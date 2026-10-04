@@ -35,7 +35,10 @@ target_link_libraries(brumeval PRIVATE SDL2::SDL2-static)
 
 if(MSVC)
   # /utf-8 : indispensable pour les accents dans les textes du jeu
-  target_compile_options(brumeval PRIVATE /utf-8 /W3)
+  # /wd4244 : coupe l'avertissement « conversion de 'int' en 'float' », émis des
+  # centaines de fois quand on passe des coordonnées entières aux fonctions de
+  # dessin (sans danger ici). GCC ne le signale pas non plus avec -Wall -Wextra.
+  target_compile_options(brumeval PRIVATE /utf-8 /W3 /wd4244)
   set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT brumeval)
 else()
   target_compile_options(brumeval PRIVATE -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers)

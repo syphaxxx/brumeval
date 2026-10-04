@@ -9,8 +9,8 @@ est original. Le projet a été démarré dans l'app Claude puis transféré ici
 - Il est francophone et débute en programmation : réponds en français, explique
   simplement ce que tu changes et pourquoi, sans jargon inutile.
 - Il travaille sous **Windows avec Visual Studio Code** (extensions CMake Tools et
-  C/C++). Le code a été écrit et testé sous Linux avec GCC ; la première
-  compilation avec MSVC sous Windows n'a pas encore été faite (voir « À faire »).
+  C/C++). Le code a été écrit sous Linux avec GCC, puis compilé et testé sous
+  Windows avec MSVC (Build Tools 2022) : tous les tests passent.
 - Tous les textes visibles par le joueur sont en français, avec accents.
 
 ## Compiler et lancer
@@ -70,7 +70,8 @@ après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
 - Police : `gfx.cpp`, fonction `buildFont()`. Un caractère absent s'affiche « ? » ;
   ajoute son dessin si tu utilises un nouveau symbole.
 - Sous MSVC, l'option `/utf-8` (déjà dans CMakeLists.txt) est indispensable pour
-  les accents.
+  les accents. `/wd4244` coupe les centaines d'avertissements « int en float »
+  des appels de dessin ; garder 0 avertissement de compilation.
 
 ### Modifier les cartes
 
@@ -100,8 +101,9 @@ Ignarok ≈ 35 % avec une équipe N.22 (un joueur avec des objets fait mieux).
 
 ## À faire / pistes
 
-1. Compiler et lancer sous Windows avec MSVC dans VS Code, corriger ce qui
-   coince (avertissements MSVC, chemin de l'exécutable, débogueur).
+1. Windows : la compilation MSVC (générateurs Visual Studio et Ninja) et le mode
+   test marchent en ligne de commande. Reste à confirmer dans VS Code même :
+   F7, Maj+F5 et le débogueur (`cppvsdbg`).
 2. Ajouter musique et effets sonores (SDL2_mixer via FetchContent, ou l'audio de SDL).
 3. Rendre le sprite d'Ignarok plus lisible (aujourd'hui un bloc rouge).
 4. Dans la fenêtre d'état du combat, les noms sont coupés à 9 caractères
