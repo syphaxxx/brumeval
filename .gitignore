@@ -1,0 +1,7 @@
+build/
+out/
+.vs/
+.cache/
+captures/
+compile_commands.json
+*.bmp
