@@ -51,6 +51,7 @@ après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
 | `sprites.hpp/.cpp` | Dessin en code des créatures (19 formes), humains (coiffes, armes), tuiles selon le thème, bâtiments (aucune image externe) |
 | `gfx.hpp/.cpp` | Primitives de dessin (ellipses, polygones, dégradés), police pixel intégrée avec accents, fenêtres bleues |
 | `ui.hpp/.cpp` | Clavier, `Script` (file de messages/actions) et `MenuStack` (menus à curseur ; `MenuItem::adjust` pour régler une valeur avec gauche/droite, `rightFn` pour un texte recalculé, `menuHeader` pour un titre de section) |
+| `settings.hpp/.cpp` | Réglages (écran titre > Outils) : éditeurs des règles, espèces, techniques, types (grille) et objets ; chaque modification passe par `Settings::change` (document JSON puis `rebuildData`) |
 | `arena.hpp/.cpp` | Arène de combat (écran titre > Outils) : composition, combat à la main, simulation progressive (`stepSim`), modèles tirés des événements et des zones, journal |
 | `test.cpp` | Mode test automatique |
 
@@ -89,6 +90,14 @@ après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
   l'ordinateur (ennemis, et alliés en mode test) ; `Battle::log` garde un journal
   lisible (`BRUMEVAL_JOURNAL=Sylvarque brumeval --test captures` l'affiche pour
   la simulation qui contient ce mot).
+- Données en mémoire : `dataDoc(DF_…)` garde chaque fichier de data/ sous forme
+  de JSON ; `rebuildData()` reconstruit les structures du jeu à partir de ces
+  documents, `saveDataDoc` les écrit. Les Réglages ne touchent qu'aux documents,
+  jamais directement aux structures. Le mode test vérifie que réécrire un
+  document sans changement redonne exactement le fichier.
+- Saisie de texte : `Game::editText(titre, texte, max, rappel)` (SDL_TEXTINPUT
+  transmis par main.cpp à `Game::onText`). Pendant la saisie, `onKey` ne sert
+  qu'à écrire (Retour arrière, Entrée, Échap).
 - Arène : mode `Mode::Arena` ; un combat lancé depuis l'Arène (`arenaBattle_`)
   y revient sans défaite « réelle ». La simulation crée des `Battle` en mode
   automatique et avance de quelques millisecondes par image. `BattleSetup::theme`

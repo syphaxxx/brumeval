@@ -1,14 +1,17 @@
 // Mode test (brumeval --test DOSSIER) : joue automatiquement quelques scènes,
 // vérifie les données, simule des combats pour l'équilibrage et enregistre
 // des captures d'écran (.bmp) dans DOSSIER. Renvoie 0 si tout va bien.
+#include <algorithm>
 #include <cstdio>
-
 #include <filesystem>
+#include <fstream>
+#include <sstream>
 
 #include "arena.hpp"
 #include "battle.hpp"
 #include "events.hpp"
 #include "game.hpp"
+#include "settings.hpp"
 #include "sprites.hpp"
 
 int Game::selfTest(SDL_Surface* target, const std::string& out) {
@@ -456,6 +459,87 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       snap("38_arene_journal");
       menus.clear();
     }
+    mode = Mode::Title;
+    titleMenu();
+  }
+
+  // --- Réglages ---
+  {
+    // Enregistrer sans rien changer doit redonner exactement les mêmes fichiers
+    bool same = true;
+    for (int f = 0; f < N_DATAFILES; f++) {
+      std::ifstream file(std::filesystem::u8path(dataDir()) / dataFileName(DataFile(f)), std::ios::binary);
+      std::stringstream ss;
+      ss << file.rdbuf();
+      std::string disk = ss.str();
+      disk.erase(std::remove(disk.begin(), disk.end(), '\r'), disk.end());
+      if (disk != prettyJson(dataDoc(DataFile(f)))) {
+        same = false;
+        std::printf("         différent : %s\n", dataFileName(DataFile(f)));
+      }
+    }
+    check(same, "réglages : les fichiers de data/ se réécrivent à l'identique");
+
+    sc.clear();
+    titleMenu();
+    menus.top().sel = 2;  // Outils
+    in.confirm = true;
+    frame();
+    menus.top().sel = 1;  // Réglages
+    in.confirm = true;
+    frame();
+    check(mode == Mode::Settings && settings_ != nullptr, "écran titre > Outils > Réglages");
+    if (settings_) {
+      Settings& S = *settings_;
+      run(.2f);
+      snap("39_reglages");
+      in.press[DOWN] = true;  // Espèces
+      frame();
+      in.confirm = true;
+      frame();
+      in.confirm = true;  // Lior
+      frame();
+      int atk0 = species("lior").base[B_ATK];
+      menus.top().sel = 7;  // Attaque
+      in.press[RIGHT] = true;
+      frame();
+      check(species("lior").base[B_ATK] == atk0 + 1 && S.dirtyCount() == 1 && makeFighter("lior", 20)->atk > 0,
+            "réglages : Attaque de Lior +1, effet immédiat, 1 fichier modifié");
+      run(.2f);
+      snap("40_reglages_espece");
+      // Saisie de texte : renommer
+      menus.top().sel = 0;
+      in.confirm = true;
+      frame();
+      bool typing = editingText();
+      for (int i = 0; i < 10; i++) onKey(SDL_SCANCODE_BACKSPACE, true, false);
+      onText("Lior le Brave");
+      run(.1f);
+      snap("41_saisie_texte");
+      onKey(SDL_SCANCODE_RETURN, true, false);
+      check(typing && !editingText() && species("lior").name == "Lior le Brave", "saisie de texte : renommer une espèce");
+      // Grille des types
+      S.menuTypes(0);
+      in.confirm = true;
+      frame();
+      float e0 = typeEff(typeOf("normal"), typeOf("normal"));
+      in.confirm = true;
+      frame();
+      check(S.inGrid() && e0 == 1.f && typeEff(typeOf("normal"), typeOf("normal")) == 2.f, "réglages : grille d'efficacité des types");
+      run(.1f);
+      snap("42_reglages_types");
+      S.menuRules(0);
+      run(.1f);
+      snap("43_reglages_regles");
+      S.editMove("flam");
+      run(.1f);
+      snap("44_reglages_technique");
+      S.revert();
+      check(S.dirtyCount() == 0 && species("lior").base[B_ATK] == atk0 && species("lior").name == "Lior" &&
+                typeEff(typeOf("normal"), typeOf("normal")) == 1.f,
+            "réglages : « Annuler les changements » recharge les fichiers");
+    }
+    menus.clear();
     mode = Mode::Title;
     titleMenu();
   }

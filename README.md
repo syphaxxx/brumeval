@@ -45,6 +45,12 @@ Depuis l'écran titre, **Outils** donne accès à :
   pour faire jouer des dizaines de combats à l'ordinateur et voir le taux de
   victoire. **Modèles…** reprend tous les combats de l'histoire et les zones de
   rencontres ; **Journal** détaille le dernier combat coup par coup.
+- **Réglages** : modifiez depuis le jeu les règles (départ, rencontres, formules
+  de combat, états, récompenses, butin), les espèces (types, statistiques,
+  résistances, immunités, techniques apprises), les techniques, la table des
+  types et les objets. Les changements s'appliquent tout de suite : essayez-les
+  avec **Tester dans l'Arène**, puis **Enregistrer** (ou **Tout annuler**).
+  Gauche/droite règle une valeur, Entrée ouvre un texte à saisir au clavier.
 
 ## Continuer le projet avec Claude Code
 

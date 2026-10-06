@@ -4,6 +4,9 @@ Tout le contenu de Brumeval est rangé ici, au format JSON. Le jeu lit ces
 fichiers à chaque démarrage : modifiez-en un, relancez le jeu, et le changement
 apparaît. Pas besoin de recompiler.
 
+Vous pouvez aussi tout modifier depuis le jeu : écran titre > Outils > Réglages
+(sauf les cartes et l'histoire, qui auront leurs propres éditeurs).
+
 Si un fichier contient une erreur, le jeu l'indique au démarrage (nom du fichier
 et numéro de ligne). Le mode test (`brumeval --test captures`) vérifie aussi que
 toutes les références existent et que chaque lieu des cartes est accessible.

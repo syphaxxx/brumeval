@@ -14,6 +14,10 @@
 class Game;
 enum class BattleResult;
 
+// Fiche d'un combattant : statistiques, faiblesses et résistances, techniques
+// (utilisée par l'Arène et les Réglages)
+void drawFighterCard(Gfx& g, const Fighter& f, int x, int y, int w, int h, float t);
+
 struct ArenaSlot {
   std::string sp;     // espèce ; vide : emplacement libre
   int lvl = 10;
@@ -84,6 +88,5 @@ class Arena {
   void restore();
   void nextSim();
   void stepSim();
-  void drawFighterCard(const Fighter& f, int x, int y, int w);
   void drawSummary(int x, int y, int w);
 };

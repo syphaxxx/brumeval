@@ -152,8 +152,15 @@ std::vector<RuleField> ruleFields(Rules& r) {
   };
 }
 
-static void loadRules() {
-  Json j = readJson("regles.json");
+// Documents JSON en mémoire : la source de vérité. Les réglages les modifient
+// puis appellent rebuildData() ; « Enregistrer » les écrit dans data/.
+static const char* FILES[N_DATAFILES] = {"types.json", "techniques.json", "especes.json", "objets.json", "apparences.json", "regles.json"};
+static Json DOCS[N_DATAFILES];
+const char* dataFileName(DataFile f) { return FILES[f]; }
+Json& dataDoc(DataFile f) { return DOCS[f]; }
+void saveDataDoc(DataFile f) { writeJson(FILES[f], DOCS[f]); }
+
+static void loadRules(const Json& j) {
   Rules r;
   for (auto& f : ruleFields(r)) {
     if (!j.contains(f.group) || !j[f.group].contains(f.key)) continue;
@@ -186,9 +193,11 @@ static void loadRules() {
 // Chargement
 // ---------------------------------------------------------------------------
 template <class T, class F>
-static void loadList(const char* file, std::vector<T>& out, F parse) {
+static void loadList(DataFile df, std::vector<T>& out, F parse) {
   out.clear();
-  Json j = readJson(file);
+  const char* file = FILES[df];
+  const Json& j = DOCS[df];
+  if (!j.is_array()) throw std::runtime_error(std::string("data/") + file + " doit contenir une liste [ … ]");
   for (auto& o : j) {
     std::string id = jget<std::string>(o, "id", "?");
     try {
@@ -212,9 +221,14 @@ static Effect parseEffect(const Json& o) {
   return e;
 }
 void loadData() {
-  loadRules();
+  for (int f = 0; f < N_DATAFILES; f++) DOCS[f] = readJson(FILES[f]);
+  rebuildData();
+}
+
+void rebuildData() {
+  loadRules(DOCS[DF_RULES]);
   // Types et table d'efficacité
-  Json t = readJson("types.json");
+  const Json& t = DOCS[DF_TYPES];
   TYPES.clear();
   for (auto& o : t.at("types"))
     TYPES.push_back({o.at("id").get<std::string>(), o.at("nom").get<std::string>(), parseColor(o.value("couleur", Json("#c8c8c8"))),
@@ -224,7 +238,7 @@ void loadData() {
   for (auto& [a, row] : chart.items())
     for (auto& [d, v] : row.items()) CHART[typeOf(a)][typeOf(d)] = v.get<float>();
 
-  loadList("techniques.json", MOVES, [](const Json& o) {
+  loadList(DF_MOVES, MOVES, [](const Json& o) {
     Move m;
     m.id = o.at("id").get<std::string>();
     m.name = o.at("nom").get<std::string>();
@@ -241,7 +255,7 @@ void loadData() {
     return m;
   });
 
-  loadList("apparences.json", LOOKS, [](const Json& o) {
+  loadList(DF_LOOKS, LOOKS, [](const Json& o) {
     Look l;
     l.id = o.at("id").get<std::string>();
     l.name = jget<std::string>(o, "nom", l.id);
@@ -254,7 +268,7 @@ void loadData() {
     return l;
   });
 
-  loadList("especes.json", SPECIES, [](const Json& o) {
+  loadList(DF_SPECIES, SPECIES, [](const Json& o) {
     Species s;
     s.id = o.at("id").get<std::string>();
     s.name = o.at("nom").get<std::string>();
@@ -292,7 +306,7 @@ void loadData() {
     return s;
   });
 
-  loadList("objets.json", ITEMS, [](const Json& o) {
+  loadList(DF_ITEMS, ITEMS, [](const Json& o) {
     ItemDef d;
     d.id = o.at("id").get<std::string>();
     d.name = o.at("nom").get<std::string>();

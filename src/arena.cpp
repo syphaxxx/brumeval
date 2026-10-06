@@ -481,10 +481,8 @@ static std::string multStr(float e) {
   return "×" + fmtMult(e);
 }
 
-void Arena::drawFighterCard(const Fighter& f, int x, int y, int w) {
-  Gfx& g = G.g;
+void drawFighterCard(Gfx& g, const Fighter& f, int x, int y, int w, int h, float t) {
   const Species& s = f.S();
-  int h = 190;
   g.window(x, y, w, h);
   g.text(x + 8, y + 5, s.name, GOLD);
   g.text(x + w - 8, y + 5, "N." + std::to_string(f.lvl), WHITE, 2);
@@ -496,7 +494,7 @@ void Arena::drawFighterCard(const Fighter& f, int x, int y, int w) {
     g.text(tx, y + 17, typeName(t), rgb(types()[t].color));
     tx += Gfx::textW(typeName(t));
   }
-  drawFighterSprite(g, f, x + w - 24, y + 44, .7f, false, G.time);
+  drawFighterSprite(g, f, x + w - 24, y + 44, .7f, false, t);
   int ly = y + 30;
   g.text(x + 8, ly, "PV " + std::to_string(f.mhp), WHITE), ly += 11;
   g.text(x + 8, ly, "PM " + std::to_string(f.mmp), WHITE), ly += 13;
@@ -596,8 +594,9 @@ void Arena::draw() {
     return;
   }
   // Panneau de droite : fiche du combattant survolé, ou résumé
-  if (!previewSp_.empty() && hasSpecies(previewSp_)) drawFighterCard(*makeFighter(previewSp_, previewLvl_), 160, 18, 156);
-  else if (hover_ >= 0 && !slot(hover_ >= 6, hover_ % 6).sp.empty()) drawFighterCard(*make(slot(hover_ >= 6, hover_ % 6)), 160, 18, 156);
+  if (!previewSp_.empty() && hasSpecies(previewSp_)) drawFighterCard(g, *makeFighter(previewSp_, previewLvl_), 160, 18, 156, 190, G.time);
+  else if (hover_ >= 0 && !slot(hover_ >= 6, hover_ % 6).sp.empty())
+    drawFighterCard(g, *make(slot(hover_ >= 6, hover_ % 6)), 160, 18, 156, 190, G.time);
   else drawSummary(160, 18, 156);
   G.menus.draw(g, G.time);
   std::string h = G.menus.help();

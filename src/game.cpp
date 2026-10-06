@@ -7,6 +7,7 @@
 
 #include "arena.hpp"
 #include "battle.hpp"
+#include "settings.hpp"
 #include "sprites.hpp"
 
 static const Color WHITE = rgb(0xffffff), GOLD = rgb(0xffd34d), MUTED = rgb(0xaab3d8);
@@ -19,6 +20,22 @@ Game::~Game() = default;
 // Échap pour annuler et ouvrir le menu.
 // ---------------------------------------------------------------------------
 void Game::onKey(SDL_Scancode k, bool down, bool repeat) {
+  if (textOn_) {  // saisie de texte : les touches servent à écrire
+    if (!down) return;
+    if (k == SDL_SCANCODE_BACKSPACE) {
+      while (!textValue_.empty() && (textValue_.back() & 0xC0) == 0x80) textValue_.pop_back();
+      if (!textValue_.empty()) textValue_.pop_back();
+    } else if ((k == SDL_SCANCODE_RETURN || k == SDL_SCANCODE_KP_ENTER) && !repeat) {
+      textOn_ = false;
+      SDL_StopTextInput();
+      auto done = textDone_;
+      if (done) done(textValue_);
+    } else if (k == SDL_SCANCODE_ESCAPE && !repeat) {
+      textOn_ = false;
+      SDL_StopTextInput();
+    }
+    return;
+  }
   int d = -1;
   if (k == SDL_SCANCODE_UP || k == SDL_SCANCODE_W) d = UP;
   if (k == SDL_SCANCODE_DOWN || k == SDL_SCANCODE_S) d = DOWN;
@@ -33,6 +50,46 @@ void Game::onKey(SDL_Scancode k, bool down, bool repeat) {
   if (k == SDL_SCANCODE_RETURN || k == SDL_SCANCODE_KP_ENTER || k == SDL_SCANCODE_SPACE) in.confirm = true;
   if (k == SDL_SCANCODE_ESCAPE || k == SDL_SCANCODE_BACKSPACE) in.cancel = in.menu = true;
   if (k == SDL_SCANCODE_TAB) in.menu = true;
+}
+
+// ---------------------------------------------------------------------------
+// Saisie de texte
+// ---------------------------------------------------------------------------
+static int utf8Len(const std::string& s) {
+  int n = 0;
+  for (unsigned char c : s)
+    if ((c & 0xC0) != 0x80) n++;
+  return n;
+}
+void Game::editText(const std::string& title, const std::string& initial, int maxChars, std::function<void(const std::string&)> done) {
+  textOn_ = true;
+  textTitle_ = title;
+  textValue_ = initial;
+  textMax_ = maxChars;
+  textDone_ = std::move(done);
+  in.endFrame();
+  SDL_StartTextInput();
+}
+void Game::onText(const char* utf8) {
+  if (!textOn_ || !utf8) return;
+  std::string add = utf8;
+  if (add == "\t" || add == "\r" || add == "\n") return;
+  textValue_ += add;
+  if (utf8Len(textValue_) > textMax_) textValue_ = utf8Prefix(textValue_, textMax_);
+}
+void Game::drawTextEdit() {
+  int lines = std::max(1, (int)Gfx::wrap(textValue_ + "_", 288).size());
+  int h = 40 + lines * 11;
+  int y = 120 - h / 2;
+  g.rect(0, 0, SCREEN_W, SCREEN_H, rgb(0x000010, 120));
+  g.window(10, y, 300, h);
+  g.text(18, y + 5, textTitle_, rgb(0xffd34d));
+  auto wl = Gfx::wrap(textValue_, 288);
+  if (wl.empty()) wl.push_back("");
+  for (size_t i = 0; i < wl.size(); i++) g.text(18, y + 19 + i * 11, wl[i], WHITE);
+  if (int(time * 3) % 2 == 0) g.rect(18 + Gfx::textW(wl.back()), y + 19 + (wl.size() - 1) * 11 + 1, 5, 9, rgb(0xffd34d));
+  g.text(160, y + h - 13, "Entrée : valider · Échap : annuler · " + std::to_string(utf8Len(textValue_)) + "/" + std::to_string(textMax_),
+         MUTED, 1);
 }
 
 // ---------------------------------------------------------------------------
@@ -52,6 +109,9 @@ void Game::update(float dt) {
       break;
     case Mode::Arena:
       if (arena_) arena_->update(dt);
+      break;
+    case Mode::Settings:
+      if (settings_) settings_->update(dt);
       break;
     case Mode::Battle: {
       battle_->update(dt);
@@ -368,7 +428,7 @@ void Game::titleMenu() {
                          showRegionBanner();
                        }
                      }});
-  m.items.push_back({"Outils", "", "Arène de combat (et bientôt éditeurs et réglages).", true, [this] { toolsMenu(); }});
+  m.items.push_back({"Outils", "", "Arène de combat, réglages (et bientôt éditeurs).", true, [this] { toolsMenu(); }});
   m.items.push_back({"Quitter", "", "", true, [this] { quit = true; }});
   if (can) m.sel = 1;
   menus.push(m);
@@ -377,11 +437,16 @@ void Game::titleMenu() {
 void Game::toolsMenu() {
   Menu m;
   m.title = "Outils";
-  m.x = 100, m.y = 120, m.w = 120, m.rows = 3;
+  m.x = 100, m.y = 112, m.w = 120, m.rows = 4;
   m.items.push_back({"Arène de combat", "", "Composer deux équipes, combattre ou simuler des combats.", true, [this] {
                        if (!arena_) arena_ = std::make_unique<Arena>(*this);
                        mode = Mode::Arena;
                        arena_->open();
+                     }});
+  m.items.push_back({"Réglages", "", "Modifier les règles, espèces, techniques, types et objets.", true, [this] {
+                       if (!settings_) settings_ = std::make_unique<Settings>(*this);
+                       mode = Mode::Settings;
+                       settings_->open();
                      }});
   m.items.push_back({"Retour", "", "", true, [this] { menus.pop(); }});
   menus.push(m);
@@ -690,7 +755,11 @@ void Game::draw() {
     case Mode::Arena:
       if (arena_) arena_->draw();
       break;
+    case Mode::Settings:
+      if (settings_) settings_->draw();
+      break;
   }
+  if (textOn_) drawTextEdit();
 }
 
 void Game::drawTitle() {

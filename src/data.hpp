@@ -167,6 +167,13 @@ int lookIndex(const std::string& id);  // -1 si inconnue
 // Lecture de tout data/ (sauf cartes et événements, voir world.hpp et events.hpp).
 // Lève une erreur lisible en cas de problème.
 void loadData();
+// Les fichiers sont gardés en mémoire sous forme de documents JSON : les réglages
+// les modifient, puis rebuildData() reconstruit les données du jeu.
+enum DataFile { DF_TYPES, DF_MOVES, DF_SPECIES, DF_ITEMS, DF_LOOKS, DF_RULES, N_DATAFILES };
+const char* dataFileName(DataFile f);
+Json& dataDoc(DataFile f);
+void rebuildData();
+void saveDataDoc(DataFile f);
 // Vérifie que toutes les références (techniques apprises, Limites…) existent.
 std::vector<std::string> checkData();
 

@@ -19,7 +19,8 @@
 
 class Battle;
 class Arena;
-enum class Mode { Title, Map, Battle, Ending, Arena };
+class Settings;
+enum class Mode { Title, Map, Battle, Ending, Arena, Settings };
 enum class BattleResult { Win, Lose, Fled };
 
 class Game {
@@ -27,6 +28,10 @@ class Game {
   explicit Game(SDL_Renderer* r);
   ~Game();
   void onKey(SDL_Scancode sc, bool down, bool repeat);
+  void onText(const char* utf8);  // caractères tapés (saisie de texte des éditeurs)
+  // Saisie de texte : affiche une fenêtre ; Entrée valide (done), Échap annule
+  void editText(const std::string& title, const std::string& initial, int maxChars, std::function<void(const std::string&)> done);
+  bool editingText() const { return textOn_; }
   void update(float dt);
   void draw();
   bool quit = false;
@@ -116,8 +121,14 @@ class Game {
   void drawEnding();
   void drawTeamPanel(int x, int y, int sel);
 
+  bool textOn_ = false;
+  std::string textTitle_, textValue_;
+  int textMax_ = 0;
+  std::function<void(const std::string&)> textDone_;
+  void drawTextEdit();
   std::unique_ptr<Battle> battle_;
   std::unique_ptr<Arena> arena_;  // Arène de combat (écran titre > Outils)
+  std::unique_ptr<Settings> settings_;  // Réglages (écran titre > Outils)
   bool arenaBattle_ = false;      // le combat en cours a été lancé depuis l'Arène
   void toolsMenu();
   std::function<void(BattleResult)> afterBattle_;
@@ -133,4 +144,5 @@ class Game {
   void shopMenuAt(const std::vector<std::string>& stock, int sel);
   friend class Battle;
   friend class Arena;
+  friend class Settings;
 };

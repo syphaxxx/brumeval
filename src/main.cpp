@@ -90,6 +90,10 @@ int main(int argc, char* argv[]) {
       SDL_Event e;
       while (SDL_PollEvent(&e)) {
         if (e.type == SDL_QUIT) game.quit = true;
+        if (e.type == SDL_TEXTINPUT) {
+          game.onText(e.text.text);
+          continue;
+        }
         if (e.type != SDL_KEYDOWN && e.type != SDL_KEYUP) continue;
         SDL_Scancode k = e.key.keysym.scancode;
         bool alt = (e.key.keysym.mod & KMOD_ALT) != 0;
