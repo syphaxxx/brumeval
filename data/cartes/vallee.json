@@ -13,7 +13,7 @@
     "T............=.WW...........,,,,,..~~,,R,,,,,,,,,,,,,T,,,,,,...T",
     "T......=.....=.WW...=..............~~,,,,,,,,T..,,,,,TT,,,,....T",
     "T......=.....=......=.....TT.......~~..,,,,,...T..,,,,,,,T.....T",
-    "T.=================================BB==========....T...........T",
+    "===================================BB==========....T...........T",
     "T............=................T..R.~~.........=..........,T,...T",
     "T............=............TT.......~~.......FT=.........,,TR,..T",
     "T.F..........=............R,,,,T...~~......T,,=T,,,....,,,,,,,.T",
@@ -134,11 +134,22 @@
     {"x": 12, "y": 10, "texte": "Village de Brumeval. Maison de soin au nord-ouest, boutique au nord-est."},
     {"x": 11, "y": 19, "texte": "Bois Murmurant. On dit qu'une herbe lunaire pousse tout au fond des bois."},
     {"x": 55, "y": 33, "texte": "Col de la Brume. Au-delà s'étendent les Monts Cendrelune."},
-    {"x": 34, "y": 10, "texte": "Pont du Ru-Clair."}
+    {"x": 34, "y": 10, "texte": "Pont du Ru-Clair."},
+    {"x": 1, "y": 8, "texte": "Forêt de Sylve-Noire, à l'ouest."}
   ],
   "passages": [
     {"x": 63, "y": 32, "vers": "cendrelune", "tx": 1, "ty": 33, "direction": "droite"},
-    {"x": 63, "y": 33, "vers": "cendrelune", "tx": 1, "ty": 34, "direction": "droite"}
+    {"x": 63, "y": 33, "vers": "cendrelune", "tx": 1, "ty": 34, "direction": "droite"},
+    {
+      "x": 0,
+      "y": 9,
+      "vers": "sylvenoire",
+      "tx": 54,
+      "ty": 20,
+      "direction": "gauche",
+      "condition": {"drapeau": "boss1"},
+      "message": "Un garde forestier vous arrête : « La forêt est trop dangereuse tant que la brume rôde. Revenez quand le gardien du col sera vaincu. »"
+    }
   ],
   "zones": [
     {

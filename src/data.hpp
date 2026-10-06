@@ -67,14 +67,14 @@ struct Move {
 
 struct Learn { int lvl; std::string move; };
 
-enum class Shape { Fox, Drop, Bud, Bird, Mouse, Bug, Frog, Mush, Rock, Wisp, Boss, Lizard, Golem, Human };
+enum class Shape { Fox, Drop, Bud, Bird, Mouse, Bug, Frog, Mush, Rock, Wisp, Boss, Lizard, Golem, Snake, Bat, Wolf, Turtle, Ghost, Crystal, Human };
 
 // Apparence d'un humain (héros ou habitant)
 struct Look {
   std::string id, name;
   uint32_t hair, skin, top, bottom;
-  int hat;     // 0 aucune, 1 capuche, 2 chapeau pointu, 3 bandeau
-  int weapon;  // 0 aucune, 1 épée, 2 bâton, 3 hache, 4 dague
+  int hat;     // 0 aucune, 1 capuche, 2 chapeau pointu, 3 bandeau, 4 casque, 5 foulard
+  int weapon;  // 0 aucune, 1 épée, 2 bâton, 3 hache, 4 dague, 5 arc, 6 lance
 };
 
 // Statistiques de base d'une espèce (multipliées par le niveau)

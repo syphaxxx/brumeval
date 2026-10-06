@@ -18,7 +18,8 @@ static Rules RULES;
 static std::unordered_map<std::string, size_t> MOVE_IX, SPECIES_IX, ITEM_IX;
 
 static const char* SHAPES[] = {"renard", "goutte", "bourgeon", "oiseau", "souris", "insecte", "grenouille",
-                               "champignon", "rocher", "feu_follet", "boss", "lezard", "golem", "humain"};
+                               "champignon", "rocher", "feu_follet", "boss", "lezard", "golem", "serpent",
+                               "chauve_souris", "loup", "tortue", "fantome", "cristal", "humain"};
 static const char* TARGETS[] = {"ennemi", "tous_ennemis", "allie", "tous_allies", "allie_ko"};
 static const char* KINDS[] = {"physique", "magique", "soin", "rappel", "statut"};
 static const char* STATUSES[] = {"aucun", "poison", "brulure", "paralysie", "sommeil"};
@@ -27,8 +28,8 @@ static const char* STATUS_TAGS[] = {"", "PSN", "BRL", "PAR", "SOM"};
 static const uint32_t STATUS_COLORS[] = {0xffffff, 0xc58aff, 0xff8a4a, 0xffe14a, 0x9fb8ff};
 static const char* STAGES[] = {"attaque", "defense", "magie", "resistance", "vitesse"};
 static const char* STAGE_NAMES[] = {"Attaque", "Défense", "Magie", "Résistance", "Vitesse"};
-static const char* HATS[] = {"aucune", "capuche", "chapeau", "bandeau"};
-static const char* WEAPONS[] = {"aucune", "epee", "baton", "hache", "dague"};
+static const char* HATS[] = {"aucune", "capuche", "chapeau", "bandeau", "casque", "foulard"};
+static const char* WEAPONS[] = {"aucune", "epee", "baton", "hache", "dague", "arc", "lance"};
 static const char* DIRS[] = {"haut", "bas", "gauche", "droite"};
 
 template <size_t N>

@@ -1,0 +1,172 @@
+{
+  "id": "pics",
+  "nom": "Pics Givrés",
+  "theme": "neige",
+  "ambiance": {"effet": "neige"},
+  "tuiles": [
+    "############################################################",
+    "############################################################",
+    "############################################################",
+    "##############################k#############################",
+    "##TT.T....TT.T..TT.......................T..T.............##",
+    "##........T....T.T....TT.............................T....##",
+    "##......T........T.T......T.T.=......T.................T..##",
+    "##.T..T....T.....TTT...T.....T=........T...nnnnnnn........##",
+    "##...........T..T.............=..T....T..nnn=nnnnnnn..T.T.##",
+    "##.......nnnnnnnT....T..T.....=......T..nnnn=nnnnnnnn...T.##",
+    "##.....nnnnnnnnnnn.T===========T.......nnnnn=nnnnnnnnn...T##",
+    "##...Tnnnnnnnnnnnnn.=.................nnnnnn=nnnnnnnnnn...##",
+    "##....nnnnnnnnnnnnn.=....T........T.T.nnnnnn=nnnnnnnnnn...##",
+    "##...nnnnnnnnnnnnnnn=...TT........T.T.nnnnnn=nnnnnnnnnn...##",
+    "##T..nnnnnnnnnnnnnnn=.................nnnnnn=nnnnnnnnnnT..##",
+    "##...nnnnnnnnnnnnnnn=.T.....T.........nnnnnn=nnnnnnnnnn...##",
+    "##....nnnnnnnnnnnnnT=.T........T.T.....nnnnn=nnnnnnnnn.T..##",
+    "##.TT.nnnnnnnnnnnnn.=.....T.T..T...T....nnnn=nnnnnnnn.....##",
+    "##..TT.nnnnnnnnnnn..=========================nnnnnnn.T....##",
+    "##.......nnnnnnn......nnnnn...=TT.nnnnn....nnnnnnn..T...T.##",
+    "##...T...T..T..T...Tnnnnnnnnn.=.nnnnnnnnn..........~~~....##",
+    "##.T...T.......T...nnnnnnnnnnn=nnnnnnnnnnn..T.....~iii~TT.##",
+    "##.........T..T....nnnnnnnnnnn=nnnnnnnnnnn..T....~iiiii~..##",
+    "##.....TT....T....Tnnnnnnnnnnn=nnnnnnnnnnn.......~iiiii~T.##",
+    "##.T................nnnnnnnnn.=TnnnnnnnnnT...T.T~iiiiiii~.##",
+    "##.T.T.~~~.T.T......TTnnnnn...=...nnnnn.......T.~iiiiiii~T##",
+    "##...~~~~~~~.T................==............=====iiiiiii~.##",
+    "##.T.~~iii~~..................==................~iiiiiii~.##",
+    "##T.~~iiiii~~T................==..............TT~iiiiiii~.##",
+    "##..~~iiiii~~.................==.................~iiiii~..##",
+    "##..~~iiiii~~.................==.................~iiiii~.T##",
+    "##..~~iiiii~~T................==.................T~iii~.T.##",
+    "##..~~iiiii~~T......=......=..==.....=.........T...~~~T..T##",
+    "##TT.~~iii~~T.......=......=..==.....=..........T.........##",
+    "##..T~~~BBBB===...=========================.............T.##",
+    "##.....~~~T..T................==..............T.........T.##",
+    "##.T..TT..TT..................==........................T.##",
+    "##.....T......................==...............T..T......T##",
+    "##............................==..........................##",
+    "##..T.......T.................==..........................##",
+    "##....T.T.....................==........................T.##",
+    "##....TT......................==...............TT...T.....##",
+    "##############################==############################",
+    "##############################==############################"
+  ],
+  "batiments": [
+    {"x": 18, "y": 28, "l": 5, "h": 4, "genre": "soin", "nom": "Maison de soin", "toit": "#b8483e"},
+    {
+      "x": 25,
+      "y": 28,
+      "l": 4,
+      "h": 4,
+      "genre": "boutique2",
+      "nom": "Boutique",
+      "toit": "#3f6fb0",
+      "evenement": "boutique3"
+    },
+    {"x": 34, "y": 28, "l": 6, "h": 4, "genre": "auberge", "nom": "Auberge du Flocon", "toit": "#9a5a2a"},
+    {"x": 20, "y": 36, "l": 5, "h": 3, "genre": "maison", "nom": "Maison", "toit": "#7a6a8a"},
+    {
+      "x": 35,
+      "y": 36,
+      "l": 5,
+      "h": 3,
+      "genre": "maison",
+      "nom": "Maison de Sélène",
+      "toit": "#5a6a9a",
+      "evenement": "maison_selene"
+    }
+  ],
+  "habitants": [
+    {
+      "x": 41,
+      "y": 35,
+      "apparence": "selene",
+      "direction": "gauche",
+      "evenement": "selene",
+      "cache_si": "selene"
+    },
+    {
+      "x": 16,
+      "y": 33,
+      "apparence": "montagnard",
+      "direction": "droite",
+      "dialogue": [
+        "Depuis que le volcan s'est éteint, le froid ne fait que gagner.",
+        "On dit que le Givrecorne, le gardien du temple, s'est réveillé."
+      ]
+    },
+    {
+      "x": 32,
+      "y": 38,
+      "apparence": "villageoise",
+      "direction": "haut",
+      "dialogue": [
+        "Les créatures des Pics sont redoutables. Pensez aux lanternes d'or de la boutique.",
+        "Le Métal ne craint pas le poison, mais le Feu le fait fondre !"
+      ]
+    },
+    {
+      "x": 44,
+      "y": 30,
+      "apparence": "enfant",
+      "direction": "bas",
+      "dialogue": ["Sélène est la meilleure chevalière du village. Elle s'entraîne tous les jours !"]
+    },
+    {
+      "x": 21,
+      "y": 17,
+      "apparence": "chevalier",
+      "direction": "bas",
+      "evenement": "chevalier1",
+      "vue": 2,
+      "vue_jusqua": "chevalier1"
+    },
+    {
+      "x": 43,
+      "y": 12,
+      "apparence": "chevalier",
+      "direction": "droite",
+      "evenement": "chevalier2",
+      "vue": 2,
+      "vue_jusqua": "chevalier2"
+    }
+  ],
+  "coffres": [
+    {"x": 9, "y": 12, "objet": "lanterne_or", "quantite": 1},
+    {"x": 52, "y": 26, "objet": "elixir", "quantite": 1},
+    {"x": 8, "y": 30, "or": 900},
+    {"x": 50, "y": 10, "objet": "superpotion", "quantite": 3},
+    {"x": 12, "y": 19, "objet": "remede", "quantite": 3}
+  ],
+  "panneaux": [
+    {"x": 28, "y": 40, "texte": "Givreval, le village au pied des Pics."},
+    {"x": 32, "y": 5, "texte": "Temple gelé. Le Givrecorne y veille depuis mille ans."}
+  ],
+  "passages": [
+    {"x": 30, "y": 3, "vers": "temple", "tx": 20, "ty": 27, "direction": "haut"},
+    {"x": 30, "y": 43, "vers": "cendrelune", "tx": 13, "ty": 1, "direction": "bas"},
+    {"x": 31, "y": 43, "vers": "cendrelune", "tx": 13, "ty": 1, "direction": "bas"}
+  ],
+  "zones": [
+    {
+      "x": 0,
+      "y": 22,
+      "l": 60,
+      "h": 22,
+      "niveau_min": 20,
+      "niveau_max": 23,
+      "max_ennemis": 2,
+      "creatures": ["givrelin", "glaconnet", "zephyrin"]
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "l": 60,
+      "h": 26,
+      "niveau_min": 21,
+      "niveau_max": 24,
+      "max_ennemis": 3,
+      "creatures": ["givrelin", "zephyrin", "ferrolin", "cristallin", "etincelot"]
+    }
+  ],
+  "boss": [],
+  "declencheurs": [{"x": 29, "y": 40, "l": 2, "h": 2, "evenement": "pics_entree", "jusqua": "pics_vu"}]
+}

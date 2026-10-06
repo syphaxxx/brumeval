@@ -731,6 +731,24 @@ void Battle::draw() {
     g.gradV(0, 0, SCREEN_W, 112, rgb(0x1d1838), rgb(0x5a4d80));
     g.rect(0, 108, SCREEN_W, 60, rgb(0x3c3360));
     for (int i = 0; i < 6; i++) g.ellipse(std::fmod(i * 70 + t * 12, 420.f) - 50, 90 + i * 9, 60, 6, rgb(0xd8d0ff, 26));
+  } else if (bg == Theme::Foret) {
+    g.gradV(0, 0, SCREEN_W, 112, rgb(0x1e3a2a), rgb(0x4a7a4a));
+    for (int i = 0; i < 9; i++) {
+      float x = i * 40.f - 10 + (i % 2) * 12;
+      g.rect(x + 8, 30 + (i % 3) * 8, 6, 80, rgb(0x2a1e16));
+      g.ellipse(x + 11, 34 + (i % 3) * 8, 22, 26, rgb(i % 2 ? 0x173a22 : 0x1f4a2a));
+    }
+    g.rect(0, 108, SCREEN_W, 60, rgb(0x3f6a3a));
+    for (int i = 0; i < 12; i++)
+      g.ellipse(std::fmod(i * 53.f + std::sin(t + i) * 8, 320.f), 40 + std::fmod(i * 23.f, 70.f), 1.5f, 1.5f,
+                rgb(0xe8ff9a, uint8_t(100 + 80 * std::sin(t * 3 + i))));
+  } else if (bg == Theme::Neige) {
+    g.gradV(0, 0, SCREEN_W, 112, boss ? rgb(0x2a3a5a) : rgb(0x9ab8d8), boss ? rgb(0x7a9ac8) : rgb(0xe6eef8));
+    g.poly({{0, 112}, {50, 50}, {100, 90}, {160, 30}, {220, 86}, {270, 56}, {320, 80}, {320, 112}}, rgb(0xc8d6e8));
+    g.poly({{150, 42}, {160, 30}, {171, 42}}, rgb(0xffffff));
+    g.rect(0, 108, SCREEN_W, 60, rgb(0xe8eef6));
+    for (int i = 0; i < 30; i++)
+      g.rect(std::fmod(i * 41 + t * 8 + std::sin(t + i) * 4, 320.f), std::fmod(i * 23 + t * 20, 168.f), 1, 1, rgb(0xffffff, 220));
   } else if (bg == Theme::Cendres) {
     g.gradV(0, 0, SCREEN_W, 112, boss ? rgb(0x2a0e08) : rgb(0x3a2420), boss ? rgb(0xa8321e) : rgb(0x8a4a2a));
     g.poly({{0, 112}, {60, 60}, {110, 100}, {170, 40}, {240, 96}, {290, 70}, {320, 90}, {320, 112}}, rgb(0x4a3a36));

@@ -9,14 +9,16 @@
 //   #  falaise / paroi  a  cendre                       g  herbes sèches (rencontres)
 //   l  lave             m  montagne                     b  pont de pierre
 //   k  entrée de grotte c  sol de grotte (rencontres)   x  cristal
-//   d  arbre mort
+//   d  arbre mort       i  glace                        n  neige profonde (rencontres)
+//   z  marais (rencontres)
+// Le dessin de certaines tuiles dépend du thème de la carte (arbres, chemins, parois).
 #pragma once
 #include <string>
 #include <vector>
 
 #include "store.hpp"
 
-enum class Theme { Vallee, Cendres, Grotte };
+enum class Theme { Vallee, Cendres, Grotte, Foret, Neige };
 Theme themeOf(const std::string& s);
 const char* themeName(Theme t);
 
@@ -56,6 +58,15 @@ struct Warp {
   int x, y;
   std::string map;  // carte d'arrivée
   int tx, ty, dir;
+  Json condition;   // facultatif : conditions pour passer (comme « si » des événements)
+  std::string message;  // affiché si le passage est fermé
+};
+
+// Zone déclencheuse : lance un événement quand le joueur y entre
+struct Trigger {
+  int x, y, w, h;
+  std::string event;
+  std::string until;  // ne se déclenche plus quand ce drapeau est posé
 };
 
 struct Zone {
@@ -85,6 +96,7 @@ struct MapDef {
   std::vector<Warp> warps;
   std::vector<Zone> zones;
   std::vector<BossSpot> bosses;
+  std::vector<Trigger> triggers;
   int w() const { return rows.empty() ? 0 : (int)rows[0].size(); }
   int h() const { return (int)rows.size(); }
 };

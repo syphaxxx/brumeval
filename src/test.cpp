@@ -8,6 +8,7 @@
 #include "battle.hpp"
 #include "events.hpp"
 #include "game.hpp"
+#include "sprites.hpp"
 
 int Game::selfTest(SDL_Surface* target, const std::string& out) {
   std::filesystem::create_directories(out);
@@ -298,6 +299,113 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     check(spotted && has("braconnier") && items["remede"] == 2, "dresseur : repère le joueur, combat avec renfort, récompense");
   }
 
+  // --- Passages fermés et zones déclencheuses ---
+  {
+    team = {makeFighter("lior", 30), makeFighter("maelle", 30)};
+    items.clear();
+    sc.clear();
+    menus.clear();
+    mode = Mode::Map;
+    auto walk = [&](int d, int n) {
+      for (int k = 0; k < n; k++) {
+        in.press[d] = true;
+        frame();
+        for (int i = 0; i < 20 && moving; i++) frame();
+      }
+    };
+    flags.clear();
+    changeMap(mi("vallee"), 1, 9, LEFT);
+    walk(LEFT, 1);
+    bool locked = M().id == "vallee" && px == 1 && sc.busy();
+    skipScript();
+    flags = {"boss1"};
+    changeMap(mi("vallee"), 1, 9, LEFT);
+    walk(LEFT, 1);
+    bool open = M().id == "sylvenoire";
+    check(locked && open, "passage fermé : la forêt s'ouvre seulement après Sylvarque");
+    // Zone déclencheuse à l'entrée de la forêt : une seule fois
+    for (int i = 0; i < 30 && !sc.busy(); i++) walk(LEFT, 1);
+    bool fired = sc.busy() || has("foret_vue");
+    skipScript();
+    bool once = has("foret_vue");
+    changeMap(mi("sylvenoire"), 55, 20, LEFT);
+    walk(LEFT, 3);
+    check(fired && once && !sc.busy(), "zone déclencheuse : la scène d'entrée de la forêt ne se joue qu'une fois");
+    skipScript();
+    // Temple : la porte du sanctuaire demande la clé de givre
+    flags = {"boss1", "boss2"};
+    changeMap(mi("temple"), 19, 1, UP);
+    walk(UP, 1);
+    bool sealed = M().id == "temple";
+    skipScript();
+    items["cle_givre"] = 1;
+    changeMap(mi("temple"), 19, 1, UP);
+    walk(UP, 1);
+    check(sealed && M().id == "sanctuaire", "porte scellée : le sanctuaire s'ouvre avec la clé de givre");
+    skipScript();
+    items.clear();
+    flags.clear();
+  }
+
+  // --- Nouvelles régions : captures des cartes et des décors de combat ---
+  {
+    team = {makeFighter("lior", 25), makeFighter("maelle", 25), makeFighter("kael", 25)};
+    flags = {"boss1", "boss2", "foret_vue", "pics_vu"};
+    sc.clear();
+    menus.clear();
+    mode = Mode::Map;
+    auto view = [&](const char* map, int x, int y, int d, const char* name) {
+      changeMap(mi(map), x, y, d);
+      banner = 0;
+      run(.3f);
+      snap(name);
+    };
+    view("sylvenoire", 14, 20, LEFT, "24_sylvenoire_camp");
+    view("sylvenoire", 40, 20, LEFT, "25_sylvenoire");
+    view("pics", 30, 35, UP, "26_givreval");
+    view("pics", 30, 12, UP, "27_pics");
+    view("temple", 20, 27, UP, "28_temple");
+    view("sanctuaire", 10, 12, UP, "29_sanctuaire");
+    auto fight = [&](const char* map, std::vector<FighterP> foes, const char* name) {
+      changeMap(mi(map), 2, 2, DOWN);
+      startBattle(foes, false, nullptr);
+      battle_->start = time - 1;
+      battle_->sc.clear();
+      run(.2f);
+      snap(name);
+      battle_.reset();
+      mode = Mode::Map;
+    };
+    fight("sylvenoire", {makeFighter("serpentin", 12), makeFighter("chauvenuit", 12), makeFighter("esprillon", 12)}, "30_combat_foret");
+    fight("pics", {makeFighter("givrelin", 24), makeFighter("ferrolin", 24), makeFighter("cristallin", 24)}, "31_combat_neige");
+    // Planches : toutes les créatures, puis tous les personnages
+    auto raw = [&](const std::string& name) {
+      SDL_RenderPresent(g.renderer());
+      std::string p = out + "/" + name + ".bmp";
+      SDL_SaveBMP(target, p.c_str());
+      std::printf("capture  %s\n", p.c_str());
+    };
+    std::vector<const Species*> cs;
+    for (auto& sp : allSpecies())
+      if (!sp.human) cs.push_back(&sp);
+    g.clear(rgb(0x1d2148));
+    for (size_t i = 0; i < cs.size(); i++) {
+      float x = 22 + (i % 7) * 46.f, y = 26 + (i / 7) * 46.f;
+      drawCreature(g, cs[i]->id, x, y, .62f, false, 0);
+      g.text(x, y + 13, utf8Prefix(cs[i]->name, 7), rgb(0xffffff), 1);
+    }
+    raw("32_galerie_creatures");
+    g.clear(rgb(0x1d2148));
+    for (size_t i = 0; i < allLooks().size(); i++) {
+      float x = 14 + (i % 9) * 34.f, y = 20 + (i / 9) * 60.f;
+      drawHuman(g, look((int)i), x, y, 1.5f, DOWN, 0, true);
+      g.text(x + 12, y + 30, utf8Prefix(look((int)i).name, 5), rgb(0xffffff), 1);
+    }
+    raw("33_galerie_personnages");
+    team.clear();
+    flags.clear();
+  }
+
   // --- Simulation d'équilibrage (IA simple, sans objets) ---
   std::printf("\nÉquilibrage (combats simulés, IA automatique) :\n");
   auto simSetup = [&](const char* name, std::vector<std::pair<std::string, int>> party, std::function<BattleSetup()> mk, int n) {
@@ -384,8 +492,60 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       group({"tisonnel", "galetor", "voltigeon", "glaconnet"}, 12, 15, 3), false, 30);
   sim("Golem de suie (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"brann", 16}},
       [&] { return std::vector<FighterP>{bossF("golem", 16, 3)}; }, true, 20);
+  simSetup("Bandit de la forêt (équipe N.12)", {{"lior", 12}, {"maelle", 12}, {"braisenard", 12}}, [] {
+    BattleSetup s;
+    s.foes = {makeFighter("bandit", 12), makeFighter("louvet", 11)};
+    s.foeName = "Le bandit";
+    s.canFlee = s.canCapture = false;
+    return s;
+  }, 30);
+  sim("Sylve-Noire (N.13 contre N.10-13)", {{"lior", 13}, {"maelle", 13}, {"kael", 13}},
+      group({"louvet", "serpentin", "chauvenuit", "esprillon", "champichou"}, 10, 13, 3), false, 30);
+  simSetup("Chef des bandits (équipe N.13)", {{"lior", 13}, {"maelle", 13}, {"gouttelin", 13}}, [&] {
+    BattleSetup s;
+    s.foes = {bossF("chef_bandit", 13, 2), makeFighter("louvet", 12)};
+    s.reserve = {makeFighter("bandit", 12), makeFighter("louvet", 12)};
+    s.foeName = "Le chef des bandits";
+    s.boss = true;
+    s.canFlee = s.canCapture = false;
+    return s;
+  }, 30);
+  simSetup("Ronce-Mère (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"kael", 16}}, [&] {
+    BattleSetup s;
+    s.foes = {makeFighter("serpentin", 14), bossF("ronce_mere", 18, 4), makeFighter("serpentin", 14)};
+    s.reserve = {makeFighter("crapoison", 13)};
+    s.boss = true;
+    s.canFlee = s.canCapture = false;
+    return s;
+  }, 30);
   sim("Boss Ignarok (équipe N.22)", {{"lior", 22}, {"maelle", 22}, {"isra", 22}},
       [&] { return std::vector<FighterP>{makeFighter("tisonnel", 19), bossF("ignarok", 23, 4), makeFighter("tisonnel", 19)}; }, true, 40);
+  sim("Pics Givrés (N.25 contre N.21-24)", {{"lior", 25}, {"maelle", 25}, {"isra", 25}},
+      group({"givrelin", "zephyrin", "ferrolin", "cristallin", "etincelot"}, 21, 24, 3), false, 30);
+  simSetup("Chevalier du givre (équipe N.25)", {{"lior", 25}, {"maelle", 25}, {"isra", 25}}, [] {
+    BattleSetup s;
+    s.foes = {makeFighter("chevalier", 26), makeFighter("givrelin", 25)};
+    s.reserve = {makeFighter("mage_givre", 26)};
+    s.foeName = "Le chevalier du givre";
+    s.canFlee = s.canCapture = false;
+    return s;
+  }, 30);
+  simSetup("Duel contre Sélène (équipe N.26)", {{"lior", 26}, {"maelle", 26}, {"isra", 26}}, [&] {
+    BattleSetup s;
+    s.foes = {bossF("selene", 26, 3)};
+    s.foeName = "Sélène";
+    s.boss = true;
+    s.canFlee = s.canCapture = false;
+    return s;
+  }, 30);
+  simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}}, [&] {
+    BattleSetup s;
+    s.foes = {makeFighter("givrelin", 27), bossF("givrecorne", 31, 4.5f), makeFighter("givrelin", 27)};
+    s.reserve = {makeFighter("cristallin", 26)};
+    s.boss = true;
+    s.canFlee = s.canCapture = false;
+    return s;
+  }, 40);
 
   std::printf("\n%s (%d échec%s)\n", fails ? "TESTS EN ÉCHEC" : "TOUS LES TESTS PASSENT", fails, fails > 1 ? "s" : "");
   return fails ? 1 : 0;

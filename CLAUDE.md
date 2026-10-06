@@ -46,9 +46,9 @@ après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
 | `battle.hpp/.cpp` | Combat ATB : jauges, menus, dégâts physiques/magiques, précision, critiques, états, bonus/malus, renforts ennemis, IA (`think`), journal (`log`), capture, Limites, victoire |
 | `store.hpp/.cpp` | Dossier data/ : recherche, lecture et écriture JSON (nlohmann/json, `Json` = `ordered_json`) |
 | `data.hpp/.cpp` | Chargement des types, techniques, espèces, objets, apparences et règles (`Rules`, `ruleFields()`), formules de stats et d'expérience |
-| `world.hpp/.cpp` | Structures des cartes, lecture/écriture de data/cartes/, vérification d'accessibilité (`checkMaps`) |
+| `world.hpp/.cpp` | Structures des cartes (thèmes, passages avec condition, zones déclencheuses), lecture/écriture de data/cartes/, vérification d'accessibilité (`checkMaps`) |
 | `events.hpp/.cpp` | Événements de l'histoire : chargement, vérification et exécution des actions (`Game::runEvent`) |
-| `sprites.hpp/.cpp` | Dessin en code des créatures, humains, tuiles, bâtiments (aucune image externe) |
+| `sprites.hpp/.cpp` | Dessin en code des créatures (19 formes), humains (coiffes, armes), tuiles selon le thème, bâtiments (aucune image externe) |
 | `gfx.hpp/.cpp` | Primitives de dessin (ellipses, polygones, dégradés), police pixel intégrée avec accents, fenêtres bleues |
 | `ui.hpp/.cpp` | Clavier, `Script` (file de messages/actions) et `MenuStack` (menus à curseur) |
 | `test.cpp` | Mode test automatique |
@@ -114,14 +114,28 @@ réécrits par `writeJson` (petites listes sur une ligne) : garder ce format.
   lave, cratère d'**Ignarok** (N.23, Feu, boss final).
 - **Grotte des Échos** (32x24) : **Golem de suie** (N.16), puis **Isra** rejoint
   l'équipe.
-- Héros : Lior (épée), Maëlle (mage blanche), Brann (hache), Isra (mage noire).
-  Starters : Braisenard (Feu), Gouttelin (Eau), Ronceau (Plante). 12 créatures
-  sauvages capturables.
+- **Forêt de Sylve-Noire** (56x40, ouverte après Sylvarque, entrée à l'ouest du
+  village) : bandits dresseurs, chef des bandits qui retient **Kael** (archer,
+  Vent), ermite qui soigne, marais, boss facultatif **Ronce-Mère** (N.18,
+  Plante/Poison).
+- **Pics Givrés** (60x44, ouverts après Ignarok, col au nord de Cendrelune) :
+  village de Givreval (soin, boutique, auberge), duel contre **Sélène**
+  (chevalière, Métal), chevaliers du givre, lac gelé.
+- **Temple gelé** (labyrinthe, clé de givre au fond) et **Sanctuaire** : boss
+  final **Givrecorne** (N.31, Glace/Roche).
+- 13 types (dont Glace, Roche, Vent, Poison, Métal, Esprit). Héros : Lior,
+  Maëlle, Brann, Isra, Kael, Sélène. Starters : Braisenard, Gouttelin, Ronceau.
+  23 créatures sauvages capturables, 5 boss, 5 sortes d'ennemis humains.
+- Les cartes de l'étape 3 ont été produites par un script (hors du dépôt) :
+  modifier directement les JSON, ou attendre l'éditeur de cartes (étape 6).
 
 Équilibrage mesuré par le mode test (IA automatique, sans objets) : combats
-normaux et braconnier gagnés à ~100 %, Sylvarque ≈ 80-85 % avec une équipe
-N.11, Ignarok ≈ 30-45 % avec une équipe N.22 (un joueur avec des objets fait
-mieux). La Lumière fait ×2 à l'Ombre mais l'Ombre est neutre sur la Lumière :
+normaux, bandits, chevaliers et duels gagnés à ~95-100 %, Sylvarque ≈ 80 %
+(N.11), Ronce-Mère ≈ 55-70 % (N.16), Ignarok ≈ 30-45 % (N.22), Givrecorne
+≈ 35 % (N.30, avec Sélène). Un boss trop facile vient souvent de sa lenteur ou
+d'acolytes trop faibles, pas de ses PV : regarder le journal (BRUMEVAL_JOURNAL).
+Le Vent fait ×4 à Plante/Poison et le Métal ×4 à Glace/Roche : la Ronce-Mère et
+le Givrecorne ont une résistance propre pour ramener cela à ×2. La Lumière fait ×2 à l'Ombre mais l'Ombre est neutre sur la Lumière :
 sinon Maëlle, ciblée en priorité par l'IA, tombe dès le début contre Sylvarque.
 
 ## À faire / pistes

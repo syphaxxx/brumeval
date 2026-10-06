@@ -117,7 +117,9 @@ std::vector<std::string> checkEvents() {
     if (!id.empty() && !findEvent(id)) err.push_back(who + " : événement inconnu « " + id + " »");
   };
   for (auto& m : maps()) {
-    for (auto& n : m.npcs) ref(n.event, m.name + ", habitant (" + std::to_string(n.x) + ", " + std::to_string(n.y) + ")");
+    for (auto& t : m.triggers) ref(t.event, m.name + ", déclencheur (" + std::to_string(t.x) + ", " + std::to_string(t.y) + ")");
+    for (auto& w : m.warps)
+      if (!w.condition.is_null()) checkCondition(w.condition, m.name + ", passage (" + std::to_string(w.x) + ", " + std::to_string(w.y) + ")", err);
     for (auto& b : m.buildings) ref(b.event, m.name + ", bâtiment « " + b.name + " »");
     for (auto& b : m.bosses) ref(b.event, m.name + ", boss « " + b.id + " »");
   }

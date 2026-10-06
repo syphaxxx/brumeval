@@ -10,7 +10,7 @@ toutes les références existent et que chaque lieu des cartes est accessible.
 
 | Fichier | Contenu |
 |---|---|
-| `types.json` | Les types (Feu, Eau…), leur couleur et la table d'efficacité |
+| `types.json` | Les 13 types (Feu, Eau, Glace, Roche, Vent, Poison, Métal, Esprit…), leur couleur, leurs immunités et la table d'efficacité |
 | `techniques.json` | Techniques, sorts et Limites |
 | `especes.json` | Héros, créatures et boss : statistiques de base, techniques apprises |
 | `objets.json` | Objets : prix, effets (soin, PM, réanimation, capture) |
@@ -51,6 +51,36 @@ et `renforts`, une liste d'ennemis qui entrent un par un quand un adversaire
 tombe. Un habitant avec `"vue": 3` repère le joueur jusqu'à 3 cases devant lui
 et lance son événement tout seul, tant que le drapeau `vue_jusqua` n'est pas
 posé (voir le braconnier dans `cartes/vallee.json`).
+
+## Les cartes (`cartes/*.json`)
+
+Chaque ligne de `tuiles` est une rangée de cases, toutes de même longueur :
+
+| Tuile | Signification | Tuile | Signification |
+|---|---|---|---|
+| `.` | sol (herbe, neige… selon le thème) | `,` | hautes herbes (rencontres) |
+| `=` | chemin | `T` | arbre (sapin enneigé, arbre sombre… selon le thème) |
+| `~` | eau | `B` | pont de bois |
+| `R` | rocher | `F` | fleurs |
+| `W` | fontaine | `#` | falaise, paroi, mur de glace |
+| `a` | cendre | `g` | herbes sèches (rencontres) |
+| `l` | lave | `b` | pont de pierre |
+| `m` | montagne | `k` | entrée de grotte, escalier |
+| `c` | sol de grotte (rencontres) | `x` | cristal |
+| `d` | arbre mort | `i` | glace |
+| `n` | neige profonde (rencontres) | `z` | marais (rencontres) |
+
+- `theme` : `vallee`, `cendres`, `grotte`, `foret` ou `neige` (couleur du sol,
+  arbres, chemins, parois et décor des combats).
+- `ambiance` : `brume`, `cendres`, `obscurite`, `neige` ou `lucioles`, avec
+  `jusqua` pour la faire disparaître quand un drapeau est posé.
+- `passages` : `condition` (mêmes conditions que `si` dans les événements) et
+  `message` pour un passage fermé, par exemple
+  `"condition": {"objet": "cle_givre"}`.
+- `declencheurs` : une zone (`x`, `y`, `l`, `h`) qui lance un `evenement` quand
+  on y entre, tant que le drapeau `jusqua` n'est pas posé.
+- `habitants` : `dialogue` (phrases simples) ou `evenement`, `cache_si` (disparaît
+  quand le drapeau est posé), `vue` et `vue_jusqua` pour les dresseurs.
 
 ## Rappels sur le format JSON
 

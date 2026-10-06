@@ -173,6 +173,8 @@ bool Game::blocked(int x, int y) const {
     if (s.x == x && s.y == y) return true;
   for (auto& b : m.bosses)
     if (bossAlive(b) && x >= b.x && x <= b.x + 1 && y >= b.y && y <= b.y + 1) return true;
+  for (auto& w : m.warps)  // passage fermé : on ne peut pas y marcher
+    if (w.x == x && w.y == y && !w.condition.is_null() && !checkCond(w.condition)) return true;
   return false;
 }
 
@@ -187,6 +189,9 @@ void Game::tryMove(int d) {
       if (nx == b.doorX() && ny == b.doorY()) return runEvent(b.event);
     for (auto& b : M().bosses)
       if (bossAlive(b) && nx >= b.x && nx <= b.x + 1 && ny >= b.y && ny <= b.y + 1) return runEvent(b.event);
+    for (auto& w : M().warps)
+      if (w.x == nx && w.y == ny && !w.condition.is_null() && !checkCond(w.condition))
+        return sc.say(w.message.empty() ? "Le passage est fermé." : fillText(w.message));
     return;
   }
   fromX = px, fromY = py;
@@ -201,6 +206,11 @@ void Game::arrive() {
     if (w.x == px && w.y == py) {
       int m = mapIndex(w.map);
       if (m >= 0) return changeMap(m, w.tx, w.ty, w.dir);
+    }
+  for (auto& t : M().triggers)
+    if (px >= t.x && py >= t.y && px < t.x + t.w && py < t.y + t.h && (t.until.empty() || !has(t.until))) {
+      steps = 0;
+      return runEvent(t.event);
     }
   if (checkSight()) return;
   char c = M().rows[py][px];
@@ -713,6 +723,17 @@ void Game::drawMap() {
   for (auto& a : actors) a.draw();
   // Ambiance
   bool amb = m.ambianceUntil.empty() || !has(m.ambianceUntil);
+  if (m.ambiance == "neige" && amb)
+    for (int i = 0; i < 40; i++) {
+      float x = std::fmod(i * 47.f + time * (6 + i % 4) + std::sin(time + i) * 6, 330.f) - 5;
+      float y = std::fmod(i * 29.f + time * (18 + i % 6), 250.f) - 5;
+      g.rect(x, y, i % 3 ? 1 : 2, i % 3 ? 1 : 2, rgb(0xffffff, 200));
+    }
+  if (m.ambiance == "lucioles" && amb)
+    for (int i = 0; i < 14; i++) {
+      float x = std::fmod(i * 61.f + std::sin(time * .7f + i) * 20, 320.f), y = std::fmod(i * 37.f + std::cos(time * .5f + i * 2) * 14, 240.f);
+      g.ellipse(x, y, 2, 2, rgb(0xe8ff9a, uint8_t(90 + 80 * std::sin(time * 3 + i))));
+    }
   if (m.ambiance == "brume" && amb)
     for (int i = 0; i < 5; i++) g.ellipse(std::fmod(i * 97 + time * 22, 460.f) - 70, 30 + i * 46, 90, 10, rgb(0xe6ebff, 22));
   if (m.ambiance == "cendres" && amb)

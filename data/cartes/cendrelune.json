@@ -4,8 +4,8 @@
   "theme": "cendres",
   "ambiance": {"effet": "cendres", "jusqua": "boss2"},
   "tuiles": [
-    "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
-    "maamaaaaaaaaaaaaaaaaaadaaaadaallaaaaaammmmmmmmmmmmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmm=mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+    "maamaaaaaaaaa=aaaaaaaadaaaadaallaaaaaammmmmmmmmmmmmmmmmmmmmmmmmm",
     "maaaaaaaaaaaaaaaaaaagggggaamaallaaaaaammmmaaaaaaaaaaallammmmmmmm",
     "maaaaaaaaaaaaaadaaagggggggaaaallaaadaammmmaaaaaaaaaaaalammmmmmmm",
     "maaaaaaaaaadaaRaaaagggggggaaaallaaaaaammmmaaaaaaaaaaaaaammmmmmmm",
@@ -119,12 +119,23 @@
   "panneaux": [
     {"x": 3, "y": 32, "texte": "Forgeroc, la ville des forges."},
     {"x": 27, "y": 11, "texte": "Vers le cratère. Ignarok y dort, dit-on."},
-    {"x": 45, "y": 31, "texte": "Grotte des Échos."}
+    {"x": 45, "y": 31, "texte": "Grotte des Échos."},
+    {"x": 14, "y": 1, "texte": "Col du Nord. Au-delà : les Pics Givrés."}
   ],
   "passages": [
     {"x": 0, "y": 33, "vers": "vallee", "tx": 62, "ty": 32, "direction": "gauche"},
     {"x": 0, "y": 34, "vers": "vallee", "tx": 62, "ty": 33, "direction": "gauche"},
-    {"x": 44, "y": 29, "vers": "grotte", "tx": 15, "ty": 21, "direction": "haut"}
+    {"x": 44, "y": 29, "vers": "grotte", "tx": 15, "ty": 21, "direction": "haut"},
+    {
+      "x": 13,
+      "y": 0,
+      "vers": "pics",
+      "tx": 30,
+      "ty": 42,
+      "direction": "haut",
+      "condition": {"drapeau": "boss2"},
+      "message": "Le col du Nord est pris dans les glaces. Un vent glacé souffle depuis que le volcan gronde…"
+    }
   ],
   "zones": [
     {

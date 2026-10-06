@@ -27,6 +27,16 @@
     "soin_pm": 25
   },
   {
+    "id": "elixir",
+    "nom": "Élixir",
+    "description": "Rend tous les PV et PM à un allié.",
+    "prix": 400,
+    "combat": true,
+    "menu": true,
+    "soin_pv": 9999,
+    "soin_pm": 999
+  },
+  {
     "id": "plume",
     "nom": "Plume ravivante",
     "description": "Relève un allié K.O. avec la moitié de ses PV.",
@@ -60,9 +70,24 @@
     "capture": 1.6
   },
   {
+    "id": "lanterne_or",
+    "nom": "Lanterne d'or",
+    "description": "Capture presque à coup sûr.",
+    "prix": 300,
+    "combat": true,
+    "capture": 2.5
+  },
+  {
     "id": "herbe",
     "nom": "Herbe lunaire",
     "description": "Une herbe qui luit doucement. Maëlle en a besoin.",
+    "prix": 0,
+    "important": true
+  },
+  {
+    "id": "cle_givre",
+    "nom": "Clé de givre",
+    "description": "Une clé taillée dans une glace qui ne fond jamais.",
     "prix": 0,
     "important": true
   }

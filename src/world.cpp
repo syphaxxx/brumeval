@@ -6,14 +6,17 @@
 
 #include "data.hpp"
 
-bool tileWalkable(char c) { return c == '.' || c == ',' || c == '=' || c == 'F' || c == 'B' || c == 'a' || c == 'g' || c == 'b' || c == 'k' || c == 'c'; }
-bool tileEncounter(char c) { return c == ',' || c == 'g' || c == 'c'; }
+bool tileWalkable(char c) {
+  return c == '.' || c == ',' || c == '=' || c == 'F' || c == 'B' || c == 'a' || c == 'g' || c == 'b' || c == 'k' || c == 'c' || c == 'i' ||
+         c == 'n' || c == 'z';
+}
+bool tileEncounter(char c) { return c == ',' || c == 'g' || c == 'c' || c == 'n' || c == 'z'; }
 
-static const char* THEMES[] = {"vallee", "cendres", "grotte"};
+static const char* THEMES[] = {"vallee", "cendres", "grotte", "foret", "neige"};
 Theme themeOf(const std::string& s) {
-  for (int i = 0; i < 3; i++)
+  for (int i = 0; i < 5; i++)
     if (s == THEMES[i]) return Theme(i);
-  throw std::runtime_error("Thème inconnu : « " + s + " » (possibles : vallee, cendres, grotte)");
+  throw std::runtime_error("Thème inconnu : « " + s + " » (possibles : vallee, cendres, grotte, foret, neige)");
 }
 const char* themeName(Theme t) { return THEMES[(int)t]; }
 
@@ -70,7 +73,11 @@ MapDef mapFromJson(const Json& j) {
   for (auto& o : j.value("panneaux", Json::array())) m.signs.push_back({o.at("x").get<int>(), o.at("y").get<int>(), o.at("texte").get<std::string>()});
   for (auto& o : j.value("passages", Json::array()))
     m.warps.push_back({o.at("x").get<int>(), o.at("y").get<int>(), o.at("vers").get<std::string>(), o.at("tx").get<int>(),
-                       o.at("ty").get<int>(), dirOf(jget<std::string>(o, "direction", "bas"))});
+                       o.at("ty").get<int>(), dirOf(jget<std::string>(o, "direction", "bas")), o.value("condition", Json()),
+                       jget<std::string>(o, "message", "")});
+  for (auto& o : j.value("declencheurs", Json::array()))
+    m.triggers.push_back({o.at("x").get<int>(), o.at("y").get<int>(), jget(o, "l", 1), jget(o, "h", 1), o.at("evenement").get<std::string>(),
+                          jget<std::string>(o, "jusqua", "")});
   for (auto& o : j.value("zones", Json::array()))
     m.zones.push_back({o.at("x").get<int>(), o.at("y").get<int>(), o.at("l").get<int>(), o.at("h").get<int>(), o.at("niveau_min").get<int>(),
                        o.at("niveau_max").get<int>(), jget(o, "max_ennemis", 3), o.at("creatures").get<std::vector<std::string>>()});
@@ -120,7 +127,12 @@ Json mapToJson(const MapDef& m) {
   for (auto& x : m.signs) s.push_back({{"x", x.x}, {"y", x.y}, {"texte", x.text}});
   o["panneaux"] = s;
   Json w = Json::array();
-  for (auto& x : m.warps) w.push_back({{"x", x.x}, {"y", x.y}, {"vers", x.map}, {"tx", x.tx}, {"ty", x.ty}, {"direction", dirName(x.dir)}});
+  for (auto& x : m.warps) {
+    Json p = {{"x", x.x}, {"y", x.y}, {"vers", x.map}, {"tx", x.tx}, {"ty", x.ty}, {"direction", dirName(x.dir)}};
+    if (!x.condition.is_null()) p["condition"] = x.condition;
+    if (!x.message.empty()) p["message"] = x.message;
+    w.push_back(p);
+  }
   o["passages"] = w;
   Json z = Json::array();
   for (auto& x : m.zones)
@@ -133,6 +145,15 @@ Json mapToJson(const MapDef& m) {
     bo.push_back(p);
   }
   o["boss"] = bo;
+  if (!m.triggers.empty()) {
+    Json t = Json::array();
+    for (auto& x : m.triggers) {
+      Json p = {{"x", x.x}, {"y", x.y}, {"l", x.w}, {"h", x.h}, {"evenement", x.event}};
+      if (!x.until.empty()) p["jusqua"] = x.until;
+      t.push_back(p);
+    }
+    o["declencheurs"] = t;
+  }
   return o;
 }
 
