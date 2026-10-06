@@ -13,9 +13,23 @@ struct Input {
   bool hold[4] = {};   // direction maintenue
   bool press[4] = {};  // direction appuyée cette image (avec répétition)
   bool confirm = false, cancel = false, menu = false;
+  // Souris (coordonnées en pixels du jeu, 320x240)
+  int mx = -1, my = -1;
+  bool mouseOn = false;    // la souris a servi récemment (sinon on l'ignore)
+  bool mdown[3] = {};      // boutons enfoncés : 0 gauche, 1 milieu, 2 droit
+  bool mclick[3] = {};     // boutons appuyés cette image
+  bool moved = false;
+  int wheel = 0;           // molette : +1 vers le haut, -1 vers le bas
+  bool ctrl = false, shift = false;
+  // Raccourcis des éditeurs
+  bool tab = false, undo = false, redo = false, saveKey = false, prev = false, next = false, del = false;
   void endFrame() {
     for (bool& p : press) p = false;
     confirm = cancel = menu = false;
+    tab = undo = redo = saveKey = prev = next = del = false;
+    for (bool& c : mclick) c = false;
+    moved = false;
+    wheel = 0;
   }
 };
 

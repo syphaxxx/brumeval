@@ -129,10 +129,57 @@ std::string MenuStack::help() const {
   return "";
 }
 
+// Élément du menu sous la souris (-1 si aucun)
+static int itemAt(const Menu& m, int mx, int my) {
+  int th = m.title.empty() ? 0 : 13;
+  int shown = std::min(m.rows, (int)m.items.size());
+  if (mx < m.x || mx >= m.x + m.w) return -1;
+  int i = (my - (m.y + 4 + th)) / 12;
+  if (my < m.y + 4 + th || i < 0 || i >= shown) return -1;
+  return m.top + i;
+}
+
 void MenuStack::update(Input& in) {
   if (st_.empty()) return;
   Menu& m = st_.back();
   int n = (int)m.items.size();
+  // Souris : survol, clic gauche = Entrée, clic droit = Échap, molette = défiler ou régler
+  if (in.mouseOn && n > 0) {
+    int at = itemAt(m, in.mx, in.my);
+    if (at >= 0 && !m.items[at].header && in.moved && at != m.sel) {
+      m.sel = at;
+      hover();
+    }
+    if (in.wheel && at >= 0 && m.items[m.sel].adjust && m.items[m.sel].enabled) {
+      auto f = m.items[m.sel].adjust;
+      int d = in.wheel > 0 ? 1 : -1;
+      in.wheel = 0;
+      f(d);
+      return;
+    }
+    if (in.wheel && n > m.rows) {
+      m.top = std::clamp(m.top - in.wheel, 0, n - m.rows);
+      in.wheel = 0;
+    }
+    if (in.mclick[0] && at >= 0 && !m.items[at].header) {
+      in.mclick[0] = false;
+      m.sel = at;
+      if (m.items[at].adjust && m.items[at].enabled && !m.items[at].act) {
+        auto f = m.items[at].adjust;
+        f(+1);
+        return;
+      }
+      in.confirm = true;
+    } else if (in.mclick[2]) {
+      in.mclick[2] = false;
+      if (at >= 0 && m.items[at].adjust && m.items[at].enabled) {
+        auto f = m.items[at].adjust;
+        f(-1);
+        return;
+      }
+      in.cancel = true;
+    }
+  }
   if (n > 0) {
     int old = m.sel;
     if (in.press[UP]) {

@@ -7,6 +7,7 @@
 
 #include "arena.hpp"
 #include "battle.hpp"
+#include "mapedit.hpp"
 #include "settings.hpp"
 #include "sprites.hpp"
 
@@ -19,7 +20,29 @@ Game::~Game() = default;
 // Clavier : flèches ou ZQSD (WASD en QWERTY), Entrée/Espace pour valider,
 // Échap pour annuler et ouvrir le menu.
 // ---------------------------------------------------------------------------
+void Game::onMouse(int x, int y, int button, bool down) {
+  if (in.mx != x || in.my != y) in.moved = true;
+  in.mx = x, in.my = y;
+  in.mouseOn = true;
+  if (button < 0 || button > 2) return;
+  in.mdown[button] = down;
+  if (down) in.mclick[button] = true;
+}
+void Game::onWheel(int dy) {
+  in.wheel += dy > 0 ? 1 : dy < 0 ? -1 : 0;
+  in.mouseOn = true;
+}
+
 void Game::onKey(SDL_Scancode k, bool down, bool repeat) {
+  in.ctrl = (SDL_GetModState() & KMOD_CTRL) != 0;
+  in.shift = (SDL_GetModState() & KMOD_SHIFT) != 0;
+  SDL_Keycode kc = SDL_GetKeyFromScancode(k);  // touche selon la disposition du clavier (AZERTY…)
+  if (!textOn_ && down && in.ctrl) {
+    if (kc == SDLK_z) in.undo = true;
+    if (kc == SDLK_y) in.redo = true;
+    if (kc == SDLK_s) in.saveKey = true;
+    if (kc == SDLK_z || kc == SDLK_y || kc == SDLK_s) return;
+  }
   if (textOn_) {  // saisie de texte : les touches servent à écrire
     if (!down) return;
     if (k == SDL_SCANCODE_BACKSPACE) {
@@ -46,10 +69,13 @@ void Game::onKey(SDL_Scancode k, bool down, bool repeat) {
     if (down) in.press[d] = true;
     return;
   }
+  if (down && k == SDL_SCANCODE_PAGEUP) in.prev = true;
+  if (down && k == SDL_SCANCODE_PAGEDOWN) in.next = true;
+  if (down && k == SDL_SCANCODE_DELETE) in.del = true;
   if (!down || repeat) return;
   if (k == SDL_SCANCODE_RETURN || k == SDL_SCANCODE_KP_ENTER || k == SDL_SCANCODE_SPACE) in.confirm = true;
   if (k == SDL_SCANCODE_ESCAPE || k == SDL_SCANCODE_BACKSPACE) in.cancel = in.menu = true;
-  if (k == SDL_SCANCODE_TAB) in.menu = true;
+  if (k == SDL_SCANCODE_TAB) in.menu = in.tab = true;
 }
 
 // ---------------------------------------------------------------------------
@@ -112,6 +138,9 @@ void Game::update(float dt) {
       break;
     case Mode::Settings:
       if (settings_) settings_->update(dt);
+      break;
+    case Mode::Editor:
+      if (editor_) editor_->update(dt);
       break;
     case Mode::Battle: {
       battle_->update(dt);
@@ -416,6 +445,7 @@ void Game::ask(const std::string& q, std::function<void()> yes, std::function<vo
 // ---------------------------------------------------------------------------
 void Game::titleMenu() {
   mode = Mode::Title;
+  editorTest_ = false;
   menus.clear();
   Menu m;
   m.x = 110, m.y = 140, m.w = 100, m.rows = 4, m.cancelable = false;
@@ -428,7 +458,7 @@ void Game::titleMenu() {
                          showRegionBanner();
                        }
                      }});
-  m.items.push_back({"Outils", "", "Arène de combat, réglages (et bientôt éditeurs).", true, [this] { toolsMenu(); }});
+  m.items.push_back({"Outils", "", "Arène de combat, réglages, éditeurs de cartes et d'histoire.", true, [this] { toolsMenu(); }});
   m.items.push_back({"Quitter", "", "", true, [this] { quit = true; }});
   if (can) m.sel = 1;
   menus.push(m);
@@ -437,7 +467,7 @@ void Game::titleMenu() {
 void Game::toolsMenu() {
   Menu m;
   m.title = "Outils";
-  m.x = 100, m.y = 112, m.w = 120, m.rows = 4;
+  m.x = 96, m.y = 100, m.w = 128, m.rows = 5;
   m.items.push_back({"Arène de combat", "", "Composer deux équipes, combattre ou simuler des combats.", true, [this] {
                        if (!arena_) arena_ = std::make_unique<Arena>(*this);
                        mode = Mode::Arena;
@@ -447,6 +477,11 @@ void Game::toolsMenu() {
                        if (!settings_) settings_ = std::make_unique<Settings>(*this);
                        mode = Mode::Settings;
                        settings_->open();
+                     }});
+  m.items.push_back({"Éditeur de cartes", "", "Peindre les cartes, placer habitants, coffres, passages, zones… et tester.", true, [this] {
+                       if (!editor_) editor_ = std::make_unique<MapEditor>(*this);
+                       mode = Mode::Editor;
+                       editor_->open();
                      }});
   m.items.push_back({"Retour", "", "", true, [this] { menus.pop(); }});
   menus.push(m);
@@ -484,7 +519,12 @@ void Game::newGame(const std::string& starter) {
 void Game::pauseMenu() {
   panelMode_ = 1;
   Menu m;
-  m.x = 8, m.y = 8, m.w = 100, m.rows = 6;
+  m.x = 8, m.y = 8, m.w = 100, m.rows = 7;
+  if (editorTest_ && editor_)
+    m.items.push_back({"Retour à l'éditeur", "", "Revenir à l'éditeur de cartes, à l'endroit où vous êtes.", true, [this] {
+                         panelMode_ = 0;
+                         editor_->returnFromTest();
+                       }});
   m.items.push_back({"Équipe", "", "Ordre de combat et fiches.", true, [this] { teamMenu(); }});
   m.items.push_back({"Objets", "", "Utiliser un objet.", true, [this] { itemMenu(); }});
   m.items.push_back({"Magie", "", "Lancer un sort de soin.", true, [this] { magicMenu(); }});
@@ -757,6 +797,9 @@ void Game::draw() {
       break;
     case Mode::Settings:
       if (settings_) settings_->draw();
+      break;
+    case Mode::Editor:
+      if (editor_) editor_->draw();
       break;
   }
   if (textOn_) drawTextEdit();

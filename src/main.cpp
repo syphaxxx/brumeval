@@ -94,6 +94,19 @@ int main(int argc, char* argv[]) {
           game.onText(e.text.text);
           continue;
         }
+        if (e.type == SDL_MOUSEMOTION) {
+          game.onMouse(e.motion.x, e.motion.y, -1, false);
+          continue;
+        }
+        if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {
+          int b = e.button.button == SDL_BUTTON_LEFT ? 0 : e.button.button == SDL_BUTTON_RIGHT ? 2 : 1;
+          game.onMouse(e.button.x, e.button.y, b, e.type == SDL_MOUSEBUTTONDOWN);
+          continue;
+        }
+        if (e.type == SDL_MOUSEWHEEL) {
+          game.onWheel(e.wheel.y);
+          continue;
+        }
         if (e.type != SDL_KEYDOWN && e.type != SDL_KEYUP) continue;
         SDL_Scancode k = e.key.keysym.scancode;
         bool alt = (e.key.keysym.mod & KMOD_ALT) != 0;

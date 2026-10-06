@@ -20,7 +20,8 @@
 class Battle;
 class Arena;
 class Settings;
-enum class Mode { Title, Map, Battle, Ending, Arena, Settings };
+class MapEditor;
+enum class Mode { Title, Map, Battle, Ending, Arena, Settings, Editor };
 enum class BattleResult { Win, Lose, Fled };
 
 class Game {
@@ -29,6 +30,8 @@ class Game {
   ~Game();
   void onKey(SDL_Scancode sc, bool down, bool repeat);
   void onText(const char* utf8);  // caractères tapés (saisie de texte des éditeurs)
+  void onMouse(int x, int y, int button, bool down);  // button -1 : simple déplacement
+  void onWheel(int dy);
   // Saisie de texte : affiche une fenêtre ; Entrée valide (done), Échap annule
   void editText(const std::string& title, const std::string& initial, int maxChars, std::function<void(const std::string&)> done);
   bool editingText() const { return textOn_; }
@@ -129,6 +132,8 @@ class Game {
   std::unique_ptr<Battle> battle_;
   std::unique_ptr<Arena> arena_;  // Arène de combat (écran titre > Outils)
   std::unique_ptr<Settings> settings_;  // Réglages (écran titre > Outils)
+  std::unique_ptr<MapEditor> editor_;   // Éditeur de cartes (écran titre > Outils)
+  bool editorTest_ = false;             // partie de test lancée depuis l'éditeur
   bool arenaBattle_ = false;      // le combat en cours a été lancé depuis l'Arène
   void toolsMenu();
   std::function<void(BattleResult)> afterBattle_;
@@ -145,4 +150,5 @@ class Game {
   friend class Battle;
   friend class Arena;
   friend class Settings;
+  friend class MapEditor;
 };

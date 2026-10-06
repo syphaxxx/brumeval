@@ -51,6 +51,17 @@ Depuis l'écran titre, **Outils** donne accès à :
   types et les objets. Les changements s'appliquent tout de suite : essayez-les
   avec **Tester dans l'Arène**, puis **Enregistrer** (ou **Tout annuler**).
   Gauche/droite règle une valeur, Entrée ouvre un texte à saisir au clavier.
+- **Éditeur de cartes** : peignez les tuiles à la souris (clic gauche, clic
+  droit = pipette, molette = tuile suivante) ou au clavier (flèches + Entrée,
+  Maj + flèches pour peindre en marchant), avec pinceau, rectangle ou
+  remplissage. **Tab** passe aux calques Objets (habitants, coffres, panneaux,
+  passages, boss, bâtiments) et Zones (rencontres, zones déclencheuses).
+  **Échap** ouvre le menu : propriétés et taille de la carte, nouvelle carte,
+  vérification, **Tester ici** (Échap > Retour à l'éditeur), enregistrer
+  (Ctrl+S). Ctrl+Z / Ctrl+Y annulent et rétablissent.
+
+Les menus se manient aussi à la souris : survol, clic gauche pour valider, clic
+droit pour revenir, molette pour défiler ou régler une valeur.
 
 ## Continuer le projet avec Claude Code
 

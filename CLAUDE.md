@@ -52,6 +52,7 @@ après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
 | `gfx.hpp/.cpp` | Primitives de dessin (ellipses, polygones, dégradés), police pixel intégrée avec accents, fenêtres bleues |
 | `ui.hpp/.cpp` | Clavier, `Script` (file de messages/actions) et `MenuStack` (menus à curseur ; `MenuItem::adjust` pour régler une valeur avec gauche/droite, `rightFn` pour un texte recalculé, `menuHeader` pour un titre de section) |
 | `settings.hpp/.cpp` | Réglages (écran titre > Outils) : éditeurs des règles, espèces, techniques, types (grille) et objets ; chaque modification passe par `Settings::change` (document JSON puis `rebuildData`) |
+| `mapedit.hpp/.cpp` | Éditeur de cartes (écran titre > Outils) : calques tuiles/objets/zones, outils, menus de chaque objet, annuler/rétablir, test en jeu (`testHere`, `editorTest_`) |
 | `arena.hpp/.cpp` | Arène de combat (écran titre > Outils) : composition, combat à la main, simulation progressive (`stepSim`), modèles tirés des événements et des zones, journal |
 | `test.cpp` | Mode test automatique |
 
@@ -95,6 +96,11 @@ après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
   documents, `saveDataDoc` les écrit. Les Réglages ne touchent qu'aux documents,
   jamais directement aux structures. Le mode test vérifie que réécrire un
   document sans changement redonne exactement le fichier.
+- Souris : `Input` reçoit position, boutons (`mclick`, `mdown`) et molette
+  (coordonnées déjà ramenées à 320x240 par SDL). `MenuStack::update` gère le
+  survol et les clics. Raccourcis des éditeurs dans `Input` : `tab`, `undo`,
+  `redo`, `saveKey` (Ctrl+Z/Y/S selon la disposition du clavier), `prev`/`next`
+  (Page préc./suiv.), `del` (Suppr).
 - Saisie de texte : `Game::editText(titre, texte, max, rappel)` (SDL_TEXTINPUT
   transmis par main.cpp à `Game::onText`). Pendant la saisie, `onKey` ne sert
   qu'à écrire (Retour arrière, Entrée, Échap).
@@ -140,8 +146,8 @@ réécrits par `writeJson` (petites listes sur une ligne) : garder ce format.
 - 13 types (dont Glace, Roche, Vent, Poison, Métal, Esprit). Héros : Lior,
   Maëlle, Brann, Isra, Kael, Sélène. Starters : Braisenard, Gouttelin, Ronceau.
   23 créatures sauvages capturables, 5 boss, 5 sortes d'ennemis humains.
-- Les cartes de l'étape 3 ont été produites par un script (hors du dépôt) :
-  modifier directement les JSON, ou attendre l'éditeur de cartes (étape 6).
+- Les cartes se modifient avec l'éditeur de cartes (Outils) ou directement
+  dans les JSON.
 
 Équilibrage mesuré par le mode test (IA automatique, sans objets) : combats
 normaux, bandits, chevaliers et duels gagnés à ~95-100 %, Sylvarque ≈ 80 %

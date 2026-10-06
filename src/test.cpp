@@ -11,6 +11,7 @@
 #include "battle.hpp"
 #include "events.hpp"
 #include "game.hpp"
+#include "mapedit.hpp"
 #include "settings.hpp"
 #include "sprites.hpp"
 
@@ -540,6 +541,100 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
             "réglages : « Annuler les changements » recharge les fichiers");
     }
     menus.clear();
+    mode = Mode::Title;
+    titleMenu();
+  }
+
+  // --- Éditeur de cartes ---
+  {
+    sc.clear();
+    titleMenu();
+    menus.top().sel = 2;  // Outils
+    in.confirm = true;
+    frame();
+    menus.top().sel = 2;  // Éditeur de cartes
+    in.confirm = true;
+    frame();
+    check(mode == Mode::Editor && editor_ != nullptr, "écran titre > Outils > Éditeur de cartes");
+    if (editor_) {
+      MapEditor& E = *editor_;
+      int vi = mi("vallee");
+      E.open("vallee");
+      Json before = mapToJson(maps()[vi]);
+      run(.2f);
+      snap("45_editeur");
+      // Pinceau, annuler, rétablir
+      E.setLayer(MapEditor::Layer::Tiles);
+      E.setTool(MapEditor::Tool::Brush);
+      E.setTile('F');
+      E.setCursor(10, 5);
+      char old = maps()[vi].rows[5][10];
+      E.apply();
+      bool painted = maps()[vi].rows[5][10] == 'F';
+      E.undo();
+      bool undone = maps()[vi].rows[5][10] == old;
+      E.redo();
+      check(painted && undone && maps()[vi].rows[5][10] == 'F' && E.dirty(vi), "éditeur : peindre, annuler, rétablir");
+      // Rectangle
+      E.setTool(MapEditor::Tool::Rect);
+      E.setTile('R');
+      E.setCursor(2, 2);
+      E.apply();
+      E.setCursor(4, 3);
+      E.apply();
+      int nR = 0;
+      for (int y = 2; y <= 3; y++)
+        for (int x = 2; x <= 4; x++) nR += maps()[vi].rows[y][x] == 'R';
+      check(nR == 6, "éditeur : rectangle de 3 x 2 cases");
+      // Souris : un clic gauche peint sous la souris
+      E.setTool(MapEditor::Tool::Brush);
+      E.setTile('~');
+      onMouse(150, 100, -1, false);
+      onMouse(150, 100, 0, true);
+      frame();
+      onMouse(150, 100, 0, false);
+      frame();
+      check(maps()[vi].rows[E.cursorY()][E.cursorX()] == '~', "éditeur : peindre à la souris");
+      in.mouseOn = false;
+      // Calque des objets : ajouter un habitant
+      E.setLayer(MapEditor::Layer::Objects);
+      size_t npcs = maps()[vi].npcs.size();
+      E.setCursor(24, 6);
+      E.apply();  // menu « Ajouter »
+      in.confirm = true;  // Habitant
+      frame();
+      run(.1f);
+      snap("46_editeur_habitant");
+      check(maps()[vi].npcs.size() == npcs + 1 && menus.active(), "éditeur : ajouter un habitant et ouvrir sa fiche");
+      menus.clear();
+      E.setLayer(MapEditor::Layer::Zones);
+      E.setCursor(30, 12);
+      run(.1f);
+      snap("47_editeur_zones");
+      // Vue éloignée (menu Échap > Vue)
+      in.cancel = true;
+      frame();
+      menus.top().sel = 3;
+      in.press[RIGHT] = true;
+      frame();
+      menus.clear();
+      run(.1f);
+      snap("48_editeur_vue_eloignee");
+      // Tester ici, puis revenir à l'éditeur
+      E.setCursor(12, 9);
+      E.testHere();
+      bool playing = mode == Mode::Map && M().id == "vallee" && px == 12 && py == 9;
+      in.menu = true;
+      frame();
+      in.confirm = true;  // « Retour à l'éditeur »
+      frame();
+      check(playing && mode == Mode::Editor, "éditeur : « Tester ici » puis « Retour à l'éditeur »");
+      // On remet la carte telle qu'elle était (rien n'est enregistré)
+      maps()[vi] = mapFromJson(before);
+      check(!E.dirty(vi) && mapToJson(maps()[vi]) == before, "éditeur : la carte d'origine est intacte");
+    }
+    menus.clear();
+    team.clear();
     mode = Mode::Title;
     titleMenu();
   }
