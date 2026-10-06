@@ -18,7 +18,8 @@
 #include "world.hpp"
 
 class Battle;
-enum class Mode { Title, Map, Battle, Ending };
+class Arena;
+enum class Mode { Title, Map, Battle, Ending, Arena };
 enum class BattleResult { Win, Lose, Fled };
 
 class Game {
@@ -116,6 +117,9 @@ class Game {
   void drawTeamPanel(int x, int y, int sel);
 
   std::unique_ptr<Battle> battle_;
+  std::unique_ptr<Arena> arena_;  // Arène de combat (écran titre > Outils)
+  bool arenaBattle_ = false;      // le combat en cours a été lancé depuis l'Arène
+  void toolsMenu();
   std::function<void(BattleResult)> afterBattle_;
   int panelMode_ = 0;        // 0 rien, 1 résumé de l'équipe, 2 fiche détaillée
   int teamPanelSel_ = 0;
@@ -128,4 +132,5 @@ class Game {
   void itemMenuAt(int sel);
   void shopMenuAt(const std::vector<std::string>& stock, int sel);
   friend class Battle;
+  friend class Arena;
 };

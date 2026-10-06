@@ -24,6 +24,7 @@ struct BattleSetup {
   std::vector<FighterP> reserve;  // renforts : entrent un par un quand un ennemi tombe
   std::string foeName;            // nom de l'adversaire (« Garo le braconnier »), vide pour des créatures sauvages
   bool boss = false, canFlee = true, canCapture = true;
+  int theme = -1;                 // décor (Theme) ; -1 : celui de la carte actuelle
 };
 
 class Battle {

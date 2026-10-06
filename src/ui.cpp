@@ -100,8 +100,16 @@ void Script::update(float dt, Input& in) {
 // ---------------------------------------------------------------------------
 // Menus
 // ---------------------------------------------------------------------------
+// Saute les titres de section dans le sens d (+1 ou -1)
+static void skipHeaders(Menu& m, int d) {
+  int n = (int)m.items.size();
+  for (int k = 0; k < n && m.items[m.sel].header; k++) m.sel = (m.sel + d + n) % n;
+}
+
 void MenuStack::push(Menu m) {
   m.sel = std::clamp(m.sel, 0, std::max(0, (int)m.items.size() - 1));
+  if (!m.items.empty()) skipHeaders(m, 1);
+  if (m.sel >= m.top + m.rows) m.top = m.sel - m.rows + 1;
   st_.push_back(std::move(m));
   hover();
 }
@@ -127,11 +135,25 @@ void MenuStack::update(Input& in) {
   int n = (int)m.items.size();
   if (n > 0) {
     int old = m.sel;
-    if (in.press[UP]) m.sel = (m.sel + n - 1) % n;
-    if (in.press[DOWN]) m.sel = (m.sel + 1) % n;
+    if (in.press[UP]) {
+      m.sel = (m.sel + n - 1) % n;
+      skipHeaders(m, -1);
+    }
+    if (in.press[DOWN]) {
+      m.sel = (m.sel + 1) % n;
+      skipHeaders(m, 1);
+    }
+    if ((in.press[LEFT] || in.press[RIGHT]) && m.items[m.sel].adjust && m.items[m.sel].enabled) {
+      auto f = m.items[m.sel].adjust;  // copie : le menu peut être reconstruit pendant le réglage
+      int d = in.press[RIGHT] ? 1 : -1;
+      in.press[LEFT] = in.press[RIGHT] = false;
+      f(d);
+      return;
+    }
     if (in.press[LEFT] && n > m.rows) m.sel = std::max(0, m.sel - m.rows);
     if (in.press[RIGHT] && n > m.rows) m.sel = std::min(n - 1, m.sel + m.rows);
     if (m.sel < m.top) m.top = m.sel;
+    if (m.sel > 0 && m.items[m.sel - 1].header && m.sel - 1 < m.top) m.top = m.sel - 1;  // garde le titre visible
     if (m.sel >= m.top + m.rows) m.top = m.sel - m.rows + 1;
     if (old != m.sel) hover();
   }
@@ -169,9 +191,15 @@ void MenuStack::draw(Gfx& g, float t) const {
       int idx = m.top + i;
       const MenuItem& it = m.items[idx];
       float y = m.y + 4 + th + i * 12;
+      if (it.header) {
+        g.text(m.x + 6, y, it.label, rgb(0xffd34d));
+        g.rect(m.x + 8 + Gfx::textW(it.label), y + 5, m.w - 16 - Gfx::textW(it.label), 1, rgb(0x8090c8, 140));
+        continue;
+      }
       Color c = it.enabled ? rgb(0xffffff) : rgb(0x8a92b8);
       g.text(m.x + 13, y, it.label, c);
-      if (!it.right.empty()) g.text(m.x + m.w - 6, y, it.right, it.enabled ? rgb(0xd8def2) : rgb(0x8a92b8), 2);
+      std::string right = it.rightFn ? it.rightFn() : it.right;
+      if (!right.empty()) g.text(m.x + m.w - 6, y, right, it.enabled ? (it.adjust ? rgb(0xffe066) : rgb(0xd8def2)) : rgb(0x8a92b8), 2);
       if (idx == m.sel) {
         if (top) g.cursor(m.x + 4 + (int(t * 4) % 2), y + 1);
         else g.rect(m.x + 4, y + 3, 4, 4, rgb(0xffd34d, 150));

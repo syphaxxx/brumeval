@@ -36,6 +36,16 @@ pour agrandir l'équipe, quatre héros recrutables, deux régions et une grotte.
 4. **F7** pour compiler, puis **Maj+F5** pour lancer le jeu (ou le bouton ▶ de
    la barre d'état en bas).
 
+## Outils
+
+Depuis l'écran titre, **Outils** donne accès à :
+
+- **Arène de combat** : composez deux équipes (espèces, niveaux, PV des boss,
+  renforts, décor), puis **Combattre !** pour jouer vous-même ou **Simuler**
+  pour faire jouer des dizaines de combats à l'ordinateur et voir le taux de
+  victoire. **Modèles…** reprend tous les combats de l'histoire et les zones de
+  rencontres ; **Journal** détaille le dernier combat coup par coup.
+
 ## Continuer le projet avec Claude Code
 
 Ouvrez un terminal dans le dossier du projet (dans VS Code : **Terminal >

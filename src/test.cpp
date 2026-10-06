@@ -5,6 +5,7 @@
 
 #include <filesystem>
 
+#include "arena.hpp"
 #include "battle.hpp"
 #include "events.hpp"
 #include "game.hpp"
@@ -404,6 +405,59 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     raw("33_galerie_personnages");
     team.clear();
     flags.clear();
+  }
+
+  // --- Arène de combat ---
+  {
+    sc.clear();
+    titleMenu();
+    menus.top().sel = 2;  // Outils
+    in.confirm = true;
+    frame();
+    in.confirm = true;  // Arène de combat
+    frame();
+    check(mode == Mode::Arena && arena_ != nullptr, "écran titre > Outils > Arène de combat");
+    if (arena_) {
+      Arena& A = *arena_;
+      check(A.presetCount() >= 15 && A.findPreset("Givrecorne") >= 0 && A.findPreset("Le braconnier") >= 0,
+            "arène : modèles repris des événements et des zones (" + std::to_string(A.presetCount()) + ")");
+      run(.3f);
+      snap("34_arene");
+      in.press[DOWN] = true;
+      frame();
+      snap("35_arene_fiche");
+      in.confirm = true;  // modifier l'allié
+      frame();
+      in.confirm = true;  // choisir l'espèce
+      frame();
+      run(.2f);
+      snap("36_arene_especes");
+      menus.clear();
+      A.applyPreset(A.findPreset("Sylvarque"));
+      A.startSim(10);
+      for (int i = 0; i < 20000 && A.simulating(); i++) frame();
+      check(!A.simulating() && A.results.total == 10, "arène : simulation de 10 combats (" + std::to_string(A.results.wins) + " victoires)");
+      run(.2f);
+      snap("37_arene_resultats");
+      A.startManual();
+      if (battle_) battle_->autoPlay = true;
+      for (int i = 0; i < 60 * 300 && mode == Mode::Battle; i++) {
+        in.confirm = true;
+        frame();
+      }
+      check(mode == Mode::Arena && !A.lastLog.empty() && !A.lastResult.empty(), "arène : combat à la main puis retour avec le journal");
+      in.press[DOWN] = true;  // Modèles…
+      frame();
+      in.press[DOWN] = true;  // Journal
+      frame();
+      in.confirm = true;
+      frame();
+      run(.2f);
+      snap("38_arene_journal");
+      menus.clear();
+    }
+    mode = Mode::Title;
+    titleMenu();
   }
 
   // --- Simulation d'équilibrage (IA simple, sans objets) ---

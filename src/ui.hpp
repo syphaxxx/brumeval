@@ -61,7 +61,17 @@ struct MenuItem {
   bool enabled = true;
   std::function<void()> act;
   std::function<void()> hover;
+  // Valeur réglable : gauche/droite appellent adjust(-1 ou +1) au lieu de changer de page
+  std::function<void(int)> adjust;
+  std::function<std::string()> rightFn;  // texte de droite recalculé à chaque image
+  bool header = false;                   // titre de section : le curseur le saute
 };
+// Titre de section dans un menu
+inline MenuItem menuHeader(const std::string& label) {
+  MenuItem it{label, "", "", false};
+  it.header = true;
+  return it;
+}
 
 struct Menu {
   std::string title;

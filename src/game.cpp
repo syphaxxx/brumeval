@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 
+#include "arena.hpp"
 #include "battle.hpp"
 #include "sprites.hpp"
 
@@ -49,10 +50,21 @@ void Game::update(float dt) {
         notice("Merci d'avoir joué ! Vous pouvez continuer l'exploration.");
       }
       break;
+    case Mode::Arena:
+      if (arena_) arena_->update(dt);
+      break;
     case Mode::Battle: {
       battle_->update(dt);
       if (battle_->finished()) {
         BattleResult r = battle_->result();
+        if (arenaBattle_ && arena_) {  // retour à l'Arène, sans les conséquences d'une vraie défaite
+          auto log = battle_->log;
+          battle_.reset();
+          arenaBattle_ = false;
+          mode = Mode::Arena;
+          arena_->onBattleEnd(r, log);
+          break;
+        }
         battle_.reset();
         mode = Mode::Map;
         menus.clear();
@@ -136,7 +148,9 @@ void Game::recruit(const std::string& id, int minLvl) {
 
 void Game::startBattle(BattleSetup setup, std::function<void(BattleResult)> after) {
   afterBattle_ = std::move(after);
-  battle_ = std::make_unique<Battle>(*this, std::move(setup), M().theme);
+  arenaBattle_ = mode == Mode::Arena;
+  Theme th = setup.theme >= 0 ? Theme(setup.theme) : M().theme;
+  battle_ = std::make_unique<Battle>(*this, std::move(setup), th);
   mode = Mode::Battle;
   menus.clear();
 }
@@ -344,7 +358,7 @@ void Game::titleMenu() {
   mode = Mode::Title;
   menus.clear();
   Menu m;
-  m.x = 110, m.y = 146, m.w = 100, m.rows = 3, m.cancelable = false;
+  m.x = 110, m.y = 140, m.w = 100, m.rows = 4, m.cancelable = false;
   m.items.push_back({"Nouvelle partie", "", "", true, [this] { starterMenu(); }});
   bool can = saveExists();
   m.items.push_back({"Continuer", "", "", can, [this] {
@@ -354,8 +368,22 @@ void Game::titleMenu() {
                          showRegionBanner();
                        }
                      }});
+  m.items.push_back({"Outils", "", "Arène de combat (et bientôt éditeurs et réglages).", true, [this] { toolsMenu(); }});
   m.items.push_back({"Quitter", "", "", true, [this] { quit = true; }});
   if (can) m.sel = 1;
+  menus.push(m);
+}
+
+void Game::toolsMenu() {
+  Menu m;
+  m.title = "Outils";
+  m.x = 100, m.y = 120, m.w = 120, m.rows = 3;
+  m.items.push_back({"Arène de combat", "", "Composer deux équipes, combattre ou simuler des combats.", true, [this] {
+                       if (!arena_) arena_ = std::make_unique<Arena>(*this);
+                       mode = Mode::Arena;
+                       arena_->open();
+                     }});
+  m.items.push_back({"Retour", "", "", true, [this] { menus.pop(); }});
   menus.push(m);
 }
 
@@ -659,6 +687,9 @@ void Game::draw() {
     case Mode::Map: drawMap(); break;
     case Mode::Battle: battle_->draw(); break;
     case Mode::Ending: drawEnding(); break;
+    case Mode::Arena:
+      if (arena_) arena_->draw();
+      break;
   }
 }
 
