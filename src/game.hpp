@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "battle.hpp"
 #include "data.hpp"
 #include "events.hpp"
 #include "gfx.hpp"
@@ -45,6 +46,7 @@ class Game {
   int gold = 0;
   std::set<std::string> flags;         // progression (boss vaincus, recrues, coffres…)
 
+  void startBattle(BattleSetup setup, std::function<void(BattleResult)> after);
   void startBattle(std::vector<FighterP> foes, bool boss, std::function<void(BattleResult)> after, bool canFlee = true,
                    bool canCapture = true);
   std::vector<FighterP> front() const;  // combattants en première ligne
@@ -79,6 +81,9 @@ class Game {
   void talk(const Npc& n);
   void openChest(int idx);
   std::string chestFlag(int idx) const;
+  bool checkSight();       // un dresseur repère le joueur ?
+  int exclaimNpc_ = -1;    // habitant qui affiche « ! »
+  float exclaimT_ = 0;
   void changeMap(int m, int x, int y, int d);
   void encounter();
   void defeat();

@@ -2,6 +2,7 @@
 // vérifie les données, simule des combats pour l'équilibrage et enregistre
 // des captures d'écran (.bmp) dans DOSSIER. Renvoie 0 si tout va bien.
 #include <cstdio>
+
 #include <filesystem>
 
 #include "battle.hpp"
@@ -210,10 +211,96 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     check(fought && has("brann") && team.size() == 4, "événement de Brann : question, duel, victoire puis recrutement");
   }
 
+  // --- Mécaniques du combat ---
+  {
+    const Species& golem = species("golem");
+    check(std::abs(moveEff(moveInfo("lame"), golem) - .75f) < 1e-4f && std::abs(moveEff(moveInfo("feu"), golem) - 1.25f) < 1e-4f,
+          "résistances propres : le Golem encaisse les coups physiques, craint la magie");
+    check(moveEff(moveInfo("lumiere"), species("sylvarque")) == 2.f && moveEff(moveInfo("feu"), species("ronceau")) == 2.f &&
+              moveEff(moveInfo("lame"), species("lior")) == 1.f,
+          "efficacité des types");
+    check(immuneTo(species("braisenard"), Status::Burn) && immuneTo(golem, Status::Poison) && !immuneTo(species("lior"), Status::Poison),
+          "immunités aux états (par type et par espèce)");
+    auto f = makeFighter("lior", 20);
+    int def = f->def;
+    f->stage[S_DEF] = 1;
+    float up = f->eDef();
+    f->stage[S_DEF] = -1;
+    float down = f->eDef();
+    check(std::abs(up - def * 1.25f) < .01f && std::abs(down - def * .8f) < .01f, "bonus et malus : +1 = ×1,25 ; -1 = ×0,8");
+    check(f->res > 0 && f->acc == 100 && f->crit == 8, "nouvelles statistiques : Résistance, Précision, Critique");
+
+    // Poison : 10 % des PV max à la fin du tour ; sommeil : le tour est perdu
+    team = {makeFighter("lior", 20), makeFighter("maelle", 20)};
+    mode = Mode::Map;
+    sc.clear();
+    menus.clear();
+    BattleSetup setup;
+    setup.foes = {makeFighter("mulotin", 10)};
+    setup.reserve = {makeFighter("piafouine", 10)};
+    setup.foeName = "Le dresseur";
+    startBattle(setup, nullptr);
+    Battle& B = *battle_;
+    B.sc.clear();
+    auto foe = B.foes[0];
+    foe->status = Status::Poison;
+    B.allies[1]->status = Status::Paralysis;
+    B.allies[1]->stage[S_DEF] = 1;
+    B.start = time - 1;  // pas d'éclair blanc d'entrée en combat sur la capture
+    snap("22_etats");
+    B.allies[1]->status = Status::None;
+    int hp0 = foe->hp;
+    B.afterAction(foe);
+    check(hp0 - foe->hp == std::max(1, int(foe->mhp * rules().poisonDmg)), "poison : perte de PV à la fin du tour");
+    B.sc.clear();
+    auto ally = B.allies[0];
+    ally->status = Status::Sleep;
+    ally->statusTurns = 2;
+    bool skipped = B.skipTurn(ally);
+    check(skipped && ally->status == Status::Sleep && ally->statusTurns == 1, "sommeil : le combattant perd son tour");
+    B.sc.clear();
+    foe->hp = 0;
+    B.knockOut(foe);
+    B.checkEnd();
+    check(B.foes[0]->sp == "piafouine" && B.reserve.empty() && !B.ending_, "renforts : un nouvel ennemi entre quand le premier tombe");
+    battle_.reset();
+    mode = Mode::Map;
+    sc.clear();
+  }
+
+  // --- Dresseur : le braconnier repère le joueur sur le chemin ---
+  {
+    team = {makeFighter("lior", 30), makeFighter("maelle", 30), makeFighter("braisenard", 30)};
+    flags.clear();
+    items.clear();
+    sc.clear();
+    menus.clear();
+    mode = Mode::Map;
+    changeMap(mi("vallee"), 43, 9, RIGHT);
+    in.hold[RIGHT] = true;
+    for (int i = 0; i < 40 && px < 45; i++) frame();
+    in.hold[RIGHT] = false;
+    for (int i = 0; i < 60 && exclaimNpc_ < 0; i++) frame();
+    run(.3f);
+    snap("23_dresseur_repere");
+    for (int i = 0; i < 2000 && mode != Mode::Battle; i++) {
+      in.confirm = true;
+      frame();
+    }
+    bool spotted = mode == Mode::Battle && battle_ && battle_->foeName == "Le braconnier";
+    if (battle_) battle_->autoPlay = true;
+    for (int i = 0; i < 2000 && mode == Mode::Battle; i++) {
+      in.confirm = i > 60;  // laisse le temps de voir l'adversaire et ses renforts
+      frame();
+      if (i == 50) snap("21_dresseur");
+    }
+    skipScript();
+    check(spotted && has("braconnier") && items["remede"] == 2, "dresseur : repère le joueur, combat avec renfort, récompense");
+  }
+
   // --- Simulation d'équilibrage (IA simple, sans objets) ---
   std::printf("\nÉquilibrage (combats simulés, IA automatique) :\n");
-  auto sim = [&](const char* name, std::vector<std::pair<std::string, int>> party, std::function<std::vector<FighterP>()> mk, bool boss,
-                 int n) {
+  auto simSetup = [&](const char* name, std::vector<std::pair<std::string, int>> party, std::function<BattleSetup()> mk, int n) {
     int wins = 0;
     float total = 0;
     for (int k = 0; k < n; k++) {
@@ -224,21 +311,38 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       mode = Mode::Map;
       BattleResult res = BattleResult::Lose;
       bool done = false;
-      startBattle(mk(), boss, [&](BattleResult r) {
+      startBattle(mk(), [&](BattleResult r) {
         res = r;
         done = true;
-      }, !boss, !boss);
+      });
       battle_->autoPlay = true;
       float t = 0;
+      std::vector<std::string> lastLog;
+      const char* want = SDL_getenv("BRUMEVAL_JOURNAL");  // ex. BRUMEVAL_JOURNAL=Sylvarque
+      bool keep = k == 0 && want && *want && std::string(name).find(want) != std::string::npos;
       for (int i = 0; i < 20 * 900 && !done; i++) {
         in.confirm = true;
+        if (keep && battle_) lastLog = battle_->log;
         update(1 / 20.f);
         t += 1 / 20.f;
       }
       if (res == BattleResult::Win) wins++;
       total += t;
+      if (keep) {
+        for (auto& l : lastLog) std::printf("      %s\n", l.c_str());
+        std::printf("      => %s\n", res == BattleResult::Win ? "victoire" : "défaite");
+      }
     }
     std::printf("  %-34s %3d %% de victoires   %4.0f s en moyenne\n", name, wins * 100 / n, total / n);
+  };
+  auto sim = [&](const char* name, std::vector<std::pair<std::string, int>> party, std::function<std::vector<FighterP>()> mk, bool boss,
+                 int n) {
+    simSetup(name, party, [mk, boss] {
+      BattleSetup s;
+      s.foes = mk();
+      s.boss = boss, s.canFlee = !boss, s.canCapture = !boss;
+      return s;
+    }, n);
   };
   auto group = [](std::vector<std::string> pool, int lo, int hi, int n) {
     return [=] {
@@ -247,20 +351,28 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       return v;
     };
   };
-  auto bossF = [](const std::string& sp, int lvl, int mult) {
+  auto bossF = [](const std::string& sp, int lvl, float mult) {
     auto f = makeFighter(sp, lvl);
-    f->mhp *= mult;
+    f->mhp = int(f->mhp * mult + 1e-4f);
     f->hp = f->mhp;
     f->boss = true;
     return f;
   };
   sim("Début (N.5 contre N.2-4)", {{"lior", 5}, {"braisenard", 5}}, group({"piafouine", "mulotin", "champichou"}, 2, 4, 2), false, 30);
+  simSetup("Braconnier (équipe N.6)", {{"lior", 6}, {"braisenard", 6}}, [] {
+    BattleSetup s;
+    s.foes = {makeFighter("braconnier", 6), makeFighter("mulotin", 5)};
+    s.reserve = {makeFighter("piafouine", 5)};
+    s.foeName = "Le braconnier";
+    s.canFlee = s.canCapture = false;
+    return s;
+  }, 30);
   sim("Bois (N.8 contre 3 x N.4-7)", {{"lior", 8}, {"maelle", 8}, {"braisenard", 8}},
       group({"champichou", "mulotin", "lucioline", "piafouine"}, 4, 7, 3), false, 30);
   sim("Bosquet du col (N.10 contre N.7-10)", {{"lior", 10}, {"maelle", 10}, {"gouttelin", 10}},
       group({"rocaillou", "grenouillon", "lucioline", "brumelin"}, 7, 10, 3), false, 30);
   sim("Boss Sylvarque (équipe N.11)", {{"lior", 11}, {"maelle", 11}, {"gouttelin", 11}},
-      [&] { return std::vector<FighterP>{makeFighter("brumelin", 9), bossF("sylvarque", 12, 3), makeFighter("brumelin", 9)}; }, true, 20);
+      [&] { return std::vector<FighterP>{makeFighter("brumelin", 9), bossF("sylvarque", 12, 3.5f), makeFighter("brumelin", 9)}; }, true, 40);
   sim("Duel contre Brann (équipe N.14)", {{"lior", 14}, {"maelle", 14}, {"ronceau", 14}}, [&] {
     auto b = makeFighter("brann", 14);
     b->mhp = b->mhp * 5 / 2;
@@ -273,7 +385,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   sim("Golem de suie (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"brann", 16}},
       [&] { return std::vector<FighterP>{bossF("golem", 16, 3)}; }, true, 20);
   sim("Boss Ignarok (équipe N.22)", {{"lior", 22}, {"maelle", 22}, {"isra", 22}},
-      [&] { return std::vector<FighterP>{makeFighter("tisonnel", 19), bossF("ignarok", 23, 4), makeFighter("tisonnel", 19)}; }, true, 20);
+      [&] { return std::vector<FighterP>{makeFighter("tisonnel", 19), bossF("ignarok", 23, 4), makeFighter("tisonnel", 19)}; }, true, 40);
 
   std::printf("\n%s (%d échec%s)\n", fails ? "TESTS EN ÉCHEC" : "TOUS LES TESTS PASSENT", fails, fails > 1 ? "s" : "");
   return fails ? 1 : 0;

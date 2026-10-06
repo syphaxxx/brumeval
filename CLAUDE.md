@@ -43,7 +43,7 @@ après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
 |---|---|
 | `main.cpp` | Fenêtre SDL, boucle principale, plein écran (F11), option `--test`, chargement de data/ |
 | `game.hpp/.cpp` | Écran titre, exploration, menus (pause, équipe, objets, magie, boutique), sauvegarde, dessin de la carte |
-| `battle.hpp/.cpp` | Combat ATB : jauges, menus de commande, dégâts, sorts, objets, capture, Limites, victoire |
+| `battle.hpp/.cpp` | Combat ATB : jauges, menus, dégâts physiques/magiques, précision, critiques, états, bonus/malus, renforts ennemis, IA (`think`), journal (`log`), capture, Limites, victoire |
 | `store.hpp/.cpp` | Dossier data/ : recherche, lecture et écriture JSON (nlohmann/json, `Json` = `ordered_json`) |
 | `data.hpp/.cpp` | Chargement des types, techniques, espèces, objets, apparences et règles (`Rules`, `ruleFields()`), formules de stats et d'expérience |
 | `world.hpp/.cpp` | Structures des cartes, lecture/écriture de data/cartes/, vérification d'accessibilité (`checkMaps`) |
@@ -80,6 +80,17 @@ après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
   actions sont exécutées par `Game::execAction` (events.cpp) via le `Script` ;
   `Script::runNow` fait passer la suite (réponse à une question, fin de combat)
   avant les étapes déjà en attente.
+- Combat : dégâts physiques = Attaque contre Défense, magiques = Magie contre
+  Résistance ; `moveEff()` combine les deux types de la cible et ses
+  `resistances` propres. Un seul état à la fois (`Fighter::status`), bonus/malus
+  de -3 à +3 (`Fighter::stage`, effet = `etage` des règles), tout est effacé à la
+  fin du combat (`clearBattle`). `Battle::think` choisit les actions de
+  l'ordinateur (ennemis, et alliés en mode test) ; `Battle::log` garde un journal
+  lisible (`BRUMEVAL_JOURNAL=Sylvarque brumeval --test captures` l'affiche pour
+  la simulation qui contient ce mot).
+- Adversaires : `BattleSetup` (ennemis, `reserve` de renforts, `foeName`).
+  Habitants avec `vue` : `Game::checkSight` les déclenche quand le joueur passe
+  devant eux.
 - Piège C++ : ne jamais écrire `for (auto& x : j.value(...).items())` (objet
   temporaire détruit avant la boucle) ; ranger d'abord le JSON dans une variable.
 - Sous MSVC, l'option `/utf-8` (déjà dans CMakeLists.txt) est indispensable pour
@@ -107,9 +118,11 @@ réécrits par `writeJson` (petites listes sur une ligne) : garder ce format.
   Starters : Braisenard (Feu), Gouttelin (Eau), Ronceau (Plante). 12 créatures
   sauvages capturables.
 
-Équilibrage mesuré par le mode test (IA automatique simple, sans objets) :
-combats normaux gagnés à 100 %, Sylvarque ≈ 80 % avec une équipe N.11,
-Ignarok ≈ 35 % avec une équipe N.22 (un joueur avec des objets fait mieux).
+Équilibrage mesuré par le mode test (IA automatique, sans objets) : combats
+normaux et braconnier gagnés à ~100 %, Sylvarque ≈ 80-85 % avec une équipe
+N.11, Ignarok ≈ 30-45 % avec une équipe N.22 (un joueur avec des objets fait
+mieux). La Lumière fait ×2 à l'Ombre mais l'Ombre est neutre sur la Lumière :
+sinon Maëlle, ciblée en priorité par l'IA, tombe dès le début contre Sylvarque.
 
 ## À faire / pistes
 
@@ -118,7 +131,5 @@ Ignarok ≈ 35 % avec une équipe N.22 (un joueur avec des objets fait mieux).
    F7, Maj+F5 et le débogueur (`cppvsdbg`).
 2. Ajouter musique et effets sonores (SDL2_mixer via FetchContent, ou l'audio de SDL).
 3. Rendre le sprite d'Ignarok plus lisible (aujourd'hui un bloc rouge).
-4. Dans la fenêtre d'état du combat, les noms sont coupés à 9 caractères
-   (« Braisenar ») : élargir la colonne ou abréger proprement.
-5. Idées : intérieurs des maisons, quêtes annexes, équipement, menu d'options,
+4. Idées : intérieurs des maisons, quêtes annexes, équipement, menu d'options,
    manette (SDL_GameController), animations d'attaque.

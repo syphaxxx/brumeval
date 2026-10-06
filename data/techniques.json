@@ -15,6 +15,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 55,
+    "critique": 15,
     "description": "Une frappe perçante."
   },
   {
@@ -24,6 +25,8 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 72,
+    "precision": 90,
+    "critique": 10,
     "description": "Un enchaînement fulgurant."
   },
   {
@@ -33,6 +36,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 48,
+    "precision": 95,
     "description": "Lourd et brutal."
   },
   {
@@ -42,6 +46,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 68,
+    "precision": 85,
     "description": "Une frappe qui ébranle le sol."
   },
   {
@@ -60,11 +65,28 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 32,
+    "critique": 20,
     "description": "Rapide mais légère."
   },
   {"id": "charge", "nom": "Charge", "type": "normal", "genre": "physique", "cible": "ennemi", "puissance": 35},
-  {"id": "flam", "nom": "Flammèche", "type": "feu", "genre": "physique", "cible": "ennemi", "puissance": 40},
-  {"id": "brasier", "nom": "Brasier", "type": "feu", "genre": "physique", "cible": "ennemi", "puissance": 65},
+  {
+    "id": "flam",
+    "nom": "Flammèche",
+    "type": "feu",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 40,
+    "effet": {"statut": "brulure", "chance": 10}
+  },
+  {
+    "id": "brasier",
+    "nom": "Brasier",
+    "type": "feu",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 65,
+    "effet": {"statut": "brulure", "chance": 20}
+  },
   {"id": "jet", "nom": "Jet d'eau", "type": "eau", "genre": "physique", "cible": "ennemi", "puissance": 40},
   {"id": "vague", "nom": "Vague", "type": "eau", "genre": "physique", "cible": "ennemi", "puissance": 65},
   {
@@ -97,7 +119,8 @@
     "type": "normal",
     "genre": "physique",
     "cible": "ennemi",
-    "puissance": 45
+    "puissance": 45,
+    "critique": 10
   },
   {
     "id": "etincelle",
@@ -108,14 +131,23 @@
     "puissance": 40
   },
   {"id": "bulle", "nom": "Bulle", "type": "eau", "genre": "physique", "cible": "ennemi", "puissance": 40},
-  {"id": "spore", "nom": "Spore", "type": "plante", "genre": "physique", "cible": "ennemi", "puissance": 40},
+  {
+    "id": "spore",
+    "nom": "Spore",
+    "type": "plante",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 40,
+    "effet": {"statut": "poison", "chance": 40}
+  },
   {
     "id": "eboul",
     "nom": "Éboulis",
     "type": "normal",
     "genre": "physique",
     "cible": "ennemi",
-    "puissance": 55
+    "puissance": 55,
+    "precision": 90
   },
   {
     "id": "griffe",
@@ -123,7 +155,8 @@
     "type": "ombre",
     "genre": "physique",
     "cible": "ennemi",
-    "puissance": 50
+    "puissance": 50,
+    "critique": 10
   },
   {
     "id": "crocs",
@@ -131,7 +164,8 @@
     "type": "feu",
     "genre": "physique",
     "cible": "ennemi",
-    "puissance": 55
+    "puissance": 55,
+    "effet": {"statut": "brulure", "chance": 15}
   },
   {
     "id": "decharge",
@@ -139,7 +173,8 @@
     "type": "foudre",
     "genre": "physique",
     "cible": "ennemi",
-    "puissance": 50
+    "puissance": 50,
+    "effet": {"statut": "paralysie", "chance": 20}
   },
   {
     "id": "pique",
@@ -147,7 +182,9 @@
     "type": "foudre",
     "genre": "physique",
     "cible": "ennemi",
-    "puissance": 65
+    "puissance": 65,
+    "precision": 90,
+    "effet": {"statut": "paralysie", "chance": 15}
   },
   {
     "id": "gel",
@@ -155,7 +192,8 @@
     "type": "eau",
     "genre": "physique",
     "cible": "ennemi",
-    "puissance": 55
+    "puissance": 55,
+    "effet": {"stat": "vitesse", "niveaux": -1, "chance": 30}
   },
   {
     "id": "suie",
@@ -163,7 +201,8 @@
     "type": "ombre",
     "genre": "magique",
     "cible": "tous_ennemis",
-    "puissance": 40
+    "puissance": 40,
+    "effet": {"stat": "defense", "niveaux": -1, "chance": 20}
   },
   {
     "id": "magma",
@@ -179,7 +218,8 @@
     "type": "feu",
     "genre": "physique",
     "cible": "ennemi",
-    "puissance": 72
+    "puissance": 72,
+    "precision": 90
   },
   {
     "id": "brume",
@@ -187,7 +227,8 @@
     "type": "ombre",
     "genre": "magique",
     "cible": "tous_ennemis",
-    "puissance": 40
+    "puissance": 40,
+    "effet": {"stat": "vitesse", "niveaux": -1, "chance": 20}
   },
   {
     "id": "voile",
@@ -195,7 +236,8 @@
     "type": "ombre",
     "genre": "magique",
     "cible": "ennemi",
-    "puissance": 45
+    "puissance": 45,
+    "effet": {"stat": "magie", "niveaux": -1, "chance": 30}
   },
   {
     "id": "soin",
@@ -316,6 +358,90 @@
     "puissance": 18,
     "cout": 9,
     "description": "Une sève douce soigne l'équipe."
+  },
+  {
+    "id": "cri",
+    "nom": "Cri de guerre",
+    "type": "normal",
+    "genre": "statut",
+    "cible": "tous_allies",
+    "puissance": 0,
+    "effet": {"stat": "attaque", "niveaux": 1},
+    "description": "Augmente l'Attaque de toute l'équipe."
+  },
+  {
+    "id": "brise",
+    "nom": "Brise-armure",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 40,
+    "effet": {"stat": "defense", "niveaux": -1},
+    "description": "Un coup qui fend l'armure : baisse la Défense."
+  },
+  {
+    "id": "piege",
+    "nom": "Piège à loup",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 30,
+    "effet": {"stat": "vitesse", "niveaux": -1, "chance": 70}
+  },
+  {
+    "id": "fleche",
+    "nom": "Fléchette empoisonnée",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 25,
+    "precision": 95,
+    "effet": {"statut": "poison", "chance": 60}
+  },
+  {
+    "id": "purification",
+    "nom": "Purification",
+    "type": "lumiere",
+    "genre": "soin",
+    "cible": "allie",
+    "puissance": 0,
+    "cout": 3,
+    "effet": {"guerison": true},
+    "description": "Guérit les états d'un allié (poison, brûlure, paralysie, sommeil)."
+  },
+  {
+    "id": "rempart",
+    "nom": "Rempart",
+    "type": "lumiere",
+    "genre": "statut",
+    "cible": "tous_allies",
+    "puissance": 0,
+    "cout": 6,
+    "effet": {"stat": "defense", "niveaux": 1},
+    "description": "Renforce la Défense de toute l'équipe."
+  },
+  {
+    "id": "sommeil",
+    "nom": "Sommeil",
+    "type": "ombre",
+    "genre": "statut",
+    "cible": "ennemi",
+    "puissance": 0,
+    "cout": 5,
+    "precision": 75,
+    "effet": {"statut": "sommeil"},
+    "description": "Endort un ennemi."
+  },
+  {
+    "id": "hate",
+    "nom": "Hâte",
+    "type": "lumiere",
+    "genre": "statut",
+    "cible": "allie",
+    "puissance": 0,
+    "cout": 5,
+    "effet": {"stat": "vitesse", "niveaux": 2},
+    "description": "Accélère beaucoup un allié."
   },
   {
     "id": "lim_lior",

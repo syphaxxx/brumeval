@@ -134,11 +134,17 @@ void Game::recruit(const std::string& id, int minLvl) {
   sc.say("(Échap > Équipe pour choisir qui combat. " + f->S().role + ".)");
 }
 
-void Game::startBattle(std::vector<FighterP> foes, bool boss, std::function<void(BattleResult)> after, bool canFlee, bool canCapture) {
+void Game::startBattle(BattleSetup setup, std::function<void(BattleResult)> after) {
   afterBattle_ = std::move(after);
-  battle_ = std::make_unique<Battle>(*this, std::move(foes), boss, M().theme, canFlee, canCapture);
+  battle_ = std::make_unique<Battle>(*this, std::move(setup), M().theme);
   mode = Mode::Battle;
   menus.clear();
+}
+void Game::startBattle(std::vector<FighterP> foes, bool boss, std::function<void(BattleResult)> after, bool canFlee, bool canCapture) {
+  BattleSetup s;
+  s.foes = std::move(foes);
+  s.boss = boss, s.canFlee = canFlee, s.canCapture = canCapture;
+  startBattle(std::move(s), std::move(after));
 }
 
 void Game::defeat() {
@@ -196,9 +202,35 @@ void Game::arrive() {
       int m = mapIndex(w.map);
       if (m >= 0) return changeMap(m, w.tx, w.ty, w.dir);
     }
+  if (checkSight()) return;
   char c = M().rows[py][px];
   double rate = M().encounterRate > 0 ? M().encounterRate : rules().encounterRate;
   if (tileEncounter(c) && steps > rules().minSteps && frand() < rate) encounter();
+}
+
+// Dresseurs : un habitant avec « vue » repère le joueur dans sa ligne de regard
+bool Game::checkSight() {
+  const MapDef& m = M();
+  for (size_t i = 0; i < m.npcs.size(); i++) {
+    const Npc& n = m.npcs[i];
+    if (n.sight <= 0 || n.event.empty() || !npcVisible(n) || (!n.sightUntil.empty() && has(n.sightUntil))) continue;
+    int dx = n.dir == LEFT ? -1 : n.dir == RIGHT ? 1 : 0, dy = n.dir == UP ? -1 : n.dir == DOWN ? 1 : 0;
+    for (int k = 1; k <= n.sight; k++) {
+      int x = n.x + dx * k, y = n.y + dy * k;
+      if (x == px && y == py) {
+        exclaimNpc_ = (int)i;
+        exclaimT_ = time;
+        dir = n.dir == UP ? DOWN : n.dir == DOWN ? UP : n.dir == LEFT ? RIGHT : LEFT;  // le joueur se tourne vers lui
+        steps = 0;
+        std::string ev = n.event;
+        sc.wait(.7f);
+        sc.call([this, ev] { runEvent(ev); });
+        return true;
+      }
+      if (blocked(x, y)) break;
+    }
+  }
+  return false;
 }
 
 void Game::encounter() {
@@ -219,6 +251,7 @@ void Game::changeMap(int m, int x, int y, int d) {
   px = x, py = y, dir = d;
   moving = false;
   steps = 0;
+  exclaimNpc_ = -1;
   if (changed) showRegionBanner();
 }
 void Game::showRegionBanner() {
@@ -323,7 +356,7 @@ void Game::starterMenu() {
   for (const std::string& id : rules().starters) {
     const Species& s = species(id);
     std::string lim = s.limit.empty() ? "aucune" : moveInfo(s.limit).name;
-    m.items.push_back({s.name, typeName(s.type), "Type " + std::string(typeName(s.type)) + " · Limite : " + lim, true,
+    m.items.push_back({s.name, typesName(s), "Type " + typesName(s) + " · Limite : " + lim, true,
                        [this, id] { newGame(id); }});
   }
   menus.push(m);
@@ -451,7 +484,7 @@ void Game::magicMenu() {
     FighterP caster = f;
     std::vector<std::string> heal;
     for (auto& id : f->spells())
-      if (moveInfo(id).kind == Kind::Heal || moveInfo(id).kind == Kind::Revive) heal.push_back(id);
+      if ((moveInfo(id).kind == Kind::Heal && moveInfo(id).power > 0) || moveInfo(id).kind == Kind::Revive) heal.push_back(id);
     m.items.push_back({f->name(), std::to_string(f->mp) + " PM", heal.empty() ? "Aucun sort utilisable hors combat." : "", f->alive() && !heal.empty(),
                        [this, caster, heal] {
                          Menu s;
@@ -665,6 +698,15 @@ void Game::drawMap() {
   for (auto& b : m.bosses)
     if (bossAlive(b))
       actors.push_back({float(b.y * 16 + 16), [&, b] { drawCreature(g, b.id, (b.x + 1) * 16 - camX, (b.y + 1) * 16 - camY - 2, .6f, false, time); }});
+  if (exclaimNpc_ >= 0 && exclaimNpc_ < (int)m.npcs.size() && time - exclaimT_ < 1.2f) {
+    const Npc& n = m.npcs[exclaimNpc_];
+    float bx = n.x * 16 - camX + 4, by = n.y * 16 - camY - 16;
+    actors.push_back({1e9f, [&, bx, by] {
+                        g.rect(bx, by, 9, 11, rgb(0xffffff));
+                        g.frame(bx, by, 9, 11, rgb(0x1a1a24));
+                        g.text(bx + 2, by - 1, "!", rgb(0xd2493f), 0, false);
+                      }});
+  }
   int step = moving ? (moveT < .5f ? 1 : 2) : 0;
   actors.push_back({ppy, [&] { drawHuman(g, look(0), ppx - camX, ppy - camY - 2, 1, dir, step, false); }});
   std::sort(actors.begin(), actors.end(), [](const Actor& a, const Actor& b) { return a.y < b.y; });
@@ -777,7 +819,12 @@ void Game::drawTeamPanel(int x, int y, int sel) {
   if (sel >= (int)team.size()) return;
   const Fighter& f = *team[sel];
   int w = 320 - x - 8;
-  g.window(x, y, w, 200);
+  std::string t, s;
+  for (auto& id : f.techs()) t += (t.empty() ? "" : ", ") + moveInfo(id).name;
+  for (auto& id : f.spells()) s += (s.empty() ? "" : ", ") + moveInfo(id).name;
+  auto techLines = Gfx::wrap("Techniques : " + t, w - 16), magicLines = s.empty() ? std::vector<std::string>{} : Gfx::wrap("Magie : " + s, w - 16);
+  int lines = (int)techLines.size() + (int)magicLines.size() + (f.S().limit.empty() ? 0 : 1);
+  g.window(x, y, w, std::min(SCREEN_H - y - 2, 34 + 4 * 11 + 3 + 4 * 11 + 3 + lines * 11 + 6));
   g.text(x + 8, y + 6, f.name(), GOLD);
   g.text(x + w - 8, y + 6, "Niveau " + std::to_string(f.lvl), WHITE, 2);
   std::string role = f.S().human ? f.S().role : std::string("Créature de type ") + typeName(f.S().type);
@@ -790,22 +837,26 @@ void Game::drawTeamPanel(int x, int y, int sel) {
     g.text(x + 54, ly, b, WHITE);
     ly += 11;
   };
-  row("Type", typeName(f.S().type));
+  row("Type", typesName(f.S()));
   row("PV", std::to_string(f.hp) + "/" + std::to_string(f.mhp));
   row("PM", std::to_string(f.mp) + "/" + std::to_string(f.mmp));
-  row("Attaque", std::to_string(f.atk));
-  row("Défense", std::to_string(f.def));
-  row("Magie", std::to_string(f.mag));
-  row("Vitesse", std::to_string(f.spd));
   row("Exp.", std::to_string(f.xp) + "/" + std::to_string(f.need()));
   ly += 3;
-  std::string t;
-  for (auto& id : f.techs()) t += (t.empty() ? "" : ", ") + moveInfo(id).name;
-  for (auto& l : Gfx::wrap("Techniques : " + t, w - 16)) g.text(x + 8, ly, l, WHITE), ly += 11;
-  std::string s;
-  for (auto& id : f.spells()) s += (s.empty() ? "" : ", ") + moveInfo(id).name;
-  if (!s.empty())
-    for (auto& l : Gfx::wrap("Magie : " + s, w - 16)) g.text(x + 8, ly, l, rgb(0x9fd8ff)), ly += 11;
+  // Statistiques sur deux colonnes
+  auto pair = [&](const char* a, int va, const char* b, const std::string& vb) {
+    g.text(x + 8, ly, a, MUTED);
+    g.text(x + 76, ly, std::to_string(va), WHITE, 2);
+    g.text(x + 84, ly, b, MUTED);
+    g.text(x + w - 8, ly, vb, WHITE, 2);
+    ly += 11;
+  };
+  pair("Attaque", f.atk, "Défense", std::to_string(f.def));
+  pair("Magie", f.mag, "Résist.", std::to_string(f.res));
+  pair("Vitesse", f.spd, "Précis.", std::to_string(f.acc) + "%");
+  pair("Esquive", f.eva, "Critique", std::to_string(f.crit) + "%");
+  ly += 3;
+  for (auto& l : techLines) g.text(x + 8, ly, l, WHITE), ly += 11;
+  for (auto& l : magicLines) g.text(x + 8, ly, l, rgb(0x9fd8ff)), ly += 11;
   if (!f.S().limit.empty()) g.text(x + 8, ly, "Limite : " + moveInfo(f.S().limit).name, rgb(0xff9ad0));
 }
 

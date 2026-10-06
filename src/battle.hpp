@@ -1,5 +1,6 @@
 // Combat au tour par tour actif (jauges ATB), jusqu'à 3 alliés contre 1 à 3 ennemis.
 // Quand la jauge ATB d'un allié est pleine, le temps s'arrête et on choisit son action.
+// Les ennemis peuvent avoir des renforts qui entrent quand l'un d'eux tombe.
 #pragma once
 #include <functional>
 #include <string>
@@ -14,15 +15,26 @@ enum class BattleResult;
 
 // Chance de capturer f avec une lanterne de multiplicateur mult (règles : capture)
 float captureChance(const Fighter& f, float mult);
+// Description courte d'une technique : genre, type, puissance, précision, effets
+std::string moveDetails(const Move& m);
+
+// Préparation d'un combat
+struct BattleSetup {
+  std::vector<FighterP> foes;     // 1 à 3 ennemis en première ligne
+  std::vector<FighterP> reserve;  // renforts : entrent un par un quand un ennemi tombe
+  std::string foeName;            // nom de l'adversaire (« Garo le braconnier »), vide pour des créatures sauvages
+  bool boss = false, canFlee = true, canCapture = true;
+};
 
 class Battle {
  public:
-  Battle(Game& game, std::vector<FighterP> foes, bool boss, Theme bg, bool canFlee, bool canCapture);
+  Battle(Game& game, BattleSetup setup, Theme bg);
   void update(float dt);
   void draw();
   bool finished() const { return finished_; }
   BattleResult result() const { return result_; }
   bool autoPlay = false;  // utilisé par le mode test
+  std::vector<std::string> log;  // journal détaillé des actions (mode test, Arène)
 
  private:
   struct Pop {
@@ -31,9 +43,16 @@ class Battle {
     Color col;
     float t;
   };
+  // Action choisie par l'ordinateur (ennemis, ou alliés en mode automatique)
+  struct Plan {
+    std::string move;
+    std::vector<FighterP> targets;
+    bool limit = false;
+  };
   Game& G;
   Script sc;
-  std::vector<FighterP> allies, foes;
+  std::vector<FighterP> allies, foes, reserve;
+  std::string foeName;
   bool boss, canFlee, canCapture;
   Theme bg;
   float start = 0;
@@ -48,24 +67,31 @@ class Battle {
   bool isAlly(const FighterP& f) const;
   std::vector<FighterP> alive(const std::vector<FighterP>& v) const;
   Pt pos(const FighterP& f) const;
-  void pop(const FighterP& f, const std::string& t, Color c, float dy = 0);
+  void pop(const FighterP& f, const std::string& t, Color c);
 
   void tickATB(float dt);
+  bool skipTurn(FighterP f);  // sommeil ou paralysie : le tour est perdu
   void command(FighterP a);
   void autoCommand(FighterP a);
   void enemyTurn(FighterP e);
+  Plan think(FighterP a);
   void useMove(FighterP a, const std::string& mv, std::vector<FighterP> targets, bool isLimit = false);
   void useItem(FighterP a, const std::string& it, FighterP target);
   void swapIn(FighterP a, FighterP r);
   void tryFlee(FighterP a);
   void afterAction(FighterP a);
+  void checkEnd();
   void victory();
   void finish(BattleResult r);
-  int applyHit(const FighterP& a, const FighterP& d, const Move& m);
+  int applyHit(const FighterP& a, const FighterP& d, const Move& m);  // -1 si raté
+  void applyEffect(const FighterP& t, const Effect& e);
+  void knockOut(const FighterP& f);
 
   // Menus de commande
-  void pickFoe(const std::string& title, std::function<std::string(const Fighter&)> info, std::function<void(FighterP)> done);
+  void pickFoe(const std::string& title, std::function<std::string(const Fighter&)> info, std::function<void(FighterP)> done,
+               bool creaturesOnly = false);
   void pickAlly(const std::string& title, bool ko, std::function<void(FighterP)> done);
   void moveTarget(FighterP a, const std::string& mv);
+  void drawStatusTag(const Fighter& f, float x, float y);
   friend class Game;
 };

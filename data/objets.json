@@ -36,6 +36,14 @@
     "rappel": 50
   },
   {
+    "id": "remede",
+    "nom": "Remède",
+    "description": "Guérit les états : poison, brûlure, paralysie, sommeil.",
+    "prix": 25,
+    "combat": true,
+    "soin_statut": true
+  },
+  {
     "id": "lanterne",
     "nom": "Lanterne",
     "description": "Capture une créature. Plus elle est affaiblie, mieux c'est.",

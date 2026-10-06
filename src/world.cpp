@@ -58,6 +58,8 @@ MapDef mapFromJson(const Json& j) {
     n.event = jget<std::string>(o, "evenement", "");
     n.lines = jget(o, "dialogue", std::vector<std::string>{});
     n.hideIf = jget<std::string>(o, "cache_si", "");
+    n.sight = jget(o, "vue", 0);
+    n.sightUntil = jget<std::string>(o, "vue_jusqua", "");
     m.npcs.push_back(n);
   }
   for (auto& o : j.value("coffres", Json::array())) {
@@ -100,6 +102,8 @@ Json mapToJson(const MapDef& m) {
     Json p = {{"x", x.x}, {"y", x.y}, {"apparence", look(x.look).id}, {"direction", dirName(x.dir)}};
     if (!x.event.empty()) p["evenement"] = x.event;
     if (!x.hideIf.empty()) p["cache_si"] = x.hideIf;
+    if (x.sight > 0) p["vue"] = x.sight;
+    if (!x.sightUntil.empty()) p["vue_jusqua"] = x.sightUntil;
     if (!x.lines.empty()) p["dialogue"] = x.lines;
     n.push_back(p);
   }

@@ -62,7 +62,7 @@
       "apparence": "villageois",
       "direction": "bas",
       "dialogue": [
-        "Bienvenue à Brumeval !",
+        "C'est ici que tout commence !",
         "Appuyez sur Échap pour ouvrir le menu : équipe, objets, magie et sauvegarde."
       ]
     },
@@ -109,6 +109,15 @@
         "Contre les créatures d'Ombre, la magie de Lumière fait des merveilles.",
         "La mage de la chapelle en connaît un rayon…"
       ]
+    },
+    {
+      "x": 45,
+      "y": 8,
+      "apparence": "braconnier",
+      "direction": "bas",
+      "evenement": "braconnier",
+      "vue": 2,
+      "vue_jusqua": "braconnier"
     }
   ],
   "coffres": [

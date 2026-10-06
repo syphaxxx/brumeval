@@ -4,6 +4,7 @@
 #pragma once
 #include <array>
 #include <cstdint>
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -16,6 +17,7 @@ using Type = int;
 struct TypeDef {
   std::string id, name;
   uint32_t color;
+  std::vector<std::string> immune;  // états auxquels ce type est insensible
 };
 const std::vector<TypeDef>& types();
 Type typeOf(const std::string& id);  // erreur si le type n'existe pas
@@ -23,7 +25,31 @@ const char* typeName(Type t);
 float typeEff(Type attaque, Type defense);  // 2 = super efficace, 0.5 = peu efficace
 
 enum class Target { Enemy, AllEnemies, Ally, AllAllies, AllyKO };
-enum class Kind { Physical, Magic, Heal, Revive };
+// Physique : Attaque contre Défense. Magique : Magie contre Résistance.
+// Statut : pas de dégâts, seulement ses effets (bonus, malus, états).
+enum class Kind { Physical, Magic, Heal, Revive, Status };
+
+// États (altérations) : un seul à la fois par combattant
+enum class Status { None, Poison, Burn, Paralysis, Sleep };
+Status statusOf(const std::string& s);  // "poison", "brulure", "paralysie", "sommeil"
+const char* statusId(Status s);
+const char* statusName(Status s);  // « Poison »…
+const char* statusTag(Status s);   // « PSN »…
+uint32_t statusColor(Status s);
+
+// Statistiques modifiables en combat par des bonus/malus (-3 à +3 niveaux)
+enum Stage { S_ATK, S_DEF, S_MAG, S_RES, S_SPD, N_STAGES };
+int stageOf(const std::string& s);  // "attaque", "defense", "magie", "resistance", "vitesse"
+const char* stageName(int st);      // « Attaque »…
+
+// Effet secondaire d'une technique
+struct Effect {
+  Status status = Status::None;  // état infligé
+  int stat = -1, stages = 0;     // bonus (stages > 0) ou malus d'une statistique
+  bool self = false;             // s'applique au lanceur plutôt qu'à la cible
+  bool cure = false;             // guérit les états
+  int chance = 100;              // en %
+};
 
 struct Move {
   std::string id, name;
@@ -33,6 +59,10 @@ struct Move {
   Kind kind;
   int cost;  // coût en PM (0 = technique gratuite)
   std::string desc;
+  int acc = 100;       // précision en %
+  int critBonus = 0;   // chance de critique en plus (%)
+  std::vector<Effect> effects;
+  bool damaging() const { return kind == Kind::Physical || kind == Kind::Magic; }
 };
 
 struct Learn { int lvl; std::string move; };
@@ -47,10 +77,17 @@ struct Look {
   int weapon;  // 0 aucune, 1 épée, 2 bâton, 3 hache, 4 dague
 };
 
+// Statistiques de base d'une espèce (multipliées par le niveau)
+enum Base { B_HP, B_MP, B_ATK, B_DEF, B_MAG, B_RES, B_SPD, N_BASE };
+
 struct Species {
   std::string id, name;
-  Type type;
-  std::array<int, 6> base;  // PV, PM, Attaque, Défense, Magie, Vitesse
+  Type type;                 // type principal
+  Type type2 = -1;           // second type éventuel (-1 : aucun)
+  std::array<int, N_BASE> base;  // PV, PM, Attaque, Défense, Magie, Résistance, Vitesse
+  int acc = 100, eva = 0, crit = 5;  // précision, esquive, critique (en %, ne dépendent pas du niveau)
+  std::map<std::string, float> resist;  // multiplicateurs propres : "physique", "magique" ou un type
+  std::vector<std::string> immune;      // états auxquels l'espèce est insensible
   Shape shape;
   uint32_t c1, c2;  // couleurs (créatures)
   std::vector<Learn> learn;
@@ -69,6 +106,7 @@ struct ItemDef {
   int healHp = 0, healMp = 0;  // soins
   int revive = 0;              // relève un K.O. avec ce pourcentage de PV
   float capture = 0;           // > 0 : lanterne de capture (multiplicateur)
+  bool cure = false;           // guérit les états
 };
 
 // Règles du jeu (data/regles.json). Les valeurs numériques sont décrites dans
@@ -86,6 +124,11 @@ struct Rules {
   int minSteps = 3;
   // Combat
   double atbBase = 20, atbSpeed = 1.1, flee = .7, limitGain = 110, stab = 1.25, spreadMin = .85, dmgDivisor = 40;
+  double critMult = 1.5, stageStep = .25;
+  int accBase = 100, evaBase = 2, critBase = 5;
+  // États
+  double poisonDmg = .1, burnDmg = .0625, burnAtk = .75, paraSpeed = .5, paraSkip = .25;
+  int sleepMin = 1, sleepMax = 3;
   // Récompenses
   int xpPerLevel = 9, xpBoss = 3, goldPerLevel = 4, goldBoss = 8;
   double xpFront = .7, xpReserve = .3;
@@ -133,19 +176,37 @@ const char* shapeName(Shape s);
 int dirOf(const std::string& s);  // "haut", "bas", "gauche", "droite"
 const char* dirName(int d);
 
+// Efficacité d'une technique sur une espèce : types (et second type) et résistances propres
+float moveEff(const Move& m, const Species& s);
+std::string typesName(const Species& s);  // « Eau » ou « Eau/Glace »
+bool hasType(const Species& s, Type t);
+bool immuneTo(const Species& s, Status st);
+
 // Un combattant (allié ou ennemi)
 struct Fighter {
   std::string sp;
   int lvl = 1, xp = 0, hp = 0, mp = 0;
-  int mhp = 1, mmp = 0, atk = 1, def = 1, mag = 1, spd = 1;
+  int mhp = 1, mmp = 0, atk = 1, def = 1, mag = 1, res = 1, spd = 1;
+  int acc = 100, eva = 0, crit = 5;
   float lim = 0;       // jauge Limite (0..100)
   float atb = 0;       // jauge ATB, uniquement en combat
   std::string tag;     // "A", "B"… quand plusieurs ennemis identiques
   bool boss = false;
+  // État et bonus/malus : seulement pendant un combat
+  Status status = Status::None;
+  int statusTurns = 0;
+  std::array<int, N_STAGES> stage{};
 
   const Species& S() const { return species(sp); }
   std::string name() const;
   void recalc();
+  void clearBattle();             // efface états et bonus/malus
+  float stageMult(int st) const;  // 1.25 pour +1, 0.8 pour -1…
+  float eAtk() const;             // statistiques avec bonus/malus (et brûlure)
+  float eDef() const;
+  float eMag() const;
+  float eRes() const;
+  float eSpd() const;
   int need() const;  // expérience nécessaire pour le niveau suivant
   std::vector<std::string> techs() const;   // techniques gratuites (4 dernières)
   std::vector<std::string> spells() const;  // sorts (coûtent des PM)

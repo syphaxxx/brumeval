@@ -74,6 +74,8 @@ static void checkAction(const Json& a, const std::string& where, std::vector<std
       for (auto& e : a["ennemis"])
         if (!hasSpecies(jget<std::string>(e, "espece", ""))) err.push_back(w + " : espèce inconnue « " + jget<std::string>(e, "espece", "") + " »");
     }
+    for (auto& e : a.value("renforts", Json::array()))
+      if (!hasSpecies(jget<std::string>(e, "espece", ""))) err.push_back(w + " : espèce inconnue en renfort « " + jget<std::string>(e, "espece", "") + " »");
     checkList(a.value("victoire", Json::array()), w + " > victoire", err);
     checkList(a.value("defaite", Json::array()), w + " > défaite", err);
   } else if (k == "question") {
@@ -203,20 +205,26 @@ void Game::execAction(const Json& a) {
   } else if (k == "recruter") {
     recruit(a["espece"].get<std::string>(), jget(a, "niveau", 1));
   } else if (k == "combat") {
-    std::vector<FighterP> foes;
-    for (auto& e : a["ennemis"]) {
+    auto make = [&](const Json& e) {
       auto f = makeFighter(e.at("espece").get<std::string>(), jget(e, "niveau", avgLevel()));
       float mult = jget(e, "pv", 1.f);
       if (mult != 1.f) f->mhp = std::max(1, int(f->mhp * mult + 1e-4f));
       f->hp = f->mhp;
       f->boss = jget(e, "boss", false);
-      foes.push_back(f);
-    }
+      return f;
+    };
+    BattleSetup setup;
+    for (auto& e : a["ennemis"]) setup.foes.push_back(make(e));
+    for (auto& e : a.value("renforts", Json::array())) setup.reserve.push_back(make(e));
+    setup.foeName = fillText(jget<std::string>(a, "nom", ""));
+    setup.boss = jget(a, "boss", false);
+    setup.canFlee = jget(a, "fuite", true);
+    setup.canCapture = jget(a, "capture", true);
     Json win = a.value("victoire", Json::array()), lose = a.value("defaite", Json::array());
-    startBattle(foes, jget(a, "boss", false), [this, win, lose](BattleResult r) {
+    startBattle(std::move(setup), [this, win, lose](BattleResult r) {
       if (r == BattleResult::Win) runActions(win);
       else if (r == BattleResult::Lose) runActions(lose);
-    }, jget(a, "fuite", true), jget(a, "capture", true));
+    });
   } else if (k == "question") {
     Json yes = a.value("oui", Json::array()), no = a.value("non", Json::array());
     ask(fillText(a["texte"].get<std::string>()), [this, yes] { runActions(yes); }, [this, no] { runActions(no); });

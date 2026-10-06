@@ -19,6 +19,39 @@ toutes les références existent et que chaque lieu des cartes est accessible.
 | `evenements.json` | Dialogues et événements de l'histoire |
 | `cartes/*.json` | Une carte par fichier : tuiles, bâtiments, habitants, coffres… |
 
+## Le combat
+
+**Statistiques des espèces** (`especes.json`, bloc `base`, multipliées par le
+niveau) : `pv`, `pm`, `attaque` et `defense` (coups physiques), `magie` et
+`resistance` (sorts), `vitesse`. Champs facultatifs, en pourcentage et
+indépendants du niveau : `precision` (100 par défaut), `esquive` (contre les
+coups physiques), `critique`. Une espèce peut avoir deux types
+(`"types": ["eau", "glace"]` au lieu de `"type"`), des `resistances` propres
+(`{"physique": 0.75, "magique": 1.25, "feu": 0.5}` : multiplicateurs de dégâts)
+et des `immunites` à certains états (`["poison", "sommeil"]`).
+
+**Techniques** (`techniques.json`) : `genre` vaut `physique` (Attaque contre
+Défense), `magique` (Magie contre Résistance), `soin`, `rappel` ou `statut` (pas
+de dégâts, seulement l'effet). Champs facultatifs : `precision` (%), `critique`
+(chance en plus, %), `effet` :
+
+| Effet | Exemple |
+|---|---|
+| Infliger un état | `{"statut": "poison", "chance": 30}` (`poison`, `brulure`, `paralysie`, `sommeil`) |
+| Bonus ou malus | `{"stat": "defense", "niveaux": -1}` (`attaque`, `defense`, `magie`, `resistance`, `vitesse`) |
+| Sur le lanceur | ajouter `"sur": "lanceur"` |
+| Guérir les états | `{"guerison": true}` |
+
+Un type peut rendre insensible à un état (`types.json`, `"immunites"`). Les
+valeurs générales (critiques, effet d'un bonus, dégâts du poison…) sont dans
+`regles.json`, sections `combat` et `etats`.
+
+**Adversaires** : l'action `combat` accepte `nom` (« Le braconnier vous défie ! »)
+et `renforts`, une liste d'ennemis qui entrent un par un quand un adversaire
+tombe. Un habitant avec `"vue": 3` repère le joueur jusqu'à 3 cases devant lui
+et lance son événement tout seul, tant que le drapeau `vue_jusqua` n'est pas
+posé (voir le braconnier dans `cartes/vallee.json`).
+
 ## Rappels sur le format JSON
 
 - Les textes sont entre guillemets droits : `"Bonjour !"`.
@@ -53,7 +86,7 @@ page dont la condition `si` est vraie.
 | `or` | Ajoute ou retire de l'or | `quantite` (négative pour payer) |
 | `drapeau` | Retient qu'un événement a eu lieu | `nom`, `valeur` (false pour l'effacer) |
 | `recruter` | Un personnage rejoint l'équipe | `espece`, `niveau` |
-| `combat` | Lance un combat | `ennemis` (1 à 3 : `espece`, `niveau`, `pv` multiplicateur, `boss`), `boss`, `fuite`, `capture`, `victoire`, `defaite` |
+| `combat` | Lance un combat | `ennemis` (1 à 3 : `espece`, `niveau`, `pv` multiplicateur, `boss`), `renforts`, `nom`, `boss`, `fuite`, `capture`, `victoire`, `defaite` |
 | `question` | Question Oui / Non | `texte`, `oui`, `non` |
 | `si` | Condition | `condition`, `alors`, `sinon` |
 | `soigner` | Soigne l'équipe | `pv`, `pm` (true par défaut) |

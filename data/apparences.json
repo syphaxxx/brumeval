@@ -98,5 +98,15 @@
     "bas": "#2f3f4f",
     "coiffe": "capuche",
     "arme": "aucune"
+  },
+  {
+    "id": "braconnier",
+    "nom": "Braconnier",
+    "cheveux": "#3a2a1e",
+    "peau": "#d9a47a",
+    "haut": "#5a6b3a",
+    "bas": "#3d3a36",
+    "coiffe": "capuche",
+    "arme": "dague"
   }
 ]

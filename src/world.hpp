@@ -37,6 +37,8 @@ struct Npc {
   std::string event;               // vide = simple dialogue ; sinon événement (data/evenements.json)
   std::vector<std::string> lines;  // dialogue simple
   std::string hideIf;              // caché quand ce drapeau est posé
+  int sight = 0;                   // dresseur : repère le joueur à cette distance devant lui
+  std::string sightUntil;          // … tant que ce drapeau n'est pas posé
 };
 
 struct Chest {
