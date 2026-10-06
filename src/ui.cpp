@@ -26,6 +26,18 @@ void Script::push(Step s) {
 void Script::say(const std::string& text, float autoSec) { push({Msg, text, nullptr, autoSec}); }
 void Script::call(std::function<void()> fn) { push({Call, "", std::move(fn), 0}); }
 void Script::wait(float sec) { push({Wait, "", nullptr, sec}); }
+void Script::runNow(const std::function<void()>& fn) {
+  if (collecting_) {  // déjà dans un appel : les étapes seront insérées juste après lui
+    if (fn) fn();
+    return;
+  }
+  collecting_ = true;
+  pending_.clear();
+  if (fn) fn();
+  collecting_ = false;
+  for (auto it = pending_.rbegin(); it != pending_.rend(); ++it) q_.push_front(std::move(*it));
+  pending_.clear();
+}
 
 static int countChars(const std::string& s) {
   int n = 0;

@@ -12,6 +12,9 @@
 class Game;
 enum class BattleResult;
 
+// Chance de capturer f avec une lanterne de multiplicateur mult (règles : capture)
+float captureChance(const Fighter& f, float mult);
+
 class Battle {
  public:
   Battle(Game& game, std::vector<FighterP> foes, bool boss, Theme bg, bool canFlee, bool canCapture);

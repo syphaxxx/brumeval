@@ -1,0 +1,249 @@
+{
+  "debut": {
+    "actions": [
+      {"action": "dire", "texte": "Ce matin encore, une brume épaisse a recouvert la vallée de Brumeval."},
+      {"action": "dire", "texte": "Elle rend les créatures sauvages. Lior, apprenti gardien, part avec {compagnon} en trouver la source."},
+      {"action": "dire", "texte": "Entrée : parler et valider. Échap : menu. Flèches ou ZQSD : se déplacer."},
+      {"action": "dire", "texte": "Les hautes herbes cachent des créatures. Capturez-les avec des lanternes pour agrandir l'équipe !"}
+    ]
+  },
+  "fin": {
+    "actions": [
+      {"action": "dire", "texte": "Ignarok rugit une dernière fois, puis le volcan se tait."},
+      {"action": "dire", "texte": "La lave refroidit. Sur Forgeroc, le ciel redevient bleu pour la première fois depuis des années."},
+      {"action": "dire", "texte": "Lior et ses compagnons ont ramené la paix à Brumeval et aux Monts Cendrelune."},
+      {"action": "fin"}
+    ]
+  },
+  "ancien": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "boss1"},
+        "actions": [
+          {"action": "dire", "texte": "Ancien : Cette brume n'est pas naturelle. Elle vient du gardien Sylvarque, qui bloque le col à l'est."},
+          {"action": "dire", "texte": "Ancien : Il est accompagné de Brumelins. Renforcez votre équipe avant de l'affronter."},
+          {"action": "dire", "texte": "Ancien : Et passez voir Maëlle, à la chapelle. Sa magie de Lumière vous serait précieuse."}
+        ]
+      },
+      {
+        "actions": [
+          {"action": "dire", "texte": "Ancien : La brume s'est levée ! Le col mène aux Monts Cendrelune, où gronde un volcan."},
+          {"action": "dire", "texte": "Ancien : Là-bas, la ville de Forgeroc pourra vous accueillir."}
+        ]
+      }
+    ]
+  },
+  "maelle": {
+    "pages": [
+      {
+        "si": {"objet": "herbe"},
+        "actions": [
+          {"action": "retirer", "objet": "herbe"},
+          {"action": "dire", "texte": "Maëlle : L'herbe lunaire ! Merci, je vais pouvoir terminer mon remède."},
+          {"action": "dire", "texte": "Maëlle : Laissez-moi vous accompagner. Ma magie de Lumière vous protégera."},
+          {"action": "recruter", "espece": "maelle", "niveau": 6},
+          {"action": "dire", "texte": "Maëlle connaît Soin et Lumière. En combat, choisissez « Magie »."}
+        ]
+      },
+      {
+        "actions": [
+          {"action": "dire", "texte": "Maëlle : Bonjour, je suis Maëlle, la mage de la chapelle."},
+          {"action": "dire", "texte": "Maëlle : J'aimerais combattre la brume avec vous, mais je dois d'abord finir un remède pour le village."},
+          {"action": "dire", "texte": "Maëlle : Il me manque une herbe lunaire. Elle pousse tout au fond du Bois Murmurant, au sud-ouest."}
+        ]
+      }
+    ]
+  },
+  "pecheur": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "pecheur"},
+        "actions": [
+          {"action": "drapeau", "nom": "pecheur"},
+          {"action": "dire", "texte": "Pêcheur : Rien ne mord avec cette brume… Tenez, j'ai repêché ces plumes ce matin."},
+          {"action": "donner", "objet": "plume", "quantite": 2}
+        ]
+      },
+      {
+        "actions": [
+          {"action": "dire", "texte": "Pêcheur : Le lac est calme. Un jour, la brume partira, et les poissons reviendront."}
+        ]
+      }
+    ]
+  },
+  "garde_col": {
+    "pages": [
+      {
+        "si": {"drapeau": "boss1"},
+        "actions": [{"action": "dire", "texte": "Garde : Le col est libre ! Les Monts Cendrelune vous attendent de l'autre côté."}]
+      },
+      {
+        "actions": [
+          {"action": "dire", "texte": "Garde : Halte ! Le gardien Sylvarque bloque le col, accompagné de deux Brumelins."},
+          {"action": "dire", "texte": "Garde : Il est de type Ombre et de niveau 12. La Lumière le blesse beaucoup."}
+        ]
+      }
+    ]
+  },
+  "brann": {
+    "actions": [
+      {"action": "dire", "texte": "Brann : Alors c'est vous qui avez chassé la brume de la vallée ?"},
+      {"action": "dire", "texte": "Brann : Ignarok, le monstre du volcan, menace Forgeroc. Je veux bien vous aider…"},
+      {"action": "dire", "texte": "Brann : … mais seulement si vous me battez en duel !"},
+      {
+        "action": "question",
+        "texte": "Affronter Brann en duel ?",
+        "oui": [
+          {
+            "action": "combat",
+            "ennemis": [{"espece": "brann", "niveau": 14, "pv": 2.5, "boss": true}],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "dire", "texte": "Brann : Ha ! Belle bagarre. Vous avez gagné un compagnon."},
+              {"action": "recruter", "espece": "brann", "niveau": 14}
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "garde_volcan": {
+    "pages": [
+      {"si": {"drapeau": "boss2"}, "actions": [{"action": "dire", "texte": "Garde : Le volcan s'est calmé. Merci, héros !"}]},
+      {
+        "actions": [
+          {"action": "dire", "texte": "Garde : Le cratère est au bout de ce chemin. Ignarok y règne, entouré de Tisonnels."},
+          {"action": "dire", "texte": "Garde : C'est une créature de Feu de niveau 23. L'Eau est sa faiblesse."}
+        ]
+      }
+    ]
+  },
+  "isra": {
+    "actions": [
+      {"action": "dire", "texte": "Isra : Vous avez abattu le Golem ? J'étais coincée ici depuis des jours !"},
+      {"action": "dire", "texte": "Isra : Je suis Isra, mage noire. Feu, Givre, Foudre… je maîtrise les éléments."},
+      {"action": "dire", "texte": "Isra : Si vous allez au volcan, comptez sur moi. Ignarok ne supportera pas mon Givre."},
+      {"action": "recruter", "espece": "isra", "niveau": 15}
+    ]
+  },
+  "sylvarque": {
+    "actions": [
+      {"action": "dire", "texte": "Une silhouette immense se dresse dans la brume. Les yeux de Sylvarque s'allument…"},
+      {
+        "action": "question",
+        "texte": "Engager le combat ?",
+        "oui": [
+          {
+            "action": "combat",
+            "ennemis": [
+              {"espece": "brumelin", "niveau": 9},
+              {"espece": "sylvarque", "niveau": 12, "pv": 3, "boss": true},
+              {"espece": "brumelin", "niveau": 9}
+            ],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "boss1"},
+              {"action": "dire", "texte": "Sylvarque se dissout dans un souffle de vent. La brume se lève sur toute la vallée !"},
+              {"action": "dire", "texte": "Le col de la Brume est ouvert. Les Monts Cendrelune vous attendent à l'est."}
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "golem": {
+    "actions": [
+      {"action": "dire", "texte": "Un amas de roches noires se redresse : le Golem de suie barre le passage !"},
+      {
+        "action": "question",
+        "texte": "Engager le combat ?",
+        "oui": [
+          {
+            "action": "combat",
+            "ennemis": [{"espece": "golem", "niveau": 16, "pv": 3, "boss": true}],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "golem"},
+              {"action": "dire", "texte": "Le Golem s'effondre en un tas de cailloux. Une voix vous appelle au fond de la grotte…"}
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "ignarok": {
+    "actions": [
+      {"action": "dire", "texte": "Le magma bouillonne. Ignarok, le cœur du volcan, ouvre les yeux."},
+      {
+        "action": "question",
+        "texte": "Engager le combat ?",
+        "oui": [
+          {
+            "action": "combat",
+            "ennemis": [
+              {"espece": "tisonnel", "niveau": 19},
+              {"espece": "ignarok", "niveau": 23, "pv": 4, "boss": true},
+              {"espece": "tisonnel", "niveau": 19}
+            ],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [{"action": "drapeau", "nom": "boss2"}, {"action": "evenement", "id": "fin"}]
+          }
+        ]
+      }
+    ]
+  },
+  "soin": {
+    "actions": [
+      {"action": "soigner"},
+      {"action": "reveil"},
+      {"action": "dire", "texte": "Guérisseuse : Reposez-vous… Voilà, toute votre équipe est en pleine forme !"}
+    ]
+  },
+  "boutique1": {"actions": [{"action": "boutique", "objets": ["potion", "ether", "plume", "lanterne"]}]},
+  "boutique2": {
+    "actions": [{"action": "boutique", "objets": ["potion", "superpotion", "ether", "plume", "lanterne", "lanterne_argent"]}]
+  },
+  "auberge": {
+    "actions": [
+      {"action": "dire", "texte": "Aubergiste : Une nuit ici coûte 20 pièces d'or. Le repos rend tous les PV et PM."},
+      {
+        "action": "question",
+        "texte": "Passer la nuit (20 or) ?",
+        "oui": [
+          {
+            "action": "si",
+            "condition": {"or_min": 20},
+            "alors": [
+              {"action": "or", "quantite": -20},
+              {"action": "soigner"},
+              {"action": "reveil"},
+              {"action": "dire", "texte": "Vous dormez d'un sommeil profond… L'équipe est en pleine forme !"}
+            ],
+            "sinon": [{"action": "dire", "texte": "Aubergiste : Vous n'avez pas assez d'or."}]
+          }
+        ]
+      }
+    ]
+  },
+  "chapelle": {
+    "actions": [
+      {"action": "soigner", "pv": false},
+      {"action": "dire", "texte": "Une douce lumière emplit la chapelle. Les PM de toute l'équipe sont restaurés."}
+    ]
+  },
+  "forge": {
+    "pages": [
+      {"si": {"drapeau": "brann"}, "actions": [{"action": "dire", "texte": "L'enclume est encore chaude. Brann y forgeait sa hache."}]},
+      {"actions": [{"action": "dire", "texte": "La forge est fermée. Brann se tient juste à côté."}]}
+    ]
+  },
+  "maison": {"actions": [{"action": "dire", "texte": "Personne ne répond."}]}
+}

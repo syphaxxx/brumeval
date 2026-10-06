@@ -26,6 +26,9 @@ class Script {
   void say(const std::string& text, float autoSec = 0);  // autoSec = 0 : attendre une touche
   void call(std::function<void()> fn);
   void wait(float sec);
+  // Exécute fn tout de suite ; les étapes qu'il ajoute passent avant celles déjà en attente
+  // (utile après un choix Oui/Non ou à la fin d'un combat).
+  void runNow(const std::function<void()>& fn);
   void halt() { halted_ = true; }    // en pause jusqu'à resume() (ex. un menu de choix)
   void resume() { halted_ = false; }
   bool busy() const { return !q_.empty() || halted_; }

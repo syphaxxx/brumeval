@@ -5,6 +5,7 @@
 #include <filesystem>
 
 #include "battle.hpp"
+#include "events.hpp"
 #include "game.hpp"
 
 int Game::selfTest(SDL_Surface* target, const std::string& out) {
@@ -35,24 +36,21 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     }
   };
 
-  // --- Données ---
-  try {
-    for (auto& m : maps()) {
-      for (auto& z : m.zones)
-        for (auto& p : z.pool) species(p);
-      for (auto& c : m.chests)
-        if (!c.item.empty()) item(c.item);
-      for (auto& b : m.bosses) species(b.id);
-      for (auto& w : m.warps) check(w.map >= 0 && w.map < (int)maps().size(), "passage valide sur " + m.name);
-    }
-    for (auto& id : {"lior", "maelle", "brann", "isra", "braisenard", "gouttelin", "ronceau"}) {
-      auto f = makeFighter(id, 20);
-      moveInfo(f->S().limit);
-      for (auto& t : f->techs()) moveInfo(t);
-    }
-    check(true, "toutes les espèces, objets et techniques existent");
-  } catch (std::exception& e) {
-    check(false, e.what());
+  // --- Données (dossier data/) ---
+  std::printf("Données lues dans %s\n", dataDir().c_str());
+  auto report = [&](const std::vector<std::string>& errs, const std::string& what) {
+    for (auto& e : errs) check(false, e);
+    if (errs.empty()) check(true, what);
+  };
+  report(checkData(), "types, techniques, espèces, objets et règles cohérents");
+  report(checkMaps(), std::to_string(maps().size()) + " cartes valides, tous les lieux sont accessibles à pied");
+  report(checkEvents(), std::to_string(events().size()) + " événements valides");
+  auto mi = [](const char* id) { return std::max(0, mapIndex(id)); };
+  // Relecture : écrire puis relire une carte doit redonner la même carte
+  {
+    bool same = true;
+    for (auto& m : maps()) same = same && mapToJson(mapFromJson(mapToJson(m))) == mapToJson(m);
+    check(same, "les cartes se relisent à l'identique après écriture");
   }
 
   // --- Écran titre et début de partie ---
@@ -65,6 +63,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   run(.3f);
   snap("03_village");
   check(mode == Mode::Map && team.size() == 2, "nouvelle partie : Lior et son compagnon sur la carte");
+  check(fillText("Lior part avec {compagnon}.") == "Lior part avec Braisenard.", "les textes remplacent {compagnon} par son nom");
 
   in.menu = true;
   frame();
@@ -76,7 +75,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   panelMode_ = 0;
 
   // --- Dialogue et recrutement de Maëlle ---
-  changeMap(0, 7, 16, UP);
+  changeMap(mi("vallee"), 7, 16, UP);
   interact();
   run(1.f);
   snap("06_dialogue");
@@ -120,21 +119,21 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   skipScript();
 
   // --- Cartes ---
-  changeMap(1, 12, 34, DOWN);
+  changeMap(mi("cendrelune"), 12, 34, DOWN);
   run(.4f);
   snap("12_forgeroc");
-  changeMap(1, 46, 12, UP);
+  changeMap(mi("cendrelune"), 46, 12, UP);
   banner = 0;
   run(.2f);
   snap("13_cendrelune_nord");
-  changeMap(2, 15, 18, UP);
+  changeMap(mi("grotte"), 15, 18, UP);
   run(.4f);
   snap("14_grotte");
-  changeMap(0, 56, 32, RIGHT);
+  changeMap(mi("vallee"), 56, 32, RIGHT);
   banner = 0;
   run(.2f);
   snap("15_col_sylvarque");
-  changeMap(0, 30, 12, DOWN);
+  changeMap(mi("vallee"), 30, 12, DOWN);
   run(.2f);
   snap("16_prairie");
   shopMenu({"potion", "superpotion", "ether", "plume", "lanterne", "lanterne_argent"});
@@ -144,7 +143,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
 
   // --- Combats spéciaux (captures) ---
   team = {makeFighter("lior", 22), makeFighter("maelle", 22), makeFighter("isra", 22)};
-  changeMap(1, 48, 4, UP);
+  changeMap(mi("cendrelune"), 48, 4, UP);
   startBattle({makeFighter("tisonnel", 19), makeFighter("ignarok", 23), makeFighter("tisonnel", 19)}, true, nullptr, false, false);
   battle_->foes[1]->boss = true;
   for (int i = 0; i < 1500 && !menus.active(); i++) frame();
@@ -168,13 +167,48 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   gold = 321;
   flags = {"maelle", "boss1"};
   items = {{"potion", 7}};
-  changeMap(0, 12, 9, DOWN);
+  changeMap(mi("cendrelune"), 12, 34, DOWN);
+  flags.insert(chestFlag(0));
   bool saved = saveGame();
   team.clear();
   gold = 0;
   bool loaded = loadGame();
-  check(saved && loaded && team.size() == 2 && team[0]->lvl == 9 && gold == 321 && has("boss1") && items["potion"] == 7,
+  check(saved && loaded && team.size() == 2 && team[0]->lvl == 9 && gold == 321 && has("boss1") && items["potion"] == 7 &&
+            M().id == "cendrelune" && px == 12 && has(chestFlag(0)),
         "sauvegarde puis chargement");
+
+  // --- Événements : le pêcheur donne deux plumes une seule fois ---
+  {
+    items.clear();
+    flags.clear();
+    changeMap(mi("vallee"), 26, 38, LEFT);
+    interact();
+    skipScript();
+    interact();
+    skipScript();
+    check(items["plume"] == 2 && has("pecheur"), "événement du pêcheur (drapeau, objet donné une seule fois)");
+  }
+  // --- Événements : question puis combat, la suite passe avant le reste ---
+  {
+    team = {makeFighter("lior", 40), makeFighter("maelle", 40), makeFighter("isra", 40)};
+    flags.clear();
+    mode = Mode::Map;
+    sc.clear();
+    menus.clear();
+    runEvent("brann");
+    for (int i = 0; i < 4000 && mode != Mode::Battle; i++) {
+      in.confirm = true;  // fait défiler et répond « Oui »
+      frame();
+    }
+    bool fought = mode == Mode::Battle;
+    if (battle_) battle_->autoPlay = true;
+    for (int i = 0; i < 60 * 120 && mode == Mode::Battle; i++) {
+      in.confirm = true;
+      frame();
+    }
+    skipScript();
+    check(fought && has("brann") && team.size() == 4, "événement de Brann : question, duel, victoire puis recrutement");
+  }
 
   // --- Simulation d'équilibrage (IA simple, sans objets) ---
   std::printf("\nÉquilibrage (combats simulés, IA automatique) :\n");

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "data.hpp"
+#include "events.hpp"
 #include "gfx.hpp"
 #include "ui.hpp"
 #include "world.hpp"
@@ -43,7 +44,6 @@ class Game {
   std::map<std::string, int> items;    // inventaire
   int gold = 0;
   std::set<std::string> flags;         // progression (boss vaincus, recrues, coffres…)
-  static constexpr int MAX_TEAM = 8;
 
   void startBattle(std::vector<FighterP> foes, bool boss, std::function<void(BattleResult)> after, bool canFlee = true,
                    bool canCapture = true);
@@ -53,6 +53,12 @@ class Game {
   void healAll(bool mpToo = true);
   bool has(const std::string& f) const { return flags.count(f) > 0; }
 
+  // ---- Événements (data/evenements.json, voir events.cpp) ----
+  void runEvent(const std::string& id);
+  void runActions(const Json& list);
+  bool checkCond(const Json& c) const;
+  std::string fillText(std::string s) const;
+
  private:
   // Carte
   const MapDef& M() const { return maps()[mapId]; }
@@ -60,7 +66,7 @@ class Game {
   bool moving = false;
   float moveT = 0;
   int fromX = 0, fromY = 0, steps = 0;
-  int respawnMap = 0, respawnX = 7, respawnY = 7;
+  int respawnMap = 0, respawnX = 0, respawnY = 0;
   float banner = 0;
   std::string bannerText;
 
@@ -71,9 +77,8 @@ class Game {
   void arrive();
   void interact();
   void talk(const Npc& n);
-  void door(const Building& b);
-  void bossEvent(const BossSpot& b);
   void openChest(int idx);
+  std::string chestFlag(int idx) const;
   void changeMap(int m, int x, int y, int d);
   void encounter();
   void defeat();
@@ -90,7 +95,7 @@ class Game {
   void shopMenu(const std::vector<std::string>& stock);
   void pickMember(const std::string& title, std::function<bool(const Fighter&)> ok, std::function<void(Fighter&)> use);
   void ask(const std::string& q, std::function<void()> yes, std::function<void()> no = nullptr);
-  void ending();
+  void execAction(const Json& a);
 
   // Sauvegarde
   std::string savePath() const;

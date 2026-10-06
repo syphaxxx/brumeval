@@ -22,6 +22,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(SDL2)
 
+# --- nlohmann/json : lecture et écriture des fichiers de data/ ---
+set(JSON_Install OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(
+  json
+  URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+FetchContent_MakeAvailable(json)
+
 # --- Le jeu ---
 file(GLOB BRUMEVAL_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/*.cpp)
 # Console visible : utile pour lire les messages du mode test (--test)
@@ -31,7 +40,9 @@ target_include_directories(brumeval PRIVATE src)
 if(TARGET SDL2::SDL2main)
   target_link_libraries(brumeval PRIVATE SDL2::SDL2main)
 endif()
-target_link_libraries(brumeval PRIVATE SDL2::SDL2-static)
+target_link_libraries(brumeval PRIVATE SDL2::SDL2-static nlohmann_json::nlohmann_json)
+# Dossier data/ du projet : utilisé si on ne le trouve pas à côté du programme
+target_compile_definitions(brumeval PRIVATE BRUMEVAL_DATA_DIR="${CMAKE_SOURCE_DIR}/data")
 
 if(MSVC)
   # /utf-8 : indispensable pour les accents dans les textes du jeu

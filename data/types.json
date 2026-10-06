@@ -1,0 +1,19 @@
+{
+  "types": [
+    {"id": "normal", "nom": "Normal", "couleur": "#c8c4b8"},
+    {"id": "feu", "nom": "Feu", "couleur": "#e8743b"},
+    {"id": "eau", "nom": "Eau", "couleur": "#3f8fd9"},
+    {"id": "plante", "nom": "Plante", "couleur": "#4ea35a"},
+    {"id": "foudre", "nom": "Foudre", "couleur": "#e8c33a"},
+    {"id": "ombre", "nom": "Ombre", "couleur": "#7a6fb0"},
+    {"id": "lumiere", "nom": "Lumière", "couleur": "#ffe38a"}
+  ],
+  "efficacite": {
+    "feu": {"feu": 0.5, "eau": 0.5, "plante": 2.0},
+    "eau": {"feu": 2.0, "eau": 0.5, "plante": 0.5},
+    "plante": {"feu": 0.5, "eau": 2.0, "plante": 0.5},
+    "foudre": {"eau": 2.0, "plante": 0.5, "foudre": 0.5},
+    "ombre": {"lumiere": 2.0},
+    "lumiere": {"ombre": 2.0}
+  }
+}

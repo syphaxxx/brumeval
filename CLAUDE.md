@@ -41,12 +41,13 @@ après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
 
 | Fichier | Rôle |
 |---|---|
-| `main.cpp` | Fenêtre SDL, boucle principale, plein écran (F11), option `--test` |
-| `game.hpp/.cpp` | Écran titre, exploration, dialogues des habitants, menus (pause, équipe, objets, magie, boutique), sauvegarde, dessin de la carte |
+| `main.cpp` | Fenêtre SDL, boucle principale, plein écran (F11), option `--test`, chargement de data/ |
+| `game.hpp/.cpp` | Écran titre, exploration, menus (pause, équipe, objets, magie, boutique), sauvegarde, dessin de la carte |
 | `battle.hpp/.cpp` | Combat ATB : jauges, menus de commande, dégâts, sorts, objets, capture, Limites, victoire |
-| `data.hpp/.cpp` | Types et efficacités, techniques et sorts, espèces (héros et créatures), objets, apparence des humains, formules de stats et d'expérience |
-| `world.hpp` | Structures des cartes (tuiles, bâtiments, PNJ, coffres, panneaux, passages, zones, boss) et légende des tuiles |
-| `world_data.cpp` | **Généré** par `tools/generate_world.py` : les 3 cartes et leur contenu |
+| `store.hpp/.cpp` | Dossier data/ : recherche, lecture et écriture JSON (nlohmann/json, `Json` = `ordered_json`) |
+| `data.hpp/.cpp` | Chargement des types, techniques, espèces, objets, apparences et règles (`Rules`, `ruleFields()`), formules de stats et d'expérience |
+| `world.hpp/.cpp` | Structures des cartes, lecture/écriture de data/cartes/, vérification d'accessibilité (`checkMaps`) |
+| `events.hpp/.cpp` | Événements de l'histoire : chargement, vérification et exécution des actions (`Game::runEvent`) |
 | `sprites.hpp/.cpp` | Dessin en code des créatures, humains, tuiles, bâtiments (aucune image externe) |
 | `gfx.hpp/.cpp` | Primitives de dessin (ellipses, polygones, dégradés), police pixel intégrée avec accents, fenêtres bleues |
 | `ui.hpp/.cpp` | Clavier, `Script` (file de messages/actions) et `MenuStack` (menus à curseur) |
@@ -69,17 +70,28 @@ après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
   "Brumeval")` (sous Windows : `%APPDATA%\Brumeval\Brumeval\`).
 - Police : `gfx.cpp`, fonction `buildFont()`. Un caractère absent s'affiche « ? » ;
   ajoute son dessin si tu utilises un nouveau symbole.
+- Données : tout le contenu est dans `data/` (voir `data/LISEZMOI.md`), chargé au
+  démarrage par `loadData()`, `loadMaps()`, `loadEvents()`. Aucune donnée de jeu
+  ne doit être écrite en dur dans le code : ajouter un champ au JSON et au
+  chargeur. Les cartes sont désignées par leur identifiant (`MapDef::id`), pas
+  par leur numéro (ordre alphabétique des fichiers).
+- Événements : habitants (`evenement`), portes des bâtiments (genre ou
+  `evenement`) et boss lancent un événement de `data/evenements.json`. Les
+  actions sont exécutées par `Game::execAction` (events.cpp) via le `Script` ;
+  `Script::runNow` fait passer la suite (réponse à une question, fin de combat)
+  avant les étapes déjà en attente.
+- Piège C++ : ne jamais écrire `for (auto& x : j.value(...).items())` (objet
+  temporaire détruit avant la boucle) ; ranger d'abord le JSON dans une variable.
 - Sous MSVC, l'option `/utf-8` (déjà dans CMakeLists.txt) est indispensable pour
   les accents. `/wd4244` coupe les centaines d'avertissements « int en float »
   des appels de dessin ; garder 0 avertissement de compilation.
 
-### Modifier les cartes
+### Modifier les données
 
-Édite `tools/generate_world.py` (fonctions `vallee()`, `cendres()`, `grotte()`),
-puis régénère : `python3 tools/generate_world.py src/world_data.cpp`. Le script
-vérifie que chaque porte, PNJ, coffre, panneau, passage et boss est accessible et
-échoue sinon. Modifier `world_data.cpp` à la main reste possible (garder des
-lignes de même longueur), mais la vérification d'accessibilité est alors perdue.
+Modifier les fichiers de `data/` puis relancer le jeu (pas besoin de recompiler).
+Le mode test vérifie les références et que chaque porte, habitant, coffre,
+panneau, passage et boss est accessible à pied (`checkMaps`). Les fichiers sont
+réécrits par `writeJson` (petites listes sur une ligne) : garder ce format.
 
 ## Contenu actuel
 

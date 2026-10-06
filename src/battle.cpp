@@ -72,7 +72,7 @@ void Battle::tickATB(float dt) {
   std::vector<FighterP> all = alive(allies);
   for (auto& e : alive(foes)) all.push_back(e);
   for (auto& f : all) {
-    f->atb += dt * (20 + f->spd) * 1.1f;
+    f->atb += dt * float((rules().atbBase + f->spd) * rules().atbSpeed);
     if (f->atb >= 100) {
       f->atb = 100;
       if (isAlly(f)) {
@@ -115,12 +115,14 @@ void Battle::command(FighterP a) {
                          }
                          G.menus.push(t);
                        }});
-  const Move& lim = moveInfo(a->S().limit);
-  m.items.push_back({"Limite", "", a->lim >= 100 ? lim.name + " : technique ultime !" : "La jauge Limite se remplit quand on reçoit des coups.",
-                     a->lim >= 100, [this, a, lim] {
-                       G.menus.clear();
-                       useMove(a, lim.id, lim.target == Target::AllAllies ? alive(allies) : alive(foes), true);
-                     }});
+  if (!a->S().limit.empty()) {
+    const Move& lim = moveInfo(a->S().limit);
+    m.items.push_back({"Limite", "", a->lim >= 100 ? lim.name + " : technique ultime !" : "La jauge Limite se remplit quand on reçoit des coups.",
+                       a->lim >= 100, [this, a, lim] {
+                         G.menus.clear();
+                         useMove(a, lim.id, lim.target == Target::AllAllies ? alive(allies) : alive(foes), true);
+                       }});
+  }
   m.items.push_back({"Objet", "", "Utiliser un objet du sac.", true, [this, a] {
                        Menu t;
                        t.title = "Objets";
@@ -130,20 +132,18 @@ void Battle::command(FighterP a) {
                          if (!d.battle || n <= 0) continue;
                          std::string id = d.id;
                          bool ok = true;
-                         bool lantern = id.rfind("lanterne", 0) == 0;
-                         if (lantern) ok = canCapture && (int)G.team.size() < Game::MAX_TEAM;
-                         if (id == "plume") ok = alive(allies).size() < allies.size();
+                         bool lantern = d.capture > 0;
+                         if (lantern) ok = canCapture && (int)G.team.size() < rules().maxTeam;
+                         if (d.revive) ok = alive(allies).size() < allies.size();
                          std::string help = d.desc;
                          if (lantern && !canCapture) help = "Impossible de capturer ici.";
-                         else if (lantern && !ok) help = "L'équipe est complète (8 membres).";
+                         else if (lantern && !ok) help = "L'équipe est complète (" + std::to_string(rules().maxTeam) + " membres).";
                          t.items.push_back({d.name, "×" + std::to_string(n), help, ok, [this, a, id, lantern] {
                                               if (lantern) {
-                                                float mult = id == "lanterne_argent" ? 1.6f : 1.f;
-                                                pickFoe("Capturer", [mult](const Fighter& f) {
-                                                  float c = std::min(.95f, (.15f + .75f * (1 - float(f.hp) / f.mhp)) * mult);
-                                                  return "Chance de capture : " + std::to_string(int(c * 100)) + " %";
+                                                pickFoe("Capturer", [id](const Fighter& f) {
+                                                  return "Chance de capture : " + std::to_string(int(captureChance(f, item(id).capture) * 100)) + " %";
                                                 }, [this, a, id](FighterP t) { useItem(a, id, t); });
-                                              } else pickAlly("Sur qui ?", id == "plume", [this, a, id](FighterP t) { useItem(a, id, t); });
+                                              } else pickAlly("Sur qui ?", item(id).revive > 0, [this, a, id](FighterP t) { useItem(a, id, t); });
                                             }});
                        }
                        if (t.items.empty()) t.items.push_back({"(sac vide)", "", "", false, nullptr});
@@ -224,7 +224,7 @@ void Battle::moveTarget(FighterP a, const std::string& id) {
 
 void Battle::autoCommand(FighterP a) {
   actor = a;
-  if (a->lim >= 100) {
+  if (a->lim >= 100 && !a->S().limit.empty()) {
     const Move& lim = moveInfo(a->S().limit);
     useMove(a, lim.id, lim.target == Target::AllAllies ? alive(allies) : alive(foes), true);
     return;
@@ -253,6 +253,11 @@ void Battle::autoCommand(FighterP a) {
 // ---------------------------------------------------------------------------
 // Résolution des actions
 // ---------------------------------------------------------------------------
+float captureChance(const Fighter& f, float mult) {
+  const Rules& R = rules();
+  return std::min(float(R.capMax), float(R.capBase + R.capHp * (1 - double(f.hp) / f.mhp)) * mult);
+}
+
 void Battle::enemyTurn(FighterP e) {
   actor = e;
   auto techs = e->techs();
@@ -271,15 +276,17 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m) {
   float A = float(magic ? a->mag : a->atk);
   float D = magic ? (d->def + d->mag) / 2.f : float(d->def);
   float eff = typeEff(m.type, d->S().type);
-  float stab = m.type == a->S().type ? 1.25f : 1.f;
-  int dmg = std::max(1, int(((2 * a->lvl / 5.f + 2) * m.power * A / std::max(1.f, D) / 40.f + 2) * stab * eff * (.85f + frand() * .15f)));
+  const Rules& R = rules();
+  float stab = m.type == a->S().type ? float(R.stab) : 1.f;
+  float spread = float(R.spreadMin) + frand() * float(1 - R.spreadMin);
+  int dmg = std::max(1, int(((2 * a->lvl / 5.f + 2) * m.power * A / std::max(1.f, D) / float(R.dmgDivisor) + 2) * stab * eff * spread));
   d->hp = std::max(0, d->hp - dmg);
   blink = d;
   blinkT = G.time;
   pop(d, std::to_string(dmg), eff > 1 ? GOLD : eff < 1 ? GREY : WHITE);
   if (eff > 1) pop(d, "Efficace !", GOLD, 11);
   else if (eff < 1) pop(d, "Résiste", GREY, 11);
-  if (isAlly(d)) d->lim = std::min(100.f, d->lim + dmg * 110.f / d->mhp);
+  if (isAlly(d)) d->lim = std::min(100.f, d->lim + dmg * float(R.limitGain) / d->mhp);
   if (!d->alive() && !isAlly(d)) defeated.push_back(d);
   return dmg;
 }
@@ -330,22 +337,25 @@ void Battle::useItem(FighterP a, const std::string& id, FighterP t) {
   const ItemDef& d = item(id);
   sc.say(a->name() + " utilise : " + d.name, .7f);
   sc.call([this, a, id, t] {
-    if (id == "potion" || id == "superpotion") {
-      int amt = std::min(id == "potion" ? 40 : 120, t->mhp - t->hp);
-      t->hp += amt;
-      pop(t, "+" + std::to_string(amt), GREEN);
-    } else if (id == "ether") {
-      int amt = std::min(25, t->mmp - t->mp);
-      t->mp += amt;
-      pop(t, "+" + std::to_string(amt) + " PM", BLUE);
-    } else if (id == "plume") {
-      t->hp = std::max(1, t->mhp / 2);
+    const ItemDef& d = item(id);
+    if (d.revive) {
+      t->hp = std::max(1, t->mhp * d.revive / 100);
       t->atb = 0;
       pop(t, "+" + std::to_string(t->hp), GREEN);
       sc.say(t->name() + " se relève !", .9f);
+    } else if (d.capture <= 0) {
+      if (d.healHp) {
+        int amt = std::min(d.healHp, t->mhp - t->hp);
+        t->hp += amt;
+        pop(t, "+" + std::to_string(amt), GREEN);
+      }
+      if (d.healMp) {
+        int amt = std::min(d.healMp, t->mmp - t->mp);
+        t->mp += amt;
+        pop(t, "+" + std::to_string(amt) + " PM", BLUE, d.healHp ? 11.f : 0.f);
+      }
     } else {
-      float mult = id == "lanterne_argent" ? 1.6f : 1.f;
-      float c = std::min(.95f, (.15f + .75f * (1 - float(t->hp) / t->mhp)) * mult);
+      float c = captureChance(*t, d.capture);
       flashT = G.time;
       flashCol = rgb(0xfff0a0);
       if (frand() < c) {
@@ -356,7 +366,7 @@ void Battle::useItem(FighterP a, const std::string& id, FighterP t) {
         t->lim = 0;
         t->atb = 0;
         G.team.push_back(t);
-        sc.say("Capturé ! " + t->name() + " rejoint l'équipe" + (G.team.size() > 3 ? " (en réserve)." : "."), 1.5f);
+        sc.say("Capturé ! " + t->name() + " rejoint l'équipe" + ((int)G.team.size() > rules().frontSize ? " (en réserve)." : "."), 1.5f);
       } else sc.say(t->name() + " s'échappe de la lumière !", 1.0f);
     }
   });
@@ -382,7 +392,7 @@ void Battle::swapIn(FighterP a, FighterP r) {
 void Battle::tryFlee(FighterP a) {
   G.menus.clear();
   sc.call([this, a] {
-    if (frand() < .7f) {
+    if (frand() < rules().flee) {
       sc.say("L'équipe prend la fuite !", 1.0f);
       sc.call([this] { finish(BattleResult::Fled); });
     } else {
@@ -405,14 +415,15 @@ void Battle::afterAction(FighterP a) {
 
 void Battle::victory() {
   ending_ = true;
+  const Rules& R = rules();
   int total = 0, goldGain = 0;
   for (auto& d : defeated) {
-    total += d->lvl * 9 * (d->boss ? 3 : 1);
-    goldGain += d->lvl * 4 * (d->boss ? 8 : 1);
+    total += d->lvl * R.xpPerLevel * (d->boss ? R.xpBoss : 1);
+    goldGain += d->lvl * R.goldPerLevel * (d->boss ? R.goldBoss : 1);
   }
   sc.say("Victoire !", .9f);
   if (total > 0) {
-    int share = total * 7 / 10, res = total * 3 / 10;
+    int share = int(total * R.xpFront + 1e-6), res = int(total * R.xpReserve + 1e-6);
     sc.say("Chaque combattant gagne " + std::to_string(share) + " points d'expérience.", 1.4f);
     sc.call([this, share, res] {
       for (auto& a : alive(allies))
@@ -426,13 +437,15 @@ void Battle::victory() {
     sc.say("Vous trouvez " + std::to_string(goldGain) + " pièces d'or.", 1.1f);
   }
   if (!boss) {
-    float r = frand();
-    if (r < .25f) {
-      G.items["potion"]++;
-      sc.say("Vous ramassez une Potion.", 1.0f);
-    } else if (r < .33f) {
-      G.items["ether"]++;
-      sc.say("Vous ramassez un Éther.", 1.0f);
+    // Un seul objet au plus : les chances s'additionnent dans l'ordre de la liste
+    float r = frand(), acc = 0;
+    for (auto& [id, chance] : R.drops) {
+      acc += float(chance);
+      if (r < acc) {
+        G.items[id]++;
+        sc.say("Vous ramassez : " + item(id).name + ".", 1.0f);
+        break;
+      }
     }
   }
   sc.call([this] { finish(BattleResult::Win); });

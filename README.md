@@ -56,6 +56,7 @@ l'équilibrage et enregistre des captures d'écran dans `captures/`.
 ## Organisation
 
 - `src/` : le code du jeu (voir `CLAUDE.md` pour le rôle de chaque fichier)
-- `tools/generate_world.py` : génère les cartes (`src/world_data.cpp`) et vérifie
-  que tout est accessible
+- `data/` : tout le contenu du jeu (créatures, techniques, objets, cartes,
+  dialogues, règles) en fichiers JSON modifiables, lus à chaque démarrage. Voir
+  `data/LISEZMOI.md`.
 - La sauvegarde est écrite dans `%APPDATA%\Brumeval\Brumeval\sauvegarde.txt`
