@@ -106,16 +106,19 @@ void Game::onText(const char* utf8) {
   if (utf8Len(textValue_) > textMax_) textValue_ = utf8Prefix(textValue_, textMax_);
 }
 void Game::drawTextEdit() {
-  int lines = std::max(1, (int)Gfx::wrap(textValue_ + "_", 288).size());
-  int h = 40 + lines * 11;
+  auto title = Gfx::wrap(textTitle_, 284);
+  int lines = std::max(1, (int)Gfx::wrap(textValue_ + "_", 284).size());
+  int top = 8 + 11 * (int)title.size();  // place du titre
+  int h = top + 22 + lines * 11;
   int y = 120 - h / 2;
-  g.rect(0, 0, SCREEN_W, SCREEN_H, rgb(0x000010, 120));
+  g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0x000010, 120));
+  g.newLayer();  // fenêtre modale : le reste est assombri derrière
   g.window(10, y, 300, h);
-  g.text(18, y + 5, textTitle_, rgb(0xffd34d));
-  auto wl = Gfx::wrap(textValue_, 288);
+  for (size_t i = 0; i < title.size(); i++) g.text(18, y + 5 + i * 11, title[i], rgb(0xffd34d));
+  auto wl = Gfx::wrap(textValue_, 284);
   if (wl.empty()) wl.push_back("");
-  for (size_t i = 0; i < wl.size(); i++) g.text(18, y + 19 + i * 11, wl[i], WHITE);
-  if (int(time * 3) % 2 == 0) g.rect(18 + Gfx::textW(wl.back()), y + 19 + (wl.size() - 1) * 11 + 1, 5, 9, rgb(0xffd34d));
+  for (size_t i = 0; i < wl.size(); i++) g.text(18, y + top + i * 11, wl[i], WHITE);
+  if (int(time * 3) % 2 == 0) g.rect(18 + Gfx::textW(wl.back()), y + top + (wl.size() - 1) * 11 + 1, 5, 9, rgb(0xffd34d));
   g.text(160, y + h - 13, "Entrée : valider · Échap : annuler · " + std::to_string(utf8Len(textValue_)) + "/" + std::to_string(textMax_),
          MUTED, 1);
 }
@@ -426,7 +429,7 @@ void Game::ask(const std::string& q, std::function<void()> yes, std::function<vo
   askText_ = q;
   sc.halt();
   Menu m;
-  m.x = 236, m.y = 128, m.w = 76, m.rows = 2;
+  m.x = 236, m.y = 152, m.w = 76, m.rows = 2;  // sous la fenêtre de la question (y 84 à 150)
   auto close = [this] {
     askText_.clear();
     menus.clear();
@@ -453,7 +456,7 @@ void Game::titleMenu() {
   editorTest_ = storyTest_ = false;
   menus.clear();
   Menu m;
-  m.x = 110, m.y = 140, m.w = 100, m.rows = 4, m.cancelable = false;
+  m.x = 102, m.y = 140, m.w = 116, m.rows = 4, m.cancelable = false;
   m.items.push_back({"Nouvelle partie", "", "", true, [this] { starterMenu(); }});
   bool can = saveExists();
   m.items.push_back({"Continuer", "", "", can, [this] {
@@ -531,12 +534,12 @@ void Game::pauseMenu() {
   Menu m;
   m.x = 8, m.y = 8, m.w = 100, m.rows = 8;
   if (editorTest_ && editor_)
-    m.items.push_back({"Retour à l'éditeur", "", "Revenir à l'éditeur de cartes, à l'endroit où vous êtes.", true, [this] {
+    m.items.push_back({"Fin du test", "", "Revenir à l'éditeur de cartes, à l'endroit où vous êtes.", true, [this] {
                          panelMode_ = 0;
                          editor_->returnFromTest();
                        }});
   if (storyTest_ && story_)
-    m.items.push_back({"Retour à l'éditeur", "", "Revenir à l'éditeur d'histoire.", true, [this] {
+    m.items.push_back({"Fin du test", "", "Revenir à l'éditeur d'histoire.", true, [this] {
                          panelMode_ = 0;
                          story_->returnFromTest();
                        }});
@@ -644,10 +647,15 @@ void Game::pickMember(const std::string& title, std::function<bool(const Fighter
 
 void Game::itemMenu() { itemMenuAt(0); }
 void Game::itemMenuAt(int sel) {
+  panelMode_ = 0;  // la liste prend la place du résumé de l'équipe
   Menu m;
   m.title = "Objets  ·  " + std::to_string(gold) + " or";
   m.x = 8, m.y = 8, m.w = 170, m.rows = 7;
   m.sel = sel;
+  m.onCancel = [this] {
+    panelMode_ = 1;
+    menus.pop();
+  };
   int idx = 0;
   for (auto& d : allItems()) {
     int n = items.count(d.id) ? items[d.id] : 0;
@@ -679,9 +687,14 @@ void Game::itemMenuAt(int sel) {
 }
 
 void Game::magicMenu() {
+  panelMode_ = 0;  // la liste prend la place du résumé de l'équipe
   Menu m;
   m.title = "Qui lance le sort ?";
   m.x = 8, m.y = 8, m.w = 170, m.rows = 8;
+  m.onCancel = [this] {
+    panelMode_ = 1;
+    menus.pop();
+  };
   for (auto& f : team) {
     FighterP caster = f;
     std::vector<std::string> heal;
@@ -727,6 +740,7 @@ void Game::magicMenu() {
 
 void Game::shopMenu(const std::vector<std::string>& stock) { shopMenuAt(stock, 0); }
 void Game::shopMenuAt(const std::vector<std::string>& stock, int sel) {
+  panelMode_ = 0;
   Menu m;
   m.title = "Boutique  ·  " + std::to_string(gold) + " or";
   m.x = 60, m.y = 20, m.w = 200, m.rows = 7;
@@ -884,10 +898,12 @@ void Game::draw() {
 }
 
 void Game::drawTitle() {
-  g.gradV(0, 0, SCREEN_W, SCREEN_H, rgb(0x141a3c), rgb(0x3c4278));
-  g.poly({{0, 150}, {50, 96}, {100, 136}, {160, 80}, {220, 128}, {270, 100}, {320, 126}, {320, 240}, {0, 240}}, rgb(0x262a52));
-  g.rect(0, 160, SCREEN_W, 80, rgb(0x1d2148));
-  for (int i = 0; i < 6; i++) g.ellipse(std::fmod(i * 70 + time * 18, 420.f) - 50, 112 + i * 10, 90, 7, rgb(0xe6ebff, 26));
+  float L = g.left(), W = (float)g.fullW;
+  g.gradV(L, 0, W, SCREEN_H, rgb(0x141a3c), rgb(0x3c4278));
+  g.poly({{L, 150}, {L, 120}, {0, 150}, {50, 96}, {100, 136}, {160, 80}, {220, 128}, {270, 100}, {320, 126}, {L + W, 104}, {L + W, 240}, {L, 240}},
+         rgb(0x262a52));
+  g.rect(L, 160, W, 80, rgb(0x1d2148));
+  for (int i = 0; i < 6 * W / SCREEN_W; i++) g.ellipse(L + std::fmod(i * 70 + time * 18, W + 100) - 50, 112 + (i % 6) * 10, 90, 7, rgb(0xe6ebff, 26));
   g.textBig(160, 26, "BRUMEVAL", GOLD, 4, 1);
   g.text(160, 76, "Les gardiens de la vallée", rgb(0xc9cbe0), 1);
   drawHuman(g, look(0), 144, 92, 2, DOWN, 0, false);
@@ -895,13 +911,17 @@ void Game::drawTitle() {
   drawCreature(g, "gouttelin", 232, 124, 1, false, time + .5f);
   if (menus.active()) {
     menus.draw(g, time);
-    std::string h = menus.help();
-    if (!h.empty()) {
-      g.window(20, 214, 280, 20);
-      g.text(160, 218, h, WHITE, 1);
+    auto lines = Gfx::wrap(menus.help(), 284);
+    if (!lines.empty() && !lines[0].empty()) {
+      int h = 9 + 11 * (int)lines.size();
+      g.window(14, 236 - h, 292, h);
+      for (size_t i = 0; i < lines.size(); i++) g.text(160, 236 - h + 4 + i * 11, lines[i], WHITE, 1);
     }
   }
-  g.text(316, 230, "v1.0", rgb(0x8a92b8), 2, false);
+  if (!menus.active() || menus.help().empty()) {
+    g.text(g.left() + 4, 227, "F11 : plein écran", rgb(0x8a92b8), 0, false);
+    g.text(g.right() - 4, 227, "v1.0", rgb(0x8a92b8), 2, false);
+  }
 }
 
 void Game::drawMap() {
@@ -909,11 +929,13 @@ void Game::drawMap() {
   float k = moving ? moveT : 1;
   float ppx = (fromX + (px - fromX) * k) * 16, ppy = (fromY + (py - fromY) * k) * 16;
   if (!moving) ppx = px * 16.f, ppy = py * 16.f;
-  int camX = (int)std::clamp(ppx - SCREEN_W / 2 + 8, 0.f, float(m.w() * 16 - SCREEN_W));
+  // camX : position dans la carte du bord gauche de la zone du milieu ; l'écran montre de camX + left() à camX + right()
+  float lo = -g.left(), hi = m.w() * 16 - g.right();
+  int camX = hi >= lo ? (int)std::clamp(ppx - SCREEN_W / 2 + 8, lo, hi) : (int)((m.w() * 16 - SCREEN_W) / 2);
   int camY = (int)std::clamp(ppy - SCREEN_H / 2 + 8, 0.f, float(m.h() * 16 - SCREEN_H));
-  int tx0 = camX / 16, ty0 = camY / 16;
+  int tx0 = std::max(0, (int)std::floor((camX + g.left()) / 16)), tx1 = (int)((camX + g.right()) / 16), ty0 = camY / 16;
   for (int y = ty0; y <= ty0 + SCREEN_H / 16 && y < m.h(); y++)
-    for (int x = tx0; x <= tx0 + SCREEN_W / 16 && x < m.w(); x++) drawTile(g, m, x, y, x * 16 - camX, y * 16 - camY, time);
+    for (int x = tx0; x <= tx1 && x < m.w(); x++) drawTile(g, m, x, y, x * 16 - camX, y * 16 - camY, time);
   for (auto& b : m.buildings) drawBuilding(g, b, b.x * 16 - camX, b.y * 16 - camY);
   for (size_t i = 0; i < m.chests.size(); i++)
     drawChest(g, m.chests[i].x * 16 - camX, m.chests[i].y * 16 - camY, has(chestFlag((int)i)));
@@ -945,21 +967,22 @@ void Game::drawMap() {
   // Ambiance
   bool amb = m.ambianceUntil.empty() || !has(m.ambianceUntil);
   if (m.ambiance == "neige" && amb)
-    for (int i = 0; i < 40; i++) {
-      float x = std::fmod(i * 47.f + time * (6 + i % 4) + std::sin(time + i) * 6, 330.f) - 5;
+    for (int i = 0; i < 40 * g.fullW / SCREEN_W; i++) {
+      float x = g.left() + std::fmod(i * 47.f + time * (6 + i % 4) + std::sin(time + i) * 6, g.fullW + 10.f) - 5;
       float y = std::fmod(i * 29.f + time * (18 + i % 6), 250.f) - 5;
       g.rect(x, y, i % 3 ? 1 : 2, i % 3 ? 1 : 2, rgb(0xffffff, 200));
     }
   if (m.ambiance == "lucioles" && amb)
-    for (int i = 0; i < 14; i++) {
-      float x = std::fmod(i * 61.f + std::sin(time * .7f + i) * 20, 320.f), y = std::fmod(i * 37.f + std::cos(time * .5f + i * 2) * 14, 240.f);
+    for (int i = 0; i < 14 * g.fullW / SCREEN_W; i++) {
+      float x = g.left() + std::fmod(i * 61.f + std::sin(time * .7f + i) * 20 + 40, (float)g.fullW), y = std::fmod(i * 37.f + std::cos(time * .5f + i * 2) * 14, 240.f);
       g.ellipse(x, y, 2, 2, rgb(0xe8ff9a, uint8_t(90 + 80 * std::sin(time * 3 + i))));
     }
   if (m.ambiance == "brume" && amb)
-    for (int i = 0; i < 5; i++) g.ellipse(std::fmod(i * 97 + time * 22, 460.f) - 70, 30 + i * 46, 90, 10, rgb(0xe6ebff, 22));
+    for (int i = 0; i < 5 * g.fullW / SCREEN_W; i++)
+      g.ellipse(g.left() + std::fmod(i * 97 + time * 22, g.fullW + 140.f) - 70, 30 + (i % 5) * 46, 90, 10, rgb(0xe6ebff, 22));
   if (m.ambiance == "cendres" && amb)
-    for (int i = 0; i < 30; i++) {
-      float x = std::fmod(i * 53.f + time * (8 + i % 5), 330.f) - 5, y = std::fmod(i * 31.f + time * (14 + i % 7), 250.f) - 5;
+    for (int i = 0; i < 30 * g.fullW / SCREEN_W; i++) {
+      float x = g.left() + std::fmod(i * 53.f + time * (8 + i % 5), g.fullW + 10.f) - 5, y = std::fmod(i * 31.f + time * (14 + i % 7), 250.f) - 5;
       g.rect(x, y, 1, 1, rgb(0xcfc6c0, 170));
     }
   if (m.ambiance == "obscurite" && amb) {
@@ -971,15 +994,15 @@ void Game::drawMap() {
         float dy = y + .5f - cy;
         float span = R * R - dy * dy;
         if (span <= 0) {
-          if (ring == 0) g.rect(0, y, SCREEN_W, 1, c);
+          if (ring == 0) g.rect(g.left(), y, g.fullW, 1, c);
           continue;
         }
         float w = std::sqrt(span);
         float R0 = ring == 0 ? 0 : 92;
         float w0 = R0 * R0 - dy * dy > 0 ? std::sqrt(R0 * R0 - dy * dy) : 0;
         if (ring == 0) {
-          g.rect(0, y, cx - w, 1, c);
-          g.rect(cx + w, y, SCREEN_W - cx - w, 1, c);
+          g.rect(g.left(), y, cx - w - g.left(), 1, c);
+          g.rect(cx + w, y, g.right() - cx - w, 1, c);
         } else {
           g.rect(cx - w0, y, w0 - w, 1, c);
           g.rect(cx + w, y, w0 - w, 1, c);
@@ -988,7 +1011,7 @@ void Game::drawMap() {
     }
   }
   // Bandeau du nom de la région
-  if (banner > 0) {
+  if (banner > 0 && !menus.active()) {  // le nom de la région s'efface quand un menu s'ouvre
     float a = std::min(1.f, banner / .5f);
     g.alpha = a;
     int w = Gfx::textW(bannerText) + 24;
@@ -1041,14 +1064,15 @@ void Game::drawDialogue() {
 
 void Game::drawTeamPanel(int x, int y, int sel) {
   if (sel < 0) {
-    int h = 22 + (int)team.size() * 22 + 14;
+    int rowH = team.size() > 6 ? 20 : 22;  // plus serré avec une grande équipe, pour laisser la place à l'aide
+    int h = 22 + (int)team.size() * rowH + 6;
     g.window(x, y, 320 - x - 8, h);
     g.text(x + 8, y + 5, "Équipe", GOLD);
     g.text(320 - 16, y + 5, std::to_string(gold) + " or", WHITE, 2);
     auto fr = front();
     for (size_t i = 0; i < team.size(); i++) {
       auto& f = team[i];
-      float ry = y + 20 + i * 22;
+      float ry = y + 20 + i * rowH;
       bool isFront = std::find(fr.begin(), fr.end(), f) != fr.end();
       g.text(x + 8, ry, f->name(), f->alive() ? WHITE : rgb(0xff7b6b));
       g.text(x + 86, ry, "N." + std::to_string(f->lvl), MUTED);
@@ -1071,7 +1095,7 @@ void Game::drawTeamPanel(int x, int y, int sel) {
   g.text(x + w - 8, y + 6, "Niveau " + std::to_string(f.lvl), WHITE, 2);
   std::string role = f.S().human ? f.S().role : std::string("Créature de type ") + typeName(f.S().type);
   g.text(x + 8, y + 19, role.size() > 40 ? typeName(f.S().type) : role, MUTED);
-  if (f.S().human) drawHuman(g, look(f.S().look), x + w - 40, y + 24, 2, DOWN, 0, false);
+  if (f.S().human) drawHuman(g, look(f.S().look), x + w - 40, y + 32, 2, DOWN, 0, false);  // sous la ligne du rôle
   else drawCreature(g, f.sp, x + w - 26, y + 48, .9f, false, time);
   int ly = y + 34;
   auto row = [&](const std::string& a, const std::string& b) {
@@ -1103,9 +1127,10 @@ void Game::drawTeamPanel(int x, int y, int sel) {
 }
 
 void Game::drawEnding() {
-  g.gradV(0, 0, SCREEN_W, SCREEN_H, rgb(0x0e1550), rgb(0x3a6fb0));
+  float L = g.left(), W = (float)g.fullW;
+  g.gradV(L, 0, W, SCREEN_H, rgb(0x0e1550), rgb(0x3a6fb0));
   g.ellipse(250, 60, 22, 22, rgb(0xfff4c0));
-  g.poly({{0, 200}, {80, 150}, {150, 190}, {230, 140}, {320, 190}, {320, 240}, {0, 240}}, rgb(0x2e6b3a));
+  g.poly({{L, 200}, {L, 170}, {0, 200}, {80, 150}, {150, 190}, {230, 140}, {320, 190}, {L + W, 160}, {L + W, 240}, {L, 240}}, rgb(0x2e6b3a));
   g.textBig(160, 30, "FIN", GOLD, 3, 1);
   const char* lines[] = {"Brumeval et les Monts Cendrelune", "sont libérés de la brume et du feu.", "",
                          "Un jeu créé avec Claude", "C++ et SDL2", "", "Appuyez sur Entrée pour continuer"};

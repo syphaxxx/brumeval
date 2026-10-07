@@ -322,6 +322,7 @@ void Arena::menuMain(int sel) {
         if (s.sp.empty()) return std::string();
         return "N." + std::to_string(s.lvl) + (s.hpMult != 1.f ? " ×" + fmtMult(s.hpMult) : "") + (s.boss ? " B" : "");
       };
+      it.shrink = true;  // nom complet sur la fiche de droite
       m.items.push_back(it);
     }
   };
@@ -395,9 +396,9 @@ void Arena::menuSlot(bool foe, int i, int sel) {
   };
   Menu m;
   m.title = std::string(foe ? (i < 3 ? "Ennemi " : "Renfort ") : (i < 3 ? "Allié " : "Remplaçant ")) + std::to_string(i % 3 + 1);
-  m.x = 70, m.y = 56, m.w = 170, m.rows = 6;
+  m.x = 10, m.y = 56, m.w = 140, m.rows = 7;  // à l'intérieur de la liste, sans toucher la fiche de droite
   m.sel = sel;
-  m.items.push_back({"Espèce", s.sp.empty() ? "—" : species(s.sp).name, "Choisir le combattant.", true, [this, foe, i] {
+  m.items.push_back({s.sp.empty() ? "Choisir l'espèce" : species(s.sp).name, ">", "Choisir le combattant.", true, [this, foe, i] {
                        G.menus.pop();
                        pickSpecies(foe, i);
                      }});
@@ -627,9 +628,9 @@ void Arena::drawSummary(int x, int y, int w) {
 
 void Arena::draw() {
   Gfx& g = G.g;
-  g.gradV(0, 0, SCREEN_W, SCREEN_H, rgb(0x231638), rgb(0x47305e));
-  g.ellipse(160, 250, 210, 60, rgb(0x2d1f46));
-  g.ellipse(160, 250, 170, 40, rgb(0x3a2a52));
+  g.gradV(g.left(), 0, g.fullW, SCREEN_H, rgb(0x231638), rgb(0x47305e));
+  g.ellipse(160, 250, 210 + g.ox, 60, rgb(0x2d1f46));
+  g.ellipse(160, 250, 170 + g.ox, 40, rgb(0x3a2a52));
   g.text(160, 4, "ARÈNE DE COMBAT", GOLD, 1);
   if (simRunning_) {
     g.window(60, 90, 200, 60);
@@ -642,11 +643,14 @@ void Arena::draw() {
     g.text(160, 156, "Échap : arrêter", MUTED, 1);
     return;
   }
-  // Panneau de droite : fiche du combattant survolé, ou résumé
-  if (!previewSp_.empty() && hasSpecies(previewSp_)) drawFighterCard(g, *makeFighter(previewSp_, previewLvl_), 160, 18, 156, 190, G.time);
-  else if (hover_ >= 0 && !slot(hover_ >= 6, hover_ % 6).sp.empty())
-    drawFighterCard(g, *make(slot(hover_ >= 6, hover_ % 6)), 160, 18, 156, 190, G.time);
-  else drawSummary(160, 18, 156);
+  // Panneau de droite : fiche du combattant survolé, ou résumé (caché par un menu large)
+  bool wide = G.menus.maxRight() > 158;
+  if (!wide) {
+    if (!previewSp_.empty() && hasSpecies(previewSp_)) drawFighterCard(g, *makeFighter(previewSp_, previewLvl_), 160, 18, 156, 190, G.time);
+    else if (hover_ >= 0 && !slot(hover_ >= 6, hover_ % 6).sp.empty())
+      drawFighterCard(g, *make(slot(hover_ >= 6, hover_ % 6)), 160, 18, 156, 190, G.time);
+    else drawSummary(160, 18, 156);
+  }
   G.menus.draw(g, G.time);
   std::string h = G.menus.help();
   if (!h.empty()) {

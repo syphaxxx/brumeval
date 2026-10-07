@@ -37,11 +37,18 @@ enregistre des captures `.bmp` dans `captures/` et simule des combats pour
 l'équilibrage. Il doit finir par « TOUS LES TESTS PASSENT ». Regarde les captures
 après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
 
+Chaque image dessinée pendant les tests est vérifiée (`Gfx::checkLayout`,
+gfx.cpp) : texte qui sort de sa fenêtre, textes qui se chevauchent, fenêtre
+posée de travers sur une autre ou hors de l'écran, libellé de menu coupé. Les
+problèmes sont listés avec la dernière capture (« après 05_equipe : … »). Le
+« tour des menus » de test.cpp ouvre en plus la plupart des menus avec les noms
+les plus longs : y ajouter tout nouvel écran.
+
 ## Architecture (src/)
 
 | Fichier | Rôle |
 |---|---|
-| `main.cpp` | Fenêtre SDL, boucle principale, plein écran (F11), option `--test`, chargement de data/ |
+| `main.cpp` | Fenêtre SDL (taille adaptée à l'écran), affichage agrandi (`Screen`), boucle principale, plein écran (F11, gardé dans `options.txt`), option `--test`, chargement de data/ |
 | `game.hpp/.cpp` | Écran titre, exploration, menus (pause, équipe, objets, magie, boutique), sauvegarde, dessin de la carte |
 | `battle.hpp/.cpp` | Combat ATB : jauges, menus, dégâts physiques/magiques, précision, critiques, états, bonus/malus, renforts ennemis, IA (`think`), tactiques des alliés (`tacticPlan`, touche Tab), journal (`log`), capture, Limites, victoire |
 | `tactics.hpp/.cpp` | Tactiques (gambits) : catalogue des conditions et actions automatiques, lecture/écriture JSON, vérifications (`tacticProblem`), lignes selon le niveau (`tacticSlots`), éditeur réutilisable (`openTacticsEditor`) |
@@ -60,13 +67,41 @@ après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
 
 ### Principes à connaître
 
-- Résolution logique 320x240, agrandie à l'écran en nombre entier de fois.
+- Résolution logique 320x240, élargie à la forme de l'écran : l'image fait
+  240 pixels de haut et `Gfx::fullW` de large (320 à 576 ; 384 en 16:10,
+  428 en 16:9). Tout le code dessine dans la zone de 320x240 du milieu
+  (`Gfx` ajoute le décalage `ox` dans `span`, `rect` et `textBig`) : menus,
+  fenêtres et combattants ne bougent pas. Un décor qui doit remplir tout
+  l'écran va de `g.left()` (négatif) à `g.right()` ; la carte, les combats,
+  l'écran titre, la fin et les outils le font. Tout nouveau décor plein écran
+  doit utiliser `g.left()`/`g.fullW` au lieu de 0/`SCREEN_W`.
+- `Screen` (main.cpp) choisit cette largeur selon la fenêtre, puis agrandit
+  l'image pour la remplir sans bandes noires (agrandissement entier puis
+  ajustement linéaire : pixels nets à toute taille). La souris est ramenée en
+  coordonnées de la zone du milieu par `Screen::toGame` (négatives à gauche).
+  Le jeu tient compte du zoom de Windows (`SDL_HINT_WINDOWS_DPI_AWARENESS`) ; la
+  fenêtre de départ a la forme de l'écran (`fitWindow`). Lancé par un
+  double-clic, il ferme la console noire (`FreeConsole`).
+- `BRUMEVAL_LARGEUR=384 brumeval --test dossier` prend les captures du mode
+  test au format large (à vérifier après un changement de décor).
+- Lancé depuis l'application Claude (application empaquetée), le jeu lit et
+  écrit `%APPDATA%` dans un dossier privé de Claude
+  (`%LOCALAPPDATA%\Packages\Claude_…\LocalCache\Roaming\`) : sauvegarde et
+  options y sont séparées de celles du jeu lancé par un double-clic ou VS Code.
+  Pour lancer le jeu pour l'utilisateur : `Start-Process explorer.exe
+  -ArgumentList <chemin de brumeval.exe>`.
 - `Script` : `say(texte, auto)` affiche un message (auto = 0 attend Entrée),
   `call(fn)` exécute du code, `wait(s)` fait une pause. Les étapes ajoutées
   *pendant* un `call` sont insérées juste après lui : c'est ce qui enchaîne les
   scènes et les tours de combat.
 - `MenuStack` : pile de menus ; chaque `MenuItem` a un libellé, une valeur à
   droite, un texte d'aide, une action et un rappel `hover` (ex. curseur de cible).
+  Un menu du dessous n'est pas dessiné si un sous-menu le chevauche sans être
+  bien à l'intérieur (4 px de marge). Un libellé trop long est coupé avec « … »
+  (signalé par le mode test, sauf `MenuItem::shrink`). Les panneaux à droite
+  (Réglages, Arène) se cachent quand `menus.maxRight()` dépasse 158. Une
+  fenêtre modale sur fond assombri appelle `g.newLayer()`. Largeur d'un
+  caractère : 6 px ; un libellé commence 13 px après le bord du menu.
 - Équipe : `Game::team` (8 membres maximum par capture, les humains s'ajoutent
   toujours). Les 3 premiers membres valides combattent (`Game::front()`).
 - Progression : `Game::flags` (`boss1`, `golem`, `boss2`, `maelle`, `brann`,
@@ -117,7 +152,7 @@ après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
 - Éditeurs : chacun a son mode (`Mode::Arena`, `Settings`, `Editor`, `Story`),
   ses menus dans `MenuStack` et ne modifie que la mémoire jusqu'à
   « Enregistrer ». Les tests en jeu (`editorTest_`, `storyTest_`) ajoutent
-  « Retour à l'éditeur » au menu de pause. Les identifiants créés passent par
+  « Fin du test » au menu de pause. Les identifiants créés passent par
   `makeSlug` (minuscules, sans accents, tirets bas).
 - Saisie de texte : `Game::editText(titre, texte, max, rappel)` (SDL_TEXTINPUT
   transmis par main.cpp à `Game::onText`). Pendant la saisie, `onKey` ne sert

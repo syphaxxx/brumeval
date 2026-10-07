@@ -93,7 +93,7 @@ MenuItem Settings::textItem(const std::string& label, const std::string& title, 
   MenuItem it{label, "", "Entrée : modifier le texte.", true};
   it.rightFn = [get] {
     std::string s = get();
-    return utf8Prefix(s, 12) + (utf8Prefix(s, 12).size() < s.size() ? "…" : "");
+    return utf8Prefix(s, 8) + (utf8Prefix(s, 8).size() < s.size() ? "…" : "");
   };
   it.act = [this, title, get, set, maxChars] { G.editText(title, get(), maxChars, set); };
   return it;
@@ -232,7 +232,7 @@ void Settings::menuRules(int sel) {
   panel_ = Panel::None;
   Menu m;
   m.title = "Règles du jeu";
-  m.x = 4, m.y = 18, m.w = 312, m.rows = 15;
+  m.x = 4, m.y = 18, m.w = 312, m.rows = 14;  // laisse la place à l'aide en bas
   m.sel = sel;
   auto setDepart = [this](const char* key, Json v) { change(DF_RULES, [key, v](Json& d) { d["depart"][key] = v; }); };
   m.items.push_back(menuHeader("Départ"));
@@ -500,7 +500,7 @@ void Settings::editSpecies(const std::string& id, int sel) {
 void Settings::menuResist(const std::string& id, int sel) {
   Menu m;
   m.title = "Résistances";
-  m.x = 24, m.y = 30, m.w = 190, m.rows = 13;
+  m.x = 8, m.y = 30, m.w = 144, m.rows = 13;  // la fiche de droite reste visible
   m.sel = sel;
   auto add = [&](const std::string& key, const std::string& label) {
     m.items.push_back(numItem(label, "Multiplicateur des dégâts reçus : 0 = immunisé, 0,5 = résiste, 2 = craint. 1 = normal.",
@@ -519,7 +519,7 @@ void Settings::menuResist(const std::string& id, int sel) {
                               },
                               .25, 0, 4));
   };
-  add("physique", "Coups physiques");
+  add("physique", "Physique");
   add("magique", "Magie");
   m.items.push_back(menuHeader("Par type"));
   for (auto& t : types()) add(t.id, t.name);
@@ -529,7 +529,7 @@ void Settings::menuResist(const std::string& id, int sel) {
 void Settings::menuImmune(const std::string& id, int sel) {
   Menu m;
   m.title = "Immunités";
-  m.x = 24, m.y = 30, m.w = 190, m.rows = 4;
+  m.x = 8, m.y = 30, m.w = 144, m.rows = 4;
   m.sel = sel;
   for (Status st : STATUSES) {
     std::string sid = statusId(st);
@@ -576,7 +576,7 @@ void Settings::menuLearn(const std::string& id, int sel) {
     });
   };
   Menu m;
-  m.title = "Techniques de " + species(id).name;
+  m.title = "Techniques apprises";  // l'espèce est sur la fiche de droite
   m.x = 4, m.y = 18, m.w = 152, m.rows = 14;
   m.sel = sel;
   const auto& learn = species(id).learn;
@@ -1146,13 +1146,13 @@ void Settings::drawPanel(int x, int y, int w, int h) {
 
 void Settings::draw() {
   Gfx& g = G.g;
-  g.gradV(0, 0, SCREEN_W, SCREEN_H, rgb(0x14203a), rgb(0x2a3a5e));
+  g.gradV(g.left(), 0, g.fullW, SCREEN_H, rgb(0x14203a), rgb(0x2a3a5e));
   g.text(160, 4, "RÉGLAGES", GOLD, 1);
   if (grid_) {
     drawGrid();
     return;
   }
-  bool wide = G.menus.active() && G.menus.top().w > 200;
+  bool wide = G.menus.maxRight() > 158;  // un menu déborde sur la place du panneau de droite
   if (!wide) drawPanel(160, 18, 156, 190);
   G.menus.draw(g, G.time);
   std::string h = G.time - messageT_ < 3 ? message_ : G.menus.help();

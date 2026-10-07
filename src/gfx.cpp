@@ -22,18 +22,35 @@ void Gfx::set(Color c) {
   SDL_SetRenderDrawBlendMode(r_, SDL_BLENDMODE_BLEND);
   SDL_SetRenderDrawColor(r_, c.r, c.g, c.b, uint8_t(c.a * std::clamp(alpha, 0.f, 1.f)));
 }
+// Les trois dessins de base (span, rect, textBig) ajoutent le décalage ox : tout le reste passe par eux
 void Gfx::span(int y, int x0, int x1) {
   if (x1 < x0 || y < 0 || y >= SCREEN_H) return;
-  SDL_Rect rc{x0, y, x1 - x0 + 1, 1};
+  SDL_Rect rc{x0 + ox, y, x1 - x0 + 1, 1};
   SDL_RenderFillRect(r_, &rc);
 }
 void Gfx::clear(Color c) {
   SDL_SetRenderDrawColor(r_, c.r, c.g, c.b, 255);
   SDL_RenderClear(r_);
+  newLayer();
+}
+
+// ---------------------------------------------------------------------------
+// Vérification de la mise en page (mode test)
+// ---------------------------------------------------------------------------
+void Gfx::newLayer() {
+  wins_.clear();
+  texts_.clear();
+}
+void Gfx::layoutIssue(const std::string& s) {
+  std::string m = (layoutScene.empty() ? "" : "après " + layoutScene + " : ") + s;
+  if (std::find(layoutIssues.begin(), layoutIssues.end(), m) == layoutIssues.end()) layoutIssues.push_back(m);
+}
+static std::string boxStr(int x, int y, int w, int h) {
+  return "(" + std::to_string(x) + "," + std::to_string(y) + " " + std::to_string(w) + "x" + std::to_string(h) + ")";
 }
 void Gfx::rect(float x, float y, float w, float h, Color c) {
   set(c);
-  SDL_Rect rc{(int)std::lround(x), (int)std::lround(y), (int)std::lround(w), (int)std::lround(h)};
+  SDL_Rect rc{(int)std::lround(x) + ox, (int)std::lround(y), (int)std::lround(w), (int)std::lround(h)};
   SDL_RenderFillRect(r_, &rc);
 }
 void Gfx::frame(float x, float y, float w, float h, Color c) {
@@ -238,6 +255,22 @@ void Gfx::text(float x, float y, const std::string& s, Color c, int align, bool 
   auto cps = decode(s);
   int w = int(cps.size()) * 6;
   int X = (int)std::lround(x - (align == 1 ? w / 2 : align == 2 ? w : 0)), Y = (int)std::lround(y);
+  // Mode test : le texte doit tenir dans la dernière fenêtre dessinée sous lui, sans toucher un autre texte
+  while (checkLayout && w > 0 && !s.empty() && s.find_first_not_of(' ') != std::string::npos) {
+    int px = align == 0 ? X + 1 : align == 2 ? X + w - 1 : X + w / 2, py = Y + 5;
+    size_t k = wins_.size();
+    while (k > 0 && !(px >= wins_[k - 1].x && px < wins_[k - 1].x + wins_[k - 1].w && py >= wins_[k - 1].y && py < wins_[k - 1].y + wins_[k - 1].h)) k--;
+    if (k == 0) break;  // texte posé sur le décor
+    const Box& b = wins_[k - 1];
+    Box t{X, Y, w - 1, 10};
+    if (t.x < b.x + 2 || t.x + t.w > b.x + b.w - 2 || t.y < b.y + 1 || t.y + t.h > b.y + b.h - 1)
+      layoutIssue("texte qui dépasse de sa fenêtre " + boxStr(b.x, b.y, b.w, b.h) + " : « " + s + " »");
+    for (auto& o : texts_)
+      if (o.win == k && t.x < o.b.x + o.b.w && o.b.x < t.x + t.w && t.y < o.b.y + o.b.h && o.b.y < t.y + t.h)
+        layoutIssue("textes qui se chevauchent dans " + boxStr(b.x, b.y, b.w, b.h) + " : « " + o.s + " » et « " + s + " »");
+    texts_.push_back({k, t, s});
+    break;
+  }
   auto& F = font();
   for (int pass = shadow ? 0 : 1; pass < 2; pass++) {
     set(pass == 0 ? Color{0, 0, 0, uint8_t(c.a * 0.85f)} : c);
@@ -276,7 +309,7 @@ void Gfx::textBig(float x, float y, const std::string& s, Color c, int k, int al
       for (int r = 0; r < 11; r++)
         for (int q = 0; q < 5; q++)
           if (it->second.rows[r] & (1 << (4 - q))) {
-            SDL_Rect rc{cx + q * k, cy + r * k, k, k};
+            SDL_Rect rc{cx + q * k + ox, cy + r * k, k, k};
             SDL_RenderFillRect(r_, &rc);
           }
       cx += 6 * k;
@@ -317,6 +350,21 @@ std::vector<std::string> Gfx::wrap(const std::string& s, int width) {
 }
 
 void Gfx::window(float x, float y, float w, float h) {
+  if (checkLayout) {
+    Box b{(int)x, (int)y, (int)w, (int)h};
+    if (b.x < 0 || b.y < 0 || b.x + b.w > SCREEN_W || b.y + b.h > SCREEN_H) layoutIssue("fenêtre hors de l'écran " + boxStr(b.x, b.y, b.w, b.h));
+    // Une fenêtre peut recouvrir entièrement une autre, ou s'ouvrir bien à l'intérieur (question,
+    // sous-menu) ; sinon elle chevauche de travers et laisse dépasser des morceaux de l'autre
+    for (auto& o : wins_) {
+      if (o.hidden) continue;
+      bool meet = b.x < o.x + o.w && o.x < b.x + b.w && b.y < o.y + o.h && o.y < b.y + b.h;
+      bool covers = b.x <= o.x && b.y <= o.y && b.x + b.w >= o.x + o.w && b.y + b.h >= o.y + o.h;
+      bool inside = b.x >= o.x + 4 && b.y >= o.y + 4 && b.x + b.w <= o.x + o.w - 4 && b.y + b.h <= o.y + o.h - 4;
+      if (covers) o.hidden = true;
+      else if (meet && !inside) layoutIssue("fenêtres qui se chevauchent " + boxStr(o.x, o.y, o.w, o.h) + " et " + boxStr(b.x, b.y, b.w, b.h));
+    }
+    wins_.push_back(b);
+  }
   gradV(x + 1, y + 1, w - 2, h - 2, rgb(0x3048b0), rgb(0x0c1452));
   frame(x, y, w, h, rgb(0xd8def2));
   frame(x + 1, y + 1, w - 2, h - 2, rgb(0x5a6aa8, 160));

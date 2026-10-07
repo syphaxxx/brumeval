@@ -28,6 +28,13 @@ class Gfx {
 
   float alpha = 1.f;  // opacité globale appliquée à tout ce qui est dessiné
 
+  // Écran plus large que le jeu (16:9, 16:10…) : l'image fait fullW pixels de large (320 au
+  // moins) et tout se place dans la zone de 320 pixels du milieu, décalée de ox pixels. Un
+  // décor qui doit remplir tout l'écran va de left() (négatif) à right() (au-delà de 320).
+  int fullW = SCREEN_W, ox = 0;
+  float left() const { return float(-ox); }
+  float right() const { return float(fullW - ox); }
+
   void clear(Color c);
   void rect(float x, float y, float w, float h, Color c);
   void frame(float x, float y, float w, float h, Color c);  // contour 1 px
@@ -48,10 +55,30 @@ class Gfx {
   void window(float x, float y, float w, float h);
   void cursor(float x, float y);  // petite main/flèche dorée
 
+  // Vérification de la mise en page (mode test) : textes qui sortent de leur
+  // fenêtre ou se chevauchent, fenêtres posées de travers l'une sur l'autre.
+  // Les problèmes trouvés depuis clear() sont ajoutés à layoutIssues.
+  bool checkLayout = false;
+  std::string layoutScene;  // préfixe des messages (dernière capture du mode test)
+  std::vector<std::string> layoutIssues;
+  void newLayer();          // ce qui suit passe au premier plan (fenêtre modale sur fond assombri)
+  void layoutIssue(const std::string& s);  // note un problème (une seule fois)
+
  private:
   void set(Color c);
   void span(int y, int x0, int x1);
   SDL_Renderer* r_;
+  struct Box {
+    int x, y, w, h;
+    bool hidden = false;  // entièrement recouverte par une fenêtre dessinée ensuite
+  };
+  struct TextBox {
+    size_t win;  // fenêtre qui contient le texte
+    Box b;
+    std::string s;
+  };
+  std::vector<Box> wins_;       // fenêtres de l'image en cours
+  std::vector<TextBox> texts_;  // textes de l'image en cours
 };
 
 // Transformation locale -> écran pour dessiner les sprites (décalage, échelle, miroir)

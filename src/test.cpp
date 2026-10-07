@@ -21,6 +21,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   std::filesystem::create_directories(out);
   saveName_ = "sauvegarde_test.txt";  // ne jamais toucher à la vraie sauvegarde du joueur
   tacticsAuto = false;                 // les combats des tests passent par les menus (les tactiques ont leurs tests)
+  g.checkLayout = true;                // chaque image dessinée vérifie la mise en page (gfx.cpp)
   int fails = 0;
   auto check = [&](bool ok, const std::string& what) {
     std::printf("%s %s\n", ok ? "[ok]    " : "[ÉCHEC] ", what.c_str());
@@ -36,6 +37,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     std::string p = out + "/" + name + ".bmp";
     SDL_SaveBMP(target, p.c_str());
     std::printf("capture  %s\n", p.c_str());
+    g.layoutScene = name;
   };
   auto run = [&](float sec) {
     for (int i = 0; i < int(sec * 60); i++) frame();
@@ -630,9 +632,9 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       bool playing = mode == Mode::Map && M().id == "vallee" && px == 12 && py == 9;
       in.menu = true;
       frame();
-      in.confirm = true;  // « Retour à l'éditeur »
+      in.confirm = true;  // « Fin du test »
       frame();
-      check(playing && mode == Mode::Editor, "éditeur : « Tester ici » puis « Retour à l'éditeur »");
+      check(playing && mode == Mode::Editor, "éditeur : « Tester ici » puis « Fin du test »");
       // On remet la carte telle qu'elle était (rien n'est enregistré)
       maps()[vi] = mapFromJson(before);
       check(!E.dirty(vi) && mapToJson(maps()[vi]) == before, "éditeur : la carte d'origine est intacte");
@@ -710,7 +712,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       check(played && has("pecheur") && items["plume"] == 2, "histoire : jouer l'événement du pêcheur sur sa carte");
       in.menu = true;
       frame();
-      in.confirm = true;  // « Retour à l'éditeur »
+      in.confirm = true;  // « Fin du test »
       frame();
       check(mode == Mode::Story, "histoire : retour à l'éditeur après le test");
     }
@@ -866,6 +868,160 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     mode = Mode::Title;
     titleMenu();
   }
+
+  // --- Tour des menus : chaque écran est dessiné une fois pour vérifier sa mise en page ---
+  {
+    auto show = [&](const std::string& name) {
+      g.layoutScene = "tour : " + name;
+      frame();
+    };
+    auto back = [&](size_t depth) {
+      for (int i = 0; i < 10 && menus.depth() > depth; i++) {
+        in.cancel = true;
+        frame();
+      }
+    };
+    team = {makeFighter("lior", 40), makeFighter("ronceau", 40), makeFighter("isra", 40), makeFighter("maelle", 40), makeFighter("kael", 40),
+            makeFighter("selene", 40), makeFighter("brann", 40), makeFighter("braisenard", 40)};
+    items.clear();
+    for (auto& d : allItems()) items[d.id] = 99;
+    gold = 99999;
+    sc.clear();
+    menus.clear();
+    mode = Mode::Map;
+    changeMap(mi("vallee"), 30, 12, DOWN);
+    banner = 0;
+    pauseMenu();
+    show("pause");
+    teamMenuAt(1);
+    show("équipe");
+    menus.clear();
+    itemMenu();
+    show("objets");
+    menus.clear();
+    magicMenu();
+    show("magie");
+    menus.top().sel = 3;  // Maëlle
+    in.confirm = true;
+    show("magie : sorts");
+    menus.clear();
+    std::vector<std::string> stock;
+    for (auto& d : allItems())
+      if (d.price > 0) stock.push_back(d.id);
+    shopMenu(stock);
+    show("boutique");
+    menus.clear();
+    tacticsMenu();
+    show("tactiques");
+    for (int k = 0; k < 3; k++) {  // éditeur de Lior, Ronceau et Isra : liste, condition, action
+      menus.top().sel = 2 + k;
+      in.confirm = true;
+      show("tactiques " + team[k]->name());
+      menus.top().sel = 2 + (int)team[k]->tactics.size();
+      in.confirm = true;
+      show("tactiques : condition");
+      in.confirm = true;
+      show("tactiques : action");
+      back(1);
+    }
+    menus.clear();
+    // Combat : chaque commande et ses sous-menus
+    tacticsAuto = false;
+    startBattle({makeFighter("chevalier", 30), makeFighter("chef_bandit", 30), makeFighter("mage_givre", 30)}, false, nullptr, false, true);
+    for (int i = 0; i < 1500 && !menus.active(); i++) frame();
+    if (battle_ && menus.active()) {
+      show("combat : commande");
+      for (int c = 0; c < (int)menus.top().items.size(); c++) {
+        std::string cmd = menus.top().items[c].label;
+        menus.top().sel = c;
+        in.confirm = true;
+        show("combat : " + cmd);
+        if (menus.depth() > 1) {
+          in.confirm = true;  // première entrée du sous-menu, puis le choix de la cible
+          show("combat : " + cmd + " > cible");
+        }
+        back(1);
+        if (mode != Mode::Battle || !menus.active()) break;  // une action est partie (Changer)
+      }
+    }
+    battle_.reset();
+    mode = Mode::Map;
+    menus.clear();
+    sc.clear();
+    // Arène : emplacement d'ennemi, modèles, tactiques d'un allié
+    if (arena_) {
+      Arena& A = *arena_;
+      mode = Mode::Arena;
+      A.open();
+      A.foes[0] = {"chevalier", 30, 2.5f, true};
+      menus.top().sel = 8;  // premier ennemi
+      in.confirm = true;
+      show("arène : ennemi");
+      back(1);
+      menus.top().sel = (int)menus.top().items.size() - 3;  // Modèles…
+      in.confirm = true;
+      show("arène : modèles");
+      back(1);
+      menus.top().sel = 1;  // premier allié
+      in.confirm = true;
+      menus.top().sel = 2;  // Tactiques…
+      in.confirm = true;
+      show("arène : tactiques");
+      back(1);
+      menus.clear();
+    }
+    // Réglages : listes et fiches avec les noms les plus longs
+    if (settings_) {
+      Settings& S = *settings_;
+      mode = Mode::Settings;
+      S.open();
+      S.menuSpeciesList("chevalier");
+      show("réglages : espèces");
+      S.editSpecies("chevalier");
+      show("réglages : Chevalier du givre");
+      S.menuLearn("chevalier");
+      show("réglages : techniques apprises");
+      S.editSpecies("ronce_mere");
+      S.menuResist("ronce_mere");
+      show("réglages : résistances");
+      S.editSpecies("golem");
+      S.menuImmune("golem");
+      show("réglages : immunités");
+      S.menuMovesList("fleche");
+      show("réglages : techniques");
+      S.editMove("fleche");
+      show("réglages : Fléchette empoisonnée");
+      S.menuEffect("fleche");
+      show("réglages : effet");
+      S.menuItemsList("lanterne_argent");
+      show("réglages : objets");
+      S.editItem("lanterne_argent");
+      show("réglages : Lanterne d'argent");
+      S.menuRules(0);
+      S.menuStartItems();
+      show("réglages : objets de départ");
+      S.menuRules(0);
+      S.menuDrops();
+      show("réglages : butin");
+      menus.clear();
+    }
+    team.clear();
+    items.clear();
+    mode = Mode::Title;
+    titleMenu();
+    show("titre");
+    menus.top().sel = 2;  // Outils
+    in.confirm = true;
+    show("outils");
+    menus.clear();
+    titleMenu();
+  }
+
+  // --- Mise en page de toutes les images dessinées pendant les tests ---
+  for (auto& s : g.layoutIssues) std::printf("         %s\n", s.c_str());
+  check(g.layoutIssues.empty(), "mise en page : aucun texte ne dépasse ni ne se chevauche, aucune fenêtre de travers (" +
+                                    std::to_string(g.layoutIssues.size()) + " problème(s))");
+  g.checkLayout = false;
 
   // --- Simulation d'équilibrage (IA simple, sans objets) ---
   std::printf("\nÉquilibrage (combats simulés, IA automatique) :\n");
