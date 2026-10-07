@@ -916,7 +916,10 @@ void Game::drawTitle() {
       for (size_t i = 0; i < lines.size(); i++) g.text(160, 236 - h + 4 + i * 11, lines[i], WHITE, 1);
     }
   }
-  if (!menus.active() || menus.help().empty()) g.text(316, 230, "v1.0", rgb(0x8a92b8), 2, false);
+  if (!menus.active() || menus.help().empty()) {
+    g.text(4, 227, "F11 : plein écran", rgb(0x8a92b8), 0, false);
+    g.text(316, 227, "v1.0", rgb(0x8a92b8), 2, false);
+  }
 }
 
 void Game::drawMap() {

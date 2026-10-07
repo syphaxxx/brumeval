@@ -13,7 +13,7 @@ pour agrandir l'équipe, quatre héros recrutables, deux régions et une grotte.
 | Entrée ou Espace | Parler, valider, faire défiler les dialogues |
 | Échap | Annuler, ouvrir le menu (équipe, tactiques, objets, magie, sauvegarde) |
 | Tab (en combat) | Mode auto : les tactiques jouent à votre place, ou vous reprenez la main |
-| F11 ou Alt+Entrée | Plein écran |
+| F11 ou Alt+Entrée | Plein écran ou fenêtre (le choix est gardé pour la prochaine fois) |
 
 ## Tactiques (combat automatique)
 
@@ -126,5 +126,6 @@ l'équilibrage et enregistre des captures d'écran dans `captures/`.
 - `data/` : tout le contenu du jeu (créatures, techniques, objets, cartes,
   dialogues, règles) en fichiers JSON modifiables, lus à chaque démarrage. Voir
   `data/LISEZMOI.md`.
-- La sauvegarde est écrite dans `%APPDATA%\Brumeval\Brumeval\sauvegarde.txt`
+- La sauvegarde est écrite dans `%APPDATA%\Brumeval\Brumeval\sauvegarde.txt`,
+  le choix plein écran / fenêtre dans `options.txt` à côté
   (le mode test utilise `sauvegarde_test.txt` et l'efface à la fin)

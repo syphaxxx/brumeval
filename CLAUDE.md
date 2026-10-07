@@ -48,7 +48,7 @@ les plus longs : y ajouter tout nouvel écran.
 
 | Fichier | Rôle |
 |---|---|
-| `main.cpp` | Fenêtre SDL, boucle principale, plein écran (F11), option `--test`, chargement de data/ |
+| `main.cpp` | Fenêtre SDL (taille adaptée à l'écran), affichage agrandi (`Screen`), boucle principale, plein écran (F11, gardé dans `options.txt`), option `--test`, chargement de data/ |
 | `game.hpp/.cpp` | Écran titre, exploration, menus (pause, équipe, objets, magie, boutique), sauvegarde, dessin de la carte |
 | `battle.hpp/.cpp` | Combat ATB : jauges, menus, dégâts physiques/magiques, précision, critiques, états, bonus/malus, renforts ennemis, IA (`think`), tactiques des alliés (`tacticPlan`, touche Tab), journal (`log`), capture, Limites, victoire |
 | `tactics.hpp/.cpp` | Tactiques (gambits) : catalogue des conditions et actions automatiques, lecture/écriture JSON, vérifications (`tacticProblem`), lignes selon le niveau (`tacticSlots`), éditeur réutilisable (`openTacticsEditor`) |
@@ -67,7 +67,20 @@ les plus longs : y ajouter tout nouvel écran.
 
 ### Principes à connaître
 
-- Résolution logique 320x240, agrandie à l'écran en nombre entier de fois.
+- Résolution logique 320x240. Le jeu dessine dans une texture de 320x240 que
+  `Screen` (main.cpp) agrandit pour remplir la fenêtre en gardant les
+  proportions (bandes noires sur les côtés) : agrandissement entier puis
+  ajustement linéaire, pour des pixels nets à toute taille. La souris est
+  ramenée en coordonnées 320x240 par `Screen::toGame`. Le jeu tient compte du
+  zoom de Windows (`SDL_HINT_WINDOWS_DPI_AWARENESS`) ; la fenêtre de départ
+  prend la plus grande taille qui tient sur l'écran (`fitWindow`). Lancé par un
+  double-clic, il ferme la console noire (`FreeConsole`).
+- Lancé depuis l'application Claude (application empaquetée), le jeu lit et
+  écrit `%APPDATA%` dans un dossier privé de Claude
+  (`%LOCALAPPDATA%\Packages\Claude_…\LocalCache\Roaming\`) : sauvegarde et
+  options y sont séparées de celles du jeu lancé par un double-clic ou VS Code.
+  Pour lancer le jeu pour l'utilisateur : `Start-Process explorer.exe
+  -ArgumentList <chemin de brumeval.exe>`.
 - `Script` : `say(texte, auto)` affiche un message (auto = 0 attend Entrée),
   `call(fn)` exécute du code, `wait(s)` fait une pause. Les étapes ajoutées
   *pendant* un `call` sont insérées juste après lui : c'est ce qui enchaîne les

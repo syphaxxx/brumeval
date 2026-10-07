@@ -3,9 +3,16 @@
 //   brumeval --test DIR mode test : rejoue des situations, vérifie l'équilibrage
 //                       et enregistre des captures d'écran dans DIR
 #include <SDL.h>
+#ifdef _WIN32
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
 
 #include <algorithm>
+#include <cmath>
 #include <cstdio>
+#include <fstream>
 #include <string>
 
 #include "events.hpp"
@@ -28,6 +35,116 @@ static std::vector<std::string> problems() {
   std::vector<std::string> p = checkData();
   for (auto& v : {checkMaps(), checkEvents()}) p.insert(p.end(), v.begin(), v.end());
   return p;
+}
+
+// ---------------------------------------------------------------------------
+// Affichage : le jeu est dessiné dans une image de 320x240, puis agrandie pour
+// remplir la fenêtre (ou l'écran) en gardant ses proportions, avec des bandes
+// noires sur les côtés si besoin. Pour des pixels nets et réguliers à n'importe
+// quelle taille, l'image est d'abord agrandie d'un nombre entier de fois (pixels
+// carrés), puis ajustée en douceur à la taille finale.
+// ---------------------------------------------------------------------------
+class Screen {
+ public:
+  explicit Screen(SDL_Renderer* r) : r_(r) {}
+  ~Screen() { reset(); }
+  // Textures perdues (changement de carte graphique, mise en veille…) : elles seront recréées
+  void reset() {
+    if (scene_) SDL_DestroyTexture(scene_);
+    if (big_) SDL_DestroyTexture(big_);
+    scene_ = big_ = nullptr;
+    bigK_ = 0;
+  }
+  // À appeler avant de dessiner une image du jeu
+  void begin() {
+    if (!scene_) {
+      scene_ = SDL_CreateTexture(r_, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, SCREEN_W, SCREEN_H);
+      SDL_SetTextureScaleMode(scene_, SDL_ScaleModeNearest);
+      SDL_SetTextureBlendMode(scene_, SDL_BLENDMODE_NONE);
+    }
+    SDL_SetRenderTarget(r_, scene_);
+  }
+  // Affiche l'image dessinée, agrandie à la taille de la fenêtre
+  void present() {
+    SDL_SetRenderTarget(r_, nullptr);
+    int ow = 1, oh = 1;
+    SDL_GetRendererOutputSize(r_, &ow, &oh);
+    scale_ = std::max(.25f, std::min(ow / float(SCREEN_W), oh / float(SCREEN_H)));
+    int dw = (int)std::lround(SCREEN_W * scale_), dh = (int)std::lround(SCREEN_H * scale_);
+    dst_ = {(ow - dw) / 2, (oh - dh) / 2, dw, dh};
+    SDL_SetRenderDrawColor(r_, 0, 0, 0, 255);
+    SDL_RenderClear(r_);
+    SDL_Texture* src = scene_;
+    if (std::fabs(scale_ - std::round(scale_)) > 1e-3f) {  // taille non entière : passer par une image agrandie
+      int k = std::max(2, (int)std::ceil(scale_));
+      if (bigK_ != k) {
+        if (big_) SDL_DestroyTexture(big_);
+        big_ = SDL_CreateTexture(r_, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, SCREEN_W * k, SCREEN_H * k);
+        SDL_SetTextureScaleMode(big_, SDL_ScaleModeLinear);
+        SDL_SetTextureBlendMode(big_, SDL_BLENDMODE_NONE);
+        bigK_ = k;
+      }
+      if (big_) {
+        SDL_SetRenderTarget(r_, big_);
+        SDL_RenderCopy(r_, scene_, nullptr, nullptr);
+        SDL_SetRenderTarget(r_, nullptr);
+        src = big_;
+      }
+    }
+    SDL_RenderCopy(r_, src, nullptr, &dst_);
+    SDL_RenderPresent(r_);
+  }
+  // Position dans la fenêtre -> position dans l'image du jeu (320x240)
+  void toGame(SDL_Window* w, int x, int y, int& gx, int& gy) const {
+    int ww = 1, wh = 1, ow = 1, oh = 1;
+    SDL_GetWindowSize(w, &ww, &wh);
+    SDL_GetRendererOutputSize(r_, &ow, &oh);
+    float px = x * float(ow) / std::max(1, ww), py = y * float(oh) / std::max(1, wh);
+    gx = (int)std::floor((px - dst_.x) / scale_);
+    gy = (int)std::floor((py - dst_.y) / scale_);
+  }
+
+ private:
+  SDL_Renderer* r_;
+  SDL_Texture *scene_ = nullptr, *big_ = nullptr;
+  int bigK_ = 0;
+  float scale_ = 1;
+  SDL_Rect dst_{0, 0, SCREEN_W, SCREEN_H};
+};
+
+// Taille de départ de la fenêtre : la plus grande qui tient sur l'écran (sans la
+// barre des tâches ni la barre de titre), en gardant les proportions du jeu
+static void fitWindow(SDL_Window* win) {
+  SDL_Rect ub;
+  if (SDL_GetDisplayUsableBounds(std::max(0, SDL_GetWindowDisplayIndex(win)), &ub) != 0) return;
+  int top = 0, left = 0, bottom = 0, right = 0;
+  if (SDL_GetWindowBordersSize(win, &top, &left, &bottom, &right) != 0) top = 40, left = right = bottom = 8;
+  float s = std::min((ub.w - left - right) * .95f / SCREEN_W, (ub.h - top - bottom) * .95f / SCREEN_H);
+  if (s >= 2 && s - std::floor(s) < .15f) s = std::floor(s);  // un nombre entier de fois si c'est presque pareil
+  s = std::max(1.f, s);
+  int w = (int)std::lround(SCREEN_W * s), h = (int)std::lround(SCREEN_H * s);
+  SDL_SetWindowSize(win, w, h);
+  SDL_SetWindowPosition(win, ub.x + left + (ub.w - left - right - w) / 2, ub.y + top + (ub.h - top - bottom - h) / 2);
+}
+
+// Préférence plein écran, gardée d'une partie à l'autre (options.txt, à côté de la sauvegarde)
+static std::string optionsPath() {
+  char* p = SDL_GetPrefPath("Brumeval", "Brumeval");
+  std::string s = p ? p : "";
+  SDL_free(p);
+  return s + "options.txt";
+}
+static bool loadFullscreen() {
+  std::ifstream f(optionsPath());
+  std::string k;
+  int v = 0;
+  while (f >> k >> v)
+    if (k == "plein_ecran") return v != 0;
+  return false;
+}
+static void saveFullscreen(bool on) {
+  std::ofstream f(optionsPath());
+  f << "plein_ecran " << (on ? 1 : 0) << '\n';
 }
 
 static int runTests(const char* outDir) {
@@ -54,6 +171,15 @@ static int runTests(const char* outDir) {
 int main(int argc, char* argv[]) {
   if (argc > 1 && std::string(argv[1]) == "--test") return runTests(argc > 2 ? argv[2] : "captures");
 
+#ifdef _WIN32
+  // Lancé par un double-clic, le jeu reçoit une console noire à lui seul : on la ferme.
+  // Lancé depuis un terminal (plusieurs programmes sur la console), on la laisse.
+  DWORD procs[2];
+  if (GetConsoleProcessList(procs, 2) == 1) FreeConsole();
+#endif
+  // Windows : tenir compte du zoom de l'écran (125 %, 150 %…) pour une image nette,
+  // au lieu de laisser Windows agrandir (et flouter) la fenêtre
+  SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "permonitorv2");
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) != 0) {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Brumeval", SDL_GetError(), nullptr);
     return 1;
@@ -70,37 +196,48 @@ int main(int argc, char* argv[]) {
     if (warn.size() > 12) msg += "\n… et " + std::to_string(warn.size() - 12) + " autres.";
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Brumeval", msg.c_str(), nullptr);
   }
-  SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");  // pixels nets
   SDL_Window* win = SDL_CreateWindow("Brumeval", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_W * 3, SCREEN_H * 3,
-                                     SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+                                     SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_HIDDEN);
   if (!win) {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Brumeval", SDL_GetError(), nullptr);
     return 1;
   }
-  SDL_Renderer* r = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-  if (!r) r = SDL_CreateRenderer(win, -1, SDL_RENDERER_SOFTWARE);
-  SDL_RenderSetLogicalSize(r, SCREEN_W, SCREEN_H);
-  SDL_RenderSetIntegerScale(r, SDL_TRUE);
+  fitWindow(win);
+  SDL_SetWindowMinimumSize(win, SCREEN_W, SCREEN_H);
+  SDL_ShowWindow(win);
+  bool fullscreen = loadFullscreen();
+  if (fullscreen) SDL_SetWindowFullscreen(win, SDL_WINDOW_FULLSCREEN_DESKTOP);
+  SDL_Renderer* r = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
+  if (!r) r = SDL_CreateRenderer(win, -1, SDL_RENDERER_SOFTWARE | SDL_RENDERER_TARGETTEXTURE);
+  if (!r) {
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Brumeval", SDL_GetError(), nullptr);
+    return 1;
+  }
 
   {
+    Screen screen(r);
     Game game(r);
-    bool fullscreen = false;
     Uint64 last = SDL_GetPerformanceCounter();
     while (!game.quit) {
       SDL_Event e;
       while (SDL_PollEvent(&e)) {
         if (e.type == SDL_QUIT) game.quit = true;
+        if (e.type == SDL_RENDER_DEVICE_RESET) screen.reset();
         if (e.type == SDL_TEXTINPUT) {
           game.onText(e.text.text);
           continue;
         }
         if (e.type == SDL_MOUSEMOTION) {
-          game.onMouse(e.motion.x, e.motion.y, -1, false);
+          int x, y;
+          screen.toGame(win, e.motion.x, e.motion.y, x, y);
+          game.onMouse(x, y, -1, false);
           continue;
         }
         if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {
           int b = e.button.button == SDL_BUTTON_LEFT ? 0 : e.button.button == SDL_BUTTON_RIGHT ? 2 : 1;
-          game.onMouse(e.button.x, e.button.y, b, e.type == SDL_MOUSEBUTTONDOWN);
+          int x, y;
+          screen.toGame(win, e.button.x, e.button.y, x, y);
+          game.onMouse(x, y, b, e.type == SDL_MOUSEBUTTONDOWN);
           continue;
         }
         if (e.type == SDL_MOUSEWHEEL) {
@@ -111,8 +248,9 @@ int main(int argc, char* argv[]) {
         SDL_Scancode k = e.key.keysym.scancode;
         bool alt = (e.key.keysym.mod & KMOD_ALT) != 0;
         if (e.type == SDL_KEYDOWN && !e.key.repeat && (k == SDL_SCANCODE_F11 || (alt && k == SDL_SCANCODE_RETURN))) {
-          fullscreen = !fullscreen;  // F11 ou Alt+Entrée : plein écran
+          fullscreen = !fullscreen;  // F11 ou Alt+Entrée : plein écran (gardé pour la prochaine fois)
           SDL_SetWindowFullscreen(win, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+          saveFullscreen(fullscreen);
           continue;
         }
         game.onKey(k, e.type == SDL_KEYDOWN, e.key.repeat != 0);
@@ -121,8 +259,9 @@ int main(int argc, char* argv[]) {
       float dt = std::min(.05f, float(now - last) / float(SDL_GetPerformanceFrequency()));
       last = now;
       game.update(dt);
+      screen.begin();
       game.draw();
-      SDL_RenderPresent(r);
+      screen.present();
       SDL_Delay(1);
     }
   }
