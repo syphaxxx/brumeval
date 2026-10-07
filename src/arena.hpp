@@ -49,6 +49,7 @@ class Arena {
   int presetCount() const { return (int)presets_.size(); }
   int findPreset(const std::string& name) const;
   void applyPreset(int i);
+  void setFoes(const Json& combat);  // ennemis et renforts d'une action « combat » de l'histoire
   void startSim(int n);
   bool simulating() const { return simRunning_; }
   void startManual();

@@ -9,6 +9,7 @@
 #include "battle.hpp"
 #include "mapedit.hpp"
 #include "settings.hpp"
+#include "storyedit.hpp"
 #include "sprites.hpp"
 
 static const Color WHITE = rgb(0xffffff), GOLD = rgb(0xffd34d), MUTED = rgb(0xaab3d8);
@@ -141,6 +142,9 @@ void Game::update(float dt) {
       break;
     case Mode::Editor:
       if (editor_) editor_->update(dt);
+      break;
+    case Mode::Story:
+      if (story_) story_->update(dt);
       break;
     case Mode::Battle: {
       battle_->update(dt);
@@ -445,7 +449,7 @@ void Game::ask(const std::string& q, std::function<void()> yes, std::function<vo
 // ---------------------------------------------------------------------------
 void Game::titleMenu() {
   mode = Mode::Title;
-  editorTest_ = false;
+  editorTest_ = storyTest_ = false;
   menus.clear();
   Menu m;
   m.x = 110, m.y = 140, m.w = 100, m.rows = 4, m.cancelable = false;
@@ -467,7 +471,7 @@ void Game::titleMenu() {
 void Game::toolsMenu() {
   Menu m;
   m.title = "Outils";
-  m.x = 96, m.y = 100, m.w = 128, m.rows = 5;
+  m.x = 92, m.y = 92, m.w = 136, m.rows = 6;
   m.items.push_back({"Arène de combat", "", "Composer deux équipes, combattre ou simuler des combats.", true, [this] {
                        if (!arena_) arena_ = std::make_unique<Arena>(*this);
                        mode = Mode::Arena;
@@ -482,6 +486,11 @@ void Game::toolsMenu() {
                        if (!editor_) editor_ = std::make_unique<MapEditor>(*this);
                        mode = Mode::Editor;
                        editor_->open();
+                     }});
+  m.items.push_back({"Éditeur d'histoire", "", "Dialogues et événements : conditions, questions, combats, récompenses… et les jouer.", true, [this] {
+                       if (!story_) story_ = std::make_unique<StoryEditor>(*this);
+                       mode = Mode::Story;
+                       story_->open();
                      }});
   m.items.push_back({"Retour", "", "", true, [this] { menus.pop(); }});
   menus.push(m);
@@ -524,6 +533,11 @@ void Game::pauseMenu() {
     m.items.push_back({"Retour à l'éditeur", "", "Revenir à l'éditeur de cartes, à l'endroit où vous êtes.", true, [this] {
                          panelMode_ = 0;
                          editor_->returnFromTest();
+                       }});
+  if (storyTest_ && story_)
+    m.items.push_back({"Retour à l'éditeur", "", "Revenir à l'éditeur d'histoire.", true, [this] {
+                         panelMode_ = 0;
+                         story_->returnFromTest();
                        }});
   m.items.push_back({"Équipe", "", "Ordre de combat et fiches.", true, [this] { teamMenu(); }});
   m.items.push_back({"Objets", "", "Utiliser un objet.", true, [this] { itemMenu(); }});
@@ -800,6 +814,9 @@ void Game::draw() {
       break;
     case Mode::Editor:
       if (editor_) editor_->draw();
+      break;
+    case Mode::Story:
+      if (story_) story_->draw();
       break;
   }
   if (textOn_) drawTextEdit();

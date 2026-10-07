@@ -60,6 +60,15 @@ Depuis l'écran titre, **Outils** donne accès à :
   vérification, **Tester ici** (Échap > Retour à l'éditeur), enregistrer
   (Ctrl+S). Ctrl+Z / Ctrl+Y annulent et rétablissent.
 
+- **Éditeur d'histoire** : tous les événements (dialogues, scènes, boss,
+  dresseurs, boutiques…). Un événement est une liste d'actions (dire, donner,
+  combat, question, si…) ou plusieurs **pages** avec une condition (drapeau,
+  objet, or, membre de l'équipe). Les actions qui en contiennent d'autres
+  (réponses Oui/Non, victoire/défaite d'un combat, alors/sinon) s'ouvrent comme
+  des sous-listes. **Jouer l'événement** le lance à l'endroit où il est utilisé,
+  avec une équipe et des drapeaux de test ; un combat peut s'essayer dans
+  l'Arène. Ctrl+Z / Ctrl+Y / Ctrl+S comme dans l'éditeur de cartes.
+
 Les menus se manient aussi à la souris : survol, clic gauche pour valider, clic
 droit pour revenir, molette pour défiler ou régler une valeur.
 

@@ -21,7 +21,8 @@ class Battle;
 class Arena;
 class Settings;
 class MapEditor;
-enum class Mode { Title, Map, Battle, Ending, Arena, Settings, Editor };
+class StoryEditor;
+enum class Mode { Title, Map, Battle, Ending, Arena, Settings, Editor, Story };
 enum class BattleResult { Win, Lose, Fled };
 
 class Game {
@@ -134,6 +135,8 @@ class Game {
   std::unique_ptr<Settings> settings_;  // Réglages (écran titre > Outils)
   std::unique_ptr<MapEditor> editor_;   // Éditeur de cartes (écran titre > Outils)
   bool editorTest_ = false;             // partie de test lancée depuis l'éditeur
+  std::unique_ptr<StoryEditor> story_;  // Éditeur d'histoire (écran titre > Outils)
+  bool storyTest_ = false;              // événement joué depuis l'éditeur d'histoire
   bool arenaBattle_ = false;      // le combat en cours a été lancé depuis l'Arène
   void toolsMenu();
   std::function<void(BattleResult)> afterBattle_;
@@ -151,4 +154,5 @@ class Game {
   friend class Arena;
   friend class Settings;
   friend class MapEditor;
+  friend class StoryEditor;
 };

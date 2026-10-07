@@ -99,6 +99,9 @@ class MapEditor {
   void drawBars();
 };
 
+// Identifiant de fichier à partir d'un nom : « Forêt d'Été » donne foret_d_ete
+std::string makeSlug(const std::string& name);
+
 // Tuiles disponibles et leur nom
 struct TileInfo {
   char c;

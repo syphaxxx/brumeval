@@ -73,7 +73,7 @@ static uint32_t tileColor(char c, Theme th) {
 }
 
 // Identifiant de fichier à partir d'un nom : minuscules, sans accents ni espaces
-static std::string slug(const std::string& name) {
+std::string makeSlug(const std::string& name) {
   static const std::pair<const char*, char> ACC[] = {{"à", 'a'}, {"â", 'a'}, {"ä", 'a'}, {"é", 'e'}, {"è", 'e'}, {"ê", 'e'}, {"ë", 'e'},
                                                      {"î", 'i'}, {"ï", 'i'}, {"ô", 'o'}, {"ö", 'o'}, {"ù", 'u'}, {"û", 'u'}, {"ü", 'u'},
                                                      {"ç", 'c'}, {"É", 'e'}, {"È", 'e'}, {"À", 'a'}, {"Ç", 'c'}, {"œ", 'o'}};
@@ -1200,7 +1200,7 @@ void MapEditor::menuOpen() {
 void MapEditor::newMap() {
   G.editText("Nom de la nouvelle carte", "", 30, [this](const std::string& name) {
     if (name.empty()) return;
-    std::string id = slug(name), base = id;
+    std::string id = makeSlug(name), base = id;
     for (int n = 2; mapIndex(id) >= 0; n++) id = base + "_" + std::to_string(n);
     MapDef m;
     m.id = id;

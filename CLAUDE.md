@@ -53,6 +53,7 @@ après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
 | `ui.hpp/.cpp` | Clavier, `Script` (file de messages/actions) et `MenuStack` (menus à curseur ; `MenuItem::adjust` pour régler une valeur avec gauche/droite, `rightFn` pour un texte recalculé, `menuHeader` pour un titre de section) |
 | `settings.hpp/.cpp` | Réglages (écran titre > Outils) : éditeurs des règles, espèces, techniques, types (grille) et objets ; chaque modification passe par `Settings::change` (document JSON puis `rebuildData`) |
 | `mapedit.hpp/.cpp` | Éditeur de cartes (écran titre > Outils) : calques tuiles/objets/zones, outils, menus de chaque objet, annuler/rétablir, test en jeu (`testHere`, `editorTest_`) |
+| `storyedit.hpp/.cpp` | Éditeur d'histoire (écran titre > Outils) : événements, pages, conditions, actions imbriquées ; chaque écran est un chemin JSON (`goTo`, `goUp`) ; « Jouer l'événement » (`play`, `storyTest_`) |
 | `arena.hpp/.cpp` | Arène de combat (écran titre > Outils) : composition, combat à la main, simulation progressive (`stepSim`), modèles tirés des événements et des zones, journal |
 | `test.cpp` | Mode test automatique |
 
@@ -101,6 +102,11 @@ après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
   survol et les clics. Raccourcis des éditeurs dans `Input` : `tab`, `undo`,
   `redo`, `saveKey` (Ctrl+Z/Y/S selon la disposition du clavier), `prev`/`next`
   (Page préc./suiv.), `del` (Suppr).
+- Éditeurs : chacun a son mode (`Mode::Arena`, `Settings`, `Editor`, `Story`),
+  ses menus dans `MenuStack` et ne modifie que la mémoire jusqu'à
+  « Enregistrer ». Les tests en jeu (`editorTest_`, `storyTest_`) ajoutent
+  « Retour à l'éditeur » au menu de pause. Les identifiants créés passent par
+  `makeSlug` (minuscules, sans accents, tirets bas).
 - Saisie de texte : `Game::editText(titre, texte, max, rappel)` (SDL_TEXTINPUT
   transmis par main.cpp à `Game::onText`). Pendant la saisie, `onKey` ne sert
   qu'à écrire (Retour arrière, Entrée, Échap).

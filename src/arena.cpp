@@ -110,6 +110,22 @@ int Arena::findPreset(const std::string& name) const {
   return -1;
 }
 
+void Arena::setFoes(const Json& combat) {
+  for (auto& s : foes) s = ArenaSlot{"", 10};
+  int k = 0;
+  for (auto& e : combat.value("ennemis", Json::array()))
+    if (k < 3 && hasSpecies(jget<std::string>(e, "espece", ""))) foes[k++] = slotFromJson(e);
+  k = 3;
+  for (auto& e : combat.value("renforts", Json::array()))
+    if (k < 6 && hasSpecies(jget<std::string>(e, "espece", ""))) foes[k++] = slotFromJson(e);
+  int top = 1;
+  bool boss = false;
+  for (auto& f : foes)
+    if (!f.sp.empty()) top = std::max(top, f.lvl), boss = boss || f.boss;
+  for (auto& a : allies)
+    if (!a.sp.empty()) a.lvl = std::max(1, top - (boss ? 1 : 0));
+}
+
 void Arena::applyPreset(int i) {
   if (i < 0 || i >= (int)presets_.size()) return;
   const Preset& p = presets_[i];

@@ -813,7 +813,7 @@
             "action": "combat",
             "ennemis": [
               {"espece": "givrelin", "niveau": 27},
-              {"espece": "givrecorne", "niveau": 31, "pv": 4.5, "boss": true},
+              {"espece": "givrecorne", "niveau": 31, "pv": 4, "boss": true},
               {"espece": "givrelin", "niveau": 27}
             ],
             "renforts": [{"espece": "cristallin", "niveau": 26}],

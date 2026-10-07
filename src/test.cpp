@@ -14,6 +14,7 @@
 #include "mapedit.hpp"
 #include "settings.hpp"
 #include "sprites.hpp"
+#include "storyedit.hpp"
 
 int Game::selfTest(SDL_Surface* target, const std::string& out) {
   std::filesystem::create_directories(out);
@@ -639,6 +640,84 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     titleMenu();
   }
 
+  // --- Éditeur d'histoire ---
+  {
+    sc.clear();
+    titleMenu();
+    menus.top().sel = 2;  // Outils
+    in.confirm = true;
+    frame();
+    menus.top().sel = 3;  // Éditeur d'histoire
+    in.confirm = true;
+    frame();
+    check(mode == Mode::Story && story_ != nullptr, "écran titre > Outils > Éditeur d'histoire");
+    if (story_) {
+      StoryEditor& S = *story_;
+      Json before = events();
+      run(.2f);
+      snap("49_histoire");
+      // Ajouter une action « Donner » à la première page du pêcheur
+      S.goTo("/pecheur/pages/0/actions");
+      run(.1f);
+      snap("50_histoire_actions");
+      size_t n0 = events()["pecheur"]["pages"][0]["actions"].size();
+      menus.top().sel = (int)n0;  // « + Ajouter une action »
+      in.confirm = true;
+      frame();
+      menus.top().sel = 1;  // Donner un objet
+      in.confirm = true;
+      frame();
+      run(.1f);
+      snap("51_histoire_action");
+      check(events()["pecheur"]["pages"][0]["actions"].size() == n0 + 1 && checkEvents().empty(), "histoire : ajouter une action « Donner »");
+      // Actions imbriquées : le duel de Brann
+      S.goTo("/brann/actions/3/oui/0");
+      run(.1f);
+      snap("52_histoire_combat");
+      S.goTo("/brann/actions/3/oui/0/victoire");
+      bool nested = menus.active() && menus.top().items.size() == events()["brann"]["actions"][3]["oui"][0]["victoire"].size() + 1;
+      check(nested, "histoire : ouvrir une sous-liste (victoire du duel de Brann)");
+      // Modifier un message au clavier, puis annuler et rétablir
+      std::string old = events()["ancien"]["pages"][0]["actions"][0]["texte"].get<std::string>();
+      S.goTo("/ancien/pages/0/actions/0");
+      menus.top().sel = 0;
+      in.confirm = true;
+      frame();
+      bool typing = editingText();
+      for (int i = 0; i < 200; i++) onKey(SDL_SCANCODE_BACKSPACE, true, true);
+      onText("Ancien : Bonjour, voyageur !");
+      onKey(SDL_SCANCODE_RETURN, true, false);
+      std::string now = events()["ancien"]["pages"][0]["actions"][0]["texte"].get<std::string>();
+      S.undo();
+      std::string undone = events()["ancien"]["pages"][0]["actions"][0]["texte"].get<std::string>();
+      S.redo();
+      check(typing && now == "Ancien : Bonjour, voyageur !" && undone == old &&
+                events()["ancien"]["pages"][0]["actions"][0]["texte"].get<std::string>() == now,
+            "histoire : modifier un message, annuler, rétablir");
+      S.goTo("/ancien/pages/0/si");
+      run(.1f);
+      snap("53_histoire_condition");
+      S.revert();
+      check(events() == before && !S.dirty(), "histoire : « Tout annuler » rend le fichier d'origine");
+      // Jouer l'événement du pêcheur, là où il se trouve
+      S.testFlags = "";
+      S.play("pecheur");
+      bool played = mode == Mode::Map && M().id == "vallee" && sc.busy();
+      skipScript();
+      check(played && has("pecheur") && items["plume"] == 2, "histoire : jouer l'événement du pêcheur sur sa carte");
+      in.menu = true;
+      frame();
+      in.confirm = true;  // « Retour à l'éditeur »
+      frame();
+      check(mode == Mode::Story, "histoire : retour à l'éditeur après le test");
+    }
+    menus.clear();
+    flags.clear();
+    team.clear();
+    mode = Mode::Title;
+    titleMenu();
+  }
+
   // --- Simulation d'équilibrage (IA simple, sans objets) ---
   std::printf("\nÉquilibrage (combats simulés, IA automatique) :\n");
   auto simSetup = [&](const char* name, std::vector<std::pair<std::string, int>> party, std::function<BattleSetup()> mk, int n) {
@@ -773,7 +852,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   }, 30);
   simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}}, [&] {
     BattleSetup s;
-    s.foes = {makeFighter("givrelin", 27), bossF("givrecorne", 31, 4.5f), makeFighter("givrelin", 27)};
+    s.foes = {makeFighter("givrelin", 27), bossF("givrecorne", 31, 4), makeFighter("givrelin", 27)};
     s.reserve = {makeFighter("cristallin", 26)};
     s.boss = true;
     s.canFlee = s.canCapture = false;
