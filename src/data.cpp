@@ -5,222 +5,438 @@
 #include <stdexcept>
 #include <unordered_map>
 
-using T = Type;
-using G = Target;
-using K = Kind;
+// ---------------------------------------------------------------------------
+// Contenu chargé depuis data/
+// ---------------------------------------------------------------------------
+static std::vector<TypeDef> TYPES;
+static std::vector<std::vector<float>> CHART;  // CHART[attaque][défense]
+static std::vector<Move> MOVES;
+static std::vector<Species> SPECIES;
+static std::vector<ItemDef> ITEMS;
+static std::vector<Look> LOOKS;
+static Rules RULES;
+static std::unordered_map<std::string, size_t> MOVE_IX, SPECIES_IX, ITEM_IX;
 
-const char* typeName(Type t) {
-  switch (t) {
-    case T::Normal: return "Normal";
-    case T::Feu: return "Feu";
-    case T::Eau: return "Eau";
-    case T::Plante: return "Plante";
-    case T::Foudre: return "Foudre";
-    case T::Ombre: return "Ombre";
-    case T::Lumiere: return "Lumière";
-  }
-  return "?";
+static const char* SHAPES[] = {"renard", "goutte", "bourgeon", "oiseau", "souris", "insecte", "grenouille",
+                               "champignon", "rocher", "feu_follet", "boss", "lezard", "golem", "serpent",
+                               "chauve_souris", "loup", "tortue", "fantome", "cristal", "humain"};
+static const char* TARGETS[] = {"ennemi", "tous_ennemis", "allie", "tous_allies", "allie_ko"};
+static const char* KINDS[] = {"physique", "magique", "soin", "rappel", "statut"};
+static const char* STATUSES[] = {"aucun", "poison", "brulure", "paralysie", "sommeil"};
+static const char* STATUS_NAMES[] = {"", "Poison", "Brûlure", "Paralysie", "Sommeil"};
+static const char* STATUS_TAGS[] = {"", "PSN", "BRL", "PAR", "SOM"};
+static const uint32_t STATUS_COLORS[] = {0xffffff, 0xc58aff, 0xff8a4a, 0xffe14a, 0x9fb8ff};
+static const char* STAGES[] = {"attaque", "defense", "magie", "resistance", "vitesse"};
+static const char* STAGE_NAMES[] = {"Attaque", "Défense", "Magie", "Résistance", "Vitesse"};
+static const char* HATS[] = {"aucune", "capuche", "chapeau", "bandeau", "casque", "foulard"};
+static const char* WEAPONS[] = {"aucune", "epee", "baton", "hache", "dague", "arc", "lance"};
+static const char* DIRS[] = {"haut", "bas", "gauche", "droite"};
+
+template <size_t N>
+static int nameIndex(const char* (&names)[N], const std::string& s, const char* what) {
+  for (size_t i = 0; i < N; i++)
+    if (s == names[i]) return (int)i;
+  std::string all;
+  for (size_t i = 0; i < N; i++) all += (i ? ", " : "") + std::string(names[i]);
+  throw std::runtime_error(std::string(what) + " inconnu(e) : « " + s + " » (possibles : " + all + ")");
 }
 
+Shape shapeOf(const std::string& s) { return Shape(nameIndex(SHAPES, s, "Forme")); }
+const char* shapeName(Shape s) { return SHAPES[(int)s]; }
+int dirOf(const std::string& s) { return nameIndex(DIRS, s, "Direction"); }
+const char* dirName(int d) { return DIRS[d & 3]; }
+Status statusOf(const std::string& s) { return Status(nameIndex(STATUSES, s, "État")); }
+const char* statusId(Status s) { return STATUSES[(int)s]; }
+const char* statusName(Status s) { return STATUS_NAMES[(int)s]; }
+const char* statusTag(Status s) { return STATUS_TAGS[(int)s]; }
+uint32_t statusColor(Status s) { return STATUS_COLORS[(int)s]; }
+int stageOf(const std::string& s) { return nameIndex(STAGES, s, "Statistique"); }
+const char* stageName(int st) { return STAGE_NAMES[st]; }
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+const std::vector<TypeDef>& types() { return TYPES; }
+Type typeOf(const std::string& id) {
+  for (size_t i = 0; i < TYPES.size(); i++)
+    if (TYPES[i].id == id) return (Type)i;
+  throw std::runtime_error("Type inconnu : « " + id + " »");
+}
+const char* typeName(Type t) { return t >= 0 && t < (int)TYPES.size() ? TYPES[t].name.c_str() : "?"; }
 float typeEff(Type a, Type d) {
-  if (a == T::Feu) return d == T::Plante ? 2.f : (d == T::Eau || d == T::Feu) ? .5f : 1.f;
-  if (a == T::Eau) return d == T::Feu ? 2.f : (d == T::Plante || d == T::Eau) ? .5f : 1.f;
-  if (a == T::Plante) return d == T::Eau ? 2.f : (d == T::Feu || d == T::Plante) ? .5f : 1.f;
-  if (a == T::Foudre) return d == T::Eau ? 2.f : (d == T::Plante || d == T::Foudre) ? .5f : 1.f;
-  if (a == T::Lumiere) return d == T::Ombre ? 2.f : 1.f;
-  if (a == T::Ombre) return d == T::Lumiere ? 2.f : 1.f;
-  return 1.f;
+  if (a < 0 || d < 0 || a >= (int)CHART.size() || d >= (int)CHART.size()) return 1.f;
+  return CHART[a][d];
+}
+float moveEff(const Move& m, const Species& s) {
+  float e = typeEff(m.type, s.type) * (s.type2 >= 0 ? typeEff(m.type, s.type2) : 1.f);
+  auto r = [&](const std::string& k) {
+    auto it = s.resist.find(k);
+    return it == s.resist.end() ? 1.f : it->second;
+  };
+  e *= r(TYPES[m.type].id);
+  if (m.kind == Kind::Physical) e *= r("physique");
+  if (m.kind == Kind::Magic) e *= r("magique");
+  return e;
+}
+std::string typesName(const Species& s) { return s.type2 >= 0 ? std::string(typeName(s.type)) + "/" + typeName(s.type2) : typeName(s.type); }
+bool hasType(const Species& s, Type t) { return s.type == t || s.type2 == t; }
+bool immuneTo(const Species& s, Status st) {
+  std::string id = statusId(st);
+  auto in = [&](const std::vector<std::string>& v) { return std::find(v.begin(), v.end(), id) != v.end(); };
+  if (in(s.immune)) return true;
+  for (Type t : {s.type, s.type2})
+    if (t >= 0 && in(TYPES[t].immune)) return true;
+  return false;
 }
 
 // ---------------------------------------------------------------------------
-// Techniques et sorts
+// Règles
 // ---------------------------------------------------------------------------
-static const std::vector<Move> MOVES = {
-    // Techniques des héros
-    {"lame", "Lame d'acier", T::Normal, 40, G::Enemy, K::Physical, 0, "Un coup d'épée net."},
-    {"estoc", "Estoc", T::Normal, 55, G::Enemy, K::Physical, 0, "Une frappe perçante."},
-    {"eclair", "Taillade éclair", T::Normal, 72, G::Enemy, K::Physical, 0, "Un enchaînement fulgurant."},
-    {"hache", "Coup de hache", T::Normal, 48, G::Enemy, K::Physical, 0, "Lourd et brutal."},
-    {"fracas", "Fracas", T::Normal, 68, G::Enemy, K::Physical, 0, "Une frappe qui ébranle le sol."},
-    {"baton", "Coup de bâton", T::Normal, 28, G::Enemy, K::Physical, 0, "Mieux vaut lancer un sort."},
-    {"dague", "Dague", T::Normal, 32, G::Enemy, K::Physical, 0, "Rapide mais légère."},
-    // Techniques des créatures
-    {"charge", "Charge", T::Normal, 35, G::Enemy, K::Physical, 0, ""},
-    {"flam", "Flammèche", T::Feu, 40, G::Enemy, K::Physical, 0, ""},
-    {"brasier", "Brasier", T::Feu, 65, G::Enemy, K::Physical, 0, ""},
-    {"jet", "Jet d'eau", T::Eau, 40, G::Enemy, K::Physical, 0, ""},
-    {"vague", "Vague", T::Eau, 65, G::Enemy, K::Physical, 0, ""},
-    {"ronce", "Fouet-ronce", T::Plante, 40, G::Enemy, K::Physical, 0, ""},
-    {"tempete", "Tempête de feuilles", T::Plante, 65, G::Enemy, K::Physical, 0, ""},
-    {"bec", "Coup de bec", T::Normal, 40, G::Enemy, K::Physical, 0, ""},
-    {"morsure", "Morsure", T::Normal, 45, G::Enemy, K::Physical, 0, ""},
-    {"etincelle", "Étincelle", T::Feu, 40, G::Enemy, K::Physical, 0, ""},
-    {"bulle", "Bulle", T::Eau, 40, G::Enemy, K::Physical, 0, ""},
-    {"spore", "Spore", T::Plante, 40, G::Enemy, K::Physical, 0, ""},
-    {"eboul", "Éboulis", T::Normal, 55, G::Enemy, K::Physical, 0, ""},
-    {"griffe", "Griffe d'ombre", T::Ombre, 50, G::Enemy, K::Physical, 0, ""},
-    {"crocs", "Crocs ardents", T::Feu, 55, G::Enemy, K::Physical, 0, ""},
-    {"decharge", "Décharge", T::Foudre, 50, G::Enemy, K::Physical, 0, ""},
-    {"pique", "Piqué tonnerre", T::Foudre, 65, G::Enemy, K::Physical, 0, ""},
-    {"gel", "Morsure de gel", T::Eau, 55, G::Enemy, K::Physical, 0, ""},
-    {"suie", "Nuage de suie", T::Ombre, 40, G::AllEnemies, K::Magic, 0, ""},
-    {"magma", "Torrent de magma", T::Feu, 50, G::AllEnemies, K::Magic, 0, ""},
-    {"poing", "Poing de lave", T::Feu, 72, G::Enemy, K::Physical, 0, ""},
-    {"brume", "Souffle de brume", T::Ombre, 40, G::AllEnemies, K::Magic, 0, ""},
-    {"voile", "Voile noir", T::Ombre, 45, G::Enemy, K::Magic, 0, ""},
-    // Sorts (coûtent des PM)
-    {"soin", "Soin", T::Lumiere, 30, G::Ally, K::Heal, 4, "Rend des PV à un allié."},
-    {"soins", "Soin de groupe", T::Lumiere, 20, G::AllAllies, K::Heal, 10, "Rend des PV à toute l'équipe."},
-    {"reveil", "Réanimation", T::Lumiere, 40, G::AllyKO, K::Revive, 16, "Relève un allié K.O."},
-    {"lumiere", "Lumière", T::Lumiere, 42, G::Enemy, K::Magic, 4, "Très efficace contre l'Ombre."},
-    {"rayon", "Rayon sacré", T::Lumiere, 55, G::AllEnemies, K::Magic, 14, "Lumière sur tous les ennemis."},
-    {"feu", "Feu", T::Feu, 45, G::Enemy, K::Magic, 4, "Brûle un ennemi."},
-    {"givre", "Givre", T::Eau, 45, G::Enemy, K::Magic, 4, "Gèle un ennemi."},
-    {"foudre", "Foudre", T::Foudre, 45, G::Enemy, K::Magic, 4, "Foudroie un ennemi."},
-    {"pyro", "Pyrosphère", T::Feu, 50, G::AllEnemies, K::Magic, 12, "Feu sur tous les ennemis."},
-    {"blizzard", "Blizzard", T::Eau, 50, G::AllEnemies, K::Magic, 12, "Glace sur tous les ennemis."},
-    {"orage", "Orage", T::Foudre, 50, G::AllEnemies, K::Magic, 12, "Foudre sur tous les ennemis."},
-    {"seve", "Sève", T::Plante, 18, G::AllAllies, K::Heal, 9, "Une sève douce soigne l'équipe."},
-    // Limites
-    {"lim_lior", "Taille-brume", T::Normal, 62, G::AllEnemies, K::Physical, 0, ""},
-    {"lim_maelle", "Grâce de l'aube", T::Lumiere, 45, G::AllAllies, K::Heal, 0, ""},
-    {"lim_brann", "Tourbillon d'acier", T::Normal, 72, G::AllEnemies, K::Physical, 0, ""},
-    {"lim_isra", "Comète", T::Normal, 75, G::AllEnemies, K::Magic, 0, ""},
-    {"lim_braisenard", "Ouragan de braises", T::Feu, 58, G::AllEnemies, K::Physical, 0, ""},
-    {"lim_gouttelin", "Déluge", T::Eau, 58, G::AllEnemies, K::Physical, 0, ""},
-    {"lim_ronceau", "Ronces infinies", T::Plante, 58, G::AllEnemies, K::Physical, 0, ""},
-    {"lim_piafouine", "Rafale de plumes", T::Normal, 55, G::AllEnemies, K::Physical, 0, ""},
-    {"lim_mulotin", "Frénésie", T::Normal, 55, G::AllEnemies, K::Physical, 0, ""},
-    {"lim_lucioline", "Nuée ardente", T::Feu, 55, G::AllEnemies, K::Physical, 0, ""},
-    {"lim_grenouillon", "Raz-de-marée", T::Eau, 55, G::AllEnemies, K::Physical, 0, ""},
-    {"lim_champichou", "Nuage de spores", T::Plante, 55, G::AllEnemies, K::Physical, 0, ""},
-    {"lim_rocaillou", "Avalanche", T::Normal, 55, G::AllEnemies, K::Physical, 0, ""},
-    {"lim_brumelin", "Ombre profonde", T::Ombre, 55, G::AllEnemies, K::Magic, 0, ""},
-    {"lim_tisonnel", "Éruption", T::Feu, 60, G::AllEnemies, K::Physical, 0, ""},
-    {"lim_voltigeon", "Tempête d'éclairs", T::Foudre, 60, G::AllEnemies, K::Physical, 0, ""},
-    {"lim_galetor", "Séisme", T::Normal, 60, G::AllEnemies, K::Physical, 0, ""},
-    {"lim_glaconnet", "Ère glaciaire", T::Eau, 60, G::AllEnemies, K::Magic, 0, ""},
-    {"lim_fumerole", "Brouillard toxique", T::Ombre, 60, G::AllEnemies, K::Magic, 0, ""},
-};
-
-// ---------------------------------------------------------------------------
-// Apparences des humains
-// ---------------------------------------------------------------------------
-static const std::vector<Look> LOOKS = {
-    {0x5a3a22, 0xf2c9a0, 0xd2493f, 0x2b2f45, 3, 1},  // 0 Lior : bandeau bleu, épée
-    {0xe8d27a, 0xf6d6b8, 0xf2f0ea, 0x9fb3d9, 1, 2},  // 1 Maëlle : capuche blanche, bâton
-    {0x8a3b1e, 0xd9a47a, 0x6b4a2f, 0x3d3a36, 0, 3},  // 2 Brann : hache
-    {0x2b2238, 0xeec4a8, 0x5b3f8c, 0x2a2140, 2, 4},  // 3 Isra : chapeau pointu, dague
-    {0x6b4a2f, 0xf2c9a0, 0x4e8c5a, 0x5a4a3a, 0, 0},  // 4 villageois
-    {0xc9c4bc, 0xe8c0a0, 0x7a5c9a, 0x4a4060, 0, 0},  // 5 ancien
-    {0xd98a3a, 0xf2c9a0, 0xe0b34a, 0x3a5a8a, 0, 0},  // 6 enfant
-    {0x3a2a1e, 0xc99a74, 0x8a8f9a, 0x3a3a44, 3, 0},  // 7 garde / mineur
-    {0x4a2e1e, 0xf2d0b0, 0xc85a7a, 0x5a3a4a, 0, 0},  // 8 villageoise
-    {0x9a9a9a, 0xe0b898, 0x3f6f8f, 0x2f3f4f, 1, 0},  // 9 pêcheur / érudit
-};
-
-// ---------------------------------------------------------------------------
-// Espèces : héros et créatures
-// base = PV, PM, Attaque, Défense, Magie, Vitesse
-// ---------------------------------------------------------------------------
-static std::vector<Species> makeSpecies() {
-  std::vector<Species> v;
-  auto H = [&](std::string id, std::string n, Type t, std::array<int, 6> b, std::vector<Learn> l, std::string lim, int lk,
-               std::string role) {
-    Species s{id, n, t, b, Shape::Human, 0, 0, l, lim};
-    s.human = true;
-    s.look = lk;
-    s.role = role;
-    v.push_back(s);
+const Rules& rules() { return RULES; }
+Rules& editRules() { return RULES; }
+std::vector<RuleField> ruleFields(Rules& r) {
+  auto D = [](const char* g, const char* k, const char* l, double& v, double mn, double mx, double st) {
+    RuleField f{g, k, l};
+    f.d = &v, f.min = mn, f.max = mx, f.step = st;
+    return f;
   };
-  auto C = [&](std::string id, std::string n, Type t, std::array<int, 6> b, Shape sh, uint32_t c1, uint32_t c2,
-               std::vector<Learn> l) {
-    v.push_back(Species{id, n, t, b, sh, c1, c2, l, "lim_" + id});
+  auto I = [](const char* g, const char* k, const char* l, int& v, double mn, double mx, double st) {
+    RuleField f{g, k, l};
+    f.i = &v, f.min = mn, f.max = mx, f.step = st;
+    return f;
   };
-  H("lior", "Lior", T::Normal, {55, 20, 55, 48, 30, 50}, {{1, "lame"}, {6, "estoc"}, {8, "soin"}, {14, "eclair"}}, "lim_lior", 0,
-    "Apprenti gardien, épéiste");
-  H("maelle", "Maëlle", T::Lumiere, {44, 60, 28, 42, 58, 48},
-    {{1, "baton"}, {1, "soin"}, {1, "lumiere"}, {9, "soins"}, {12, "reveil"}, {17, "rayon"}}, "lim_maelle", 1,
-    "Mage blanche du village");
-  H("brann", "Brann", T::Normal, {70, 12, 66, 60, 20, 36}, {{1, "hache"}, {15, "fracas"}}, "lim_brann", 2,
-    "Forgeron et guerrier à la hache");
-  H("isra", "Isra", T::Ombre, {40, 70, 26, 36, 66, 54},
-    {{1, "dague"}, {1, "feu"}, {1, "givre"}, {1, "foudre"}, {17, "pyro"}, {18, "blizzard"}, {19, "orage"}}, "lim_isra", 3,
-    "Mage noire, exploratrice des grottes");
-
-  C("braisenard", "Braisenard", T::Feu, {45, 22, 56, 42, 40, 60}, Shape::Fox, 0xe8743b, 0xffd27a,
-    {{1, "charge"}, {1, "flam"}, {9, "brasier"}, {12, "pyro"}});
-  C("gouttelin", "Gouttelin", T::Eau, {50, 22, 50, 54, 42, 46}, Shape::Drop, 0x3f8fd9, 0xbfe6ff,
-    {{1, "charge"}, {1, "jet"}, {9, "vague"}, {12, "blizzard"}});
-  C("ronceau", "Ronceau", T::Plante, {52, 24, 50, 52, 44, 44}, Shape::Bud, 0x4ea35a, 0xd6f0a0,
-    {{1, "charge"}, {1, "ronce"}, {9, "tempete"}, {12, "seve"}});
-  C("piafouine", "Piafouine", T::Normal, {40, 10, 45, 38, 20, 58}, Shape::Bird, 0xb98a5e, 0xf3e2c4, {{1, "bec"}, {6, "charge"}});
-  C("mulotin", "Mulotin", T::Normal, {38, 10, 50, 36, 20, 52}, Shape::Mouse, 0x9a92a8, 0xefe6f2, {{1, "charge"}, {5, "morsure"}});
-  C("lucioline", "Lucioline", T::Feu, {40, 16, 48, 40, 40, 55}, Shape::Bug, 0xd9a23b, 0xfff1a8,
-    {{1, "charge"}, {4, "etincelle"}, {10, "feu"}});
-  C("grenouillon", "Grenouillon", T::Eau, {48, 16, 46, 48, 36, 42}, Shape::Frog, 0x3fae9f, 0xc9f2e6,
-    {{1, "charge"}, {4, "bulle"}, {10, "givre"}});
-  C("champichou", "Champichou", T::Plante, {50, 18, 44, 50, 40, 36}, Shape::Mush, 0xc4524f, 0xf6e7d2,
-    {{1, "charge"}, {4, "spore"}, {12, "seve"}});
-  C("rocaillou", "Rocaillou", T::Normal, {50, 8, 52, 66, 20, 28}, Shape::Rock, 0x8b8378, 0xcfc6b8, {{1, "charge"}, {7, "eboul"}});
-  C("brumelin", "Brumelin", T::Ombre, {40, 20, 44, 40, 44, 50}, Shape::Wisp, 0x7a6fb0, 0xe3dcff, {{1, "griffe"}, {8, "voile"}});
-  C("tisonnel", "Tisonnel", T::Feu, {52, 20, 58, 46, 40, 56}, Shape::Lizard, 0xd9542b, 0xffc15a, {{1, "flam"}, {1, "crocs"}});
-  C("voltigeon", "Voltigeon", T::Foudre, {46, 20, 52, 40, 48, 64}, Shape::Bird, 0xe8c33a, 0xfff6c0,
-    {{1, "bec"}, {1, "decharge"}, {14, "pique"}});
-  C("galetor", "Galetor", T::Normal, {62, 8, 60, 72, 22, 26}, Shape::Rock, 0x6e6560, 0xa99f96,
-    {{1, "charge"}, {1, "eboul"}, {16, "fracas"}});
-  C("glaconnet", "Glaçonnet", T::Eau, {50, 24, 44, 52, 52, 44}, Shape::Drop, 0x9fd3ee, 0xffffff,
-    {{1, "bulle"}, {1, "gel"}, {12, "givre"}});
-  C("fumerole", "Fumerole", T::Ombre, {44, 26, 40, 44, 56, 50}, Shape::Wisp, 0x8a8592, 0xd8d4de,
-    {{1, "griffe"}, {1, "voile"}, {14, "suie"}});
-  // Boss
-  C("sylvarque", "Sylvarque", T::Ombre, {80, 40, 48, 46, 46, 45}, Shape::Boss, 0x5b4a8c, 0xc9b8ff,
-    {{1, "griffe"}, {1, "brume"}, {1, "eboul"}});
-  C("golem", "Golem de suie", T::Ombre, {90, 10, 60, 66, 30, 24}, Shape::Golem, 0x4a4440, 0xff9a3c,
-    {{1, "eboul"}, {1, "suie"}, {1, "fracas"}});
-  C("ignarok", "Ignarok", T::Feu, {95, 40, 60, 56, 58, 50}, Shape::Boss, 0xa8321e, 0xffb347,
-    {{1, "poing"}, {1, "magma"}, {1, "crocs"}});
-  return v;
+  return {
+      I("equipe", "taille_max", "Taille max. de l'équipe", r.maxTeam, 3, 20, 1),
+      I("equipe", "en_combat", "Combattants en première ligne", r.frontSize, 1, 3, 1),
+      D("rencontres", "taux", "Chance de rencontre par pas", r.encounterRate, 0, 1, .01),
+      I("rencontres", "pas_minimum", "Pas sans rencontre après un combat", r.minSteps, 0, 50, 1),
+      D("rencontres", "chance_2e", "Chance d'un 2e ennemi", r.second, 0, 1, .05),
+      D("rencontres", "chance_3e", "Chance d'un 3e ennemi", r.third, 0, 1, .05),
+      D("combat", "atb_base", "Vitesse ATB de base", r.atbBase, 0, 100, 1),
+      D("combat", "atb_vitesse", "Multiplicateur de vitesse ATB", r.atbSpeed, .1, 5, .1),
+      D("combat", "fuite", "Chance de fuite", r.flee, 0, 1, .05),
+      D("combat", "limite_gain", "Gain de Limite (coups reçus)", r.limitGain, 0, 500, 10),
+      D("combat", "bonus_meme_type", "Bonus si technique du même type", r.stab, 1, 3, .05),
+      D("combat", "alea_min", "Dégâts aléatoires minimum", r.spreadMin, .5, 1, .01),
+      D("combat", "diviseur_degats", "Diviseur des dégâts", r.dmgDivisor, 5, 200, 1),
+      D("combat", "critique_mult", "Multiplicateur des critiques", r.critMult, 1, 5, .05),
+      D("combat", "etage", "Effet d'un niveau de bonus/malus", r.stageStep, 0, 1, .05),
+      I("combat", "precision_base", "Précision par défaut (%)", r.accBase, 0, 200, 1),
+      I("combat", "esquive_base", "Esquive par défaut (%)", r.evaBase, 0, 100, 1),
+      I("combat", "critique_base", "Critique par défaut (%)", r.critBase, 0, 100, 1),
+      D("etats", "poison_degats", "Poison : part des PV perdus par tour", r.poisonDmg, 0, 1, .01),
+      D("etats", "brulure_degats", "Brûlure : part des PV perdus par tour", r.burnDmg, 0, 1, .01),
+      D("etats", "brulure_attaque", "Brûlure : multiplicateur d'Attaque", r.burnAtk, 0, 1, .05),
+      D("etats", "paralysie_vitesse", "Paralysie : multiplicateur de vitesse", r.paraSpeed, 0, 1, .05),
+      D("etats", "paralysie_blocage", "Paralysie : chance de rester bloqué", r.paraSkip, 0, 1, .05),
+      I("etats", "sommeil_min", "Sommeil : tours minimum", r.sleepMin, 1, 10, 1),
+      I("etats", "sommeil_max", "Sommeil : tours maximum", r.sleepMax, 1, 10, 1),
+      I("recompenses", "xp_par_niveau", "Expérience par niveau d'ennemi", r.xpPerLevel, 0, 100, 1),
+      I("recompenses", "xp_boss", "Multiplicateur d'expérience des boss", r.xpBoss, 1, 20, 1),
+      I("recompenses", "or_par_niveau", "Or par niveau d'ennemi", r.goldPerLevel, 0, 100, 1),
+      I("recompenses", "or_boss", "Multiplicateur d'or des boss", r.goldBoss, 1, 50, 1),
+      D("recompenses", "part_combattants", "Part d'expérience des combattants", r.xpFront, 0, 2, .05),
+      D("recompenses", "part_reserve", "Part d'expérience de la réserve", r.xpReserve, 0, 2, .05),
+      D("capture", "base", "Chance de capture de base", r.capBase, 0, 1, .01),
+      D("capture", "bonus_pv", "Bonus de capture (PV perdus)", r.capHp, 0, 1, .01),
+      D("capture", "max", "Chance de capture maximale", r.capMax, 0, 1, .01),
+      I("formules", "pv_diviseur", "PV : diviseur", r.hpDiv, 1, 100, 1),
+      I("formules", "pv_par_niveau", "PV : bonus par niveau", r.hpPerLvl, 0, 20, 1),
+      I("formules", "pv_base", "PV : base", r.hpBase, 0, 200, 1),
+      I("formules", "pm_diviseur", "PM : diviseur", r.mpDiv, 1, 100, 1),
+      I("formules", "pm_base", "PM : base", r.mpBase, 0, 100, 1),
+      I("formules", "stat_diviseur", "Stats : diviseur", r.statDiv, 1, 100, 1),
+      I("formules", "stat_base", "Stats : base", r.statBase, 0, 100, 1),
+      I("formules", "xp_base", "Expérience : base", r.xpBase, 0, 1000, 1),
+      D("formules", "xp_carre", "Expérience : facteur niveau²", r.xpSquare, .1, 10, .1),
+  };
 }
-static const std::vector<Species> SPECIES = makeSpecies();
 
-static const std::vector<ItemDef> ITEMS = {
-    {"potion", "Potion", "Rend 40 PV à un allié.", 30, true, true, false},
-    {"superpotion", "Super-potion", "Rend 120 PV à un allié.", 90, true, true, false},
-    {"ether", "Éther", "Rend 25 PM à un allié.", 70, true, true, false},
-    {"plume", "Plume ravivante", "Relève un allié K.O. avec la moitié de ses PV.", 120, true, true, false},
-    {"lanterne", "Lanterne", "Capture une créature. Plus elle est affaiblie, mieux c'est.", 40, true, false, false},
-    {"lanterne_argent", "Lanterne d'argent", "Capture beaucoup plus facile.", 110, true, false, false},
-    {"herbe", "Herbe lunaire", "Une herbe qui luit doucement. Maëlle en a besoin.", 0, false, false, true},
-};
+// Documents JSON en mémoire : la source de vérité. Les réglages les modifient
+// puis appellent rebuildData() ; « Enregistrer » les écrit dans data/.
+static const char* FILES[N_DATAFILES] = {"types.json", "techniques.json", "especes.json", "objets.json", "apparences.json", "regles.json"};
+static Json DOCS[N_DATAFILES];
+const char* dataFileName(DataFile f) { return FILES[f]; }
+Json& dataDoc(DataFile f) { return DOCS[f]; }
+void saveDataDoc(DataFile f) { writeJson(FILES[f], DOCS[f]); }
 
+static void loadRules(const Json& j) {
+  Rules r;
+  for (auto& f : ruleFields(r)) {
+    if (!j.contains(f.group) || !j[f.group].contains(f.key)) continue;
+    const Json& v = j[f.group][f.key];
+    if (f.d) *f.d = v.get<double>();
+    else *f.i = v.get<int>();
+  }
+  const Json& d = j.at("depart");
+  r.startMap = d.at("carte").get<std::string>();
+  r.startX = d.at("x").get<int>();
+  r.startY = d.at("y").get<int>();
+  r.startDir = dirOf(jget<std::string>(d, "direction", "bas"));
+  r.hero = d.at("heros").get<std::string>();
+  r.starters = d.at("compagnons").get<std::vector<std::string>>();
+  r.startLevel = jget(d, "niveau", 5);
+  r.startGold = jget(d, "or", 0);
+  Json startItems = d.value("objets", Json::object());  // variable : la boucle doit la garder en vie
+  for (auto& [k, v] : startItems.items()) r.startItems.push_back({k, v.get<int>()});
+  const Json& rv = d.at("reveil");
+  r.respawnMap = rv.at("carte").get<std::string>();
+  r.respawnX = rv.at("x").get<int>();
+  r.respawnY = rv.at("y").get<int>();
+  r.startEvent = jget<std::string>(d, "evenement", "");
+  if (j.contains("recompenses"))
+    for (auto& b : j["recompenses"].value("butin", Json::array())) r.drops.push_back({b.at("objet").get<std::string>(), b.at("chance").get<double>()});
+  RULES = r;
+}
+
+// ---------------------------------------------------------------------------
+// Chargement
+// ---------------------------------------------------------------------------
+template <class T, class F>
+static void loadList(DataFile df, std::vector<T>& out, F parse) {
+  out.clear();
+  const char* file = FILES[df];
+  const Json& j = DOCS[df];
+  if (!j.is_array()) throw std::runtime_error(std::string("data/") + file + " doit contenir une liste [ … ]");
+  for (auto& o : j) {
+    std::string id = jget<std::string>(o, "id", "?");
+    try {
+      out.push_back(parse(o));
+    } catch (const std::exception& e) {
+      throw std::runtime_error(std::string("data/") + file + ", « " + id + " » : " + e.what());
+    }
+  }
+}
+
+static Effect parseEffect(const Json& o) {
+  Effect e;
+  if (o.contains("statut")) e.status = statusOf(o["statut"].get<std::string>());
+  if (o.contains("stat")) {
+    e.stat = stageOf(o["stat"].get<std::string>());
+    e.stages = jget(o, "niveaux", 1);
+  }
+  e.self = jget<std::string>(o, "sur", "cible") == "lanceur";
+  e.cure = jget(o, "guerison", false);
+  e.chance = jget(o, "chance", 100);
+  return e;
+}
+void loadData() {
+  for (int f = 0; f < N_DATAFILES; f++) DOCS[f] = readJson(FILES[f]);
+  rebuildData();
+}
+
+void rebuildData() {
+  loadRules(DOCS[DF_RULES]);
+  // Types et table d'efficacité
+  const Json& t = DOCS[DF_TYPES];
+  TYPES.clear();
+  for (auto& o : t.at("types"))
+    TYPES.push_back({o.at("id").get<std::string>(), o.at("nom").get<std::string>(), parseColor(o.value("couleur", Json("#c8c8c8"))),
+                     jget(o, "immunites", std::vector<std::string>{})});
+  CHART.assign(TYPES.size(), std::vector<float>(TYPES.size(), 1.f));
+  Json chart = t.value("efficacite", Json::object());  // variable : la boucle doit la garder en vie
+  for (auto& [a, row] : chart.items())
+    for (auto& [d, v] : row.items()) CHART[typeOf(a)][typeOf(d)] = v.get<float>();
+
+  loadList(DF_MOVES, MOVES, [](const Json& o) {
+    Move m;
+    m.id = o.at("id").get<std::string>();
+    m.name = o.at("nom").get<std::string>();
+    m.type = typeOf(o.at("type").get<std::string>());
+    m.kind = Kind(nameIndex(KINDS, o.at("genre").get<std::string>(), "Genre"));
+    m.target = Target(nameIndex(TARGETS, o.at("cible").get<std::string>(), "Cible"));
+    m.power = o.at("puissance").get<int>();
+    m.cost = jget(o, "cout", 0);
+    m.desc = jget<std::string>(o, "description", "");
+    m.acc = jget(o, "precision", 100);
+    m.critBonus = jget(o, "critique", 0);
+    if (o.contains("effet")) m.effects.push_back(parseEffect(o["effet"]));
+    for (auto& e : o.value("effets", Json::array())) m.effects.push_back(parseEffect(e));
+    return m;
+  });
+
+  loadList(DF_LOOKS, LOOKS, [](const Json& o) {
+    Look l;
+    l.id = o.at("id").get<std::string>();
+    l.name = jget<std::string>(o, "nom", l.id);
+    l.hair = parseColor(o.at("cheveux"));
+    l.skin = parseColor(o.at("peau"));
+    l.top = parseColor(o.at("haut"));
+    l.bottom = parseColor(o.at("bas"));
+    l.hat = nameIndex(HATS, jget<std::string>(o, "coiffe", "aucune"), "Coiffe");
+    l.weapon = nameIndex(WEAPONS, jget<std::string>(o, "arme", "aucune"), "Arme");
+    return l;
+  });
+
+  loadList(DF_SPECIES, SPECIES, [](const Json& o) {
+    Species s;
+    s.id = o.at("id").get<std::string>();
+    s.name = o.at("nom").get<std::string>();
+    if (o.contains("types")) {
+      auto ts = o["types"].get<std::vector<std::string>>();
+      if (ts.empty() || ts.size() > 2) throw std::runtime_error("« types » doit contenir 1 ou 2 types");
+      s.type = typeOf(ts[0]);
+      if (ts.size() > 1) s.type2 = typeOf(ts[1]);
+    } else s.type = typeOf(o.at("type").get<std::string>());
+    const Json& b = o.at("base");
+    int def = b.at("defense").get<int>(), mag = b.at("magie").get<int>();
+    s.base = {b.at("pv").get<int>(), b.at("pm").get<int>(), b.at("attaque").get<int>(), def, mag,
+              jget(b, "resistance", (def + mag) / 2), b.at("vitesse").get<int>()};
+    s.acc = jget(o, "precision", RULES.accBase);
+    s.eva = jget(o, "esquive", RULES.evaBase);
+    s.crit = jget(o, "critique", RULES.critBase);
+    Json resist = o.value("resistances", Json::object());  // variable : la boucle doit la garder en vie
+    for (auto& [k, v] : resist.items()) s.resist[k] = v.get<float>();
+    s.immune = jget(o, "immunites", std::vector<std::string>{});
+    s.human = jget(o, "humain", false);
+    if (s.human) {
+      s.shape = Shape::Human;
+      s.look = lookIndex(o.at("apparence").get<std::string>());
+      if (s.look < 0) throw std::runtime_error("apparence inconnue : " + o.at("apparence").get<std::string>());
+      s.c1 = s.c2 = 0;
+    } else {
+      s.shape = shapeOf(o.at("forme").get<std::string>());
+      const Json& c = o.at("couleurs");
+      s.c1 = parseColor(c.at(0));
+      s.c2 = parseColor(c.at(1));
+    }
+    s.role = jget<std::string>(o, "role", "");
+    for (auto& l : o.at("apprend")) s.learn.push_back({l.at(0).get<int>(), l.at(1).get<std::string>()});
+    s.limit = jget<std::string>(o, "limite", "");  // vide : pas de Limite
+    return s;
+  });
+
+  loadList(DF_ITEMS, ITEMS, [](const Json& o) {
+    ItemDef d;
+    d.id = o.at("id").get<std::string>();
+    d.name = o.at("nom").get<std::string>();
+    d.desc = jget<std::string>(o, "description", "");
+    d.price = jget(o, "prix", 0);
+    d.battle = jget(o, "combat", false);
+    d.field = jget(o, "menu", false);
+    d.key = jget(o, "important", false);
+    d.healHp = jget(o, "soin_pv", 0);
+    d.healMp = jget(o, "soin_pm", 0);
+    d.revive = jget(o, "rappel", 0);
+    d.capture = jget(o, "capture", 0.f);
+    d.cure = jget(o, "soin_statut", false);
+    return d;
+  });
+
+  MOVE_IX.clear(), SPECIES_IX.clear(), ITEM_IX.clear();
+  for (size_t i = 0; i < MOVES.size(); i++) MOVE_IX[MOVES[i].id] = i;
+  for (size_t i = 0; i < SPECIES.size(); i++) SPECIES_IX[SPECIES[i].id] = i;
+  for (size_t i = 0; i < ITEMS.size(); i++) ITEM_IX[ITEMS[i].id] = i;
+}
+
+std::vector<std::string> checkData() {
+  std::vector<std::string> err;
+  auto dup = [&](auto& v, const char* what) {
+    for (size_t i = 0; i < v.size(); i++)
+      for (size_t k = 0; k < i; k++)
+        if (v[i].id == v[k].id) err.push_back(std::string(what) + " en double : " + v[i].id);
+  };
+  dup(MOVES, "Technique");
+  dup(SPECIES, "Espèce");
+  dup(ITEMS, "Objet");
+  dup(LOOKS, "Apparence");
+  for (auto& s : SPECIES) {
+    for (auto& l : s.learn)
+      if (!hasMove(l.move)) err.push_back(s.name + " apprend une technique inconnue : " + l.move);
+    if (!s.limit.empty() && !hasMove(s.limit)) err.push_back(s.name + " a une Limite inconnue : " + s.limit);
+    bool tech = false;
+    for (auto& l : s.learn)
+      if (hasMove(l.move) && l.lvl <= 1 && moveInfo(l.move).cost == 0) tech = true;
+    if (!tech) err.push_back(s.name + " ne connaît aucune technique gratuite au niveau 1");
+    for (auto& [k, v] : s.resist) {
+      bool ok = k == "physique" || k == "magique";
+      for (auto& t : TYPES) ok = ok || t.id == k;
+      if (!ok) err.push_back(s.name + " : résistance inconnue « " + k + " » (un type, physique ou magique)");
+    }
+    for (auto& st : s.immune)
+      if (std::find(std::begin(STATUSES) + 1, std::end(STATUSES), st) == std::end(STATUSES))
+        err.push_back(s.name + " : immunité à un état inconnu « " + st + " »");
+  }
+  for (auto& t : TYPES)
+    for (auto& st : t.immune)
+      if (std::find(std::begin(STATUSES) + 1, std::end(STATUSES), st) == std::end(STATUSES))
+        err.push_back("Type " + t.name + " : immunité à un état inconnu « " + st + " »");
+  for (auto& m : MOVES)
+    for (auto& e : m.effects)
+      if (e.status == Status::None && e.stat < 0 && !e.cure) err.push_back("Technique " + m.name + " : effet vide");
+  auto& r = RULES;
+  if (!hasSpecies(r.hero)) err.push_back("Héros de départ inconnu : " + r.hero);
+  for (auto& s : r.starters)
+    if (!hasSpecies(s)) err.push_back("Compagnon de départ inconnu : " + s);
+  for (auto& [id, n] : r.startItems)
+    if (!hasItem(id)) err.push_back("Objet de départ inconnu : " + id);
+  for (auto& [id, c] : r.drops)
+    if (!hasItem(id)) err.push_back("Butin inconnu : " + id);
+  return err;
+}
+
+// ---------------------------------------------------------------------------
+// Accès
 // ---------------------------------------------------------------------------
 template <class V>
-static const typename V::value_type& findId(const V& v, const std::string& id, const char* what) {
-  for (auto& x : v)
-    if (x.id == id) return x;
-  throw std::runtime_error(std::string(what) + " inconnu : " + id);
+static const typename V::value_type& findIx(const V& v, const std::unordered_map<std::string, size_t>& ix, const std::string& id, const char* what) {
+  auto it = ix.find(id);
+  if (it == ix.end()) throw std::runtime_error(std::string(what) + " inconnu : " + id);
+  return v[it->second];
 }
-const Move& moveInfo(const std::string& id) { return findId(MOVES, id, "Technique"); }
-const Species& species(const std::string& id) { return findId(SPECIES, id, "Espèce"); }
-const ItemDef& item(const std::string& id) { return findId(ITEMS, id, "Objet"); }
+const Move& moveInfo(const std::string& id) { return findIx(MOVES, MOVE_IX, id, "Technique"); }
+const Species& species(const std::string& id) { return findIx(SPECIES, SPECIES_IX, id, "Espèce"); }
+const ItemDef& item(const std::string& id) { return findIx(ITEMS, ITEM_IX, id, "Objet"); }
+bool hasMove(const std::string& id) { return MOVE_IX.count(id) > 0; }
+bool hasSpecies(const std::string& id) { return SPECIES_IX.count(id) > 0; }
+bool hasItem(const std::string& id) { return ITEM_IX.count(id) > 0; }
 const std::vector<ItemDef>& allItems() { return ITEMS; }
-const Look& look(int i) { return LOOKS[(size_t)i % LOOKS.size()]; }
+const std::vector<Move>& allMoves() { return MOVES; }
+const std::vector<Species>& allSpecies() { return SPECIES; }
+const std::vector<Look>& allLooks() { return LOOKS; }
+const Look& look(int i) { return LOOKS[(size_t)std::max(0, i) % LOOKS.size()]; }
+int lookIndex(const std::string& id) {
+  for (size_t i = 0; i < LOOKS.size(); i++)
+    if (LOOKS[i].id == id) return (int)i;
+  return -1;
+}
 
+// ---------------------------------------------------------------------------
+// Combattants
 // ---------------------------------------------------------------------------
 std::string Fighter::name() const { return tag.empty() ? S().name : S().name + " " + tag; }
 
-static int stat(int b, int l) { return b * l / 25 + 5; }
 void Fighter::recalc() {
   const auto& b = S().base;
-  mhp = b[0] * lvl / 20 + lvl + 10;
-  mmp = b[1] * lvl / 30 + 5;
-  atk = stat(b[2], lvl);
-  def = stat(b[3], lvl);
-  mag = stat(b[4], lvl);
-  spd = stat(b[5], lvl);
+  const Rules& r = RULES;
+  auto stat = [&](int base) { return base * lvl / r.statDiv + r.statBase; };
+  mhp = b[B_HP] * lvl / r.hpDiv + lvl * r.hpPerLvl + r.hpBase;
+  mmp = b[B_MP] * lvl / r.mpDiv + r.mpBase;
+  atk = stat(b[B_ATK]);
+  def = stat(b[B_DEF]);
+  mag = stat(b[B_MAG]);
+  res = stat(b[B_RES]);
+  spd = stat(b[B_SPD]);
+  acc = S().acc;
+  eva = S().eva;
+  crit = S().crit;
 }
-int Fighter::need() const { return 10 + lvl * lvl * 6 / 5; }
+void Fighter::clearBattle() {
+  status = Status::None;
+  statusTurns = 0;
+  stage.fill(0);
+}
+float Fighter::stageMult(int st) const {
+  int n = stage[st];
+  float k = float(RULES.stageStep);
+  return n >= 0 ? 1 + k * n : 1 / (1 - k * n);
+}
+float Fighter::eAtk() const { return atk * stageMult(S_ATK) * (status == Status::Burn ? float(RULES.burnAtk) : 1.f); }
+float Fighter::eDef() const { return def * stageMult(S_DEF); }
+float Fighter::eMag() const { return mag * stageMult(S_MAG); }
+float Fighter::eRes() const { return res * stageMult(S_RES); }
+float Fighter::eSpd() const { return spd * stageMult(S_SPD) * (status == Status::Paralysis ? float(RULES.paraSpeed) : 1.f); }
+int Fighter::need() const { return RULES.xpBase + int(lvl * lvl * RULES.xpSquare + 1e-6); }
 
 std::vector<std::string> Fighter::techs() const {
   std::vector<std::string> v;

@@ -1,0 +1,91 @@
+{
+  "id": "temple",
+  "nom": "Temple gelé",
+  "theme": "neige",
+  "taux_rencontre": 0.09,
+  "tuiles": [
+    "###################k#####################",
+    "#cccccccccccccc#cccccccc#cccccccccccccc##",
+    "#cccccccccccccc#cccccccc#cccccccccccccc##",
+    "#cc##########cc####cc#cc#cc##########cc##",
+    "#cc#cccccccc#cc#ccccc#cc#ccccc#cccccccc##",
+    "#cc#cccccccc#cc#ccccc#cc#ccccc#cccccccc##",
+    "#cc####cc####cc#cc####cc#cc#cc#cc#cc#####",
+    "#ccccc#ccccccccccc#cc#cc#cc#cc#cccccccc##",
+    "#ccccc#ccccccccccc#cc#cc#cc#cc#cccccccc##",
+    "####cc#cc#cc#######cc#cc####cc#cc####cc##",
+    "#cccccccc#ccccccccccc#ccccc#cc#ccccc#cc##",
+    "#cccccccc#ccccccccccc#ccccc#cc#ccccc#cc##",
+    "#cc################cc####cc#cc#cc#cc#cc##",
+    "#cccccccc#ccccccccccc#cc#ccccc#cc#cc#cc##",
+    "#cccccccc#ccccccccccc#cc#ccccc#cc#cc#cc##",
+    "#######cc#cc#######cc#cc#######cc####cc##",
+    "#cccccccc#ccccc#ccccc#ccccc#ccccc#ccccc##",
+    "#cccccccc#ccccc#ccccc#ccccc#ccccc#ccccc##",
+    "#cc#######cc#cc#cc####cc####cc#cc#cc#####",
+    "#cc#cccccccc#cc#cccccccc#cccccccccccccc##",
+    "#cc#cccccccc#cc#cccccccc#cccccccccccccc##",
+    "#cc#cc#######cc##########cc##########cc##",
+    "#cc#cc#ccccc#ccccccccccc#cc#cccccccc#cc##",
+    "#cc#cc#ccccc#ccccccccccc#cc#cccccccc#cc##",
+    "#cc####cc#cc##########cc#cc####cc#cc#cc##",
+    "#cccccccc#ccccccccccc#ccccccccccc#ccccc##",
+    "#cccccccc#ccccccc......cccccccccc#ccccc##",
+    "#################......##################",
+    "#################......##################",
+    "###################..####################"
+  ],
+  "batiments": [],
+  "habitants": [
+    {
+      "x": 17,
+      "y": 26,
+      "apparence": "mage_givre",
+      "direction": "droite",
+      "evenement": "mage_temple",
+      "vue": 3,
+      "vue_jusqua": "mage_temple"
+    }
+  ],
+  "coffres": [
+    {"x": 25, "y": 8, "objet": "cle_givre", "quantite": 1},
+    {"x": 11, "y": 4, "objet": "superpotion", "quantite": 2},
+    {"x": 26, "y": 16, "objet": "ether", "quantite": 3},
+    {"x": 23, "y": 13, "objet": "lanterne_or", "quantite": 1},
+    {"x": 20, "y": 7, "objet": "elixir", "quantite": 1}
+  ],
+  "panneaux": [
+    {
+      "x": 22,
+      "y": 26,
+      "texte": "Le Temple gelé. Seul le porteur de la clé de givre peut monter au sanctuaire."
+    }
+  ],
+  "passages": [
+    {"x": 19, "y": 29, "vers": "pics", "tx": 30, "ty": 4, "direction": "bas"},
+    {"x": 20, "y": 29, "vers": "pics", "tx": 30, "ty": 4, "direction": "bas"},
+    {
+      "x": 19,
+      "y": 0,
+      "vers": "sanctuaire",
+      "tx": 10,
+      "ty": 13,
+      "direction": "haut",
+      "condition": {"objet": "cle_givre"},
+      "message": "Une porte de glace scellée. Une serrure en forme de flocon attend sa clé…"
+    }
+  ],
+  "zones": [
+    {
+      "x": 0,
+      "y": 0,
+      "l": 41,
+      "h": 30,
+      "niveau_min": 25,
+      "niveau_max": 28,
+      "max_ennemis": 3,
+      "creatures": ["givrelin", "ferrolin", "cristallin", "glaconnet", "esprillon"]
+    }
+  ],
+  "boss": []
+}

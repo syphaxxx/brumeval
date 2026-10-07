@@ -13,9 +13,23 @@ struct Input {
   bool hold[4] = {};   // direction maintenue
   bool press[4] = {};  // direction appuyée cette image (avec répétition)
   bool confirm = false, cancel = false, menu = false;
+  // Souris (coordonnées en pixels du jeu, 320x240)
+  int mx = -1, my = -1;
+  bool mouseOn = false;    // la souris a servi récemment (sinon on l'ignore)
+  bool mdown[3] = {};      // boutons enfoncés : 0 gauche, 1 milieu, 2 droit
+  bool mclick[3] = {};     // boutons appuyés cette image
+  bool moved = false;
+  int wheel = 0;           // molette : +1 vers le haut, -1 vers le bas
+  bool ctrl = false, shift = false;
+  // Raccourcis des éditeurs
+  bool tab = false, undo = false, redo = false, saveKey = false, prev = false, next = false, del = false;
   void endFrame() {
     for (bool& p : press) p = false;
     confirm = cancel = menu = false;
+    tab = undo = redo = saveKey = prev = next = del = false;
+    for (bool& c : mclick) c = false;
+    moved = false;
+    wheel = 0;
   }
 };
 
@@ -26,6 +40,9 @@ class Script {
   void say(const std::string& text, float autoSec = 0);  // autoSec = 0 : attendre une touche
   void call(std::function<void()> fn);
   void wait(float sec);
+  // Exécute fn tout de suite ; les étapes qu'il ajoute passent avant celles déjà en attente
+  // (utile après un choix Oui/Non ou à la fin d'un combat).
+  void runNow(const std::function<void()>& fn);
   void halt() { halted_ = true; }    // en pause jusqu'à resume() (ex. un menu de choix)
   void resume() { halted_ = false; }
   bool busy() const { return !q_.empty() || halted_; }
@@ -58,7 +75,17 @@ struct MenuItem {
   bool enabled = true;
   std::function<void()> act;
   std::function<void()> hover;
+  // Valeur réglable : gauche/droite appellent adjust(-1 ou +1) au lieu de changer de page
+  std::function<void(int)> adjust;
+  std::function<std::string()> rightFn;  // texte de droite recalculé à chaque image
+  bool header = false;                   // titre de section : le curseur le saute
 };
+// Titre de section dans un menu
+inline MenuItem menuHeader(const std::string& label) {
+  MenuItem it{label, "", "", false};
+  it.header = true;
+  return it;
+}
 
 struct Menu {
   std::string title;

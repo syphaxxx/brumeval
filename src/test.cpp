@@ -1,11 +1,20 @@
 // Mode test (brumeval --test DOSSIER) : joue automatiquement quelques scènes,
 // vérifie les données, simule des combats pour l'équilibrage et enregistre
 // des captures d'écran (.bmp) dans DOSSIER. Renvoie 0 si tout va bien.
+#include <algorithm>
 #include <cstdio>
 #include <filesystem>
+#include <fstream>
+#include <sstream>
 
+#include "arena.hpp"
 #include "battle.hpp"
+#include "events.hpp"
 #include "game.hpp"
+#include "mapedit.hpp"
+#include "settings.hpp"
+#include "sprites.hpp"
+#include "storyedit.hpp"
 
 int Game::selfTest(SDL_Surface* target, const std::string& out) {
   std::filesystem::create_directories(out);
@@ -35,24 +44,21 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     }
   };
 
-  // --- Données ---
-  try {
-    for (auto& m : maps()) {
-      for (auto& z : m.zones)
-        for (auto& p : z.pool) species(p);
-      for (auto& c : m.chests)
-        if (!c.item.empty()) item(c.item);
-      for (auto& b : m.bosses) species(b.id);
-      for (auto& w : m.warps) check(w.map >= 0 && w.map < (int)maps().size(), "passage valide sur " + m.name);
-    }
-    for (auto& id : {"lior", "maelle", "brann", "isra", "braisenard", "gouttelin", "ronceau"}) {
-      auto f = makeFighter(id, 20);
-      moveInfo(f->S().limit);
-      for (auto& t : f->techs()) moveInfo(t);
-    }
-    check(true, "toutes les espèces, objets et techniques existent");
-  } catch (std::exception& e) {
-    check(false, e.what());
+  // --- Données (dossier data/) ---
+  std::printf("Données lues dans %s\n", dataDir().c_str());
+  auto report = [&](const std::vector<std::string>& errs, const std::string& what) {
+    for (auto& e : errs) check(false, e);
+    if (errs.empty()) check(true, what);
+  };
+  report(checkData(), "types, techniques, espèces, objets et règles cohérents");
+  report(checkMaps(), std::to_string(maps().size()) + " cartes valides, tous les lieux sont accessibles à pied");
+  report(checkEvents(), std::to_string(events().size()) + " événements valides");
+  auto mi = [](const char* id) { return std::max(0, mapIndex(id)); };
+  // Relecture : écrire puis relire une carte doit redonner la même carte
+  {
+    bool same = true;
+    for (auto& m : maps()) same = same && mapToJson(mapFromJson(mapToJson(m))) == mapToJson(m);
+    check(same, "les cartes se relisent à l'identique après écriture");
   }
 
   // --- Écran titre et début de partie ---
@@ -65,6 +71,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   run(.3f);
   snap("03_village");
   check(mode == Mode::Map && team.size() == 2, "nouvelle partie : Lior et son compagnon sur la carte");
+  check(fillText("Lior part avec {compagnon}.") == "Lior part avec Braisenard.", "les textes remplacent {compagnon} par son nom");
 
   in.menu = true;
   frame();
@@ -76,7 +83,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   panelMode_ = 0;
 
   // --- Dialogue et recrutement de Maëlle ---
-  changeMap(0, 7, 16, UP);
+  changeMap(mi("vallee"), 7, 16, UP);
   interact();
   run(1.f);
   snap("06_dialogue");
@@ -120,21 +127,21 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   skipScript();
 
   // --- Cartes ---
-  changeMap(1, 12, 34, DOWN);
+  changeMap(mi("cendrelune"), 12, 34, DOWN);
   run(.4f);
   snap("12_forgeroc");
-  changeMap(1, 46, 12, UP);
+  changeMap(mi("cendrelune"), 46, 12, UP);
   banner = 0;
   run(.2f);
   snap("13_cendrelune_nord");
-  changeMap(2, 15, 18, UP);
+  changeMap(mi("grotte"), 15, 18, UP);
   run(.4f);
   snap("14_grotte");
-  changeMap(0, 56, 32, RIGHT);
+  changeMap(mi("vallee"), 56, 32, RIGHT);
   banner = 0;
   run(.2f);
   snap("15_col_sylvarque");
-  changeMap(0, 30, 12, DOWN);
+  changeMap(mi("vallee"), 30, 12, DOWN);
   run(.2f);
   snap("16_prairie");
   shopMenu({"potion", "superpotion", "ether", "plume", "lanterne", "lanterne_argent"});
@@ -144,7 +151,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
 
   // --- Combats spéciaux (captures) ---
   team = {makeFighter("lior", 22), makeFighter("maelle", 22), makeFighter("isra", 22)};
-  changeMap(1, 48, 4, UP);
+  changeMap(mi("cendrelune"), 48, 4, UP);
   startBattle({makeFighter("tisonnel", 19), makeFighter("ignarok", 23), makeFighter("tisonnel", 19)}, true, nullptr, false, false);
   battle_->foes[1]->boss = true;
   for (int i = 0; i < 1500 && !menus.active(); i++) frame();
@@ -168,18 +175,552 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   gold = 321;
   flags = {"maelle", "boss1"};
   items = {{"potion", 7}};
-  changeMap(0, 12, 9, DOWN);
+  changeMap(mi("cendrelune"), 12, 34, DOWN);
+  flags.insert(chestFlag(0));
   bool saved = saveGame();
   team.clear();
   gold = 0;
   bool loaded = loadGame();
-  check(saved && loaded && team.size() == 2 && team[0]->lvl == 9 && gold == 321 && has("boss1") && items["potion"] == 7,
+  check(saved && loaded && team.size() == 2 && team[0]->lvl == 9 && gold == 321 && has("boss1") && items["potion"] == 7 &&
+            M().id == "cendrelune" && px == 12 && has(chestFlag(0)),
         "sauvegarde puis chargement");
+
+  // --- Événements : le pêcheur donne deux plumes une seule fois ---
+  {
+    items.clear();
+    flags.clear();
+    changeMap(mi("vallee"), 26, 38, LEFT);
+    interact();
+    skipScript();
+    interact();
+    skipScript();
+    check(items["plume"] == 2 && has("pecheur"), "événement du pêcheur (drapeau, objet donné une seule fois)");
+  }
+  // --- Événements : question puis combat, la suite passe avant le reste ---
+  {
+    team = {makeFighter("lior", 40), makeFighter("maelle", 40), makeFighter("isra", 40)};
+    flags.clear();
+    mode = Mode::Map;
+    sc.clear();
+    menus.clear();
+    runEvent("brann");
+    for (int i = 0; i < 4000 && mode != Mode::Battle; i++) {
+      in.confirm = true;  // fait défiler et répond « Oui »
+      frame();
+    }
+    bool fought = mode == Mode::Battle;
+    if (battle_) battle_->autoPlay = true;
+    for (int i = 0; i < 60 * 120 && mode == Mode::Battle; i++) {
+      in.confirm = true;
+      frame();
+    }
+    skipScript();
+    check(fought && has("brann") && team.size() == 4, "événement de Brann : question, duel, victoire puis recrutement");
+  }
+
+  // --- Mécaniques du combat ---
+  {
+    const Species& golem = species("golem");
+    check(std::abs(moveEff(moveInfo("lame"), golem) - .75f) < 1e-4f && std::abs(moveEff(moveInfo("feu"), golem) - 1.25f) < 1e-4f,
+          "résistances propres : le Golem encaisse les coups physiques, craint la magie");
+    check(moveEff(moveInfo("lumiere"), species("sylvarque")) == 2.f && moveEff(moveInfo("feu"), species("ronceau")) == 2.f &&
+              moveEff(moveInfo("lame"), species("lior")) == 1.f,
+          "efficacité des types");
+    check(immuneTo(species("braisenard"), Status::Burn) && immuneTo(golem, Status::Poison) && !immuneTo(species("lior"), Status::Poison),
+          "immunités aux états (par type et par espèce)");
+    auto f = makeFighter("lior", 20);
+    int def = f->def;
+    f->stage[S_DEF] = 1;
+    float up = f->eDef();
+    f->stage[S_DEF] = -1;
+    float down = f->eDef();
+    check(std::abs(up - def * 1.25f) < .01f && std::abs(down - def * .8f) < .01f, "bonus et malus : +1 = ×1,25 ; -1 = ×0,8");
+    check(f->res > 0 && f->acc == 100 && f->crit == 8, "nouvelles statistiques : Résistance, Précision, Critique");
+
+    // Poison : 10 % des PV max à la fin du tour ; sommeil : le tour est perdu
+    team = {makeFighter("lior", 20), makeFighter("maelle", 20)};
+    mode = Mode::Map;
+    sc.clear();
+    menus.clear();
+    BattleSetup setup;
+    setup.foes = {makeFighter("mulotin", 10)};
+    setup.reserve = {makeFighter("piafouine", 10)};
+    setup.foeName = "Le dresseur";
+    startBattle(setup, nullptr);
+    Battle& B = *battle_;
+    B.sc.clear();
+    auto foe = B.foes[0];
+    foe->status = Status::Poison;
+    B.allies[1]->status = Status::Paralysis;
+    B.allies[1]->stage[S_DEF] = 1;
+    B.start = time - 1;  // pas d'éclair blanc d'entrée en combat sur la capture
+    snap("22_etats");
+    B.allies[1]->status = Status::None;
+    int hp0 = foe->hp;
+    B.afterAction(foe);
+    check(hp0 - foe->hp == std::max(1, int(foe->mhp * rules().poisonDmg)), "poison : perte de PV à la fin du tour");
+    B.sc.clear();
+    auto ally = B.allies[0];
+    ally->status = Status::Sleep;
+    ally->statusTurns = 2;
+    bool skipped = B.skipTurn(ally);
+    check(skipped && ally->status == Status::Sleep && ally->statusTurns == 1, "sommeil : le combattant perd son tour");
+    B.sc.clear();
+    foe->hp = 0;
+    B.knockOut(foe);
+    B.checkEnd();
+    check(B.foes[0]->sp == "piafouine" && B.reserve.empty() && !B.ending_, "renforts : un nouvel ennemi entre quand le premier tombe");
+    battle_.reset();
+    mode = Mode::Map;
+    sc.clear();
+  }
+
+  // --- Dresseur : le braconnier repère le joueur sur le chemin ---
+  {
+    team = {makeFighter("lior", 30), makeFighter("maelle", 30), makeFighter("braisenard", 30)};
+    flags.clear();
+    items.clear();
+    sc.clear();
+    menus.clear();
+    mode = Mode::Map;
+    changeMap(mi("vallee"), 43, 9, RIGHT);
+    in.hold[RIGHT] = true;
+    for (int i = 0; i < 40 && px < 45; i++) frame();
+    in.hold[RIGHT] = false;
+    for (int i = 0; i < 60 && exclaimNpc_ < 0; i++) frame();
+    run(.3f);
+    snap("23_dresseur_repere");
+    for (int i = 0; i < 2000 && mode != Mode::Battle; i++) {
+      in.confirm = true;
+      frame();
+    }
+    bool spotted = mode == Mode::Battle && battle_ && battle_->foeName == "Le braconnier";
+    if (battle_) battle_->autoPlay = true;
+    for (int i = 0; i < 2000 && mode == Mode::Battle; i++) {
+      in.confirm = i > 60;  // laisse le temps de voir l'adversaire et ses renforts
+      frame();
+      if (i == 50) snap("21_dresseur");
+    }
+    skipScript();
+    check(spotted && has("braconnier") && items["remede"] == 2, "dresseur : repère le joueur, combat avec renfort, récompense");
+  }
+
+  // --- Passages fermés et zones déclencheuses ---
+  {
+    team = {makeFighter("lior", 30), makeFighter("maelle", 30)};
+    items.clear();
+    sc.clear();
+    menus.clear();
+    mode = Mode::Map;
+    auto walk = [&](int d, int n) {
+      for (int k = 0; k < n; k++) {
+        in.press[d] = true;
+        frame();
+        for (int i = 0; i < 20 && moving; i++) frame();
+      }
+    };
+    flags.clear();
+    changeMap(mi("vallee"), 1, 9, LEFT);
+    walk(LEFT, 1);
+    bool locked = M().id == "vallee" && px == 1 && sc.busy();
+    skipScript();
+    flags = {"boss1"};
+    changeMap(mi("vallee"), 1, 9, LEFT);
+    walk(LEFT, 1);
+    bool open = M().id == "sylvenoire";
+    check(locked && open, "passage fermé : la forêt s'ouvre seulement après Sylvarque");
+    // Zone déclencheuse à l'entrée de la forêt : une seule fois
+    for (int i = 0; i < 30 && !sc.busy(); i++) walk(LEFT, 1);
+    bool fired = sc.busy() || has("foret_vue");
+    skipScript();
+    bool once = has("foret_vue");
+    changeMap(mi("sylvenoire"), 55, 20, LEFT);
+    walk(LEFT, 3);
+    check(fired && once && !sc.busy(), "zone déclencheuse : la scène d'entrée de la forêt ne se joue qu'une fois");
+    skipScript();
+    // Temple : la porte du sanctuaire demande la clé de givre
+    flags = {"boss1", "boss2"};
+    changeMap(mi("temple"), 19, 1, UP);
+    walk(UP, 1);
+    bool sealed = M().id == "temple";
+    skipScript();
+    items["cle_givre"] = 1;
+    changeMap(mi("temple"), 19, 1, UP);
+    walk(UP, 1);
+    check(sealed && M().id == "sanctuaire", "porte scellée : le sanctuaire s'ouvre avec la clé de givre");
+    skipScript();
+    items.clear();
+    flags.clear();
+  }
+
+  // --- Nouvelles régions : captures des cartes et des décors de combat ---
+  {
+    team = {makeFighter("lior", 25), makeFighter("maelle", 25), makeFighter("kael", 25)};
+    flags = {"boss1", "boss2", "foret_vue", "pics_vu"};
+    sc.clear();
+    menus.clear();
+    mode = Mode::Map;
+    auto view = [&](const char* map, int x, int y, int d, const char* name) {
+      changeMap(mi(map), x, y, d);
+      banner = 0;
+      run(.3f);
+      snap(name);
+    };
+    view("sylvenoire", 14, 20, LEFT, "24_sylvenoire_camp");
+    view("sylvenoire", 40, 20, LEFT, "25_sylvenoire");
+    view("pics", 30, 35, UP, "26_givreval");
+    view("pics", 30, 12, UP, "27_pics");
+    view("temple", 20, 27, UP, "28_temple");
+    view("sanctuaire", 10, 12, UP, "29_sanctuaire");
+    auto fight = [&](const char* map, std::vector<FighterP> foes, const char* name) {
+      changeMap(mi(map), 2, 2, DOWN);
+      startBattle(foes, false, nullptr);
+      battle_->start = time - 1;
+      battle_->sc.clear();
+      run(.2f);
+      snap(name);
+      battle_.reset();
+      mode = Mode::Map;
+    };
+    fight("sylvenoire", {makeFighter("serpentin", 12), makeFighter("chauvenuit", 12), makeFighter("esprillon", 12)}, "30_combat_foret");
+    fight("pics", {makeFighter("givrelin", 24), makeFighter("ferrolin", 24), makeFighter("cristallin", 24)}, "31_combat_neige");
+    // Planches : toutes les créatures, puis tous les personnages
+    auto raw = [&](const std::string& name) {
+      SDL_RenderPresent(g.renderer());
+      std::string p = out + "/" + name + ".bmp";
+      SDL_SaveBMP(target, p.c_str());
+      std::printf("capture  %s\n", p.c_str());
+    };
+    std::vector<const Species*> cs;
+    for (auto& sp : allSpecies())
+      if (!sp.human) cs.push_back(&sp);
+    g.clear(rgb(0x1d2148));
+    for (size_t i = 0; i < cs.size(); i++) {
+      float x = 22 + (i % 7) * 46.f, y = 26 + (i / 7) * 46.f;
+      drawCreature(g, cs[i]->id, x, y, .62f, false, 0);
+      g.text(x, y + 13, utf8Prefix(cs[i]->name, 7), rgb(0xffffff), 1);
+    }
+    raw("32_galerie_creatures");
+    g.clear(rgb(0x1d2148));
+    for (size_t i = 0; i < allLooks().size(); i++) {
+      float x = 14 + (i % 9) * 34.f, y = 20 + (i / 9) * 60.f;
+      drawHuman(g, look((int)i), x, y, 1.5f, DOWN, 0, true);
+      g.text(x + 12, y + 30, utf8Prefix(look((int)i).name, 5), rgb(0xffffff), 1);
+    }
+    raw("33_galerie_personnages");
+    team.clear();
+    flags.clear();
+  }
+
+  // --- Arène de combat ---
+  {
+    sc.clear();
+    titleMenu();
+    menus.top().sel = 2;  // Outils
+    in.confirm = true;
+    frame();
+    in.confirm = true;  // Arène de combat
+    frame();
+    check(mode == Mode::Arena && arena_ != nullptr, "écran titre > Outils > Arène de combat");
+    if (arena_) {
+      Arena& A = *arena_;
+      check(A.presetCount() >= 15 && A.findPreset("Givrecorne") >= 0 && A.findPreset("Le braconnier") >= 0,
+            "arène : modèles repris des événements et des zones (" + std::to_string(A.presetCount()) + ")");
+      run(.3f);
+      snap("34_arene");
+      in.press[DOWN] = true;
+      frame();
+      snap("35_arene_fiche");
+      in.confirm = true;  // modifier l'allié
+      frame();
+      in.confirm = true;  // choisir l'espèce
+      frame();
+      run(.2f);
+      snap("36_arene_especes");
+      menus.clear();
+      A.applyPreset(A.findPreset("Sylvarque"));
+      A.startSim(10);
+      for (int i = 0; i < 20000 && A.simulating(); i++) frame();
+      check(!A.simulating() && A.results.total == 10, "arène : simulation de 10 combats (" + std::to_string(A.results.wins) + " victoires)");
+      run(.2f);
+      snap("37_arene_resultats");
+      A.startManual();
+      if (battle_) battle_->autoPlay = true;
+      for (int i = 0; i < 60 * 300 && mode == Mode::Battle; i++) {
+        in.confirm = true;
+        frame();
+      }
+      check(mode == Mode::Arena && !A.lastLog.empty() && !A.lastResult.empty(), "arène : combat à la main puis retour avec le journal");
+      in.press[DOWN] = true;  // Modèles…
+      frame();
+      in.press[DOWN] = true;  // Journal
+      frame();
+      in.confirm = true;
+      frame();
+      run(.2f);
+      snap("38_arene_journal");
+      menus.clear();
+    }
+    mode = Mode::Title;
+    titleMenu();
+  }
+
+  // --- Réglages ---
+  {
+    // Enregistrer sans rien changer doit redonner exactement les mêmes fichiers
+    bool same = true;
+    for (int f = 0; f < N_DATAFILES; f++) {
+      std::ifstream file(std::filesystem::u8path(dataDir()) / dataFileName(DataFile(f)), std::ios::binary);
+      std::stringstream ss;
+      ss << file.rdbuf();
+      std::string disk = ss.str();
+      disk.erase(std::remove(disk.begin(), disk.end(), '\r'), disk.end());
+      if (disk != prettyJson(dataDoc(DataFile(f)))) {
+        same = false;
+        std::printf("         différent : %s\n", dataFileName(DataFile(f)));
+      }
+    }
+    check(same, "réglages : les fichiers de data/ se réécrivent à l'identique");
+
+    sc.clear();
+    titleMenu();
+    menus.top().sel = 2;  // Outils
+    in.confirm = true;
+    frame();
+    menus.top().sel = 1;  // Réglages
+    in.confirm = true;
+    frame();
+    check(mode == Mode::Settings && settings_ != nullptr, "écran titre > Outils > Réglages");
+    if (settings_) {
+      Settings& S = *settings_;
+      run(.2f);
+      snap("39_reglages");
+      in.press[DOWN] = true;  // Espèces
+      frame();
+      in.confirm = true;
+      frame();
+      in.confirm = true;  // Lior
+      frame();
+      int atk0 = species("lior").base[B_ATK];
+      menus.top().sel = 7;  // Attaque
+      in.press[RIGHT] = true;
+      frame();
+      check(species("lior").base[B_ATK] == atk0 + 1 && S.dirtyCount() == 1 && makeFighter("lior", 20)->atk > 0,
+            "réglages : Attaque de Lior +1, effet immédiat, 1 fichier modifié");
+      run(.2f);
+      snap("40_reglages_espece");
+      // Saisie de texte : renommer
+      menus.top().sel = 0;
+      in.confirm = true;
+      frame();
+      bool typing = editingText();
+      for (int i = 0; i < 10; i++) onKey(SDL_SCANCODE_BACKSPACE, true, false);
+      onText("Lior le Brave");
+      run(.1f);
+      snap("41_saisie_texte");
+      onKey(SDL_SCANCODE_RETURN, true, false);
+      check(typing && !editingText() && species("lior").name == "Lior le Brave", "saisie de texte : renommer une espèce");
+      // Grille des types
+      S.menuTypes(0);
+      in.confirm = true;
+      frame();
+      float e0 = typeEff(typeOf("normal"), typeOf("normal"));
+      in.confirm = true;
+      frame();
+      check(S.inGrid() && e0 == 1.f && typeEff(typeOf("normal"), typeOf("normal")) == 2.f, "réglages : grille d'efficacité des types");
+      run(.1f);
+      snap("42_reglages_types");
+      S.menuRules(0);
+      run(.1f);
+      snap("43_reglages_regles");
+      S.editMove("flam");
+      run(.1f);
+      snap("44_reglages_technique");
+      S.revert();
+      check(S.dirtyCount() == 0 && species("lior").base[B_ATK] == atk0 && species("lior").name == "Lior" &&
+                typeEff(typeOf("normal"), typeOf("normal")) == 1.f,
+            "réglages : « Annuler les changements » recharge les fichiers");
+    }
+    menus.clear();
+    mode = Mode::Title;
+    titleMenu();
+  }
+
+  // --- Éditeur de cartes ---
+  {
+    sc.clear();
+    titleMenu();
+    menus.top().sel = 2;  // Outils
+    in.confirm = true;
+    frame();
+    menus.top().sel = 2;  // Éditeur de cartes
+    in.confirm = true;
+    frame();
+    check(mode == Mode::Editor && editor_ != nullptr, "écran titre > Outils > Éditeur de cartes");
+    if (editor_) {
+      MapEditor& E = *editor_;
+      int vi = mi("vallee");
+      E.open("vallee");
+      Json before = mapToJson(maps()[vi]);
+      run(.2f);
+      snap("45_editeur");
+      // Pinceau, annuler, rétablir
+      E.setLayer(MapEditor::Layer::Tiles);
+      E.setTool(MapEditor::Tool::Brush);
+      E.setTile('F');
+      E.setCursor(10, 5);
+      char old = maps()[vi].rows[5][10];
+      E.apply();
+      bool painted = maps()[vi].rows[5][10] == 'F';
+      E.undo();
+      bool undone = maps()[vi].rows[5][10] == old;
+      E.redo();
+      check(painted && undone && maps()[vi].rows[5][10] == 'F' && E.dirty(vi), "éditeur : peindre, annuler, rétablir");
+      // Rectangle
+      E.setTool(MapEditor::Tool::Rect);
+      E.setTile('R');
+      E.setCursor(2, 2);
+      E.apply();
+      E.setCursor(4, 3);
+      E.apply();
+      int nR = 0;
+      for (int y = 2; y <= 3; y++)
+        for (int x = 2; x <= 4; x++) nR += maps()[vi].rows[y][x] == 'R';
+      check(nR == 6, "éditeur : rectangle de 3 x 2 cases");
+      // Souris : un clic gauche peint sous la souris
+      E.setTool(MapEditor::Tool::Brush);
+      E.setTile('~');
+      onMouse(150, 100, -1, false);
+      onMouse(150, 100, 0, true);
+      frame();
+      onMouse(150, 100, 0, false);
+      frame();
+      check(maps()[vi].rows[E.cursorY()][E.cursorX()] == '~', "éditeur : peindre à la souris");
+      in.mouseOn = false;
+      // Calque des objets : ajouter un habitant
+      E.setLayer(MapEditor::Layer::Objects);
+      size_t npcs = maps()[vi].npcs.size();
+      E.setCursor(24, 6);
+      E.apply();  // menu « Ajouter »
+      in.confirm = true;  // Habitant
+      frame();
+      run(.1f);
+      snap("46_editeur_habitant");
+      check(maps()[vi].npcs.size() == npcs + 1 && menus.active(), "éditeur : ajouter un habitant et ouvrir sa fiche");
+      menus.clear();
+      E.setLayer(MapEditor::Layer::Zones);
+      E.setCursor(30, 12);
+      run(.1f);
+      snap("47_editeur_zones");
+      // Vue éloignée (menu Échap > Vue)
+      in.cancel = true;
+      frame();
+      menus.top().sel = 3;
+      in.press[RIGHT] = true;
+      frame();
+      menus.clear();
+      run(.1f);
+      snap("48_editeur_vue_eloignee");
+      // Tester ici, puis revenir à l'éditeur
+      E.setCursor(12, 9);
+      E.testHere();
+      bool playing = mode == Mode::Map && M().id == "vallee" && px == 12 && py == 9;
+      in.menu = true;
+      frame();
+      in.confirm = true;  // « Retour à l'éditeur »
+      frame();
+      check(playing && mode == Mode::Editor, "éditeur : « Tester ici » puis « Retour à l'éditeur »");
+      // On remet la carte telle qu'elle était (rien n'est enregistré)
+      maps()[vi] = mapFromJson(before);
+      check(!E.dirty(vi) && mapToJson(maps()[vi]) == before, "éditeur : la carte d'origine est intacte");
+    }
+    menus.clear();
+    team.clear();
+    mode = Mode::Title;
+    titleMenu();
+  }
+
+  // --- Éditeur d'histoire ---
+  {
+    sc.clear();
+    titleMenu();
+    menus.top().sel = 2;  // Outils
+    in.confirm = true;
+    frame();
+    menus.top().sel = 3;  // Éditeur d'histoire
+    in.confirm = true;
+    frame();
+    check(mode == Mode::Story && story_ != nullptr, "écran titre > Outils > Éditeur d'histoire");
+    if (story_) {
+      StoryEditor& S = *story_;
+      Json before = events();
+      run(.2f);
+      snap("49_histoire");
+      // Ajouter une action « Donner » à la première page du pêcheur
+      S.goTo("/pecheur/pages/0/actions");
+      run(.1f);
+      snap("50_histoire_actions");
+      size_t n0 = events()["pecheur"]["pages"][0]["actions"].size();
+      menus.top().sel = (int)n0;  // « + Ajouter une action »
+      in.confirm = true;
+      frame();
+      menus.top().sel = 1;  // Donner un objet
+      in.confirm = true;
+      frame();
+      run(.1f);
+      snap("51_histoire_action");
+      check(events()["pecheur"]["pages"][0]["actions"].size() == n0 + 1 && checkEvents().empty(), "histoire : ajouter une action « Donner »");
+      // Actions imbriquées : le duel de Brann
+      S.goTo("/brann/actions/3/oui/0");
+      run(.1f);
+      snap("52_histoire_combat");
+      S.goTo("/brann/actions/3/oui/0/victoire");
+      bool nested = menus.active() && menus.top().items.size() == events()["brann"]["actions"][3]["oui"][0]["victoire"].size() + 1;
+      check(nested, "histoire : ouvrir une sous-liste (victoire du duel de Brann)");
+      // Modifier un message au clavier, puis annuler et rétablir
+      std::string old = events()["ancien"]["pages"][0]["actions"][0]["texte"].get<std::string>();
+      S.goTo("/ancien/pages/0/actions/0");
+      menus.top().sel = 0;
+      in.confirm = true;
+      frame();
+      bool typing = editingText();
+      for (int i = 0; i < 200; i++) onKey(SDL_SCANCODE_BACKSPACE, true, true);
+      onText("Ancien : Bonjour, voyageur !");
+      onKey(SDL_SCANCODE_RETURN, true, false);
+      std::string now = events()["ancien"]["pages"][0]["actions"][0]["texte"].get<std::string>();
+      S.undo();
+      std::string undone = events()["ancien"]["pages"][0]["actions"][0]["texte"].get<std::string>();
+      S.redo();
+      check(typing && now == "Ancien : Bonjour, voyageur !" && undone == old &&
+                events()["ancien"]["pages"][0]["actions"][0]["texte"].get<std::string>() == now,
+            "histoire : modifier un message, annuler, rétablir");
+      S.goTo("/ancien/pages/0/si");
+      run(.1f);
+      snap("53_histoire_condition");
+      S.revert();
+      check(events() == before && !S.dirty(), "histoire : « Tout annuler » rend le fichier d'origine");
+      // Jouer l'événement du pêcheur, là où il se trouve
+      S.testFlags = "";
+      S.play("pecheur");
+      bool played = mode == Mode::Map && M().id == "vallee" && sc.busy();
+      skipScript();
+      check(played && has("pecheur") && items["plume"] == 2, "histoire : jouer l'événement du pêcheur sur sa carte");
+      in.menu = true;
+      frame();
+      in.confirm = true;  // « Retour à l'éditeur »
+      frame();
+      check(mode == Mode::Story, "histoire : retour à l'éditeur après le test");
+    }
+    menus.clear();
+    flags.clear();
+    team.clear();
+    mode = Mode::Title;
+    titleMenu();
+  }
 
   // --- Simulation d'équilibrage (IA simple, sans objets) ---
   std::printf("\nÉquilibrage (combats simulés, IA automatique) :\n");
-  auto sim = [&](const char* name, std::vector<std::pair<std::string, int>> party, std::function<std::vector<FighterP>()> mk, bool boss,
-                 int n) {
+  auto simSetup = [&](const char* name, std::vector<std::pair<std::string, int>> party, std::function<BattleSetup()> mk, int n) {
     int wins = 0;
     float total = 0;
     for (int k = 0; k < n; k++) {
@@ -190,21 +731,38 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       mode = Mode::Map;
       BattleResult res = BattleResult::Lose;
       bool done = false;
-      startBattle(mk(), boss, [&](BattleResult r) {
+      startBattle(mk(), [&](BattleResult r) {
         res = r;
         done = true;
-      }, !boss, !boss);
+      });
       battle_->autoPlay = true;
       float t = 0;
+      std::vector<std::string> lastLog;
+      const char* want = SDL_getenv("BRUMEVAL_JOURNAL");  // ex. BRUMEVAL_JOURNAL=Sylvarque
+      bool keep = k == 0 && want && *want && std::string(name).find(want) != std::string::npos;
       for (int i = 0; i < 20 * 900 && !done; i++) {
         in.confirm = true;
+        if (keep && battle_) lastLog = battle_->log;
         update(1 / 20.f);
         t += 1 / 20.f;
       }
       if (res == BattleResult::Win) wins++;
       total += t;
+      if (keep) {
+        for (auto& l : lastLog) std::printf("      %s\n", l.c_str());
+        std::printf("      => %s\n", res == BattleResult::Win ? "victoire" : "défaite");
+      }
     }
     std::printf("  %-34s %3d %% de victoires   %4.0f s en moyenne\n", name, wins * 100 / n, total / n);
+  };
+  auto sim = [&](const char* name, std::vector<std::pair<std::string, int>> party, std::function<std::vector<FighterP>()> mk, bool boss,
+                 int n) {
+    simSetup(name, party, [mk, boss] {
+      BattleSetup s;
+      s.foes = mk();
+      s.boss = boss, s.canFlee = !boss, s.canCapture = !boss;
+      return s;
+    }, n);
   };
   auto group = [](std::vector<std::string> pool, int lo, int hi, int n) {
     return [=] {
@@ -213,20 +771,28 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       return v;
     };
   };
-  auto bossF = [](const std::string& sp, int lvl, int mult) {
+  auto bossF = [](const std::string& sp, int lvl, float mult) {
     auto f = makeFighter(sp, lvl);
-    f->mhp *= mult;
+    f->mhp = int(f->mhp * mult + 1e-4f);
     f->hp = f->mhp;
     f->boss = true;
     return f;
   };
   sim("Début (N.5 contre N.2-4)", {{"lior", 5}, {"braisenard", 5}}, group({"piafouine", "mulotin", "champichou"}, 2, 4, 2), false, 30);
+  simSetup("Braconnier (équipe N.6)", {{"lior", 6}, {"braisenard", 6}}, [] {
+    BattleSetup s;
+    s.foes = {makeFighter("braconnier", 6), makeFighter("mulotin", 5)};
+    s.reserve = {makeFighter("piafouine", 5)};
+    s.foeName = "Le braconnier";
+    s.canFlee = s.canCapture = false;
+    return s;
+  }, 30);
   sim("Bois (N.8 contre 3 x N.4-7)", {{"lior", 8}, {"maelle", 8}, {"braisenard", 8}},
       group({"champichou", "mulotin", "lucioline", "piafouine"}, 4, 7, 3), false, 30);
   sim("Bosquet du col (N.10 contre N.7-10)", {{"lior", 10}, {"maelle", 10}, {"gouttelin", 10}},
       group({"rocaillou", "grenouillon", "lucioline", "brumelin"}, 7, 10, 3), false, 30);
   sim("Boss Sylvarque (équipe N.11)", {{"lior", 11}, {"maelle", 11}, {"gouttelin", 11}},
-      [&] { return std::vector<FighterP>{makeFighter("brumelin", 9), bossF("sylvarque", 12, 3), makeFighter("brumelin", 9)}; }, true, 20);
+      [&] { return std::vector<FighterP>{makeFighter("brumelin", 9), bossF("sylvarque", 12, 3.5f), makeFighter("brumelin", 9)}; }, true, 40);
   sim("Duel contre Brann (équipe N.14)", {{"lior", 14}, {"maelle", 14}, {"ronceau", 14}}, [&] {
     auto b = makeFighter("brann", 14);
     b->mhp = b->mhp * 5 / 2;
@@ -238,8 +804,60 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       group({"tisonnel", "galetor", "voltigeon", "glaconnet"}, 12, 15, 3), false, 30);
   sim("Golem de suie (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"brann", 16}},
       [&] { return std::vector<FighterP>{bossF("golem", 16, 3)}; }, true, 20);
+  simSetup("Bandit de la forêt (équipe N.12)", {{"lior", 12}, {"maelle", 12}, {"braisenard", 12}}, [] {
+    BattleSetup s;
+    s.foes = {makeFighter("bandit", 12), makeFighter("louvet", 11)};
+    s.foeName = "Le bandit";
+    s.canFlee = s.canCapture = false;
+    return s;
+  }, 30);
+  sim("Sylve-Noire (N.13 contre N.10-13)", {{"lior", 13}, {"maelle", 13}, {"kael", 13}},
+      group({"louvet", "serpentin", "chauvenuit", "esprillon", "champichou"}, 10, 13, 3), false, 30);
+  simSetup("Chef des bandits (équipe N.13)", {{"lior", 13}, {"maelle", 13}, {"gouttelin", 13}}, [&] {
+    BattleSetup s;
+    s.foes = {bossF("chef_bandit", 13, 2), makeFighter("louvet", 12)};
+    s.reserve = {makeFighter("bandit", 12), makeFighter("louvet", 12)};
+    s.foeName = "Le chef des bandits";
+    s.boss = true;
+    s.canFlee = s.canCapture = false;
+    return s;
+  }, 30);
+  simSetup("Ronce-Mère (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"kael", 16}}, [&] {
+    BattleSetup s;
+    s.foes = {makeFighter("serpentin", 14), bossF("ronce_mere", 18, 4), makeFighter("serpentin", 14)};
+    s.reserve = {makeFighter("crapoison", 13)};
+    s.boss = true;
+    s.canFlee = s.canCapture = false;
+    return s;
+  }, 30);
   sim("Boss Ignarok (équipe N.22)", {{"lior", 22}, {"maelle", 22}, {"isra", 22}},
-      [&] { return std::vector<FighterP>{makeFighter("tisonnel", 19), bossF("ignarok", 23, 4), makeFighter("tisonnel", 19)}; }, true, 20);
+      [&] { return std::vector<FighterP>{makeFighter("tisonnel", 19), bossF("ignarok", 23, 4), makeFighter("tisonnel", 19)}; }, true, 40);
+  sim("Pics Givrés (N.25 contre N.21-24)", {{"lior", 25}, {"maelle", 25}, {"isra", 25}},
+      group({"givrelin", "zephyrin", "ferrolin", "cristallin", "etincelot"}, 21, 24, 3), false, 30);
+  simSetup("Chevalier du givre (équipe N.25)", {{"lior", 25}, {"maelle", 25}, {"isra", 25}}, [] {
+    BattleSetup s;
+    s.foes = {makeFighter("chevalier", 26), makeFighter("givrelin", 25)};
+    s.reserve = {makeFighter("mage_givre", 26)};
+    s.foeName = "Le chevalier du givre";
+    s.canFlee = s.canCapture = false;
+    return s;
+  }, 30);
+  simSetup("Duel contre Sélène (équipe N.26)", {{"lior", 26}, {"maelle", 26}, {"isra", 26}}, [&] {
+    BattleSetup s;
+    s.foes = {bossF("selene", 26, 3)};
+    s.foeName = "Sélène";
+    s.boss = true;
+    s.canFlee = s.canCapture = false;
+    return s;
+  }, 30);
+  simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}}, [&] {
+    BattleSetup s;
+    s.foes = {makeFighter("givrelin", 27), bossF("givrecorne", 31, 4), makeFighter("givrelin", 27)};
+    s.reserve = {makeFighter("cristallin", 26)};
+    s.boss = true;
+    s.canFlee = s.canCapture = false;
+    return s;
+  }, 40);
 
   std::printf("\n%s (%d échec%s)\n", fails ? "TESTS EN ÉCHEC" : "TOUS LES TESTS PASSENT", fails, fails > 1 ? "s" : "");
   return fails ? 1 : 0;

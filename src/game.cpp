@@ -5,7 +5,11 @@
 #include <fstream>
 #include <sstream>
 
+#include "arena.hpp"
 #include "battle.hpp"
+#include "mapedit.hpp"
+#include "settings.hpp"
+#include "storyedit.hpp"
 #include "sprites.hpp"
 
 static const Color WHITE = rgb(0xffffff), GOLD = rgb(0xffd34d), MUTED = rgb(0xaab3d8);
@@ -17,7 +21,45 @@ Game::~Game() = default;
 // Clavier : flèches ou ZQSD (WASD en QWERTY), Entrée/Espace pour valider,
 // Échap pour annuler et ouvrir le menu.
 // ---------------------------------------------------------------------------
+void Game::onMouse(int x, int y, int button, bool down) {
+  if (in.mx != x || in.my != y) in.moved = true;
+  in.mx = x, in.my = y;
+  in.mouseOn = true;
+  if (button < 0 || button > 2) return;
+  in.mdown[button] = down;
+  if (down) in.mclick[button] = true;
+}
+void Game::onWheel(int dy) {
+  in.wheel += dy > 0 ? 1 : dy < 0 ? -1 : 0;
+  in.mouseOn = true;
+}
+
 void Game::onKey(SDL_Scancode k, bool down, bool repeat) {
+  in.ctrl = (SDL_GetModState() & KMOD_CTRL) != 0;
+  in.shift = (SDL_GetModState() & KMOD_SHIFT) != 0;
+  SDL_Keycode kc = SDL_GetKeyFromScancode(k);  // touche selon la disposition du clavier (AZERTY…)
+  if (!textOn_ && down && in.ctrl) {
+    if (kc == SDLK_z) in.undo = true;
+    if (kc == SDLK_y) in.redo = true;
+    if (kc == SDLK_s) in.saveKey = true;
+    if (kc == SDLK_z || kc == SDLK_y || kc == SDLK_s) return;
+  }
+  if (textOn_) {  // saisie de texte : les touches servent à écrire
+    if (!down) return;
+    if (k == SDL_SCANCODE_BACKSPACE) {
+      while (!textValue_.empty() && (textValue_.back() & 0xC0) == 0x80) textValue_.pop_back();
+      if (!textValue_.empty()) textValue_.pop_back();
+    } else if ((k == SDL_SCANCODE_RETURN || k == SDL_SCANCODE_KP_ENTER) && !repeat) {
+      textOn_ = false;
+      SDL_StopTextInput();
+      auto done = textDone_;
+      if (done) done(textValue_);
+    } else if (k == SDL_SCANCODE_ESCAPE && !repeat) {
+      textOn_ = false;
+      SDL_StopTextInput();
+    }
+    return;
+  }
   int d = -1;
   if (k == SDL_SCANCODE_UP || k == SDL_SCANCODE_W) d = UP;
   if (k == SDL_SCANCODE_DOWN || k == SDL_SCANCODE_S) d = DOWN;
@@ -28,10 +70,53 @@ void Game::onKey(SDL_Scancode k, bool down, bool repeat) {
     if (down) in.press[d] = true;
     return;
   }
+  if (down && k == SDL_SCANCODE_PAGEUP) in.prev = true;
+  if (down && k == SDL_SCANCODE_PAGEDOWN) in.next = true;
+  if (down && k == SDL_SCANCODE_DELETE) in.del = true;
   if (!down || repeat) return;
   if (k == SDL_SCANCODE_RETURN || k == SDL_SCANCODE_KP_ENTER || k == SDL_SCANCODE_SPACE) in.confirm = true;
   if (k == SDL_SCANCODE_ESCAPE || k == SDL_SCANCODE_BACKSPACE) in.cancel = in.menu = true;
-  if (k == SDL_SCANCODE_TAB) in.menu = true;
+  if (k == SDL_SCANCODE_TAB) in.menu = in.tab = true;
+}
+
+// ---------------------------------------------------------------------------
+// Saisie de texte
+// ---------------------------------------------------------------------------
+static int utf8Len(const std::string& s) {
+  int n = 0;
+  for (unsigned char c : s)
+    if ((c & 0xC0) != 0x80) n++;
+  return n;
+}
+void Game::editText(const std::string& title, const std::string& initial, int maxChars, std::function<void(const std::string&)> done) {
+  textOn_ = true;
+  textTitle_ = title;
+  textValue_ = initial;
+  textMax_ = maxChars;
+  textDone_ = std::move(done);
+  in.endFrame();
+  SDL_StartTextInput();
+}
+void Game::onText(const char* utf8) {
+  if (!textOn_ || !utf8) return;
+  std::string add = utf8;
+  if (add == "\t" || add == "\r" || add == "\n") return;
+  textValue_ += add;
+  if (utf8Len(textValue_) > textMax_) textValue_ = utf8Prefix(textValue_, textMax_);
+}
+void Game::drawTextEdit() {
+  int lines = std::max(1, (int)Gfx::wrap(textValue_ + "_", 288).size());
+  int h = 40 + lines * 11;
+  int y = 120 - h / 2;
+  g.rect(0, 0, SCREEN_W, SCREEN_H, rgb(0x000010, 120));
+  g.window(10, y, 300, h);
+  g.text(18, y + 5, textTitle_, rgb(0xffd34d));
+  auto wl = Gfx::wrap(textValue_, 288);
+  if (wl.empty()) wl.push_back("");
+  for (size_t i = 0; i < wl.size(); i++) g.text(18, y + 19 + i * 11, wl[i], WHITE);
+  if (int(time * 3) % 2 == 0) g.rect(18 + Gfx::textW(wl.back()), y + 19 + (wl.size() - 1) * 11 + 1, 5, 9, rgb(0xffd34d));
+  g.text(160, y + h - 13, "Entrée : valider · Échap : annuler · " + std::to_string(utf8Len(textValue_)) + "/" + std::to_string(textMax_),
+         MUTED, 1);
 }
 
 // ---------------------------------------------------------------------------
@@ -49,18 +134,41 @@ void Game::update(float dt) {
         notice("Merci d'avoir joué ! Vous pouvez continuer l'exploration.");
       }
       break;
+    case Mode::Arena:
+      if (arena_) arena_->update(dt);
+      break;
+    case Mode::Settings:
+      if (settings_) settings_->update(dt);
+      break;
+    case Mode::Editor:
+      if (editor_) editor_->update(dt);
+      break;
+    case Mode::Story:
+      if (story_) story_->update(dt);
+      break;
     case Mode::Battle: {
       battle_->update(dt);
       if (battle_->finished()) {
         BattleResult r = battle_->result();
+        if (arenaBattle_ && arena_) {  // retour à l'Arène, sans les conséquences d'une vraie défaite
+          auto log = battle_->log;
+          battle_.reset();
+          arenaBattle_ = false;
+          mode = Mode::Arena;
+          arena_->onBattleEnd(r, log);
+          break;
+        }
         battle_.reset();
         mode = Mode::Map;
         menus.clear();
         steps = 0;
         auto after = afterBattle_;
         afterBattle_ = nullptr;
-        if (r == BattleResult::Lose) defeat();
-        if (after) after(r);
+        if (r == BattleResult::Lose) {
+          sc.clear();  // la défaite interrompt l'événement en cours
+          defeat();
+        }
+        if (after) sc.runNow([&] { after(r); });
       }
       break;
     }
@@ -107,7 +215,7 @@ void Game::update(float dt) {
 std::vector<FighterP> Game::front() const {
   std::vector<FighterP> v;
   for (auto& f : team)
-    if (f->alive() && v.size() < 3) v.push_back(f);
+    if (f->alive() && (int)v.size() < rules().frontSize) v.push_back(f);
   return v;
 }
 int Game::avgLevel() const {
@@ -131,11 +239,19 @@ void Game::recruit(const std::string& id, int minLvl) {
   sc.say("(Échap > Équipe pour choisir qui combat. " + f->S().role + ".)");
 }
 
-void Game::startBattle(std::vector<FighterP> foes, bool boss, std::function<void(BattleResult)> after, bool canFlee, bool canCapture) {
+void Game::startBattle(BattleSetup setup, std::function<void(BattleResult)> after) {
   afterBattle_ = std::move(after);
-  battle_ = std::make_unique<Battle>(*this, std::move(foes), boss, M().theme, canFlee, canCapture);
+  arenaBattle_ = mode == Mode::Arena;
+  Theme th = setup.theme >= 0 ? Theme(setup.theme) : M().theme;
+  battle_ = std::make_unique<Battle>(*this, std::move(setup), th);
   mode = Mode::Battle;
   menus.clear();
+}
+void Game::startBattle(std::vector<FighterP> foes, bool boss, std::function<void(BattleResult)> after, bool canFlee, bool canCapture) {
+  BattleSetup s;
+  s.foes = std::move(foes);
+  s.boss = boss, s.canFlee = canFlee, s.canCapture = canCapture;
+  startBattle(std::move(s), std::move(after));
 }
 
 void Game::defeat() {
@@ -147,10 +263,7 @@ void Game::defeat() {
 // ---------------------------------------------------------------------------
 // Carte
 // ---------------------------------------------------------------------------
-bool Game::npcVisible(const Npc& n) const {
-  if (n.script == "maelle" || n.script == "brann" || n.script == "isra") return !has(n.script);
-  return true;
-}
+bool Game::npcVisible(const Npc& n) const { return n.hideIf.empty() || !has(n.hideIf); }
 bool Game::bossAlive(const BossSpot& b) const { return !has(b.flag); }
 
 bool Game::blocked(int x, int y) const {
@@ -167,6 +280,8 @@ bool Game::blocked(int x, int y) const {
     if (s.x == x && s.y == y) return true;
   for (auto& b : m.bosses)
     if (bossAlive(b) && x >= b.x && x <= b.x + 1 && y >= b.y && y <= b.y + 1) return true;
+  for (auto& w : m.warps)  // passage fermé : on ne peut pas y marcher
+    if (w.x == x && w.y == y && !w.condition.is_null() && !checkCond(w.condition)) return true;
   return false;
 }
 
@@ -178,9 +293,12 @@ void Game::tryMove(int d) {
   if (blocked(nx, ny)) {
     if (!fresh) return;
     for (auto& b : M().buildings)
-      if (nx == b.doorX() && ny == b.doorY()) return door(b);
+      if (nx == b.doorX() && ny == b.doorY()) return runEvent(b.event);
     for (auto& b : M().bosses)
-      if (bossAlive(b) && nx >= b.x && nx <= b.x + 1 && ny >= b.y && ny <= b.y + 1) return bossEvent(b);
+      if (bossAlive(b) && nx >= b.x && nx <= b.x + 1 && ny >= b.y && ny <= b.y + 1) return runEvent(b.event);
+    for (auto& w : M().warps)
+      if (w.x == nx && w.y == ny && !w.condition.is_null() && !checkCond(w.condition))
+        return sc.say(w.message.empty() ? "Le passage est fermé." : fillText(w.message));
     return;
   }
   fromX = px, fromY = py;
@@ -192,16 +310,50 @@ void Game::tryMove(int d) {
 void Game::arrive() {
   steps++;
   for (auto& w : M().warps)
-    if (w.x == px && w.y == py) return changeMap(w.map, w.tx, w.ty, w.dir);
+    if (w.x == px && w.y == py) {
+      int m = mapIndex(w.map);
+      if (m >= 0) return changeMap(m, w.tx, w.ty, w.dir);
+    }
+  for (auto& t : M().triggers)
+    if (px >= t.x && py >= t.y && px < t.x + t.w && py < t.y + t.h && (t.until.empty() || !has(t.until))) {
+      steps = 0;
+      return runEvent(t.event);
+    }
+  if (checkSight()) return;
   char c = M().rows[py][px];
-  float rate = M().theme == Theme::Grotte ? .08f : .11f;
-  if (tileEncounter(c) && steps > 3 && frand() < rate) encounter();
+  double rate = M().encounterRate > 0 ? M().encounterRate : rules().encounterRate;
+  if (tileEncounter(c) && steps > rules().minSteps && frand() < rate) encounter();
+}
+
+// Dresseurs : un habitant avec « vue » repère le joueur dans sa ligne de regard
+bool Game::checkSight() {
+  const MapDef& m = M();
+  for (size_t i = 0; i < m.npcs.size(); i++) {
+    const Npc& n = m.npcs[i];
+    if (n.sight <= 0 || n.event.empty() || !npcVisible(n) || (!n.sightUntil.empty() && has(n.sightUntil))) continue;
+    int dx = n.dir == LEFT ? -1 : n.dir == RIGHT ? 1 : 0, dy = n.dir == UP ? -1 : n.dir == DOWN ? 1 : 0;
+    for (int k = 1; k <= n.sight; k++) {
+      int x = n.x + dx * k, y = n.y + dy * k;
+      if (x == px && y == py) {
+        exclaimNpc_ = (int)i;
+        exclaimT_ = time;
+        dir = n.dir == UP ? DOWN : n.dir == DOWN ? UP : n.dir == LEFT ? RIGHT : LEFT;  // le joueur se tourne vers lui
+        steps = 0;
+        std::string ev = n.event;
+        sc.wait(.7f);
+        sc.call([this, ev] { runEvent(ev); });
+        return true;
+      }
+      if (blocked(x, y)) break;
+    }
+  }
+  return false;
 }
 
 void Game::encounter() {
   for (auto& z : M().zones) {
     if (px < z.x || py < z.y || px >= z.x + z.w || py >= z.y + z.h) continue;
-    int n = 1 + (frand() < .55f) + (frand() < .35f);
+    int n = 1 + (frand() < rules().second) + (frand() < rules().third);
     n = std::min(n, z.maxN);
     std::vector<FighterP> foes;
     for (int i = 0; i < n; i++) foes.push_back(makeFighter(z.pool[irand(0, (int)z.pool.size() - 1)], irand(z.lo, z.hi)));
@@ -216,6 +368,7 @@ void Game::changeMap(int m, int x, int y, int d) {
   px = x, py = y, dir = d;
   moving = false;
   steps = 0;
+  exclaimNpc_ = -1;
   if (changed) showRegionBanner();
 }
 void Game::showRegionBanner() {
@@ -234,13 +387,19 @@ void Game::interact() {
   for (size_t i = 0; i < m.chests.size(); i++)
     if (m.chests[i].x == fx && m.chests[i].y == fy) return openChest((int)i);
   for (auto& b : m.bosses)
-    if (bossAlive(b) && fx >= b.x && fx <= b.x + 1 && fy >= b.y && fy <= b.y + 1) return bossEvent(b);
+    if (bossAlive(b) && fx >= b.x && fx <= b.x + 1 && fy >= b.y && fy <= b.y + 1) return runEvent(b.event);
   for (auto& b : m.buildings)
-    if (fx == b.doorX() && fy == b.doorY()) return door(b);
+    if (fx == b.doorX() && fy == b.doorY()) return runEvent(b.event);
+}
+
+// Drapeau d'un coffre ouvert : carte et position (reste valable si on ajoute des coffres)
+std::string Game::chestFlag(int i) const {
+  const Chest& c = M().chests[i];
+  return "coffre:" + M().id + ":" + std::to_string(c.x) + ":" + std::to_string(c.y);
 }
 
 void Game::openChest(int i) {
-  std::string key = "coffre:" + std::to_string(mapId) + ":" + std::to_string(i);
+  std::string key = chestFlag(i);
   if (has(key)) return sc.say("Le coffre est vide.");
   flags.insert(key);
   const Chest& c = M().chests[i];
@@ -258,145 +417,8 @@ void Game::openChest(int i) {
 // Habitants et événements
 // ---------------------------------------------------------------------------
 void Game::talk(const Npc& n) {
-  const std::string& s = n.script;
-  if (s.empty()) {
-    for (auto& l : n.lines) sc.say(l);
-    return;
-  }
-  if (s == "ancien") {
-    if (!has("boss1")) {
-      sc.say("Ancien : Cette brume n'est pas naturelle. Elle vient du gardien Sylvarque, qui bloque le col à l'est.");
-      sc.say("Ancien : Il est accompagné de Brumelins. Renforcez votre équipe avant de l'affronter.");
-      sc.say("Ancien : Et passez voir Maëlle, à la chapelle. Sa magie de Lumière vous serait précieuse.");
-    } else {
-      sc.say("Ancien : La brume s'est levée ! Le col mène aux Monts Cendrelune, où gronde un volcan.");
-      sc.say("Ancien : Là-bas, la ville de Forgeroc pourra vous accueillir.");
-    }
-  } else if (s == "maelle") {
-    if (items["herbe"] > 0) {
-      items["herbe"] = 0;
-      sc.say("Maëlle : L'herbe lunaire ! Merci, je vais pouvoir terminer mon remède.");
-      sc.say("Maëlle : Laissez-moi vous accompagner. Ma magie de Lumière vous protégera.");
-      sc.call([this] { recruit("maelle", 6); });
-      sc.say("Maëlle connaît Soin et Lumière. En combat, choisissez « Magie ».");
-    } else {
-      sc.say("Maëlle : Bonjour, je suis Maëlle, la mage de la chapelle.");
-      sc.say("Maëlle : J'aimerais combattre la brume avec vous, mais je dois d'abord finir un remède pour le village.");
-      sc.say("Maëlle : Il me manque une herbe lunaire. Elle pousse tout au fond du Bois Murmurant, au sud-ouest.");
-    }
-  } else if (s == "pecheur") {
-    if (!has("pecheur")) {
-      flags.insert("pecheur");
-      items["plume"] += 2;
-      sc.say("Pêcheur : Rien ne mord avec cette brume… Tenez, j'ai repêché ces plumes ce matin.");
-      sc.say("Vous obtenez : Plume ravivante ×2 !");
-    } else sc.say("Pêcheur : Le lac est calme. Un jour, la brume partira, et les poissons reviendront.");
-  } else if (s == "garde_col") {
-    if (has("boss1")) sc.say("Garde : Le col est libre ! Les Monts Cendrelune vous attendent de l'autre côté.");
-    else {
-      sc.say("Garde : Halte ! Le gardien Sylvarque bloque le col, accompagné de deux Brumelins.");
-      sc.say("Garde : Il est de type Ombre et de niveau 12. La Lumière le blesse beaucoup.");
-    }
-  } else if (s == "brann") {
-    sc.say("Brann : Alors c'est vous qui avez chassé la brume de la vallée ?");
-    sc.say("Brann : Ignarok, le monstre du volcan, menace Forgeroc. Je veux bien vous aider…");
-    sc.say("Brann : … mais seulement si vous me battez en duel !");
-    sc.call([this] {
-      ask("Affronter Brann en duel ?", [this] {
-        auto b = makeFighter("brann", 14);
-        b->mhp = b->mhp * 5 / 2;
-        b->hp = b->mhp;
-        b->boss = true;
-        startBattle({b}, true, [this](BattleResult r) {
-          if (r != BattleResult::Win) return;
-          sc.say("Brann : Ha ! Belle bagarre. Vous avez gagné un compagnon.");
-          sc.call([this] { recruit("brann", 14); });
-        }, false, false);
-      });
-    });
-  } else if (s == "garde_volcan") {
-    if (has("boss2")) sc.say("Garde : Le volcan s'est calmé. Merci, héros !");
-    else {
-      sc.say("Garde : Le cratère est au bout de ce chemin. Ignarok y règne, entouré de Tisonnels.");
-      sc.say("Garde : C'est une créature de Feu de niveau 23. L'Eau est sa faiblesse.");
-    }
-  } else if (s == "isra") {
-    sc.say("Isra : Vous avez abattu le Golem ? J'étais coincée ici depuis des jours !");
-    sc.say("Isra : Je suis Isra, mage noire. Feu, Givre, Foudre… je maîtrise les éléments.");
-    sc.say("Isra : Si vous allez au volcan, comptez sur moi. Ignarok ne supportera pas mon Givre.");
-    sc.call([this] { recruit("isra", 15); });
-  }
-}
-
-void Game::door(const Building& b) {
-  if (b.kind == "soin") {
-    healAll();
-    respawnMap = mapId, respawnX = b.doorX(), respawnY = b.doorY() + 1;
-    sc.say("Guérisseuse : Reposez-vous… Voilà, toute votre équipe est en pleine forme !");
-  } else if (b.kind == "boutique1") {
-    shopMenu({"potion", "ether", "plume", "lanterne"});
-  } else if (b.kind == "boutique2") {
-    shopMenu({"potion", "superpotion", "ether", "plume", "lanterne", "lanterne_argent"});
-  } else if (b.kind == "auberge") {
-    sc.say("Aubergiste : Une nuit ici coûte 20 pièces d'or. Le repos rend tous les PV et PM.");
-    sc.call([this] {
-      ask("Passer la nuit (20 or) ?", [this] {
-        if (gold < 20) return sc.say("Aubergiste : Vous n'avez pas assez d'or.");
-        gold -= 20;
-        healAll();
-        respawnMap = mapId, respawnX = px, respawnY = py;
-        sc.say("Vous dormez d'un sommeil profond… L'équipe est en pleine forme !");
-      });
-    });
-  } else if (b.kind == "chapelle") {
-    for (auto& f : team) f->mp = f->mmp;
-    sc.say("Une douce lumière emplit la chapelle. Les PM de toute l'équipe sont restaurés.");
-  } else if (b.kind == "forge") {
-    sc.say(has("brann") ? "L'enclume est encore chaude. Brann y forgeait sa hache." : "La forge est fermée. Brann se tient juste à côté.");
-  } else {
-    sc.say("Personne ne répond.");
-  }
-}
-
-void Game::bossEvent(const BossSpot& b) {
-  std::string id = b.id, flag = b.flag;
-  if (id == "sylvarque") sc.say("Une silhouette immense se dresse dans la brume. Les yeux de Sylvarque s'allument…");
-  if (id == "golem") sc.say("Un amas de roches noires se redresse : le Golem de suie barre le passage !");
-  if (id == "ignarok") sc.say("Le magma bouillonne. Ignarok, le cœur du volcan, ouvre les yeux.");
-  sc.call([this, id, flag] {
-    ask("Engager le combat ?", [this, id, flag] {
-      std::vector<FighterP> foes;
-      auto bossF = [](const std::string& sp, int lvl, int mult) {
-        auto f = makeFighter(sp, lvl);
-        f->mhp *= mult;
-        f->hp = f->mhp;
-        f->boss = true;
-        return f;
-      };
-      if (id == "sylvarque") foes = {makeFighter("brumelin", 9), bossF("sylvarque", 12, 3), makeFighter("brumelin", 9)};
-      if (id == "golem") foes = {bossF("golem", 16, 3)};
-      if (id == "ignarok") foes = {makeFighter("tisonnel", 19), bossF("ignarok", 23, 4), makeFighter("tisonnel", 19)};
-      startBattle(foes, true, [this, id, flag](BattleResult r) {
-        if (r != BattleResult::Win) return;
-        flags.insert(flag);
-        if (id == "sylvarque") {
-          sc.say("Sylvarque se dissout dans un souffle de vent. La brume se lève sur toute la vallée !");
-          sc.say("Le col de la Brume est ouvert. Les Monts Cendrelune vous attendent à l'est.");
-        } else if (id == "golem") {
-          sc.say("Le Golem s'effondre en un tas de cailloux. Une voix vous appelle au fond de la grotte…");
-        } else {
-          ending();
-        }
-      }, false, false);
-    });
-  });
-}
-
-void Game::ending() {
-  sc.say("Ignarok rugit une dernière fois, puis le volcan se tait.");
-  sc.say("La lave refroidit. Sur Forgeroc, le ciel redevient bleu pour la première fois depuis des années.");
-  sc.say("Lior et ses compagnons ont ramené la paix à Brumeval et aux Monts Cendrelune.");
-  sc.call([this] { mode = Mode::Ending; });
+  if (!n.event.empty()) return runEvent(n.event);
+  for (auto& l : n.lines) sc.say(fillText(l));
 }
 
 void Game::ask(const std::string& q, std::function<void()> yes, std::function<void()> no) {
@@ -409,13 +431,14 @@ void Game::ask(const std::string& q, std::function<void()> yes, std::function<vo
     menus.clear();
     sc.resume();
   };
-  m.items.push_back({"Oui", "", "", true, [close, yes] {
+  // La réponse passe avant les étapes déjà en attente dans la file
+  m.items.push_back({"Oui", "", "", true, [this, close, yes] {
                        close();
-                       if (yes) yes();
+                       sc.runNow(yes);
                      }});
-  m.items.push_back({"Non", "", "", true, [close, no] {
+  m.items.push_back({"Non", "", "", true, [this, close, no] {
                        close();
-                       if (no) no();
+                       sc.runNow(no);
                      }});
   m.onCancel = m.items[1].act;
   menus.push(m);
@@ -426,9 +449,10 @@ void Game::ask(const std::string& q, std::function<void()> yes, std::function<vo
 // ---------------------------------------------------------------------------
 void Game::titleMenu() {
   mode = Mode::Title;
+  editorTest_ = storyTest_ = false;
   menus.clear();
   Menu m;
-  m.x = 110, m.y = 146, m.w = 100, m.rows = 3, m.cancelable = false;
+  m.x = 110, m.y = 140, m.w = 100, m.rows = 4, m.cancelable = false;
   m.items.push_back({"Nouvelle partie", "", "", true, [this] { starterMenu(); }});
   bool can = saveExists();
   m.items.push_back({"Continuer", "", "", can, [this] {
@@ -438,8 +462,37 @@ void Game::titleMenu() {
                          showRegionBanner();
                        }
                      }});
+  m.items.push_back({"Outils", "", "Arène de combat, réglages, éditeurs de cartes et d'histoire.", true, [this] { toolsMenu(); }});
   m.items.push_back({"Quitter", "", "", true, [this] { quit = true; }});
   if (can) m.sel = 1;
+  menus.push(m);
+}
+
+void Game::toolsMenu() {
+  Menu m;
+  m.title = "Outils";
+  m.x = 92, m.y = 92, m.w = 136, m.rows = 6;
+  m.items.push_back({"Arène de combat", "", "Composer deux équipes, combattre ou simuler des combats.", true, [this] {
+                       if (!arena_) arena_ = std::make_unique<Arena>(*this);
+                       mode = Mode::Arena;
+                       arena_->open();
+                     }});
+  m.items.push_back({"Réglages", "", "Modifier les règles, espèces, techniques, types et objets.", true, [this] {
+                       if (!settings_) settings_ = std::make_unique<Settings>(*this);
+                       mode = Mode::Settings;
+                       settings_->open();
+                     }});
+  m.items.push_back({"Éditeur de cartes", "", "Peindre les cartes, placer habitants, coffres, passages, zones… et tester.", true, [this] {
+                       if (!editor_) editor_ = std::make_unique<MapEditor>(*this);
+                       mode = Mode::Editor;
+                       editor_->open();
+                     }});
+  m.items.push_back({"Éditeur d'histoire", "", "Dialogues et événements : conditions, questions, combats, récompenses… et les jouer.", true, [this] {
+                       if (!story_) story_ = std::make_unique<StoryEditor>(*this);
+                       mode = Mode::Story;
+                       story_->open();
+                     }});
+  m.items.push_back({"Retour", "", "", true, [this] { menus.pop(); }});
   menus.push(m);
 }
 
@@ -447,36 +500,45 @@ void Game::starterMenu() {
   Menu m;
   m.title = "Premier compagnon";
   m.x = 90, m.y = 132, m.w = 140, m.rows = 3;
-  for (std::string id : {"braisenard", "gouttelin", "ronceau"}) {
+  for (const std::string& id : rules().starters) {
     const Species& s = species(id);
-    m.items.push_back({s.name, typeName(s.type), "Type " + std::string(typeName(s.type)) + " · Limite : " + moveInfo(s.limit).name, true,
+    std::string lim = s.limit.empty() ? "aucune" : moveInfo(s.limit).name;
+    m.items.push_back({s.name, typesName(s), "Type " + typesName(s) + " · Limite : " + lim, true,
                        [this, id] { newGame(id); }});
   }
   menus.push(m);
 }
 
 void Game::newGame(const std::string& starter) {
+  const Rules& r = rules();
   menus.clear();
   sc.clear();
-  team = {makeFighter("lior", 5), makeFighter(starter, 5)};
-  items = {{"potion", 4}, {"ether", 1}, {"plume", 1}, {"lanterne", 5}};
-  gold = 100;
+  team = {makeFighter(r.hero, r.startLevel), makeFighter(starter, r.startLevel)};
+  items.clear();
+  for (auto& [id, n] : r.startItems) items[id] = n;
+  gold = r.startGold;
   flags.clear();
-  respawnMap = 0, respawnX = 7, respawnY = 7;
-  mapId = 0;
-  changeMap(0, 12, 9, DOWN);
-  showRegionBanner();
+  respawnMap = std::max(0, mapIndex(r.respawnMap)), respawnX = r.respawnX, respawnY = r.respawnY;
+  mapId = -1;
+  changeMap(std::max(0, mapIndex(r.startMap)), r.startX, r.startY, r.startDir);
   mode = Mode::Map;
-  sc.say("Ce matin encore, une brume épaisse a recouvert la vallée de Brumeval.");
-  sc.say("Elle rend les créatures sauvages. Lior, apprenti gardien, part avec " + species(starter).name + " en trouver la source.");
-  sc.say("Entrée : parler et valider. Échap : menu. Flèches ou ZQSD : se déplacer.");
-  sc.say("Les hautes herbes cachent des créatures. Capturez-les avec des lanternes pour agrandir l'équipe !");
+  if (!r.startEvent.empty()) runEvent(r.startEvent);
 }
 
 void Game::pauseMenu() {
   panelMode_ = 1;
   Menu m;
-  m.x = 8, m.y = 8, m.w = 100, m.rows = 6;
+  m.x = 8, m.y = 8, m.w = 100, m.rows = 7;
+  if (editorTest_ && editor_)
+    m.items.push_back({"Retour à l'éditeur", "", "Revenir à l'éditeur de cartes, à l'endroit où vous êtes.", true, [this] {
+                         panelMode_ = 0;
+                         editor_->returnFromTest();
+                       }});
+  if (storyTest_ && story_)
+    m.items.push_back({"Retour à l'éditeur", "", "Revenir à l'éditeur d'histoire.", true, [this] {
+                         panelMode_ = 0;
+                         story_->returnFromTest();
+                       }});
   m.items.push_back({"Équipe", "", "Ordre de combat et fiches.", true, [this] { teamMenu(); }});
   m.items.push_back({"Objets", "", "Utiliser un objet.", true, [this] { itemMenu(); }});
   m.items.push_back({"Magie", "", "Lancer un sort de soin.", true, [this] { magicMenu(); }});
@@ -550,15 +612,17 @@ void Game::itemMenuAt(int sel) {
     m.items.push_back({d.name, "×" + std::to_string(n), d.desc + (d.field ? "" : d.key ? " (objet important)" : " (en combat)"), d.field,
                        [this, id, myIdx] {
                          pickMember("Sur qui ?", [id](const Fighter& f) {
-                           if (id == "plume") return !f.alive();
-                           if (id == "ether") return f.alive() && f.mp < f.mmp;
-                           return f.alive() && f.hp < f.mhp;
+                           const ItemDef& d = item(id);
+                           if (d.revive) return !f.alive();
+                           return f.alive() && ((d.healHp && f.hp < f.mhp) || (d.healMp && f.mp < f.mmp));
                          }, [this, id, myIdx](Fighter& f) {
+                           const ItemDef& d = item(id);
                            items[id]--;
-                           if (id == "potion") f.hp = std::min(f.mhp, f.hp + 40);
-                           if (id == "superpotion") f.hp = std::min(f.mhp, f.hp + 120);
-                           if (id == "ether") f.mp = std::min(f.mmp, f.mp + 25);
-                           if (id == "plume") f.hp = std::max(1, f.mhp / 2);
+                           if (d.revive) f.hp = std::max(1, f.mhp * d.revive / 100);
+                           else {
+                             f.hp = std::min(f.mhp, f.hp + d.healHp);
+                             f.mp = std::min(f.mmp, f.mp + d.healMp);
+                           }
                            notice(item(id).name + " utilisé sur " + f.name() + ".");
                            menus.pop();
                            itemMenuAt(myIdx);
@@ -577,7 +641,7 @@ void Game::magicMenu() {
     FighterP caster = f;
     std::vector<std::string> heal;
     for (auto& id : f->spells())
-      if (moveInfo(id).kind == Kind::Heal || moveInfo(id).kind == Kind::Revive) heal.push_back(id);
+      if ((moveInfo(id).kind == Kind::Heal && moveInfo(id).power > 0) || moveInfo(id).kind == Kind::Revive) heal.push_back(id);
     m.items.push_back({f->name(), std::to_string(f->mp) + " PM", heal.empty() ? "Aucun sort utilisable hors combat." : "", f->alive() && !heal.empty(),
                        [this, caster, heal] {
                          Menu s;
@@ -661,8 +725,8 @@ bool Game::saveGame() {
   std::ofstream f(savePath());
   if (!f) return false;
   f << "BRUMEVAL 1\n";
-  f << "carte " << mapId << ' ' << px << ' ' << py << ' ' << dir << '\n';
-  f << "reveil " << respawnMap << ' ' << respawnX << ' ' << respawnY << '\n';
+  f << "carte " << M().id << ' ' << px << ' ' << py << ' ' << dir << '\n';
+  f << "reveil " << maps()[respawnMap].id << ' ' << respawnX << ' ' << respawnY << '\n';
   f << "or " << gold << '\n';
   for (auto& fl : flags) f << "drapeau " << fl << '\n';
   for (auto& [id, n] : items)
@@ -677,18 +741,32 @@ bool Game::loadGame() {
   team.clear();
   items.clear();
   flags.clear();
+  // Anciennes sauvegardes : cartes désignées par leur numéro
+  static const char* OLD_MAPS[] = {"vallee", "cendrelune", "grotte"};
+  auto mapOf = [&](const std::string& v) {
+    int m = mapIndex(v);
+    if (m < 0 && v.size() == 1 && v[0] >= '0' && v[0] <= '2') m = mapIndex(OLD_MAPS[v[0] - '0']);
+    return std::max(0, m);
+  };
+  std::vector<std::string> oldChests;
   std::string line;
+  mapId = 0;
   while (std::getline(f, line)) {
     std::istringstream s(line);
-    std::string k;
+    std::string k, v;
     s >> k;
-    if (k == "carte") s >> mapId >> px >> py >> dir;
-    else if (k == "reveil") s >> respawnMap >> respawnX >> respawnY;
-    else if (k == "or") s >> gold;
+    if (k == "carte") {
+      s >> v >> px >> py >> dir;
+      mapId = mapOf(v);
+    } else if (k == "reveil") {
+      s >> v >> respawnX >> respawnY;
+      respawnMap = mapOf(v);
+    } else if (k == "or") s >> gold;
     else if (k == "drapeau") {
-      std::string v;
       s >> v;
-      flags.insert(v);
+      // Ancien format des coffres : coffre:<numéro de carte>:<numéro du coffre>
+      if (v.rfind("coffre:", 0) == 0 && std::count(v.begin(), v.end(), ':') == 2) oldChests.push_back(v);
+      else flags.insert(v);
     } else if (k == "objet") {
       std::string id;
       int n;
@@ -702,6 +780,14 @@ bool Game::loadGame() {
       auto m = makeFighter(sp, lvl);
       m->xp = xp, m->hp = std::min(hp, m->mhp), m->mp = std::min(mp, m->mmp), m->lim = lim;
       team.push_back(m);
+    }
+  }
+  for (auto& v : oldChests) {
+    int m = mapOf(v.substr(7, v.find(':', 7) - 7));
+    int i = std::atoi(v.substr(v.rfind(':') + 1).c_str());
+    if (i >= 0 && i < (int)maps()[m].chests.size()) {
+      auto& c = maps()[m].chests[i];
+      flags.insert("coffre:" + maps()[m].id + ":" + std::to_string(c.x) + ":" + std::to_string(c.y));
     }
   }
   moving = false;
@@ -720,7 +806,20 @@ void Game::draw() {
     case Mode::Map: drawMap(); break;
     case Mode::Battle: battle_->draw(); break;
     case Mode::Ending: drawEnding(); break;
+    case Mode::Arena:
+      if (arena_) arena_->draw();
+      break;
+    case Mode::Settings:
+      if (settings_) settings_->draw();
+      break;
+    case Mode::Editor:
+      if (editor_) editor_->draw();
+      break;
+    case Mode::Story:
+      if (story_) story_->draw();
+      break;
   }
+  if (textOn_) drawTextEdit();
 }
 
 void Game::drawTitle() {
@@ -756,7 +855,7 @@ void Game::drawMap() {
     for (int x = tx0; x <= tx0 + SCREEN_W / 16 && x < m.w(); x++) drawTile(g, m, x, y, x * 16 - camX, y * 16 - camY, time);
   for (auto& b : m.buildings) drawBuilding(g, b, b.x * 16 - camX, b.y * 16 - camY);
   for (size_t i = 0; i < m.chests.size(); i++)
-    drawChest(g, m.chests[i].x * 16 - camX, m.chests[i].y * 16 - camY, has("coffre:" + std::to_string(mapId) + ":" + std::to_string(i)));
+    drawChest(g, m.chests[i].x * 16 - camX, m.chests[i].y * 16 - camY, has(chestFlag((int)i)));
   for (auto& s : m.signs) drawSign(g, s.x * 16 - camX, s.y * 16 - camY);
   // Personnages triés de haut en bas
   struct Actor {
@@ -769,19 +868,40 @@ void Game::drawMap() {
   for (auto& b : m.bosses)
     if (bossAlive(b))
       actors.push_back({float(b.y * 16 + 16), [&, b] { drawCreature(g, b.id, (b.x + 1) * 16 - camX, (b.y + 1) * 16 - camY - 2, .6f, false, time); }});
+  if (exclaimNpc_ >= 0 && exclaimNpc_ < (int)m.npcs.size() && time - exclaimT_ < 1.2f) {
+    const Npc& n = m.npcs[exclaimNpc_];
+    float bx = n.x * 16 - camX + 4, by = n.y * 16 - camY - 16;
+    actors.push_back({1e9f, [&, bx, by] {
+                        g.rect(bx, by, 9, 11, rgb(0xffffff));
+                        g.frame(bx, by, 9, 11, rgb(0x1a1a24));
+                        g.text(bx + 2, by - 1, "!", rgb(0xd2493f), 0, false);
+                      }});
+  }
   int step = moving ? (moveT < .5f ? 1 : 2) : 0;
   actors.push_back({ppy, [&] { drawHuman(g, look(0), ppx - camX, ppy - camY - 2, 1, dir, step, false); }});
   std::sort(actors.begin(), actors.end(), [](const Actor& a, const Actor& b) { return a.y < b.y; });
   for (auto& a : actors) a.draw();
   // Ambiance
-  if (m.theme == Theme::Vallee && !has("boss1"))
+  bool amb = m.ambianceUntil.empty() || !has(m.ambianceUntil);
+  if (m.ambiance == "neige" && amb)
+    for (int i = 0; i < 40; i++) {
+      float x = std::fmod(i * 47.f + time * (6 + i % 4) + std::sin(time + i) * 6, 330.f) - 5;
+      float y = std::fmod(i * 29.f + time * (18 + i % 6), 250.f) - 5;
+      g.rect(x, y, i % 3 ? 1 : 2, i % 3 ? 1 : 2, rgb(0xffffff, 200));
+    }
+  if (m.ambiance == "lucioles" && amb)
+    for (int i = 0; i < 14; i++) {
+      float x = std::fmod(i * 61.f + std::sin(time * .7f + i) * 20, 320.f), y = std::fmod(i * 37.f + std::cos(time * .5f + i * 2) * 14, 240.f);
+      g.ellipse(x, y, 2, 2, rgb(0xe8ff9a, uint8_t(90 + 80 * std::sin(time * 3 + i))));
+    }
+  if (m.ambiance == "brume" && amb)
     for (int i = 0; i < 5; i++) g.ellipse(std::fmod(i * 97 + time * 22, 460.f) - 70, 30 + i * 46, 90, 10, rgb(0xe6ebff, 22));
-  if (m.theme == Theme::Cendres && !has("boss2"))
+  if (m.ambiance == "cendres" && amb)
     for (int i = 0; i < 30; i++) {
       float x = std::fmod(i * 53.f + time * (8 + i % 5), 330.f) - 5, y = std::fmod(i * 31.f + time * (14 + i % 7), 250.f) - 5;
       g.rect(x, y, 1, 1, rgb(0xcfc6c0, 170));
     }
-  if (m.theme == Theme::Grotte) {
+  if (m.ambiance == "obscurite" && amb) {
     float cx = ppx - camX + 8, cy = ppy - camY + 8;
     for (int ring = 0; ring < 2; ring++) {
       float R = ring == 0 ? 92 : 68;
@@ -880,7 +1000,12 @@ void Game::drawTeamPanel(int x, int y, int sel) {
   if (sel >= (int)team.size()) return;
   const Fighter& f = *team[sel];
   int w = 320 - x - 8;
-  g.window(x, y, w, 200);
+  std::string t, s;
+  for (auto& id : f.techs()) t += (t.empty() ? "" : ", ") + moveInfo(id).name;
+  for (auto& id : f.spells()) s += (s.empty() ? "" : ", ") + moveInfo(id).name;
+  auto techLines = Gfx::wrap("Techniques : " + t, w - 16), magicLines = s.empty() ? std::vector<std::string>{} : Gfx::wrap("Magie : " + s, w - 16);
+  int lines = (int)techLines.size() + (int)magicLines.size() + (f.S().limit.empty() ? 0 : 1);
+  g.window(x, y, w, std::min(SCREEN_H - y - 2, 34 + 4 * 11 + 3 + 4 * 11 + 3 + lines * 11 + 6));
   g.text(x + 8, y + 6, f.name(), GOLD);
   g.text(x + w - 8, y + 6, "Niveau " + std::to_string(f.lvl), WHITE, 2);
   std::string role = f.S().human ? f.S().role : std::string("Créature de type ") + typeName(f.S().type);
@@ -893,23 +1018,27 @@ void Game::drawTeamPanel(int x, int y, int sel) {
     g.text(x + 54, ly, b, WHITE);
     ly += 11;
   };
-  row("Type", typeName(f.S().type));
+  row("Type", typesName(f.S()));
   row("PV", std::to_string(f.hp) + "/" + std::to_string(f.mhp));
   row("PM", std::to_string(f.mp) + "/" + std::to_string(f.mmp));
-  row("Attaque", std::to_string(f.atk));
-  row("Défense", std::to_string(f.def));
-  row("Magie", std::to_string(f.mag));
-  row("Vitesse", std::to_string(f.spd));
   row("Exp.", std::to_string(f.xp) + "/" + std::to_string(f.need()));
   ly += 3;
-  std::string t;
-  for (auto& id : f.techs()) t += (t.empty() ? "" : ", ") + moveInfo(id).name;
-  for (auto& l : Gfx::wrap("Techniques : " + t, w - 16)) g.text(x + 8, ly, l, WHITE), ly += 11;
-  std::string s;
-  for (auto& id : f.spells()) s += (s.empty() ? "" : ", ") + moveInfo(id).name;
-  if (!s.empty())
-    for (auto& l : Gfx::wrap("Magie : " + s, w - 16)) g.text(x + 8, ly, l, rgb(0x9fd8ff)), ly += 11;
-  g.text(x + 8, ly, "Limite : " + moveInfo(f.S().limit).name, rgb(0xff9ad0));
+  // Statistiques sur deux colonnes
+  auto pair = [&](const char* a, int va, const char* b, const std::string& vb) {
+    g.text(x + 8, ly, a, MUTED);
+    g.text(x + 76, ly, std::to_string(va), WHITE, 2);
+    g.text(x + 84, ly, b, MUTED);
+    g.text(x + w - 8, ly, vb, WHITE, 2);
+    ly += 11;
+  };
+  pair("Attaque", f.atk, "Défense", std::to_string(f.def));
+  pair("Magie", f.mag, "Résist.", std::to_string(f.res));
+  pair("Vitesse", f.spd, "Précis.", std::to_string(f.acc) + "%");
+  pair("Esquive", f.eva, "Critique", std::to_string(f.crit) + "%");
+  ly += 3;
+  for (auto& l : techLines) g.text(x + 8, ly, l, WHITE), ly += 11;
+  for (auto& l : magicLines) g.text(x + 8, ly, l, rgb(0x9fd8ff)), ly += 11;
+  if (!f.S().limit.empty()) g.text(x + 8, ly, "Limite : " + moveInfo(f.S().limit).name, rgb(0xff9ad0));
 }
 
 void Game::drawEnding() {

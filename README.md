@@ -36,6 +36,42 @@ pour agrandir l'équipe, quatre héros recrutables, deux régions et une grotte.
 4. **F7** pour compiler, puis **Maj+F5** pour lancer le jeu (ou le bouton ▶ de
    la barre d'état en bas).
 
+## Outils
+
+Depuis l'écran titre, **Outils** donne accès à :
+
+- **Arène de combat** : composez deux équipes (espèces, niveaux, PV des boss,
+  renforts, décor), puis **Combattre !** pour jouer vous-même ou **Simuler**
+  pour faire jouer des dizaines de combats à l'ordinateur et voir le taux de
+  victoire. **Modèles…** reprend tous les combats de l'histoire et les zones de
+  rencontres ; **Journal** détaille le dernier combat coup par coup.
+- **Réglages** : modifiez depuis le jeu les règles (départ, rencontres, formules
+  de combat, états, récompenses, butin), les espèces (types, statistiques,
+  résistances, immunités, techniques apprises), les techniques, la table des
+  types et les objets. Les changements s'appliquent tout de suite : essayez-les
+  avec **Tester dans l'Arène**, puis **Enregistrer** (ou **Tout annuler**).
+  Gauche/droite règle une valeur, Entrée ouvre un texte à saisir au clavier.
+- **Éditeur de cartes** : peignez les tuiles à la souris (clic gauche, clic
+  droit = pipette, molette = tuile suivante) ou au clavier (flèches + Entrée,
+  Maj + flèches pour peindre en marchant), avec pinceau, rectangle ou
+  remplissage. **Tab** passe aux calques Objets (habitants, coffres, panneaux,
+  passages, boss, bâtiments) et Zones (rencontres, zones déclencheuses).
+  **Échap** ouvre le menu : propriétés et taille de la carte, nouvelle carte,
+  vérification, **Tester ici** (Échap > Retour à l'éditeur), enregistrer
+  (Ctrl+S). Ctrl+Z / Ctrl+Y annulent et rétablissent.
+
+- **Éditeur d'histoire** : tous les événements (dialogues, scènes, boss,
+  dresseurs, boutiques…). Un événement est une liste d'actions (dire, donner,
+  combat, question, si…) ou plusieurs **pages** avec une condition (drapeau,
+  objet, or, membre de l'équipe). Les actions qui en contiennent d'autres
+  (réponses Oui/Non, victoire/défaite d'un combat, alors/sinon) s'ouvrent comme
+  des sous-listes. **Jouer l'événement** le lance à l'endroit où il est utilisé,
+  avec une équipe et des drapeaux de test ; un combat peut s'essayer dans
+  l'Arène. Ctrl+Z / Ctrl+Y / Ctrl+S comme dans l'éditeur de cartes.
+
+Les menus se manient aussi à la souris : survol, clic gauche pour valider, clic
+droit pour revenir, molette pour défiler ou régler une valeur.
+
 ## Continuer le projet avec Claude Code
 
 Ouvrez un terminal dans le dossier du projet (dans VS Code : **Terminal >
@@ -56,6 +92,7 @@ l'équilibrage et enregistre des captures d'écran dans `captures/`.
 ## Organisation
 
 - `src/` : le code du jeu (voir `CLAUDE.md` pour le rôle de chaque fichier)
-- `tools/generate_world.py` : génère les cartes (`src/world_data.cpp`) et vérifie
-  que tout est accessible
+- `data/` : tout le contenu du jeu (créatures, techniques, objets, cartes,
+  dialogues, règles) en fichiers JSON modifiables, lus à chaque démarrage. Voir
+  `data/LISEZMOI.md`.
 - La sauvegarde est écrite dans `%APPDATA%\Brumeval\Brumeval\sauvegarde.txt`

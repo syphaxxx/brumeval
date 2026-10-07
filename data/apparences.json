@@ -1,0 +1,192 @@
+[
+  {
+    "id": "lior",
+    "nom": "Lior",
+    "cheveux": "#5a3a22",
+    "peau": "#f2c9a0",
+    "haut": "#d2493f",
+    "bas": "#2b2f45",
+    "coiffe": "bandeau",
+    "arme": "epee"
+  },
+  {
+    "id": "maelle",
+    "nom": "Maëlle",
+    "cheveux": "#e8d27a",
+    "peau": "#f6d6b8",
+    "haut": "#f2f0ea",
+    "bas": "#9fb3d9",
+    "coiffe": "capuche",
+    "arme": "baton"
+  },
+  {
+    "id": "brann",
+    "nom": "Brann",
+    "cheveux": "#8a3b1e",
+    "peau": "#d9a47a",
+    "haut": "#6b4a2f",
+    "bas": "#3d3a36",
+    "coiffe": "aucune",
+    "arme": "hache"
+  },
+  {
+    "id": "isra",
+    "nom": "Isra",
+    "cheveux": "#2b2238",
+    "peau": "#eec4a8",
+    "haut": "#5b3f8c",
+    "bas": "#2a2140",
+    "coiffe": "chapeau",
+    "arme": "dague"
+  },
+  {
+    "id": "villageois",
+    "nom": "Villageois",
+    "cheveux": "#6b4a2f",
+    "peau": "#f2c9a0",
+    "haut": "#4e8c5a",
+    "bas": "#5a4a3a",
+    "coiffe": "aucune",
+    "arme": "aucune"
+  },
+  {
+    "id": "ancien",
+    "nom": "Ancien",
+    "cheveux": "#c9c4bc",
+    "peau": "#e8c0a0",
+    "haut": "#7a5c9a",
+    "bas": "#4a4060",
+    "coiffe": "aucune",
+    "arme": "aucune"
+  },
+  {
+    "id": "enfant",
+    "nom": "Enfant",
+    "cheveux": "#d98a3a",
+    "peau": "#f2c9a0",
+    "haut": "#e0b34a",
+    "bas": "#3a5a8a",
+    "coiffe": "aucune",
+    "arme": "aucune"
+  },
+  {
+    "id": "garde",
+    "nom": "Garde",
+    "cheveux": "#3a2a1e",
+    "peau": "#c99a74",
+    "haut": "#8a8f9a",
+    "bas": "#3a3a44",
+    "coiffe": "bandeau",
+    "arme": "aucune"
+  },
+  {
+    "id": "villageoise",
+    "nom": "Villageoise",
+    "cheveux": "#4a2e1e",
+    "peau": "#f2d0b0",
+    "haut": "#c85a7a",
+    "bas": "#5a3a4a",
+    "coiffe": "aucune",
+    "arme": "aucune"
+  },
+  {
+    "id": "pecheur",
+    "nom": "Pêcheur",
+    "cheveux": "#9a9a9a",
+    "peau": "#e0b898",
+    "haut": "#3f6f8f",
+    "bas": "#2f3f4f",
+    "coiffe": "capuche",
+    "arme": "aucune"
+  },
+  {
+    "id": "braconnier",
+    "nom": "Braconnier",
+    "cheveux": "#3a2a1e",
+    "peau": "#d9a47a",
+    "haut": "#5a6b3a",
+    "bas": "#3d3a36",
+    "coiffe": "capuche",
+    "arme": "dague"
+  },
+  {
+    "id": "kael",
+    "nom": "Kael",
+    "cheveux": "#2a4a2a",
+    "peau": "#e0b08a",
+    "haut": "#3f7a4a",
+    "bas": "#5a4a3a",
+    "coiffe": "aucune",
+    "arme": "arc"
+  },
+  {
+    "id": "selene",
+    "nom": "Sélène",
+    "cheveux": "#e6e6f0",
+    "peau": "#f6d6c0",
+    "haut": "#8aa0c8",
+    "bas": "#4a5a7a",
+    "coiffe": "casque",
+    "arme": "lance"
+  },
+  {
+    "id": "bandit",
+    "nom": "Bandit",
+    "cheveux": "#3a2a1e",
+    "peau": "#d9a47a",
+    "haut": "#6a4a3a",
+    "bas": "#3d3a36",
+    "coiffe": "foulard",
+    "arme": "dague"
+  },
+  {
+    "id": "chef_bandit",
+    "nom": "Chef des bandits",
+    "cheveux": "#1a1a1a",
+    "peau": "#c99a74",
+    "haut": "#5a2a2a",
+    "bas": "#2a2a2a",
+    "coiffe": "foulard",
+    "arme": "hache"
+  },
+  {
+    "id": "chevalier",
+    "nom": "Chevalier du givre",
+    "cheveux": "#8a8a96",
+    "peau": "#f2c9a0",
+    "haut": "#9ab4d8",
+    "bas": "#4a5a7a",
+    "coiffe": "casque",
+    "arme": "lance"
+  },
+  {
+    "id": "mage_givre",
+    "nom": "Mage du givre",
+    "cheveux": "#cfe6ff",
+    "peau": "#f6d6c0",
+    "haut": "#e6f2ff",
+    "bas": "#7a9ac8",
+    "coiffe": "capuche",
+    "arme": "baton"
+  },
+  {
+    "id": "ermite",
+    "nom": "Ermite",
+    "cheveux": "#d8d8d8",
+    "peau": "#e0b898",
+    "haut": "#6a5a3a",
+    "bas": "#4a3a2a",
+    "coiffe": "capuche",
+    "arme": "baton"
+  },
+  {
+    "id": "montagnard",
+    "nom": "Montagnard",
+    "cheveux": "#6a4a2f",
+    "peau": "#f2c9a0",
+    "haut": "#b84a3a",
+    "bas": "#3a3a44",
+    "coiffe": "casque",
+    "arme": "aucune"
+  }
+]

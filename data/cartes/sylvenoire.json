@@ -1,0 +1,164 @@
+{
+  "id": "sylvenoire",
+  "nom": "Forêt de Sylve-Noire",
+  "theme": "foret",
+  "ambiance": {"effet": "lucioles"},
+  "taux_rencontre": 0.12,
+  "tuiles": [
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+    "TT.T....TTT.TTTTTTTTTTT..TTTTT....TTTT.TT..T.T....TTT.TT",
+    "TT......T.TTTTT......TTTTT............T.T..TT..TTT..T.TT",
+    "TTTT.......TTTT.TTT.T.................T...T.TT........TT",
+    "TT.....T...TT.TTT...T................T.T..TT..T...TTT.TT",
+    "TT.TT...TT..T...T.T...................TTTT..T..T....T.TT",
+    "TT..TTTTT.TTT...TTT.T........=........TTTTTT......TT.TTT",
+    "TT....T.........TTTTT........=.........T...T.....TTT.TTT",
+    "TT...T...T.T..T...,,,,,......=.........TTTT.T..,,,.TTTTT",
+    "TTTTT.T.TT.TT....,,,,=,,.....==......T.TTTT..T,,,,,TTTTT",
+    "TT.TT.TTTT.T...TT,,,,=,,T.....=....TTT.......,,,,,,,TTTT",
+    "TT..TT.TT.....TT.,,,,====================.T..,,,,,,,T.TT",
+    "TT.....TT..T.TTTTT,,,,,TT...T.T.TT.TT..T=T.T.,,,,,,,TTTT",
+    "TT.TT..............TTT.TT.TTT.T...,,,,,.=T....,,,,,T.TTT",
+    "TT.T............TTTT...T..T..T..T,,,,,,,=T.TTT.,,,T..TTT",
+    "TTT...............T..TT...T.T.TT.,,,,,,,=..T.....T.TT.TT",
+    "TT......................T..T...T.,,,,,,,=T............TT",
+    "TT.................TTTT...T.T..T..,,,,,T=.............TT",
+    "TT.................T..T.TT....TTT..T....=.............TT",
+    "TT..........============================================",
+    "TT.................,,,,,,,TTTT....=.TT.T=............TTT",
+    "TT.................,,,,,,,T.T....T=T.T.T=...........TTTT",
+    "TTT................,,,,,,,TT....T.=TTTT.=............TTT",
+    "TT...............T..,,,,,.T.T...T.=.....=.T......TTTTTTT",
+    "TTT.............T.T....T.T.T,,,,,T=.TTT.=..T..T...T..TTT",
+    "TTTTT.T...........T......TT,,,,,,,=.T...=.TT.T..T...T.TT",
+    "TT..T.T...T.............TTT,,,,,,,=TTT..=........T...TTT",
+    "TT.T...TT.T...zzzzzzzzz....,,,,,,,=.T.T.=====,,....T..TT",
+    "TT.TT..TT..zzzzzzzzzzzzzzz..,,,,,.=.....,,,,,,,,,.....TT",
+    "TTTTTTTTT.zzzzzzzzzzzzzzB==========TT..,,,,,,,,,,,.T.TTT",
+    "TT......Tzzz~~~~~zzzzzzzBzzz...T.T..TT.,,,,,,,,,,,...TTT",
+    "TTT.....Tzz~~~~~~~zzzzzzBzzz..TT..T.TT.,,,,,,,,,,,.T.TTT",
+    "TT.......==B=BBBBBBBBBBBBzzz....TT....T.,,,,,,,,,....TTT",
+    "TTT.......z~~~~~~~zzzzzzzzz...TT.TT....T..,,,,,..T..T.TT",
+    "TTT.....T..z~~~~~zzzzzzzzz....TT.......T.T.....T...TT.TT",
+    "TTT.....TTT...zzzzzzzzz...T.T.TT.T..T.T.TT..TT..TT..TTTT",
+    "TT......T..T.T.........T...TT.TT....TTT..T.T...T..TT..TT",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+  ],
+  "batiments": [
+    {
+      "x": 27,
+      "y": 4,
+      "l": 5,
+      "h": 3,
+      "genre": "maison",
+      "nom": "Cabane de l'ermite",
+      "toit": "#6a5a3a",
+      "evenement": "ermite_porte"
+    },
+    {
+      "x": 5,
+      "y": 16,
+      "l": 4,
+      "h": 3,
+      "genre": "maison",
+      "nom": "Tente des bandits",
+      "toit": "#8a3a2a",
+      "evenement": "tente"
+    },
+    {
+      "x": 11,
+      "y": 15,
+      "l": 4,
+      "h": 3,
+      "genre": "maison",
+      "nom": "Tente des bandits",
+      "toit": "#7a4a2a",
+      "evenement": "tente"
+    }
+  ],
+  "habitants": [
+    {"x": 32, "y": 8, "apparence": "ermite", "direction": "bas", "evenement": "ermite"},
+    {
+      "x": 8,
+      "y": 20,
+      "apparence": "chef_bandit",
+      "direction": "droite",
+      "evenement": "chef_bandits",
+      "vue": 3,
+      "vue_jusqua": "bandits",
+      "cache_si": "bandits"
+    },
+    {"x": 6, "y": 23, "apparence": "kael", "direction": "droite", "evenement": "kael", "cache_si": "kael"},
+    {
+      "x": 13,
+      "y": 23,
+      "apparence": "bandit",
+      "direction": "gauche",
+      "cache_si": "bandits",
+      "dialogue": ["Bandit : Le chef a capturé un archer. Il paraît qu'il visait nos cages…"]
+    },
+    {
+      "x": 26,
+      "y": 19,
+      "apparence": "bandit",
+      "direction": "bas",
+      "evenement": "bandit1",
+      "vue": 1,
+      "vue_jusqua": "bandit1"
+    },
+    {
+      "x": 35,
+      "y": 25,
+      "apparence": "bandit",
+      "direction": "gauche",
+      "evenement": "bandit2",
+      "vue": 1,
+      "vue_jusqua": "bandit2"
+    }
+  ],
+  "coffres": [
+    {"x": 3, "y": 32, "objet": "elixir", "quantite": 1},
+    {"x": 4, "y": 36, "objet": "lanterne_or", "quantite": 1},
+    {"x": 35, "y": 6, "objet": "remede", "quantite": 3},
+    {"x": 5, "y": 24, "or": 400},
+    {"x": 21, "y": 9, "objet": "lanterne_argent", "quantite": 2},
+    {"x": 48, "y": 33, "objet": "superpotion", "quantite": 2},
+    {"x": 26, "y": 34, "objet": "remede", "quantite": 2}
+  ],
+  "panneaux": [
+    {"x": 52, "y": 19, "texte": "Forêt de Sylve-Noire. Des bandits y rôdent : restez sur les chemins."},
+    {"x": 16, "y": 19, "texte": "Camp des bandits. Défense d'entrer !"},
+    {
+      "x": 35,
+      "y": 21,
+      "texte": "Au sud : le marais. À l'ouest : le camp des bandits. Au nord : la cabane de l'ermite."
+    }
+  ],
+  "passages": [{"x": 55, "y": 20, "vers": "vallee", "tx": 1, "ty": 9, "direction": "droite"}],
+  "zones": [
+    {
+      "x": 8,
+      "y": 26,
+      "l": 26,
+      "h": 12,
+      "niveau_min": 11,
+      "niveau_max": 14,
+      "max_ennemis": 3,
+      "creatures": ["crapoison", "serpentin", "carapierre", "grenouillon"]
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "l": 56,
+      "h": 40,
+      "niveau_min": 10,
+      "niveau_max": 13,
+      "max_ennemis": 3,
+      "creatures": ["louvet", "serpentin", "chauvenuit", "esprillon", "champichou"]
+    }
+  ],
+  "boss": [{"x": 7, "y": 33, "espece": "ronce_mere", "drapeau": "ronce", "evenement": "ronce_mere"}],
+  "declencheurs": [{"x": 52, "y": 19, "l": 3, "h": 3, "evenement": "foret_entree", "jusqua": "foret_vue"}]
+}

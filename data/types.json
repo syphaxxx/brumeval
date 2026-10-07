@@ -1,0 +1,32 @@
+{
+  "types": [
+    {"id": "normal", "nom": "Normal", "couleur": "#c8c4b8"},
+    {"id": "feu", "nom": "Feu", "couleur": "#e8743b", "immunites": ["brulure"]},
+    {"id": "eau", "nom": "Eau", "couleur": "#3f8fd9"},
+    {"id": "plante", "nom": "Plante", "couleur": "#4ea35a"},
+    {"id": "foudre", "nom": "Foudre", "couleur": "#e8c33a", "immunites": ["paralysie"]},
+    {"id": "ombre", "nom": "Ombre", "couleur": "#7a6fb0"},
+    {"id": "lumiere", "nom": "Lumière", "couleur": "#ffe38a"},
+    {"id": "glace", "nom": "Glace", "couleur": "#9fd8f0"},
+    {"id": "roche", "nom": "Roche", "couleur": "#a08a62"},
+    {"id": "vent", "nom": "Vent", "couleur": "#a8e0c8"},
+    {"id": "poison", "nom": "Poison", "couleur": "#a860c0", "immunites": ["poison"]},
+    {"id": "metal", "nom": "Métal", "couleur": "#9aa4b4", "immunites": ["poison"]},
+    {"id": "esprit", "nom": "Esprit", "couleur": "#e08ad8", "immunites": ["sommeil"]}
+  ],
+  "efficacite": {
+    "normal": {"roche": 0.5, "metal": 0.5, "esprit": 0.5},
+    "feu": {"feu": 0.5, "eau": 0.5, "plante": 2.0, "glace": 2.0, "roche": 0.5, "metal": 2.0},
+    "eau": {"feu": 2.0, "eau": 0.5, "plante": 0.5, "roche": 2.0},
+    "plante": {"feu": 0.5, "eau": 2.0, "plante": 0.5, "roche": 2.0, "vent": 0.5, "poison": 0.5, "metal": 0.5},
+    "foudre": {"eau": 2.0, "plante": 0.5, "foudre": 0.5, "vent": 2.0, "roche": 0.0, "metal": 2.0},
+    "ombre": {"ombre": 0.5, "esprit": 2.0, "metal": 0.5},
+    "lumiere": {"ombre": 2.0, "lumiere": 0.5, "poison": 2.0},
+    "glace": {"feu": 0.5, "eau": 0.5, "plante": 2.0, "glace": 0.5, "roche": 2.0, "vent": 2.0, "metal": 0.5},
+    "roche": {"feu": 2.0, "foudre": 2.0, "glace": 2.0, "vent": 2.0, "plante": 0.5, "metal": 0.5},
+    "vent": {"plante": 2.0, "poison": 2.0, "foudre": 0.5, "roche": 0.5, "metal": 0.5},
+    "poison": {"eau": 2.0, "plante": 2.0, "poison": 0.5, "roche": 0.5, "metal": 0.0},
+    "metal": {"glace": 2.0, "roche": 2.0, "feu": 0.5, "eau": 0.5, "foudre": 0.5, "metal": 0.5},
+    "esprit": {"normal": 2.0, "poison": 2.0, "esprit": 0.5, "ombre": 0.5, "metal": 0.5}
+  }
+}

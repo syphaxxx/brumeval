@@ -1,0 +1,183 @@
+{
+  "id": "cendrelune",
+  "nom": "Monts Cendrelune",
+  "theme": "cendres",
+  "ambiance": {"effet": "cendres", "jusqua": "boss2"},
+  "tuiles": [
+    "mmmmmmmmmmmmm=mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+    "maamaaaaaaaaa=aaaaaaaadaaaadaallaaaaaammmmmmmmmmmmmmmmmmmmmmmmmm",
+    "maaaaaaaaaaaaaaaaaaagggggaamaallaaaaaammmmaaaaaaaaaaallammmmmmmm",
+    "maaaaaaaaaaaaaadaaagggggggaaaallaaadaammmmaaaaaaaaaaaalammmmmmmm",
+    "maaaaaaaaaadaaRaaaagggggggaaaallaaaaaammmmaaaaaaaaaaaaaammmmmmmm",
+    "maadaadagggggaaaaaagggggggaaaallaaaaaammmmmmmm===mmmmmmmmmmmmmmm",
+    "maaaaagggggggggRaaaagggggaaaaallaaaaaammmmmmmm=mmmmmmmmmmmmmmmmm",
+    "maaaagggggggggggRaaaaaaaaaaaaallaaaaaammmmmmmm=mmmmmmmmmmmmmmmmm",
+    "maaaagggggggggggaaaaaRaaaadaamllaaaadammmmmmmm=mmmmmmmmmmmmmmmmm",
+    "mdaaagggggggggggaadaaaaaaaaaaallaaaaaaaaaaaaaa=aaaaaaaaaaadaaaam",
+    "maaaaagggggggggaaaaaaaaaaa====bb===============aaaamamaaamaaRaam",
+    "maaaaaaagggggaaaaaaaaaaaaa=aaallaagggggaaaaaaaagggggggaaaaaaaaam",
+    "maaaaaaaRaaaaaaagggggaaaaa=aaallgggggggggaaaamggggggggggaaaaaRam",
+    "maaaaaaaaaaaaaagggggggaaaa=aaallgggggggggaaaggggggggggmggaaaaaam",
+    "maaRaaaaRaadaagggggggggaaa=aaallgggggggggaaagggggggggggggaaaaaam",
+    "maaaaaaaaaaaaagggggggggaaR=aaallaagggggaaaaagggggggggggggaaaaaam",
+    "maaagggggaaaaagggggggggaaa=aaallaaaRaaadaaaaaggggggggmggRaaaaaRm",
+    "maagggggggaRaaamggggggaaaa=aaallaaaaaaaaaaaaaaagggggggaagggggaam",
+    "maagggggggaaaaaagggggaaaaR=aaallaaaaaagggggaaaaaaaaaaRagggggggam",
+    "maagggggggaaaaaaaadaaaaaaa=aaallaaaagggggggggaamaaaaaaagggggggam",
+    "maaagggggaagggggaaaRaaaaaa=aaallaaaagggggggggaaaaaaaaaagggggggam",
+    "maaaaaaaaagggggggaaamaaaaa=adallaaaagggggggggamaaaaRaaaagggggaam",
+    "maaaaaaaaaagggggaaaaaaaaaa=aaallaaaaaagggggaaaaaaaaadaaaaaaaaaam",
+    "mdaaaamaaaaaaaaaaaaaaaaaaa=aaallaaadamaaaRaaaaaaaaaaaaaaaaaaaaam",
+    "maaaaaaaaRaaaaaaaaaaaaaaaa=aaallllllllllllllllllllllllllllaaaadm",
+    "maaaaaaRaaaaaaaRaRaaaaaadm=aaalllllllllllllllllllllllllllladamam",
+    "maaaaaaaaaaaaaaaaaaaaaaaaa=aaaamaaaaaaaaRaaaaaaaadaaaaaaagggaaam",
+    "maaaaaaaaaaaaaaaaaaaaaaaaa=aaaaaaadaaaaammmmmmmmaaaaaaaagggggaam",
+    "maaaaaaaaaaaaaaaaaaaaaaaaa=aaaaaaaaaaaaaammmmmmmaaaaaaagggggggam",
+    "maaaaaaaaaaaaaaaaaaaaaaaaa=aaaaaaaaaamaaammmkmmmRaaaaaagggggggam",
+    "maaaaaaaaaaaaaaaaaaaaaaaaa=aaaadaaadaaaaaaaa=aaaaaaaaaagggggggam",
+    "maaaaaa=aaaaaa=aaaaaa=aaaa=aaaaaaaaaaaaaaaaa=aaaaaaaaaaagggggaam",
+    "maaaaaa=aaaaaa=aaaaaa=aaaa=aaaaaaaaadmaadaaa=aaaaaaaaRaaagggaaam",
+    "=============================================aaaagggggggaaaaaaam",
+    "===aaaaaaaaaaaaa=aaaaaaaaaaadaaaaaaRaaaaaaaaRaaggggmggggggaaaaam",
+    "maaaaaaaaaaaaaaa=aaaaaaaaaaaRaaaaaaaaaaaaaaaaagggggggggggggdaaam",
+    "maaaaaaaaaaaaaaa=aaaaaaaaaaaaaaRaagggggaaaaaaagggggggggggggaaaam",
+    "maaaaaaaaaaaaaaa=aaaaaaaaaaaaaaagggggggggaaaaagggggggggmgggaaaam",
+    "maaaaaaaaaaaaaaa=aaaaaaaaaaaaaaagggggggggaaaaaagggggggggggadaaam",
+    "maaaaaaaa=aaaaaa=aaa=aaaaaaaaaaagggggggggaadaaaaagmgggggaRaaaRam",
+    "maaaaaaaa============aaaaaaaaaaaaagggggamaaaagggggaRaaaaaaaaaaam",
+    "maaaaaaaaaaaaaaaaaaaaaaaaaaaaaRaaaaaaaaaaaaagggggggaaaaaaaaaaaam",
+    "maaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaadaaaaagggggaaaaaaaaaaaamm",
+    "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"
+  ],
+  "batiments": [
+    {"x": 5, "y": 27, "l": 5, "h": 4, "genre": "soin", "nom": "Maison de soin", "toit": "#b8483e"},
+    {"x": 12, "y": 27, "l": 5, "h": 4, "genre": "boutique2", "nom": "Boutique", "toit": "#3f6fb0"},
+    {"x": 19, "y": 27, "l": 5, "h": 4, "genre": "auberge", "nom": "Auberge du Tison", "toit": "#9a5a2a"},
+    {"x": 6, "y": 35, "l": 6, "h": 4, "genre": "forge", "nom": "Forge de Brann", "toit": "#4a4a52"},
+    {"x": 18, "y": 35, "l": 5, "h": 4, "genre": "maison", "nom": "Maison", "toit": "#7a6a4a"}
+  ],
+  "habitants": [
+    {
+      "x": 4,
+      "y": 35,
+      "apparence": "garde",
+      "direction": "bas",
+      "dialogue": [
+        "Une jeune mage est partie explorer la Grotte des Échos, à l'est.",
+        "Elle n'est jamais revenue… On entend des grondements là-dedans."
+      ]
+    },
+    {
+      "x": 11,
+      "y": 32,
+      "apparence": "pecheur",
+      "direction": "bas",
+      "dialogue": [
+        "Ignarok, le cœur du volcan, est une créature de Feu.",
+        "L'Eau est sa grande faiblesse. Les sorts Givre et Blizzard devraient le faire vaciller."
+      ]
+    },
+    {
+      "x": 24,
+      "y": 35,
+      "apparence": "enfant",
+      "direction": "gauche",
+      "dialogue": ["Brann, c'est le plus fort de Forgeroc !", "Il ne suit que ceux qui le battent en duel."]
+    },
+    {"x": 11, "y": 40, "apparence": "brann", "direction": "gauche", "evenement": "brann", "cache_si": "brann"},
+    {"x": 47, "y": 10, "apparence": "garde", "direction": "bas", "evenement": "garde_volcan"},
+    {
+      "x": 33,
+      "y": 35,
+      "apparence": "villageoise",
+      "direction": "bas",
+      "dialogue": [
+        "Ici, les créatures sont bien plus fortes que dans la vallée.",
+        "Pensez à faire tourner votre équipe pour que tout le monde progresse."
+      ]
+    },
+    {
+      "x": 26,
+      "y": 30,
+      "apparence": "villageois",
+      "direction": "gauche",
+      "dialogue": [
+        "Les lanternes d'argent de la boutique attrapent presque tout.",
+        "Pratique pour les créatures têtues des montagnes."
+      ]
+    }
+  ],
+  "coffres": [
+    {"x": 60, "y": 41, "objet": "superpotion", "quantite": 2},
+    {"x": 12, "y": 4, "objet": "ether", "quantite": 2},
+    {"x": 60, "y": 11, "objet": "plume", "quantite": 2},
+    {"x": 34, "y": 41, "or": 300},
+    {"x": 3, "y": 22, "objet": "lanterne_argent", "quantite": 3},
+    {"x": 55, "y": 30, "objet": "ether", "quantite": 1},
+    {"x": 24, "y": 2, "objet": "superpotion", "quantite": 1}
+  ],
+  "panneaux": [
+    {"x": 3, "y": 32, "texte": "Forgeroc, la ville des forges."},
+    {"x": 27, "y": 11, "texte": "Vers le cratère. Ignarok y dort, dit-on."},
+    {"x": 45, "y": 31, "texte": "Grotte des Échos."},
+    {"x": 14, "y": 1, "texte": "Col du Nord. Au-delà : les Pics Givrés."}
+  ],
+  "passages": [
+    {"x": 0, "y": 33, "vers": "vallee", "tx": 62, "ty": 32, "direction": "gauche"},
+    {"x": 0, "y": 34, "vers": "vallee", "tx": 62, "ty": 33, "direction": "gauche"},
+    {"x": 44, "y": 29, "vers": "grotte", "tx": 15, "ty": 21, "direction": "haut"},
+    {
+      "x": 13,
+      "y": 0,
+      "vers": "pics",
+      "tx": 30,
+      "ty": 42,
+      "direction": "haut",
+      "condition": {"drapeau": "boss2"},
+      "message": "Le col du Nord est pris dans les glaces. Un vent glacé souffle depuis que le volcan gronde…"
+    }
+  ],
+  "zones": [
+    {
+      "x": 1,
+      "y": 1,
+      "l": 29,
+      "h": 23,
+      "niveau_min": 11,
+      "niveau_max": 14,
+      "max_ennemis": 3,
+      "creatures": ["tisonnel", "galetor", "voltigeon"]
+    },
+    {
+      "x": 32,
+      "y": 9,
+      "l": 31,
+      "h": 15,
+      "niveau_min": 14,
+      "niveau_max": 17,
+      "max_ennemis": 3,
+      "creatures": ["voltigeon", "glaconnet", "fumerole", "tisonnel"]
+    },
+    {
+      "x": 28,
+      "y": 26,
+      "l": 35,
+      "h": 17,
+      "niveau_min": 12,
+      "niveau_max": 15,
+      "max_ennemis": 3,
+      "creatures": ["galetor", "tisonnel", "voltigeon", "glaconnet"]
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "l": 64,
+      "h": 44,
+      "niveau_min": 12,
+      "niveau_max": 15,
+      "max_ennemis": 3,
+      "creatures": ["tisonnel", "galetor"]
+    }
+  ],
+  "boss": [{"x": 48, "y": 2, "espece": "ignarok", "drapeau": "boss2", "evenement": "ignarok"}]
+}

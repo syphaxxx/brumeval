@@ -1,0 +1,1001 @@
+[
+  {
+    "id": "lame",
+    "nom": "Lame d'acier",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 40,
+    "description": "Un coup d'épée net."
+  },
+  {
+    "id": "estoc",
+    "nom": "Estoc",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 55,
+    "critique": 15,
+    "description": "Une frappe perçante."
+  },
+  {
+    "id": "eclair",
+    "nom": "Taillade éclair",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 72,
+    "precision": 90,
+    "critique": 10,
+    "description": "Un enchaînement fulgurant."
+  },
+  {
+    "id": "hache",
+    "nom": "Coup de hache",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 48,
+    "precision": 95,
+    "description": "Lourd et brutal."
+  },
+  {
+    "id": "fracas",
+    "nom": "Fracas",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 68,
+    "precision": 85,
+    "description": "Une frappe qui ébranle le sol."
+  },
+  {
+    "id": "baton",
+    "nom": "Coup de bâton",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 28,
+    "description": "Mieux vaut lancer un sort."
+  },
+  {
+    "id": "dague",
+    "nom": "Dague",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 32,
+    "critique": 20,
+    "description": "Rapide mais légère."
+  },
+  {"id": "charge", "nom": "Charge", "type": "normal", "genre": "physique", "cible": "ennemi", "puissance": 35},
+  {
+    "id": "flam",
+    "nom": "Flammèche",
+    "type": "feu",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 40,
+    "effet": {"statut": "brulure", "chance": 10}
+  },
+  {
+    "id": "brasier",
+    "nom": "Brasier",
+    "type": "feu",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 65,
+    "effet": {"statut": "brulure", "chance": 20}
+  },
+  {"id": "jet", "nom": "Jet d'eau", "type": "eau", "genre": "physique", "cible": "ennemi", "puissance": 40},
+  {"id": "vague", "nom": "Vague", "type": "eau", "genre": "physique", "cible": "ennemi", "puissance": 65},
+  {
+    "id": "ronce",
+    "nom": "Fouet-ronce",
+    "type": "plante",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 40
+  },
+  {
+    "id": "tempete",
+    "nom": "Tempête de feuilles",
+    "type": "plante",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 65
+  },
+  {
+    "id": "bec",
+    "nom": "Coup de bec",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 40
+  },
+  {
+    "id": "morsure",
+    "nom": "Morsure",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 45,
+    "critique": 10
+  },
+  {
+    "id": "etincelle",
+    "nom": "Étincelle",
+    "type": "feu",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 40
+  },
+  {"id": "bulle", "nom": "Bulle", "type": "eau", "genre": "physique", "cible": "ennemi", "puissance": 40},
+  {
+    "id": "spore",
+    "nom": "Spore",
+    "type": "plante",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 40,
+    "effet": {"statut": "poison", "chance": 40}
+  },
+  {
+    "id": "eboul",
+    "nom": "Éboulis",
+    "type": "roche",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 55,
+    "precision": 90
+  },
+  {
+    "id": "griffe",
+    "nom": "Griffe d'ombre",
+    "type": "ombre",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 50,
+    "critique": 10
+  },
+  {
+    "id": "crocs",
+    "nom": "Crocs ardents",
+    "type": "feu",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 55,
+    "effet": {"statut": "brulure", "chance": 15}
+  },
+  {
+    "id": "decharge",
+    "nom": "Décharge",
+    "type": "foudre",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 50,
+    "effet": {"statut": "paralysie", "chance": 20}
+  },
+  {
+    "id": "pique",
+    "nom": "Piqué tonnerre",
+    "type": "foudre",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 65,
+    "precision": 90,
+    "effet": {"statut": "paralysie", "chance": 15}
+  },
+  {
+    "id": "gel",
+    "nom": "Morsure de gel",
+    "type": "glace",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 55,
+    "effet": {"stat": "vitesse", "niveaux": -1, "chance": 30}
+  },
+  {
+    "id": "suie",
+    "nom": "Nuage de suie",
+    "type": "ombre",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 40,
+    "effet": {"stat": "defense", "niveaux": -1, "chance": 20}
+  },
+  {
+    "id": "magma",
+    "nom": "Torrent de magma",
+    "type": "feu",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 50
+  },
+  {
+    "id": "poing",
+    "nom": "Poing de lave",
+    "type": "feu",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 72,
+    "precision": 90
+  },
+  {
+    "id": "brume",
+    "nom": "Souffle de brume",
+    "type": "ombre",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 40,
+    "effet": {"stat": "vitesse", "niveaux": -1, "chance": 20}
+  },
+  {
+    "id": "voile",
+    "nom": "Voile noir",
+    "type": "ombre",
+    "genre": "magique",
+    "cible": "ennemi",
+    "puissance": 45,
+    "effet": {"stat": "magie", "niveaux": -1, "chance": 30}
+  },
+  {
+    "id": "soin",
+    "nom": "Soin",
+    "type": "lumiere",
+    "genre": "soin",
+    "cible": "allie",
+    "puissance": 30,
+    "cout": 4,
+    "description": "Rend des PV à un allié."
+  },
+  {
+    "id": "soins",
+    "nom": "Soin de groupe",
+    "type": "lumiere",
+    "genre": "soin",
+    "cible": "tous_allies",
+    "puissance": 20,
+    "cout": 10,
+    "description": "Rend des PV à toute l'équipe."
+  },
+  {
+    "id": "reveil",
+    "nom": "Réanimation",
+    "type": "lumiere",
+    "genre": "rappel",
+    "cible": "allie_ko",
+    "puissance": 40,
+    "cout": 16,
+    "description": "Relève un allié K.O."
+  },
+  {
+    "id": "lumiere",
+    "nom": "Lumière",
+    "type": "lumiere",
+    "genre": "magique",
+    "cible": "ennemi",
+    "puissance": 42,
+    "cout": 4,
+    "description": "Très efficace contre l'Ombre."
+  },
+  {
+    "id": "rayon",
+    "nom": "Rayon sacré",
+    "type": "lumiere",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 55,
+    "cout": 14,
+    "description": "Lumière sur tous les ennemis."
+  },
+  {
+    "id": "feu",
+    "nom": "Feu",
+    "type": "feu",
+    "genre": "magique",
+    "cible": "ennemi",
+    "puissance": 45,
+    "cout": 4,
+    "description": "Brûle un ennemi."
+  },
+  {
+    "id": "givre",
+    "nom": "Givre",
+    "type": "eau",
+    "genre": "magique",
+    "cible": "ennemi",
+    "puissance": 45,
+    "cout": 4,
+    "description": "Gèle un ennemi."
+  },
+  {
+    "id": "foudre",
+    "nom": "Foudre",
+    "type": "foudre",
+    "genre": "magique",
+    "cible": "ennemi",
+    "puissance": 45,
+    "cout": 4,
+    "description": "Foudroie un ennemi."
+  },
+  {
+    "id": "pyro",
+    "nom": "Pyrosphère",
+    "type": "feu",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 50,
+    "cout": 12,
+    "description": "Feu sur tous les ennemis."
+  },
+  {
+    "id": "blizzard",
+    "nom": "Blizzard",
+    "type": "eau",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 50,
+    "cout": 12,
+    "description": "Glace sur tous les ennemis."
+  },
+  {
+    "id": "orage",
+    "nom": "Orage",
+    "type": "foudre",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 50,
+    "cout": 12,
+    "description": "Foudre sur tous les ennemis."
+  },
+  {
+    "id": "seve",
+    "nom": "Sève",
+    "type": "plante",
+    "genre": "soin",
+    "cible": "tous_allies",
+    "puissance": 18,
+    "cout": 9,
+    "description": "Une sève douce soigne l'équipe."
+  },
+  {
+    "id": "cri",
+    "nom": "Cri de guerre",
+    "type": "normal",
+    "genre": "statut",
+    "cible": "tous_allies",
+    "puissance": 0,
+    "effet": {"stat": "attaque", "niveaux": 1},
+    "description": "Augmente l'Attaque de toute l'équipe."
+  },
+  {
+    "id": "brise",
+    "nom": "Brise-armure",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 40,
+    "effet": {"stat": "defense", "niveaux": -1},
+    "description": "Un coup qui fend l'armure : baisse la Défense."
+  },
+  {
+    "id": "piege",
+    "nom": "Piège à loup",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 30,
+    "effet": {"stat": "vitesse", "niveaux": -1, "chance": 70}
+  },
+  {
+    "id": "fleche",
+    "nom": "Fléchette empoisonnée",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 25,
+    "precision": 95,
+    "effet": {"statut": "poison", "chance": 60}
+  },
+  {
+    "id": "purification",
+    "nom": "Purification",
+    "type": "lumiere",
+    "genre": "soin",
+    "cible": "allie",
+    "puissance": 0,
+    "cout": 3,
+    "effet": {"guerison": true},
+    "description": "Guérit les états d'un allié (poison, brûlure, paralysie, sommeil)."
+  },
+  {
+    "id": "rempart",
+    "nom": "Rempart",
+    "type": "lumiere",
+    "genre": "statut",
+    "cible": "tous_allies",
+    "puissance": 0,
+    "cout": 6,
+    "effet": {"stat": "defense", "niveaux": 1},
+    "description": "Renforce la Défense de toute l'équipe."
+  },
+  {
+    "id": "sommeil",
+    "nom": "Sommeil",
+    "type": "ombre",
+    "genre": "statut",
+    "cible": "ennemi",
+    "puissance": 0,
+    "cout": 5,
+    "precision": 75,
+    "effet": {"statut": "sommeil"},
+    "description": "Endort un ennemi."
+  },
+  {
+    "id": "hate",
+    "nom": "Hâte",
+    "type": "lumiere",
+    "genre": "statut",
+    "cible": "allie",
+    "puissance": 0,
+    "cout": 5,
+    "effet": {"stat": "vitesse", "niveaux": 2},
+    "description": "Accélère beaucoup un allié."
+  },
+  {"id": "rafale", "nom": "Rafale", "type": "vent", "genre": "physique", "cible": "ennemi", "puissance": 45},
+  {
+    "id": "lame_air",
+    "nom": "Lame d'air",
+    "type": "vent",
+    "genre": "magique",
+    "cible": "ennemi",
+    "puissance": 60,
+    "critique": 10
+  },
+  {
+    "id": "tornade",
+    "nom": "Tornade",
+    "type": "vent",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 45
+  },
+  {
+    "id": "venin",
+    "nom": "Morsure venimeuse",
+    "type": "poison",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 40,
+    "effet": {"statut": "poison", "chance": 30}
+  },
+  {
+    "id": "acide",
+    "nom": "Jet d'acide",
+    "type": "poison",
+    "genre": "magique",
+    "cible": "ennemi",
+    "puissance": 50,
+    "effet": {"stat": "resistance", "niveaux": -1, "chance": 30}
+  },
+  {
+    "id": "nuage_toxique",
+    "nom": "Nuage toxique",
+    "type": "poison",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 40,
+    "effet": {"statut": "poison", "chance": 20}
+  },
+  {
+    "id": "toxine",
+    "nom": "Toxine",
+    "type": "poison",
+    "genre": "statut",
+    "cible": "ennemi",
+    "puissance": 0,
+    "cout": 4,
+    "precision": 90,
+    "effet": {"statut": "poison"},
+    "description": "Empoisonne un ennemi."
+  },
+  {
+    "id": "jet_pierres",
+    "nom": "Jet de pierres",
+    "type": "roche",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 40
+  },
+  {
+    "id": "seisme",
+    "nom": "Séisme",
+    "type": "roche",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 55,
+    "precision": 95
+  },
+  {
+    "id": "carapace",
+    "nom": "Carapace",
+    "type": "roche",
+    "genre": "statut",
+    "cible": "tous_allies",
+    "puissance": 0,
+    "effet": {"stat": "defense", "niveaux": 2, "sur": "lanceur"},
+    "description": "Se replie dans sa carapace : Défense +2."
+  },
+  {
+    "id": "eclat_glace",
+    "nom": "Éclat de glace",
+    "type": "glace",
+    "genre": "magique",
+    "cible": "ennemi",
+    "puissance": 50,
+    "effet": {"stat": "vitesse", "niveaux": -1, "chance": 20}
+  },
+  {
+    "id": "poudreuse",
+    "nom": "Poudreuse",
+    "type": "glace",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 45
+  },
+  {
+    "id": "glaciation",
+    "nom": "Glaciation",
+    "type": "glace",
+    "genre": "magique",
+    "cible": "ennemi",
+    "puissance": 70,
+    "cout": 10,
+    "description": "Enferme un ennemi dans la glace."
+  },
+  {
+    "id": "coup_acier",
+    "nom": "Coup d'acier",
+    "type": "metal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 55
+  },
+  {
+    "id": "blindage",
+    "nom": "Blindage",
+    "type": "metal",
+    "genre": "statut",
+    "cible": "tous_allies",
+    "puissance": 0,
+    "effet": {"stat": "defense", "niveaux": 2, "sur": "lanceur"},
+    "description": "Durcit son corps : Défense +2."
+  },
+  {
+    "id": "lance_acier",
+    "nom": "Lance d'acier",
+    "type": "metal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 50,
+    "critique": 10,
+    "description": "Un coup de lance précis."
+  },
+  {
+    "id": "charge_heroique",
+    "nom": "Charge héroïque",
+    "type": "metal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 75,
+    "precision": 90,
+    "description": "Une charge puissante, lance en avant."
+  },
+  {
+    "id": "bouclier",
+    "nom": "Bouclier",
+    "type": "metal",
+    "genre": "statut",
+    "cible": "tous_allies",
+    "puissance": 0,
+    "effet": {"stat": "defense", "niveaux": 1},
+    "description": "Protège l'équipe : Défense +1 pour tous."
+  },
+  {
+    "id": "onde",
+    "nom": "Onde psychique",
+    "type": "esprit",
+    "genre": "magique",
+    "cible": "ennemi",
+    "puissance": 45
+  },
+  {
+    "id": "hypnose",
+    "nom": "Hypnose",
+    "type": "esprit",
+    "genre": "statut",
+    "cible": "ennemi",
+    "puissance": 0,
+    "precision": 70,
+    "effet": {"statut": "sommeil"}
+  },
+  {
+    "id": "regard",
+    "nom": "Regard hanté",
+    "type": "esprit",
+    "genre": "statut",
+    "cible": "ennemi",
+    "puissance": 0,
+    "effet": {"stat": "resistance", "niveaux": -2}
+  },
+  {
+    "id": "cauchemar",
+    "nom": "Cauchemar",
+    "type": "esprit",
+    "genre": "magique",
+    "cible": "ennemi",
+    "puissance": 65
+  },
+  {"id": "prisme", "nom": "Prisme", "type": "lumiere", "genre": "magique", "cible": "ennemi", "puissance": 55},
+  {
+    "id": "mordant",
+    "nom": "Crocs",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 55,
+    "critique": 10
+  },
+  {
+    "id": "hurlement",
+    "nom": "Hurlement",
+    "type": "normal",
+    "genre": "statut",
+    "cible": "tous_allies",
+    "puissance": 0,
+    "effet": {"stat": "attaque", "niveaux": 1},
+    "description": "Galvanise ses alliés : Attaque +1."
+  },
+  {
+    "id": "coup_bas",
+    "nom": "Coup bas",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 45,
+    "critique": 25,
+    "description": "Frappe là où ça fait mal."
+  },
+  {
+    "id": "tir",
+    "nom": "Tir précis",
+    "type": "vent",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 40,
+    "critique": 15,
+    "description": "Une flèche qui vise les points faibles."
+  },
+  {
+    "id": "fleche_vent",
+    "nom": "Flèche du vent",
+    "type": "vent",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 60,
+    "precision": 95,
+    "description": "Une flèche portée par le vent."
+  },
+  {
+    "id": "pluie_fleches",
+    "nom": "Pluie de flèches",
+    "type": "vent",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 45,
+    "description": "Des flèches sur tous les ennemis."
+  },
+  {
+    "id": "oeil",
+    "nom": "Œil de faucon",
+    "type": "vent",
+    "genre": "statut",
+    "cible": "tous_allies",
+    "puissance": 0,
+    "effet": {"stat": "attaque", "niveaux": 2, "sur": "lanceur"},
+    "description": "Se concentre : Attaque +2."
+  },
+  {
+    "id": "etreinte",
+    "nom": "Étreinte de ronces",
+    "type": "plante",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 60,
+    "effet": {"stat": "vitesse", "niveaux": -1}
+  },
+  {
+    "id": "pollen",
+    "nom": "Pollen toxique",
+    "type": "poison",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 42,
+    "effet": {"statut": "poison", "chance": 25}
+  },
+  {
+    "id": "corne_givre",
+    "nom": "Corne de givre",
+    "type": "glace",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 70,
+    "critique": 10
+  },
+  {
+    "id": "blizzard_eternel",
+    "nom": "Blizzard éternel",
+    "type": "glace",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 58,
+    "effet": {"stat": "vitesse", "niveaux": -1, "chance": 30}
+  },
+  {
+    "id": "lim_lior",
+    "nom": "Taille-brume",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 62
+  },
+  {
+    "id": "lim_maelle",
+    "nom": "Grâce de l'aube",
+    "type": "lumiere",
+    "genre": "soin",
+    "cible": "tous_allies",
+    "puissance": 45
+  },
+  {
+    "id": "lim_brann",
+    "nom": "Tourbillon d'acier",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 72
+  },
+  {
+    "id": "lim_isra",
+    "nom": "Comète",
+    "type": "normal",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 75
+  },
+  {
+    "id": "lim_braisenard",
+    "nom": "Ouragan de braises",
+    "type": "feu",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 58
+  },
+  {
+    "id": "lim_gouttelin",
+    "nom": "Déluge",
+    "type": "eau",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 58
+  },
+  {
+    "id": "lim_ronceau",
+    "nom": "Ronces infinies",
+    "type": "plante",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 58
+  },
+  {
+    "id": "lim_piafouine",
+    "nom": "Rafale de plumes",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 55
+  },
+  {
+    "id": "lim_mulotin",
+    "nom": "Frénésie",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 55
+  },
+  {
+    "id": "lim_lucioline",
+    "nom": "Nuée ardente",
+    "type": "feu",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 55
+  },
+  {
+    "id": "lim_grenouillon",
+    "nom": "Raz-de-marée",
+    "type": "eau",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 55
+  },
+  {
+    "id": "lim_champichou",
+    "nom": "Nuage de spores",
+    "type": "plante",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 55
+  },
+  {
+    "id": "lim_rocaillou",
+    "nom": "Avalanche",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 55
+  },
+  {
+    "id": "lim_brumelin",
+    "nom": "Ombre profonde",
+    "type": "ombre",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 55
+  },
+  {
+    "id": "lim_tisonnel",
+    "nom": "Éruption",
+    "type": "feu",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 60
+  },
+  {
+    "id": "lim_voltigeon",
+    "nom": "Tempête d'éclairs",
+    "type": "foudre",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 60
+  },
+  {
+    "id": "lim_galetor",
+    "nom": "Séisme",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 60
+  },
+  {
+    "id": "lim_glaconnet",
+    "nom": "Ère glaciaire",
+    "type": "eau",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 60
+  },
+  {
+    "id": "lim_fumerole",
+    "nom": "Brouillard toxique",
+    "type": "ombre",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 60
+  },
+  {
+    "id": "lim_kael",
+    "nom": "Tempête de flèches",
+    "type": "vent",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 75
+  },
+  {
+    "id": "lim_selene",
+    "nom": "Jugement d'acier",
+    "type": "metal",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 78
+  },
+  {
+    "id": "lim_serpentin",
+    "nom": "Constriction",
+    "type": "poison",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 58
+  },
+  {
+    "id": "lim_chauvenuit",
+    "nom": "Nuée nocturne",
+    "type": "ombre",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 58
+  },
+  {
+    "id": "lim_louvet",
+    "nom": "Meute",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 60
+  },
+  {
+    "id": "lim_esprillon",
+    "nom": "Spectre",
+    "type": "esprit",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 60
+  },
+  {
+    "id": "lim_crapoison",
+    "nom": "Marée toxique",
+    "type": "poison",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 58
+  },
+  {
+    "id": "lim_carapierre",
+    "nom": "Éboulement",
+    "type": "roche",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 60
+  },
+  {
+    "id": "lim_givrelin",
+    "nom": "Tempête de neige",
+    "type": "glace",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 62
+  },
+  {
+    "id": "lim_zephyrin",
+    "nom": "Ouragan",
+    "type": "vent",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 62
+  },
+  {
+    "id": "lim_ferrolin",
+    "nom": "Marteau-pilon",
+    "type": "metal",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 62
+  },
+  {
+    "id": "lim_cristallin",
+    "nom": "Réfraction",
+    "type": "lumiere",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 62
+  },
+  {
+    "id": "lim_etincelot",
+    "nom": "Surtension",
+    "type": "foudre",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 62
+  }
+]

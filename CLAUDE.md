@@ -41,15 +41,20 @@ après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
 
 | Fichier | Rôle |
 |---|---|
-| `main.cpp` | Fenêtre SDL, boucle principale, plein écran (F11), option `--test` |
-| `game.hpp/.cpp` | Écran titre, exploration, dialogues des habitants, menus (pause, équipe, objets, magie, boutique), sauvegarde, dessin de la carte |
-| `battle.hpp/.cpp` | Combat ATB : jauges, menus de commande, dégâts, sorts, objets, capture, Limites, victoire |
-| `data.hpp/.cpp` | Types et efficacités, techniques et sorts, espèces (héros et créatures), objets, apparence des humains, formules de stats et d'expérience |
-| `world.hpp` | Structures des cartes (tuiles, bâtiments, PNJ, coffres, panneaux, passages, zones, boss) et légende des tuiles |
-| `world_data.cpp` | **Généré** par `tools/generate_world.py` : les 3 cartes et leur contenu |
-| `sprites.hpp/.cpp` | Dessin en code des créatures, humains, tuiles, bâtiments (aucune image externe) |
+| `main.cpp` | Fenêtre SDL, boucle principale, plein écran (F11), option `--test`, chargement de data/ |
+| `game.hpp/.cpp` | Écran titre, exploration, menus (pause, équipe, objets, magie, boutique), sauvegarde, dessin de la carte |
+| `battle.hpp/.cpp` | Combat ATB : jauges, menus, dégâts physiques/magiques, précision, critiques, états, bonus/malus, renforts ennemis, IA (`think`), journal (`log`), capture, Limites, victoire |
+| `store.hpp/.cpp` | Dossier data/ : recherche, lecture et écriture JSON (nlohmann/json, `Json` = `ordered_json`) |
+| `data.hpp/.cpp` | Chargement des types, techniques, espèces, objets, apparences et règles (`Rules`, `ruleFields()`), formules de stats et d'expérience |
+| `world.hpp/.cpp` | Structures des cartes (thèmes, passages avec condition, zones déclencheuses), lecture/écriture de data/cartes/, vérification d'accessibilité (`checkMaps`) |
+| `events.hpp/.cpp` | Événements de l'histoire : chargement, vérification et exécution des actions (`Game::runEvent`) |
+| `sprites.hpp/.cpp` | Dessin en code des créatures (19 formes), humains (coiffes, armes), tuiles selon le thème, bâtiments (aucune image externe) |
 | `gfx.hpp/.cpp` | Primitives de dessin (ellipses, polygones, dégradés), police pixel intégrée avec accents, fenêtres bleues |
-| `ui.hpp/.cpp` | Clavier, `Script` (file de messages/actions) et `MenuStack` (menus à curseur) |
+| `ui.hpp/.cpp` | Clavier, `Script` (file de messages/actions) et `MenuStack` (menus à curseur ; `MenuItem::adjust` pour régler une valeur avec gauche/droite, `rightFn` pour un texte recalculé, `menuHeader` pour un titre de section) |
+| `settings.hpp/.cpp` | Réglages (écran titre > Outils) : éditeurs des règles, espèces, techniques, types (grille) et objets ; chaque modification passe par `Settings::change` (document JSON puis `rebuildData`) |
+| `mapedit.hpp/.cpp` | Éditeur de cartes (écran titre > Outils) : calques tuiles/objets/zones, outils, menus de chaque objet, annuler/rétablir, test en jeu (`testHere`, `editorTest_`) |
+| `storyedit.hpp/.cpp` | Éditeur d'histoire (écran titre > Outils) : événements, pages, conditions, actions imbriquées ; chaque écran est un chemin JSON (`goTo`, `goUp`) ; « Jouer l'événement » (`play`, `storyTest_`) |
+| `arena.hpp/.cpp` | Arène de combat (écran titre > Outils) : composition, combat à la main, simulation progressive (`stepSim`), modèles tirés des événements et des zones, journal |
 | `test.cpp` | Mode test automatique |
 
 ### Principes à connaître
@@ -69,17 +74,61 @@ après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
   "Brumeval")` (sous Windows : `%APPDATA%\Brumeval\Brumeval\`).
 - Police : `gfx.cpp`, fonction `buildFont()`. Un caractère absent s'affiche « ? » ;
   ajoute son dessin si tu utilises un nouveau symbole.
+- Données : tout le contenu est dans `data/` (voir `data/LISEZMOI.md`), chargé au
+  démarrage par `loadData()`, `loadMaps()`, `loadEvents()`. Aucune donnée de jeu
+  ne doit être écrite en dur dans le code : ajouter un champ au JSON et au
+  chargeur. Les cartes sont désignées par leur identifiant (`MapDef::id`), pas
+  par leur numéro (ordre alphabétique des fichiers).
+- Événements : habitants (`evenement`), portes des bâtiments (genre ou
+  `evenement`) et boss lancent un événement de `data/evenements.json`. Les
+  actions sont exécutées par `Game::execAction` (events.cpp) via le `Script` ;
+  `Script::runNow` fait passer la suite (réponse à une question, fin de combat)
+  avant les étapes déjà en attente.
+- Combat : dégâts physiques = Attaque contre Défense, magiques = Magie contre
+  Résistance ; `moveEff()` combine les deux types de la cible et ses
+  `resistances` propres. Un seul état à la fois (`Fighter::status`), bonus/malus
+  de -3 à +3 (`Fighter::stage`, effet = `etage` des règles), tout est effacé à la
+  fin du combat (`clearBattle`). `Battle::think` choisit les actions de
+  l'ordinateur (ennemis, et alliés en mode test) ; `Battle::log` garde un journal
+  lisible (`BRUMEVAL_JOURNAL=Sylvarque brumeval --test captures` l'affiche pour
+  la simulation qui contient ce mot).
+- Données en mémoire : `dataDoc(DF_…)` garde chaque fichier de data/ sous forme
+  de JSON ; `rebuildData()` reconstruit les structures du jeu à partir de ces
+  documents, `saveDataDoc` les écrit. Les Réglages ne touchent qu'aux documents,
+  jamais directement aux structures. Le mode test vérifie que réécrire un
+  document sans changement redonne exactement le fichier.
+- Souris : `Input` reçoit position, boutons (`mclick`, `mdown`) et molette
+  (coordonnées déjà ramenées à 320x240 par SDL). `MenuStack::update` gère le
+  survol et les clics. Raccourcis des éditeurs dans `Input` : `tab`, `undo`,
+  `redo`, `saveKey` (Ctrl+Z/Y/S selon la disposition du clavier), `prev`/`next`
+  (Page préc./suiv.), `del` (Suppr).
+- Éditeurs : chacun a son mode (`Mode::Arena`, `Settings`, `Editor`, `Story`),
+  ses menus dans `MenuStack` et ne modifie que la mémoire jusqu'à
+  « Enregistrer ». Les tests en jeu (`editorTest_`, `storyTest_`) ajoutent
+  « Retour à l'éditeur » au menu de pause. Les identifiants créés passent par
+  `makeSlug` (minuscules, sans accents, tirets bas).
+- Saisie de texte : `Game::editText(titre, texte, max, rappel)` (SDL_TEXTINPUT
+  transmis par main.cpp à `Game::onText`). Pendant la saisie, `onKey` ne sert
+  qu'à écrire (Retour arrière, Entrée, Échap).
+- Arène : mode `Mode::Arena` ; un combat lancé depuis l'Arène (`arenaBattle_`)
+  y revient sans défaite « réelle ». La simulation crée des `Battle` en mode
+  automatique et avance de quelques millisecondes par image. `BattleSetup::theme`
+  impose un décor.
+- Adversaires : `BattleSetup` (ennemis, `reserve` de renforts, `foeName`).
+  Habitants avec `vue` : `Game::checkSight` les déclenche quand le joueur passe
+  devant eux.
+- Piège C++ : ne jamais écrire `for (auto& x : j.value(...).items())` (objet
+  temporaire détruit avant la boucle) ; ranger d'abord le JSON dans une variable.
 - Sous MSVC, l'option `/utf-8` (déjà dans CMakeLists.txt) est indispensable pour
   les accents. `/wd4244` coupe les centaines d'avertissements « int en float »
   des appels de dessin ; garder 0 avertissement de compilation.
 
-### Modifier les cartes
+### Modifier les données
 
-Édite `tools/generate_world.py` (fonctions `vallee()`, `cendres()`, `grotte()`),
-puis régénère : `python3 tools/generate_world.py src/world_data.cpp`. Le script
-vérifie que chaque porte, PNJ, coffre, panneau, passage et boss est accessible et
-échoue sinon. Modifier `world_data.cpp` à la main reste possible (garder des
-lignes de même longueur), mais la vérification d'accessibilité est alors perdue.
+Modifier les fichiers de `data/` puis relancer le jeu (pas besoin de recompiler).
+Le mode test vérifie les références et que chaque porte, habitant, coffre,
+panneau, passage et boss est accessible à pied (`checkMaps`). Les fichiers sont
+réécrits par `writeJson` (petites listes sur une ligne) : garder ce format.
 
 ## Contenu actuel
 
@@ -91,13 +140,29 @@ lignes de même longueur), mais la vérification d'accessibilité est alors perd
   lave, cratère d'**Ignarok** (N.23, Feu, boss final).
 - **Grotte des Échos** (32x24) : **Golem de suie** (N.16), puis **Isra** rejoint
   l'équipe.
-- Héros : Lior (épée), Maëlle (mage blanche), Brann (hache), Isra (mage noire).
-  Starters : Braisenard (Feu), Gouttelin (Eau), Ronceau (Plante). 12 créatures
-  sauvages capturables.
+- **Forêt de Sylve-Noire** (56x40, ouverte après Sylvarque, entrée à l'ouest du
+  village) : bandits dresseurs, chef des bandits qui retient **Kael** (archer,
+  Vent), ermite qui soigne, marais, boss facultatif **Ronce-Mère** (N.18,
+  Plante/Poison).
+- **Pics Givrés** (60x44, ouverts après Ignarok, col au nord de Cendrelune) :
+  village de Givreval (soin, boutique, auberge), duel contre **Sélène**
+  (chevalière, Métal), chevaliers du givre, lac gelé.
+- **Temple gelé** (labyrinthe, clé de givre au fond) et **Sanctuaire** : boss
+  final **Givrecorne** (N.31, Glace/Roche).
+- 13 types (dont Glace, Roche, Vent, Poison, Métal, Esprit). Héros : Lior,
+  Maëlle, Brann, Isra, Kael, Sélène. Starters : Braisenard, Gouttelin, Ronceau.
+  23 créatures sauvages capturables, 5 boss, 5 sortes d'ennemis humains.
+- Les cartes se modifient avec l'éditeur de cartes (Outils) ou directement
+  dans les JSON.
 
-Équilibrage mesuré par le mode test (IA automatique simple, sans objets) :
-combats normaux gagnés à 100 %, Sylvarque ≈ 80 % avec une équipe N.11,
-Ignarok ≈ 35 % avec une équipe N.22 (un joueur avec des objets fait mieux).
+Équilibrage mesuré par le mode test (IA automatique, sans objets) : combats
+normaux, bandits, chevaliers et duels gagnés à ~95-100 %, Sylvarque ≈ 80 %
+(N.11), Ronce-Mère ≈ 55-70 % (N.16), Ignarok ≈ 30-45 % (N.22), Givrecorne
+≈ 35 % (N.30, avec Sélène). Un boss trop facile vient souvent de sa lenteur ou
+d'acolytes trop faibles, pas de ses PV : regarder le journal (BRUMEVAL_JOURNAL).
+Le Vent fait ×4 à Plante/Poison et le Métal ×4 à Glace/Roche : la Ronce-Mère et
+le Givrecorne ont une résistance propre pour ramener cela à ×2. La Lumière fait ×2 à l'Ombre mais l'Ombre est neutre sur la Lumière :
+sinon Maëlle, ciblée en priorité par l'IA, tombe dès le début contre Sylvarque.
 
 ## À faire / pistes
 
@@ -106,7 +171,5 @@ Ignarok ≈ 35 % avec une équipe N.22 (un joueur avec des objets fait mieux).
    F7, Maj+F5 et le débogueur (`cppvsdbg`).
 2. Ajouter musique et effets sonores (SDL2_mixer via FetchContent, ou l'audio de SDL).
 3. Rendre le sprite d'Ignarok plus lisible (aujourd'hui un bloc rouge).
-4. Dans la fenêtre d'état du combat, les noms sont coupés à 9 caractères
-   (« Braisenar ») : élargir la colonne ou abréger proprement.
-5. Idées : intérieurs des maisons, quêtes annexes, équipement, menu d'options,
+4. Idées : intérieurs des maisons, quêtes annexes, équipement, menu d'options,
    manette (SDL_GameController), animations d'attaque.

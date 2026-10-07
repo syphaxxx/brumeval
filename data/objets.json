@@ -1,0 +1,94 @@
+[
+  {
+    "id": "potion",
+    "nom": "Potion",
+    "description": "Rend 40 PV à un allié.",
+    "prix": 30,
+    "combat": true,
+    "menu": true,
+    "soin_pv": 40
+  },
+  {
+    "id": "superpotion",
+    "nom": "Super-potion",
+    "description": "Rend 120 PV à un allié.",
+    "prix": 90,
+    "combat": true,
+    "menu": true,
+    "soin_pv": 120
+  },
+  {
+    "id": "ether",
+    "nom": "Éther",
+    "description": "Rend 25 PM à un allié.",
+    "prix": 70,
+    "combat": true,
+    "menu": true,
+    "soin_pm": 25
+  },
+  {
+    "id": "elixir",
+    "nom": "Élixir",
+    "description": "Rend tous les PV et PM à un allié.",
+    "prix": 400,
+    "combat": true,
+    "menu": true,
+    "soin_pv": 9999,
+    "soin_pm": 999
+  },
+  {
+    "id": "plume",
+    "nom": "Plume ravivante",
+    "description": "Relève un allié K.O. avec la moitié de ses PV.",
+    "prix": 120,
+    "combat": true,
+    "menu": true,
+    "rappel": 50
+  },
+  {
+    "id": "remede",
+    "nom": "Remède",
+    "description": "Guérit les états : poison, brûlure, paralysie, sommeil.",
+    "prix": 25,
+    "combat": true,
+    "soin_statut": true
+  },
+  {
+    "id": "lanterne",
+    "nom": "Lanterne",
+    "description": "Capture une créature. Plus elle est affaiblie, mieux c'est.",
+    "prix": 40,
+    "combat": true,
+    "capture": 1.0
+  },
+  {
+    "id": "lanterne_argent",
+    "nom": "Lanterne d'argent",
+    "description": "Capture beaucoup plus facile.",
+    "prix": 110,
+    "combat": true,
+    "capture": 1.6
+  },
+  {
+    "id": "lanterne_or",
+    "nom": "Lanterne d'or",
+    "description": "Capture presque à coup sûr.",
+    "prix": 300,
+    "combat": true,
+    "capture": 2.5
+  },
+  {
+    "id": "herbe",
+    "nom": "Herbe lunaire",
+    "description": "Une herbe qui luit doucement. Maëlle en a besoin.",
+    "prix": 0,
+    "important": true
+  },
+  {
+    "id": "cle_givre",
+    "nom": "Clé de givre",
+    "description": "Une clé taillée dans une glace qui ne fond jamais.",
+    "prix": 0,
+    "important": true
+  }
+]

@@ -117,6 +117,67 @@ void drawCreature(Gfx& g, const std::string& id, float x, float y, float s, bool
       X.ell(-9, -4, 3.5f, 2, e); X.ell(2, -4, 3.5f, 2, e);
       break;
     }
+    case Shape::Snake: {
+      float w = std::sin(t * 3) * 1.5f;
+      X.ell(6, 11, 14, 4.5f, D); X.ell(4, 7, 12, 5, C); X.ell(2, 2, 10, 5, C); X.ell(4, 9, 9, 2.5f, L);
+      for (int i = 0; i < 3; i++) X.ell(9 - i * 5.f, 4 - i * 1.f, 1.5f, 3, D);
+      X.ell(-6, -5 + w, 5, 7, C); X.ell(-10, -12 + w, 7, 5, C); X.ell(-11, -9 + w, 4, 2, L);
+      X.line(-16, -10 + w, -21, -9 + w, 1, rgb(0xd2493f)); X.line(-21, -9 + w, -23, -11 + w, 1, rgb(0xd2493f));
+      X.line(-21, -9 + w, -23, -7 + w, 1, rgb(0xd2493f));
+      eyes(X, -13, -8, -14 + w, 1.6f);
+      break;
+    }
+    case Shape::Bat: {
+      float fl = std::sin(t * 12) * 4, y0 = std::sin(t * 3) * 2 - 5;
+      X.tri(-4, y0 - 1, -24, y0 - 9 + fl, -13, y0 + 7, D); X.tri(4, y0 - 1, 24, y0 - 9 + fl, 13, y0 + 7, D);
+      X.tri(-6, y0, -20, y0 - 6 + fl, -12, y0 + 4, C); X.tri(6, y0, 20, y0 - 6 + fl, 12, y0 + 4, C);
+      X.ell(0, y0, 8, 9, C);
+      X.tri(-6, y0 - 6, -5, y0 - 15, -1, y0 - 7, C); X.tri(1, y0 - 7, 5, y0 - 15, 6, y0 - 6, C);
+      X.ell(0, y0 + 3, 5, 4, L); eyes(X, -4, 2, y0 - 2, 1.6f);
+      X.tri(-2, y0 + 2, -1, y0 + 5, 0, y0 + 2, rgb(0xffffff));
+      break;
+    }
+    case Shape::Wolf:
+      X.ell(15, -4, 4, 9, C, .9f); X.ell(18, -10, 3, 4, L);
+      X.ell(3, 3, 14, 9, C); X.ell(1, 8, 9, 4, L);
+      X.ell(-9, 13, 3, 3, D); X.ell(-3, 13, 3, 3, D); X.ell(8, 13, 3, 3, D); X.ell(14, 12, 3, 3, D);
+      X.ell(-11, -5, 8, 7, C); X.tri(-17, -5, -26, -1, -16, 1, C); X.ell(-25, -1.5f, 1.6f, 1.4f, INK);
+      X.tri(-15, -9, -14, -19, -9, -10, C); X.tri(-8, -10, -5, -19, -3, -9, C); X.tri(-14, -10, -13.5f, -16, -11, -10, L);
+      eyes(X, -15, -9, -6, 1.7f);
+      break;
+    case Shape::Turtle: {
+      X.ell(-16, 3, 6, 5, L); eyes(X, -19, -15, 1, 1.4f);
+      X.ell(-9, 12, 4, 3, L); X.ell(9, 12, 4, 3, L);
+      std::vector<Pt> shell;
+      for (int i = 0; i <= 16; i++) {
+        float a = 3.14159f + 3.14159f * i / 16;
+        shell.push_back({15 * std::cos(a), 14 * std::sin(a) + 8});
+      }
+      X.poly(shell, C);
+      X.rect(-15, 7, 30, 3, D);
+      X.ell(-6, 0, 4, 3, D); X.ell(5, -1, 4, 3, D); X.ell(0, -5, 3, 2, D);
+      break;
+    }
+    case Shape::Ghost: {
+      Color c = C;
+      c.a = 205;
+      float y0 = std::sin(t * 2.5f) * 2 - 3;
+      X.ell(0, y0 - 4, 12, 11, c); X.rect(-12, y0 - 4, 24, 12, c);
+      for (int i = 0; i < 4; i++) X.tri(-12 + i * 6.f, y0 + 8, -9 + i * 6.f, y0 + 14 + std::sin(t * 6 + i) * 2, -6 + i * 6.f, y0 + 8, c);
+      X.ell(-14, y0, 3, 5, c, .5f); X.ell(13, y0, 3, 5, c, -.5f);
+      X.ell(-4, y0 - 6, 2.5f, 3.5f, INK); X.ell(4, y0 - 6, 2.5f, 3.5f, INK);
+      X.ell(-4, y0 - 7, .9f, .9f, L); X.ell(4, y0 - 7, .9f, .9f, L); X.ell(0, y0 + 1, 3, 2, shade(C, .45f));
+      break;
+    }
+    case Shape::Crystal: {
+      Color glow = L;
+      glow.a = uint8_t(60 + 40 * std::sin(t * 3));
+      X.ell(0, 0, 20, 18, glow);
+      X.poly({{-14, 14}, {-17, 0}, {-11, -8}, {-7, 14}}, D); X.poly({{8, 14}, {12, -6}, {17, 2}, {16, 14}}, D);
+      X.poly({{-8, 14}, {-10, -6}, {0, -20}, {9, -6}, {7, 14}}, C); X.poly({{0, -20}, {9, -6}, {2, -4}}, L);
+      eyes(X, -4, 3, 1, 1.8f);
+      break;
+    }
     case Shape::Human: break;
   }
 }
@@ -161,6 +222,15 @@ void drawHuman(Gfx& g, const Look& lk, float x, float y, float s, int dir, int s
     Color h = shade(top, .35f);
     X.rect(1, 1, 14, 2, h);
     X.tri(3, 1.5f, 13, 1.5f, 10, -9, h);
+  } else if (lk.hat == 4) {  // casque
+    Color m = rgb(0xb8c0cc);
+    X.rect(3, 0, 10, 4, m);
+    X.rect(3, 3, 1, 4, m);
+    X.rect(12, 3, 1, 4, m);
+    X.rect(3, 0, 10, 1, rgb(0xe6ebf2));
+  } else if (lk.hat == 5) {  // foulard sur le bas du visage
+    if (pose == 1) X.rect(4, 5, 8, 3, rgb(0xa83232));
+    else if (pose == 2) X.rect(3, 5, 6, 3, rgb(0xa83232));
   } else if (lk.hat == 3) {
     X.rect(4, 3, 8, 1, rgb(0x3a6fd0));
     if (pose == 2) X.rect(12, 3, 2, 2, rgb(0x3a6fd0));
@@ -179,6 +249,15 @@ void drawHuman(Gfx& g, const Look& lk, float x, float y, float s, int dir, int s
     case 4:
       X.rect(1, 7, 1, 4, rgb(0xdfe6f2));
       X.rect(0, 10, 3, 1, rgb(0xffd34d));
+      break;
+    case 5:  // arc
+      X.line(1, -4, -2, 5, 1, rgb(0x8a5a32));
+      X.line(-2, 5, 1, 14, 1, rgb(0x8a5a32));
+      X.line(1, -4, 1, 14, .5f, rgb(0xf2f0ea));
+      break;
+    case 6:  // lance
+      X.rect(1, -9, 1, 23, rgb(0x6b4a2f));
+      X.tri(0, -9, 1.5f, -15, 3, -9, rgb(0xdfe6f2));
       break;
     default: break;
   }
@@ -209,6 +288,15 @@ static void ground(Gfx& g, Theme th, int sx, int sy, unsigned h) {
     g.rect(sx, sy, 16, 16, rgb(0x6e625c));
     g.rect(sx + h % 13, sy + (h >> 4) % 13, 2, 1, rgb(0x5f544f));
     g.rect(sx + (h >> 8) % 12 + 2, sy + (h >> 12) % 12 + 2, 1, 1, rgb(0x857770));
+  } else if (th == Theme::Foret) {
+    g.rect(sx, sy, 16, 16, rgb(0x3f7d45));
+    g.rect(sx + h % 13, sy + (h >> 4) % 13, 2, 1, rgb(0x34693a));
+    g.rect(sx + (h >> 8) % 12 + 2, sy + (h >> 12) % 12 + 2, 1, 2, rgb(0x34693a));
+    if (h % 7 == 0) g.rect(sx + (h >> 3) % 12 + 2, sy + (h >> 7) % 12 + 2, 2, 1, rgb(0x8a6a3a));  // feuille morte
+  } else if (th == Theme::Neige) {
+    g.rect(sx, sy, 16, 16, rgb(0xe8eef6));
+    g.rect(sx + h % 13, sy + (h >> 4) % 13, 2, 1, rgb(0xcdd8e8));
+    g.rect(sx + (h >> 8) % 12 + 2, sy + (h >> 12) % 12 + 2, 1, 1, rgb(0xffffff));
   } else {
     g.rect(sx, sy, 16, 16, rgb(0x4a4252));
     g.rect(sx + h % 13, sy + (h >> 4) % 13, 2, 1, rgb(0x3f3847));
@@ -233,21 +321,57 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
     }
     case ',':
     case 'g': {
-      bool dry = c == 'g';
-      g.rect(sx, sy, 16, 16, rgb(dry ? 0x7a6a50 : 0x4a9446));
+      bool dry = c == 'g', dark = th == Theme::Foret;
+      g.rect(sx, sy, 16, 16, rgb(dry ? 0x7a6a50 : dark ? 0x2f6236 : 0x4a9446));
       for (int i = 0; i < 5; i++) {
         int bx = sx + 1 + i * 3 + ((h >> i) & 1);
         int sw = (int)std::lround(std::sin(t * 2.2f + x * .7f + i) * .8f);
-        g.rect(bx, sy + 6, 2, 9, rgb(dry ? 0x9a7a3a : 0x2f6e35));
-        g.rect(bx + sw, sy + 3 + ((h >> (i + 3)) & 3), 1, 4, rgb(dry ? 0xe0c070 : 0x7cc46a));
+        g.rect(bx, sy + 6, 2, 9, rgb(dry ? 0x9a7a3a : dark ? 0x1f4a26 : 0x2f6e35));
+        g.rect(bx + sw, sy + 3 + ((h >> (i + 3)) & 3), 1, 4, rgb(dry ? 0xe0c070 : dark ? 0x5a9a4a : 0x7cc46a));
       }
+      break;
+    }
+    case 'n': {  // neige profonde (rencontres)
+      g.rect(sx, sy, 16, 16, rgb(0xd4e0f0));
+      for (int i = 0; i < 4; i++) {
+        float bx = sx + 2 + i * 4 + ((h >> i) & 1);
+        g.ellipse(bx, sy + 11 - ((h >> (i + 2)) & 3), 3, 3, rgb(0xffffff));
+        g.rect(bx - 2, sy + 13, 4, 1, rgb(0xb4c6e0));
+      }
+      break;
+    }
+    case 'i': {  // glace
+      g.rect(sx, sy, 16, 16, rgb(0xa8d8f0));
+      g.rect(sx + 2 + h % 6, sy + 3, 5, 1, rgb(0xe6f6ff));
+      g.rect(sx + 8, sy + 9 + (h >> 4) % 4, 4, 1, rgb(0xe6f6ff));
+      g.rect(sx + (h >> 6) % 12, sy + 13, 3, 1, rgb(0x8ac0e0));
+      break;
+    }
+    case 'z': {  // marais
+      g.rect(sx, sy, 16, 16, rgb(0x4a6a4a));
+      float ph = t * 1.2f + x * .9f + y * .5f;
+      g.ellipse(sx + 5 + std::sin(ph) * 1.5f, sy + 6, 3, 1.5f, rgb(0x6a8a5a));
+      g.ellipse(sx + 11, sy + 12, 3, 1.5f, rgb(0x3a5a3a));
+      g.rect(sx + 3 + h % 4, sy + 2, 1, 6, rgb(0x6a8a3a));
+      g.rect(sx + 12, sy + 6 + (h >> 3) % 3, 1, 6, rgb(0x6a8a3a));
+      g.rect(sx + 12, sy + 5 + (h >> 3) % 3, 1, 2, rgb(0x8a5a32));
       break;
     }
     case 'T':
       ground(g, th, sx, sy, h);
       g.rect(sx + 6, sy + 10, 4, 5, rgb(0x6b4a2f));
-      g.ellipse(sx + 8, sy + 7, 7, 6, rgb(0x2e6b3a));
-      g.ellipse(sx + 6, sy + 5, 4, 3, rgb(0x3f8a4a));
+      if (th == Theme::Neige) {  // sapin enneigé
+        g.tri(sx + 1, sy + 12, sx + 8, sy - 1, sx + 15, sy + 12, rgb(0x2e5a46));
+        g.tri(sx + 3, sy + 6, sx + 8, sy - 1, sx + 13, sy + 6, rgb(0xf2f6fb));
+        g.rect(sx + 2, sy + 11, 12, 1, rgb(0xf2f6fb));
+      } else if (th == Theme::Foret) {  // grand arbre sombre
+        g.ellipse(sx + 8, sy + 7, 8, 7, rgb(0x1f4a2a));
+        g.ellipse(sx + 5, sy + 4, 4, 3, rgb(0x2e6b3a));
+        g.ellipse(sx + 11, sy + 6, 3, 2, rgb(0x2a5e34));
+      } else {
+        g.ellipse(sx + 8, sy + 7, 7, 6, rgb(0x2e6b3a));
+        g.ellipse(sx + 6, sy + 5, 4, 3, rgb(0x3f8a4a));
+      }
       break;
     case 'd':
       ground(g, th, sx, sy, h);
@@ -279,7 +403,11 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
       break;
     }
     case '=':
-      if (th == Theme::Vallee) {
+      if (th == Theme::Neige) {
+        g.rect(sx, sy, 16, 16, rgb(0xc4cedc));
+        g.rect(sx + h % 14, sy + (h >> 5) % 14, 2, 1, rgb(0xaab6c8));
+        g.rect(sx + (h >> 9) % 14, sy + (h >> 13) % 14, 1, 1, rgb(0xdfe6f0));
+      } else if (th == Theme::Vallee || th == Theme::Foret) {
         g.rect(sx, sy, 16, 16, rgb(0xd9c08a));
         g.rect(sx + h % 14, sy + (h >> 5) % 14, 2, 1, rgb(0xc4a873));
         g.rect(sx + (h >> 9) % 14, sy + (h >> 13) % 14, 1, 1, rgb(0xc4a873));
@@ -309,7 +437,14 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
       break;
     }
     case '#':
-      if (th == Theme::Grotte) {
+      if (th == Theme::Neige) {
+        g.rect(sx, sy, 16, 16, rgb(0x7fa8c8));
+        g.rect(sx, sy + 5, 16, 1, rgb(0x6a92b4));
+        g.rect(sx, sy + 11, 16, 1, rgb(0x6a92b4));
+        g.rect(sx + (h % 10), sy, 1, 5, rgb(0x9ec4e0));
+        g.rect(sx + ((h >> 4) % 12), sy + 6, 1, 5, rgb(0x9ec4e0));
+        if (at(x, y - 1) != '#') g.rect(sx, sy, 16, 3, rgb(0xf2f6fb));
+      } else if (th == Theme::Grotte) {
         g.rect(sx, sy, 16, 16, rgb(0x241e2e));
         g.ellipse(sx + 4 + h % 8, sy + 4 + (h >> 4) % 8, 4, 3, rgb(0x322a3e));
         g.rect(sx + (h >> 8) % 14, sy + (h >> 12) % 14, 2, 2, rgb(0x1a1522));

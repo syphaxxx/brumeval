@@ -1,0 +1,61 @@
+{
+  "depart": {
+    "carte": "vallee",
+    "x": 12,
+    "y": 9,
+    "direction": "bas",
+    "heros": "lior",
+    "compagnons": ["braisenard", "gouttelin", "ronceau"],
+    "niveau": 5,
+    "or": 100,
+    "objets": {"potion": 4, "ether": 1, "plume": 1, "lanterne": 5},
+    "reveil": {"carte": "vallee", "x": 7, "y": 7},
+    "evenement": "debut"
+  },
+  "equipe": {"taille_max": 8, "en_combat": 3},
+  "rencontres": {"taux": 0.11, "pas_minimum": 3, "chance_2e": 0.55, "chance_3e": 0.35},
+  "combat": {
+    "atb_base": 20,
+    "atb_vitesse": 1.1,
+    "fuite": 0.7,
+    "limite_gain": 110,
+    "bonus_meme_type": 1.25,
+    "alea_min": 0.85,
+    "diviseur_degats": 40,
+    "critique_mult": 1.5,
+    "etage": 0.25,
+    "precision_base": 100,
+    "esquive_base": 2,
+    "critique_base": 5
+  },
+  "etats": {
+    "poison_degats": 0.1,
+    "brulure_degats": 0.0625,
+    "brulure_attaque": 0.75,
+    "paralysie_vitesse": 0.5,
+    "paralysie_blocage": 0.25,
+    "sommeil_min": 1,
+    "sommeil_max": 3
+  },
+  "recompenses": {
+    "xp_par_niveau": 9,
+    "xp_boss": 3,
+    "or_par_niveau": 4,
+    "or_boss": 8,
+    "part_combattants": 0.7,
+    "part_reserve": 0.3,
+    "butin": [{"objet": "potion", "chance": 0.25}, {"objet": "ether", "chance": 0.08}]
+  },
+  "capture": {"base": 0.15, "bonus_pv": 0.75, "max": 0.95},
+  "formules": {
+    "pv_diviseur": 20,
+    "pv_par_niveau": 1,
+    "pv_base": 10,
+    "pm_diviseur": 30,
+    "pm_base": 5,
+    "stat_diviseur": 25,
+    "stat_base": 5,
+    "xp_base": 10,
+    "xp_carre": 1.2
+  }
+}

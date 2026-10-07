@@ -10,13 +10,19 @@
 #include <string>
 #include <vector>
 
+#include "battle.hpp"
 #include "data.hpp"
+#include "events.hpp"
 #include "gfx.hpp"
 #include "ui.hpp"
 #include "world.hpp"
 
 class Battle;
-enum class Mode { Title, Map, Battle, Ending };
+class Arena;
+class Settings;
+class MapEditor;
+class StoryEditor;
+enum class Mode { Title, Map, Battle, Ending, Arena, Settings, Editor, Story };
 enum class BattleResult { Win, Lose, Fled };
 
 class Game {
@@ -24,6 +30,12 @@ class Game {
   explicit Game(SDL_Renderer* r);
   ~Game();
   void onKey(SDL_Scancode sc, bool down, bool repeat);
+  void onText(const char* utf8);  // caractères tapés (saisie de texte des éditeurs)
+  void onMouse(int x, int y, int button, bool down);  // button -1 : simple déplacement
+  void onWheel(int dy);
+  // Saisie de texte : affiche une fenêtre ; Entrée valide (done), Échap annule
+  void editText(const std::string& title, const std::string& initial, int maxChars, std::function<void(const std::string&)> done);
+  bool editingText() const { return textOn_; }
   void update(float dt);
   void draw();
   bool quit = false;
@@ -43,8 +55,8 @@ class Game {
   std::map<std::string, int> items;    // inventaire
   int gold = 0;
   std::set<std::string> flags;         // progression (boss vaincus, recrues, coffres…)
-  static constexpr int MAX_TEAM = 8;
 
+  void startBattle(BattleSetup setup, std::function<void(BattleResult)> after);
   void startBattle(std::vector<FighterP> foes, bool boss, std::function<void(BattleResult)> after, bool canFlee = true,
                    bool canCapture = true);
   std::vector<FighterP> front() const;  // combattants en première ligne
@@ -53,6 +65,12 @@ class Game {
   void healAll(bool mpToo = true);
   bool has(const std::string& f) const { return flags.count(f) > 0; }
 
+  // ---- Événements (data/evenements.json, voir events.cpp) ----
+  void runEvent(const std::string& id);
+  void runActions(const Json& list);
+  bool checkCond(const Json& c) const;
+  std::string fillText(std::string s) const;
+
  private:
   // Carte
   const MapDef& M() const { return maps()[mapId]; }
@@ -60,7 +78,7 @@ class Game {
   bool moving = false;
   float moveT = 0;
   int fromX = 0, fromY = 0, steps = 0;
-  int respawnMap = 0, respawnX = 7, respawnY = 7;
+  int respawnMap = 0, respawnX = 0, respawnY = 0;
   float banner = 0;
   std::string bannerText;
 
@@ -71,9 +89,11 @@ class Game {
   void arrive();
   void interact();
   void talk(const Npc& n);
-  void door(const Building& b);
-  void bossEvent(const BossSpot& b);
   void openChest(int idx);
+  std::string chestFlag(int idx) const;
+  bool checkSight();       // un dresseur repère le joueur ?
+  int exclaimNpc_ = -1;    // habitant qui affiche « ! »
+  float exclaimT_ = 0;
   void changeMap(int m, int x, int y, int d);
   void encounter();
   void defeat();
@@ -90,7 +110,7 @@ class Game {
   void shopMenu(const std::vector<std::string>& stock);
   void pickMember(const std::string& title, std::function<bool(const Fighter&)> ok, std::function<void(Fighter&)> use);
   void ask(const std::string& q, std::function<void()> yes, std::function<void()> no = nullptr);
-  void ending();
+  void execAction(const Json& a);
 
   // Sauvegarde
   std::string savePath() const;
@@ -105,7 +125,20 @@ class Game {
   void drawEnding();
   void drawTeamPanel(int x, int y, int sel);
 
+  bool textOn_ = false;
+  std::string textTitle_, textValue_;
+  int textMax_ = 0;
+  std::function<void(const std::string&)> textDone_;
+  void drawTextEdit();
   std::unique_ptr<Battle> battle_;
+  std::unique_ptr<Arena> arena_;  // Arène de combat (écran titre > Outils)
+  std::unique_ptr<Settings> settings_;  // Réglages (écran titre > Outils)
+  std::unique_ptr<MapEditor> editor_;   // Éditeur de cartes (écran titre > Outils)
+  bool editorTest_ = false;             // partie de test lancée depuis l'éditeur
+  std::unique_ptr<StoryEditor> story_;  // Éditeur d'histoire (écran titre > Outils)
+  bool storyTest_ = false;              // événement joué depuis l'éditeur d'histoire
+  bool arenaBattle_ = false;      // le combat en cours a été lancé depuis l'Arène
+  void toolsMenu();
   std::function<void(BattleResult)> afterBattle_;
   int panelMode_ = 0;        // 0 rien, 1 résumé de l'équipe, 2 fiche détaillée
   int teamPanelSel_ = 0;
@@ -118,4 +151,8 @@ class Game {
   void itemMenuAt(int sel);
   void shopMenuAt(const std::vector<std::string>& stock, int sel);
   friend class Battle;
+  friend class Arena;
+  friend class Settings;
+  friend class MapEditor;
+  friend class StoryEditor;
 };

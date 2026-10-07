@@ -1,0 +1,840 @@
+{
+  "debut": {
+    "actions": [
+      {"action": "dire", "texte": "Ce matin encore, une brume épaisse a recouvert la vallée de Brumeval."},
+      {
+        "action": "dire",
+        "texte": "Elle rend les créatures sauvages. Lior, apprenti gardien, part avec {compagnon} en trouver la source."
+      },
+      {
+        "action": "dire",
+        "texte": "Entrée : parler et valider. Échap : menu. Flèches ou ZQSD : se déplacer."
+      },
+      {
+        "action": "dire",
+        "texte": "Les hautes herbes cachent des créatures. Capturez-les avec des lanternes pour agrandir l'équipe !"
+      }
+    ]
+  },
+  "fin": {
+    "actions": [
+      {"action": "dire", "texte": "Ignarok rugit une dernière fois, puis le volcan se tait."},
+      {
+        "action": "dire",
+        "texte": "La lave refroidit. Sur Forgeroc, le ciel redevient bleu pour la première fois depuis des années."
+      },
+      {
+        "action": "dire",
+        "texte": "Lior et ses compagnons ont ramené la paix à Brumeval et aux Monts Cendrelune."
+      },
+      {
+        "action": "dire",
+        "texte": "Mais au nord des Monts Cendrelune, un vent glacé se lève sur le col des Pics Givrés…"
+      },
+      {"action": "fin"}
+    ]
+  },
+  "ancien": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "boss1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ancien : Cette brume n'est pas naturelle. Elle vient du gardien Sylvarque, qui bloque le col à l'est."
+          },
+          {
+            "action": "dire",
+            "texte": "Ancien : Il est accompagné de Brumelins. Renforcez votre équipe avant de l'affronter."
+          },
+          {
+            "action": "dire",
+            "texte": "Ancien : Et passez voir Maëlle, à la chapelle. Sa magie de Lumière vous serait précieuse."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ancien : La brume s'est levée ! Le col mène aux Monts Cendrelune, où gronde un volcan."
+          },
+          {"action": "dire", "texte": "Ancien : Là-bas, la ville de Forgeroc pourra vous accueillir."},
+          {
+            "action": "dire",
+            "texte": "Ancien : Et la forêt de Sylve-Noire, à l'ouest du village, a rouvert ses chemins. Méfiez-vous des bandits qui s'y cachent."
+          }
+        ]
+      }
+    ]
+  },
+  "maelle": {
+    "pages": [
+      {
+        "si": {"objet": "herbe"},
+        "actions": [
+          {"action": "retirer", "objet": "herbe"},
+          {
+            "action": "dire",
+            "texte": "Maëlle : L'herbe lunaire ! Merci, je vais pouvoir terminer mon remède."
+          },
+          {
+            "action": "dire",
+            "texte": "Maëlle : Laissez-moi vous accompagner. Ma magie de Lumière vous protégera."
+          },
+          {"action": "recruter", "espece": "maelle", "niveau": 6},
+          {"action": "dire", "texte": "Maëlle connaît Soin et Lumière. En combat, choisissez « Magie »."}
+        ]
+      },
+      {
+        "actions": [
+          {"action": "dire", "texte": "Maëlle : Bonjour, je suis Maëlle, la mage de la chapelle."},
+          {
+            "action": "dire",
+            "texte": "Maëlle : J'aimerais combattre la brume avec vous, mais je dois d'abord finir un remède pour le village."
+          },
+          {
+            "action": "dire",
+            "texte": "Maëlle : Il me manque une herbe lunaire. Elle pousse tout au fond du Bois Murmurant, au sud-ouest."
+          }
+        ]
+      }
+    ]
+  },
+  "pecheur": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "pecheur"},
+        "actions": [
+          {"action": "drapeau", "nom": "pecheur"},
+          {
+            "action": "dire",
+            "texte": "Pêcheur : Rien ne mord avec cette brume… Tenez, j'ai repêché ces plumes ce matin."
+          },
+          {"action": "donner", "objet": "plume", "quantite": 2}
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Pêcheur : Le lac est calme. Un jour, la brume partira, et les poissons reviendront."
+          }
+        ]
+      }
+    ]
+  },
+  "braconnier": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "braconnier"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Braconnier : Hé ! Ces bois sont à moi. Les créatures que j'attrape, je les revends en ville !"
+          },
+          {"action": "dire", "texte": "Braconnier : Tu veux m'en empêcher ? Alors bats-toi !"},
+          {
+            "action": "combat",
+            "nom": "Le braconnier",
+            "ennemis": [{"espece": "braconnier", "niveau": 6}, {"espece": "mulotin", "niveau": 5}],
+            "renforts": [{"espece": "piafouine", "niveau": 5}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "braconnier"},
+              {
+                "action": "dire",
+                "texte": "Braconnier : Aïe ! D'accord, d'accord… J'ouvre mes cages et je change de métier."
+              },
+              {"action": "donner", "objet": "remede", "quantite": 2},
+              {"action": "or", "quantite": 120}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ancien braconnier : J'ai relâché toutes mes créatures. Elles avaient l'air si contentes…"
+          }
+        ]
+      }
+    ]
+  },
+  "garde_col": {
+    "pages": [
+      {
+        "si": {"drapeau": "boss1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Garde : Le col est libre ! Les Monts Cendrelune vous attendent de l'autre côté."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Garde : Halte ! Le gardien Sylvarque bloque le col, accompagné de deux Brumelins."
+          },
+          {
+            "action": "dire",
+            "texte": "Garde : Il est de type Ombre et de niveau 12. La Lumière le blesse beaucoup."
+          }
+        ]
+      }
+    ]
+  },
+  "brann": {
+    "actions": [
+      {"action": "dire", "texte": "Brann : Alors c'est vous qui avez chassé la brume de la vallée ?"},
+      {
+        "action": "dire",
+        "texte": "Brann : Ignarok, le monstre du volcan, menace Forgeroc. Je veux bien vous aider…"
+      },
+      {"action": "dire", "texte": "Brann : … mais seulement si vous me battez en duel !"},
+      {
+        "action": "question",
+        "texte": "Affronter Brann en duel ?",
+        "oui": [
+          {
+            "action": "combat",
+            "ennemis": [{"espece": "brann", "niveau": 14, "pv": 2.5, "boss": true}],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "dire", "texte": "Brann : Ha ! Belle bagarre. Vous avez gagné un compagnon."},
+              {"action": "recruter", "espece": "brann", "niveau": 14}
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "garde_volcan": {
+    "pages": [
+      {
+        "si": {"drapeau": "boss2"},
+        "actions": [{"action": "dire", "texte": "Garde : Le volcan s'est calmé. Merci, héros !"}]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Garde : Le cratère est au bout de ce chemin. Ignarok y règne, entouré de Tisonnels."
+          },
+          {
+            "action": "dire",
+            "texte": "Garde : C'est une créature de Feu de niveau 23. L'Eau est sa faiblesse."
+          }
+        ]
+      }
+    ]
+  },
+  "isra": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Isra : Vous avez abattu le Golem ? J'étais coincée ici depuis des jours !"
+      },
+      {
+        "action": "dire",
+        "texte": "Isra : Je suis Isra, mage noire. Feu, Givre, Foudre… je maîtrise les éléments."
+      },
+      {
+        "action": "dire",
+        "texte": "Isra : Si vous allez au volcan, comptez sur moi. Ignarok ne supportera pas mon Givre."
+      },
+      {"action": "recruter", "espece": "isra", "niveau": 15}
+    ]
+  },
+  "sylvarque": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Une silhouette immense se dresse dans la brume. Les yeux de Sylvarque s'allument…"
+      },
+      {
+        "action": "question",
+        "texte": "Engager le combat ?",
+        "oui": [
+          {
+            "action": "combat",
+            "ennemis": [
+              {"espece": "brumelin", "niveau": 9},
+              {"espece": "sylvarque", "niveau": 12, "pv": 3.5, "boss": true},
+              {"espece": "brumelin", "niveau": 9}
+            ],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "boss1"},
+              {
+                "action": "dire",
+                "texte": "Sylvarque se dissout dans un souffle de vent. La brume se lève sur toute la vallée !"
+              },
+              {
+                "action": "dire",
+                "texte": "Le col de la Brume est ouvert. Les Monts Cendrelune vous attendent à l'est."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "golem": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Un amas de roches noires se redresse : le Golem de suie barre le passage !"
+      },
+      {
+        "action": "question",
+        "texte": "Engager le combat ?",
+        "oui": [
+          {
+            "action": "combat",
+            "ennemis": [{"espece": "golem", "niveau": 16, "pv": 3, "boss": true}],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "golem"},
+              {
+                "action": "dire",
+                "texte": "Le Golem s'effondre en un tas de cailloux. Une voix vous appelle au fond de la grotte…"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "ignarok": {
+    "actions": [
+      {"action": "dire", "texte": "Le magma bouillonne. Ignarok, le cœur du volcan, ouvre les yeux."},
+      {
+        "action": "question",
+        "texte": "Engager le combat ?",
+        "oui": [
+          {
+            "action": "combat",
+            "ennemis": [
+              {"espece": "tisonnel", "niveau": 19},
+              {"espece": "ignarok", "niveau": 23, "pv": 4, "boss": true},
+              {"espece": "tisonnel", "niveau": 19}
+            ],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [{"action": "drapeau", "nom": "boss2"}, {"action": "evenement", "id": "fin"}]
+          }
+        ]
+      }
+    ]
+  },
+  "soin": {
+    "actions": [
+      {"action": "soigner"},
+      {"action": "reveil"},
+      {
+        "action": "dire",
+        "texte": "Guérisseuse : Reposez-vous… Voilà, toute votre équipe est en pleine forme !"
+      }
+    ]
+  },
+  "boutique1": {
+    "actions": [{"action": "boutique", "objets": ["potion", "ether", "remede", "plume", "lanterne"]}]
+  },
+  "boutique2": {
+    "actions": [
+      {
+        "action": "boutique",
+        "objets": ["potion", "superpotion", "ether", "remede", "plume", "lanterne", "lanterne_argent"]
+      }
+    ]
+  },
+  "auberge": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Aubergiste : Une nuit ici coûte 20 pièces d'or. Le repos rend tous les PV et PM."
+      },
+      {
+        "action": "question",
+        "texte": "Passer la nuit (20 or) ?",
+        "oui": [
+          {
+            "action": "si",
+            "condition": {"or_min": 20},
+            "alors": [
+              {"action": "or", "quantite": -20},
+              {"action": "soigner"},
+              {"action": "reveil"},
+              {
+                "action": "dire",
+                "texte": "Vous dormez d'un sommeil profond… L'équipe est en pleine forme !"
+              }
+            ],
+            "sinon": [{"action": "dire", "texte": "Aubergiste : Vous n'avez pas assez d'or."}]
+          }
+        ]
+      }
+    ]
+  },
+  "chapelle": {
+    "actions": [
+      {"action": "soigner", "pv": false},
+      {
+        "action": "dire",
+        "texte": "Une douce lumière emplit la chapelle. Les PM de toute l'équipe sont restaurés."
+      }
+    ]
+  },
+  "forge": {
+    "pages": [
+      {
+        "si": {"drapeau": "brann"},
+        "actions": [{"action": "dire", "texte": "L'enclume est encore chaude. Brann y forgeait sa hache."}]
+      },
+      {"actions": [{"action": "dire", "texte": "La forge est fermée. Brann se tient juste à côté."}]}
+    ]
+  },
+  "maison": {"actions": [{"action": "dire", "texte": "Personne ne répond."}]},
+  "foret_entree": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Des branches craquent au loin. Une voix crie, quelque part à l'ouest : « Lâchez-moi, brigands ! »"
+      },
+      {
+        "action": "dire",
+        "texte": "On raconte que des bandits capturent les créatures de la forêt pour les revendre."
+      },
+      {"action": "drapeau", "nom": "foret_vue"}
+    ]
+  },
+  "ermite": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "bandits"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ermite : Des bandits se sont installés à l'ouest. Ils ont capturé Kael, le jeune archer qui protège la forêt."
+          },
+          {
+            "action": "dire",
+            "texte": "Ermite : Et au sud, au fond du marais, la Ronce-Mère étouffe le cœur de la forêt. Ne l'approchez pas sans être bien préparés."
+          },
+          {
+            "action": "dire",
+            "texte": "Ermite : Entrez dans ma cabane si vous êtes fatigués. Ma tisane fait des miracles."
+          }
+        ]
+      },
+      {
+        "si": {"sans_drapeau": "ronce"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ermite : Merci d'avoir chassé ces brigands ! Kael veillera de nouveau sur la forêt."
+          },
+          {"action": "dire", "texte": "Ermite : Reste la Ronce-Mère, au fond du marais…"}
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ermite : La forêt respire de nouveau. Même les lucioles sont revenues."
+          }
+        ]
+      }
+    ]
+  },
+  "ermite_porte": {
+    "actions": [
+      {"action": "soigner"},
+      {"action": "dire", "texte": "L'ermite vous sert une tisane d'herbes. Toute l'équipe est soignée."}
+    ]
+  },
+  "tente": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Des cages vides et des cordes… C'est ici que les bandits enferment les créatures capturées."
+      }
+    ]
+  },
+  "bandit1": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "bandit1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Bandit : Halte ! Pour passer, il faut payer le péage… avec tes créatures !"
+          },
+          {
+            "action": "combat",
+            "nom": "Le bandit",
+            "ennemis": [{"espece": "bandit", "niveau": 12}, {"espece": "louvet", "niveau": 11}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "bandit1"},
+              {"action": "dire", "texte": "Bandit : Aïe… Le chef va me passer un savon."}
+            ]
+          }
+        ]
+      },
+      {"actions": [{"action": "dire", "texte": "Bandit : Ne dis surtout pas au chef que j'ai perdu…"}]}
+    ]
+  },
+  "bandit2": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "bandit2"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Bandit : Le marais est à nous ! Déguerpis, ou je lâche mon serpent !"
+          },
+          {
+            "action": "combat",
+            "nom": "Le bandit",
+            "ennemis": [{"espece": "bandit", "niveau": 13}, {"espece": "serpentin", "niveau": 12}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "bandit2"},
+              {"action": "dire", "texte": "Bandit : D'accord, d'accord ! Le marais est à toi."}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Bandit : Fais attention à la Ronce-Mère, au fond du marais. Même nous, on ne s'en approche pas."
+          }
+        ]
+      }
+    ]
+  },
+  "chef_bandits": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Chef des bandits : Encore un héros ? Cet archer voulait déjà libérer nos créatures…"
+      },
+      {"action": "dire", "texte": "Chef des bandits : Tu vas finir dans la même cage que lui !"},
+      {
+        "action": "combat",
+        "nom": "Le chef des bandits",
+        "ennemis": [
+          {"espece": "chef_bandit", "niveau": 13, "pv": 2, "boss": true},
+          {"espece": "louvet", "niveau": 12}
+        ],
+        "renforts": [{"espece": "bandit", "niveau": 12}, {"espece": "louvet", "niveau": 12}],
+        "boss": true,
+        "fuite": false,
+        "capture": false,
+        "victoire": [
+          {"action": "drapeau", "nom": "bandits"},
+          {"action": "dire", "texte": "Chef des bandits : Assez ! Les gars, on décampe !"},
+          {
+            "action": "dire",
+            "texte": "Les bandits s'enfuient dans les profondeurs de la forêt, abandonnant leur camp."
+          }
+        ]
+      }
+    ]
+  },
+  "kael": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "bandits"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Kael (ligoté) : Psst ! Par ici… Ces brigands m'ont attaché. Leur chef garde l'entrée du camp."
+          },
+          {"action": "dire", "texte": "Kael : Battez-le, et je vous revaudrai ça !"}
+        ]
+      },
+      {
+        "actions": [
+          {"action": "dire", "texte": "Kael : Libre ! Merci. Je suis Kael, archer de Sylve-Noire."},
+          {
+            "action": "dire",
+            "texte": "Kael : Ces bandits capturaient les créatures de la forêt pour les vendre. Je les traquais depuis des semaines."
+          },
+          {
+            "action": "dire",
+            "texte": "Kael : Je vous accompagne. Mes flèches, portées par le vent, ne manquent jamais leur cible."
+          },
+          {"action": "recruter", "espece": "kael", "niveau": 13}
+        ]
+      }
+    ]
+  },
+  "ronce_mere": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Une fleur gigantesque s'ouvre dans un nuage de pollen violet. La Ronce-Mère se dresse !"
+      },
+      {
+        "action": "question",
+        "texte": "Engager le combat ?",
+        "oui": [
+          {
+            "action": "combat",
+            "ennemis": [
+              {"espece": "serpentin", "niveau": 14},
+              {"espece": "ronce_mere", "niveau": 18, "pv": 4, "boss": true},
+              {"espece": "serpentin", "niveau": 14}
+            ],
+            "renforts": [{"espece": "crapoison", "niveau": 13}],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "ronce"},
+              {"action": "dire", "texte": "La Ronce-Mère se fane dans un dernier soupir de pollen."},
+              {
+                "action": "dire",
+                "texte": "Le cœur de la forêt respire à nouveau. Des coffres brillent derrière les ronces."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "pics_entree": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Un vent glacé vous saisit. Les Pics Givrés sont couverts de neige depuis la chute d'Ignarok."
+      },
+      {
+        "action": "dire",
+        "texte": "Le village de Givreval s'étend devant vous. Tout là-haut, au sommet, se dresse le Temple gelé."
+      },
+      {"action": "drapeau", "nom": "pics_vu"}
+    ]
+  },
+  "boutique3": {
+    "actions": [
+      {
+        "action": "boutique",
+        "objets": [
+          "potion",
+          "superpotion",
+          "ether",
+          "remede",
+          "elixir",
+          "plume",
+          "lanterne_argent",
+          "lanterne_or"
+        ]
+      }
+    ]
+  },
+  "maison_selene": {
+    "pages": [
+      {
+        "si": {"drapeau": "selene"},
+        "actions": [
+          {"action": "dire", "texte": "La maison est vide. Sélène est partie à l'aventure avec vous."}
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Une armure étincelante trône dans l'entrée. C'est la maison de Sélène."
+          }
+        ]
+      }
+    ]
+  },
+  "selene": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Sélène : Vous êtes ceux qui ont vaincu Ignarok ? Le froid qui nous accable vient du temple, là-haut."
+      },
+      {
+        "action": "dire",
+        "texte": "Sélène : Le Givrecorne, son gardien, s'est réveillé quand le volcan s'est tu. Je veux l'apaiser…"
+      },
+      {
+        "action": "dire",
+        "texte": "Sélène : Mais je ne partirai qu'avec des compagnons dignes de confiance. Croisons le fer !"
+      },
+      {
+        "action": "question",
+        "texte": "Affronter Sélène en duel ?",
+        "oui": [
+          {
+            "action": "combat",
+            "nom": "Sélène",
+            "ennemis": [{"espece": "selene", "niveau": 26, "pv": 3, "boss": true}],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "dire", "texte": "Sélène : Quelle force ! Je vous suis jusqu'au sommet."},
+              {"action": "recruter", "espece": "selene", "niveau": 26},
+              {
+                "action": "dire",
+                "texte": "Sélène : La clé du sanctuaire serait cachée au plus profond du temple."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "chevalier1": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "chevalier1"},
+        "actions": [
+          {"action": "dire", "texte": "Chevalier du givre : Nul ne monte au temple sans prouver sa valeur !"},
+          {
+            "action": "combat",
+            "nom": "Le chevalier du givre",
+            "ennemis": [{"espece": "chevalier", "niveau": 26}, {"espece": "givrelin", "niveau": 25}],
+            "renforts": [{"espece": "mage_givre", "niveau": 26}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "chevalier1"},
+              {"action": "dire", "texte": "Chevalier : Vous êtes dignes. Que le givre vous épargne."}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Chevalier : Le Givrecorne attend au sanctuaire, derrière une porte scellée."
+          }
+        ]
+      }
+    ]
+  },
+  "chevalier2": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "chevalier2"},
+        "actions": [
+          {"action": "dire", "texte": "Chevalier du givre : Ces sommets sont sous ma garde. En garde !"},
+          {
+            "action": "combat",
+            "nom": "Le chevalier du givre",
+            "ennemis": [{"espece": "chevalier", "niveau": 27}, {"espece": "ferrolin", "niveau": 26}],
+            "renforts": [{"espece": "zephyrin", "niveau": 26}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "chevalier2"},
+              {"action": "dire", "texte": "Chevalier : Bien joué. Prenez ceci pour la route."},
+              {"action": "donner", "objet": "superpotion", "quantite": 2}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {"action": "dire", "texte": "Chevalier : Le Feu fait fondre le Métal… mais pas notre courage !"}
+        ]
+      }
+    ]
+  },
+  "mage_temple": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "mage_temple"},
+        "actions": [
+          {"action": "dire", "texte": "Mage du givre : Ce temple est sacré. Retournez d'où vous venez !"},
+          {
+            "action": "combat",
+            "nom": "La mage du givre",
+            "ennemis": [{"espece": "mage_givre", "niveau": 26}, {"espece": "cristallin", "niveau": 25}],
+            "renforts": [{"espece": "givrelin", "niveau": 25}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "mage_temple"},
+              {
+                "action": "dire",
+                "texte": "Mage du givre : Pardonnez-moi… Le Givrecorne murmure des ordres dans mes rêves."
+              },
+              {
+                "action": "dire",
+                "texte": "Mage du givre : La clé de givre est cachée au plus profond du labyrinthe."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {"action": "dire", "texte": "Mage du givre : Que la clé de givre vous guide jusqu'au sanctuaire."}
+        ]
+      }
+    ]
+  },
+  "givrecorne": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Un souffle glacial balaie le sanctuaire. Le Givrecorne lève sa tête couronnée de glace."
+      },
+      {
+        "action": "question",
+        "texte": "Engager le combat ?",
+        "oui": [
+          {
+            "action": "combat",
+            "ennemis": [
+              {"espece": "givrelin", "niveau": 27},
+              {"espece": "givrecorne", "niveau": 31, "pv": 4, "boss": true},
+              {"espece": "givrelin", "niveau": 27}
+            ],
+            "renforts": [{"espece": "cristallin", "niveau": 26}],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "boss3"},
+              {
+                "action": "dire",
+                "texte": "Le Givrecorne s'apaise et se couche sur l'autel. La neige cesse de tomber."
+              },
+              {
+                "action": "dire",
+                "texte": "Le feu du volcan et la glace des Pics ont retrouvé leur équilibre."
+              },
+              {"action": "dire", "texte": "Brumeval, Cendrelune et Givreval peuvent enfin vivre en paix."}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

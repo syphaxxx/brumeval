@@ -1,0 +1,207 @@
+{
+  "id": "vallee",
+  "nom": "Vallée de Brumeval",
+  "theme": "vallee",
+  "ambiance": {"effet": "brume", "jusqua": "boss1"},
+  "tuiles": [
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT~~TTTTTTTTTTTTTTTTTTTTTTTTTTT",
+    "T......F....................F......~~......F...................T",
+    "T..........F.=..............,T,,,..~~..,,,,,......,,,T,,,R.....T",
+    "T...........F=............,,,,,,,,,~~,,,,,,,,,T.,,,,,,T,,,,....T",
+    "T............=............,R,,,,,,,~~,RR,,,,,,R,,,,,,,,,,,,T..TT",
+    "T............=............,,,RR,,,,~~,T,,,,,,,,,,,,,,T,,,,,,...T",
+    "T............=.WW...........,,,,,..~~,,R,,,,,,,,,,,,,T,,,,,,...T",
+    "T......=.....=.WW...=..............~~,,,,,,,,T..,,,,,TT,,,,....T",
+    "T......=.....=......=.....TT.......~~..,,,,,...T..,,,,,,,T.....T",
+    "===================================BB==========....T...........T",
+    "T............=................T..R.~~.........=..........,T,...T",
+    "T............=............TT.......~~.......FT=.........,,TR,..T",
+    "T.F..........=............R,,,,T...~~......T,,=T,,,....,,,,,,,.T",
+    "T............=............R,,,,,,..~~TR...,,,,=,,,,,,..,,,,,,,.T",
+    "T............=............,,,,,R,..~~,,,,,,,,,=,,,,,,.T,,,,,,,.T",
+    "T.....=......=.....=......,,,,,,,..~~,,,,,,,,,=,,,,,,...,,,,,.TT",
+    "T..F..==================...,,,,,...~~,,,,,,,,,=,,,,T.....,,,...T",
+    "T............=.....=...........R...~~,,,,,,,..=.....T..........T",
+    "T.........====.....=..,,,,,.......T~~,,,,,....=...F.F.....#####T",
+    "TTT.TTTTTT=TTT.TT..=T,,,,,,,....TT.~~........T=...T...T.T.#####T",
+    "TT.TTTT.T.=TT,,,,,T=TT,,,,,,.......~~......F..=....TT.T.T.#####T",
+    "TF.T.T..T.=T,,,,,,,=T,,,,,,,.......~~....T....=....T..T...#####T",
+    "T..T..T.T.=.,,,,,,,=T.,T,,,.F.~~~~~~~....F....=,,,T,.T..#######T",
+    "TTTT.TTT..=T,,,,,,,=T...TT....~~~~~~~.TF......=,,,,TTT.T#######T",
+    "TTT.=======T.,,,,,T=TTT.......~~...F.........T=T,,,,,...#######T",
+    "TTTT=T,,,,,.TTTTT..=TT.F.....T~~....FT........=,,TT,TF.T..#####T",
+    "TTTT=,,,,,,,,...TTT=T....~~~~~~~.F...........T=,,,TTTF.T..#####T",
+    "TTT.=,,,,,,,,TTT..T=...~~~~~~~~~........,,,T,.=TT.TTT.....#####T",
+    "TTTT=,,,,,,,,....TT=T.~~~~~~~~~~~T..F..,,,,,,,=.TT.T...TTT#####T",
+    "T.TT=.,,,,,T...TTTT=F~~~~~~~~~~~~~.....,,,,T,,=..FTT....T.#####T",
+    "T.T.=TTTT.TTT.TT..T=T~~~~~~~~~~~~~..F..,,,,,,,=..TTT......#####T",
+    "TTTT=T.TT..TT..T.TT=T~~~~~~~~~~~~~......,,T,,.=T.T...TT..T#####T",
+    "T..T===========T...=TT~~~~~~~~~~~......F....FT==================",
+    "TTTT.,,,..T..T=,,,,=TT.~~~~~~~~~......TT.....T=...T...T..T======",
+    "TTTT,,,,,TFTT,=,,,,=TT...~~~~~.....,,T,,.....T=..T...T,,.T#####T",
+    "TT..,,,,,TT.T,=,,,,=.T.....~~....,,T,,,,,,...T=T..TT,,,T,T#####T",
+    "TT..,,,,,TTTT,=,,,,=TT.....~~.T..,T,,,,,,,....=TT..,,,,,T,#####T",
+    "T.FTT,,,TT.TT.=,,,,======..~~....,,,,,,,,T....=....TTT,,T,#####T",
+    "TTT.TTT...TTTT=TT..TT...=..~~T.....,,,,,.....T=.,,T,,,T,,######T",
+    "TTTTTTT.=======TT.T....F=..~~........T........=,TTT,T,,,T######T",
+    "T.TT.T..T...F.TTT.......===BB==================,,TT,,,,TT######T",
+    "T..TTTTT.....TT..TT.T......~~......T...........,.,,,T,...######T",
+    "TTTT.T..TTT....TTT.T.T....T~~........F..T.......,TT,TTT..######T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTT~~TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+  ],
+  "batiments": [
+    {"x": 5, "y": 3, "l": 5, "h": 4, "genre": "soin", "nom": "Maison de soin", "toit": "#b8483e"},
+    {"x": 18, "y": 3, "l": 5, "h": 4, "genre": "boutique1", "nom": "Boutique", "toit": "#3f6fb0"},
+    {"x": 4, "y": 11, "l": 5, "h": 4, "genre": "chapelle", "nom": "Chapelle", "toit": "#8a6fb8"},
+    {"x": 17, "y": 11, "l": 5, "h": 4, "genre": "maison", "nom": "Maison de l'ancien", "toit": "#7a8a4a"}
+  ],
+  "habitants": [
+    {
+      "x": 11,
+      "y": 8,
+      "apparence": "villageois",
+      "direction": "bas",
+      "dialogue": [
+        "C'est ici que tout commence !",
+        "Appuyez sur Échap pour ouvrir le menu : équipe, objets, magie et sauvegarde."
+      ]
+    },
+    {
+      "x": 17,
+      "y": 10,
+      "apparence": "villageoise",
+      "direction": "bas",
+      "dialogue": [
+        "La maison au toit rouge, c'est celle de la guérisseuse. Elle soigne gratuitement.",
+        "La boutique, juste à côté, vend potions, éthers et lanternes."
+      ]
+    },
+    {"x": 21, "y": 15, "apparence": "ancien", "direction": "bas", "evenement": "ancien"},
+    {"x": 7, "y": 15, "apparence": "maelle", "direction": "bas", "evenement": "maelle", "cache_si": "maelle"},
+    {
+      "x": 25,
+      "y": 8,
+      "apparence": "enfant",
+      "direction": "gauche",
+      "dialogue": [
+        "Les créatures affaiblies se capturent beaucoup plus facilement avec une lanterne !",
+        "Moi, j'attends qu'il leur reste presque plus de PV."
+      ]
+    },
+    {"x": 25, "y": 38, "apparence": "pecheur", "direction": "droite", "evenement": "pecheur"},
+    {"x": 55, "y": 31, "apparence": "garde", "direction": "bas", "evenement": "garde_col"},
+    {
+      "x": 44,
+      "y": 8,
+      "apparence": "villageois",
+      "direction": "gauche",
+      "dialogue": [
+        "Les sorts coûtent des PM.",
+        "Un éther en rend 25, et la guérisseuse les restaure aussi."
+      ]
+    },
+    {
+      "x": 41,
+      "y": 24,
+      "apparence": "villageoise",
+      "direction": "bas",
+      "dialogue": [
+        "Contre les créatures d'Ombre, la magie de Lumière fait des merveilles.",
+        "La mage de la chapelle en connaît un rayon…"
+      ]
+    },
+    {
+      "x": 45,
+      "y": 8,
+      "apparence": "braconnier",
+      "direction": "bas",
+      "evenement": "braconnier",
+      "vue": 2,
+      "vue_jusqua": "braconnier"
+    }
+  ],
+  "coffres": [
+    {"x": 7, "y": 39, "objet": "herbe", "quantite": 1},
+    {"x": 17, "y": 24, "objet": "potion", "quantite": 2},
+    {"x": 61, "y": 2, "objet": "ether", "quantite": 1},
+    {"x": 55, "y": 21, "objet": "plume", "quantite": 1},
+    {"x": 48, "y": 41, "objet": "lanterne", "quantite": 3},
+    {"x": 3, "y": 24, "or": 80},
+    {"x": 31, "y": 41, "objet": "potion", "quantite": 3},
+    {"x": 2, "y": 2, "objet": "lanterne", "quantite": 2}
+  ],
+  "panneaux": [
+    {"x": 12, "y": 10, "texte": "Village de Brumeval. Maison de soin au nord-ouest, boutique au nord-est."},
+    {"x": 11, "y": 19, "texte": "Bois Murmurant. On dit qu'une herbe lunaire pousse tout au fond des bois."},
+    {"x": 55, "y": 33, "texte": "Col de la Brume. Au-delà s'étendent les Monts Cendrelune."},
+    {"x": 34, "y": 10, "texte": "Pont du Ru-Clair."},
+    {"x": 1, "y": 8, "texte": "Forêt de Sylve-Noire, à l'ouest."}
+  ],
+  "passages": [
+    {"x": 63, "y": 32, "vers": "cendrelune", "tx": 1, "ty": 33, "direction": "droite"},
+    {"x": 63, "y": 33, "vers": "cendrelune", "tx": 1, "ty": 34, "direction": "droite"},
+    {
+      "x": 0,
+      "y": 9,
+      "vers": "sylvenoire",
+      "tx": 54,
+      "ty": 20,
+      "direction": "gauche",
+      "condition": {"drapeau": "boss1"},
+      "message": "Un garde forestier vous arrête : « La forêt est trop dangereuse tant que la brume rôde. Revenez quand le gardien du col sera vaincu. »"
+    }
+  ],
+  "zones": [
+    {
+      "x": 25,
+      "y": 1,
+      "l": 16,
+      "h": 18,
+      "niveau_min": 2,
+      "niveau_max": 4,
+      "max_ennemis": 2,
+      "creatures": ["piafouine", "mulotin", "champichou"]
+    },
+    {
+      "x": 41,
+      "y": 1,
+      "l": 22,
+      "h": 18,
+      "niveau_min": 4,
+      "niveau_max": 7,
+      "max_ennemis": 3,
+      "creatures": ["lucioline", "grenouillon", "piafouine", "champichou"]
+    },
+    {
+      "x": 1,
+      "y": 19,
+      "l": 22,
+      "h": 24,
+      "niveau_min": 4,
+      "niveau_max": 7,
+      "max_ennemis": 3,
+      "creatures": ["champichou", "mulotin", "lucioline", "piafouine"]
+    },
+    {
+      "x": 41,
+      "y": 19,
+      "l": 17,
+      "h": 24,
+      "niveau_min": 7,
+      "niveau_max": 10,
+      "max_ennemis": 3,
+      "creatures": ["rocaillou", "grenouillon", "lucioline", "brumelin"]
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "l": 64,
+      "h": 44,
+      "niveau_min": 3,
+      "niveau_max": 6,
+      "max_ennemis": 2,
+      "creatures": ["piafouine", "grenouillon", "mulotin"]
+    }
+  ],
+  "boss": [{"x": 59, "y": 32, "espece": "sylvarque", "drapeau": "boss1", "evenement": "sylvarque"}]
+}

@@ -1,0 +1,58 @@
+{
+  "id": "grotte",
+  "nom": "Grotte des Échos",
+  "theme": "grotte",
+  "ambiance": {"effet": "obscurite"},
+  "taux_rencontre": 0.08,
+  "tuiles": [
+    "################################",
+    "################################",
+    "########cc#################cccc#",
+    "########cc#####cccccccccccccccc#",
+    "########cc#####cccccccccccccccc#",
+    "########ccccccccc##########cccc#",
+    "########ccccccccc##########cccx#",
+    "###############cc###############",
+    "###############cc###############",
+    "###############cc###############",
+    "####ccccccccccccc###############",
+    "####ccccccccccccc###############",
+    "####cc#########cc###############",
+    "####cc#########cccccccccc#######",
+    "####cc#########cccccccccc#######",
+    "####cc#########cc######cc#######",
+    "####cc#########cc######cc#######",
+    "####cc#########cc######cc#######",
+    "##xccccc######cccc#####cc#######",
+    "##cccccc######cccc###cccccc#####",
+    "##cccccc######cccc###cccccc#####",
+    "##cccccx######xccc###xccccx#####",
+    "###############k################",
+    "################################"
+  ],
+  "batiments": [],
+  "habitants": [
+    {"x": 29, "y": 4, "apparence": "isra", "direction": "gauche", "evenement": "isra", "cache_si": "isra"}
+  ],
+  "coffres": [
+    {"x": 3, "y": 20, "objet": "superpotion", "quantite": 1},
+    {"x": 25, "y": 20, "objet": "ether", "quantite": 2},
+    {"x": 28, "y": 6, "objet": "plume", "quantite": 1},
+    {"x": 8, "y": 2, "or": 150}
+  ],
+  "panneaux": [{"x": 13, "y": 19, "texte": "Grotte des Échos. Le sol tremble sous vos pieds."}],
+  "passages": [{"x": 15, "y": 22, "vers": "cendrelune", "tx": 44, "ty": 30, "direction": "bas"}],
+  "zones": [
+    {
+      "x": 0,
+      "y": 0,
+      "l": 32,
+      "h": 24,
+      "niveau_min": 13,
+      "niveau_max": 16,
+      "max_ennemis": 3,
+      "creatures": ["galetor", "fumerole", "glaconnet", "tisonnel"]
+    }
+  ],
+  "boss": [{"x": 24, "y": 3, "espece": "golem", "drapeau": "golem", "evenement": "golem"}]
+}

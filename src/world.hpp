@@ -1,6 +1,6 @@
 // Description des cartes : tuiles, bâtiments, habitants, coffres, panneaux,
 // passages vers d'autres cartes, zones de rencontres et boss.
-// Les cartes elles-mêmes sont dans world_data.cpp.
+// Chaque carte est un fichier data/cartes/<id>.json.
 //
 // Légende des tuiles :
 //   .  herbe            ,  hautes herbes (rencontres)   =  chemin
@@ -9,28 +9,38 @@
 //   #  falaise / paroi  a  cendre                       g  herbes sèches (rencontres)
 //   l  lave             m  montagne                     b  pont de pierre
 //   k  entrée de grotte c  sol de grotte (rencontres)   x  cristal
-//   d  arbre mort
+//   d  arbre mort       i  glace                        n  neige profonde (rencontres)
+//   z  marais (rencontres)
+// Le dessin de certaines tuiles dépend du thème de la carte (arbres, chemins, parois).
 #pragma once
 #include <string>
 #include <vector>
 
-enum class Theme { Vallee, Cendres, Grotte };
+#include "store.hpp"
+
+enum class Theme { Vallee, Cendres, Grotte, Foret, Neige };
+Theme themeOf(const std::string& s);
+const char* themeName(Theme t);
 
 struct Building {
   int x, y, w, h;
-  std::string kind;  // "soin", "boutique1", "boutique2", "forge", "chapelle", "maison", "auberge"
+  std::string kind;   // apparence : "soin", "boutique1", "boutique2", "forge", "chapelle", "maison", "auberge"
   std::string name;
   unsigned roof;
+  std::string event;  // événement lancé à la porte (par défaut : le genre)
   int doorX() const { return x + w / 2; }
   int doorY() const { return y + h - 1; }
 };
 
 struct Npc {
   int x, y;
-  int look;            // apparence (voir data.cpp)
-  int dir;             // 0 haut, 1 bas, 2 gauche, 3 droite
-  std::string script;  // vide = simple dialogue ; sinon comportement spécial (game.cpp)
-  std::vector<std::string> lines;
+  int look;                        // apparence (data/apparences.json)
+  int dir;                         // 0 haut, 1 bas, 2 gauche, 3 droite
+  std::string event;               // vide = simple dialogue ; sinon événement (data/evenements.json)
+  std::vector<std::string> lines;  // dialogue simple
+  std::string hideIf;              // caché quand ce drapeau est posé
+  int sight = 0;                   // dresseur : repère le joueur à cette distance devant lui
+  std::string sightUntil;          // … tant que ce drapeau n'est pas posé
 };
 
 struct Chest {
@@ -46,7 +56,17 @@ struct Sign {
 
 struct Warp {
   int x, y;
-  int map, tx, ty, dir;
+  std::string map;  // carte d'arrivée
+  int tx, ty, dir;
+  Json condition;   // facultatif : conditions pour passer (comme « si » des événements)
+  std::string message;  // affiché si le passage est fermé
+};
+
+// Zone déclencheuse : lance un événement quand le joueur y entre
+struct Trigger {
+  int x, y, w, h;
+  std::string event;
+  std::string until;  // ne se déclenche plus quand ce drapeau est posé
 };
 
 struct Zone {
@@ -57,13 +77,17 @@ struct Zone {
 
 struct BossSpot {
   int x, y;           // coin haut-gauche d'un bloc de 2x2 tuiles
-  std::string id;     // "sylvarque", "golem", "ignarok"
-  std::string flag;   // drapeau posé quand il est vaincu
+  std::string id;     // espèce affichée sur la carte
+  std::string flag;   // drapeau posé quand il est vaincu (le boss disparaît)
+  std::string event;  // événement lancé quand on lui parle
 };
 
 struct MapDef {
-  std::string name;
+  std::string id, name;
   Theme theme;
+  float encounterRate = 0;  // 0 = valeur des règles
+  std::string ambiance;     // "", "brume", "cendres", "obscurite"
+  std::string ambianceUntil;  // l'ambiance disparaît quand ce drapeau est posé
   std::vector<std::string> rows;
   std::vector<Building> buildings;
   std::vector<Npc> npcs;
@@ -72,10 +96,19 @@ struct MapDef {
   std::vector<Warp> warps;
   std::vector<Zone> zones;
   std::vector<BossSpot> bosses;
+  std::vector<Trigger> triggers;
   int w() const { return rows.empty() ? 0 : (int)rows[0].size(); }
   int h() const { return (int)rows.size(); }
 };
 
-const std::vector<MapDef>& maps();
+std::vector<MapDef>& maps();
+int mapIndex(const std::string& id);  // -1 si inconnue
+void loadMaps();
+Json mapToJson(const MapDef& m);
+MapDef mapFromJson(const Json& j);
+void saveMap(const MapDef& m);  // écrit data/cartes/<id>.json
+// Vérifie les références (espèces, objets, cartes) et que tout est accessible à pied.
+std::vector<std::string> checkMaps();
+
 bool tileWalkable(char c);
 bool tileEncounter(char c);
