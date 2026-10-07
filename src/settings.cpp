@@ -8,6 +8,7 @@
 #include "events.hpp"
 #include "game.hpp"
 #include "sprites.hpp"
+#include "tactics.hpp"
 #include "world.hpp"
 
 static const Color WHITE = rgb(0xffffff), GOLD = rgb(0xffd34d), MUTED = rgb(0xaab3d8), GREEN = rgb(0x7dffa8), RED = rgb(0xff8a7a);
@@ -46,7 +47,8 @@ static void reorderKeys(Json& o, const std::vector<std::string>& order) {
   o = r;
 }
 static const std::vector<std::string> SPECIES_KEYS = {"id", "nom", "type", "types", "base", "precision", "esquive", "critique", "resistances",
-                                                      "immunites", "humain", "apparence", "role", "forme", "couleurs", "apprend", "limite"};
+                                                      "immunites", "humain", "apparence", "role", "forme", "couleurs", "apprend", "limite",
+                                                      "tactiques"};
 static const std::vector<std::string> MOVE_KEYS = {"id", "nom", "type", "genre", "cible", "puissance", "cout", "precision", "critique", "effet",
                                                    "effets", "description"};
 static const std::vector<std::string> ITEM_KEYS = {"id", "nom", "description", "prix", "combat", "menu", "important", "soin_pv", "soin_pm",
@@ -259,9 +261,29 @@ void Settings::menuRules(int sel) {
                             200));
   m.items.push_back({"Objets de départ", ">", "", true, [this] { menuStartItems(); }});
   m.items.push_back({"Butin des combats", ">", "Objets trouvés après un combat (un seul au plus).", true, [this] { menuDrops(); }});
+  {
+    int row = (int)m.items.size();
+    m.items.push_back({"Tactiques de départ", ">", "Règles de combat données à chaque nouveau membre (sauf espèce qui a les siennes).", true,
+                       [this, row] {
+                         tactics_ = rules().tactics;
+                         TacticsTarget t;
+                         t.list = &tactics_;
+                         t.title = "Tactiques de départ";
+                         t.slots = std::max(rules().tacticMax, (int)tactics_.size());
+                         t.changed = [this] {
+                           change(DF_RULES, [this](Json& d) {
+                             Json list = Json::array();
+                             for (auto& t : tactics_) list.push_back(tacticToJson(t));
+                             d["tactiques"]["defaut"] = list;
+                           });
+                         };
+                         t.closed = [this, row] { menuRules(row); };
+                         openTacticsEditor(G, t);
+                       }});
+  }
   static const std::pair<const char*, const char*> GROUPS[] = {{"equipe", "Équipe"},   {"rencontres", "Rencontres"},   {"combat", "Combat"},
                                                                {"etats", "États"},     {"recompenses", "Récompenses"}, {"capture", "Capture"},
-                                                               {"formules", "Formules des statistiques"}};
+                                                               {"formules", "Formules des statistiques"}, {"tactiques", "Tactiques"}};
   std::string group;
   for (auto& f : ruleFields(editRules())) {
     if (group != f.group) {

@@ -55,6 +55,7 @@ class Game {
   std::map<std::string, int> items;    // inventaire
   int gold = 0;
   std::set<std::string> flags;         // progression (boss vaincus, recrues, coffres…)
+  bool tacticsAuto = true;             // mode auto : les tactiques jouent en combat (touche Tab)
 
   void startBattle(BattleSetup setup, std::function<void(BattleResult)> after);
   void startBattle(std::vector<FighterP> foes, bool boss, std::function<void(BattleResult)> after, bool canFlee = true,
@@ -104,6 +105,7 @@ class Game {
   void starterMenu();
   void newGame(const std::string& starter);
   void pauseMenu();
+  void tacticsMenu(int sel = 0);
   void teamMenu();
   void itemMenu();
   void magicMenu();
@@ -113,6 +115,7 @@ class Game {
   void execAction(const Json& a);
 
   // Sauvegarde
+  std::string saveName_ = "sauvegarde.txt";  // le mode test utilise un autre fichier
   std::string savePath() const;
   bool saveGame();
   bool loadGame();

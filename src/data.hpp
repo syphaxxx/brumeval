@@ -77,6 +77,16 @@ struct Look {
   int weapon;  // 0 aucune, 1 épée, 2 bâton, 3 hache, 4 dague, 5 arc, 6 lance
 };
 
+// Tactique (comme les « gambits » de Final Fantasy XII) : « si condition, alors action ».
+// Les conditions et actions automatiques sont décrites dans tactics.hpp.
+struct Tactic {
+  bool on = true;
+  std::string cond;  // identifiant de la condition (« allie_pv_moins »…)
+  int value = 0;     // seuil de la condition, si elle en a un (PV < valeur %)
+  enum class Act { Auto, Move, Item } kind = Act::Auto;
+  std::string act;   // action automatique (« soin »…), technique ou objet
+};
+
 // Statistiques de base d'une espèce (multipliées par le niveau)
 enum Base { B_HP, B_MP, B_ATK, B_DEF, B_MAG, B_RES, B_SPD, N_BASE };
 
@@ -95,6 +105,7 @@ struct Species {
   bool human = false;
   int look = 0;       // index dans allLooks() pour les humains
   std::string role;   // courte description
+  std::vector<Tactic> tactics;  // tactiques de départ propres (vide : celles des règles)
 };
 
 struct ItemDef {
@@ -138,6 +149,9 @@ struct Rules {
   // Formules des statistiques
   int hpDiv = 20, hpPerLvl = 1, hpBase = 10, mpDiv = 30, mpBase = 5, statDiv = 25, statBase = 5, xpBase = 10;
   double xpSquare = 1.2;
+  // Tactiques : lignes disponibles (départ, une de plus tous les n niveaux, maximum) et règles de départ
+  int tacticStart = 4, tacticPerLvl = 6, tacticMax = 10;
+  std::vector<Tactic> tactics;
 };
 struct RuleField {
   const char* group;  // section de regles.json
@@ -203,6 +217,9 @@ struct Fighter {
   Status status = Status::None;
   int statusTurns = 0;
   std::array<int, N_STAGES> stage{};
+  // Tactiques (alliés) : jouées en combat quand le mode auto est actif
+  std::vector<Tactic> tactics;
+  bool tacticsOn = true;
 
   const Species& S() const { return species(sp); }
   std::string name() const;

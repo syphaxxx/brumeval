@@ -23,6 +23,9 @@ struct ArenaSlot {
   int lvl = 10;
   float hpMult = 1;   // multiplicateur de PV (comme « pv » dans les événements)
   bool boss = false;
+  bool customTactics = false;  // tactiques modifiées (sinon celles de départ de l'espèce)
+  std::vector<Tactic> tactics;
+  bool tacticsOn = true;
 };
 
 class Arena {
@@ -37,6 +40,7 @@ class Arena {
   std::array<ArenaSlot, 6> allies, foes;
   int theme = 0, simN = 20;
   bool withItems = true;
+  bool simTactics = true;  // simulations : les alliés suivent leurs tactiques (sinon l'IA de l'ordinateur)
   struct Results {
     int total = 0, wins = 0, losses = 0, timeouts = 0;
     double time = 0, hpLeft = 0;

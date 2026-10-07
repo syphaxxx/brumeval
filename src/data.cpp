@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include <unordered_map>
 
+#include "tactics.hpp"
+
 // ---------------------------------------------------------------------------
 // Contenu chargé depuis data/
 // ---------------------------------------------------------------------------
@@ -149,6 +151,9 @@ std::vector<RuleField> ruleFields(Rules& r) {
       I("formules", "stat_base", "Stats : base", r.statBase, 0, 100, 1),
       I("formules", "xp_base", "Expérience : base", r.xpBase, 0, 1000, 1),
       D("formules", "xp_carre", "Expérience : facteur niveau²", r.xpSquare, .1, 10, .1),
+      I("tactiques", "lignes_depart", "Lignes de tactiques au départ", r.tacticStart, 1, 20, 1),
+      I("tactiques", "niveaux_par_ligne", "Niveaux pour une ligne de plus", r.tacticPerLvl, 1, 50, 1),
+      I("tactiques", "lignes_max", "Lignes de tactiques au maximum", r.tacticMax, 1, 20, 1),
   };
 }
 
@@ -186,6 +191,8 @@ static void loadRules(const Json& j) {
   r.startEvent = jget<std::string>(d, "evenement", "");
   if (j.contains("recompenses"))
     for (auto& b : j["recompenses"].value("butin", Json::array())) r.drops.push_back({b.at("objet").get<std::string>(), b.at("chance").get<double>()});
+  if (j.contains("tactiques"))
+    for (auto& t : j["tactiques"].value("defaut", Json::array())) r.tactics.push_back(tacticFromJson(t));
   RULES = r;
 }
 
@@ -303,6 +310,7 @@ void rebuildData() {
     s.role = jget<std::string>(o, "role", "");
     for (auto& l : o.at("apprend")) s.learn.push_back({l.at(0).get<int>(), l.at(1).get<std::string>()});
     s.limit = jget<std::string>(o, "limite", "");  // vide : pas de Limite
+    for (auto& t : o.value("tactiques", Json::array())) s.tactics.push_back(tacticFromJson(t));
     return s;
   });
 
@@ -356,6 +364,7 @@ std::vector<std::string> checkData() {
     for (auto& st : s.immune)
       if (std::find(std::begin(STATUSES) + 1, std::end(STATUSES), st) == std::end(STATUSES))
         err.push_back(s.name + " : immunité à un état inconnu « " + st + " »");
+    for (auto& e : checkTactics(s.tactics, s.name)) err.push_back(e);
   }
   for (auto& t : TYPES)
     for (auto& st : t.immune)
@@ -372,6 +381,8 @@ std::vector<std::string> checkData() {
     if (!hasItem(id)) err.push_back("Objet de départ inconnu : " + id);
   for (auto& [id, c] : r.drops)
     if (!hasItem(id)) err.push_back("Butin inconnu : " + id);
+  for (auto& e : checkTactics(r.tactics, "Tactiques de départ")) err.push_back(e);
+  if (r.tacticMax < r.tacticStart) err.push_back("Tactiques : le maximum de lignes est plus petit que le départ");
   return err;
 }
 
@@ -459,6 +470,7 @@ FighterP makeFighter(const std::string& id, int lvl) {
   f->recalc();
   f->hp = f->mhp;
   f->mp = f->mmp;
+  f->tactics = f->S().tactics.empty() ? RULES.tactics : f->S().tactics;
   return f;
 }
 

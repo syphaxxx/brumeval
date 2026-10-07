@@ -11,8 +11,36 @@ pour agrandir l'équipe, quatre héros recrutables, deux régions et une grotte.
 |---|---|
 | Flèches ou ZQSD | Se déplacer, naviguer dans les menus |
 | Entrée ou Espace | Parler, valider, faire défiler les dialogues |
-| Échap | Annuler, ouvrir le menu (équipe, objets, magie, sauvegarde) |
+| Échap | Annuler, ouvrir le menu (équipe, tactiques, objets, magie, sauvegarde) |
+| Tab (en combat) | Mode auto : les tactiques jouent à votre place, ou vous reprenez la main |
 | F11 ou Alt+Entrée | Plein écran |
+
+## Tactiques (combat automatique)
+
+Comme les « gambits » de Final Fantasy XII, chaque membre de l'équipe a une
+liste de règles « condition → action » (menu Échap > **Tactiques**), par
+exemple :
+
+1. Allié : K.O. → Réanimation
+2. Allié : PV < 40 % → Meilleur soin
+3. Soi : Limite prête → Limite
+4. Ennemi : n'importe lequel → Meilleure attaque
+
+En combat, quand la jauge d'un membre est pleine et que le **mode auto** est
+actif (touche **Tab**, indiqué « Auto (Tab) » en bas de l'écran), la première
+règle possible, de haut en bas, est jouée toute seule. Si aucune ne l'est, le
+menu de commande s'ouvre comme d'habitude. Appuyer sur Tab pendant que le menu
+attend un ordre laisse les tactiques jouer ce tour.
+
+Les conditions visent un ennemi (le moins de PV, PV < x %, faible à l'action,
+sans l'effet, boss…), un allié (PV < x %, K.O., avec un état, PM < x %…) ou le
+membre lui-même. Les actions sont automatiques (meilleure attaque, attaque sans
+PM, meilleur soin, réanimation, guérison, Limite), une technique ou un sort
+précis, ou un objet du sac (potion, éther, lanterne de capture…). Chaque
+personnage a 4 lignes au départ, puis une de plus tous les 6 niveaux (10 au
+maximum). Une règle grise ne peut pas encore servir (sort pas encore appris),
+une règle orange ne marchera pas (par exemple une attaque avec une condition
+« Allié »).
 
 ## Installer et lancer sous Windows avec VS Code
 
@@ -44,9 +72,12 @@ Depuis l'écran titre, **Outils** donne accès à :
   renforts, décor), puis **Combattre !** pour jouer vous-même ou **Simuler**
   pour faire jouer des dizaines de combats à l'ordinateur et voir le taux de
   victoire. **Modèles…** reprend tous les combats de l'histoire et les zones de
-  rencontres ; **Journal** détaille le dernier combat coup par coup.
+  rencontres ; **Journal** détaille le dernier combat coup par coup. Chaque
+  allié a ses **Tactiques…**, et l'option **Alliés** choisit si les
+  simulations suivent les tactiques ou l'IA de l'ordinateur.
 - **Réglages** : modifiez depuis le jeu les règles (départ, rencontres, formules
-  de combat, états, récompenses, butin), les espèces (types, statistiques,
+  de combat, états, récompenses, butin, tactiques de départ et nombre de
+  lignes), les espèces (types, statistiques,
   résistances, immunités, techniques apprises), les techniques, la table des
   types et les objets. Les changements s'appliquent tout de suite : essayez-les
   avec **Tester dans l'Arène**, puis **Enregistrer** (ou **Tout annuler**).
@@ -96,3 +127,4 @@ l'équilibrage et enregistre des captures d'écran dans `captures/`.
   dialogues, règles) en fichiers JSON modifiables, lus à chaque démarrage. Voir
   `data/LISEZMOI.md`.
 - La sauvegarde est écrite dans `%APPDATA%\Brumeval\Brumeval\sauvegarde.txt`
+  (le mode test utilise `sauvegarde_test.txt` et l'efface à la fin)

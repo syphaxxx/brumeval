@@ -5,7 +5,7 @@ fichiers à chaque démarrage : modifiez-en un, relancez le jeu, et le changemen
 apparaît. Pas besoin de recompiler.
 
 Vous pouvez aussi tout modifier depuis le jeu (écran titre > Outils) :
-**Réglages** pour les règles, espèces, techniques, types et objets, **Éditeur
+**Réglages** pour les règles (dont les tactiques de départ), espèces, techniques, types et objets, **Éditeur
 de cartes** pour `cartes/`, **Éditeur d'histoire** pour `evenements.json`.
 
 Si un fichier contient une erreur, le jeu l'indique au démarrage (nom du fichier
@@ -19,7 +19,7 @@ toutes les références existent et que chaque lieu des cartes est accessible.
 | `especes.json` | Héros, créatures et boss : statistiques de base, techniques apprises |
 | `objets.json` | Objets : prix, effets (soin, PM, réanimation, capture) |
 | `apparences.json` | Couleurs et accessoires des personnages |
-| `regles.json` | Départ de la partie, rencontres, formules de combat, récompenses… |
+| `regles.json` | Départ de la partie, rencontres, formules de combat, récompenses, tactiques de départ… |
 | `evenements.json` | Dialogues et événements de l'histoire |
 | `cartes/*.json` | Une carte par fichier : tuiles, bâtiments, habitants, coffres… |
 
@@ -55,6 +55,37 @@ et `renforts`, une liste d'ennemis qui entrent un par un quand un adversaire
 tombe. Un habitant avec `"vue": 3` repère le joueur jusqu'à 3 cases devant lui
 et lance son événement tout seul, tant que le drapeau `vue_jusqua` n'est pas
 posé (voir le braconnier dans `cartes/vallee.json`).
+
+## Les tactiques (`regles.json`, section `tactiques`)
+
+Les tactiques sont les règles de combat automatiques de l'équipe (menu Échap >
+Tactiques, touche Tab en combat). `lignes_depart`, `niveaux_par_ligne` et
+`lignes_max` fixent le nombre de lignes de chaque membre selon son niveau.
+`defaut` est la liste donnée à chaque nouveau membre ; une espèce peut avoir la
+sienne (`"tactiques": [ … ]` dans `especes.json`). Une règle s'écrit :
+
+```json
+{"si": "allie_pv_moins", "valeur": 40, "faire": "soin"}
+```
+
+- `si` : la condition. Ennemis : `ennemi` (n'importe lequel : celui où l'action
+  fait le plus d'effet), `ennemi_pv_bas`, `ennemi_pv_haut`, `ennemi_pv_moins`,
+  `ennemi_pv_plus`, `ennemi_faible` (action super efficace), `ennemi_sans_effet`
+  (n'a pas encore l'état ou le malus), `ennemi_boss`, `ennemis_nombre`.
+  Alliés : `allie_pv_moins`, `allie_ko`, `allie_etat`, `allie_pm_moins`,
+  `allie_sans_effet` (n'a pas encore le bonus), `allie_chef`. Le membre
+  lui-même : `soi`, `soi_pv_moins`, `soi_pm_moins`, `soi_limite`,
+  `soi_sans_effet`.
+- `valeur` : le seuil, pour les conditions qui en ont un (PV ou PM en %, nombre
+  d'ennemis).
+- L'action, au choix : `"faire"` (`attaque`, `technique` = attaque sans PM,
+  `soin`, `reanimation`, `guerison`, `limite`), `"technique": "feu"` (une
+  technique ou un sort précis) ou `"objet": "potion"` (pris dans le sac).
+- `"active": false` garde la règle dans la liste sans la jouer.
+
+Une action qui vise un ennemi demande une condition « ennemi », un soin ou un
+objet de soin une condition « allié » ou « soi », et une réanimation la
+condition `allie_ko`. Le mode test signale les règles qui ne vont pas ensemble.
 
 ## Les cartes (`cartes/*.json`)
 

@@ -43,7 +43,8 @@ après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
 |---|---|
 | `main.cpp` | Fenêtre SDL, boucle principale, plein écran (F11), option `--test`, chargement de data/ |
 | `game.hpp/.cpp` | Écran titre, exploration, menus (pause, équipe, objets, magie, boutique), sauvegarde, dessin de la carte |
-| `battle.hpp/.cpp` | Combat ATB : jauges, menus, dégâts physiques/magiques, précision, critiques, états, bonus/malus, renforts ennemis, IA (`think`), journal (`log`), capture, Limites, victoire |
+| `battle.hpp/.cpp` | Combat ATB : jauges, menus, dégâts physiques/magiques, précision, critiques, états, bonus/malus, renforts ennemis, IA (`think`), tactiques des alliés (`tacticPlan`, touche Tab), journal (`log`), capture, Limites, victoire |
+| `tactics.hpp/.cpp` | Tactiques (gambits) : catalogue des conditions et actions automatiques, lecture/écriture JSON, vérifications (`tacticProblem`), lignes selon le niveau (`tacticSlots`), éditeur réutilisable (`openTacticsEditor`) |
 | `store.hpp/.cpp` | Dossier data/ : recherche, lecture et écriture JSON (nlohmann/json, `Json` = `ordered_json`) |
 | `data.hpp/.cpp` | Chargement des types, techniques, espèces, objets, apparences et règles (`Rules`, `ruleFields()`), formules de stats et d'expérience |
 | `world.hpp/.cpp` | Structures des cartes (thèmes, passages avec condition, zones déclencheuses), lecture/écriture de data/cartes/, vérification d'accessibilité (`checkMaps`) |
@@ -71,7 +72,18 @@ après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
 - Progression : `Game::flags` (`boss1`, `golem`, `boss2`, `maelle`, `brann`,
   `isra`, `pecheur`, `coffre:<carte>:<index>`).
 - Sauvegarde : fichier texte `sauvegarde.txt` dans `SDL_GetPrefPath("Brumeval",
-  "Brumeval")` (sous Windows : `%APPDATA%\Brumeval\Brumeval\`).
+  "Brumeval")` (sous Windows : `%APPDATA%\Brumeval\Brumeval\`). Chaque ligne
+  `membre` est suivie de `tactiques` (interrupteur) et des lignes `tactique` du
+  membre ; `auto` garde le mode auto. Le mode test écrit dans
+  `sauvegarde_test.txt` (`saveName_`) pour ne jamais toucher à la vraie partie.
+- Tactiques (tactics.hpp) : `Fighter::tactics` (liste de `Tactic` : condition,
+  seuil, action automatique / technique / objet), `Fighter::tacticsOn`,
+  `Game::tacticsAuto` (touche Tab en combat). Quand la jauge d'un allié est
+  pleine, `Battle::tacticTurn` joue la première règle possible
+  (`Battle::tacticPlan` choisit la cible et la technique) ; sinon le menu de
+  commande s'ouvre. Ajouter une condition : l'entrée dans `CONDS`
+  (tactics.cpp) et son test dans `holds` (battle.cpp). Les simulations
+  (`autoPlay`) n'utilisent les tactiques que si `simTactics` est vrai.
 - Police : `gfx.cpp`, fonction `buildFont()`. Un caractère absent s'affiche « ? » ;
   ajoute son dessin si tu utilises un nouveau symbole.
 - Données : tout le contenu est dans `data/` (voir `data/LISEZMOI.md`), chargé au
@@ -160,6 +172,9 @@ normaux, bandits, chevaliers et duels gagnés à ~95-100 %, Sylvarque ≈ 80 %
 (N.11), Ronce-Mère ≈ 55-70 % (N.16), Ignarok ≈ 30-45 % (N.22), Givrecorne
 ≈ 35 % (N.30, avec Sélène). Un boss trop facile vient souvent de sa lenteur ou
 d'acolytes trop faibles, pas de ses PV : regarder le journal (BRUMEVAL_JOURNAL).
+Avec les tactiques de départ (mêmes combats, `simTactics`), l'équipe soigne
+plus tôt que l'IA : Sylvarque ≈ 85 %, Ignarok ≈ 45 %, mais Givrecorne ≈ 90 %
+(Lior, Maëlle et Sélène savent tous soigner).
 Le Vent fait ×4 à Plante/Poison et le Métal ×4 à Glace/Roche : la Ronce-Mère et
 le Givrecorne ont une résistance propre pour ramener cela à ×2. La Lumière fait ×2 à l'Ombre mais l'Ombre est neutre sur la Lumière :
 sinon Maëlle, ciblée en priorité par l'IA, tombe dès le début contre Sylvarque.
