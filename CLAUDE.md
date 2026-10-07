@@ -37,6 +37,13 @@ enregistre des captures `.bmp` dans `captures/` et simule des combats pour
 l'équilibrage. Il doit finir par « TOUS LES TESTS PASSENT ». Regarde les captures
 après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
 
+Chaque image dessinée pendant les tests est vérifiée (`Gfx::checkLayout`,
+gfx.cpp) : texte qui sort de sa fenêtre, textes qui se chevauchent, fenêtre
+posée de travers sur une autre ou hors de l'écran, libellé de menu coupé. Les
+problèmes sont listés avec la dernière capture (« après 05_equipe : … »). Le
+« tour des menus » de test.cpp ouvre en plus la plupart des menus avec les noms
+les plus longs : y ajouter tout nouvel écran.
+
 ## Architecture (src/)
 
 | Fichier | Rôle |
@@ -67,6 +74,12 @@ après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
   scènes et les tours de combat.
 - `MenuStack` : pile de menus ; chaque `MenuItem` a un libellé, une valeur à
   droite, un texte d'aide, une action et un rappel `hover` (ex. curseur de cible).
+  Un menu du dessous n'est pas dessiné si un sous-menu le chevauche sans être
+  bien à l'intérieur (4 px de marge). Un libellé trop long est coupé avec « … »
+  (signalé par le mode test, sauf `MenuItem::shrink`). Les panneaux à droite
+  (Réglages, Arène) se cachent quand `menus.maxRight()` dépasse 158. Une
+  fenêtre modale sur fond assombri appelle `g.newLayer()`. Largeur d'un
+  caractère : 6 px ; un libellé commence 13 px après le bord du menu.
 - Équipe : `Game::team` (8 membres maximum par capture, les humains s'ajoutent
   toujours). Les 3 premiers membres valides combattent (`Game::front()`).
 - Progression : `Game::flags` (`boss1`, `golem`, `boss2`, `maelle`, `brann`,
@@ -117,7 +130,7 @@ après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
 - Éditeurs : chacun a son mode (`Mode::Arena`, `Settings`, `Editor`, `Story`),
   ses menus dans `MenuStack` et ne modifie que la mémoire jusqu'à
   « Enregistrer ». Les tests en jeu (`editorTest_`, `storyTest_`) ajoutent
-  « Retour à l'éditeur » au menu de pause. Les identifiants créés passent par
+  « Fin du test » au menu de pause. Les identifiants créés passent par
   `makeSlug` (minuscules, sans accents, tirets bas).
 - Saisie de texte : `Game::editText(titre, texte, max, rappel)` (SDL_TEXTINPUT
   transmis par main.cpp à `Game::onText`). Pendant la saisie, `onKey` ne sert

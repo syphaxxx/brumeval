@@ -106,16 +106,19 @@ void Game::onText(const char* utf8) {
   if (utf8Len(textValue_) > textMax_) textValue_ = utf8Prefix(textValue_, textMax_);
 }
 void Game::drawTextEdit() {
-  int lines = std::max(1, (int)Gfx::wrap(textValue_ + "_", 288).size());
-  int h = 40 + lines * 11;
+  auto title = Gfx::wrap(textTitle_, 284);
+  int lines = std::max(1, (int)Gfx::wrap(textValue_ + "_", 284).size());
+  int top = 8 + 11 * (int)title.size();  // place du titre
+  int h = top + 22 + lines * 11;
   int y = 120 - h / 2;
   g.rect(0, 0, SCREEN_W, SCREEN_H, rgb(0x000010, 120));
+  g.newLayer();  // fenêtre modale : le reste est assombri derrière
   g.window(10, y, 300, h);
-  g.text(18, y + 5, textTitle_, rgb(0xffd34d));
-  auto wl = Gfx::wrap(textValue_, 288);
+  for (size_t i = 0; i < title.size(); i++) g.text(18, y + 5 + i * 11, title[i], rgb(0xffd34d));
+  auto wl = Gfx::wrap(textValue_, 284);
   if (wl.empty()) wl.push_back("");
-  for (size_t i = 0; i < wl.size(); i++) g.text(18, y + 19 + i * 11, wl[i], WHITE);
-  if (int(time * 3) % 2 == 0) g.rect(18 + Gfx::textW(wl.back()), y + 19 + (wl.size() - 1) * 11 + 1, 5, 9, rgb(0xffd34d));
+  for (size_t i = 0; i < wl.size(); i++) g.text(18, y + top + i * 11, wl[i], WHITE);
+  if (int(time * 3) % 2 == 0) g.rect(18 + Gfx::textW(wl.back()), y + top + (wl.size() - 1) * 11 + 1, 5, 9, rgb(0xffd34d));
   g.text(160, y + h - 13, "Entrée : valider · Échap : annuler · " + std::to_string(utf8Len(textValue_)) + "/" + std::to_string(textMax_),
          MUTED, 1);
 }
@@ -426,7 +429,7 @@ void Game::ask(const std::string& q, std::function<void()> yes, std::function<vo
   askText_ = q;
   sc.halt();
   Menu m;
-  m.x = 236, m.y = 128, m.w = 76, m.rows = 2;
+  m.x = 236, m.y = 152, m.w = 76, m.rows = 2;  // sous la fenêtre de la question (y 84 à 150)
   auto close = [this] {
     askText_.clear();
     menus.clear();
@@ -453,7 +456,7 @@ void Game::titleMenu() {
   editorTest_ = storyTest_ = false;
   menus.clear();
   Menu m;
-  m.x = 110, m.y = 140, m.w = 100, m.rows = 4, m.cancelable = false;
+  m.x = 102, m.y = 140, m.w = 116, m.rows = 4, m.cancelable = false;
   m.items.push_back({"Nouvelle partie", "", "", true, [this] { starterMenu(); }});
   bool can = saveExists();
   m.items.push_back({"Continuer", "", "", can, [this] {
@@ -531,12 +534,12 @@ void Game::pauseMenu() {
   Menu m;
   m.x = 8, m.y = 8, m.w = 100, m.rows = 8;
   if (editorTest_ && editor_)
-    m.items.push_back({"Retour à l'éditeur", "", "Revenir à l'éditeur de cartes, à l'endroit où vous êtes.", true, [this] {
+    m.items.push_back({"Fin du test", "", "Revenir à l'éditeur de cartes, à l'endroit où vous êtes.", true, [this] {
                          panelMode_ = 0;
                          editor_->returnFromTest();
                        }});
   if (storyTest_ && story_)
-    m.items.push_back({"Retour à l'éditeur", "", "Revenir à l'éditeur d'histoire.", true, [this] {
+    m.items.push_back({"Fin du test", "", "Revenir à l'éditeur d'histoire.", true, [this] {
                          panelMode_ = 0;
                          story_->returnFromTest();
                        }});
@@ -644,10 +647,15 @@ void Game::pickMember(const std::string& title, std::function<bool(const Fighter
 
 void Game::itemMenu() { itemMenuAt(0); }
 void Game::itemMenuAt(int sel) {
+  panelMode_ = 0;  // la liste prend la place du résumé de l'équipe
   Menu m;
   m.title = "Objets  ·  " + std::to_string(gold) + " or";
   m.x = 8, m.y = 8, m.w = 170, m.rows = 7;
   m.sel = sel;
+  m.onCancel = [this] {
+    panelMode_ = 1;
+    menus.pop();
+  };
   int idx = 0;
   for (auto& d : allItems()) {
     int n = items.count(d.id) ? items[d.id] : 0;
@@ -679,9 +687,14 @@ void Game::itemMenuAt(int sel) {
 }
 
 void Game::magicMenu() {
+  panelMode_ = 0;  // la liste prend la place du résumé de l'équipe
   Menu m;
   m.title = "Qui lance le sort ?";
   m.x = 8, m.y = 8, m.w = 170, m.rows = 8;
+  m.onCancel = [this] {
+    panelMode_ = 1;
+    menus.pop();
+  };
   for (auto& f : team) {
     FighterP caster = f;
     std::vector<std::string> heal;
@@ -727,6 +740,7 @@ void Game::magicMenu() {
 
 void Game::shopMenu(const std::vector<std::string>& stock) { shopMenuAt(stock, 0); }
 void Game::shopMenuAt(const std::vector<std::string>& stock, int sel) {
+  panelMode_ = 0;
   Menu m;
   m.title = "Boutique  ·  " + std::to_string(gold) + " or";
   m.x = 60, m.y = 20, m.w = 200, m.rows = 7;
@@ -895,13 +909,14 @@ void Game::drawTitle() {
   drawCreature(g, "gouttelin", 232, 124, 1, false, time + .5f);
   if (menus.active()) {
     menus.draw(g, time);
-    std::string h = menus.help();
-    if (!h.empty()) {
-      g.window(20, 214, 280, 20);
-      g.text(160, 218, h, WHITE, 1);
+    auto lines = Gfx::wrap(menus.help(), 284);
+    if (!lines.empty() && !lines[0].empty()) {
+      int h = 9 + 11 * (int)lines.size();
+      g.window(14, 236 - h, 292, h);
+      for (size_t i = 0; i < lines.size(); i++) g.text(160, 236 - h + 4 + i * 11, lines[i], WHITE, 1);
     }
   }
-  g.text(316, 230, "v1.0", rgb(0x8a92b8), 2, false);
+  if (!menus.active() || menus.help().empty()) g.text(316, 230, "v1.0", rgb(0x8a92b8), 2, false);
 }
 
 void Game::drawMap() {
@@ -988,7 +1003,7 @@ void Game::drawMap() {
     }
   }
   // Bandeau du nom de la région
-  if (banner > 0) {
+  if (banner > 0 && !menus.active()) {  // le nom de la région s'efface quand un menu s'ouvre
     float a = std::min(1.f, banner / .5f);
     g.alpha = a;
     int w = Gfx::textW(bannerText) + 24;
@@ -1041,14 +1056,15 @@ void Game::drawDialogue() {
 
 void Game::drawTeamPanel(int x, int y, int sel) {
   if (sel < 0) {
-    int h = 22 + (int)team.size() * 22 + 14;
+    int rowH = team.size() > 6 ? 20 : 22;  // plus serré avec une grande équipe, pour laisser la place à l'aide
+    int h = 22 + (int)team.size() * rowH + 6;
     g.window(x, y, 320 - x - 8, h);
     g.text(x + 8, y + 5, "Équipe", GOLD);
     g.text(320 - 16, y + 5, std::to_string(gold) + " or", WHITE, 2);
     auto fr = front();
     for (size_t i = 0; i < team.size(); i++) {
       auto& f = team[i];
-      float ry = y + 20 + i * 22;
+      float ry = y + 20 + i * rowH;
       bool isFront = std::find(fr.begin(), fr.end(), f) != fr.end();
       g.text(x + 8, ry, f->name(), f->alive() ? WHITE : rgb(0xff7b6b));
       g.text(x + 86, ry, "N." + std::to_string(f->lvl), MUTED);
@@ -1071,7 +1087,7 @@ void Game::drawTeamPanel(int x, int y, int sel) {
   g.text(x + w - 8, y + 6, "Niveau " + std::to_string(f.lvl), WHITE, 2);
   std::string role = f.S().human ? f.S().role : std::string("Créature de type ") + typeName(f.S().type);
   g.text(x + 8, y + 19, role.size() > 40 ? typeName(f.S().type) : role, MUTED);
-  if (f.S().human) drawHuman(g, look(f.S().look), x + w - 40, y + 24, 2, DOWN, 0, false);
+  if (f.S().human) drawHuman(g, look(f.S().look), x + w - 40, y + 32, 2, DOWN, 0, false);  // sous la ligne du rôle
   else drawCreature(g, f.sp, x + w - 26, y + 48, .9f, false, time);
   int ly = y + 34;
   auto row = [&](const std::string& a, const std::string& b) {

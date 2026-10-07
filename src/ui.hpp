@@ -80,6 +80,7 @@ struct MenuItem {
   std::function<std::string()> rightFn;  // texte de droite recalculé à chaque image
   bool header = false;                   // titre de section : le curseur le saute
   uint32_t color = 0;                    // couleur du libellé (0 : blanc)
+  bool shrink = false;                   // libellé coupé avec « … » s'il manque de place (sinon le mode test le signale)
 };
 // Titre de section dans un menu
 inline MenuItem menuHeader(const std::string& label) {
@@ -105,6 +106,7 @@ class MenuStack {
   bool active() const { return !st_.empty(); }
   size_t depth() const { return st_.size(); }
   Menu& top() { return st_.back(); }
+  int maxRight() const;  // bord droit le plus à droite des menus ouverts (0 si aucun)
   void update(Input& in);
   void draw(Gfx& g, float t) const;
   std::string help() const;

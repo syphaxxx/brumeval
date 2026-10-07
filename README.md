@@ -88,7 +88,7 @@ Depuis l'écran titre, **Outils** donne accès à :
   remplissage. **Tab** passe aux calques Objets (habitants, coffres, panneaux,
   passages, boss, bâtiments) et Zones (rencontres, zones déclencheuses).
   **Échap** ouvre le menu : propriétés et taille de la carte, nouvelle carte,
-  vérification, **Tester ici** (Échap > Retour à l'éditeur), enregistrer
+  vérification, **Tester ici** (Échap > Fin du test), enregistrer
   (Ctrl+S). Ctrl+Z / Ctrl+Y annulent et rétablissent.
 
 - **Éditeur d'histoire** : tous les événements (dialogues, scènes, boss,

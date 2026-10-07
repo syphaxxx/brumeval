@@ -458,7 +458,7 @@ void StoryEditor::editEvent(const std::string& id, int sel) {
   m.x = 4, m.y = 16, m.w = 312, m.rows = 13;
   m.sel = sel;
   if (ev.contains("pages")) {
-    m.items.push_back(menuHeader("Pages : la première dont la condition est vraie est jouée"));
+    m.items.push_back(menuHeader("Pages (la première vraie est jouée)"));
     for (size_t p = 0; p < ev["pages"].size(); p++) {
       const Json& pg = ev["pages"][p];
       std::string cond = pg.contains("si") ? "si " + conditionSummary(pg["si"]) : "sinon (toujours)";
@@ -662,7 +662,7 @@ void StoryEditor::editAction(const std::string& ptr, int sel) {
   for (auto& [id, ev] : events().items()) evIds.push_back(id);
   int row = 0;
   if (k == "dire") {
-    m.items.push_back(textField(ptr, "texte", "Texte", "Message ({heros}, {compagnon} et {or} sont remplacés)", 300, row));
+    m.items.push_back(textField(ptr, "texte", "Texte", "Message : {heros}, {compagnon} et {or} sont remplacés par leur valeur", 300, row));
     num("Défilement auto (s)", "auto", 0, .5, 0, 10, false, "0 : le joueur appuie sur Entrée pour continuer.", true);
   } else if (k == "donner" || k == "retirer") {
     cycleIds("Objet", "objet", itemIds, itemNames);

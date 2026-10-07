@@ -7,7 +7,7 @@
 // Souris : clic gauche = peindre / modifier, clic droit = pipette (tuiles),
 // molette = tuile suivante. Clavier : flèches = curseur, Entrée = peindre /
 // modifier, Tab = calque suivant, Échap = menu, Ctrl+Z / Ctrl+Y = annuler / rétablir.
-// « Tester ici » lance le jeu depuis le curseur ; Échap > « Retour à l'éditeur ».
+// « Tester ici » lance le jeu depuis le curseur ; Échap > « Fin du test ».
 #pragma once
 #include <functional>
 #include <map>

@@ -1012,9 +1012,9 @@ void MapEditor::menuMain(int sel) {
     return p.empty() ? std::string("ok") : std::to_string(p.size()) + " problème(s)";
   };
   m.items.push_back(chk);
-  m.items.push_back({"Tester ici", "", "Jouer depuis le curseur avec une équipe de test. Échap > « Retour à l'éditeur ».", true, [this] { testHere(); }});
-  m.items.push_back(numItem("Niveau de l'équipe de test", "", [this] { return (double)testLevel_; }, [this](double v) { testLevel_ = (int)v; }, 1,
-                            1, 100));
+  m.items.push_back({"Tester ici", "", "Jouer depuis le curseur avec une équipe de test. Échap > « Fin du test ».", true, [this] { testHere(); }});
+  m.items.push_back(numItem("Niveau du test", "Niveau de l'équipe utilisée par « Tester ici ».", [this] { return (double)testLevel_; },
+                            [this](double v) { testLevel_ = (int)v; }, 1, 1, 100));
   m.items.push_back({"Annuler (Ctrl+Z)", "", "", !undo_.empty(), [this] {
                        undo();
                        menuMain(10);

@@ -222,16 +222,46 @@ void MenuStack::update(Input& in) {
   }
 }
 
+// Cadre d'un menu à l'écran
+static void menuBox(const Menu& m, int& h, int& th) {
+  th = m.title.empty() ? 0 : 13;
+  h = std::min(m.rows, (int)m.items.size()) * 12 + 8 + th;
+}
+// Texte coupé avec « … » s'il est plus large que w pixels (le mode test le signale, sauf si c'est prévu)
+static std::string fit(Gfx& g, const std::string& s, int w, bool planned = false) {
+  if (Gfx::textW(s) <= w) return s;
+  if (g.checkLayout && !planned) g.layoutIssue("texte coupé dans un menu : « " + s + " »");
+  return utf8Prefix(s, std::max(0, w / 6 - 1)) + "…";
+}
+
+int MenuStack::maxRight() const {
+  int r = 0;
+  for (auto& m : st_) r = std::max(r, m.x + m.w);
+  return r;
+}
+
 void MenuStack::draw(Gfx& g, float t) const {
   for (size_t k = 0; k < st_.size(); k++) {
     const Menu& m = st_[k];
     bool top = k + 1 == st_.size();
+    int h, th;
+    menuBox(m, h, th);
+    // Un menu ouvert par-dessus qui n'est pas bien à l'intérieur de celui-ci le cache entièrement,
+    // plutôt que d'en laisser dépasser des morceaux
+    bool hidden = false;
+    for (size_t j = k + 1; j < st_.size() && !hidden; j++) {
+      const Menu& o = st_[j];
+      int oh, oth;
+      menuBox(o, oh, oth);
+      bool meet = o.x < m.x + m.w && m.x < o.x + o.w && o.y < m.y + h && m.y < o.y + oh;
+      bool inside = o.x >= m.x + 4 && o.y >= m.y + 4 && o.x + o.w <= m.x + m.w - 4 && o.y + oh <= m.y + h - 4;
+      hidden = meet && !inside;
+    }
+    if (hidden) continue;
     int shown = std::min(m.rows, (int)m.items.size());
-    int th = m.title.empty() ? 0 : 13;
-    int h = shown * 12 + 8 + th;
     g.window(m.x, m.y, m.w, h);
     if (!m.title.empty()) {
-      g.text(m.x + 6, m.y + 3, m.title, rgb(0xffd34d));
+      g.text(m.x + 6, m.y + 3, fit(g, m.title, m.w - 12), rgb(0xffd34d));
       g.rect(m.x + 4, m.y + 14, m.w - 8, 1, rgb(0x8090c8, 140));
     }
     for (int i = 0; i < shown; i++) {
@@ -239,13 +269,15 @@ void MenuStack::draw(Gfx& g, float t) const {
       const MenuItem& it = m.items[idx];
       float y = m.y + 4 + th + i * 12;
       if (it.header) {
-        g.text(m.x + 6, y, it.label, rgb(0xffd34d));
-        g.rect(m.x + 8 + Gfx::textW(it.label), y + 5, m.w - 16 - Gfx::textW(it.label), 1, rgb(0x8090c8, 140));
+        std::string label = fit(g, it.label, m.w - 12);
+        g.text(m.x + 6, y, label, rgb(0xffd34d));
+        g.rect(m.x + 8 + Gfx::textW(label), y + 5, m.w - 16 - Gfx::textW(label), 1, rgb(0x8090c8, 140));
         continue;
       }
       Color c = !it.enabled ? rgb(0x8a92b8) : it.color ? rgb(it.color) : rgb(0xffffff);
-      g.text(m.x + 13, y, it.label, c);
       std::string right = it.rightFn ? it.rightFn() : it.right;
+      int rw = right.empty() ? 0 : Gfx::textW(right) + 6;
+      g.text(m.x + 13, y, fit(g, it.label, m.w - 19 - rw, it.shrink), c);
       if (!right.empty()) g.text(m.x + m.w - 6, y, right, it.enabled ? (it.adjust ? rgb(0xffe066) : rgb(0xd8def2)) : rgb(0x8a92b8), 2);
       if (idx == m.sel) {
         if (top) g.cursor(m.x + 4 + (int(t * 4) % 2), y + 1);

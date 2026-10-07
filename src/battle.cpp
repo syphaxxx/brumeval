@@ -249,7 +249,7 @@ void Battle::pickFoe(const std::string& title, std::function<std::string(const F
                      bool creaturesOnly) {
   Menu t;
   t.title = title;
-  t.x = 4, t.y = 94, t.w = 150, t.rows = 3;
+  t.x = 4, t.y = 94, t.w = 166, t.rows = 3;  // assez large pour « Chevalier du givre »
   t.onCancel = [this] {
     cursor = nullptr;
     G.menus.pop();
@@ -990,17 +990,19 @@ void Battle::draw() {
     g.window(4, 2, 312, 7 + 11 * (int)lines.size());
     for (size_t i = 0; i < lines.size(); i++) g.text(160, 5 + i * 11, lines[i], WHITE, 1);
   }
-  // Fenêtre de gauche : noms des ennemis (et renforts restants)
-  g.window(4, 168, 96, 70);
-  int row = 0;
-  for (auto& f : foes) {
-    if (!f->alive() || row > 3) continue;
-    g.text(10, 173 + row * 12, utf8Prefix(f->name(), f->status != Status::None ? 11 : 14),
-           f->status != Status::None ? rgb(statusColor(f->status)) : WHITE);
-    if (f->status != Status::None) g.text(94, 173 + row * 12, statusTag(f->status), rgb(statusColor(f->status)), 2);
-    row++;
+  // Fenêtre de gauche : noms des ennemis (et renforts restants), cachée par le menu de commande
+  if (!G.menus.active()) {
+    g.window(4, 168, 96, 70);
+    int row = 0;
+    for (auto& f : foes) {
+      if (!f->alive() || row > 3) continue;
+      g.text(10, 173 + row * 12, utf8Prefix(f->name(), f->status != Status::None ? 10 : 14),
+             f->status != Status::None ? rgb(statusColor(f->status)) : WHITE);
+      if (f->status != Status::None) g.text(94, 173 + row * 12, statusTag(f->status), rgb(statusColor(f->status)), 2);
+      row++;
+    }
+    if (!reserve.empty()) g.text(10, 222, "Renforts : " + std::to_string(reserve.size()), GREY);
   }
-  if (!reserve.empty()) g.text(10, 222, "Renforts : " + std::to_string(reserve.size()), GREY);
   // Fenêtre d'état de l'équipe
   g.window(102, 168, 214, 70);
   Color lab = rgb(0xaab3d8);
