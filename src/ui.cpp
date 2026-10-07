@@ -243,7 +243,7 @@ void MenuStack::draw(Gfx& g, float t) const {
         g.rect(m.x + 8 + Gfx::textW(it.label), y + 5, m.w - 16 - Gfx::textW(it.label), 1, rgb(0x8090c8, 140));
         continue;
       }
-      Color c = it.enabled ? rgb(0xffffff) : rgb(0x8a92b8);
+      Color c = !it.enabled ? rgb(0x8a92b8) : it.color ? rgb(it.color) : rgb(0xffffff);
       g.text(m.x + 13, y, it.label, c);
       std::string right = it.rightFn ? it.rightFn() : it.right;
       if (!right.empty()) g.text(m.x + m.w - 6, y, right, it.enabled ? (it.adjust ? rgb(0xffe066) : rgb(0xd8def2)) : rgb(0x8a92b8), 2);

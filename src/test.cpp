@@ -15,9 +15,12 @@
 #include "settings.hpp"
 #include "sprites.hpp"
 #include "storyedit.hpp"
+#include "tactics.hpp"
 
 int Game::selfTest(SDL_Surface* target, const std::string& out) {
   std::filesystem::create_directories(out);
+  saveName_ = "sauvegarde_test.txt";  // ne jamais toucher à la vraie sauvegarde du joueur
+  tacticsAuto = false;                 // les combats des tests passent par les menus (les tactiques ont leurs tests)
   int fails = 0;
   auto check = [&](bool ok, const std::string& what) {
     std::printf("%s %s\n", ok ? "[ok]    " : "[ÉCHEC] ", what.c_str());
@@ -718,9 +721,156 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     titleMenu();
   }
 
+  // --- Tactiques (règles de combat automatiques) ---
+  {
+    auto selectLabel = [&](const std::string& start) {
+      auto& it = menus.top().items;
+      for (size_t k = 0; k < it.size(); k++)
+        if (!it[k].header && it[k].label.rfind(start, 0) == 0) {
+          menus.top().sel = (int)k;
+          return true;
+        }
+      return false;
+    };
+    check(rules().tactics.size() == 4 && tacticSlots(5) == 4 && tacticSlots(12) == 6 && tacticSlots(200) == rules().tacticMax &&
+              makeFighter("braisenard", 5)->tactics.size() == 4,
+          "tactiques : règles de départ, lignes selon le niveau");
+    team = {makeFighter("lior", 20), makeFighter("maelle", 20), makeFighter("isra", 20)};
+    FighterP lior = team[0], maelle = team[1], isra = team[2];
+    items = {{"potion", 3}};
+    flags.clear();
+    sc.clear();
+    menus.clear();
+    mode = Mode::Map;
+    changeMap(mi("vallee"), 30, 12, DOWN);
+    tacticsAuto = false;
+    startBattle({makeFighter("ronceau", 18), makeFighter("gouttelin", 18)}, false, nullptr);
+    if (battle_) {
+      Battle& B = *battle_;
+      Battle::Plan p;
+      lior->hp = lior->mhp / 5;
+      bool heal = B.tacticPlan(maelle, p) && p.move == "soin" && p.targets.size() == 1 && p.targets[0] == lior;
+      lior->hp = 0;
+      bool revive = B.tacticPlan(maelle, p) && p.move == "reveil" && p.targets[0] == lior;
+      lior->hp = lior->mhp;
+      check(heal && revive, "tactiques : Maëlle soigne Lior blessé, puis le relève quand il est K.O.");
+      isra->tactics = {Tactic{true, "ennemi_faible", 0, Tactic::Act::Auto, "attaque"}};
+      bool weak = B.tacticPlan(isra, p) && std::any_of(p.targets.begin(), p.targets.end(), [&](const FighterP& t) {
+                    return moveEff(moveInfo(p.move), t->S()) > 1;
+                  });
+      check(weak, "tactiques : « Ennemi : faible à l'action » choisit une attaque super efficace (" + (p.move.empty() ? "?" : p.move) + ")");
+      lior->tactics = {Tactic{true, "allie_pv_moins", 50, Tactic::Act::Item, "potion"}};
+      maelle->hp = maelle->mhp * 3 / 10;
+      bool potion = B.tacticPlan(lior, p) && p.item == "potion" && p.targets[0] == maelle;
+      lior->tactics[0].on = false;
+      bool off = !B.tacticPlan(lior, p);
+      lior->tactics = {Tactic{true, "allie_pv_moins", 50, Tactic::Act::Auto, "attaque"}};  // attaque sur un allié : impossible
+      bool wrong = !B.tacticPlan(lior, p) && !tacticProblem(lior->tactics[0], nullptr).empty();
+      maelle->hp = maelle->mhp;
+      check(potion && off && wrong, "tactiques : objet du sac, règle désactivée, règle impossible sautée");
+      for (auto& f : team) f->tactics = defaultTactics(f->S());
+      // Le menu de commande attend un ordre : Tab active le mode auto et joue ce tour
+      for (int i = 0; i < 1500 && !menus.active(); i++) frame();
+      bool waiting = menus.active();
+      onKey(SDL_SCANCODE_TAB, true, false);
+      frame();
+      check(waiting && tacticsAuto && !menus.active(), "tactiques : Tab en combat active le mode auto et joue le tour en attente");
+      run(.4f);
+      snap("54_combat_auto");
+      bool menu = false;
+      for (int i = 0; i < 60 * 300 && mode == Mode::Battle; i++) {
+        frame();
+        menu = menu || menus.active();
+      }
+      check(mode == Mode::Map && !menu, "tactiques : le combat se joue tout seul en mode auto, sans ouvrir de menu");
+    }
+    // Éditeur des tactiques : menu de pause > Tactiques > Lior
+    skipScript();
+    menus.clear();
+    sc.clear();
+    in.menu = true;
+    frame();
+    bool inMenu = selectLabel("Tactiques");
+    in.confirm = true;
+    frame();
+    run(.1f);
+    snap("55_tactiques_membres");
+    menus.top().sel = 2;  // Lior
+    in.confirm = true;
+    frame();
+    run(.1f);
+    snap("56_tactiques_regles");
+    size_t n0 = lior->tactics.size();
+    menus.top().sel = 2 + (int)n0;  // première ligne libre
+    in.confirm = true;
+    frame();
+    bool found = selectLabel("Soi : PV");
+    run(.1f);
+    snap("57_tactiques_condition");
+    in.confirm = true;
+    frame();
+    found = selectLabel("Potion") && found;
+    run(.1f);
+    snap("58_tactiques_action");
+    in.confirm = true;
+    frame();
+    bool added = lior->tactics.size() == n0 + 1 && lior->tactics.back().cond == "soi_pv_moins" && lior->tactics.back().act == "potion" &&
+                 lior->tactics.back().kind == Tactic::Act::Item && lior->tactics.back().value == 30;
+    check(inMenu && found && added, "tactiques : ajouter « Soi : PV < 30 % > Potion » depuis le menu de pause");
+    in.confirm = true;  // la nouvelle règle est sous le curseur
+    frame();
+    bool up = selectLabel("Monter");
+    in.confirm = true;
+    frame();
+    up = selectLabel("Active") && up;
+    in.confirm = true;
+    frame();
+    check(up && lior->tactics[n0 - 1].cond == "soi_pv_moins" && !lior->tactics[n0 - 1].on, "tactiques : monter puis désactiver une règle");
+    for (int i = 0; i < 5 && menus.active(); i++) {
+      in.cancel = true;
+      frame();
+    }
+    // Sauvegarde : les règles et le mode auto sont gardés
+    tacticsAuto = false;
+    bool saved = saveGame();
+    tacticsAuto = true;
+    team.clear();
+    bool loaded = loadGame();
+    check(saved && loaded && !tacticsAuto && team.size() == 3 && team[0]->tactics.size() == n0 + 1 && team[0]->tactics[n0 - 1].act == "potion" &&
+              !team[0]->tactics[n0 - 1].on && team[0]->tactics[n0 - 1].value == 30 && team[1]->tactics.size() == 4,
+          "tactiques : sauvegarde puis chargement des règles et du mode auto");
+    // Réglages : tactiques de départ
+    if (settings_) {
+      mode = Mode::Settings;
+      settings_->open();
+      settings_->menuRules(0);
+      bool opened = selectLabel("Tactiques de départ");
+      in.confirm = true;
+      frame();
+      menus.top().sel = 2;  // règle 2 : Allié : PV < 40 %
+      in.confirm = true;
+      frame();
+      run(.1f);
+      snap("59_reglages_tactiques");
+      opened = selectLabel("Seuil") && opened;
+      in.press[RIGHT] = true;
+      frame();
+      bool changed = rules().tactics.size() == 4 && rules().tactics[1].value == 50 && dataDoc(DF_RULES)["tactiques"]["defaut"][1]["valeur"] == 50 &&
+                     settings_->dirtyCount() == 1;
+      settings_->revert();
+      check(opened && changed && rules().tactics[1].value == 40, "réglages : seuil d'une tactique de départ, puis annulation");
+    }
+    menus.clear();
+    team.clear();
+    tacticsAuto = false;
+    mode = Mode::Title;
+    titleMenu();
+  }
+
   // --- Simulation d'équilibrage (IA simple, sans objets) ---
   std::printf("\nÉquilibrage (combats simulés, IA automatique) :\n");
-  auto simSetup = [&](const char* name, std::vector<std::pair<std::string, int>> party, std::function<BattleSetup()> mk, int n) {
+  auto simSetup = [&](const char* name, std::vector<std::pair<std::string, int>> party, std::function<BattleSetup()> mk, int n,
+                      bool tac = false) {
     int wins = 0;
     float total = 0;
     for (int k = 0; k < n; k++) {
@@ -736,6 +886,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         done = true;
       });
       battle_->autoPlay = true;
+      battle_->simTactics = tac;  // alliés guidés par leurs tactiques de départ plutôt que par l'IA
       float t = 0;
       std::vector<std::string> lastLog;
       const char* want = SDL_getenv("BRUMEVAL_JOURNAL");  // ex. BRUMEVAL_JOURNAL=Sylvarque
@@ -756,13 +907,13 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     std::printf("  %-34s %3d %% de victoires   %4.0f s en moyenne\n", name, wins * 100 / n, total / n);
   };
   auto sim = [&](const char* name, std::vector<std::pair<std::string, int>> party, std::function<std::vector<FighterP>()> mk, bool boss,
-                 int n) {
+                 int n, bool tac = false) {
     simSetup(name, party, [mk, boss] {
       BattleSetup s;
       s.foes = mk();
       s.boss = boss, s.canFlee = !boss, s.canCapture = !boss;
       return s;
-    }, n);
+    }, n, tac);
   };
   auto group = [](std::vector<std::string> pool, int lo, int hi, int n) {
     return [=] {
@@ -859,6 +1010,23 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     return s;
   }, 40);
 
+  std::printf("\nMêmes combats, alliés guidés par les tactiques de départ :\n");
+  sim("Bois (N.8 contre 3 x N.4-7)", {{"lior", 8}, {"maelle", 8}, {"braisenard", 8}},
+      group({"champichou", "mulotin", "lucioline", "piafouine"}, 4, 7, 3), false, 30, true);
+  sim("Boss Sylvarque (équipe N.11)", {{"lior", 11}, {"maelle", 11}, {"gouttelin", 11}},
+      [&] { return std::vector<FighterP>{makeFighter("brumelin", 9), bossF("sylvarque", 12, 3.5f), makeFighter("brumelin", 9)}; }, true, 30, true);
+  sim("Boss Ignarok (équipe N.22)", {{"lior", 22}, {"maelle", 22}, {"isra", 22}},
+      [&] { return std::vector<FighterP>{makeFighter("tisonnel", 19), bossF("ignarok", 23, 4), makeFighter("tisonnel", 19)}; }, true, 30, true);
+  simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}}, [&] {
+    BattleSetup s;
+    s.foes = {makeFighter("givrelin", 27), bossF("givrecorne", 31, 4), makeFighter("givrelin", 27)};
+    s.reserve = {makeFighter("cristallin", 26)};
+    s.boss = true;
+    s.canFlee = s.canCapture = false;
+    return s;
+  }, 30, true);
+
+  std::remove(savePath().c_str());
   std::printf("\n%s (%d échec%s)\n", fails ? "TESTS EN ÉCHEC" : "TOUS LES TESTS PASSENT", fails, fails > 1 ? "s" : "");
   return fails ? 1 : 0;
 }

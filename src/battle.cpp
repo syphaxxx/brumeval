@@ -6,6 +6,7 @@
 
 #include "game.hpp"
 #include "sprites.hpp"
+#include "tactics.hpp"
 
 static const Color WHITE = rgb(0xffffff), GOLD = rgb(0xffe066), GREY = rgb(0xb9c0de), GREEN = rgb(0x7dffa8), BLUE = rgb(0x8fd0ff),
                    RED = rgb(0xff8a7a);
@@ -97,6 +98,14 @@ void Battle::pop(const FighterP& f, const std::string& t, Color c) {
 // ---------------------------------------------------------------------------
 void Battle::update(float dt) {
   if (finished_) return;
+  // Tab : mode auto (tactiques) activé ou coupé
+  if (G.in.tab && !autoPlay && !ending_) {
+    G.in.tab = false;
+    G.tacticsAuto = !G.tacticsAuto;
+    toggledT_ = G.time;
+    // Un allié attendait un ordre : ses tactiques jouent ce tour à la place du joueur
+    if (G.tacticsAuto && G.menus.active() && !sc.busy() && actor && isAlly(actor) && tacticTurn(actor)) return;
+  }
   if (sc.busy()) {
     sc.update(dt, G.in);
     return;
@@ -119,6 +128,7 @@ void Battle::tickATB(float dt) {
       f->atb = 100;
       if (skipTurn(f)) return;
       if (isAlly(f)) {
+        if (tacticsActive() && tacticTurn(f)) return;
         if (autoPlay) autoCommand(f);
         else command(f);
       } else enemyTurn(f);
@@ -399,6 +409,178 @@ void Battle::enemyTurn(FighterP e) {
   actor = e;
   Plan p = think(e);
   useMove(e, p.move, p.targets);
+}
+
+// ---------------------------------------------------------------------------
+// Tactiques des alliés (voir tactics.hpp) : de haut en bas, la première règle
+// dont la condition vise quelqu'un et dont l'action est possible est jouée.
+// ---------------------------------------------------------------------------
+bool Battle::tacticsActive() const { return autoPlay ? simTactics : G.tacticsAuto; }
+
+bool Battle::tacticTurn(FighterP a) {
+  if (!a->tacticsOn) return false;
+  Plan p;
+  if (!tacticPlan(a, p)) return false;
+  actor = a;
+  log.push_back(a->name() + " : tactique " + std::to_string(p.tactic + 1));
+  if (!p.item.empty()) useItem(a, p.item, p.targets.at(0));
+  else useMove(a, p.move, p.targets, p.limit);
+  return true;
+}
+
+bool Battle::tacticPlan(FighterP a, Plan& out) {
+  struct Act {
+    const Move* m = nullptr;  // technique, sort ou Limite
+    std::string item;         // ou objet du sac
+    bool limit = false;
+  };
+  std::vector<std::string> known = a->techs();
+  for (auto& id : a->spells()) known.push_back(id);
+  auto liveFoes = alive(foes), liveAllies = alive(allies);
+  auto cures = [](const Move& m) {
+    for (auto& e : m.effects)
+      if (e.cure) return true;
+    return false;
+  };
+  // Dégâts attendus (comme Battle::think, sans hasard)
+  auto damage = [&](const Move& m, const FighterP& t) {
+    bool magic = m.kind == Kind::Magic;
+    float A = magic ? a->eMag() : a->eAtk(), D = std::max(1.f, magic ? t->eRes() : t->eDef());
+    float hit = std::clamp(m.acc / 100.f * a->acc / 100.f - (magic ? 0 : t->eva / 100.f), 0.f, 1.f);
+    return m.power * moveEff(m, t->S()) * (hasType(a->S(), m.type) ? float(rules().stab) : 1.f) * A / D * hit;
+  };
+  auto healed = [&](const Move& m, const FighterP& t) { return std::min(m.power * a->eMag() / 20 + 2, float(t->mhp - t->hp)); };
+  // La cible n'a pas encore l'effet de l'action (état, bonus/malus, soin)
+  auto lacks = [&](const Act& x, const FighterP& t) {
+    if (!x.m) {
+      if (x.item.empty()) return true;
+      const ItemDef& d = item(x.item);
+      return (d.healHp && t->hp < t->mhp) || (d.healMp && t->mp < t->mmp) || (d.cure && t->status != Status::None);
+    }
+    bool any = false;
+    for (auto& e : x.m->effects) {
+      const Fighter& w = e.self ? *a : *t;
+      any = true;
+      if (e.status != Status::None && w.status == Status::None && !immuneTo(w.S(), e.status)) return true;
+      if (e.stat >= 0 && (e.stages > 0 ? w.stage[e.stat] < e.stages : w.stage[e.stat] > e.stages)) return true;
+      if (e.cure && w.status != Status::None) return true;
+    }
+    return !any && (x.m->kind != Kind::Heal || t->hp < t->mhp);
+  };
+  auto holds = [&](const Tactic& tc, const Act& x, const FighterP& t) {
+    const std::string& c = tc.cond;
+    if (c == "ennemi_pv_moins" || c == "allie_pv_moins" || c == "soi_pv_moins") return t->hp * 100 < tc.value * t->mhp;
+    if (c == "ennemi_pv_plus") return t->hp * 100 > tc.value * t->mhp;
+    if (c == "allie_pm_moins" || c == "soi_pm_moins") return t->mmp > 0 && t->mp * 100 < tc.value * t->mmp;
+    if (c == "ennemi_faible") return x.m && x.m->damaging() && moveEff(*x.m, t->S()) > 1;
+    if (c == "ennemi_sans_effet" || c == "allie_sans_effet" || c == "soi_sans_effet") return lacks(x, t);
+    if (c == "ennemi_boss") return t->boss;
+    if (c == "ennemis_nombre") return (int)liveFoes.size() >= tc.value;
+    if (c == "allie_ko") return !t->alive();
+    if (c == "allie_etat") return t->status != Status::None;
+    if (c == "allie_chef") return !allies.empty() && t == allies[0];
+    if (c == "soi_limite") return a->lim >= 100;
+    return true;  // ennemi, ennemi_pv_bas, ennemi_pv_haut, soi
+  };
+  // L'action sert à quelque chose sur cette cible (pas de soin sur un allié en pleine forme…)
+  auto useful = [&](const Act& x, const FighterP& t) {
+    if (x.limit) return true;
+    if (x.m) {
+      switch (x.m->kind) {
+        case Kind::Physical:
+        case Kind::Magic: return moveEff(*x.m, t->S()) > 0;
+        case Kind::Heal: return (x.m->power > 0 && t->hp < t->mhp) || (cures(*x.m) && t->status != Status::None);
+        case Kind::Revive: return !t->alive();
+        default: return true;
+      }
+    }
+    const ItemDef& d = item(x.item);
+    if (d.capture > 0) return canCapture && !t->S().human && (int)G.team.size() < rules().maxTeam;
+    if (d.revive) return !t->alive();
+    return (d.healHp && t->hp < t->mhp) || (d.healMp && t->mp < t->mmp) || (d.cure && t->status != Status::None);
+  };
+  // Ordre des cibles imposé par la condition (le plus petit d'abord)
+  auto order = [&](const std::string& c, const FighterP& t) {
+    float hpR = float(t->hp) / t->mhp, mpR = t->mmp ? float(t->mp) / t->mmp : 1.f;
+    if (c == "ennemi_pv_bas") return float(t->hp);
+    if (c == "ennemi_pv_haut") return -float(t->hp);
+    if (c == "ennemi_pv_moins" || c == "allie_pv_moins") return hpR;
+    if (c == "ennemi_pv_plus") return -hpR;
+    if (c == "allie_pm_moins") return mpR;
+    return 0.f;
+  };
+
+  int n = std::min((int)a->tactics.size(), tacticSlots(a->lvl));
+  for (int i = 0; i < n; i++) {
+    const Tactic& tc = a->tactics[i];
+    const TacticCond* c = findTacticCond(tc.cond);
+    if (!tc.on || !c || !tacticProblem(tc, nullptr).empty()) continue;
+    // Actions possibles maintenant
+    std::vector<Act> acts;
+    auto canCast = [&](const std::string& id) {
+      return std::find(known.begin(), known.end(), id) != known.end() && a->mp >= moveInfo(id).cost;
+    };
+    if (tc.kind == Tactic::Act::Move) {
+      if (canCast(tc.act)) acts.push_back({&moveInfo(tc.act)});
+    } else if (tc.kind == Tactic::Act::Item) {
+      if (item(tc.act).battle && G.items.count(tc.act) && G.items[tc.act] > 0) acts.push_back({nullptr, tc.act});
+    } else if (tc.act == "limite") {
+      if (a->lim >= 100 && !a->S().limit.empty()) acts.push_back({&moveInfo(a->S().limit), "", true});
+    } else
+      for (auto& id : known) {
+        const Move& m = moveInfo(id);
+        if (a->mp < m.cost) continue;
+        const std::string& k = tc.act;
+        if ((k == "attaque" && m.damaging()) || (k == "technique" && m.damaging() && m.cost == 0) ||
+            (k == "soin" && m.kind == Kind::Heal && m.power > 0) || (k == "reanimation" && m.kind == Kind::Revive) ||
+            (k == "guerison" && m.kind == Kind::Heal && cures(m)))
+          acts.push_back({&m});
+      }
+    // Meilleure paire (action, cible) : d'abord l'ordre de la condition, puis l'effet de l'action
+    bool found = false;
+    float bestKey = 0, bestScore = 0;
+    for (auto& x : acts) {
+      bool revive = x.m ? x.m->kind == Kind::Revive : item(x.item).revive > 0;
+      Target tg = x.m ? x.m->target : Target::Ally;
+      bool multi = x.limit || tg == Target::AllEnemies || tg == Target::AllAllies;
+      std::vector<FighterP> pool;
+      if (c->side == TSide::Foe) pool = liveFoes;
+      else if (c->side == TSide::Self) {
+        if (!revive) pool = {a};
+      } else if (revive) {
+        for (auto& f : allies)
+          if (!f->alive()) pool.push_back(f);
+      } else pool = liveAllies;
+      bool onAllies = x.limit ? tg == Target::AllAllies : c->side != TSide::Foe;
+      auto& side = onAllies ? liveAllies : liveFoes;
+      for (auto& t : pool) {
+        if (!holds(tc, x, t) || !useful(x, t)) continue;
+        float key = order(tc.cond, t), score = 1;
+        if (x.m && x.m->damaging()) {
+          score = 0;
+          if (multi)
+            for (auto& f : side) score += damage(*x.m, f) * .8f;
+          else score = damage(*x.m, t);
+        } else if (x.m && x.m->kind == Kind::Heal && x.m->power > 0) {
+          score = 0;
+          if (multi)
+            for (auto& f : side) score += healed(*x.m, f);
+          else score = healed(*x.m, t);
+        }
+        if (x.m) score -= x.m->cost * .3f;
+        if (found && (key > bestKey + 1e-4f || (key > bestKey - 1e-4f && score <= bestScore))) continue;
+        found = true;
+        bestKey = key, bestScore = score;
+        out = Plan{};
+        out.tactic = i;
+        if (x.m) out.move = x.m->id, out.limit = x.limit;
+        else out.item = x.item;
+        out.targets = multi ? side : std::vector<FighterP>{t};
+      }
+    }
+    if (found) return true;
+  }
+  return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -826,6 +1008,9 @@ void Battle::draw() {
   g.text(238, 171, "PM", lab, 1);
   g.text(263, 171, "ATB", lab, 1);
   g.text(296, 171, "LIMITE", lab, 1);
+  // Mode auto : les tactiques jouent (touche Tab pour l'activer ou le couper)
+  bool flash = t - toggledT_ < 1.2f && int(t * 8) % 2;
+  g.text(108, 171, G.tacticsAuto ? "Auto (Tab)" : "Manuel (Tab)", flash ? WHITE : G.tacticsAuto ? GOLD : lab);
   for (size_t i = 0; i < allies.size(); i++) {
     auto& a = allies[i];
     float y = 184 + i * 17;

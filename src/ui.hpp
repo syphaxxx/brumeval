@@ -79,6 +79,7 @@ struct MenuItem {
   std::function<void(int)> adjust;
   std::function<std::string()> rightFn;  // texte de droite recalculé à chaque image
   bool header = false;                   // titre de section : le curseur le saute
+  uint32_t color = 0;                    // couleur du libellé (0 : blanc)
 };
 // Titre de section dans un menu
 inline MenuItem menuHeader(const std::string& label) {

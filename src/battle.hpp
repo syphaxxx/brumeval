@@ -1,5 +1,6 @@
 // Combat au tour par tour actif (jauges ATB), jusqu'à 3 alliés contre 1 à 3 ennemis.
-// Quand la jauge ATB d'un allié est pleine, le temps s'arrête et on choisit son action.
+// Quand la jauge ATB d'un allié est pleine, le temps s'arrête et on choisit son action,
+// sauf si le mode auto est actif (touche Tab) et qu'une de ses tactiques s'applique.
 // Les ennemis peuvent avoir des renforts qui entrent quand l'un d'eux tombe.
 #pragma once
 #include <functional>
@@ -34,7 +35,8 @@ class Battle {
   void draw();
   bool finished() const { return finished_; }
   BattleResult result() const { return result_; }
-  bool autoPlay = false;  // utilisé par le mode test
+  bool autoPlay = false;    // les alliés jouent tout seuls (mode test, simulations de l'Arène)
+  bool simTactics = false;  // avec autoPlay : les alliés suivent d'abord leurs tactiques
   std::vector<std::string> log;  // journal détaillé des actions (mode test, Arène)
 
  private:
@@ -44,11 +46,13 @@ class Battle {
     Color col;
     float t;
   };
-  // Action choisie par l'ordinateur (ennemis, ou alliés en mode automatique)
+  // Action choisie par l'ordinateur (ennemis, ou alliés en mode automatique) ou par une tactique
   struct Plan {
     std::string move;
     std::vector<FighterP> targets;
     bool limit = false;
+    std::string item;  // objet du sac à utiliser à la place d'une technique
+    int tactic = -1;   // numéro de la tactique qui a choisi cette action
   };
   Game& G;
   Script sc;
@@ -76,6 +80,11 @@ class Battle {
   void autoCommand(FighterP a);
   void enemyTurn(FighterP e);
   Plan think(FighterP a);
+  // Tactiques (tactics.hpp) : première règle possible de l'allié a, puis son exécution
+  bool tacticsActive() const;
+  bool tacticPlan(FighterP a, Plan& out);
+  bool tacticTurn(FighterP a);
+  float toggledT_ = -10;  // moment où le mode auto a été changé (touche Tab)
   void useMove(FighterP a, const std::string& mv, std::vector<FighterP> targets, bool isLimit = false);
   void useItem(FighterP a, const std::string& it, FighterP target);
   void swapIn(FighterP a, FighterP r);

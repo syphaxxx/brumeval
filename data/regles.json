@@ -57,5 +57,16 @@
     "stat_base": 5,
     "xp_base": 10,
     "xp_carre": 1.2
+  },
+  "tactiques": {
+    "lignes_depart": 4,
+    "niveaux_par_ligne": 6,
+    "lignes_max": 10,
+    "defaut": [
+      {"si": "allie_ko", "faire": "reanimation"},
+      {"si": "allie_pv_moins", "valeur": 40, "faire": "soin"},
+      {"si": "soi_limite", "faire": "limite"},
+      {"si": "ennemi", "faire": "attaque"}
+    ]
   }
 }

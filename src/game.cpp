@@ -11,6 +11,7 @@
 #include "settings.hpp"
 #include "storyedit.hpp"
 #include "sprites.hpp"
+#include "tactics.hpp"
 
 static const Color WHITE = rgb(0xffffff), GOLD = rgb(0xffd34d), MUTED = rgb(0xaab3d8);
 
@@ -528,7 +529,7 @@ void Game::newGame(const std::string& starter) {
 void Game::pauseMenu() {
   panelMode_ = 1;
   Menu m;
-  m.x = 8, m.y = 8, m.w = 100, m.rows = 7;
+  m.x = 8, m.y = 8, m.w = 100, m.rows = 8;
   if (editorTest_ && editor_)
     m.items.push_back({"Retour à l'éditeur", "", "Revenir à l'éditeur de cartes, à l'endroit où vous êtes.", true, [this] {
                          panelMode_ = 0;
@@ -540,6 +541,7 @@ void Game::pauseMenu() {
                          story_->returnFromTest();
                        }});
   m.items.push_back({"Équipe", "", "Ordre de combat et fiches.", true, [this] { teamMenu(); }});
+  m.items.push_back({"Tactiques", "", "Ce que chaque membre fait tout seul en combat (mode auto : touche Tab).", true, [this] { tacticsMenu(); }});
   m.items.push_back({"Objets", "", "Utiliser un objet.", true, [this] { itemMenu(); }});
   m.items.push_back({"Magie", "", "Lancer un sort de soin.", true, [this] { magicMenu(); }});
   m.items.push_back({"Sauvegarder", "", "", true, [this] { notice(saveGame() ? "Partie sauvegardée." : "Impossible de sauvegarder."); }});
@@ -547,6 +549,49 @@ void Game::pauseMenu() {
                        ask("Revenir à l'écran titre ? (pensez à sauvegarder)", [this] { titleMenu(); });
                      }});
   m.items.push_back({"Reprendre", "", "", true, [this] { menus.clear(); }});
+  menus.push(m);
+}
+
+// Tactiques : mode auto, puis la liste des règles de chaque membre (tactics.hpp)
+void Game::tacticsMenu(int sel) {
+  panelMode_ = 0;
+  Menu m;
+  m.title = "Tactiques";
+  m.x = 112, m.y = 8, m.w = 200, m.rows = 11;
+  m.sel = sel;
+  {
+    MenuItem it{"Mode auto en combat", "", "Oui : quand sa jauge est pleine, chaque membre joue sa première tactique possible. En combat, Tab l'active ou le coupe.",
+                true, [this] { tacticsAuto = !tacticsAuto; }};
+    it.adjust = [this](int) { tacticsAuto = !tacticsAuto; };
+    it.rightFn = [this] { return std::string(tacticsAuto ? "Oui" : "Non"); };
+    m.items.push_back(it);
+  }
+  m.items.push_back(menuHeader("Règles de chaque membre"));
+  for (size_t i = 0; i < team.size(); i++) {
+    FighterP f = team[i];
+    MenuItem it{f->name(), "", "Entrée : modifier ses tactiques (" + std::to_string(tacticSlots(f->lvl)) + " lignes au niveau " +
+                                   std::to_string(f->lvl) + ").",
+                true, [this, f] {
+                  TacticsTarget t;
+                  t.list = &f->tactics;
+                  t.on = &f->tacticsOn;
+                  t.fighter = f;
+                  t.title = "Tactiques de " + f->name();
+                  t.slots = tacticSlots(f->lvl);
+                  openTacticsEditor(*this, t);
+                }};
+    it.rightFn = [f] {
+      if (!f->tacticsOn) return std::string("manuel");
+      int n = 0, slots = tacticSlots(f->lvl);
+      for (int k = 0; k < (int)f->tactics.size() && k < slots; k++) n += f->tactics[k].on;
+      return std::to_string(n) + (n > 1 ? " règles" : " règle");
+    };
+    m.items.push_back(it);
+  }
+  m.onCancel = [this] {
+    panelMode_ = 1;
+    menus.pop();
+  };
   menus.push(m);
 }
 
@@ -715,7 +760,7 @@ std::string Game::savePath() const {
   char* p = SDL_GetPrefPath("Brumeval", "Brumeval");
   std::string s = p ? p : "";
   SDL_free(p);
-  return s + "sauvegarde.txt";
+  return s + saveName_;
 }
 bool Game::saveExists() const {
   std::ifstream f(savePath());
@@ -731,7 +776,13 @@ bool Game::saveGame() {
   for (auto& fl : flags) f << "drapeau " << fl << '\n';
   for (auto& [id, n] : items)
     if (n > 0) f << "objet " << id << ' ' << n << '\n';
-  for (auto& m : team) f << "membre " << m->sp << ' ' << m->lvl << ' ' << m->xp << ' ' << m->hp << ' ' << m->mp << ' ' << m->lim << '\n';
+  f << "auto " << tacticsAuto << '\n';
+  static const char KIND[] = {'a', 't', 'o'};  // action automatique, technique, objet
+  for (auto& m : team) {
+    f << "membre " << m->sp << ' ' << m->lvl << ' ' << m->xp << ' ' << m->hp << ' ' << m->mp << ' ' << m->lim << '\n';
+    f << "tactiques " << m->tacticsOn << '\n';
+    for (auto& t : m->tactics) f << "tactique " << t.on << ' ' << t.cond << ' ' << t.value << ' ' << KIND[(int)t.kind] << ' ' << t.act << '\n';
+  }
   return true;
 }
 bool Game::loadGame() {
@@ -780,6 +831,16 @@ bool Game::loadGame() {
       auto m = makeFighter(sp, lvl);
       m->xp = xp, m->hp = std::min(hp, m->mhp), m->mp = std::min(mp, m->mmp), m->lim = lim;
       team.push_back(m);
+    } else if (k == "auto") s >> tacticsAuto;
+    else if (k == "tactiques" && !team.empty()) {  // les anciennes sauvegardes gardent les tactiques de départ
+      s >> team.back()->tacticsOn;
+      team.back()->tactics.clear();
+    } else if (k == "tactique" && !team.empty()) {
+      Tactic t;
+      char kind = 'a';
+      s >> t.on >> t.cond >> t.value >> kind >> t.act;
+      t.kind = kind == 't' ? Tactic::Act::Move : kind == 'o' ? Tactic::Act::Item : Tactic::Act::Auto;
+      if (s && findTacticCond(t.cond)) team.back()->tactics.push_back(t);
     }
   }
   for (auto& v : oldChests) {

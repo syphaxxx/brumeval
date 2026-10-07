@@ -9,13 +9,14 @@
 #include "events.hpp"
 #include "game.hpp"
 #include "sprites.hpp"
+#include "tactics.hpp"
 
 static const Color WHITE = rgb(0xffffff), GOLD = rgb(0xffd34d), MUTED = rgb(0xaab3d8), GREEN = rgb(0x7dffa8), RED = rgb(0xff8a7a);
 static const char* THEME_NAMES[] = {"Vallée", "Cendres", "Grotte", "Forêt", "Neige"};
 static const int N_THEMES = 5;
 
 // Menu principal : position des éléments
-enum { I_ALLY = 1, I_FOE = 8, I_LEVEL = 15, I_THEME, I_ITEMS, I_SIM, I_FIGHT, I_PRESETS, I_LOG, I_QUIT };
+enum { I_ALLY = 1, I_FOE = 8, I_LEVEL = 15, I_THEME, I_ITEMS, I_AI, I_SIM, I_FIGHT, I_PRESETS, I_LOG, I_QUIT };
 
 // « 3 », « 2,5 »
 static std::string fmtMult(float v) {
@@ -150,6 +151,8 @@ FighterP Arena::make(const ArenaSlot& s) const {
   if (s.hpMult != 1.f) f->mhp = std::max(1, int(f->mhp * s.hpMult + 1e-4f));
   f->hp = f->mhp;
   f->boss = s.boss;
+  if (s.customTactics) f->tactics = s.tactics;
+  f->tacticsOn = s.tacticsOn;
   return f;
 }
 
@@ -234,6 +237,7 @@ void Arena::nextSim() {
   G.items.clear();  // l'ordinateur n'utilise pas d'objets
   sim_ = std::make_unique<Battle>(G, makeSetup(), Theme(theme));
   sim_->autoPlay = true;
+  sim_->simTactics = simTactics;
   simTime_ = 0;
 }
 
@@ -357,6 +361,14 @@ void Arena::menuMain(int sel) {
     m.items.push_back(it);
   }
   {
+    MenuItem it{"Alliés", "",
+                "Simulations : les alliés suivent leurs tactiques (allié > Tactiques…), ou l'IA de l'ordinateur. À la main : mode auto avec Tab.",
+                true, [this] { simTactics = !simTactics; }, unhover};
+    it.adjust = [this](int) { simTactics = !simTactics; };
+    it.rightFn = [this] { return std::string(simTactics ? "Tactiques" : "IA"); };
+    m.items.push_back(it);
+  }
+  {
     MenuItem it{"Simuler", "", "Gauche/droite : nombre de combats. Entrée : les deux camps jouent tout seuls (Échap pour arrêter).",
                 ready(), [this] { startSim(simN); }, unhover};
     it.adjust = [this](int d) { simN = std::clamp(simN + d * 10, 10, 500); };
@@ -404,6 +416,26 @@ void Arena::menuSlot(bool foe, int i, int sel) {
     b.adjust = [this, foe, i](int) { slot(foe, i).boss = !slot(foe, i).boss; };
     b.rightFn = [this, foe, i] { return std::string(slot(foe, i).boss ? "Oui" : "Non"); };
     m.items.push_back(b);
+  } else {
+    int row = (int)m.items.size();
+    MenuItem it{"Tactiques…", "", "Règles de combat de cet allié, pour les simulations et le mode auto.", !s.sp.empty(), [this, i, row] {
+                  ArenaSlot& s = allies[i];
+                  if (!s.customTactics) s.tactics = defaultTactics(species(s.sp));
+                  TacticsTarget t;
+                  t.list = &s.tactics;
+                  t.on = &s.tacticsOn;
+                  t.fighter = make(s);
+                  t.title = "Tactiques de " + species(s.sp).name + " (Arène)";
+                  t.slots = tacticSlots(s.lvl);
+                  t.changed = [this, i] { allies[i].customTactics = true; };
+                  t.closed = [this, i, row] {
+                    menuMain(I_ALLY + i);
+                    menuSlot(false, i, row);
+                  };
+                  openTacticsEditor(G, t);
+                }};
+    it.rightFn = [this, i] { return std::string(allies[i].customTactics ? "modifiées" : ""); };
+    m.items.push_back(it);
   }
   m.items.push_back({"Vider", "", "Libère cet emplacement.", !s.sp.empty(), [this, foe, i, refresh] {
                        slot(foe, i) = ArenaSlot{"", slot(foe, i).lvl};
@@ -431,6 +463,7 @@ void Arena::pickSpecies(bool foe, int i) {
       help += " · " + typesName(s);
       m.items.push_back({s.name, "", help, true,
                          [this, foe, i, id] {
+                           if (slot(foe, i).sp != id) slot(foe, i).customTactics = false, slot(foe, i).tactics.clear();
                            slot(foe, i).sp = id;
                            menuMain(foe ? I_FOE + i : I_ALLY + i);
                            menuSlot(foe, i, 0);

@@ -43,6 +43,7 @@ class Settings {
   float messageT_ = -10;
   std::array<Json, N_DATAFILES> saved_;  // contenu des fichiers au dernier chargement ou enregistrement
   std::vector<std::string> problems_;
+  std::vector<Tactic> tactics_;          // tactiques de départ en cours de modification
 
   void snapshot();
   bool dirty(DataFile f) const;
