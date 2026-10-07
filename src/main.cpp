@@ -38,14 +38,18 @@ static std::vector<std::string> problems() {
 }
 
 // ---------------------------------------------------------------------------
-// Affichage : le jeu est dessiné dans une image de 320x240, puis agrandie pour
-// remplir la fenêtre (ou l'écran) en gardant ses proportions, avec des bandes
-// noires sur les côtés si besoin. Pour des pixels nets et réguliers à n'importe
-// quelle taille, l'image est d'abord agrandie d'un nombre entier de fois (pixels
-// carrés), puis ajustée en douceur à la taille finale.
+// Affichage : le jeu est dessiné dans une image de 240 pixels de haut, aussi
+// large que la forme de la fenêtre le demande (320 pixels au moins ; les menus
+// restent dans la zone de 320 pixels du milieu, voir Gfx::ox), puis agrandie
+// pour remplir toute la fenêtre ou tout l'écran, sans bandes noires. Pour des
+// pixels nets et réguliers à n'importe quelle taille, l'image est d'abord
+// agrandie d'un nombre entier de fois (pixels carrés), puis ajustée en douceur
+// à la taille finale.
 // ---------------------------------------------------------------------------
 class Screen {
  public:
+  static constexpr int MAX_W = 576;  // écran encore plus large (plus de 2,4 fois sa hauteur) : bandes sur les côtés
+
   explicit Screen(SDL_Renderer* r) : r_(r) {}
   ~Screen() { reset(); }
   // Textures perdues (changement de carte graphique, mise en veille…) : elles seront recréées
@@ -55,23 +59,36 @@ class Screen {
     scene_ = big_ = nullptr;
     bigK_ = 0;
   }
-  // À appeler avant de dessiner une image du jeu
-  void begin() {
+  // À appeler avant de dessiner une image du jeu : choisit sa largeur selon la fenêtre
+  void begin(Gfx& g) {
+    SDL_SetRenderTarget(r_, nullptr);
+    int ow = 1, oh = 1;
+    SDL_GetRendererOutputSize(r_, &ow, &oh);
+    scale_ = std::max(.25f, oh / float(SCREEN_H));  // la hauteur remplit la fenêtre
+    int w = (int)std::ceil(ow / scale_ - 1e-3f);
+    if (w < SCREEN_W) {  // fenêtre plus étroite que le jeu : c'est la largeur qui remplit
+      w = SCREEN_W;
+      scale_ = std::max(.25f, ow / float(SCREEN_W));
+    }
+    w = std::min(w + (w & 1), MAX_W);  // largeur paire : la zone du milieu tombe sur un pixel entier
+    if (w != w_) {
+      reset();
+      w_ = w;
+    }
+    int dw = (int)std::lround(w_ * scale_), dh = (int)std::lround(SCREEN_H * scale_);
+    dst_ = {(ow - dw) / 2, (oh - dh) / 2, dw, dh};
     if (!scene_) {
-      scene_ = SDL_CreateTexture(r_, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, SCREEN_W, SCREEN_H);
+      scene_ = SDL_CreateTexture(r_, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, w_, SCREEN_H);
       SDL_SetTextureScaleMode(scene_, SDL_ScaleModeNearest);
       SDL_SetTextureBlendMode(scene_, SDL_BLENDMODE_NONE);
     }
+    g.fullW = w_;
+    g.ox = (w_ - SCREEN_W) / 2;
     SDL_SetRenderTarget(r_, scene_);
   }
   // Affiche l'image dessinée, agrandie à la taille de la fenêtre
   void present() {
     SDL_SetRenderTarget(r_, nullptr);
-    int ow = 1, oh = 1;
-    SDL_GetRendererOutputSize(r_, &ow, &oh);
-    scale_ = std::max(.25f, std::min(ow / float(SCREEN_W), oh / float(SCREEN_H)));
-    int dw = (int)std::lround(SCREEN_W * scale_), dh = (int)std::lround(SCREEN_H * scale_);
-    dst_ = {(ow - dw) / 2, (oh - dh) / 2, dw, dh};
     SDL_SetRenderDrawColor(r_, 0, 0, 0, 255);
     SDL_RenderClear(r_);
     SDL_Texture* src = scene_;
@@ -79,7 +96,7 @@ class Screen {
       int k = std::max(2, (int)std::ceil(scale_));
       if (bigK_ != k) {
         if (big_) SDL_DestroyTexture(big_);
-        big_ = SDL_CreateTexture(r_, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, SCREEN_W * k, SCREEN_H * k);
+        big_ = SDL_CreateTexture(r_, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, w_ * k, SCREEN_H * k);
         SDL_SetTextureScaleMode(big_, SDL_ScaleModeLinear);
         SDL_SetTextureBlendMode(big_, SDL_BLENDMODE_NONE);
         bigK_ = k;
@@ -94,35 +111,37 @@ class Screen {
     SDL_RenderCopy(r_, src, nullptr, &dst_);
     SDL_RenderPresent(r_);
   }
-  // Position dans la fenêtre -> position dans l'image du jeu (320x240)
-  void toGame(SDL_Window* w, int x, int y, int& gx, int& gy) const {
+  // Position dans la fenêtre -> position dans le jeu (la zone de 320x240 du milieu commence à 0)
+  void toGame(SDL_Window* w, const Gfx& g, int x, int y, int& gx, int& gy) const {
     int ww = 1, wh = 1, ow = 1, oh = 1;
     SDL_GetWindowSize(w, &ww, &wh);
     SDL_GetRendererOutputSize(r_, &ow, &oh);
     float px = x * float(ow) / std::max(1, ww), py = y * float(oh) / std::max(1, wh);
-    gx = (int)std::floor((px - dst_.x) / scale_);
+    gx = (int)std::floor((px - dst_.x) / scale_) - g.ox;
     gy = (int)std::floor((py - dst_.y) / scale_);
   }
 
  private:
   SDL_Renderer* r_;
   SDL_Texture *scene_ = nullptr, *big_ = nullptr;
-  int bigK_ = 0;
+  int w_ = 0, bigK_ = 0;
   float scale_ = 1;
   SDL_Rect dst_{0, 0, SCREEN_W, SCREEN_H};
 };
 
-// Taille de départ de la fenêtre : la plus grande qui tient sur l'écran (sans la
-// barre des tâches ni la barre de titre), en gardant les proportions du jeu
+// Taille de départ de la fenêtre : la forme de l'écran, aussi grande que possible
+// sans la barre des tâches ni la barre de titre
 static void fitWindow(SDL_Window* win) {
-  SDL_Rect ub;
-  if (SDL_GetDisplayUsableBounds(std::max(0, SDL_GetWindowDisplayIndex(win)), &ub) != 0) return;
+  int d = std::max(0, SDL_GetWindowDisplayIndex(win));
+  SDL_Rect ub, full;
+  if (SDL_GetDisplayUsableBounds(d, &ub) != 0 || SDL_GetDisplayBounds(d, &full) != 0) return;
   int top = 0, left = 0, bottom = 0, right = 0;
   if (SDL_GetWindowBordersSize(win, &top, &left, &bottom, &right) != 0) top = 40, left = right = bottom = 8;
-  float s = std::min((ub.w - left - right) * .95f / SCREEN_W, (ub.h - top - bottom) * .95f / SCREEN_H);
+  float aspect = std::clamp(full.w / float(std::max(1, full.h)), SCREEN_W / float(SCREEN_H), Screen::MAX_W / float(SCREEN_H));
+  float s = std::min((ub.w - left - right) * .95f / (SCREEN_H * aspect), (ub.h - top - bottom) * .95f / SCREEN_H);
   if (s >= 2 && s - std::floor(s) < .15f) s = std::floor(s);  // un nombre entier de fois si c'est presque pareil
   s = std::max(1.f, s);
-  int w = (int)std::lround(SCREEN_W * s), h = (int)std::lround(SCREEN_H * s);
+  int h = (int)std::lround(SCREEN_H * s), w = (int)std::lround(SCREEN_H * s * aspect);
   SDL_SetWindowSize(win, w, h);
   SDL_SetWindowPosition(win, ub.x + left + (ub.w - left - right - w) / 2, ub.y + top + (ub.h - top - bottom - h) / 2);
 }
@@ -155,11 +174,17 @@ static int runTests(const char* outDir) {
     std::printf("[ÉCHEC]  chargement de data/ : %s\n", err.c_str());
     return 1;
   }
-  SDL_Surface* surf = SDL_CreateRGBSurfaceWithFormat(0, SCREEN_W, SCREEN_H, 32, SDL_PIXELFORMAT_ARGB8888);
+  // BRUMEVAL_LARGEUR=384 : captures au format d'un écran large (16:10), pour vérifier les décors élargis
+  const char* wEnv = SDL_getenv("BRUMEVAL_LARGEUR");
+  int w = std::clamp(wEnv ? std::atoi(wEnv) : SCREEN_W, SCREEN_W, Screen::MAX_W);
+  w += w & 1;
+  SDL_Surface* surf = SDL_CreateRGBSurfaceWithFormat(0, w, SCREEN_H, 32, SDL_PIXELFORMAT_ARGB8888);
   SDL_Renderer* r = SDL_CreateSoftwareRenderer(surf);
   int code = 1;
   {
     Game game(r);
+    game.g.fullW = w;
+    game.g.ox = (w - SCREEN_W) / 2;
     code = game.selfTest(surf, outDir);
   }
   SDL_DestroyRenderer(r);
@@ -229,14 +254,14 @@ int main(int argc, char* argv[]) {
         }
         if (e.type == SDL_MOUSEMOTION) {
           int x, y;
-          screen.toGame(win, e.motion.x, e.motion.y, x, y);
+          screen.toGame(win, game.g, e.motion.x, e.motion.y, x, y);
           game.onMouse(x, y, -1, false);
           continue;
         }
         if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {
           int b = e.button.button == SDL_BUTTON_LEFT ? 0 : e.button.button == SDL_BUTTON_RIGHT ? 2 : 1;
           int x, y;
-          screen.toGame(win, e.button.x, e.button.y, x, y);
+          screen.toGame(win, game.g, e.button.x, e.button.y, x, y);
           game.onMouse(x, y, b, e.type == SDL_MOUSEBUTTONDOWN);
           continue;
         }
@@ -259,7 +284,7 @@ int main(int argc, char* argv[]) {
       float dt = std::min(.05f, float(now - last) / float(SDL_GetPerformanceFrequency()));
       last = now;
       game.update(dt);
-      screen.begin();
+      screen.begin(game.g);
       game.draw();
       screen.present();
       SDL_Delay(1);

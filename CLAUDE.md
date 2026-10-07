@@ -67,14 +67,23 @@ les plus longs : y ajouter tout nouvel écran.
 
 ### Principes à connaître
 
-- Résolution logique 320x240. Le jeu dessine dans une texture de 320x240 que
-  `Screen` (main.cpp) agrandit pour remplir la fenêtre en gardant les
-  proportions (bandes noires sur les côtés) : agrandissement entier puis
-  ajustement linéaire, pour des pixels nets à toute taille. La souris est
-  ramenée en coordonnées 320x240 par `Screen::toGame`. Le jeu tient compte du
-  zoom de Windows (`SDL_HINT_WINDOWS_DPI_AWARENESS`) ; la fenêtre de départ
-  prend la plus grande taille qui tient sur l'écran (`fitWindow`). Lancé par un
+- Résolution logique 320x240, élargie à la forme de l'écran : l'image fait
+  240 pixels de haut et `Gfx::fullW` de large (320 à 576 ; 384 en 16:10,
+  428 en 16:9). Tout le code dessine dans la zone de 320x240 du milieu
+  (`Gfx` ajoute le décalage `ox` dans `span`, `rect` et `textBig`) : menus,
+  fenêtres et combattants ne bougent pas. Un décor qui doit remplir tout
+  l'écran va de `g.left()` (négatif) à `g.right()` ; la carte, les combats,
+  l'écran titre, la fin et les outils le font. Tout nouveau décor plein écran
+  doit utiliser `g.left()`/`g.fullW` au lieu de 0/`SCREEN_W`.
+- `Screen` (main.cpp) choisit cette largeur selon la fenêtre, puis agrandit
+  l'image pour la remplir sans bandes noires (agrandissement entier puis
+  ajustement linéaire : pixels nets à toute taille). La souris est ramenée en
+  coordonnées de la zone du milieu par `Screen::toGame` (négatives à gauche).
+  Le jeu tient compte du zoom de Windows (`SDL_HINT_WINDOWS_DPI_AWARENESS`) ; la
+  fenêtre de départ a la forme de l'écran (`fitWindow`). Lancé par un
   double-clic, il ferme la console noire (`FreeConsole`).
+- `BRUMEVAL_LARGEUR=384 brumeval --test dossier` prend les captures du mode
+  test au format large (à vérifier après un changement de décor).
 - Lancé depuis l'application Claude (application empaquetée), le jeu lit et
   écrit `%APPDATA%` dans un dossier privé de Claude
   (`%LOCALAPPDATA%\Packages\Claude_…\LocalCache\Roaming\`) : sauvegarde et

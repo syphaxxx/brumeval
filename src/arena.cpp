@@ -628,9 +628,9 @@ void Arena::drawSummary(int x, int y, int w) {
 
 void Arena::draw() {
   Gfx& g = G.g;
-  g.gradV(0, 0, SCREEN_W, SCREEN_H, rgb(0x231638), rgb(0x47305e));
-  g.ellipse(160, 250, 210, 60, rgb(0x2d1f46));
-  g.ellipse(160, 250, 170, 40, rgb(0x3a2a52));
+  g.gradV(g.left(), 0, g.fullW, SCREEN_H, rgb(0x231638), rgb(0x47305e));
+  g.ellipse(160, 250, 210 + g.ox, 60, rgb(0x2d1f46));
+  g.ellipse(160, 250, 170 + g.ox, 40, rgb(0x3a2a52));
   g.text(160, 4, "ARÈNE DE COMBAT", GOLD, 1);
   if (simRunning_) {
     g.window(60, 90, 200, 60);

@@ -13,7 +13,7 @@ pour agrandir l'équipe, quatre héros recrutables, deux régions et une grotte.
 | Entrée ou Espace | Parler, valider, faire défiler les dialogues |
 | Échap | Annuler, ouvrir le menu (équipe, tactiques, objets, magie, sauvegarde) |
 | Tab (en combat) | Mode auto : les tactiques jouent à votre place, ou vous reprenez la main |
-| F11 ou Alt+Entrée | Plein écran ou fenêtre (le choix est gardé pour la prochaine fois) |
+| F11 ou Alt+Entrée | Plein écran ou fenêtre (le choix est gardé pour la prochaine fois). L'image s'adapte à la forme de l'écran ou de la fenêtre, sans bandes noires |
 
 ## Tactiques (combat automatique)
 

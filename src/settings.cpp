@@ -1146,7 +1146,7 @@ void Settings::drawPanel(int x, int y, int w, int h) {
 
 void Settings::draw() {
   Gfx& g = G.g;
-  g.gradV(0, 0, SCREEN_W, SCREEN_H, rgb(0x14203a), rgb(0x2a3a5e));
+  g.gradV(g.left(), 0, g.fullW, SCREEN_H, rgb(0x14203a), rgb(0x2a3a5e));
   g.text(160, 4, "RÉGLAGES", GOLD, 1);
   if (grid_) {
     drawGrid();

@@ -153,12 +153,12 @@ void MapEditor::setCursor(int x, int y) {
 
 void MapEditor::follow() {
   float px = cx_ * zoom_, py = cy_ * zoom_;
-  float mx = 2.f * zoom_;
-  if (px - camX_ < mx) camX_ = px - mx;
-  if (px - camX_ > SCREEN_W - mx - zoom_) camX_ = px - SCREEN_W + mx + zoom_;
+  float mx = 2.f * zoom_, L = G.g.left(), R = G.g.right();
+  if (px - camX_ < L + mx) camX_ = px - mx - L;
+  if (px - camX_ > R - mx - zoom_) camX_ = px - R + mx + zoom_;
   if (py - camY_ < mx) camY_ = py - mx;
   if (py - camY_ > VIEW_H - mx - zoom_) camY_ = py - VIEW_H + mx + zoom_;
-  camX_ = std::clamp(camX_, 0.f, std::max(0.f, float(M().w() * zoom_ - SCREEN_W)));
+  camX_ = std::clamp(camX_, -L, std::max(-L, float(M().w() * zoom_) - R));
   camY_ = std::clamp(camY_, 0.f, std::max(0.f, float(M().h() * zoom_ - VIEW_H)));
 }
 
@@ -1343,11 +1343,11 @@ void MapEditor::drawMap() {
   const MapDef& m = M();
   int z = zoom_;
   int cx = (int)camX_, cy = (int)camY_;
-  int tx0 = cx / z, ty0 = cy / z;
+  int tx0 = std::max(0, (int)std::floor((cx + g.left()) / z)), tx1 = (int)((cx + g.right()) / z) + 1, ty0 = cy / z;
   auto SX = [&](int x) { return x * z - cx; };
   auto SY = [&](int y) { return TOP + y * z - cy; };
   for (int y = ty0; y <= ty0 + VIEW_H / z + 1 && y < m.h(); y++)
-    for (int x = tx0; x <= tx0 + SCREEN_W / z + 1 && x < m.w(); x++) {
+    for (int x = tx0; x <= tx1 && x < m.w(); x++) {
       if (z == 16) drawTile(g, m, x, y, SX(x), SY(y), G.time);
       else g.rect(SX(x), SY(y), z, z, rgb(tileColor(m.rows[y][x], m.theme)));
     }
@@ -1433,7 +1433,7 @@ static std::string underCursor(const MapDef& m, int x, int y) {
 void MapEditor::drawBars() {
   Gfx& g = G.g;
   const MapDef& m = M();
-  g.rect(0, 0, SCREEN_W, TOP, rgb(0x0a0f33, 235));
+  g.rect(g.left(), 0, g.fullW, TOP, rgb(0x0a0f33, 235));
   static const char* L[] = {"Tuiles", "Objets", "Zones"};
   std::string left = utf8Prefix(m.name, 16) + (dirty(map_) ? "*" : "") + " · " + L[(int)layer_];
   g.text(3, 0, left, GOLD);
@@ -1451,7 +1451,7 @@ void MapEditor::drawBars() {
     g.text(8, TOP + 1, utf8Prefix(info, 51), ic);
   }
   // Barre du bas : palette ou aide
-  g.rect(0, BOTTOM, SCREEN_W, SCREEN_H - BOTTOM, rgb(0x0a0f33, 235));
+  g.rect(g.left(), BOTTOM, g.fullW, SCREEN_H - BOTTOM, rgb(0x0a0f33, 235));
   if (layer_ == Layer::Tiles) {
     static MapDef pal;
     pal.theme = m.theme;

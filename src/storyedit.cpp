@@ -992,7 +992,7 @@ void StoryEditor::update(float) {
 
 void StoryEditor::draw() {
   Gfx& g = G.g;
-  g.gradV(0, 0, SCREEN_W, SCREEN_H, rgb(0x241a30), rgb(0x3e2c4e));
+  g.gradV(g.left(), 0, g.fullW, SCREEN_H, rgb(0x241a30), rgb(0x3e2c4e));
   g.text(160, 3, "ÉDITEUR D'HISTOIRE", GOLD, 1);
   if (!errors_.empty()) g.text(316, 3, std::to_string(errors_.size()) + " erreur(s)", RED, 2);
   else g.text(316, 3, dirty() ? "modifié" : "ok", dirty() ? GOLD : GREEN, 2);

@@ -22,9 +22,10 @@ void Gfx::set(Color c) {
   SDL_SetRenderDrawBlendMode(r_, SDL_BLENDMODE_BLEND);
   SDL_SetRenderDrawColor(r_, c.r, c.g, c.b, uint8_t(c.a * std::clamp(alpha, 0.f, 1.f)));
 }
+// Les trois dessins de base (span, rect, textBig) ajoutent le décalage ox : tout le reste passe par eux
 void Gfx::span(int y, int x0, int x1) {
   if (x1 < x0 || y < 0 || y >= SCREEN_H) return;
-  SDL_Rect rc{x0, y, x1 - x0 + 1, 1};
+  SDL_Rect rc{x0 + ox, y, x1 - x0 + 1, 1};
   SDL_RenderFillRect(r_, &rc);
 }
 void Gfx::clear(Color c) {
@@ -49,7 +50,7 @@ static std::string boxStr(int x, int y, int w, int h) {
 }
 void Gfx::rect(float x, float y, float w, float h, Color c) {
   set(c);
-  SDL_Rect rc{(int)std::lround(x), (int)std::lround(y), (int)std::lround(w), (int)std::lround(h)};
+  SDL_Rect rc{(int)std::lround(x) + ox, (int)std::lround(y), (int)std::lround(w), (int)std::lround(h)};
   SDL_RenderFillRect(r_, &rc);
 }
 void Gfx::frame(float x, float y, float w, float h, Color c) {
@@ -308,7 +309,7 @@ void Gfx::textBig(float x, float y, const std::string& s, Color c, int k, int al
       for (int r = 0; r < 11; r++)
         for (int q = 0; q < 5; q++)
           if (it->second.rows[r] & (1 << (4 - q))) {
-            SDL_Rect rc{cx + q * k, cy + r * k, k, k};
+            SDL_Rect rc{cx + q * k + ox, cy + r * k, k, k};
             SDL_RenderFillRect(r_, &rc);
           }
       cx += 6 * k;
