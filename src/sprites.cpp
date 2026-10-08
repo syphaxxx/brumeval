@@ -277,9 +277,12 @@ void drawFighterSprite(Gfx& g, const Fighter& f, float x, float y, float s, bool
 // ---------------------------------------------------------------------------
 // Tuiles
 // ---------------------------------------------------------------------------
-static unsigned hsh(int x, int y) { return unsigned(x * 73856093) ^ unsigned(y * 19349663); }
+// Petit hasard propre à chaque case (cailloux, herbes…). Signé et positif : « sx + h % 13 »
+// doit rester un int (un unsigned ferait d'une position négative un nombre énorme,
+// et le dessin sortirait de l'image : plantage sur les Mac à processeur Apple).
+static int hsh(int x, int y) { return int((unsigned(x) * 73856093u ^ unsigned(y) * 19349663u) & 0x7fffffffu); }
 
-static void ground(Gfx& g, Theme th, int sx, int sy, unsigned h) {
+static void ground(Gfx& g, Theme th, int sx, int sy, int h) {
   if (th == Theme::Vallee) {
     g.rect(sx, sy, 16, 16, rgb(0x67b35d));
     g.rect(sx + h % 13, sy + (h >> 4) % 13, 2, 1, rgb(0x57a04f));
@@ -306,7 +309,7 @@ static void ground(Gfx& g, Theme th, int sx, int sy, unsigned h) {
 
 void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
   char c = m.rows[y][x];
-  unsigned h = hsh(x, y);
+  int h = hsh(x, y);
   Theme th = m.theme;
   auto at = [&](int xx, int yy) { return (xx < 0 || yy < 0 || xx >= m.w() || yy >= m.h()) ? ' ' : m.rows[yy][xx]; };
   switch (c) {

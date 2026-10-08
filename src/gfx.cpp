@@ -23,6 +23,11 @@ void Gfx::set(Color c) {
   SDL_SetRenderDrawColor(r_, c.r, c.g, c.b, uint8_t(c.a * std::clamp(alpha, 0.f, 1.f)));
 }
 // Les trois dessins de base (span, rect, textBig) ajoutent le décalage ox : tout le reste passe par eux
+// Coordonnée raisonnable ? Une valeur énorme ou NaN (calcul raté) est ignorée : convertie en
+// int, elle ne donne pas le même résultat sur PC et sur processeur Apple (ARM), et SDL
+// dessinerait alors hors de l'image.
+static bool sane(float v) { return v > -1e5f && v < 1e5f; }
+
 void Gfx::span(int y, int x0, int x1) {
   if (x1 < x0 || y < 0 || y >= SCREEN_H) return;
   SDL_Rect rc{x0 + ox, y, x1 - x0 + 1, 1};
@@ -49,6 +54,7 @@ static std::string boxStr(int x, int y, int w, int h) {
   return "(" + std::to_string(x) + "," + std::to_string(y) + " " + std::to_string(w) + "x" + std::to_string(h) + ")";
 }
 void Gfx::rect(float x, float y, float w, float h, Color c) {
+  if (!sane(x) || !sane(y) || !sane(w) || !sane(h)) return;
   set(c);
   SDL_Rect rc{(int)std::lround(x) + ox, (int)std::lround(y), (int)std::lround(w), (int)std::lround(h)};
   SDL_RenderFillRect(r_, &rc);
@@ -62,7 +68,7 @@ void Gfx::frame(float x, float y, float w, float h, Color c) {
 
 // Ellipse pleine (éventuellement tournée), remplie ligne par ligne
 void Gfx::ellipse(float cx, float cy, float rx, float ry, Color c, float rot) {
-  if (rx <= 0 || ry <= 0) return;
+  if (rx <= 0 || ry <= 0 || !sane(cx) || !sane(cy) || !sane(rx) || !sane(ry)) return;
   set(c);
   float cs = std::cos(rot), sn = std::sin(rot);
   float A = cs * cs / (rx * rx) + sn * sn / (ry * ry);
@@ -83,6 +89,8 @@ void Gfx::ellipse(float cx, float cy, float rx, float ry, Color c, float rot) {
 
 void Gfx::poly(const std::vector<Pt>& p, Color c) {
   if (p.size() < 3) return;
+  for (auto& q : p)
+    if (!sane(q.x) || !sane(q.y)) return;
   set(c);
   float ymin = p[0].y, ymax = p[0].y;
   for (auto& q : p) ymin = std::min(ymin, q.y), ymax = std::max(ymax, q.y);
@@ -252,6 +260,7 @@ static std::vector<uint32_t> decode(const std::string& s) {
 int Gfx::textW(const std::string& s) { return int(decode(s).size()) * 6; }
 
 void Gfx::text(float x, float y, const std::string& s, Color c, int align, bool shadow) {
+  if (!sane(x) || !sane(y)) return;
   auto cps = decode(s);
   int w = int(cps.size()) * 6;
   int X = (int)std::lround(x - (align == 1 ? w / 2 : align == 2 ? w : 0)), Y = (int)std::lround(y);
