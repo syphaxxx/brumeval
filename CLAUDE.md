@@ -63,6 +63,8 @@ les plus longs : y ajouter tout nouvel écran.
 | `mapedit.hpp/.cpp` | Éditeur de cartes (écran titre > Outils) : calques tuiles/objets/zones, outils, menus de chaque objet, annuler/rétablir, test en jeu (`testHere`, `editorTest_`) |
 | `storyedit.hpp/.cpp` | Éditeur d'histoire (écran titre > Outils) : événements, pages, conditions, actions imbriquées ; chaque écran est un chemin JSON (`goTo`, `goUp`) ; « Jouer l'événement » (`play`, `storyTest_`) |
 | `arena.hpp/.cpp` | Arène de combat (écran titre > Outils) : composition, combat à la main, simulation progressive (`stepSim`), modèles tirés des événements et des zones, journal |
+| `procgen.hpp/.cpp` | Génération procédurale du mode Expédition : hasard reproductible (`Rng`, graine), techniques par type (`Pool`), soutiens, créatures, gardiens, personnages par classe, apparences, régions (carte, village, chemin, rivière, dresseurs, coffres, gardien, événements), au format de data/ |
+| `expedition.hpp/.cpp` | Mode Expédition (écran titre) : menus, choix du héros et de la créature, contenu généré installé à la place des données du jeu (`install`/`restore`), passage de région, défaite roguelite (éclats, record), Camp (améliorations), sauvegarde à part |
 | `test.cpp` | Mode test automatique |
 
 ### Principes à connaître
@@ -111,6 +113,23 @@ les plus longs : y ajouter tout nouvel écran.
   `membre` est suivie de `tactiques` (interrupteur) et des lignes `tactique` du
   membre ; `auto` garde le mode auto. Le mode test écrit dans
   `sauvegarde_test.txt` (`saveName_`) pour ne jamais toucher à la vraie partie.
+- Expédition (expedition.hpp, procgen.hpp) : tout le contenu est généré depuis
+  une graine (`procgen::generateBase`, puis `generateRegion(graine, k, contenu)`
+  région par région : la région k ne dépend que de la graine et de k). Le
+  contenu prend la place des données en mémoire (`dataDoc` + `rebuildData`,
+  `maps()` = la seule région courante, `events()`), avec les types et objets du
+  jeu ; `Game::titleMenu` appelle `Expedition::leave` qui remet tout en place.
+  Identifiants générés : `x_<type>_p1`… (techniques), `xh1`… (héros), `xs1`…
+  (créatures de départ), `x<k>c1`, `x<k>b` (gardien), `x<k>t1` (dresseurs),
+  `x<k>r` (recrue), `lk_…` (apparences), `expedition_<k>` (carte). La sortie
+  (derrière le gardien) est testée dans `Game::arrive` ; `Game::defeat` finit
+  l'expédition. Sauvegarde : `expedition.txt` (ligne `expedition <graine>
+  <région>` en premier : le chargement régénère le monde), progression du Camp
+  dans `expedition_progres.txt` ; le mode test utilise des fichiers `_test`.
+  Changer le générateur change le monde des graines déjà jouées (et donc les
+  sauvegardes d'expédition en cours).
+  `BRUMEVAL_MONDE=brume brumeval --test captures` affiche le monde de la graine
+  « brume » (héros, créatures, gardiens et techniques des trois premières régions).
 - Tactiques (tactics.hpp) : `Fighter::tactics` (liste de `Tactic` : condition,
   seuil, action automatique / technique / objet), `Fighter::tacticsOn`,
   `Game::tacticsAuto` (touche Tab en combat). Quand la jauge d'un allié est
@@ -221,6 +240,12 @@ plus tôt que l'IA : Sylvarque ≈ 85 %, Ignarok ≈ 65 %, mais Givrecorne ≈ 9
 Chaque ligne ne joue que 20 à 40 combats : d'une fois à l'autre, un taux varie
 de ±10 %. Pour comparer deux réglages, `BRUMEVAL_SIMULATIONS=5` joue cinq fois
 plus de combats (±4 %), et c'est plus long.
+Expédition (équipe générée : héros, créature de départ et recrue, deux niveaux
+au-dessus des créatures sauvages) : dresseurs et sauvages gagnés à 100 %,
+gardiens à 85-100 % pour une équipe bien assortie, moins quand les types se
+prêtent mal au gardien (le joueur peut capturer d'autres créatures ; les
+habitants donnent son point faible). Réglages du gardien dans
+`procgen::generateRegion` (niveau, multiplicateur de PV, acolytes, renforts).
 Le Vent fait ×4 à Plante/Poison et le Métal ×4 à Glace/Roche : la Ronce-Mère et
 le Givrecorne ont une résistance propre pour ramener cela à ×2. La Lumière fait ×2 à l'Ombre mais l'Ombre est neutre sur la Lumière :
 sinon Maëlle, ciblée en priorité par l'IA, tombe dès le début contre Sylvarque.

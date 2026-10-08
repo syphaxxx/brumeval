@@ -7,6 +7,7 @@
 
 #include "arena.hpp"
 #include "battle.hpp"
+#include "expedition.hpp"
 #include "mapedit.hpp"
 #include "settings.hpp"
 #include "storyedit.hpp"
@@ -258,7 +259,10 @@ void Game::startBattle(std::vector<FighterP> foes, bool boss, std::function<void
   startBattle(std::move(s), std::move(after));
 }
 
+bool Game::inExpedition() const { return expedition_ && expedition_->active(); }
+
 void Game::defeat() {
+  if (inExpedition()) return expedition_->onDefeat();
   healAll();
   changeMap(respawnMap, respawnX, respawnY, DOWN);
   sc.say("Vous reprenez connaissance chez la guérisseuse. Toute l'équipe est soignée.");
@@ -313,6 +317,7 @@ void Game::tryMove(int d) {
 
 void Game::arrive() {
   steps++;
+  if (inExpedition() && expedition_->atExit(px, py)) return expedition_->nextRegion();
   for (auto& w : M().warps)
     if (w.x == px && w.y == py) {
       int m = mapIndex(w.map);
@@ -452,11 +457,12 @@ void Game::ask(const std::string& q, std::function<void()> yes, std::function<vo
 // Menus
 // ---------------------------------------------------------------------------
 void Game::titleMenu() {
+  if (expedition_) expedition_->leave();  // remet les données du jeu à la place de celles de l'expédition
   mode = Mode::Title;
   editorTest_ = storyTest_ = false;
   menus.clear();
   Menu m;
-  m.x = 102, m.y = 140, m.w = 116, m.rows = 4, m.cancelable = false;
+  m.x = 102, m.y = 136, m.w = 116, m.rows = 5, m.cancelable = false;
   m.items.push_back({"Nouvelle partie", "", "", true, [this] { starterMenu(); }});
   bool can = saveExists();
   m.items.push_back({"Continuer", "", "", can, [this] {
@@ -465,6 +471,10 @@ void Game::titleMenu() {
                          mode = Mode::Map;
                          showRegionBanner();
                        }
+                     }});
+  m.items.push_back({"Expédition", "", "Des régions générées sans fin, façon roguelite.", true, [this] {
+                       if (!expedition_) expedition_ = std::make_unique<Expedition>(*this);
+                       expedition_->menu();
                      }});
   m.items.push_back({"Outils", "", "Arène de combat, réglages, éditeurs de cartes et d'histoire.", true, [this] { toolsMenu(); }});
   m.items.push_back({"Quitter", "", "", true, [this] { quit = true; }});
@@ -547,10 +557,22 @@ void Game::pauseMenu() {
   m.items.push_back({"Tactiques", "", "Ce que chaque membre fait tout seul en combat (mode auto : touche Tab).", true, [this] { tacticsMenu(); }});
   m.items.push_back({"Objets", "", "Utiliser un objet.", true, [this] { itemMenu(); }});
   m.items.push_back({"Magie", "", "Lancer un sort de soin.", true, [this] { magicMenu(); }});
-  m.items.push_back({"Sauvegarder", "", "", true, [this] { notice(saveGame() ? "Partie sauvegardée." : "Impossible de sauvegarder."); }});
-  m.items.push_back({"Écran titre", "", "", true, [this] {
-                       ask("Revenir à l'écran titre ? (pensez à sauvegarder)", [this] { titleMenu(); });
-                     }});
+  if (inExpedition()) {
+    m.items.push_back({"Sauvegarder", "", "Expédition : " + expedition_->status() + ".", true,
+                       [this] { notice(saveGame() ? "Expédition sauvegardée." : "Impossible de sauvegarder."); }});
+    m.items.push_back({"Abandonner", "", "Arrêter l'expédition ici et recevoir les éclats gagnés.", true, [this] {
+                         ask("Abandonner l'expédition ?", [this] { expedition_->onDefeat(true); });
+                       }});
+    m.items.push_back({"Écran titre", "", "Sauvegarder et revenir à l'écran titre.", true, [this] {
+                         saveGame();
+                         titleMenu();
+                       }});
+  } else {
+    m.items.push_back({"Sauvegarder", "", "", true, [this] { notice(saveGame() ? "Partie sauvegardée." : "Impossible de sauvegarder."); }});
+    m.items.push_back({"Écran titre", "", "", true, [this] {
+                         ask("Revenir à l'écran titre ? (pensez à sauvegarder)", [this] { titleMenu(); });
+                       }});
+  }
   m.items.push_back({"Reprendre", "", "", true, [this] { menus.clear(); }});
   menus.push(m);
 }
@@ -774,7 +796,7 @@ std::string Game::savePath() const {
   char* p = SDL_GetPrefPath("Brumeval", "Brumeval");
   std::string s = p ? p : "";
   SDL_free(p);
-  return s + saveName_;
+  return s + (inExpedition() ? expedition_->saveName : saveName_);
 }
 bool Game::saveExists() const {
   std::ifstream f(savePath());
@@ -784,6 +806,7 @@ bool Game::saveGame() {
   std::ofstream f(savePath());
   if (!f) return false;
   f << "BRUMEVAL 1\n";
+  if (inExpedition()) expedition_->writeSave(f);  // en premier : le chargement génère d'abord le monde
   f << "carte " << M().id << ' ' << px << ' ' << py << ' ' << dir << '\n';
   f << "reveil " << maps()[respawnMap].id << ' ' << respawnX << ' ' << respawnY << '\n';
   f << "or " << gold << '\n';
@@ -820,7 +843,11 @@ bool Game::loadGame() {
     std::istringstream s(line);
     std::string k, v;
     s >> k;
-    if (k == "carte") {
+    if (k == "expedition" || k == "graine") {
+      std::string rest;
+      std::getline(s, rest);
+      if (!expedition_ || !expedition_->readSave(k, rest)) return false;
+    } else if (k == "carte") {
       s >> v >> px >> py >> dir;
       mapId = mapOf(v);
     } else if (k == "reveil") {
@@ -898,6 +925,7 @@ void Game::draw() {
 }
 
 void Game::drawTitle() {
+  if (expedition_ && expedition_->onScreen()) return expedition_->draw(g);
   float L = g.left(), W = (float)g.fullW;
   g.gradV(L, 0, W, SCREEN_H, rgb(0x141a3c), rgb(0x3c4278));
   g.poly({{L, 150}, {L, 120}, {0, 150}, {50, 96}, {100, 136}, {160, 80}, {220, 128}, {270, 100}, {320, 126}, {L + W, 104}, {L + W, 240}, {L, 240}},
@@ -961,7 +989,15 @@ void Game::drawMap() {
                       }});
   }
   int step = moving ? (moveT < .5f ? 1 : 2) : 0;
-  actors.push_back({ppy, [&] { drawHuman(g, look(0), ppx - camX, ppy - camY - 2, 1, dir, step, false); }});
+  // Le joueur a l'apparence de Lior ; en Expédition, celle du premier personnage de l'équipe (le héros choisi)
+  int playerLook = 0;
+  if (inExpedition())
+    for (auto& f : team)
+      if (f->S().human) {
+        playerLook = f->S().look;
+        break;
+      }
+  actors.push_back({ppy, [&] { drawHuman(g, look(playerLook), ppx - camX, ppy - camY - 2, 1, dir, step, false); }});
   std::sort(actors.begin(), actors.end(), [](const Actor& a, const Actor& b) { return a.y < b.y; });
   for (auto& a : actors) a.draw();
   // Ambiance

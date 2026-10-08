@@ -58,6 +58,31 @@ maximum). Une règle grise ne peut pas encore servir (sort pas encore appris),
 une règle orange ne marchera pas (par exemple une attaque avec une condition
 « Allié »).
 
+## Mode Expédition (roguelite)
+
+Depuis l'écran titre, **Expédition** lance une aventure où tout est généré à
+partir d'une **graine** (un nombre, ou un mot via « Graine… ») : les techniques
+de chaque type, les créatures, les héros, les dresseurs et les régions. La même
+graine redonne exactement le même monde : on peut la noter et la partager.
+
+1. Choisissez votre héros parmi plusieurs (classe, type, statistiques, Limite),
+   puis une créature parmi trois.
+2. Chaque région a un village (guérisseuse, boutique, habitants qui donnent des
+   conseils, parfois un héros à recruter), des herbes à rencontres, des
+   dresseurs, des coffres, et un **gardien** qui bloque la route. Une fois
+   vaincu, la sortie à l'est mène à la région suivante, plus forte. Les régions
+   sont sans fin : allez le plus loin possible.
+3. Une défaite termine l'expédition. Elle rapporte des **éclats de brume**
+   selon la distance parcourue (et les dresseurs battus), et le record de
+   région est gardé.
+4. Au **Camp**, les éclats achètent des améliorations permanentes : plus de héros
+   et de créatures proposés au départ, or et objets de départ, niveau de
+   départ, captures plus faciles, plus d'expérience.
+
+L'expédition se sauvegarde (Échap > Sauvegarder, et à chaque nouvelle région)
+dans un fichier à part, `expedition.txt` : la partie principale n'est jamais
+touchée.
+
 ## Installer et lancer sous Windows avec VS Code
 
 1. Installez les outils (une seule fois) :
