@@ -83,6 +83,33 @@ L'expédition se sauvegarde (Échap > Sauvegarder, et à chaque nouvelle région
 dans un fichier à part, `expedition.txt` : la partie principale n'est jamais
 touchée.
 
+## Multijoueur : duel en ligne
+
+Écran titre > **Multijoueur**. Chacun combat avec les trois premiers membres de
+l'équipe de sa partie principale (ou, sans partie, le héros et deux compagnons
+de départ). Les deux joueurs doivent avoir **la même version du jeu** (indiquée
+en bas à droite de l'écran titre) et les mêmes données.
+
+1. L'un choisit **Héberger un duel** : le jeu affiche ses adresses.
+2. L'autre choisit **Rejoindre un duel** et tape une de ces adresses.
+3. Dans le salon, l'hôte peut mettre tous les combattants au niveau 50
+   (« Niveaux : égaux ») puis **Lancer le duel**. Chacun commande son équipe ;
+   Tab active le mode auto (tactiques). Ni objets ni fuite.
+
+**Jouer par Internet, chacun chez soi.** Le plus simple : installer tous les
+deux une appli gratuite de réseau privé, puis utiliser l'adresse qu'elle donne.
+
+- **Tailscale** (https://tailscale.com) : créez un compte, installez-la sur les
+  deux ordinateurs, invitez votre ami dans votre réseau ; l'adresse de l'hôte
+  commence par `100.`.
+- ou **Radmin VPN** (Windows) : l'un crée un réseau, l'autre le rejoint ;
+  l'adresse commence par `26.`.
+
+Sans VPN, l'hôte doit ouvrir le port **47474** (TCP) sur sa box et donner son
+adresse publique. La première fois qu'on héberge, Windows demande s'il faut
+autoriser Brumeval sur le réseau : cochez **privé et public** puis
+**Autoriser**. Sur le même Wi-Fi, l'adresse locale (`192.168.…`) suffit.
+
 ## Installer et lancer sous Windows avec VS Code
 
 1. Installez les outils (une seule fois) :
