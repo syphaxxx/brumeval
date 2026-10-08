@@ -49,8 +49,8 @@ static void reorderKeys(Json& o, const std::vector<std::string>& order) {
 static const std::vector<std::string> SPECIES_KEYS = {"id", "nom", "type", "types", "base", "precision", "esquive", "critique", "resistances",
                                                       "immunites", "humain", "apparence", "role", "forme", "couleurs", "apprend", "limite",
                                                       "tactiques"};
-static const std::vector<std::string> MOVE_KEYS = {"id", "nom", "type", "genre", "cible", "puissance", "cout", "precision", "critique", "effet",
-                                                   "effets", "description"};
+static const std::vector<std::string> MOVE_KEYS = {"id", "nom", "type", "genre", "cible", "puissance", "cout", "precision", "critique", "rythme",
+                                                   "effet", "effets", "description"};
 static const std::vector<std::string> ITEM_KEYS = {"id", "nom", "description", "prix", "combat", "menu", "important", "soin_pv", "soin_pm",
                                                    "rappel", "capture", "soin_statut"};
 static const char* BASE_KEYS[N_BASE] = {"pv", "pm", "attaque", "defense", "magie", "resistance", "vitesse"};
@@ -740,6 +740,17 @@ void Settings::editMove(const std::string& id, int sel) {
                               });
                             },
                             5, 0, 100));
+  m.items.push_back(cycleItem("Rythme",
+                              "Rapide : la jauge du lanceur repart à " + std::to_string(rules().quickGauge) +
+                                  " %. Lourde : elle repart à -" + std::to_string(rules().heavyDelay) + " % (règles, combat).",
+                              [id] { return (int)moveInfo(id).pace; },
+                              [this, id](int k) {
+                                EDIT_MOVE(id, {
+                                  if (k == 0) o.erase("rythme");
+                                  else o["rythme"] = paceId(Pace(k));
+                                });
+                              },
+                              3, [](int k) { return std::string(paceName(Pace(k))); }));
   {
     MenuItem e{"Effet", "", "État, bonus/malus ou guérison.", true, [this, id] { menuEffect(id); }};
     e.rightFn = [id] {

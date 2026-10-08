@@ -51,6 +51,9 @@ struct Effect {
   int chance = 100;              // en %
 };
 
+// Rythme d'une technique : où repart la jauge ATB du lanceur après l'avoir utilisée
+enum class Pace { Normal, Quick, Heavy };
+
 struct Move {
   std::string id, name;
   Type type;
@@ -61,6 +64,7 @@ struct Move {
   std::string desc;
   int acc = 100;       // précision en %
   int critBonus = 0;   // chance de critique en plus (%)
+  Pace pace = Pace::Normal;  // rapide : la jauge repart plus haut ; lourde : plus bas que zéro
   std::vector<Effect> effects;
   bool damaging() const { return kind == Kind::Physical || kind == Kind::Magic; }
 };
@@ -137,6 +141,7 @@ struct Rules {
   double atbBase = 20, atbSpeed = 1.1, flee = .7, limitGain = 110, stab = 1.25, spreadMin = .85, dmgDivisor = 40;
   double critMult = 1.5, stageStep = .25;
   int accBase = 100, evaBase = 2, critBase = 5;
+  int quickGauge = 25, heavyDelay = 25;  // jauge après une technique rapide (%), retard après une lourde (%)
   // États
   double poisonDmg = .1, burnDmg = .0625, burnAtk = .75, paraSpeed = .5, paraSkip = .25;
   int sleepMin = 1, sleepMax = 3;
@@ -166,6 +171,10 @@ Rules& editRules();
 std::vector<RuleField> ruleFields(Rules& r);
 
 const Move& moveInfo(const std::string& id);
+const char* paceId(Pace p);         // "normale", "rapide", "lourde"
+const char* paceName(Pace p);       // « Normale »…
+float paceGauge(const Move& m);     // jauge ATB du lanceur après la technique (négative si lourde)
+float paceTime(const Move& m);      // temps avant le tour suivant (1 = normal, moins si rapide)
 const Species& species(const std::string& id);
 const ItemDef& item(const std::string& id);
 bool hasMove(const std::string& id);

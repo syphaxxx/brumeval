@@ -26,7 +26,9 @@
     "etage": 0.25,
     "precision_base": 100,
     "esquive_base": 2,
-    "critique_base": 5
+    "critique_base": 5,
+    "jauge_rapide": 25,
+    "retard_lourde": 25
   },
   "etats": {
     "poison_degats": 0.1,

@@ -46,9 +46,16 @@ de dégâts, seulement l'effet). Champs facultatifs : `precision` (%), `critique
 | Sur le lanceur | ajouter `"sur": "lanceur"` |
 | Guérir les états | `{"guerison": true}` |
 
+`rythme` (facultatif) règle le moment où le lanceur rejoue : `rapide` (sa jauge
+ATB repart à `jauge_rapide` %, 25 par défaut) ou `lourde` (elle repart à
+-`retard_lourde` %, -25 par défaut) ; sans ce champ, la jauge repart de zéro.
+Une technique rapide frappe moins fort mais plus souvent, une lourde frappe plus
+fort mais laisse le temps à l'adversaire. L'ordinateur et les tactiques en
+tiennent compte (dégâts divisés par le temps que prend la technique).
+
 Un type peut rendre insensible à un état (`types.json`, `"immunites"`). Les
-valeurs générales (critiques, effet d'un bonus, dégâts du poison…) sont dans
-`regles.json`, sections `combat` et `etats`.
+valeurs générales (critiques, effet d'un bonus, dégâts du poison, rythme…) sont
+dans `regles.json`, sections `combat` et `etats`.
 
 **Adversaires** : l'action `combat` accepte `nom` (« Le braconnier vous défie ! »)
 et `renforts`, une liste d'ennemis qui entrent un par un quand un adversaire

@@ -139,6 +139,14 @@ les plus longs : y ajouter tout nouvel écran.
   l'ordinateur (ennemis, et alliés en mode test) ; `Battle::log` garde un journal
   lisible (`BRUMEVAL_JOURNAL=Sylvarque brumeval --test captures` l'affiche pour
   la simulation qui contient ce mot).
+- Rythme (`Move::pace`, champ `rythme`) : après une technique rapide, la jauge ATB
+  du lanceur repart à `jauge_rapide` % ; après une lourde, à -`retard_lourde` %
+  (`paceGauge`, passé à `Battle::afterAction`). `Battle::attackScore` note une
+  attaque pour `think` et les tactiques : dégâts attendus divisés par
+  `paceTime` ; pour les alliés seulement, critiques et effets en plus comptent
+  aussi (les ennemis gardent l'ancienne notation, sur laquelle la difficulté
+  est réglée). Principe des techniques : une faible est rapide et souvent avec
+  un effet, une forte est lourde, pour qu'aucune ne devienne inutile.
 - Données en mémoire : `dataDoc(DF_…)` garde chaque fichier de data/ sous forme
   de JSON ; `rebuildData()` reconstruit les structures du jeu à partir de ces
   documents, `saveDataDoc` les écrit. Les Réglages ne touchent qu'aux documents,
@@ -208,8 +216,11 @@ normaux, bandits, chevaliers et duels gagnés à ~95-100 %, Sylvarque ≈ 80 %
 ≈ 35 % (N.30, avec Sélène). Un boss trop facile vient souvent de sa lenteur ou
 d'acolytes trop faibles, pas de ses PV : regarder le journal (BRUMEVAL_JOURNAL).
 Avec les tactiques de départ (mêmes combats, `simTactics`), l'équipe soigne
-plus tôt que l'IA : Sylvarque ≈ 85 %, Ignarok ≈ 45 %, mais Givrecorne ≈ 90 %
+plus tôt que l'IA : Sylvarque ≈ 85 %, Ignarok ≈ 65 %, mais Givrecorne ≈ 90 %
 (Lior, Maëlle et Sélène savent tous soigner).
+Chaque ligne ne joue que 20 à 40 combats : d'une fois à l'autre, un taux varie
+de ±10 %. Pour comparer deux réglages, `BRUMEVAL_SIMULATIONS=5` joue cinq fois
+plus de combats (±4 %), et c'est plus long.
 Le Vent fait ×4 à Plante/Poison et le Métal ×4 à Glace/Roche : la Ronce-Mère et
 le Givrecorne ont une résistance propre pour ramener cela à ×2. La Lumière fait ×2 à l'Ombre mais l'Ombre est neutre sur la Lumière :
 sinon Maëlle, ciblée en priorité par l'IA, tombe dès le début contre Sylvarque.

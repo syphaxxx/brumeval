@@ -723,6 +723,47 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     titleMenu();
   }
 
+  // --- Rythme des techniques : rapide (la jauge repart plus haut) ou lourde (en dessous de zéro) ---
+  {
+    check(moveInfo("lame").pace == Pace::Quick && moveInfo("estoc").pace == Pace::Normal && moveInfo("eclair").pace == Pace::Heavy,
+          "techniques : Lame d'acier rapide, Estoc normale, Taillade éclair lourde");
+    team = {makeFighter("lior", 20), makeFighter("maelle", 20)};
+    FighterP lior = team[0];
+    flags.clear();
+    sc.clear();
+    menus.clear();
+    mode = Mode::Map;
+    changeMap(mi("vallee"), 30, 12, DOWN);
+    tacticsAuto = false;
+    auto foe = makeFighter("golem", 20);
+    foe->mhp = foe->hp = 9999;
+    startBattle({foe}, false, nullptr);
+    if (battle_) {
+      Battle& B = *battle_;
+      // Jauge de Lior juste après chaque technique (le script fini, avant que le temps ne repasse)
+      auto gaugeAfter = [&](const std::string& mv) {
+        menus.clear();
+        B.sc.clear();
+        B.useMove(lior, mv, {foe});
+        for (int i = 0; i < 600 && B.sc.busy(); i++) frame();
+        return lior->atb;
+      };
+      float q = gaugeAfter("lame"), n = gaugeAfter("estoc"), h = gaugeAfter("eclair");
+      check(q == float(rules().quickGauge) && n == 0 && h == -float(rules().heavyDelay),
+            "techniques : la jauge repart à " + std::to_string((int)q) + " % (rapide), " + std::to_string((int)n) + " % (normale), " +
+                std::to_string((int)h) + " % (lourde)");
+      snap("60_combat_jauge_lourde");
+      foe->hp = 1;
+      B.autoPlay = true;
+      for (int i = 0; i < 60 * 60 && mode == Mode::Battle; i++) {
+        in.confirm = true;
+        frame();
+      }
+    }
+    check(mode == Mode::Map, "techniques : fin du combat de test du rythme");
+    skipScript();
+  }
+
   // --- Tactiques (règles de combat automatiques) ---
   {
     auto selectLabel = [&](const std::string& start) {
@@ -1025,8 +1066,12 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
 
   // --- Simulation d'équilibrage (IA simple, sans objets) ---
   std::printf("\nÉquilibrage (combats simulés, IA automatique) :\n");
+  // BRUMEVAL_SIMULATIONS=5 : cinq fois plus de combats par ligne (mesure plus précise, plus longue)
+  const char* simEnv = SDL_getenv("BRUMEVAL_SIMULATIONS");
+  int simFactor = simEnv ? std::max(1, std::atoi(simEnv)) : 1;
   auto simSetup = [&](const char* name, std::vector<std::pair<std::string, int>> party, std::function<BattleSetup()> mk, int n,
                       bool tac = false) {
+    n *= simFactor;
     int wins = 0;
     float total = 0;
     for (int k = 0; k < n; k++) {

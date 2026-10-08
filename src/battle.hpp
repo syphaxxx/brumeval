@@ -80,6 +80,7 @@ class Battle {
   void autoCommand(FighterP a);
   void enemyTurn(FighterP e);
   Plan think(FighterP a);
+  float attackScore(const FighterP& a, const Move& m, const FighterP& t) const;  // intérêt d'une attaque (IA et tactiques)
   // Tactiques (tactics.hpp) : première règle possible de l'allié a, puis son exécution
   bool tacticsActive() const;
   bool tacticPlan(FighterP a, Plan& out);
@@ -89,7 +90,7 @@ class Battle {
   void useItem(FighterP a, const std::string& it, FighterP target);
   void swapIn(FighterP a, FighterP r);
   void tryFlee(FighterP a);
-  void afterAction(FighterP a);
+  void afterAction(FighterP a, float gauge = 0);  // gauge : jauge ATB de départ (technique rapide ou lourde)
   void checkEnd();
   void victory();
   void finish(BattleResult r);

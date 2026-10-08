@@ -30,6 +30,8 @@ std::string moveDetails(const Move& m) {
   if (m.acc < 100) s += " · Précision " + std::to_string(m.acc) + " %";
   if (m.critBonus > 0) s += " · Critique +" + std::to_string(m.critBonus) + " %";
   for (auto& e : m.effects) s += " · " + effectText(e);
+  if (m.pace == Pace::Quick) s += " · Rapide : rejoue plus tôt";
+  if (m.pace == Pace::Heavy) s += " · Lourde : rejoue plus tard";
   return s;
 }
 
@@ -336,14 +338,6 @@ Battle::Plan Battle::think(FighterP a) {
     score *= .85f + frand() * .3f;
     if (!tg.empty() && score > bestScore) bestScore = score, best = {id, tg, false};
   };
-  auto expected = [&](const Move& m, const FighterP& t) {
-    bool magic = m.kind == Kind::Magic;
-    float A = magic ? a->eMag() : a->eAtk(), D = std::max(1.f, magic ? t->eRes() : t->eDef());
-    float hit = std::clamp(m.acc / 100.f * a->acc / 100.f - (magic ? 0 : t->eva / 100.f), 0.f, 1.f);
-    float dmg = m.power * moveEff(m, t->S()) * (hasType(a->S(), m.type) ? float(rules().stab) : 1.f) * A / D * hit;
-    if (ally && dmg >= t->hp * 1.2f) dmg += 15;  // achever un adversaire affaibli
-    return dmg;
-  };
   for (auto& id : moves) {
     const Move& m = moveInfo(id);
     switch (m.kind) {
@@ -387,16 +381,43 @@ Battle::Plan Battle::think(FighterP a) {
       default:
         if (m.target == Target::AllEnemies) {
           float sum = 0;
-          for (auto& t : theirs) sum += expected(m, t);
+          for (auto& t : theirs) sum += attackScore(a, m, t);
           consider(id, theirs, sum * (ally ? .8f : .6f));  // les ennemis abusent moins des attaques de zone
         } else
           for (auto& t : theirs)
-            if (!focus || t == focus) consider(id, {t}, expected(m, t));
+            if (!focus || t == focus) consider(id, {t}, attackScore(a, m, t));
         break;
     }
   }
   if (best.move.empty()) best = {a->techs()[0], {theirs[irand(0, (int)theirs.size() - 1)]}, false};
   return best;
+}
+
+// Intérêt d'une attaque sur une cible (sans hasard), dans l'unité de Battle::think :
+// dégâts attendus (puissance x efficacité x Attaque/Défense x précision), divisés par
+// le temps que prend la technique (rapide ou lourde). Les alliés comptent aussi les
+// critiques et les effets en plus ; les ennemis non, pour garder la difficulté des
+// combats telle qu'elle a été réglée.
+float Battle::attackScore(const FighterP& a, const Move& m, const FighterP& t) const {
+  const Rules& R = rules();
+  bool magic = m.kind == Kind::Magic, ally = isAlly(a);
+  float A = magic ? a->eMag() : a->eAtk(), D = std::max(1.f, magic ? t->eRes() : t->eDef());
+  float hit = std::clamp(m.acc / 100.f * a->acc / 100.f - (magic ? 0 : t->eva / 100.f), 0.f, 1.f);
+  float score = m.power * moveEff(m, t->S()) * (hasType(a->S(), m.type) ? float(R.stab) : 1.f) * A / D * hit;
+  if (!ally) return score / paceTime(m);
+  score *= 1 + std::min(1.f, (a->crit + m.critBonus) / 100.f) * float(R.critMult - 1);
+  if (score >= t->hp * 1.2f) score += 15;  // achever un adversaire affaibli
+  // Effets en plus : un état ou un malus sur la cible, un bonus pour le lanceur
+  for (auto& e : m.effects) {
+    float ch = e.chance / 100.f * hit;
+    if (e.self) {
+      if (e.stat >= 0 && e.stages > 0 && a->stage[e.stat] < 2) score += 16 * ch;
+    } else {
+      if (e.status != Status::None && t->status == Status::None && !immuneTo(t->S(), e.status)) score += 35 * ch;
+      if (e.stat >= 0 && (e.stages > 0 ? t->stage[e.stat] < 2 : t->stage[e.stat] > -2)) score += 18 * ch;
+    }
+  }
+  return score / paceTime(m);
 }
 
 void Battle::autoCommand(FighterP a) {
@@ -441,13 +462,6 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
     for (auto& e : m.effects)
       if (e.cure) return true;
     return false;
-  };
-  // Dégâts attendus (comme Battle::think, sans hasard)
-  auto damage = [&](const Move& m, const FighterP& t) {
-    bool magic = m.kind == Kind::Magic;
-    float A = magic ? a->eMag() : a->eAtk(), D = std::max(1.f, magic ? t->eRes() : t->eDef());
-    float hit = std::clamp(m.acc / 100.f * a->acc / 100.f - (magic ? 0 : t->eva / 100.f), 0.f, 1.f);
-    return m.power * moveEff(m, t->S()) * (hasType(a->S(), m.type) ? float(rules().stab) : 1.f) * A / D * hit;
   };
   auto healed = [&](const Move& m, const FighterP& t) { return std::min(m.power * a->eMag() / 20 + 2, float(t->mhp - t->hp)); };
   // La cible n'a pas encore l'effet de l'action (état, bonus/malus, soin)
@@ -559,8 +573,8 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
         if (x.m && x.m->damaging()) {
           score = 0;
           if (multi)
-            for (auto& f : side) score += damage(*x.m, f) * .8f;
-          else score = damage(*x.m, t);
+            for (auto& f : side) score += attackScore(a, *x.m, f) * .8f;
+          else score = attackScore(a, *x.m, t);
         } else if (x.m && x.m->kind == Kind::Heal && x.m->power > 0) {
           score = 0;
           if (multi)
@@ -718,7 +732,8 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
   sc.call([this, ko] {
     for (auto& f : *ko) sc.say(f->name() + (isAlly(f) ? " est K.O. !" : " est vaincu !"), .75f);
   });
-  sc.call([this, a] { afterAction(a); });
+  float gauge = isLimit ? 0.f : paceGauge(m);
+  sc.call([this, a, gauge] { afterAction(a, gauge); });
 }
 
 void Battle::useItem(FighterP a, const std::string& id, FighterP t) {
@@ -800,8 +815,8 @@ void Battle::tryFlee(FighterP a) {
   });
 }
 
-void Battle::afterAction(FighterP a) {
-  a->atb = 0;
+void Battle::afterAction(FighterP a, float gauge) {
+  a->atb = gauge;
   actor = nullptr;
   // Poison et brûlure : dégâts à la fin du tour de celui qui en souffre
   if (a->alive() && (a->status == Status::Poison || a->status == Status::Burn)) {
@@ -1045,7 +1060,9 @@ void Battle::draw() {
       g.rect(x, y + 3, 26, 4, rgb(0x2a3270));
       g.rect(x, y + 3, 26 * std::clamp(r, 0.f, 1.f), 4, c);
     };
-    bar(250, a->alive() ? a->atb / 100 : 0, a->atb >= 100 ? GOLD : rgb(0x7fd6ff));
+    // Après une technique lourde, la jauge part en dessous de zéro : barre rouge qui se vide
+    if (a->alive() && a->atb < 0) bar(250, -a->atb / 100, RED);
+    else bar(250, a->alive() ? a->atb / 100 : 0, a->atb >= 100 ? GOLD : rgb(0x7fd6ff));
     bool full = a->lim >= 100;
     bar(283, a->lim / 100, full && int(t * 5) % 2 ? WHITE : rgb(0xff6fb0));
   }
