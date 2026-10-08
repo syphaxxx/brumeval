@@ -69,7 +69,17 @@ jobs:
             macOS) EXE=build/Brumeval.app/Contents/MacOS/Brumeval ;;
             *) EXE=build/brumeval ;;
           esac
-          "$EXE" --test captures
+          if ! "$EXE" --test captures; then
+            # Échec ou plantage : on relance sous le débogueur pour savoir dans quelle fonction
+            echo "::group::Pile d'appels au moment du plantage"
+            if [ "$RUNNER_OS" = "macOS" ]; then
+              lldb --batch -o run -k "thread backtrace" -k quit -- "$EXE" --test captures2 2>&1 | tail -60
+            elif [ "$RUNNER_OS" = "Linux" ]; then
+              gdb -batch -ex run -ex bt --args "$EXE" --test captures2 2>&1 | tail -60
+            fi
+            echo "::endgroup::"
+            exit 1
+          fi
 
       - name: Paquet à télécharger
         shell: bash
