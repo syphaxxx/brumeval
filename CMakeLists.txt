@@ -9,12 +9,22 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set(CMAKE_BUILD_TYPE Debug CACHE STRING "" FORCE)
 endif()
 
+# Version du jeu, lue dans src/version.hpp (nom des paquets, application Mac)
+file(STRINGS ${CMAKE_SOURCE_DIR}/src/version.hpp BRUMEVAL_VERSION_LINE REGEX "define BRUMEVAL_VERSION")
+string(REGEX MATCH "\"([^\"]+)\"" BRUMEVAL_VERSION_MATCH "${BRUMEVAL_VERSION_LINE}")
+set(BRUMEVAL_VERSION "${CMAKE_MATCH_1}")
+
+# Windows : la bibliothèque C++ de Microsoft est intégrée au programme (rien à
+# installer chez les joueurs). SDL suit le même réglage.
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
 # --- SDL2 : téléchargée et compilée automatiquement au premier "configure" ---
 include(FetchContent)
 set(SDL_SHARED OFF CACHE BOOL "" FORCE)
 set(SDL_STATIC ON CACHE BOOL "" FORCE)
 set(SDL_TEST OFF CACHE BOOL "" FORCE)
 set(SDL2_DISABLE_INSTALL ON CACHE BOOL "" FORCE)
+set(SDL_FORCE_STATIC_VCRT ON CACHE BOOL "" FORCE)
 FetchContent_Declare(
   SDL2
   URL https://github.com/libsdl-org/SDL/releases/download/release-2.32.10/SDL2-2.32.10.tar.gz
@@ -56,4 +66,21 @@ if(MSVC)
   set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT brumeval)
 else()
   target_compile_options(brumeval PRIVATE -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers)
+endif()
+
+# Mac : une vraie application (Brumeval.app) ; le dossier data/ va dans
+# Brumeval.app/Contents/Resources (copié par .github/workflows/compilation.yml)
+if(APPLE)
+  set_target_properties(brumeval PROPERTIES
+    MACOSX_BUNDLE TRUE
+    OUTPUT_NAME Brumeval
+    MACOSX_BUNDLE_BUNDLE_NAME Brumeval
+    MACOSX_BUNDLE_GUI_IDENTIFIER io.github.syphaxxx.brumeval
+    MACOSX_BUNDLE_BUNDLE_VERSION ${BRUMEVAL_VERSION}
+    MACOSX_BUNDLE_SHORT_VERSION_STRING ${BRUMEVAL_VERSION})
+endif()
+
+# Linux : bibliothèques C++ intégrées (le jeu marche sur plus de distributions)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  target_link_options(brumeval PRIVATE -static-libstdc++ -static-libgcc)
 endif()

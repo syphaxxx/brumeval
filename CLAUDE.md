@@ -25,6 +25,20 @@ Dans VS Code : CMake Tools configure le projet à l'ouverture ; F7 compile,
 Maj+F5 lance sans débogueur. `.vscode/launch.json` contient une configuration
 de débogage MSVC (`cppvsdbg`) et une GDB.
 
+## Publier une version pour les joueurs
+
+`.github/workflows/compilation.yml` compile le jeu sous Windows (MSVC), Mac
+(application universelle `Brumeval.app`, macOS 11+) et Linux (Ubuntu 22.04) à
+chaque envoi sur GitHub, lance le mode test sur les trois, et fabrique les
+paquets (exécutable + `data/` + `distribution/LISEZ-MOI.txt`). Pour publier :
+augmenter `BRUMEVAL_VERSION` dans `src/version.hpp`, fusionner dans `main`,
+puis `git tag v1.2` et `git push origin v1.2` : la page Releases est créée avec
+le texte de `distribution/notes.md`. Sous Windows, la bibliothèque C++ est
+intégrée (`CMAKE_MSVC_RUNTIME_LIBRARY`, `SDL_FORCE_STATIC_VCRT`) ; sous Linux,
+`-static-libstdc++`. Sur Mac, `data/` va dans `Contents/Resources` (trouvé par
+`SDL_GetBasePath`). Pour essayer une version Release ici : `cmake -S . -B
+build-release` puis `cmake --build build-release --config Release`.
+
 ## Tester (à faire après chaque modification)
 
 ```bash
