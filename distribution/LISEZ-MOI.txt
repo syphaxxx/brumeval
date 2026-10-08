@@ -1,0 +1,78 @@
+BRUMEVAL — Les gardiens de la vallée
+====================================
+
+Un petit RPG : combats au tour par tour actif (jauges ATB, Limites, magie),
+créatures à capturer, une aventure, un mode Expédition sans fin (roguelite)
+et des duels en ligne entre amis.
+
+
+LANCER LE JEU
+-------------
+
+Windows
+  1. Décompressez le dossier (clic droit > Extraire tout).
+  2. Double-cliquez sur brumeval.exe.
+  Si Windows affiche « Windows a protégé votre ordinateur » : cliquez sur
+  « Informations complémentaires », puis « Exécuter quand même ». (Le jeu
+  n'est pas signé par un éditeur payant, c'est normal pour un jeu amateur.)
+
+Mac
+  1. Décompressez, puis glissez Brumeval.app dans le dossier Applications.
+  2. Ouvrez-le une première fois : macOS refuse (jeu non signé par Apple).
+  3. Allez dans Réglages Système > Confidentialité et sécurité, tout en bas :
+     « Ouvrir quand même ». Ensuite, il s'ouvre normalement.
+  Si macOS dit que l'application est « endommagée », ouvrez le Terminal et
+  tapez :  xattr -cr /Applications/Brumeval.app
+
+Linux
+  1. Décompressez :  tar xzf Brumeval-*-linux.tar.gz
+  2. Lancez :  ./Brumeval/brumeval
+
+
+COMMANDES
+---------
+
+  Flèches ou ZQSD     se déplacer, choisir dans les menus
+  Entrée ou Espace    parler, valider
+  Échap               annuler, menu (équipe, tactiques, objets, sauvegarde)
+  Tab (en combat)     mode auto : les tactiques jouent à votre place
+  F11                 plein écran ou fenêtre
+  La souris marche aussi dans les menus.
+
+
+JOUER À PLUSIEURS (écran titre > Multijoueur)
+---------------------------------------------
+
+Il faut la même version du jeu des deux côtés (en bas à droite de l'écran
+titre).
+
+  - L'un choisit « Héberger un duel » : le jeu affiche ses adresses.
+  - L'autre choisit « Rejoindre un duel » et tape une de ces adresses.
+
+Chacun chez soi, le plus simple est d'installer tous les deux Tailscale
+(https://tailscale.com, gratuit) et d'être dans le même réseau Tailscale :
+l'adresse de l'hôte commence alors par 100. Sinon, l'hôte ouvre le port
+47474 (TCP) sur sa box. Sur le même Wi-Fi, l'adresse 192.168.… suffit.
+La première fois qu'on héberge, Windows demande l'autorisation : cochez
+réseaux privés ET publics, puis « Autoriser ».
+
+
+SAUVEGARDES
+-----------
+
+Elles sont rangées à part, et gardées quand on installe une nouvelle version :
+  Windows : %APPDATA%\Brumeval\Brumeval\
+  Mac     : ~/Library/Application Support/Brumeval/Brumeval/
+  Linux   : ~/.local/share/Brumeval/Brumeval/
+
+
+MODIFIER LE JEU
+---------------
+
+Tout le contenu (créatures, techniques, objets, cartes, dialogues, règles) est
+dans le dossier data/ (sur Mac : clic droit sur Brumeval.app > Afficher le
+contenu du paquet > Contents/Resources/data). Le jeu a aussi ses propres
+outils : écran titre > Outils. Attention : pour jouer en ligne, les deux
+joueurs doivent avoir les mêmes données.
+
+Code source : https://github.com/syphaxxx/brumeval

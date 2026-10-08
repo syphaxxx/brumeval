@@ -1,0 +1,125 @@
+# Compilation du jeu sous Windows, Mac et Linux à chaque envoi sur GitHub :
+# le mode test tourne sur les trois systèmes, puis les paquets à télécharger
+# sont fabriqués (onglet Actions > une compilation > Artifacts).
+# Pour publier une version : mettre à jour src/version.hpp, puis
+#   git tag v1.1
+#   git push origin v1.1
+# Les paquets sont alors mis sur la page de téléchargement (Releases).
+name: Compilation
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: windows, os: windows-latest }
+          - { name: mac, os: macos-14 }
+          - { name: linux, os: ubuntu-22.04 }
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bibliothèques de Linux pour SDL (fenêtre, son, manettes)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev \
+            libxss-dev libxinerama-dev libxkbcommon-dev libwayland-dev wayland-protocols libegl1-mesa-dev \
+            libgl1-mesa-dev libgles2-mesa-dev libdrm-dev libgbm-dev libasound2-dev libpulse-dev libdbus-1-dev libudev-dev
+
+      - name: Version (src/version.hpp)
+        shell: bash
+        run: |
+          VERSION=$(sed -n 's/.*define BRUMEVAL_VERSION "\(.*\)".*/\1/p' src/version.hpp)
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          if [[ "$GITHUB_REF" == refs/tags/v* && "$GITHUB_REF_NAME" != "v$VERSION" ]]; then
+            echo "L'étiquette $GITHUB_REF_NAME ne correspond pas à la version $VERSION de src/version.hpp"
+            exit 1
+          fi
+
+      - name: Configuration
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            cmake -S . -B build -DCMAKE_BUILD_TYPE=Release "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
+          else
+            cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          fi
+
+      - name: Compilation
+        run: cmake --build build --config Release --parallel
+
+      - name: Mode test du jeu
+        shell: bash
+        run: |
+          case "$RUNNER_OS" in
+            Windows) EXE=build/Release/brumeval.exe ;;
+            macOS) EXE=build/Brumeval.app/Contents/MacOS/Brumeval ;;
+            *) EXE=build/brumeval ;;
+          esac
+          "$EXE" --test captures
+
+      - name: Paquet à télécharger
+        shell: bash
+        run: |
+          mkdir -p dist pkg/Brumeval
+          cp distribution/LISEZ-MOI.txt pkg/Brumeval/
+          case "$RUNNER_OS" in
+            Windows)
+              cp build/Release/brumeval.exe pkg/Brumeval/
+              cp -r data pkg/Brumeval/
+              (cd pkg && 7z a -tzip "../dist/Brumeval-$VERSION-windows.zip" Brumeval > /dev/null)
+              ;;
+            macOS)
+              cp -R build/Brumeval.app pkg/Brumeval/
+              cp -R data pkg/Brumeval/Brumeval.app/Contents/Resources/
+              codesign --force --deep --sign - pkg/Brumeval/Brumeval.app
+              ditto -c -k --keepParent pkg/Brumeval "dist/Brumeval-$VERSION-mac.zip"
+              ;;
+            *)
+              cp build/brumeval pkg/Brumeval/
+              strip pkg/Brumeval/brumeval
+              cp -r data pkg/Brumeval/
+              tar czf "dist/Brumeval-$VERSION-linux.tar.gz" -C pkg Brumeval
+              ;;
+          esac
+          ls -l dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Brumeval-${{ matrix.name }}
+          path: dist/*
+          if-no-files-found: error
+
+  release:
+    name: Page de téléchargement
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Publier les paquets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          sed "s/VERSION/$VERSION/g" distribution/notes.md > notes.md
+          gh release create "$GITHUB_REF_NAME" dist/* --title "Brumeval $VERSION" --notes-file notes.md

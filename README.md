@@ -5,6 +5,15 @@ rend les créatures sauvages. Combats au tour par tour actif à la Final Fantasy
 (jusqu'à trois combattants, jauges ATB, Limites, magie), créatures à capturer
 pour agrandir l'équipe, quatre héros recrutables, deux régions et une grotte.
 
+## Télécharger et jouer
+
+Pas besoin de compiler : les versions prêtes à jouer pour **Windows, Mac et
+Linux** sont sur la page
+[Releases](https://github.com/syphaxxx/brumeval/releases/latest). Téléchargez le
+fichier de votre système, décompressez-le et lancez le jeu ; le fichier
+`LISEZ-MOI.txt` du dossier explique tout (y compris les avertissements de
+Windows et de macOS, normaux pour un jeu non signé).
+
 ## Commandes
 
 | Touche | Action |
