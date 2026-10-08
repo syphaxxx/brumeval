@@ -10,6 +10,7 @@
 #include "arena.hpp"
 #include "battle.hpp"
 #include "events.hpp"
+#include "expedition.hpp"
 #include "game.hpp"
 #include "mapedit.hpp"
 #include "settings.hpp"
@@ -421,7 +422,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   {
     sc.clear();
     titleMenu();
-    menus.top().sel = 2;  // Outils
+    menus.top().sel = 3;  // Outils
     in.confirm = true;
     frame();
     in.confirm = true;  // Arène de combat
@@ -489,7 +490,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
 
     sc.clear();
     titleMenu();
-    menus.top().sel = 2;  // Outils
+    menus.top().sel = 3;  // Outils
     in.confirm = true;
     frame();
     menus.top().sel = 1;  // Réglages
@@ -555,7 +556,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   {
     sc.clear();
     titleMenu();
-    menus.top().sel = 2;  // Outils
+    menus.top().sel = 3;  // Outils
     in.confirm = true;
     frame();
     menus.top().sel = 2;  // Éditeur de cartes
@@ -649,7 +650,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   {
     sc.clear();
     titleMenu();
-    menus.top().sel = 2;  // Outils
+    menus.top().sel = 3;  // Outils
     in.confirm = true;
     frame();
     menus.top().sel = 3;  // Éditeur d'histoire
@@ -1051,10 +1052,178 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     mode = Mode::Title;
     titleMenu();
     show("titre");
-    menus.top().sel = 2;  // Outils
+    menus.top().sel = 3;  // Outils
     in.confirm = true;
     show("outils");
     menus.clear();
+    titleMenu();
+  }
+
+  // --- Expédition : monde généré (procgen.hpp) et mode roguelite (expedition.hpp) ---
+  {
+    expedition_ = std::make_unique<Expedition>(*this);
+    Expedition& X = *expedition_;
+    X.saveName = "expedition_test.txt";  // ne jamais toucher à l'expédition ni à la progression du joueur
+    X.progressName = "expedition_progres_test.txt";
+    X.removeSave();
+    std::remove(X.path(X.progressName).c_str());
+    X.loadProgress();
+    auto u8 = [](const std::string& s) {
+      int n = 0;
+      for (unsigned char c : s) n += (c & 0xC0) != 0x80;
+      return n;
+    };
+    // Plusieurs graines, huit régions chacune : données, cartes (tout accessible à pied) et événements valides
+    int bad = 0, checked = 0;
+    std::string firstErr;
+    size_t nMoves = 0, nSpecies = 0;
+    for (uint64_t seed : {1ull, 2ull, 7ull, 42ull, 2026ull, 123456789ull}) {
+      try {
+        X.generate(seed, 1);
+        for (int k = 1; k <= 8; k++) {
+          if (k > 1) X.current_ = procgen::generateRegion(seed, k, X.content_), X.region_ = k;
+          X.install();
+          std::vector<std::string> errs = checkData();
+          for (auto& e : checkMaps()) errs.push_back(e);
+          for (auto& e : checkEvents()) errs.push_back(e);
+          for (auto& m : allMoves())
+            if (u8(m.name) > 18) errs.push_back("nom de technique trop long : " + m.name);
+          for (auto& sp : allSpecies())
+            if (u8(sp.name) > 10) errs.push_back("nom d'espèce trop long : " + sp.name);
+          checked++;
+          if (!errs.empty() && bad++ == 0) firstErr = "graine " + std::to_string(seed) + ", région " + std::to_string(k) + " : " + errs[0];
+        }
+        nMoves = allMoves().size(), nSpecies = allSpecies().size();
+      } catch (std::exception& e) {
+        if (bad++ == 0) firstErr = "graine " + std::to_string(seed) + " : " + e.what();
+      }
+      X.leave();
+    }
+    check(bad == 0, "expédition : " + std::to_string(checked) + " régions générées (6 graines) : " + std::to_string(nMoves) + " techniques, " +
+                        std::to_string(nSpecies) + " espèces, cartes et événements valides" + (firstErr.empty() ? "" : " — " + firstErr));
+    check(hasSpecies("lior") && mapIndex("vallee") >= 0 && findEvent("sylvarque"), "expédition : les données du jeu sont remises en place ensuite");
+    // BRUMEVAL_MONDE=brume : affiche le monde de cette graine (noms, types, rôles des trois premières régions)
+    if (const char* w = SDL_getenv("BRUMEVAL_MONDE")) {
+      uint64_t seed = procgen::seedFromText(w);
+      X.generate(seed, 3);
+      X.install();
+      std::printf("\nMonde de la graine « %s » :\n", w);
+      for (auto& id : X.content_.heroes) std::printf("  héros     %-10s %s\n", species(id).name.c_str(), species(id).role.c_str());
+      for (auto& id : X.content_.starters) std::printf("  départ    %-10s %s\n", species(id).name.c_str(), typesName(species(id)).c_str());
+      for (int k = 1; k <= 3; k++) {
+        std::string px = "x" + std::to_string(k);
+        std::printf("  région %d  %s (gardien : %s)\n", k, procgen::regionName(seed, k).c_str(), species(px + "b").name.c_str());
+        for (auto& s : allSpecies())
+          if (s.id.rfind(px, 0) == 0) std::printf("            %-10s %-14s %s\n", s.name.c_str(), typesName(s).c_str(), s.role.c_str());
+      }
+      for (auto& m : allMoves()) std::printf("  technique %-18s %-8s %s\n", m.name.c_str(), typeName(m.type), moveDetails(m).c_str());
+      X.leave();
+    }
+    {
+      procgen::Content a = procgen::generateBase(99), b = procgen::generateBase(99);
+      procgen::Region ra = procgen::generateRegion(99, 1, a), rb = procgen::generateRegion(99, 1, b);
+      procgen::Region ra2 = procgen::generateRegion(99, 2, a), rb2 = procgen::generateRegion(99, 2, b);
+      check(a.moves == b.moves && a.species == b.species && a.looks == b.looks && ra.map == rb.map && ra.events == rb.events && ra2.map == rb2.map &&
+                procgen::seedFromText("1234") == 1234 && procgen::seedFromText("brume") == procgen::seedFromText("brume"),
+            "expédition : la même graine redonne exactement le même monde");
+    }
+    // Écran titre > Expédition, choix du héros puis de la créature
+    titleMenu();
+    menus.top().sel = 2;  // Expédition
+    in.confirm = true;
+    frame();
+    run(.2f);
+    snap("61_expedition_menu");
+    bool onMenu = X.onScreen() && menus.active() && menus.top().title == "Expédition";
+    X.start(424242, "");
+    run(.2f);
+    snap("62_expedition_heros");
+    int nHeroes = (int)menus.top().items.size();
+    in.confirm = true;
+    frame();
+    run(.2f);
+    snap("63_expedition_creature");
+    in.confirm = true;
+    frame();
+    skipScript();
+    run(.3f);
+    snap("64_expedition_region");
+    check(onMenu && nHeroes == 3 && inExpedition() && mode == Mode::Map && team.size() == 2 && M().id == "expedition_1" && X.savedRegion() == 1,
+          "expédition : écran titre > Expédition, choix du héros (3) et de la créature, région 1 (sauvegardée)");
+    // Combat contre une créature générée
+    startBattle({makeFighter(X.current_.wild.at(0), 3)}, false, nullptr);
+    run(.8f);
+    snap("65_expedition_combat");
+    if (battle_) battle_->autoPlay = true;
+    for (int i = 0; i < 60 * 120 && mode == Mode::Battle; i++) {
+      in.confirm = true;
+      frame();
+    }
+    skipScript();
+    check(mode == Mode::Map && inExpedition() && !team.empty(), "expédition : combat contre une créature générée");
+    // Le gardien bloque la sortie ; vaincu, la sortie mène à la région 2 (sauvegarde automatique)
+    {
+      const BossSpot b = M().bosses.at(0);
+      bool wall = blocked(b.x, b.y) && blocked(b.x, b.y + 1);
+      flags.insert(b.flag);
+      bool open = !blocked(b.x, b.y) && !blocked(b.x + 1, b.y + 1);
+      px = X.current_.exitX - 1, py = X.current_.exitY;
+      moving = false;
+      in.press[RIGHT] = true;
+      tryMove(RIGHT);
+      for (int i = 0; i < 30 && moving; i++) frame();
+      run(.5f);
+      snap("66_expedition_region2");
+      check(wall && open && X.region() == 2 && M().id == "expedition_2" && X.savedRegion() == 2,
+            "expédition : le gardien bloque la route ; vaincu, la sortie mène à la région 2 (sauvegarde automatique)");
+    }
+    // Sauvegarde, retour au titre (données du jeu remises), puis reprise identique
+    {
+      std::vector<std::pair<std::string, int>> before, after;
+      for (auto& f : team) before.push_back({f->sp, f->lvl});
+      int gold0 = gold;
+      bool saved = saveGame();
+      titleMenu();
+      bool restored = !inExpedition() && hasSpecies("lior") && !hasSpecies(before[0].first);
+      X.menu();
+      in.confirm = true;  // Continuer
+      frame();
+      for (auto& f : team) after.push_back({f->sp, f->lvl});
+      check(saved && restored && inExpedition() && X.region() == 2 && M().id == "expedition_2" && after == before && gold == gold0,
+            "expédition : sauvegarde, retour au titre (données du jeu remises), puis reprise à l'identique");
+    }
+    // Défaite : l'expédition s'arrête, éclats et record gardés, sauvegarde effacée
+    {
+      int shards0 = X.progress.shards;
+      for (auto& f : team) f->hp = 0;
+      defeat();
+      skipScript();
+      run(.2f);
+      snap("67_expedition_bilan");
+      check(!inExpedition() && mode == Mode::Title && X.onScreen() && X.progress.shards > shards0 && X.progress.record >= 2 && !X.saveExists() &&
+                hasSpecies("lior"),
+            "expédition : la défaite y met fin (" + std::to_string(X.progress.shards - shards0) + " éclats, record : région " +
+                std::to_string(X.progress.record) + "), sauvegarde effacée");
+    }
+    // Camp : une amélioration achetée propose un héros de plus
+    {
+      X.progress.shards += 100;
+      X.camp(0);
+      run(.1f);
+      snap("68_expedition_camp");
+      int lv = X.progress.up[U_HEROES];
+      in.confirm = true;
+      frame();
+      bool bought = X.progress.up[U_HEROES] == lv + 1;
+      X.start(7, "");
+      bool four = menus.top().items.size() == 4;
+      X.cancelSetup();
+      check(bought && four && !inExpedition(), "expédition : le Camp vend une amélioration (4 héros proposés)");
+    }
+    menus.clear();
+    X.leave();
+    X.removeSave();
+    std::remove(X.path(X.progressName).c_str());
     titleMenu();
   }
 
@@ -1226,6 +1395,75 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     s.canFlee = s.canCapture = false;
     return s;
   }, 30, true);
+
+  // Expédition : gardien de chaque région contre une équipe générée (héros, créature de départ,
+  // recrue de la région 1) arrivée deux niveaux au-dessus des créatures sauvages
+  std::printf("\nExpédition (gardiens, équipe générée au niveau de la région + 2) :\n");
+  if (expedition_) {
+    Expedition& X = *expedition_;
+    std::function<const Json*(const Json&)> findCombat = [&](const Json& list) -> const Json* {
+      for (auto& a : list) {
+        if (jget<std::string>(a, "action", "") == "combat") return &a;
+        for (const char* key : {"oui", "non", "alors", "sinon"})
+          if (a.contains(key))
+            if (const Json* c = findCombat(a[key])) return c;
+      }
+      return nullptr;
+    };
+    for (int k : {1, 2, 3, 5, 8})
+      for (uint64_t seed : {11ull, 22ull, 33ull}) {
+        X.generate(seed, k);
+        X.install();
+        mapId = 0;
+        int L = procgen::regionLevel(k), lvl = L + 2;
+        const Json* fight = findCombat(X.current_.events["x" + std::to_string(k) + "_gardien"]["actions"]);
+        if (!fight) continue;
+        Json f = *fight;
+        auto mk = [f, L] {
+          BattleSetup s;
+          auto make = [&](const Json& e) {
+            auto x = makeFighter(e.at("espece").get<std::string>(), jget(e, "niveau", L));
+            float mult = jget(e, "pv", 1.f);
+            if (mult != 1.f) x->mhp = std::max(1, int(x->mhp * mult + 1e-4f));
+            x->hp = x->mhp;
+            x->boss = jget(e, "boss", false);
+            return x;
+          };
+          for (auto& e : f.at("ennemis")) s.foes.push_back(make(e));
+          Json res = f.value("renforts", Json::array());  // variable : la boucle doit la garder en vie
+          for (auto& e : res) s.reserve.push_back(make(e));
+          s.boss = true;
+          s.canFlee = s.canCapture = false;
+          return s;
+        };
+        std::vector<std::pair<std::string, int>> party = {{X.content_.heroes[0], lvl}, {X.content_.starters[0], lvl}, {"x1r", lvl}};
+        std::string name = "Région " + std::to_string(k) + " (graine " + std::to_string(seed) + ", N." + std::to_string(lvl) + ")";
+        simSetup(name.c_str(), party, mk, 15);
+        if (seed == 11) {
+          // Combats ordinaires de la même région : un dresseur, puis un groupe sauvage de la zone la plus forte
+          for (auto& [id, ev] : X.current_.events.items())
+            if (id.find("_dresseur") != std::string::npos) {
+              if (const Json* c = findCombat(ev["pages"][0]["actions"])) {
+                Json tf = *c;
+                std::string tn = "  dresseur, région " + std::to_string(k);
+                simSetup(tn.c_str(), party, [tf, L] {
+                  BattleSetup s;
+                  for (auto& e : tf.at("ennemis")) s.foes.push_back(makeFighter(e.at("espece").get<std::string>(), jget(e, "niveau", L)));
+                  Json res = tf.value("renforts", Json::array());
+                  for (auto& e : res) s.reserve.push_back(makeFighter(e.at("espece").get<std::string>(), jget(e, "niveau", L)));
+                  s.canFlee = s.canCapture = false;
+                  return s;
+                }, 10);
+              }
+              break;
+            }
+          const Zone& z = M().zones.back();
+          std::string wn = "  sauvages, région " + std::to_string(k);
+          sim(wn.c_str(), party, group(z.pool, z.lo, z.hi, z.maxN), false, 10);
+        }
+        X.leave();
+      }
+  }
 
   std::remove(savePath().c_str());
   std::printf("\n%s (%d échec%s)\n", fails ? "TESTS EN ÉCHEC" : "TOUS LES TESTS PASSENT", fails, fails > 1 ? "s" : "");
