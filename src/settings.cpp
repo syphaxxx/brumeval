@@ -587,10 +587,10 @@ void Settings::menuLearn(const std::string& id, int sel) {
       auto& l = species(id).learn;
       return k < l.size() ? "< " + std::to_string(l[k].lvl) + " >" : std::string();
     };
-    it.adjust = [this, id, k](int d) {
+    it.adjust = [this, id, k](int delta) {  // pas « d » : c'est le nom du document dans EDIT_SPECIES
       EDIT_SPECIES(id, {
         Json& l = o["apprend"][k];
-        l[0] = std::clamp(l[0].get<int>() + d, 1, 100);
+        l[0] = std::clamp(l[0].get<int>() + delta, 1, 100);
       });
     };
     it.act = [this, id, k, mv] {
