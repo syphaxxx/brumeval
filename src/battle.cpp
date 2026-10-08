@@ -95,6 +95,7 @@ void Battle::pop(const FighterP& f, const std::string& t, Color c) {
   for (auto& q : pops)
     if (q.x == p.x && G.time - q.t < .3f) stack++;
   pops.push_back({p.x, p.y - 22 - 11.f * stack, t, c, G.time});
+  if (net_ == Net::Host) send_(Json{{"t", "pop"}, {"f", mine(f)}, {"txt", t}, {"c", Json::array({c.r, c.g, c.b})}});
 }
 
 // ---------------------------------------------------------------------------
@@ -117,6 +118,7 @@ void Battle::update(float dt) {
     G.menus.update(G.in);
     return;
   }
+  if (net_ == Net::Guest || remoteTurn_) return;  // invité : l'hôte fait avancer le temps ; hôte : ordre attendu
   tickATB(dt);
 }
 
@@ -133,6 +135,10 @@ void Battle::tickATB(float dt) {
         if (tacticsActive() && tacticTurn(f)) return;
         if (autoPlay) autoCommand(f);
         else command(f);
+      } else if (net_ == Net::Host) {  // combattant de l'invité : on attend son ordre
+        remoteTurn_ = f;
+        actor = f;
+        send_(Json{{"t", "tour"}, {"i", mine(f)[1]}});
       } else enemyTurn(f);
       return;
     }
@@ -244,6 +250,9 @@ void Battle::command(FighterP a) {
                        G.menus.push(t);
                      }});
   if (canFlee) m.items.push_back({"Fuir", "", "Tenter de fuir avec toute l'équipe.", true, [this, a] { tryFlee(a); }});
+  if (net_ != Net::None)  // duel : ni objets ni remplaçants, à armes égales
+    m.items.erase(std::remove_if(m.items.begin(), m.items.end(), [](const MenuItem& it) { return it.label == "Objet" || it.label == "Changer"; }),
+                  m.items.end());
   G.menus.push(m);
 }
 
@@ -623,13 +632,12 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m) {
   float k = crit ? float(R.critMult) : 1.f;
   int dmg = std::max(1, int(((2 * a->lvl / 5.f + 2) * m.power * A / std::max(1.f, D) / float(R.dmgDivisor) + 2) * stab * eff * spread * k));
   d->hp = std::max(0, d->hp - dmg);
-  blink = d;
-  blinkT = G.time;
+  setBlink(d);
   pop(d, std::to_string(dmg), eff > 1 ? GOLD : eff < 1 ? GREY : WHITE);
   if (crit) pop(d, "Critique !", RED);
   if (eff > 1) pop(d, "Efficace !", GOLD);
   else if (eff < 1) pop(d, "Résiste", GREY);
-  if (isAlly(d)) d->lim = std::min(100.f, d->lim + dmg * float(R.limitGain) / d->mhp);
+  if (isAlly(d) || net_ != Net::None) d->lim = std::min(100.f, d->lim + dmg * float(R.limitGain) / d->mhp);  // en duel, les deux équipes
   log.push_back(a->name() + " > " + d->name() + " : " + m.name + " " + std::to_string(dmg) + (crit ? " critique" : "") +
                 (eff > 1 ? " efficace" : eff < 1 ? " résiste" : "") + " (reste " + std::to_string(d->hp) + "/" + std::to_string(d->mhp) + ")");
   return dmg;
@@ -669,6 +677,15 @@ void Battle::knockOut(const FighterP& f) {
 }
 
 void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> targets, bool isLimit) {
+  if (net_ == Net::Guest) {  // l'invité envoie son ordre ; l'hôte le joue et renvoie le résultat
+    Json t = Json::array();
+    for (auto& f : targets) t.push_back(mine(f));
+    send_(Json{{"t", "ordre"}, {"i", mine(a)[1]}, {"move", id}, {"limite", isLimit}, {"cibles", t}});
+    G.menus.clear();
+    cursor = nullptr;
+    actor = nullptr;
+    return;
+  }
   G.menus.clear();
   cursor = nullptr;
   const Move& m = moveInfo(id);
@@ -680,6 +697,7 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
     if (isLimit || m.target == Target::AllEnemies) {
       flashT = G.time;
       flashCol = m.kind == Kind::Heal ? rgb(0xfff4c0) : isLimit ? rgb(0xff8ac8) : rgb(0xffffff);
+      if (net_ == Net::Host) send_(Json{{"t", "eclair"}, {"c", Json::array({flashCol.r, flashCol.g, flashCol.b})}});
     }
     bool landed = false;
     for (auto& t : targets) {
@@ -730,13 +748,14 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
   });
   sc.wait(.75f);
   sc.call([this, ko] {
-    for (auto& f : *ko) sc.say(f->name() + (isAlly(f) ? " est K.O. !" : " est vaincu !"), .75f);
+    for (auto& f : *ko) sc.say(f->name() + (isAlly(f) || net_ != Net::None ? " est K.O. !" : " est vaincu !"), .75f);
   });
   float gauge = isLimit ? 0.f : paceGauge(m);
   sc.call([this, a, gauge] { afterAction(a, gauge); });
 }
 
 void Battle::useItem(FighterP a, const std::string& id, FighterP t) {
+  if (net_ != Net::None) return;  // pas d'objets en duel
   G.menus.clear();
   cursor = nullptr;
   G.items[id]--;
@@ -823,20 +842,27 @@ void Battle::afterAction(FighterP a, float gauge) {
     bool poison = a->status == Status::Poison;
     int dmg = std::max(1, int(a->mhp * (poison ? rules().poisonDmg : rules().burnDmg)));
     a->hp = std::max(0, a->hp - dmg);
-    blink = a;
-    blinkT = G.time;
+    setBlink(a);
     pop(a, std::to_string(dmg), rgb(statusColor(a->status)));
     log.push_back("  " + a->name() + " : " + statusName(a->status) + " " + std::to_string(dmg));
     sc.say(a->name() + (poison ? " souffre du poison." : " souffre de sa brûlure."), .6f);
     if (!a->alive()) {
       knockOut(a);
-      sc.say(a->name() + (isAlly(a) ? " est K.O. !" : " est vaincu !"), .75f);
+      sc.say(a->name() + (isAlly(a) || net_ != Net::None ? " est K.O. !" : " est vaincu !"), .75f);
     }
   }
   sc.call([this] { checkEnd(); });
 }
 
 void Battle::checkEnd() {
+  if (net_ != Net::None) {
+    if (!alive(foes).empty() && !alive(allies).empty()) return;
+    bool won = alive(foes).empty();
+    ending_ = true;
+    sc.say(names_[won ? 0 : 1] + " remporte le duel !", 1.8f);
+    sc.call([this, won] { finish(won ? BattleResult::Win : BattleResult::Lose); });
+    return;
+  }
   // Renforts ennemis : remplacent ceux qui sont tombés
   for (auto& f : foes)
     if (!f->alive() && !reserve.empty()) {
@@ -1013,6 +1039,8 @@ void Battle::draw() {
   std::string top;
   if (G.menus.active()) top = G.menus.help();
   else if (sc.showingMessage()) top = utf8Prefix(sc.text(), sc.visibleChars());
+  else if (net_ == Net::Guest && !netMsg_.empty()) top = utf8Prefix(netMsg_, int((t - netMsgT_) * 60));
+  else if ((net_ == Net::Host && remoteTurn_) || (net_ == Net::Guest && netWait_ == "hote")) top = names_[1] + " choisit…";
   if (!top.empty()) {
     auto lines = Gfx::wrap(top, 300);
     g.window(4, 2, 312, 7 + 11 * (int)lines.size());
@@ -1069,4 +1097,127 @@ void Battle::draw() {
   G.menus.draw(g, t);
   float k = (t - start) / .35f;
   if (k < 1) g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0xffffff, uint8_t(255 * (1 - k))));
+}
+
+// ---------------------------------------------------------------------------
+// Duel en ligne (online.hpp) : l'hôte joue tout le combat et envoie son état ;
+// l'invité l'affiche et répond quand un de ses combattants doit agir.
+// ---------------------------------------------------------------------------
+void Battle::goOnline(Net mode, std::function<void(const Json&)> send, const std::string& me, const std::string& other) {
+  net_ = mode;
+  send_ = std::move(send);
+  names_[0] = me, names_[1] = other;
+  sc.clear();
+  if (mode == Net::Host) sc.say("Duel : " + me + " contre " + other + " !", 1.3f);
+}
+
+Json Battle::mine(const FighterP& f) const {
+  for (size_t i = 0; i < allies.size(); i++)
+    if (allies[i] == f) return Json::array({0, (int)i});
+  for (size_t i = 0; i < foes.size(); i++)
+    if (foes[i] == f) return Json::array({1, (int)i});
+  return Json::array({-1, -1});
+}
+FighterP Battle::other(const Json& s) const {
+  if (!s.is_array() || s.size() != 2) return nullptr;
+  int side = s[0].get<int>(), i = s[1].get<int>();
+  const auto& v = side == 0 ? foes : allies;  // l'équipe de l'autre joueur, ce sont mes « ennemis »
+  return side >= 0 && side <= 1 && i >= 0 && i < (int)v.size() ? v[(size_t)i] : nullptr;
+}
+void Battle::setBlink(const FighterP& f) {
+  blink = f;
+  blinkT = G.time;
+  if (net_ == Net::Host) send_(Json{{"t", "clignote"}, {"f", mine(f)}});
+}
+
+Json Battle::netState() const {
+  auto pack = [](const std::vector<FighterP>& v) {
+    Json a = Json::array();
+    for (auto& f : v) {
+      Json st = Json::array();
+      for (int k = 0; k < N_STAGES; k++) st.push_back(f->stage[k]);
+      a.push_back(Json::array({f->hp, f->mp, (int)std::lround(f->atb), (int)std::lround(f->lim), (int)f->status, st}));
+    }
+    return a;
+  };
+  return Json{{"t", "etat"},
+              {"a", pack(allies)},
+              {"b", pack(foes)},
+              {"msg", sc.showingMessage() ? sc.text() : std::string()},
+              {"attente", remoteTurn_ ? "invite" : G.menus.active() ? "hote" : ""}};
+}
+
+void Battle::netMessage(const Json& m) {
+  std::string k = jget<std::string>(m, "t", "");
+  if (net_ == Net::Guest) {
+    if (k == "etat") {
+      // « a » : l'équipe de l'hôte (mes ennemis) ; « b » : la mienne
+      auto apply = [](std::vector<FighterP>& v, const Json& a) {
+        for (size_t i = 0; i < v.size() && i < a.size(); i++) {
+          const Json& x = a[i];
+          Fighter& f = *v[i];
+          f.hp = x[0].get<int>(), f.mp = x[1].get<int>(), f.atb = x[2].get<float>(), f.lim = x[3].get<float>();
+          f.status = Status(std::clamp(x[4].get<int>(), 0, 4));
+          for (int s = 0; s < N_STAGES && s < (int)x[5].size(); s++) f.stage[s] = x[5][(size_t)s].get<int>();
+        }
+      };
+      apply(foes, m.value("a", Json::array()));
+      apply(allies, m.value("b", Json::array()));
+      std::string msg = jget<std::string>(m, "msg", "");
+      if (msg != netMsg_) netMsg_ = msg, netMsgT_ = G.time;
+      netWait_ = jget<std::string>(m, "attente", "");
+    } else if (k == "tour") {
+      int i = jget(m, "i", -1);
+      if (i < 0 || i >= (int)allies.size() || !allies[(size_t)i]->alive()) return;
+      FighterP a = allies[(size_t)i];
+      actor = a;
+      if (G.tacticsAuto && tacticTurn(a)) return;  // mode auto : les tactiques choisissent
+      command(a);
+    } else if (k == "pop") {
+      if (FighterP f = other(m.value("f", Json()))) {
+        Json c = m.value("c", Json::array({255, 255, 255}));
+        Color col;
+        col.r = c[0].get<uint8_t>(), col.g = c[1].get<uint8_t>(), col.b = c[2].get<uint8_t>();
+        // même empilement que Battle::pop, sans renvoyer le message
+        Net keep = net_;
+        net_ = Net::None;
+        pop(f, jget<std::string>(m, "txt", ""), col);
+        net_ = keep;
+      }
+    } else if (k == "clignote") {
+      if (FighterP f = other(m.value("f", Json()))) blink = f, blinkT = G.time;
+    } else if (k == "eclair") {
+      Json c = m.value("c", Json::array({255, 255, 255}));
+      flashT = G.time;
+      flashCol = rgb(uint32_t(c[0].get<int>()) << 16 | uint32_t(c[1].get<int>()) << 8 | uint32_t(c[2].get<int>()));
+    }
+    return;
+  }
+  // Hôte : l'ordre de l'invité pour son combattant en attente (vérifié : technique connue, PM, cibles)
+  if (net_ == Net::Host && k == "ordre" && remoteTurn_) {
+    FighterP f = remoteTurn_;
+    remoteTurn_ = nullptr;
+    int i = jget(m, "i", -1);
+    std::string id = jget<std::string>(m, "move", "");
+    bool lim = jget(m, "limite", false);
+    std::vector<FighterP> targets;
+    Json cs = m.value("cibles", Json::array());
+    for (auto& c : cs)
+      if (FighterP t = other(c)) targets.push_back(t);
+    bool ok = i >= 0 && i < (int)foes.size() && foes[(size_t)i] == f && hasMove(id) && !targets.empty();
+    if (ok && lim) ok = f->S().limit == id && f->lim >= 100;
+    else if (ok) {
+      auto known = f->techs();
+      for (auto& s : f->spells()) known.push_back(s);
+      ok = std::find(known.begin(), known.end(), id) != known.end() && f->mp >= moveInfo(id).cost;
+    }
+    if (ok) useMove(f, id, targets, lim);
+    else enemyTurn(f);  // ordre impossible : l'ordinateur joue à sa place
+  }
+}
+
+void Battle::netEnd(bool won) {
+  if (finished_) return;
+  G.menus.clear();
+  finish(won ? BattleResult::Win : BattleResult::Lose);
 }

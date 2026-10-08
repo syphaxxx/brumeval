@@ -23,6 +23,7 @@ class Settings;
 class MapEditor;
 class StoryEditor;
 class Expedition;
+class Online;
 enum class Mode { Title, Map, Battle, Ending, Arena, Settings, Editor, Story };
 enum class BattleResult { Win, Lose, Fled };
 
@@ -142,6 +143,8 @@ class Game {
   std::unique_ptr<StoryEditor> story_;  // Éditeur d'histoire (écran titre > Outils)
   bool storyTest_ = false;              // événement joué depuis l'éditeur d'histoire
   std::unique_ptr<Expedition> expedition_;  // mode Expédition (écran titre), voir expedition.hpp
+  std::unique_ptr<Online> online_;          // multijoueur (écran titre), voir online.hpp
+  bool duelBattle_ = false;                 // le combat en cours est un duel en ligne
   bool inExpedition() const;
   bool arenaBattle_ = false;      // le combat en cours a été lancé depuis l'Arène
   void toolsMenu();
@@ -162,4 +165,5 @@ class Game {
   friend class MapEditor;
   friend class StoryEditor;
   friend class Expedition;
+  friend class Online;
 };

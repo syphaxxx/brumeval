@@ -41,6 +41,9 @@ if(TARGET SDL2::SDL2main)
   target_link_libraries(brumeval PRIVATE SDL2::SDL2main)
 endif()
 target_link_libraries(brumeval PRIVATE SDL2::SDL2-static nlohmann_json::nlohmann_json)
+if(WIN32)
+  target_link_libraries(brumeval PRIVATE ws2_32)  # réseau (multijoueur)
+endif()
 # Dossier data/ du projet : utilisé si on ne le trouve pas à côté du programme
 target_compile_definitions(brumeval PRIVATE BRUMEVAL_DATA_DIR="${CMAKE_SOURCE_DIR}/data")
 

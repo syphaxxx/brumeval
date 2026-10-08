@@ -9,10 +9,12 @@
 #include "battle.hpp"
 #include "expedition.hpp"
 #include "mapedit.hpp"
+#include "online.hpp"
 #include "settings.hpp"
 #include "storyedit.hpp"
 #include "sprites.hpp"
 #include "tactics.hpp"
+#include "version.hpp"
 
 static const Color WHITE = rgb(0xffffff), GOLD = rgb(0xffd34d), MUTED = rgb(0xaab3d8);
 
@@ -129,6 +131,7 @@ void Game::drawTextEdit() {
 // ---------------------------------------------------------------------------
 void Game::update(float dt) {
   time += dt;
+  if (online_) online_->update(dt);  // réseau du multijoueur, dans tous les écrans
   banner -= dt;
   noticeT_ -= dt;
   switch (mode) {
@@ -155,6 +158,14 @@ void Game::update(float dt) {
       battle_->update(dt);
       if (battle_->finished()) {
         BattleResult r = battle_->result();
+        if (duelBattle_ && online_) {  // duel en ligne : retour au salon, sans conséquence sur la partie
+          battle_.reset();
+          duelBattle_ = false;
+          menus.clear();
+          mode = Mode::Title;
+          online_->onBattleEnd(r);
+          break;
+        }
         if (arenaBattle_ && arena_) {  // retour à l'Arène, sans les conséquences d'une vraie défaite
           auto log = battle_->log;
           battle_.reset();
@@ -458,11 +469,12 @@ void Game::ask(const std::string& q, std::function<void()> yes, std::function<vo
 // ---------------------------------------------------------------------------
 void Game::titleMenu() {
   if (expedition_) expedition_->leave();  // remet les données du jeu à la place de celles de l'expédition
+  if (online_) online_->leave();          // ferme les connexions du multijoueur
   mode = Mode::Title;
   editorTest_ = storyTest_ = false;
   menus.clear();
   Menu m;
-  m.x = 102, m.y = 136, m.w = 116, m.rows = 5, m.cancelable = false;
+  m.x = 102, m.y = 128, m.w = 116, m.rows = 6, m.cancelable = false;
   m.items.push_back({"Nouvelle partie", "", "", true, [this] { starterMenu(); }});
   bool can = saveExists();
   m.items.push_back({"Continuer", "", "", can, [this] {
@@ -476,7 +488,11 @@ void Game::titleMenu() {
                        if (!expedition_) expedition_ = std::make_unique<Expedition>(*this);
                        expedition_->menu();
                      }});
-  m.items.push_back({"Outils", "", "Arène de combat, réglages, éditeurs de cartes et d'histoire.", true, [this] { toolsMenu(); }});
+  m.items.push_back({"Multijoueur", "", "Duel en ligne contre un ami.", true, [this] {
+                       if (!online_) online_ = std::make_unique<Online>(*this);
+                       online_->menu();
+                     }});
+  m.items.push_back({"Outils", "", "Arène, réglages et éditeurs.", true, [this] { toolsMenu(); }});
   m.items.push_back({"Quitter", "", "", true, [this] { quit = true; }});
   if (can) m.sel = 1;
   menus.push(m);
@@ -926,6 +942,7 @@ void Game::draw() {
 
 void Game::drawTitle() {
   if (expedition_ && expedition_->onScreen()) return expedition_->draw(g);
+  if (online_ && online_->onScreen()) return online_->draw(g);
   float L = g.left(), W = (float)g.fullW;
   g.gradV(L, 0, W, SCREEN_H, rgb(0x141a3c), rgb(0x3c4278));
   g.poly({{L, 150}, {L, 120}, {0, 150}, {50, 96}, {100, 136}, {160, 80}, {220, 128}, {270, 100}, {320, 126}, {L + W, 104}, {L + W, 240}, {L, 240}},
@@ -948,7 +965,7 @@ void Game::drawTitle() {
   }
   if (!menus.active() || menus.help().empty()) {
     g.text(g.left() + 4, 227, "F11 : plein écran", rgb(0x8a92b8), 0, false);
-    g.text(g.right() - 4, 227, "v1.0", rgb(0x8a92b8), 2, false);
+    g.text(g.right() - 4, 227, "v" BRUMEVAL_VERSION, rgb(0x8a92b8), 2, false);
   }
 }
 

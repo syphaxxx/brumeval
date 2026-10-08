@@ -65,6 +65,9 @@ les plus longs : y ajouter tout nouvel écran.
 | `arena.hpp/.cpp` | Arène de combat (écran titre > Outils) : composition, combat à la main, simulation progressive (`stepSim`), modèles tirés des événements et des zones, journal |
 | `procgen.hpp/.cpp` | Génération procédurale du mode Expédition : hasard reproductible (`Rng`, graine), techniques par type (`Pool`), soutiens, créatures, gardiens, personnages par classe, apparences, régions (carte, village, chemin, rivière, dresseurs, coffres, gardien, événements), au format de data/ |
 | `expedition.hpp/.cpp` | Mode Expédition (écran titre) : menus, choix du héros et de la créature, contenu généré installé à la place des données du jeu (`install`/`restore`), passage de région, défaite roguelite (éclats, record), Camp (améliorations), sauvegarde à part |
+| `net.hpp/.cpp` | Réseau du multijoueur : connexions TCP non bloquantes (Windows, Mac, Linux), messages JSON précédés de leur longueur, adresses de l'ordinateur |
+| `online.hpp/.cpp` | Multijoueur (écran titre) : héberger, rejoindre, salon, vérification de la version et des données (`dataHash`), duel en ligne |
+| `version.hpp` | Numéro de version (`BRUMEVAL_VERSION`), affiché sur l'écran titre et comparé en multijoueur |
 | `test.cpp` | Mode test automatique |
 
 ### Principes à connaître
@@ -130,6 +133,21 @@ les plus longs : y ajouter tout nouvel écran.
   sauvegardes d'expédition en cours).
   `BRUMEVAL_MONDE=brume brumeval --test captures` affiche le monde de la graine
   « brume » (héros, créatures, gardiens et techniques des trois premières régions).
+- Multijoueur (online.hpp, net.hpp) : TCP sur le port 47474. Les deux joueurs
+  échangent `bonjour` (version, empreinte des données, pseudo) puis leur
+  équipe (3 premiers membres de la partie principale). En duel, l'**hôte**
+  calcule tout le combat (`Battle::goOnline`, `Net::Host` : les « ennemis » sont
+  l'équipe de l'invité ; quand la jauge de l'un d'eux est pleine, il envoie
+  `tour` et attend `ordre`, qu'il vérifie) et envoie son état dix fois par
+  seconde (`netState` : PV, PM, jauges, états, message en cours), plus les
+  nombres flottants, éclairs et clignotements. L'**invité** (`Net::Guest`) ne
+  fait pas avancer le temps : il affiche cet état et répond à `tour` par son
+  menu ou ses tactiques ; `useMove` envoie alors l'ordre au lieu de le jouer.
+  Un combattant dans un message : `[0, rang]` pour l'équipe de l'expéditeur,
+  `[1, rang]` pour l'autre (`Battle::mine`, `Battle::other`). Pas d'objets, ni
+  remplaçants, ni expérience en duel. Le mode test lance deux `Game` reliés
+  par 127.0.0.1 (port 47475) et joue un duel complet. Augmenter
+  `BRUMEVAL_VERSION` à chaque version publiée.
 - Tactiques (tactics.hpp) : `Fighter::tactics` (liste de `Tactic` : condition,
   seuil, action automatique / technique / objet), `Fighter::tacticsOn`,
   `Game::tacticsAuto` (touche Tab en combat). Quand la jauge d'un allié est

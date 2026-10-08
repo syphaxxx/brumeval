@@ -13,6 +13,7 @@
 #include "expedition.hpp"
 #include "game.hpp"
 #include "mapedit.hpp"
+#include "online.hpp"
 #include "settings.hpp"
 #include "sprites.hpp"
 #include "storyedit.hpp"
@@ -422,7 +423,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   {
     sc.clear();
     titleMenu();
-    menus.top().sel = 3;  // Outils
+    menus.top().sel = 4;  // Outils
     in.confirm = true;
     frame();
     in.confirm = true;  // Arène de combat
@@ -490,7 +491,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
 
     sc.clear();
     titleMenu();
-    menus.top().sel = 3;  // Outils
+    menus.top().sel = 4;  // Outils
     in.confirm = true;
     frame();
     menus.top().sel = 1;  // Réglages
@@ -556,7 +557,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   {
     sc.clear();
     titleMenu();
-    menus.top().sel = 3;  // Outils
+    menus.top().sel = 4;  // Outils
     in.confirm = true;
     frame();
     menus.top().sel = 2;  // Éditeur de cartes
@@ -650,7 +651,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   {
     sc.clear();
     titleMenu();
-    menus.top().sel = 3;  // Outils
+    menus.top().sel = 4;  // Outils
     in.confirm = true;
     frame();
     menus.top().sel = 3;  // Éditeur d'histoire
@@ -1052,7 +1053,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     mode = Mode::Title;
     titleMenu();
     show("titre");
-    menus.top().sel = 3;  // Outils
+    menus.top().sel = 4;  // Outils
     in.confirm = true;
     show("outils");
     menus.clear();
@@ -1224,6 +1225,100 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     X.leave();
     X.removeSave();
     std::remove(X.path(X.progressName).c_str());
+    titleMenu();
+  }
+
+  // --- Multijoueur : duel en ligne entre deux jeux sur cet ordinateur (vrai réseau, 127.0.0.1) ---
+  {
+    Game guest(g.renderer());
+    guest.g.checkLayout = true;
+    guest.saveName_ = "sans_sauvegarde_test.txt";  // pas de partie : l'invité prend l'équipe de départ
+    online_ = std::make_unique<Online>(*this);
+    guest.online_ = std::make_unique<Online>(guest);
+    Online &H = *online_, &V = *guest.online_;
+    for (Online* o : {&H, &V}) o->settingsName = "multijoueur_test.txt", o->port = 47475;
+    H.pseudo = "Hôte", V.pseudo = "Invité";
+    H.loopback = true;
+    auto both = [&](int frames) {
+      for (int i = 0; i < frames; i++) {
+        frame();
+        guest.update(1 / 60.f);
+      }
+    };
+    auto snapGuest = [&](const std::string& name) {
+      guest.draw();
+      SDL_RenderPresent(g.renderer());
+      std::string p = out + "/" + name + ".bmp";
+      SDL_SaveBMP(target, p.c_str());
+      std::printf("capture  %s\n", p.c_str());
+    };
+    titleMenu();
+    menus.top().sel = 3;  // Multijoueur
+    in.confirm = true;
+    frame();
+    run(.1f);
+    snap("69_multijoueur");
+    bool menuOk = H.onScreen() && menus.top().title == "Multijoueur";
+    in.confirm = true;  // Héberger un duel
+    frame();
+    run(.1f);
+    snap("70_multijoueur_attente");
+    bool hosting = H.state_ == Online::State::Hosting;
+    V.menu();
+    V.join("127.0.0.1");
+    for (int i = 0; i < 600 && !(H.state_ == Online::State::Salon && V.state_ == Online::State::Salon); i++) both(1);
+    run(.1f);
+    snap("71_multijoueur_salon");
+    check(menuOk && hosting && H.state_ == Online::State::Salon && V.state_ == Online::State::Salon && H.peer_ == "Invité" && V.peer_ == "Hôte",
+          "multijoueur : écran titre > Multijoueur, héberger, rejoindre (127.0.0.1), les deux joueurs dans le salon");
+    // Duel : niveaux égaux ; l'hôte laisse jouer l'ordinateur, l'invité ses tactiques (mode auto)
+    menus.top().sel = 1;  // Niveaux : égaux
+    in.confirm = true;
+    frame();
+    menus.top().sel = 0;  // Lancer le duel
+    in.confirm = true;
+    frame();
+    both(5);
+    bool started = mode == Mode::Battle && guest.mode == Mode::Battle && battle_ && guest.battle_ && battle_->online() == Battle::Net::Host &&
+                   guest.battle_->online() == Battle::Net::Guest && V.sameLevel_ && team.at(0)->lvl == 50;
+    if (battle_) battle_->autoPlay = true;
+    guest.tacticsAuto = true;
+    both(240);
+    snap("72_duel_hote");
+    snapGuest("73_duel_invite");
+    // L'invité voit les mêmes PV que l'hôte (état reçu dix fois par seconde)
+    bool mirrored = false;
+    for (int i = 0; i < 120 && !mirrored && battle_ && guest.battle_; i++) {
+      both(1);
+      mirrored = battle_->allies.size() == guest.battle_->foes.size() && battle_->foes.size() == guest.battle_->allies.size();
+      for (size_t k = 0; mirrored && k < battle_->allies.size(); k++) mirrored = battle_->allies[k]->hp == guest.battle_->foes[k]->hp;
+      for (size_t k = 0; mirrored && k < battle_->foes.size(); k++) mirrored = battle_->foes[k]->hp == guest.battle_->allies[k]->hp;
+    }
+    size_t guestTurns = 0;
+    for (int i = 0; i < 60 * 900 && (mode == Mode::Battle || guest.mode == Mode::Battle); i++) {
+      if (guest.battle_) guestTurns = std::max(guestTurns, guest.battle_->log.size());
+      both(1);
+    }
+    both(10);
+    bool hostWon = H.status_.find("Victoire") != std::string::npos, guestWon = V.status_.find("Victoire") != std::string::npos;
+    check(started && mirrored && guestTurns > 0 && mode == Mode::Title && guest.mode == Mode::Title && H.state_ == Online::State::Salon &&
+              V.state_ == Online::State::Salon && hostWon != guestWon,
+          "multijoueur : duel complet (niveaux égaux), l'invité voit les mêmes PV et joue ses tours ; " + std::string(hostWon ? "l'hôte" : "l'invité") +
+              " gagne, les deux reviennent au salon");
+    snapGuest("74_duel_fin_invite");
+    // L'invité s'en va : l'hôte revient au menu Multijoueur avec un message
+    V.leave();
+    both(30);
+    check(H.state_ == Online::State::Menu && !H.conn_ && H.status_.find("parti") != std::string::npos,
+          "multijoueur : l'invité quitte, l'hôte le voit (« " + H.status_ + " »)");
+    // Version différente : refusée
+    H.onMessage(Json{{"t", "bonjour"}, {"version", "0.1"}, {"donnees", Online::dataHash()}, {"pseudo", "Ancien"}});
+    check(H.status_.find("Versions différentes") != std::string::npos, "multijoueur : une autre version du jeu est refusée");
+    for (auto& s : guest.g.layoutIssues) std::printf("         (invité) %s\n", s.c_str());
+    check(guest.g.layoutIssues.empty(), "multijoueur : mise en page de l'écran de l'invité");
+    H.leave();
+    std::remove(H.file(H.settingsName).c_str());
+    online_.reset();
     titleMenu();
   }
 

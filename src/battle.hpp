@@ -39,6 +39,15 @@ class Battle {
   bool simTactics = false;  // avec autoPlay : les alliés suivent d'abord leurs tactiques
   std::vector<std::string> log;  // journal détaillé des actions (mode test, Arène)
 
+  // Duel en ligne (online.hpp) : l'hôte calcule tout le combat ; l'invité affiche l'état
+  // reçu et envoie ses ordres. Les « ennemis » de l'hôte sont l'équipe de l'invité.
+  enum class Net { None, Host, Guest };
+  void goOnline(Net mode, std::function<void(const Json&)> send, const std::string& me, const std::string& other);
+  void netMessage(const Json& m);  // message reçu de l'autre joueur
+  Json netState() const;           // hôte : état du combat, envoyé régulièrement à l'invité
+  void netEnd(bool won);           // fin décidée par l'hôte, ou départ de l'autre joueur
+  Net online() const { return net_; }
+
  private:
   struct Pop {
     float x, y;
@@ -86,6 +95,17 @@ class Battle {
   bool tacticPlan(FighterP a, Plan& out);
   bool tacticTurn(FighterP a);
   float toggledT_ = -10;  // moment où le mode auto a été changé (touche Tab)
+  // Duel en ligne
+  Net net_ = Net::None;
+  std::function<void(const Json&)> send_;
+  std::string names_[2];          // ce joueur, puis son adversaire
+  FighterP remoteTurn_;           // hôte : combattant de l'invité qui attend son ordre
+  std::string netMsg_, netWait_;  // invité : message reçu de l'hôte, et qui choisit en ce moment
+  float netMsgT_ = 0;
+  // Un combattant dans un message : [0, rang] pour l'équipe de celui qui l'envoie, [1, rang] pour l'autre
+  Json mine(const FighterP& f) const;
+  FighterP other(const Json& s) const;  // le même, vu par celui qui le reçoit
+  void setBlink(const FighterP& f);
   void useMove(FighterP a, const std::string& mv, std::vector<FighterP> targets, bool isLimit = false);
   void useItem(FighterP a, const std::string& it, FighterP target);
   void swapIn(FighterP a, FighterP r);
