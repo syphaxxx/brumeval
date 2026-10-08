@@ -517,7 +517,7 @@ void Arena::menuPresets() {
 void Arena::menuLog() {
   Menu m;
   m.title = "Journal du dernier combat";
-  m.x = 4, m.y = 4, m.w = 312, m.rows = 16;
+  m.x = 4, m.y = 4, m.w = 312, m.rows = 15;  // laisse la place à une aide sur deux lignes
   for (auto& l : lastLog) m.items.push_back({utf8Prefix(l, 47), "", l, true, nullptr});
   if (m.items.empty()) m.items.push_back({"(vide)", "", "", false, nullptr});
   G.menus.push(m);

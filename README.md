@@ -15,6 +15,22 @@ pour agrandir l'équipe, quatre héros recrutables, deux régions et une grotte.
 | Tab (en combat) | Mode auto : les tactiques jouent à votre place, ou vous reprenez la main |
 | F11 ou Alt+Entrée | Plein écran ou fenêtre (le choix est gardé pour la prochaine fois). L'image s'adapte à la forme de l'écran ou de la fenêtre, sans bandes noires |
 
+## Techniques rapides et lourdes
+
+Chaque technique a un rythme, indiqué dans l'aide en bas de l'écran :
+
+- **rapide** (Lame d'acier, Charge, Jet d'eau…) : moins de dégâts, mais la jauge
+  ATB repart à 25 % et le personnage rejoue plus tôt ;
+- **lourde** (Taillade éclair, Fracas, Charge héroïque) : un gros coup, mais la
+  jauge repart en dessous de zéro (barre rouge) et le personnage rejoue plus
+  tard ;
+- **normale** : la jauge repart de zéro.
+
+Les techniques faibles ont aussi souvent un effet en plus : Lame d'acier peut
+augmenter la vitesse de Lior, Jet d'eau baisser l'attaque de l'ennemi,
+Fouet-ronce sa vitesse. Les premières techniques apprises restent ainsi utiles,
+par exemple pour achever un ennemi vite ou préparer le combat.
+
 ## Tactiques (combat automatique)
 
 Comme les « gambits » de Final Fantasy XII, chaque membre de l'équipe a une

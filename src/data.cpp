@@ -33,6 +33,8 @@ static const char* STAGE_NAMES[] = {"Attaque", "Défense", "Magie", "Résistance
 static const char* HATS[] = {"aucune", "capuche", "chapeau", "bandeau", "casque", "foulard"};
 static const char* WEAPONS[] = {"aucune", "epee", "baton", "hache", "dague", "arc", "lance"};
 static const char* DIRS[] = {"haut", "bas", "gauche", "droite"};
+static const char* PACES[] = {"normale", "rapide", "lourde"};
+static const char* PACE_NAMES[] = {"Normale", "Rapide", "Lourde"};
 
 template <size_t N>
 static int nameIndex(const char* (&names)[N], const std::string& s, const char* what) {
@@ -54,6 +56,8 @@ const char* statusTag(Status s) { return STATUS_TAGS[(int)s]; }
 uint32_t statusColor(Status s) { return STATUS_COLORS[(int)s]; }
 int stageOf(const std::string& s) { return nameIndex(STAGES, s, "Statistique"); }
 const char* stageName(int st) { return STAGE_NAMES[st]; }
+const char* paceId(Pace p) { return PACES[(int)p]; }
+const char* paceName(Pace p) { return PACE_NAMES[(int)p]; }
 
 // ---------------------------------------------------------------------------
 // Types
@@ -126,6 +130,8 @@ std::vector<RuleField> ruleFields(Rules& r) {
       I("combat", "precision_base", "Précision par défaut (%)", r.accBase, 0, 200, 1),
       I("combat", "esquive_base", "Esquive par défaut (%)", r.evaBase, 0, 100, 1),
       I("combat", "critique_base", "Critique par défaut (%)", r.critBase, 0, 100, 1),
+      I("combat", "jauge_rapide", "Technique rapide : jauge de départ (%)", r.quickGauge, 0, 90, 5),
+      I("combat", "retard_lourde", "Technique lourde : retard de la jauge (%)", r.heavyDelay, 0, 200, 5),
       D("etats", "poison_degats", "Poison : part des PV perdus par tour", r.poisonDmg, 0, 1, .01),
       D("etats", "brulure_degats", "Brûlure : part des PV perdus par tour", r.burnDmg, 0, 1, .01),
       D("etats", "brulure_attaque", "Brûlure : multiplicateur d'Attaque", r.burnAtk, 0, 1, .05),
@@ -257,6 +263,7 @@ void rebuildData() {
     m.desc = jget<std::string>(o, "description", "");
     m.acc = jget(o, "precision", 100);
     m.critBonus = jget(o, "critique", 0);
+    m.pace = Pace(nameIndex(PACES, jget<std::string>(o, "rythme", "normale"), "Rythme"));
     if (o.contains("effet")) m.effects.push_back(parseEffect(o["effet"]));
     for (auto& e : o.value("effets", Json::array())) m.effects.push_back(parseEffect(e));
     return m;
@@ -396,6 +403,10 @@ static const typename V::value_type& findIx(const V& v, const std::unordered_map
   return v[it->second];
 }
 const Move& moveInfo(const std::string& id) { return findIx(MOVES, MOVE_IX, id, "Technique"); }
+float paceGauge(const Move& m) {
+  return m.pace == Pace::Quick ? float(RULES.quickGauge) : m.pace == Pace::Heavy ? -float(RULES.heavyDelay) : 0.f;
+}
+float paceTime(const Move& m) { return (100 - paceGauge(m)) / 100; }
 const Species& species(const std::string& id) { return findIx(SPECIES, SPECIES_IX, id, "Espèce"); }
 const ItemDef& item(const std::string& id) { return findIx(ITEMS, ITEM_IX, id, "Objet"); }
 bool hasMove(const std::string& id) { return MOVE_IX.count(id) > 0; }

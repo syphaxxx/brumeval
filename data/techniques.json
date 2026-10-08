@@ -6,7 +6,9 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 40,
-    "description": "Un coup d'épée net."
+    "rythme": "rapide",
+    "effet": {"stat": "vitesse", "niveaux": 1, "sur": "lanceur", "chance": 25},
+    "description": "Un coup d'épée vif qui donne de l'élan."
   },
   {
     "id": "estoc",
@@ -24,9 +26,10 @@
     "type": "normal",
     "genre": "physique",
     "cible": "ennemi",
-    "puissance": 72,
+    "puissance": 85,
     "precision": 90,
     "critique": 10,
+    "rythme": "lourde",
     "description": "Un enchaînement fulgurant."
   },
   {
@@ -45,8 +48,9 @@
     "type": "normal",
     "genre": "physique",
     "cible": "ennemi",
-    "puissance": 68,
+    "puissance": 80,
     "precision": 85,
+    "rythme": "lourde",
     "description": "Une frappe qui ébranle le sol."
   },
   {
@@ -56,6 +60,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 28,
+    "rythme": "rapide",
     "description": "Mieux vaut lancer un sort."
   },
   {
@@ -66,9 +71,18 @@
     "cible": "ennemi",
     "puissance": 32,
     "critique": 20,
+    "rythme": "rapide",
     "description": "Rapide mais légère."
   },
-  {"id": "charge", "nom": "Charge", "type": "normal", "genre": "physique", "cible": "ennemi", "puissance": 35},
+  {
+    "id": "charge",
+    "nom": "Charge",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 30,
+    "rythme": "rapide"
+  },
   {
     "id": "flam",
     "nom": "Flammèche",
@@ -76,7 +90,8 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 40,
-    "effet": {"statut": "brulure", "chance": 10}
+    "rythme": "rapide",
+    "effet": {"statut": "brulure", "chance": 15}
   },
   {
     "id": "brasier",
@@ -87,7 +102,16 @@
     "puissance": 65,
     "effet": {"statut": "brulure", "chance": 20}
   },
-  {"id": "jet", "nom": "Jet d'eau", "type": "eau", "genre": "physique", "cible": "ennemi", "puissance": 40},
+  {
+    "id": "jet",
+    "nom": "Jet d'eau",
+    "type": "eau",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 40,
+    "rythme": "rapide",
+    "effet": {"stat": "attaque", "niveaux": -1, "chance": 20}
+  },
   {"id": "vague", "nom": "Vague", "type": "eau", "genre": "physique", "cible": "ennemi", "puissance": 65},
   {
     "id": "ronce",
@@ -95,7 +119,9 @@
     "type": "plante",
     "genre": "physique",
     "cible": "ennemi",
-    "puissance": 40
+    "puissance": 40,
+    "rythme": "rapide",
+    "effet": {"stat": "vitesse", "niveaux": -1, "chance": 20}
   },
   {
     "id": "tempete",
@@ -588,8 +614,9 @@
     "type": "metal",
     "genre": "physique",
     "cible": "ennemi",
-    "puissance": 75,
+    "puissance": 90,
     "precision": 90,
+    "rythme": "lourde",
     "description": "Une charge puissante, lance en avant."
   },
   {
@@ -608,7 +635,8 @@
     "type": "esprit",
     "genre": "magique",
     "cible": "ennemi",
-    "puissance": 45
+    "puissance": 45,
+    "rythme": "rapide"
   },
   {
     "id": "hypnose",
@@ -675,6 +703,7 @@
     "cible": "ennemi",
     "puissance": 40,
     "critique": 15,
+    "rythme": "rapide",
     "description": "Une flèche qui vise les points faibles."
   },
   {
