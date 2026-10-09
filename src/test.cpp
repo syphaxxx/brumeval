@@ -1812,6 +1812,24 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   // BRUMEVAL_SIMULATIONS=5 : cinq fois plus de combats par ligne (mesure plus précise, plus longue)
   const char* simEnv = SDL_getenv("BRUMEVAL_SIMULATIONS");
   int simFactor = simEnv ? std::max(1, std::atoi(simEnv)) : 1;
+  // Équipement des boutiques (1 : vallée, 2 : Forgeroc, 3 : Givreval) : le meilleur de chaque
+  // emplacement ; arme de magie pour les mages (plus de Magie que d'Attaque), accessoire seul pour une créature
+  int simGear = 0;
+  auto equipParty = [](std::vector<FighterP>& t, int tier) {
+    static const char* GEAR[3][5] = {{"epee_fer", "baton_chene", "tunique_cuir", "tunique_cuir", "amulette_vie"},
+                                     {"hache_braise", "baton_lune", "cotte_mailles", "robe_mage", "bague_vif"},
+                                     {"lame_givre", "sceptre_aurore", "armure_givre", "robe_mage", "pendentif_brume"}};
+    const char* const* g = GEAR[std::clamp(tier, 1, 3) - 1];
+    for (auto& f : t) {
+      bool mage = f->S().base[B_MAG] > f->S().base[B_ATK];
+      if (f->S().human) f->gear = {mage ? g[1] : g[0], mage ? g[3] : g[2], g[4]};
+      else f->gear = {"", "", g[4]};
+      for (auto& id : f->gear)
+        if (!id.empty() && !hasItem(id)) id.clear();
+      f->recalc();
+      f->hp = f->mhp, f->mp = f->mmp;
+    }
+  };
   auto simSetup = [&](const char* name, std::vector<std::pair<std::string, int>> party, std::function<BattleSetup()> mk, int n,
                       bool tac = false) {
     n *= simFactor;
@@ -1820,6 +1838,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     for (int k = 0; k < n; k++) {
       team.clear();
       for (auto& [id, l] : party) team.push_back(makeFighter(id, l));
+      if (simGear) equipParty(team, simGear);
       menus.clear();
       sc.clear();
       mode = Mode::Map;
@@ -1970,6 +1989,49 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     return s;
   }, 30, true);
 
+  std::printf("\nMêmes boss, équipe équipée par les boutiques de sa région (meilleur achat possible) :\n");
+  simGear = 1;
+  sim("Boss Sylvarque (équipe N.11)", {{"lior", 11}, {"maelle", 11}, {"gouttelin", 11}},
+      [&] { return std::vector<FighterP>{makeFighter("brumelin", 9), bossF("sylvarque", 12, 3.5f), makeFighter("brumelin", 9)}; }, true, 40);
+  sim("Duel contre Brann (équipe N.14)", {{"lior", 14}, {"maelle", 14}, {"ronceau", 14}}, [&] {
+    auto b = makeFighter("brann", 14);
+    b->mhp = b->mhp * 5 / 2;
+    b->hp = b->mhp;
+    b->boss = true;
+    return std::vector<FighterP>{b};
+  }, true, 20);
+  simSetup("Ronce-Mère (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"kael", 16}}, [&] {
+    BattleSetup s;
+    s.foes = {makeFighter("serpentin", 14), bossF("ronce_mere", 18, 4), makeFighter("serpentin", 14)};
+    s.reserve = {makeFighter("crapoison", 13)};
+    s.boss = true;
+    s.canFlee = s.canCapture = false;
+    return s;
+  }, 30);
+  simGear = 2;
+  sim("Golem de suie (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"brann", 16}},
+      [&] { return std::vector<FighterP>{bossF("golem", 16, 3)}; }, true, 20);
+  sim("Boss Ignarok (équipe N.22)", {{"lior", 22}, {"maelle", 22}, {"isra", 22}},
+      [&] { return std::vector<FighterP>{makeFighter("tisonnel", 19), bossF("ignarok", 23, 4), makeFighter("tisonnel", 19)}; }, true, 40);
+  simGear = 3;
+  simSetup("Duel contre Sélène (équipe N.26)", {{"lior", 26}, {"maelle", 26}, {"isra", 26}}, [&] {
+    BattleSetup s;
+    s.foes = {bossF("selene", 26, 3)};
+    s.foeName = "Sélène";
+    s.boss = true;
+    s.canFlee = s.canCapture = false;
+    return s;
+  }, 30);
+  simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}}, [&] {
+    BattleSetup s;
+    s.foes = {makeFighter("givrelin", 27), bossF("givrecorne", 31, 4), makeFighter("givrelin", 27)};
+    s.reserve = {makeFighter("cristallin", 26)};
+    s.boss = true;
+    s.canFlee = s.canCapture = false;
+    return s;
+  }, 40);
+  simGear = 0;
+
   // Expédition : gardien de chaque région contre une équipe générée (héros, créature de départ,
   // recrue de la région 1) arrivée deux niveaux au-dessus des créatures sauvages
   std::printf("\nExpédition (gardiens, équipe générée au niveau de la région + 2) :\n");
@@ -2013,6 +2075,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         std::vector<std::pair<std::string, int>> party = {{X.content_.heroes[0], lvl}, {X.content_.starters[0], lvl}, {"x1r", lvl}};
         std::string name = "Région " + std::to_string(k) + " (graine " + std::to_string(seed) + ", N." + std::to_string(lvl) + ")";
         simSetup(name.c_str(), party, mk, 15);
+        if (k != 2) {  // le même gardien, équipe équipée par la boutique de la région
+          simGear = k >= 6 ? 3 : k >= 3 ? 2 : 1;
+          simSetup("  avec équipement", party, mk, 15);
+          simGear = 0;
+        }
         // Gardien à plusieurs (coop.cpp) : 2 combattants chacun à deux, 1 chacun à trois ou quatre ;
         // PV des ennemis × guardianScale (comme en jeu). Chaque joueur a son héros et sa créature.
         if (k != 2 && k != 8)

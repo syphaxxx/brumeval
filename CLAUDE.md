@@ -390,7 +390,13 @@ peu » à la demande de l'utilisateur (2026-10-09) : +15 % de PV par joueur en
 plus. Mesuré ensuite (15 combats par ligne, moyenne des graines 11/22/33) :
 région 3 : 100 % seul, 84-93 % à plusieurs ; région 5 : 42 % seul, 55-64 % à
 plusieurs. +20 % rendait le groupe plus dur que le solo en région 3. Les
-simulations n'utilisent pas l'équipement : il rend le jeu un peu plus facile.
+simulations ordinaires n'utilisent pas l'équipement.
+Avec l'équipement (mesuré le 2026-10-09, `simGear` dans test.cpp : le meilleur
+achat de la boutique de la région pour chaque membre, borne haute) : Sylvarque
+75 → 100 %, Ronce-Mère 73 → 93 %, Ignarok 25 → 90 %, Givrecorne 35 → 92 %
+(sans tactiques) ; gardiens de l'Expédition : région 5 graine 33 6 → 40 %,
+région 8 graine 11 73 → 93 %. Tout acheter rend les boss d'Ignarok et du
+Givrecorne faciles ; pas encore ajusté (à décider avec l'utilisateur).
 Duel avec l'équipement (`Online::Member::gear`, équipe `[espèce, niveau,
 équipement]`), décision du 2026-10-09.
 
