@@ -49,6 +49,7 @@
     "butin": [{"objet": "potion", "chance": 0.25}, {"objet": "ether", "chance": 0.08}]
   },
   "capture": {"base": 0.15, "bonus_pv": 0.75, "max": 0.95},
+  "multijoueur": {"gardien_par_joueur": 0.15},
   "formules": {
     "pv_diviseur": 20,
     "pv_par_niveau": 1,

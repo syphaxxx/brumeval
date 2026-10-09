@@ -110,7 +110,7 @@ Json Online::myFighters() const {
   for (size_t i = 0; i < G.team.size() && a.size() < 3; i++) {
     const Fighter& f = *G.team[i];
     if (!f.alive()) continue;
-    a.push_back(Json{{"rang", (int)i}, {"sp", f.sp}, {"lvl", f.lvl}, {"hp", f.hp}, {"mp", f.mp}, {"lim", (int)f.lim}});
+    a.push_back(Json{{"rang", (int)i}, {"sp", f.sp}, {"lvl", f.lvl}, {"hp", f.hp}, {"mp", f.mp}, {"lim", (int)f.lim}, {"eq", gearJson(f)}});
   }
   return a;
 }
@@ -374,6 +374,7 @@ void Online::onGuardian(const Json& m) {
         f = G.team[(size_t)r];
       else {
         f = makeFighter(sp, jget(d, "lvl", 1));
+        applyGear(*f, d.value("eq", Json()));  // même équipement que chez son joueur
         f->hp = std::clamp(jget(d, "hp", f->mhp), 1, f->mhp);
         f->mp = std::clamp(jget(d, "mp", f->mmp), 0, f->mmp);
         f->lim = (float)std::clamp(jget(d, "lim", 0), 0, 100);
@@ -388,7 +389,7 @@ void Online::onGuardian(const Json& m) {
     ready_ = 0;
     return;
   }
-  float scale = std::max(1.f, allies.size() / 3.f);
+  float scale = guardianScale((int)allies.size(), (int)grp.size());
   auto make = [scale](const Json& e) {
     auto f = makeFighter(jget<std::string>(e, "espece", ""), jget(e, "niveau", 1));
     float mult = jget(e, "pv", 1.f) * scale;

@@ -54,10 +54,6 @@ std::vector<FighterP> Online::myTeam() const {
     readMemberLine(k, s, team);  // même lecture que Game::loadGame
   }
   team.erase(std::remove(team.begin(), team.end(), nullptr), team.end());
-  for (auto& m : team) {  // duel à armes égales : sans équipement (l'autre joueur ne connaît que l'espèce et le niveau)
-    m->gear = {};
-    m->recalc();
-  }
   if (team.empty()) {
     const Rules& r = rules();
     if (hasSpecies(r.hero)) team.push_back(makeFighter(r.hero, 10));
@@ -97,9 +93,15 @@ std::string Online::nameOf(int id) const {
 }
 Online::Player* Online::opponent() { return players_.size() == 1 ? &players_[0] : nullptr; }
 
-Json Online::hello() const {
+// Une équipe dans un message : [espèce, niveau, équipement] pour chaque membre
+static Json teamJson(const std::vector<FighterP>& t) {
   Json team = Json::array();
-  for (auto& f : myTeam()) team.push_back(Json::array({f->sp, f->lvl}));
+  for (auto& f : t) team.push_back(Json::array({f->sp, f->lvl, gearJson(*f)}));
+  return team;
+}
+
+Json Online::hello() const {
+  Json team = teamJson(myTeam());
   return Json{{"t", "bonjour"}, {"version", BRUMEVAL_VERSION}, {"donnees", hash_}, {"pseudo", pseudo}, {"equipe", team}};
 }
 
@@ -120,21 +122,20 @@ Json Online::playersJson() const {
   Json a = Json::array();
   auto team = [](const std::vector<Member>& t) {
     Json e = Json::array();
-    for (auto& m : t) e.push_back(Json::array({m.sp, m.lvl}));
+    for (auto& m : t) e.push_back(Json::array({m.sp, m.lvl, m.gear}));
     return e;
   };
-  std::vector<Member> mine;
-  for (auto& f : myTeam()) mine.push_back({f->sp, f->lvl});
-  a.push_back(Json{{"id", myId_}, {"nom", me_}, {"equipe", team(mine)}});
+  a.push_back(Json{{"id", myId_}, {"nom", me_}, {"equipe", teamJson(myTeam())}});
   for (auto& p : players_) a.push_back(Json{{"id", p.id}, {"nom", p.name}, {"equipe", team(p.team)}});
   return a;
 }
 
-static std::vector<std::pair<std::string, int>> readTeam(const Json& team) {
-  std::vector<std::pair<std::string, int>> out;
+// Équipe reçue : [espèce, niveau, équipement] (3 membres au plus)
+static std::vector<Online::Member> readTeam(const Json& team) {
+  std::vector<Online::Member> out;
   for (auto& e : team)
-    if (e.is_array() && e.size() == 2 && e[0].is_string() && e[1].is_number_integer() && out.size() < 3)
-      out.push_back({e[0].get<std::string>(), std::clamp(e[1].get<int>(), 1, 100)});
+    if (e.is_array() && e.size() >= 2 && e[0].is_string() && e[1].is_number_integer() && out.size() < 3)
+      out.push_back({e[0].get<std::string>(), std::clamp(e[1].get<int>(), 1, 100), e.size() > 2 ? e[2] : Json::array()});
   return out;
 }
 
@@ -153,8 +154,7 @@ void Online::applyPlayers(const Json& list) {
     else added = true;
     p.id = id;
     p.name = jget<std::string>(e, "nom", "Joueur");
-    p.team.clear();
-    for (auto& [sp, lvl] : readTeam(e.value("equipe", Json::array()))) p.team.push_back({sp, lvl});
+    p.team = readTeam(e.value("equipe", Json::array()));
     next.push_back(p);
   }
   for (auto& p : players_) {
@@ -293,9 +293,7 @@ void Online::leave() {
 void Online::salon(int sel) {
   refreshTeam();
   // Mon équipe pour un duel : celle de ma partie principale (pas celle d'une expédition qui vient de finir)
-  Json team = Json::array();
-  for (auto& f : myTeam()) team.push_back(Json::array({f->sp, f->lvl}));
-  send(Json{{"t", "equipe"}, {"equipe", team}});
+  send(Json{{"t", "equipe"}, {"equipe", teamJson(myTeam())}});
   state_ = State::Salon;
   screen_ = true;
   ready_ = 0;
@@ -357,13 +355,16 @@ void Online::startDuel(int theme) {
   if (!o) return;
   std::vector<FighterP> mine = myTeam(), theirs;
   for (auto& p : o->team)
-    if (hasSpecies(p.sp)) theirs.push_back(makeFighter(p.sp, p.lvl));
+    if (hasSpecies(p.sp)) {
+      theirs.push_back(makeFighter(p.sp, p.lvl));
+      applyGear(*theirs.back(), p.gear);  // duel avec l'équipement de chacun
+    }
   if (sameLevel_) {
     std::vector<FighterP> all = mine;
     all.insert(all.end(), theirs.begin(), theirs.end());
     for (auto& f : all) {
       f->lvl = 50;
-      f->recalc();
+      f->recalc();  // garde l'équipement
       f->hp = f->mhp, f->mp = f->mmp;
     }
   }
@@ -374,7 +375,7 @@ void Online::startDuel(int theme) {
   state_ = State::Duel;
   screen_ = false;
   G.team = mine;
-  G.items.clear();  // à armes égales : pas d'objets
+  G.items.clear();  // pas d'objets en duel (l'équipement, lui, compte)
   BattleSetup s;
   s.foes = theirs;
   s.foeName = o->name;
@@ -488,10 +489,7 @@ void Online::onMessage(int from, Json m) {
     salon();
   } else if (k == "joueurs" && !host_) applyPlayers(m.value("joueurs", Json::array()));
   else if (k == "equipe") {  // retour au salon : l'équipe de sa partie principale (pour un duel)
-    if (Player* p = player(de)) {
-      p->team.clear();
-      for (auto& [sp, lvl] : readTeam(m.value("equipe", Json::array()))) p->team.push_back({sp, lvl});
-    }
+    if (Player* p = player(de)) p->team = readTeam(m.value("equipe", Json::array()));
   } else if (k == "regles") sameLevel_ = jget(m, "egaux", false);
   else if (k == "debut" && !host_ && state_ == State::Salon) {
     sameLevel_ = jget(m, "egaux", false);
@@ -558,7 +556,7 @@ void Online::onHello(int from, const Json& m) {
   Player pl;
   pl.id = from;
   pl.name = name;
-  for (auto& [sp, lvl] : readTeam(m.value("equipe", Json::array()))) pl.team.push_back({sp, lvl});
+  pl.team = readTeam(m.value("equipe", Json::array()));
   players_.push_back(pl);
   Json welcome{{"t", "bienvenue"}, {"id", from}, {"joueurs", playersJson()}};
   if (session_.on)

@@ -15,11 +15,9 @@ dans l'ordre conseillé ; chacune finit par une version publiée.
 - Essayer **une fois** dans VS Code : F7, Maj+F5, F5 (voir CLAUDE.md, À faire).
 - Faire passer les amis en 1.3 (la 1.2 ne se connecte plus à la 1.3).
 
-**Décisions à prendre (par toi)** :
-1. Gardien à plusieurs : il est souvent plus facile qu'en solo (voir CLAUDE.md,
-   Équilibrage). Garder, ou le renforcer quand on est plusieurs ?
-2. Équipement dans l'Expédition (boutiques générées) : oui ou non ?
-3. Duels : sans équipement (actuel, « à armes égales ») ou avec ?
+**Décisions prises le 9 octobre** (faites en version 1.4) : gardien à plusieurs
+un peu renforcé (+15 % de PV par joueur en plus), équipement dans les
+boutiques de l'Expédition, duels avec l'équipement.
 
 ## Étape 1 — Essais et finitions (1 à 2 séances)
 
@@ -27,8 +25,7 @@ dans l'ordre conseillé ; chacune finit par une version publiée.
   ordinateurs** (jamais essayé : seulement deux fenêtres sur le même PC).
 - Mesurer l'équilibrage **avec l'équipement** (les simulations jouent sans) et
   ajuster les prix si le jeu devient trop facile.
-- Équipement dans les boutiques de l'Expédition (si décidé) : changer le
-  générateur change le monde des graines, donc l'empreinte du mode test.
+
 - Petits plus du retour des joueurs.
 
 ## Étape 2 — Plus de contenu (3 à 5 séances)
