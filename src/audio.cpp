@@ -30,6 +30,7 @@ struct Seg {
 struct Effect {
   std::vector<Seg> segs;
   float length = 0;
+  float variation = 0;  // hauteur changée au hasard à chaque fois (0.1 : ±10 %), pour ne pas lasser
 };
 // Une case de la partition : note, prolongation de la précédente (tie), silence ou coup de bruit
 struct Note {
@@ -86,9 +87,12 @@ float freqOf(const Json& j, const std::string& where) {
   throw std::runtime_error("sons.json : " + where + " : fréquence ou note invalide (" + j.dump() + ")");
 }
 
-Effect readEffect(const std::string& id, const Json& list) {
+// Un effet : une liste de sons, ou {"variation": 0.1, "sons": [...]}
+Effect readEffect(const std::string& id, const Json& j) {
   Effect e;
   float t = 0;
+  Json list = j.is_object() ? j.value("sons", Json::array()) : j;
+  if (j.is_object()) e.variation = std::clamp(jget(j, "variation", 0.f), 0.f, .5f);
   for (auto& s : list) {
     Seg g;
     std::string where = "effet « " + id + " »";
@@ -167,6 +171,7 @@ struct EffectPlay {
   const Effect* e;
   float t = 0;
   std::vector<Osc> osc;
+  float pitch = 1;  // variation tirée au hasard pour cette fois
 };
 
 struct VoicePlay {
@@ -186,6 +191,8 @@ class Mixer {
     if (it == effects_.end()) return;
     if (fx_.size() >= 12) fx_.erase(fx_.begin());  // trop d'effets à la fois : le plus ancien s'arrête
     EffectPlay p{&it->second, 0, std::vector<Osc>(it->second.segs.size())};
+    seed_ = seed_ * 1664525u + 1013904223u;  // petit hasard (pas besoin d'être le même partout)
+    p.pitch = 1 + it->second.variation * (float(seed_ >> 8) / float(1u << 24) * 2 - 1);
     fx_.push_back(p);
   }
   void setMusic(const std::string& id) {
@@ -209,7 +216,7 @@ class Mixer {
           const Seg& s = p.e->segs[k];
           float u = (p.t - s.start) / s.dur;
           if (u < 0 || u >= 1) continue;
-          float f = s.f0 * std::pow(s.f1 / s.f0, u);  // glissement de fréquence
+          float f = s.f0 * std::pow(s.f1 / s.f0, u) * p.pitch;  // glissement de fréquence
           float env = std::min(1.f, (p.t - s.start) / .003f) * (u < .7f ? 1.f : (1 - u) / .3f);
           fx += p.osc[k].next(s.wave, f, s.duty) * s.vol * env;
         }
@@ -223,10 +230,11 @@ class Mixer {
   const Track* tr_ = nullptr;
   std::vector<VoicePlay> voices_;
   std::vector<EffectPlay> fx_;
+  uint32_t seed_ = 12345;
   int step_ = -1;
   float stepT_ = 0, fade_ = 1;
 
-  void start(const std::string& id) {
+  void start(std::string id) {  // par valeur : id vient souvent de « pending », vidé ci-dessous
     track = id;
     switching = false;
     pending.clear();
@@ -354,6 +362,11 @@ void music(const std::string& track) {
   mixer_.setMusic(track);
 }
 
+bool has(const std::string& effect) {
+  Lock lock;
+  return effects_.count(effect) > 0;
+}
+
 std::string currentMusic() {
   Lock lock;
   return mixer_.switching ? mixer_.pending : mixer_.track;
@@ -372,6 +385,17 @@ void setVolumes(int music, int effects) {
   Lock lock;
   mixer_.musicGain = gain(music);
   mixer_.fxGain = gain(effects);
+}
+
+float runMixer(float seconds) {
+  if (dev_) return 0;  // une vraie sortie son tourne déjà
+  std::vector<float> out((size_t)std::max(0.f, seconds * RATE));
+  float g = mixer_.fxGain, peak = 0;
+  mixer_.fxGain = 0;  // la musique seule
+  mixer_.mix(out.data(), (int)out.size());
+  mixer_.fxGain = g;
+  for (float x : out) peak = std::max(peak, std::fabs(x));
+  return peak;
 }
 
 std::vector<float> render(const std::string& name, bool isMusic, float seconds) {

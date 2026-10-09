@@ -19,6 +19,7 @@ void init();                            // ouvre la sortie son (sans effet si im
 void shutdown();
 
 void play(const std::string& effect);  // bruitage (ignoré s'il n'existe pas)
+bool has(const std::string& effect);   // ce bruitage existe dans data/sons.json
 // Musique jouée en boucle ("" : silence). Le même morceau continue sans repartir du
 // début ; un autre remplace l'ancien après un court fondu.
 void music(const std::string& track);
@@ -30,6 +31,9 @@ void setVolumes(int music, int effects);  // 0 à 10
 std::vector<float> render(const std::string& name, bool isMusic, float seconds);
 std::vector<std::string> effectNames();
 std::vector<std::string> trackNames();
+// Mode test (pas de sortie son) : fait tourner le vrai mélangeur pendant « seconds », comme le
+// ferait le fil audio, et renvoie le plus fort échantillon de musique produit
+float runMixer(float seconds);
 extern int playedCount;  // effets demandés depuis le début (mode test)
 extern std::string lastEffect;
 

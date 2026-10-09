@@ -754,7 +754,10 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m) {
   int dmg = std::max(1, int(((2 * a->lvl / 5.f + 2) * m.power * A / std::max(1.f, D) / float(R.dmgDivisor) + 2) * stab * eff * spread * k));
   d->hp = std::max(0, d->hp - dmg);
   setBlink(d);
-  sound(crit ? "critique" : magic ? "sort" : "coup");
+  // Bruitage : sort selon l'élément (« sort_feu »…), coup selon le rythme (rapide, normal, lourd)
+  std::string fx = crit ? "critique" : magic ? "sort_" + types()[m.type].id : m.pace == Pace::Quick ? "coup_rapide" : m.pace == Pace::Heavy ? "coup_lourd" : "coup";
+  if (!audio::has(fx)) fx = magic ? "sort" : "coup";
+  sound(fx);
   pop(d, std::to_string(dmg), eff > 1 ? GOLD : eff < 1 ? GREY : WHITE);
   if (crit) pop(d, "Critique !", RED);
   if (eff > 1) pop(d, "Efficace !", GOLD);

@@ -14,8 +14,8 @@
         {
           "onde": "carree",
           "volume": 0.16,
-          "rapport": 0.25,
-          "notes": "A4 . . C5 E5 . D5 C5 | B4 . . G4 A4 . . . | F4 . A4 C5 B4 . A4 G4 | E4 . . . - - - - | A4 . . C5 E5 . G5 F5 | E5 . D5 C5 D5 . . . | C5 . B4 A4 G#4 . B4 . | A4 . . . - - - -"
+          "rapport": 0.5,
+          "notes": "A3 . . C4 E4 . D4 C4 | B3 . . G3 A3 . . . | F3 . A3 C4 B3 . A3 G3 | E3 . . . - - - - | A3 . . C4 E4 . G4 F4 | E4 . D4 C4 D4 . . . | C4 . B3 A3 G#3 . B3 . | A3 . . . - - - - | E4 . . D4 C4 . B3 . | G3 . . . B3 . E4 . | F4 . E4 . C4 . A3 . | G#3 . . . B3 . . . | C4 . . E4 A4 . G4 . | G4 . E4 . C4 . G3 . | A3 . C4 . B3 . G#3 . | A3 . . . - - - -"
         },
         {
           "onde": "triangle",
@@ -25,7 +25,7 @@
         {
           "onde": "carree",
           "volume": 0.05,
-          "rapport": 0.125,
+          "rapport": 0.25,
           "extinction": 0.18,
           "notes": "A3 C4 E4 C4 A3 C4 E4 C4 | G3 B3 E4 B3 G3 B3 E4 B3 | F3 A3 C4 A3 F3 A3 C4 A3 | E3 G#3 B3 G#3 E3 G#3 B3 G#3 | A3 C4 E4 C4 A3 C4 E4 C4 | C4 E4 G4 E4 C4 E4 G4 E4 | F3 A3 C4 A3 E3 G#3 B3 G#3 | A3 C4 E4 C4 A3 C4 E4 C4"
         }
@@ -38,7 +38,7 @@
           "onde": "carree",
           "volume": 0.15,
           "rapport": 0.5,
-          "notes": "E5 . G5 . C6 . G5 . | A5 . G5 E5 D5 . . . | C5 . E5 . G5 . E5 . | F5 E5 D5 C5 D5 . . . | E5 . G5 . C6 . B5 A5 | G5 . E5 . A5 . G5 . | F5 . E5 . D5 . G4 . | C5 . . . - . - ."
+          "notes": "E4 . G4 . C5 . G4 . | A4 . G4 E4 D4 . . . | C4 . E4 . G4 . E4 . | F4 E4 D4 C4 D4 . . . | E4 . G4 . C5 . B4 A4 | G4 . E4 . A4 . G4 . | F4 . E4 . D4 . G3 . | C4 . . . - . - . | G4 . E4 . C4 . E4 . | F4 . A4 . G4 . D4 . | E4 . G4 . C5 . B4 . | A4 . F4 . D4 . B3 . | C4 . E4 . G4 . C5 . | B4 . G4 . A4 . E4 . | F4 . A4 . G4 . B4 . | C5 . . . G4 . C4 ."
         },
         {
           "onde": "triangle",
@@ -47,10 +47,10 @@
         },
         {
           "onde": "bruit",
-          "volume": 0.05,
-          "frequence": 9000,
+          "volume": 0.04,
+          "frequence": 5000,
           "extinction": 0.03,
-          "notes": "- x - x - x - x | - x - x - x - x | - x - x - x - x | - x - x - x - x | - x - x - x - x | - x - x - x - x | - x - x - x - x | - x - x - x - x"
+          "notes": "- x - x - x - x | - x - x - x - x | - x - x - x - x | - x - x x x x x | - x - x - x - x | - x - x - x - x | - x - x - x - x | - x - x x x x x"
         }
       ]
     },
@@ -60,7 +60,7 @@
         {
           "onde": "triangle",
           "volume": 0.28,
-          "notes": "D5 . . F5 E5 . C5 . | D5 . . . A4 . . . | C5 . D5 . F5 . G5 . | E5 . . . C5 . . . | D5 . . F5 E5 . C5 . | A4 . G4 . A4 . C5 . | D5 . . . C5 . A4 . | D5 . . . - - - -"
+          "notes": "D4 . . F4 E4 . C4 . | D4 . . . A3 . . . | C4 . D4 . F4 . G4 . | E4 . . . C4 . . . | D4 . . F4 E4 . C4 . | A3 . G3 . A3 . C4 . | D4 . . . C4 . A3 . | D4 . . . - - - - | A4 . . G4 F4 . E4 . | F4 . . . D4 . . . | E4 . . D4 C4 . G3 . | C4 . . . E4 . . . | F4 . E4 . D4 . A3 . | B3 . . . C#4 . . . | D4 . F4 . E4 . G4 . | F4 . . . D4 . . ."
         },
         {
           "onde": "triangle",
@@ -70,7 +70,7 @@
         {
           "onde": "carree",
           "volume": 0.05,
-          "rapport": 0.125,
+          "rapport": 0.25,
           "extinction": 0.2,
           "notes": "D4 F4 A4 F4 D4 F4 A4 F4 | D4 F4 A4 F4 D4 F4 A4 F4 | C4 E4 G4 E4 C4 E4 G4 E4 | C4 E4 G4 E4 C4 E4 G4 E4 | D4 F4 A4 F4 D4 F4 A4 F4 | G3 B3 D4 B3 G3 B3 D4 B3 | Bb3 D4 F4 D4 C4 E4 G4 E4 | D4 F4 A4 F4 D4 F4 A4 F4"
         }
@@ -82,8 +82,8 @@
         {
           "onde": "carree",
           "volume": 0.14,
-          "rapport": 0.25,
-          "notes": "E5 . F5 . E5 . B4 . | C5 . B4 . A4 . B4 . | E5 . F5 . G5 . F5 . | E5 . . . - . - . | B5 . A5 . G5 . F5 . | E5 . F5 . D5 . E5 . | C5 . D5 . B4 . C5 . | B4 . . . - . - ."
+          "rapport": 0.5,
+          "notes": "E4 . F4 . E4 . B3 . | C4 . B3 . A3 . B3 . | E4 . F4 . G4 . F4 . | E4 . . . - . - . | B4 . A4 . G4 . F4 . | E4 . F4 . D4 . E4 . | C4 . D4 . B3 . C4 . | B3 . . . - . - . | B3 . C4 . B3 . G3 . | A3 . G3 . F3 . E3 . | B3 . C4 . D4 . C4 . | B3 . . . - . - . | G4 . F4 . E4 . C4 . | B3 . C4 . A3 . B3 . | F4 . E4 . D4 . C4 . | E4 . . . - . - ."
         },
         {
           "onde": "carree",
@@ -96,7 +96,7 @@
           "volume": 0.14,
           "frequence": 220,
           "extinction": 0.09,
-          "notes": "x - - x x - - - | x - - x x - - - | x - - x x - - - | x - - x x - - - | x - - x x - - - | x - - x x - - - | x - - x x - - - | x - - x x - - -"
+          "notes": "x - - x x - - - | x - - x x - - - | x - - x x - - - | x - x x x - x x | x - - x x - - - | x - - x x - - - | x - - x x - - - | x - x x x - x x"
         }
       ]
     },
@@ -107,7 +107,7 @@
           "onde": "sinus",
           "volume": 0.3,
           "extinction": 0.9,
-          "notes": "E5 . . . - - B4 . | C5 . . . - - - - | D5 . . . - - A4 . | B4 . . . - - - - | E5 . . . - - G5 . | F5 . . . - - E5 . | D5 . . . C5 . B4 . | A4 . . . - - - -"
+          "notes": "E4 . . . - - B3 . | C4 . . . - - - - | D4 . . . - - A3 . | B3 . . . - - - - | E4 . . . - - G4 . | F4 . . . - - E4 . | D4 . . . C4 . B3 . | A3 . . . - - - - | C4 . . . - - E4 . | A3 . . . - - - - | B3 . . . - - D4 . | G#3 . . . - - - - | A3 . . . - - C4 . | F4 . . . - - D4 . | B3 . . . G#3 . E3 . | A3 . . . - - - -"
         },
         {
           "onde": "triangle",
@@ -118,7 +118,7 @@
           "onde": "sinus",
           "volume": 0.08,
           "extinction": 0.12,
-          "notes": "- - - - - - A6 - | - - - - - - - - | - - - E6 - - - - | - - - - - - - - | - - - - - - C7 - | - - - - - - - - | - - - B6 - - - - | - - - - - - - -"
+          "notes": "- - - - - - A5 - | - - - - - - - - | - - - E5 - - - - | - - - - - - - - | - - - - - - C6 - | - - - - - - - - | - - - B5 - - - - | - - - - - - - -"
         }
       ]
     },
@@ -128,7 +128,7 @@
         {
           "onde": "triangle",
           "volume": 0.28,
-          "notes": "B4 . E5 . G#5 . F#5 . | E5 . . . B4 . . . | C#5 . E5 . A5 . G#5 . | F#5 . . . - . . . | B4 . E5 . G#5 . B5 . | A5 . G#5 . F#5 . E5 . | D#5 . E5 . F#5 . D#5 . | E5 . . . - . . ."
+          "notes": "B3 . E4 . G#4 . F#4 . | E4 . . . B3 . . . | C#4 . E4 . A4 . G#4 . | F#4 . . . - . . . | B3 . E4 . G#4 . B4 . | A4 . G#4 . F#4 . E4 . | D#4 . E4 . F#4 . D#4 . | E4 . . . - . . . | G#4 . F#4 . E4 . B3 . | G#3 . . . B3 . . . | A3 . C#4 . E4 . A4 . | F#4 . . . D#4 . . . | E4 . G#4 . B4 . G#4 . | E4 . C#4 . A3 . C#4 . | B3 . D#4 . F#4 . A4 . | G#4 . . . - . . ."
         },
         {
           "onde": "triangle",
@@ -139,7 +139,7 @@
           "onde": "sinus",
           "volume": 0.1,
           "extinction": 0.35,
-          "notes": "E6 - - - B5 - - - | G#5 - - - B5 - - - | A5 - - - E6 - - - | F#6 - - - D#6 - - - | E6 - - - B5 - - - | C#6 - - - A5 - - - | B5 - - - F#6 - - - | E6 - - - - - - -"
+          "notes": "E5 - - - B4 - - - | G#4 - - - B4 - - - | A4 - - - E5 - - - | F#5 - - - D#5 - - - | E5 - - - B4 - - - | C#5 - - - A4 - - - | B4 - - - F#5 - - - | E5 - - - - - - -"
         }
       ]
     },
@@ -149,7 +149,7 @@
         {
           "onde": "triangle",
           "volume": 0.28,
-          "notes": "C5 . A4 . F4 . A4 . | Bb4 . G4 . E4 . G4 . | A4 . C5 . F5 . E5 . | D5 . . . C5 . . . | C5 . A4 . F4 . A4 . | Bb4 . D5 . G5 . F5 . | E5 . G5 . C5 . E5 . | F5 . . . - . . ."
+          "notes": "C4 . A3 . F3 . A3 . | Bb3 . G3 . E3 . G3 . | A3 . C4 . F4 . E4 . | D4 . . . C4 . . . | C4 . A3 . F3 . A3 . | Bb3 . D4 . G4 . F4 . | E4 . G4 . C4 . E4 . | F4 . . . - . . . | A3 . C4 . F4 . A4 . | G4 . E4 . C4 . E4 . | F4 . A4 . C5 . A4 . | Bb4 . F4 . E4 . G4 . | A4 . F4 . C4 . A3 . | D4 . F4 . B3 . D4 . | C4 . E4 . G4 . Bb4 . | A4 . . . F4 . . ."
         },
         {
           "onde": "triangle",
@@ -171,8 +171,8 @@
         {
           "onde": "carree",
           "volume": 0.14,
-          "rapport": 0.25,
-          "notes": "A4 . C5 . E5 . A5 . | G5 . E5 . D5 . E5 . | F5 . E5 . D5 . C5 . | B4 . C5 . D5 . E5 . | A4 . C5 . E5 . A5 . | B5 . A5 . G5 . E5 . | F5 . G5 . E5 . D5 . | E5 . . . E4 . . ."
+          "rapport": 0.5,
+          "notes": "A3 . C4 . E4 . A4 . | G4 . E4 . D4 . E4 . | F4 . E4 . D4 . C4 . | B3 . C4 . D4 . E4 . | A3 . C4 . E4 . A4 . | B4 . A4 . G4 . E4 . | F4 . G4 . E4 . D4 . | E4 . . . E3 . . . | C4 . E4 . A4 . E4 . | D4 . G4 . B4 . G4 . | C4 . F4 . A4 . F4 . | E4 . G#4 . B4 . G#4 . | A4 . G4 . E4 . C4 . | B3 . D4 . G4 . D4 . | A3 . C4 . F4 . A4 . | G#4 . . . E4 . . ."
         },
         {
           "onde": "triangle",
@@ -184,12 +184,12 @@
           "volume": 0.16,
           "frequence": 200,
           "extinction": 0.08,
-          "notes": "x - x - x - x - | x - x - x - x - | x - x - x - x - | x - x - x - x - | x - x - x - x - | x - x - x - x - | x - x - x - x - | x - x - x - x -"
+          "notes": "x - x - x - x - | x - x - x - x - | x - x - x - x - | x - x x x - x x | x - x - x - x - | x - x - x - x - | x - x - x - x - | x - x x x - x x"
         },
         {
           "onde": "bruit",
-          "volume": 0.05,
-          "frequence": 9000,
+          "volume": 0.04,
+          "frequence": 5000,
           "extinction": 0.03,
           "notes": "- x - x - x - x | - x - x - x - x | - x - x - x - x | - x - x - x - x | - x - x - x - x | - x - x - x - x | - x - x - x - x | - x - x - x - x"
         }
@@ -201,7 +201,7 @@
         {
           "onde": "scie",
           "volume": 0.1,
-          "notes": "D5 . . . F5 . E5 . | D5 . C5 . A4 . . . | Bb4 . . . D5 . C5 . | A4 . G4 . A4 . . . | D5 . . . F5 . A5 . | G5 . F5 . E5 . C#5 . | D5 . E5 . F5 . E5 . | D5 . . . A4 . . ."
+          "notes": "D4 . . . F4 . E4 . | D4 . C4 . A3 . . . | Bb3 . . . D4 . C4 . | A3 . G3 . A3 . . . | D4 . . . F4 . A4 . | G4 . F4 . E4 . C#4 . | D4 . E4 . F4 . E4 . | D4 . . . A3 . . . | F4 . . . D4 . A3 . | F4 . E4 . D4 . . . | D4 . . . F4 . Bb4 . | A4 . G4 . E4 . C#4 . | A4 . . . G4 . F4 . | G4 . . . Bb4 . D4 . | C#4 . E4 . G4 . A4 . | D4 . . . - . . ."
         },
         {
           "onde": "triangle",
@@ -213,7 +213,7 @@
           "volume": 0.17,
           "frequence": 180,
           "extinction": 0.09,
-          "notes": "x - - x - - x - | x - - x - - x - | x - - x - - x - | x - - x - - x - | x - - x - - x - | x - - x - - x - | x - - x - - x - | x - - x - - x -"
+          "notes": "x - - x - - x - | x - - x - - x - | x - - x - - x - | x - x - x x x x | x - - x - - x - | x - - x - - x - | x - - x - - x - | x - x - x x x x"
         },
         {
           "onde": "bruit",
@@ -268,49 +268,429 @@
         "rapport": 0.3
       }
     ],
-    "coup": [
-      {
-        "onde": "bruit",
-        "de": 2500,
-        "a": 400,
-        "duree": 0.12,
-        "volume": 0.4,
-        "depart": 0
-      },
-      {
-        "onde": "carree",
-        "de": 160,
-        "a": 60,
-        "duree": 0.1,
-        "volume": 0.25,
-        "depart": 0
-      }
-    ],
-    "critique": [
-      {
-        "onde": "bruit",
-        "de": 4000,
-        "a": 300,
-        "duree": 0.16,
-        "volume": 0.45,
-        "depart": 0
-      },
-      {
-        "onde": "carree",
-        "de": 200,
-        "a": 50,
-        "duree": 0.14,
-        "volume": 0.3,
-        "depart": 0
-      },
-      {
-        "onde": "carree",
-        "de": "E6",
-        "duree": 0.08,
-        "volume": 0.12,
-        "depart": 0.05
-      }
-    ],
+    "coup": {
+      "variation": 0.12,
+      "sons": [
+        {
+          "onde": "bruit",
+          "de": 2500,
+          "a": 400,
+          "duree": 0.12,
+          "volume": 0.4,
+          "depart": 0
+        },
+        {
+          "onde": "carree",
+          "de": 160,
+          "a": 60,
+          "duree": 0.1,
+          "volume": 0.25,
+          "depart": 0
+        }
+      ]
+    },
+    "coup_rapide": {
+      "variation": 0.15,
+      "sons": [
+        {
+          "onde": "bruit",
+          "de": 3500,
+          "a": 1200,
+          "duree": 0.07,
+          "volume": 0.3,
+          "depart": 0
+        },
+        {
+          "onde": "carree",
+          "de": 220,
+          "a": 120,
+          "duree": 0.05,
+          "volume": 0.15,
+          "depart": 0
+        }
+      ]
+    },
+    "coup_lourd": {
+      "variation": 0.1,
+      "sons": [
+        {
+          "onde": "bruit",
+          "de": 1800,
+          "a": 200,
+          "duree": 0.2,
+          "volume": 0.45,
+          "depart": 0
+        },
+        {
+          "onde": "carree",
+          "de": 110,
+          "a": 40,
+          "duree": 0.2,
+          "volume": 0.3,
+          "depart": 0
+        },
+        {
+          "onde": "bruit",
+          "de": 400,
+          "a": 100,
+          "duree": 0.15,
+          "volume": 0.25,
+          "depart": 0.05
+        }
+      ]
+    },
+    "sort_feu": {
+      "variation": 0.08,
+      "sons": [
+        {
+          "onde": "bruit",
+          "de": 3000,
+          "a": 800,
+          "duree": 0.3,
+          "volume": 0.25,
+          "depart": 0
+        },
+        {
+          "onde": "scie",
+          "de": 120,
+          "a": 60,
+          "duree": 0.3,
+          "volume": 0.15,
+          "depart": 0
+        }
+      ]
+    },
+    "sort_eau": {
+      "variation": 0.08,
+      "sons": [
+        {
+          "onde": "sinus",
+          "de": 500,
+          "a": 900,
+          "duree": 0.06,
+          "volume": 0.3,
+          "depart": 0
+        },
+        {
+          "onde": "sinus",
+          "de": 600,
+          "a": 1000,
+          "duree": 0.06,
+          "volume": 0.3,
+          "depart": 0.08
+        },
+        {
+          "onde": "sinus",
+          "de": 450,
+          "a": 850,
+          "duree": 0.07,
+          "volume": 0.3,
+          "depart": 0.16
+        },
+        {
+          "onde": "bruit",
+          "de": 1500,
+          "a": 600,
+          "duree": 0.2,
+          "volume": 0.08,
+          "depart": 0
+        }
+      ]
+    },
+    "sort_plante": {
+      "variation": 0.08,
+      "sons": [
+        {
+          "onde": "triangle",
+          "de": 300,
+          "a": 500,
+          "duree": 0.1,
+          "volume": 0.3,
+          "depart": 0
+        },
+        {
+          "onde": "triangle",
+          "de": 450,
+          "a": 700,
+          "duree": 0.1,
+          "volume": 0.3,
+          "depart": 0.1
+        },
+        {
+          "onde": "bruit",
+          "de": 4000,
+          "a": 2000,
+          "duree": 0.15,
+          "volume": 0.08,
+          "depart": 0.05
+        }
+      ]
+    },
+    "sort_foudre": {
+      "variation": 0.08,
+      "sons": [
+        {
+          "onde": "bruit",
+          "de": 8000,
+          "a": 2000,
+          "duree": 0.08,
+          "volume": 0.35,
+          "depart": 0
+        },
+        {
+          "onde": "carree",
+          "de": 1800,
+          "a": 200,
+          "duree": 0.2,
+          "volume": 0.15,
+          "depart": 0
+        },
+        {
+          "onde": "bruit",
+          "de": 6000,
+          "a": 1500,
+          "duree": 0.08,
+          "volume": 0.3,
+          "depart": 0.12
+        }
+      ]
+    },
+    "sort_ombre": {
+      "variation": 0.08,
+      "sons": [
+        {
+          "onde": "scie",
+          "de": 220,
+          "a": 110,
+          "duree": 0.35,
+          "volume": 0.15,
+          "depart": 0
+        },
+        {
+          "onde": "sinus",
+          "de": 110,
+          "a": 55,
+          "duree": 0.35,
+          "volume": 0.3,
+          "depart": 0
+        }
+      ]
+    },
+    "sort_lumiere": {
+      "variation": 0.08,
+      "sons": [
+        {
+          "onde": "sinus",
+          "de": 880,
+          "a": 1760,
+          "duree": 0.2,
+          "volume": 0.25,
+          "depart": 0
+        },
+        {
+          "onde": "triangle",
+          "de": 1320,
+          "a": 2640,
+          "duree": 0.25,
+          "volume": 0.15,
+          "depart": 0.05
+        },
+        {
+          "onde": "sinus",
+          "de": "C7",
+          "duree": 0.15,
+          "volume": 0.08,
+          "depart": 0.15
+        }
+      ]
+    },
+    "sort_glace": {
+      "variation": 0.08,
+      "sons": [
+        {
+          "onde": "sinus",
+          "de": 2000,
+          "a": 3000,
+          "duree": 0.08,
+          "volume": 0.2,
+          "depart": 0
+        },
+        {
+          "onde": "sinus",
+          "de": 2600,
+          "a": 3500,
+          "duree": 0.08,
+          "volume": 0.2,
+          "depart": 0.06
+        },
+        {
+          "onde": "sinus",
+          "de": 3000,
+          "a": 4000,
+          "duree": 0.1,
+          "volume": 0.2,
+          "depart": 0.12
+        },
+        {
+          "onde": "bruit",
+          "de": 9000,
+          "a": 6000,
+          "duree": 0.15,
+          "volume": 0.06,
+          "depart": 0
+        }
+      ]
+    },
+    "sort_roche": {
+      "variation": 0.08,
+      "sons": [
+        {
+          "onde": "bruit",
+          "de": 600,
+          "a": 150,
+          "duree": 0.25,
+          "volume": 0.4,
+          "depart": 0
+        },
+        {
+          "onde": "carree",
+          "de": 90,
+          "a": 50,
+          "duree": 0.2,
+          "volume": 0.25,
+          "depart": 0
+        }
+      ]
+    },
+    "sort_vent": {
+      "variation": 0.08,
+      "sons": [
+        {
+          "onde": "bruit",
+          "de": 1200,
+          "a": 3000,
+          "duree": 0.3,
+          "volume": 0.18,
+          "depart": 0
+        },
+        {
+          "onde": "bruit",
+          "de": 3000,
+          "a": 800,
+          "duree": 0.2,
+          "volume": 0.15,
+          "depart": 0.25
+        }
+      ]
+    },
+    "sort_poison": {
+      "variation": 0.08,
+      "sons": [
+        {
+          "onde": "carree",
+          "de": 400,
+          "a": 300,
+          "duree": 0.12,
+          "volume": 0.14,
+          "rapport": 0.3,
+          "depart": 0
+        },
+        {
+          "onde": "carree",
+          "de": 350,
+          "a": 250,
+          "duree": 0.12,
+          "volume": 0.14,
+          "rapport": 0.3,
+          "depart": 0.12
+        },
+        {
+          "onde": "sinus",
+          "de": 300,
+          "a": 500,
+          "duree": 0.08,
+          "volume": 0.2,
+          "depart": 0.1
+        }
+      ]
+    },
+    "sort_metal": {
+      "variation": 0.08,
+      "sons": [
+        {
+          "onde": "carree",
+          "de": 1500,
+          "duree": 0.05,
+          "volume": 0.15,
+          "depart": 0
+        },
+        {
+          "onde": "triangle",
+          "de": 2200,
+          "a": 2100,
+          "duree": 0.3,
+          "volume": 0.2,
+          "depart": 0
+        },
+        {
+          "onde": "bruit",
+          "de": 5000,
+          "a": 3000,
+          "duree": 0.05,
+          "volume": 0.2,
+          "depart": 0
+        }
+      ]
+    },
+    "sort_esprit": {
+      "variation": 0.08,
+      "sons": [
+        {
+          "onde": "sinus",
+          "de": 600,
+          "a": 900,
+          "duree": 0.3,
+          "volume": 0.2,
+          "depart": 0
+        },
+        {
+          "onde": "sinus",
+          "de": 900,
+          "a": 600,
+          "duree": 0.3,
+          "volume": 0.15,
+          "depart": 0.1
+        }
+      ]
+    },
+    "critique": {
+      "variation": 0.08,
+      "sons": [
+        {
+          "onde": "bruit",
+          "de": 4000,
+          "a": 300,
+          "duree": 0.16,
+          "volume": 0.45,
+          "depart": 0
+        },
+        {
+          "onde": "carree",
+          "de": 200,
+          "a": 50,
+          "duree": 0.14,
+          "volume": 0.3,
+          "depart": 0
+        },
+        {
+          "onde": "carree",
+          "de": "E6",
+          "duree": 0.08,
+          "volume": 0.12,
+          "depart": 0.05
+        }
+      ]
+    },
     "sort": [
       {
         "onde": "sinus",
@@ -329,85 +709,103 @@
         "depart": 0.04
       }
     ],
-    "soin": [
-      {
-        "onde": "triangle",
-        "de": "C5",
-        "duree": 0.06,
-        "volume": 0.3
-      },
-      {
-        "onde": "triangle",
-        "de": "E5",
-        "duree": 0.06,
-        "volume": 0.3
-      },
-      {
-        "onde": "triangle",
-        "de": "G5",
-        "duree": 0.06,
-        "volume": 0.3
-      },
-      {
-        "onde": "triangle",
-        "de": "C6",
-        "duree": 0.06,
-        "volume": 0.3
-      }
-    ],
-    "rate": [
-      {
-        "onde": "bruit",
-        "de": 3000,
-        "a": 900,
-        "duree": 0.14,
-        "volume": 0.15
-      }
-    ],
-    "ko": [
-      {
-        "onde": "carree",
-        "de": 420,
-        "a": 70,
-        "duree": 0.35,
-        "volume": 0.22,
-        "rapport": 0.3
-      }
-    ],
-    "statut": [
-      {
-        "onde": "carree",
-        "de": 640,
-        "a": 520,
-        "duree": 0.08,
-        "volume": 0.14
-      },
-      {
-        "onde": "carree",
-        "de": 640,
-        "a": 520,
-        "duree": 0.08,
-        "volume": 0.14
-      }
-    ],
-    "bonus": [
-      {
-        "onde": "triangle",
-        "de": 400,
-        "a": 900,
-        "duree": 0.16,
-        "volume": 0.3
-      }
-    ],
-    "malus": [
-      {
-        "onde": "triangle",
-        "de": 900,
-        "a": 350,
-        "duree": 0.16,
-        "volume": 0.3
-      }
-    ],
+    "soin": {
+      "variation": 0.08,
+      "sons": [
+        {
+          "onde": "triangle",
+          "de": "C5",
+          "duree": 0.06,
+          "volume": 0.3
+        },
+        {
+          "onde": "triangle",
+          "de": "E5",
+          "duree": 0.06,
+          "volume": 0.3
+        },
+        {
+          "onde": "triangle",
+          "de": "G5",
+          "duree": 0.06,
+          "volume": 0.3
+        },
+        {
+          "onde": "triangle",
+          "de": "C6",
+          "duree": 0.06,
+          "volume": 0.3
+        }
+      ]
+    },
+    "rate": {
+      "variation": 0.15,
+      "sons": [
+        {
+          "onde": "bruit",
+          "de": 3000,
+          "a": 900,
+          "duree": 0.14,
+          "volume": 0.15
+        }
+      ]
+    },
+    "ko": {
+      "variation": 0.08,
+      "sons": [
+        {
+          "onde": "carree",
+          "de": 420,
+          "a": 70,
+          "duree": 0.35,
+          "volume": 0.22,
+          "rapport": 0.3
+        }
+      ]
+    },
+    "statut": {
+      "variation": 0.08,
+      "sons": [
+        {
+          "onde": "carree",
+          "de": 640,
+          "a": 520,
+          "duree": 0.08,
+          "volume": 0.14
+        },
+        {
+          "onde": "carree",
+          "de": 640,
+          "a": 520,
+          "duree": 0.08,
+          "volume": 0.14
+        }
+      ]
+    },
+    "bonus": {
+      "variation": 0.08,
+      "sons": [
+        {
+          "onde": "triangle",
+          "de": 400,
+          "a": 900,
+          "duree": 0.16,
+          "volume": 0.3
+        }
+      ]
+    },
+    "malus": {
+      "variation": 0.08,
+      "sons": [
+        {
+          "onde": "triangle",
+          "de": 900,
+          "a": 350,
+          "duree": 0.16,
+          "volume": 0.3
+        }
+      ]
+    },
     "lancer": [
       {
         "onde": "sinus",
@@ -500,93 +898,89 @@
       {
         "onde": "carree",
         "de": "C5",
-        "duree": 0.1,
-        "volume": 0.16,
-        "rapport": 0.25
+        "duree": 0.07,
+        "volume": 0.14
       },
       {
         "onde": "carree",
-        "de": "C5",
-        "duree": 0.1,
-        "volume": 0.16,
-        "rapport": 0.25
+        "de": "E5",
+        "duree": 0.07,
+        "volume": 0.14
       },
       {
         "onde": "carree",
-        "de": "C5",
-        "duree": 0.1,
-        "volume": 0.16,
-        "rapport": 0.25
+        "de": "G5",
+        "duree": 0.07,
+        "volume": 0.14
       },
       {
         "onde": "carree",
-        "de": "C5",
-        "duree": 0.3,
-        "volume": 0.16,
-        "rapport": 0.25
+        "de": "C6",
+        "duree": 0.28,
+        "volume": 0.14
       },
       {
         "onde": "carree",
-        "de": "Ab4",
-        "duree": 0.3,
-        "volume": 0.16,
-        "rapport": 0.25
+        "de": "A5",
+        "duree": 0.09,
+        "volume": 0.14,
+        "depart": 0.55
       },
       {
         "onde": "carree",
-        "de": "Bb4",
-        "duree": 0.3,
-        "volume": 0.16,
-        "rapport": 0.25
+        "de": "B5",
+        "duree": 0.09,
+        "volume": 0.14,
+        "depart": 0.64
       },
       {
         "onde": "carree",
-        "de": "C5",
-        "duree": 0.15,
-        "volume": 0.16,
-        "rapport": 0.25
+        "de": "C6",
+        "duree": 0.09,
+        "volume": 0.14,
+        "depart": 0.73
       },
       {
         "onde": "carree",
-        "de": "Bb4",
-        "duree": 0.1,
-        "volume": 0.16,
-        "rapport": 0.25
+        "de": "D6",
+        "duree": 0.09,
+        "volume": 0.14,
+        "depart": 0.8200000000000001
       },
       {
         "onde": "carree",
-        "de": "C5",
-        "duree": 0.7,
-        "volume": 0.16,
-        "rapport": 0.25
+        "de": "E6",
+        "duree": 0.5,
+        "volume": 0.13,
+        "depart": 0.91
       },
       {
         "onde": "triangle",
-        "de": "C3",
-        "duree": 0.6,
-        "volume": 0.3,
+        "de": "C4",
+        "duree": 0.5,
+        "volume": 0.28,
         "depart": 0
       },
       {
         "onde": "triangle",
-        "de": "Ab2",
+        "de": "G3",
         "duree": 0.3,
-        "volume": 0.3,
-        "depart": 0.6
+        "volume": 0.28,
+        "depart": 0.55
       },
       {
         "onde": "triangle",
-        "de": "Bb2",
-        "duree": 0.3,
-        "volume": 0.3,
-        "depart": 0.9
+        "de": "C4",
+        "duree": 0.6,
+        "volume": 0.28,
+        "depart": 0.91
       },
       {
-        "onde": "triangle",
-        "de": "C3",
-        "duree": 0.9,
-        "volume": 0.3,
-        "depart": 1.2
+        "onde": "sinus",
+        "de": "G6",
+        "duree": 0.3,
+        "volume": 0.05,
+        "depart": 0.95
       }
     ],
     "defaite": [

@@ -45,20 +45,26 @@ mot :
 - `x` : un coup de percussion (voix `bruit`, hauteur réglée par `frequence`) ;
 - `|` sépare les mesures, seulement pour s'y retrouver.
 
-Toutes les voix d'un morceau devraient avoir le même nombre de cases (il
-tourne en boucle). `extinction` (en secondes) fait s'éteindre chaque note
-toute seule, comme une corde pincée.
+Chaque voix tourne en boucle sur ses propres cases : une mélodie de 16 mesures
+peut jouer sur des basses de 8 mesures (deux fois les mêmes accords), ce qui
+rend le morceau moins répétitif. Garder des longueurs multiples l'une de
+l'autre. `extinction` (en secondes) fait s'éteindre chaque note toute seule,
+comme une corde pincée.
 
 **Lieux** (`lieux`) : la musique de chaque thème de carte (`vallee`, `foret`,
 `cendres`, `grotte`, `neige`, `interieur`). Les morceaux `titre`, `combat` et
 `boss` sont joués à l'écran titre et en combat.
 
-**Effets** (`effets`) : une liste de sons simples joués l'un après l'autre :
+**Effets** (`effets`) : une liste de sons simples joués l'un après l'autre
+(ou `{"variation": 0.1, "sons": [...]}` : la hauteur change un peu, au hasard,
+à chaque fois, pour que les bruits répétés ne lassent pas) :
 `onde`, `de` et `a` (fréquence en Hz ou note, la hauteur glisse de l'une à
 l'autre), `duree` (secondes), `volume`. `depart` (secondes) place un son à un
 moment précis : deux sons avec `"depart": 0` jouent ensemble. Le jeu utilise
 `curseur`, `valider`, `retour`, `refus` (menus), `coup`, `critique`, `sort`,
 `soin`, `rate`, `ko`, `statut`, `bonus`, `malus`, `lancer`, `capture`,
+`coup_rapide` et `coup_lourd` (selon le rythme de la technique), `sort_<type>`
+(un sort de cet élément, par exemple `sort_feu` ; sinon `sort`),
 `capture_rate`, `limite`, `fuite`, `niveau`, `victoire`, `defaite`,
 `rencontre` (combat), `coffre`, `achat` et `porte`.
 
