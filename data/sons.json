@@ -1,0 +1,742 @@
+{
+  "lieux": {
+    "vallee": "vallee",
+    "foret": "foret",
+    "cendres": "cendres",
+    "grotte": "grotte",
+    "neige": "neige",
+    "interieur": "maison"
+  },
+  "musiques": {
+    "titre": {
+      "tempo": 84,
+      "voix": [
+        {
+          "onde": "carree",
+          "volume": 0.16,
+          "rapport": 0.25,
+          "notes": "A4 . . C5 E5 . D5 C5 | B4 . . G4 A4 . . . | F4 . A4 C5 B4 . A4 G4 | E4 . . . - - - - | A4 . . C5 E5 . G5 F5 | E5 . D5 C5 D5 . . . | C5 . B4 A4 G#4 . B4 . | A4 . . . - - - -"
+        },
+        {
+          "onde": "triangle",
+          "volume": 0.32,
+          "notes": "A2 . . . E3 . . . | G2 . . . E2 . . . | F2 . . . C3 . . . | E2 . . . E2 . . . | A2 . . . E3 . . . | C3 . . . G2 . . . | F2 . . . E2 . . . | A2 . . . A2 . . ."
+        },
+        {
+          "onde": "carree",
+          "volume": 0.05,
+          "rapport": 0.125,
+          "extinction": 0.18,
+          "notes": "A3 C4 E4 C4 A3 C4 E4 C4 | G3 B3 E4 B3 G3 B3 E4 B3 | F3 A3 C4 A3 F3 A3 C4 A3 | E3 G#3 B3 G#3 E3 G#3 B3 G#3 | A3 C4 E4 C4 A3 C4 E4 C4 | C4 E4 G4 E4 C4 E4 G4 E4 | F3 A3 C4 A3 E3 G#3 B3 G#3 | A3 C4 E4 C4 A3 C4 E4 C4"
+        }
+      ]
+    },
+    "vallee": {
+      "tempo": 112,
+      "voix": [
+        {
+          "onde": "carree",
+          "volume": 0.15,
+          "rapport": 0.5,
+          "notes": "E5 . G5 . C6 . G5 . | A5 . G5 E5 D5 . . . | C5 . E5 . G5 . E5 . | F5 E5 D5 C5 D5 . . . | E5 . G5 . C6 . B5 A5 | G5 . E5 . A5 . G5 . | F5 . E5 . D5 . G4 . | C5 . . . - . - ."
+        },
+        {
+          "onde": "triangle",
+          "volume": 0.32,
+          "notes": "C3 . G3 . C3 . G3 . | F2 . C3 . G2 . D3 . | C3 . G3 . E3 . G3 . | F2 . A2 . G2 . B2 . | C3 . G3 . E3 . G3 . | E2 . B2 . A2 . E3 . | F2 . C3 . G2 . D3 . | C3 . G2 . C3 . - ."
+        },
+        {
+          "onde": "bruit",
+          "volume": 0.05,
+          "frequence": 9000,
+          "extinction": 0.03,
+          "notes": "- x - x - x - x | - x - x - x - x | - x - x - x - x | - x - x - x - x | - x - x - x - x | - x - x - x - x | - x - x - x - x | - x - x - x - x"
+        }
+      ]
+    },
+    "foret": {
+      "tempo": 92,
+      "voix": [
+        {
+          "onde": "triangle",
+          "volume": 0.28,
+          "notes": "D5 . . F5 E5 . C5 . | D5 . . . A4 . . . | C5 . D5 . F5 . G5 . | E5 . . . C5 . . . | D5 . . F5 E5 . C5 . | A4 . G4 . A4 . C5 . | D5 . . . C5 . A4 . | D5 . . . - - - -"
+        },
+        {
+          "onde": "triangle",
+          "volume": 0.3,
+          "notes": "D3 . . . A2 . . . | D3 . . . A2 . . . | C3 . . . G2 . . . | C3 . . . A2 . . . | D3 . . . A2 . . . | G2 . . . A2 . . . | Bb2 . . . C3 . . . | D3 . . . D3 . . ."
+        },
+        {
+          "onde": "carree",
+          "volume": 0.05,
+          "rapport": 0.125,
+          "extinction": 0.2,
+          "notes": "D4 F4 A4 F4 D4 F4 A4 F4 | D4 F4 A4 F4 D4 F4 A4 F4 | C4 E4 G4 E4 C4 E4 G4 E4 | C4 E4 G4 E4 C4 E4 G4 E4 | D4 F4 A4 F4 D4 F4 A4 F4 | G3 B3 D4 B3 G3 B3 D4 B3 | Bb3 D4 F4 D4 C4 E4 G4 E4 | D4 F4 A4 F4 D4 F4 A4 F4"
+        }
+      ]
+    },
+    "cendres": {
+      "tempo": 120,
+      "voix": [
+        {
+          "onde": "carree",
+          "volume": 0.14,
+          "rapport": 0.25,
+          "notes": "E5 . F5 . E5 . B4 . | C5 . B4 . A4 . B4 . | E5 . F5 . G5 . F5 . | E5 . . . - . - . | B5 . A5 . G5 . F5 . | E5 . F5 . D5 . E5 . | C5 . D5 . B4 . C5 . | B4 . . . - . - ."
+        },
+        {
+          "onde": "carree",
+          "volume": 0.1,
+          "rapport": 0.5,
+          "notes": "E2 E2 - E2 F2 . E2 . | E2 E2 - E2 F2 . E2 . | E2 E2 - E2 G2 . F2 . | E2 E2 - E2 F2 . E2 . | C3 C3 - C3 B2 . A2 . | E2 E2 - E2 F2 . E2 . | A2 A2 - A2 G2 . F2 . | E2 E2 - E2 F2 . E2 ."
+        },
+        {
+          "onde": "bruit",
+          "volume": 0.14,
+          "frequence": 220,
+          "extinction": 0.09,
+          "notes": "x - - x x - - - | x - - x x - - - | x - - x x - - - | x - - x x - - - | x - - x x - - - | x - - x x - - - | x - - x x - - - | x - - x x - - -"
+        }
+      ]
+    },
+    "grotte": {
+      "tempo": 70,
+      "voix": [
+        {
+          "onde": "sinus",
+          "volume": 0.3,
+          "extinction": 0.9,
+          "notes": "E5 . . . - - B4 . | C5 . . . - - - - | D5 . . . - - A4 . | B4 . . . - - - - | E5 . . . - - G5 . | F5 . . . - - E5 . | D5 . . . C5 . B4 . | A4 . . . - - - -"
+        },
+        {
+          "onde": "triangle",
+          "volume": 0.28,
+          "notes": "A2 . . . . . . . | F2 . . . . . . . | G2 . . . . . . . | E2 . . . . . . . | A2 . . . . . . . | D2 . . . . . . . | E2 . . . . . . . | A2 . . . . . . ."
+        },
+        {
+          "onde": "sinus",
+          "volume": 0.08,
+          "extinction": 0.12,
+          "notes": "- - - - - - A6 - | - - - - - - - - | - - - E6 - - - - | - - - - - - - - | - - - - - - C7 - | - - - - - - - - | - - - B6 - - - - | - - - - - - - -"
+        }
+      ]
+    },
+    "neige": {
+      "tempo": 96,
+      "voix": [
+        {
+          "onde": "triangle",
+          "volume": 0.28,
+          "notes": "B4 . E5 . G#5 . F#5 . | E5 . . . B4 . . . | C#5 . E5 . A5 . G#5 . | F#5 . . . - . . . | B4 . E5 . G#5 . B5 . | A5 . G#5 . F#5 . E5 . | D#5 . E5 . F#5 . D#5 . | E5 . . . - . . ."
+        },
+        {
+          "onde": "triangle",
+          "volume": 0.28,
+          "notes": "E3 . . . B2 . . . | E3 . . . B2 . . . | A2 . . . E3 . . . | B2 . . . F#3 . . . | E3 . . . B2 . . . | C#3 . . . A2 . . . | B2 . . . B2 . . . | E3 . . . E3 . . ."
+        },
+        {
+          "onde": "sinus",
+          "volume": 0.1,
+          "extinction": 0.35,
+          "notes": "E6 - - - B5 - - - | G#5 - - - B5 - - - | A5 - - - E6 - - - | F#6 - - - D#6 - - - | E6 - - - B5 - - - | C#6 - - - A5 - - - | B5 - - - F#6 - - - | E6 - - - - - - -"
+        }
+      ]
+    },
+    "maison": {
+      "tempo": 100,
+      "voix": [
+        {
+          "onde": "triangle",
+          "volume": 0.28,
+          "notes": "C5 . A4 . F4 . A4 . | Bb4 . G4 . E4 . G4 . | A4 . C5 . F5 . E5 . | D5 . . . C5 . . . | C5 . A4 . F4 . A4 . | Bb4 . D5 . G5 . F5 . | E5 . G5 . C5 . E5 . | F5 . . . - . . ."
+        },
+        {
+          "onde": "triangle",
+          "volume": 0.26,
+          "notes": "F2 . C3 . F2 . C3 . | C2 . G2 . C2 . G2 . | F2 . C3 . A2 . C3 . | Bb2 . F2 . C3 . G2 . | F2 . C3 . F2 . C3 . | Bb2 . F3 . G2 . D3 . | C3 . G2 . C3 . E3 . | F2 . C3 . F2 . . ."
+        },
+        {
+          "onde": "carree",
+          "volume": 0.04,
+          "rapport": 0.25,
+          "extinction": 0.15,
+          "notes": "- F4 - A4 - F4 - A4 | - E4 - G4 - E4 - G4 | - F4 - A4 - C5 - A4 | - F4 - Bb4 - E4 - G4 | - F4 - A4 - F4 - A4 | - D4 - F4 - B3 - D4 | - E4 - G4 - E4 - G4 | - F4 - A4 - F4 - -"
+        }
+      ]
+    },
+    "combat": {
+      "tempo": 150,
+      "voix": [
+        {
+          "onde": "carree",
+          "volume": 0.14,
+          "rapport": 0.25,
+          "notes": "A4 . C5 . E5 . A5 . | G5 . E5 . D5 . E5 . | F5 . E5 . D5 . C5 . | B4 . C5 . D5 . E5 . | A4 . C5 . E5 . A5 . | B5 . A5 . G5 . E5 . | F5 . G5 . E5 . D5 . | E5 . . . E4 . . ."
+        },
+        {
+          "onde": "triangle",
+          "volume": 0.32,
+          "notes": "A2 A3 A2 A3 A2 A3 A2 A3 | G2 G3 G2 G3 G2 G3 G2 G3 | F2 F3 F2 F3 F2 F3 F2 F3 | E2 E3 E2 E3 E2 E3 E2 E3 | A2 A3 A2 A3 A2 A3 A2 A3 | G2 G3 G2 G3 G2 G3 G2 G3 | F2 F3 F2 F3 F2 F3 F2 F3 | E2 E3 E2 E3 E2 E3 E2 E3"
+        },
+        {
+          "onde": "bruit",
+          "volume": 0.16,
+          "frequence": 200,
+          "extinction": 0.08,
+          "notes": "x - x - x - x - | x - x - x - x - | x - x - x - x - | x - x - x - x - | x - x - x - x - | x - x - x - x - | x - x - x - x - | x - x - x - x -"
+        },
+        {
+          "onde": "bruit",
+          "volume": 0.05,
+          "frequence": 9000,
+          "extinction": 0.03,
+          "notes": "- x - x - x - x | - x - x - x - x | - x - x - x - x | - x - x - x - x | - x - x - x - x | - x - x - x - x | - x - x - x - x | - x - x - x - x"
+        }
+      ]
+    },
+    "boss": {
+      "tempo": 140,
+      "voix": [
+        {
+          "onde": "scie",
+          "volume": 0.1,
+          "notes": "D5 . . . F5 . E5 . | D5 . C5 . A4 . . . | Bb4 . . . D5 . C5 . | A4 . G4 . A4 . . . | D5 . . . F5 . A5 . | G5 . F5 . E5 . C#5 . | D5 . E5 . F5 . E5 . | D5 . . . A4 . . ."
+        },
+        {
+          "onde": "triangle",
+          "volume": 0.34,
+          "notes": "D2 D2 D3 D2 D2 D2 D3 D2 | D2 D2 D3 D2 D2 D2 D3 D2 | Bb1 Bb1 Bb2 Bb1 Bb1 Bb1 Bb2 Bb1 | A1 A1 A2 A1 A1 A1 A2 A1 | D2 D2 D3 D2 D2 D2 D3 D2 | G1 G1 G2 G1 G1 G1 G2 G1 | A1 A1 A2 A1 A1 A1 A2 A1 | D2 D2 D3 D2 D2 D2 D3 D2"
+        },
+        {
+          "onde": "bruit",
+          "volume": 0.17,
+          "frequence": 180,
+          "extinction": 0.09,
+          "notes": "x - - x - - x - | x - - x - - x - | x - - x - - x - | x - - x - - x - | x - - x - - x - | x - - x - - x - | x - - x - - x - | x - - x - - x -"
+        },
+        {
+          "onde": "bruit",
+          "volume": 0.09,
+          "frequence": 2500,
+          "extinction": 0.07,
+          "notes": "- - x - - - x - | - - x - - - x - | - - x - - - x - | - - x - - - x - | - - x - - - x - | - - x - - - x - | - - x - - - x - | - - x - - - x -"
+        }
+      ]
+    }
+  },
+  "effets": {
+    "curseur": [
+      {
+        "onde": "carree",
+        "de": 1320,
+        "duree": 0.025,
+        "volume": 0.12,
+        "rapport": 0.25
+      }
+    ],
+    "valider": [
+      {
+        "onde": "carree",
+        "de": 880,
+        "duree": 0.04,
+        "volume": 0.16
+      },
+      {
+        "onde": "carree",
+        "de": 1320,
+        "duree": 0.06,
+        "volume": 0.16
+      }
+    ],
+    "retour": [
+      {
+        "onde": "carree",
+        "de": 990,
+        "a": 520,
+        "duree": 0.08,
+        "volume": 0.15
+      }
+    ],
+    "refus": [
+      {
+        "onde": "carree",
+        "de": 180,
+        "a": 150,
+        "duree": 0.14,
+        "volume": 0.18,
+        "rapport": 0.3
+      }
+    ],
+    "coup": [
+      {
+        "onde": "bruit",
+        "de": 2500,
+        "a": 400,
+        "duree": 0.12,
+        "volume": 0.4,
+        "depart": 0
+      },
+      {
+        "onde": "carree",
+        "de": 160,
+        "a": 60,
+        "duree": 0.1,
+        "volume": 0.25,
+        "depart": 0
+      }
+    ],
+    "critique": [
+      {
+        "onde": "bruit",
+        "de": 4000,
+        "a": 300,
+        "duree": 0.16,
+        "volume": 0.45,
+        "depart": 0
+      },
+      {
+        "onde": "carree",
+        "de": 200,
+        "a": 50,
+        "duree": 0.14,
+        "volume": 0.3,
+        "depart": 0
+      },
+      {
+        "onde": "carree",
+        "de": "E6",
+        "duree": 0.08,
+        "volume": 0.12,
+        "depart": 0.05
+      }
+    ],
+    "sort": [
+      {
+        "onde": "sinus",
+        "de": 300,
+        "a": 1300,
+        "duree": 0.25,
+        "volume": 0.3,
+        "depart": 0
+      },
+      {
+        "onde": "triangle",
+        "de": 600,
+        "a": 2400,
+        "duree": 0.25,
+        "volume": 0.12,
+        "depart": 0.04
+      }
+    ],
+    "soin": [
+      {
+        "onde": "triangle",
+        "de": "C5",
+        "duree": 0.06,
+        "volume": 0.3
+      },
+      {
+        "onde": "triangle",
+        "de": "E5",
+        "duree": 0.06,
+        "volume": 0.3
+      },
+      {
+        "onde": "triangle",
+        "de": "G5",
+        "duree": 0.06,
+        "volume": 0.3
+      },
+      {
+        "onde": "triangle",
+        "de": "C6",
+        "duree": 0.06,
+        "volume": 0.3
+      }
+    ],
+    "rate": [
+      {
+        "onde": "bruit",
+        "de": 3000,
+        "a": 900,
+        "duree": 0.14,
+        "volume": 0.15
+      }
+    ],
+    "ko": [
+      {
+        "onde": "carree",
+        "de": 420,
+        "a": 70,
+        "duree": 0.35,
+        "volume": 0.22,
+        "rapport": 0.3
+      }
+    ],
+    "statut": [
+      {
+        "onde": "carree",
+        "de": 640,
+        "a": 520,
+        "duree": 0.08,
+        "volume": 0.14
+      },
+      {
+        "onde": "carree",
+        "de": 640,
+        "a": 520,
+        "duree": 0.08,
+        "volume": 0.14
+      }
+    ],
+    "bonus": [
+      {
+        "onde": "triangle",
+        "de": 400,
+        "a": 900,
+        "duree": 0.16,
+        "volume": 0.3
+      }
+    ],
+    "malus": [
+      {
+        "onde": "triangle",
+        "de": 900,
+        "a": 350,
+        "duree": 0.16,
+        "volume": 0.3
+      }
+    ],
+    "lancer": [
+      {
+        "onde": "sinus",
+        "de": 300,
+        "a": 1000,
+        "duree": 0.18,
+        "volume": 0.3
+      }
+    ],
+    "capture": [
+      {
+        "onde": "carree",
+        "de": "G5",
+        "duree": 0.08,
+        "volume": 0.16,
+        "rapport": 0.25
+      },
+      {
+        "onde": "carree",
+        "de": "C6",
+        "duree": 0.08,
+        "volume": 0.16,
+        "rapport": 0.25
+      },
+      {
+        "onde": "carree",
+        "de": "E6",
+        "duree": 0.08,
+        "volume": 0.16,
+        "rapport": 0.25
+      },
+      {
+        "onde": "carree",
+        "de": "G6",
+        "duree": 0.08,
+        "volume": 0.16,
+        "rapport": 0.25
+      },
+      {
+        "onde": "carree",
+        "de": "C7",
+        "duree": 0.25,
+        "volume": 0.14,
+        "rapport": 0.25
+      }
+    ],
+    "capture_rate": [
+      {
+        "onde": "bruit",
+        "de": 1500,
+        "a": 300,
+        "duree": 0.25,
+        "volume": 0.22
+      },
+      {
+        "onde": "carree",
+        "de": 300,
+        "a": 150,
+        "duree": 0.15,
+        "volume": 0.15
+      }
+    ],
+    "niveau": [
+      {
+        "onde": "carree",
+        "de": "C5",
+        "duree": 0.07,
+        "volume": 0.16
+      },
+      {
+        "onde": "carree",
+        "de": "E5",
+        "duree": 0.07,
+        "volume": 0.16
+      },
+      {
+        "onde": "carree",
+        "de": "G5",
+        "duree": 0.07,
+        "volume": 0.16
+      },
+      {
+        "onde": "carree",
+        "de": "C6",
+        "duree": 0.28,
+        "volume": 0.16
+      }
+    ],
+    "victoire": [
+      {
+        "onde": "carree",
+        "de": "C5",
+        "duree": 0.1,
+        "volume": 0.16,
+        "rapport": 0.25
+      },
+      {
+        "onde": "carree",
+        "de": "C5",
+        "duree": 0.1,
+        "volume": 0.16,
+        "rapport": 0.25
+      },
+      {
+        "onde": "carree",
+        "de": "C5",
+        "duree": 0.1,
+        "volume": 0.16,
+        "rapport": 0.25
+      },
+      {
+        "onde": "carree",
+        "de": "C5",
+        "duree": 0.3,
+        "volume": 0.16,
+        "rapport": 0.25
+      },
+      {
+        "onde": "carree",
+        "de": "Ab4",
+        "duree": 0.3,
+        "volume": 0.16,
+        "rapport": 0.25
+      },
+      {
+        "onde": "carree",
+        "de": "Bb4",
+        "duree": 0.3,
+        "volume": 0.16,
+        "rapport": 0.25
+      },
+      {
+        "onde": "carree",
+        "de": "C5",
+        "duree": 0.15,
+        "volume": 0.16,
+        "rapport": 0.25
+      },
+      {
+        "onde": "carree",
+        "de": "Bb4",
+        "duree": 0.1,
+        "volume": 0.16,
+        "rapport": 0.25
+      },
+      {
+        "onde": "carree",
+        "de": "C5",
+        "duree": 0.7,
+        "volume": 0.16,
+        "rapport": 0.25
+      },
+      {
+        "onde": "triangle",
+        "de": "C3",
+        "duree": 0.6,
+        "volume": 0.3,
+        "depart": 0
+      },
+      {
+        "onde": "triangle",
+        "de": "Ab2",
+        "duree": 0.3,
+        "volume": 0.3,
+        "depart": 0.6
+      },
+      {
+        "onde": "triangle",
+        "de": "Bb2",
+        "duree": 0.3,
+        "volume": 0.3,
+        "depart": 0.9
+      },
+      {
+        "onde": "triangle",
+        "de": "C3",
+        "duree": 0.9,
+        "volume": 0.3,
+        "depart": 1.2
+      }
+    ],
+    "defaite": [
+      {
+        "onde": "triangle",
+        "de": "E4",
+        "duree": 0.25,
+        "volume": 0.3
+      },
+      {
+        "onde": "triangle",
+        "de": "D4",
+        "duree": 0.25,
+        "volume": 0.3
+      },
+      {
+        "onde": "triangle",
+        "de": "C4",
+        "duree": 0.25,
+        "volume": 0.3
+      },
+      {
+        "onde": "triangle",
+        "de": "A3",
+        "duree": 0.8,
+        "volume": 0.3
+      }
+    ],
+    "rencontre": [
+      {
+        "onde": "carree",
+        "de": 200,
+        "a": 1200,
+        "duree": 0.3,
+        "volume": 0.14,
+        "depart": 0
+      },
+      {
+        "onde": "bruit",
+        "de": 6000,
+        "a": 1000,
+        "duree": 0.3,
+        "volume": 0.12,
+        "depart": 0
+      }
+    ],
+    "fuite": [
+      {
+        "onde": "bruit",
+        "de": 2500,
+        "a": 400,
+        "duree": 0.3,
+        "volume": 0.18
+      }
+    ],
+    "coffre": [
+      {
+        "onde": "triangle",
+        "de": "E5",
+        "duree": 0.07,
+        "volume": 0.3
+      },
+      {
+        "onde": "triangle",
+        "de": "G5",
+        "duree": 0.07,
+        "volume": 0.3
+      },
+      {
+        "onde": "triangle",
+        "de": "C6",
+        "duree": 0.07,
+        "volume": 0.3
+      },
+      {
+        "onde": "triangle",
+        "de": "E6",
+        "duree": 0.2,
+        "volume": 0.3
+      }
+    ],
+    "achat": [
+      {
+        "onde": "carree",
+        "de": "B5",
+        "duree": 0.05,
+        "volume": 0.14,
+        "rapport": 0.25
+      },
+      {
+        "onde": "carree",
+        "de": "E6",
+        "duree": 0.15,
+        "volume": 0.14,
+        "rapport": 0.25
+      }
+    ],
+    "porte": [
+      {
+        "onde": "bruit",
+        "de": 500,
+        "a": 200,
+        "duree": 0.12,
+        "volume": 0.2
+      }
+    ],
+    "limite": [
+      {
+        "onde": "scie",
+        "de": 150,
+        "a": 900,
+        "duree": 0.4,
+        "volume": 0.18,
+        "depart": 0
+      },
+      {
+        "onde": "carree",
+        "de": "C5",
+        "duree": 0.05,
+        "volume": 0.12,
+        "depart": 0.1
+      },
+      {
+        "onde": "carree",
+        "de": "G5",
+        "duree": 0.05,
+        "volume": 0.12,
+        "depart": 0.15000000000000002
+      },
+      {
+        "onde": "carree",
+        "de": "C6",
+        "duree": 0.05,
+        "volume": 0.12,
+        "depart": 0.2
+      },
+      {
+        "onde": "carree",
+        "de": "G6",
+        "duree": 0.05,
+        "volume": 0.12,
+        "depart": 0.25
+      },
+      {
+        "onde": "carree",
+        "de": "C7",
+        "duree": 0.05,
+        "volume": 0.12,
+        "depart": 0.30000000000000004
+      }
+    ]
+  }
+}

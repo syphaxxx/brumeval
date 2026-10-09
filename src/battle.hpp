@@ -91,6 +91,10 @@ class Battle {
   std::vector<FighterP> alive(const std::vector<FighterP>& v) const;
   Pt pos(const FighterP& f) const;
   void pop(const FighterP& f, const std::string& t, Color c);
+  // Bruitage (audio.hpp), seulement pour le combat affiché (pas les simulations) ;
+  // share : l'hôte ou le chef le fait aussi entendre aux autres joueurs
+  void sound(const std::string& id, bool share = true);
+  bool shown() const;  // c'est le combat affiché à l'écran
 
   void tickATB(float dt);
   bool skipTurn(FighterP f);  // sommeil ou paralysie : le tour est perdu

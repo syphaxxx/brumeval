@@ -2,6 +2,8 @@
 
 #include <algorithm>
 
+#include "audio.hpp"
+
 std::string fmtInt(int v) { return std::to_string(v); }
 std::string utf8Prefix(const std::string& s, int n) {
   size_t i = 0;
@@ -148,6 +150,7 @@ void MenuStack::update(Input& in) {
     int at = itemAt(m, in.mx, in.my);
     if (at >= 0 && !m.items[at].header && in.moved && at != m.sel) {
       m.sel = at;
+      audio::play("curseur");
       hover();
     }
     if (in.wheel && at >= 0 && m.items[m.sel].adjust && m.items[m.sel].enabled) {
@@ -194,6 +197,7 @@ void MenuStack::update(Input& in) {
       auto f = m.items[m.sel].adjust;  // copie : le menu peut être reconstruit pendant le réglage
       int d = in.press[RIGHT] ? 1 : -1;
       in.press[LEFT] = in.press[RIGHT] = false;
+      audio::play("curseur");
       f(d);
       return;
     }
@@ -202,19 +206,25 @@ void MenuStack::update(Input& in) {
     if (m.sel < m.top) m.top = m.sel;
     if (m.sel > 0 && m.items[m.sel - 1].header && m.sel - 1 < m.top) m.top = m.sel - 1;  // garde le titre visible
     if (m.sel >= m.top + m.rows) m.top = m.sel - m.rows + 1;
-    if (old != m.sel) hover();
+    if (old != m.sel) {
+      audio::play("curseur");
+      hover();
+    }
   }
   if (in.confirm) {
     in.confirm = false;
     if (n > 0 && m.items[m.sel].enabled && m.items[m.sel].act) {
       auto act = m.items[m.sel].act;  // copie : le menu peut être détruit pendant l'action
+      audio::play("valider");
       act();
-    }
+    } else if (n > 0 && !m.items[m.sel].header)
+      audio::play("refus");
     return;
   }
   if (in.cancel) {
     in.cancel = false;
     if (!m.cancelable) return;
+    audio::play("retour");
     if (m.onCancel) {
       auto f = m.onCancel;
       f();

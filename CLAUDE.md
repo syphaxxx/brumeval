@@ -71,6 +71,7 @@ les plus longs : y ajouter tout nouvel écran.
 | `world.hpp/.cpp` | Structures des cartes (thèmes, passages avec condition, zones déclencheuses), lecture/écriture de data/cartes/, vérification d'accessibilité (`checkMaps`) |
 | `events.hpp/.cpp` | Événements de l'histoire : chargement, vérification et exécution des actions (`Game::runEvent`) |
 | `sprites.hpp/.cpp` | Dessin en code des créatures (19 formes), humains (coiffes, armes), tuiles selon le thème, bâtiments (aucune image externe) |
+| `audio.hpp/.cpp` | Son fabriqué par le programme (synthèse) : musiques et bruitages décrits dans `data/sons.json`, mélangés dans le fil audio de SDL (`Mixer`) |
 | `gfx.hpp/.cpp` | Primitives de dessin (ellipses, polygones, dégradés), police pixel intégrée avec accents, fenêtres bleues |
 | `ui.hpp/.cpp` | Clavier, `Script` (file de messages/actions) et `MenuStack` (menus à curseur ; `MenuItem::adjust` pour régler une valeur avec gauche/droite, `rightFn` pour un texte recalculé, `menuHeader` pour un titre de section) |
 | `settings.hpp/.cpp` | Réglages (écran titre > Outils) : éditeurs des règles, espèces, techniques, types (grille) et objets ; chaque modification passe par `Settings::change` (document JSON puis `rebuildData`) |
@@ -219,6 +220,14 @@ les plus longs : y ajouter tout nouvel écran.
   commande s'ouvre. Ajouter une condition : l'entrée dans `CONDS`
   (tactics.cpp) et son test dans `holds` (battle.cpp). Les simulations
   (`autoPlay`) n'utilisent les tactiques que si `simTactics` est vrai.
+- Son (audio.hpp) : `audio::play("coup")` joue un bruitage, `audio::music("combat")`
+  change de morceau (fondu ; le même morceau continue). `Game::updateMusic`
+  choisit la musique à chaque image (lieu selon `themeName`, combat, boss,
+  silence pendant la fanfare de fin). En combat, passer par `Battle::sound`
+  (seulement le combat affiché, pas les simulations ; l'hôte ou le chef envoie
+  `son` aux autres). Les menus font leurs bruits eux-mêmes (`MenuStack::update`).
+  Le mode test n'ouvre pas de sortie son mais fabrique chaque morceau et chaque
+  effet (`audio::render`) pour vérifier qu'ils s'entendent.
 - Police : `gfx.cpp`, fonction `buildFont()`. Un caractère absent s'affiche « ? » ;
   ajoute son dessin si tu utilises un nouveau symbole.
 - Données : tout le contenu est dans `data/` (voir `data/LISEZMOI.md`), chargé au

@@ -2,12 +2,14 @@
 // vérifie les données, simule des combats pour l'équilibrage et enregistre
 // des captures d'écran (.bmp) dans DOSSIER. Renvoie 0 si tout va bien.
 #include <algorithm>
+#include <cmath>
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
 
 #include "arena.hpp"
+#include "audio.hpp"
 #include "battle.hpp"
 #include "events.hpp"
 #include "expedition.hpp"
@@ -68,6 +70,25 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     check(same, "les cartes se relisent à l'identique après écriture");
   }
 
+  // --- Son (data/sons.json) : chaque musique et chaque effet donne un son audible, sans saturer ---
+  report(audio::checkSounds(), std::to_string(audio::trackNames().size()) + " musiques et " + std::to_string(audio::effectNames().size()) +
+                                   " effets sonores décrits");
+  {
+    std::string bad;
+    auto audible = [&](const std::string& name, bool isMusic) {
+      auto v = audio::render(name, isMusic, isMusic ? 4.f : 2.f);
+      float peak = 0;
+      for (float x : v) peak = std::max(peak, std::fabs(x));
+      if (peak < .02f || peak >= 1.f) bad += " " + name + "(" + std::to_string(peak) + ")";
+    };
+    for (auto& t : audio::trackNames()) audible(t, true);
+    for (auto& e : audio::effectNames()) audible(e, false);
+    bool places = true;
+    for (int t = 0; t <= (int)Theme::Neige; t++) places = places && !audio::musicForPlace(themeName(Theme(t))).empty();
+    check(bad.empty() && places, "son : chaque morceau et chaque effet s'entend sans saturer, chaque thème de carte a sa musique" +
+                                     (bad.empty() ? std::string() : " (problème :" + bad + ")"));
+  }
+
   // --- Écran titre et début de partie ---
   run(.5f);
   snap("01_titre");
@@ -78,6 +99,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   run(.3f);
   snap("03_village");
   check(mode == Mode::Map && team.size() == 2, "nouvelle partie : Lior et son compagnon sur la carte");
+  check(audio::currentMusic() == audio::musicForPlace("vallee"), "son : la musique de la vallée joue sur la carte (« " + audio::currentMusic() + " »)");
   check(fillText("Lior part avec {compagnon}.") == "Lior part avec Braisenard.", "les textes remplacent {compagnon} par son nom");
 
   in.menu = true;
@@ -104,6 +126,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   startBattle({makeFighter("mulotin", 4), makeFighter("champichou", 5), makeFighter("piafouine", 4)}, false, nullptr);
   for (int i = 0; i < 1500 && !menus.active(); i++) frame();
   check(menus.active(), "le menu de commande s'ouvre quand une jauge ATB est pleine");
+  check(audio::currentMusic() == "combat" && audio::lastEffect != "", "son : musique de combat, bruitages (dernier : « " + audio::lastEffect + " »)");
   snap("07_combat_commande");
   if (battle_ && battle_->actor && !battle_->actor->spells().empty()) {
     in.press[DOWN] = true;
@@ -163,6 +186,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   battle_->foes[1]->boss = true;
   for (int i = 0; i < 1500 && !menus.active(); i++) frame();
   snap("18_boss_ignarok");
+  check(audio::currentMusic() == "boss", "son : musique du boss");
   battle_->autoPlay = true;
   menus.clear();
   battle_->actor->atb = 0;

@@ -22,6 +22,44 @@ toutes les références existent et que chaque lieu des cartes est accessible.
 | `regles.json` | Départ de la partie, rencontres, formules de combat, récompenses, tactiques de départ… |
 | `evenements.json` | Dialogues et événements de l'histoire |
 | `cartes/*.json` | Une carte par fichier : tuiles, bâtiments, habitants, coffres… |
+| `sons.json` | Musiques et bruitages (fabriqués par le jeu, sans fichier audio) |
+
+## Le son (`sons.json`)
+
+Le jeu fabrique lui-même ses sons, comme les vieilles consoles : aucune
+musique enregistrée, seulement des partitions et des recettes de bruitages.
+
+**Ondes** (`onde`) : `carree` (son de console, `rapport` de 0.05 à 0.95 change
+son timbre), `triangle` (doux, bon pour les basses), `scie` (dur), `sinus`
+(très doux, cloches) et `bruit` (souffle, percussions).
+
+**Musiques** (`musiques`) : `tempo` (temps par minute), `pas_par_temps` (2 par
+défaut : chaque case de la partition dure une croche) et une liste de `voix`.
+Chaque voix a son `onde`, son `volume` (0 à 1) et ses `notes`, une case par
+mot :
+
+- une note : `A4`, `C#5`, `Bb3` (lettre anglaise A–G, dièse `#` ou bémol `b`,
+  octave ; `A4` = le la du diapason) ;
+- `.` prolonge la note précédente, `-` est un silence ;
+- `x` : un coup de percussion (voix `bruit`, hauteur réglée par `frequence`) ;
+- `|` sépare les mesures, seulement pour s'y retrouver.
+
+Toutes les voix d'un morceau devraient avoir le même nombre de cases (il
+tourne en boucle). `extinction` (en secondes) fait s'éteindre chaque note
+toute seule, comme une corde pincée.
+
+**Lieux** (`lieux`) : la musique de chaque thème de carte (`vallee`, `foret`,
+`cendres`, `grotte`, `neige`, `interieur`). Les morceaux `titre`, `combat` et
+`boss` sont joués à l'écran titre et en combat.
+
+**Effets** (`effets`) : une liste de sons simples joués l'un après l'autre :
+`onde`, `de` et `a` (fréquence en Hz ou note, la hauteur glisse de l'une à
+l'autre), `duree` (secondes), `volume`. `depart` (secondes) place un son à un
+moment précis : deux sons avec `"depart": 0` jouent ensemble. Le jeu utilise
+`curseur`, `valider`, `retour`, `refus` (menus), `coup`, `critique`, `sort`,
+`soin`, `rate`, `ko`, `statut`, `bonus`, `malus`, `lancer`, `capture`,
+`capture_rate`, `limite`, `fuite`, `niveau`, `victoire`, `defaite`,
+`rencontre` (combat), `coffre`, `achat` et `porte`.
 
 ## Le combat
 

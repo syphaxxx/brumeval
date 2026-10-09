@@ -4,6 +4,7 @@
 #include <cmath>
 #include <map>
 
+#include "audio.hpp"
 #include "game.hpp"
 #include "sprites.hpp"
 #include "tactics.hpp"
@@ -100,6 +101,12 @@ void Battle::pop(const FighterP& f, const std::string& t, Color c) {
     if (q.x == p.x && G.time - q.t < .3f) stack++;
   pops.push_back({p.x, p.y - 22 - 11.f * stack, t, c, G.time});
   if (net_ == Net::Host || net_ == Net::Lead) send_(-1, Json{{"t", "pop"}, {"f", mine(f)}, {"txt", t}, {"c", Json::array({c.r, c.g, c.b})}});
+}
+
+bool Battle::shown() const { return G.battle_.get() == this; }
+void Battle::sound(const std::string& id, bool share) {
+  if (shown()) audio::play(id);
+  if (share && (net_ == Net::Host || net_ == Net::Lead)) send_(-1, Json{{"t", "son"}, {"s", id}});
 }
 
 // ---------------------------------------------------------------------------
@@ -631,12 +638,14 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m) {
   float hit = m.acc / 100.f * a->acc / 100.f - (magic ? 0 : d->eva / 100.f);
   if (frand() >= hit) {
     pop(d, "Raté", GREY);
+    sound("rate");
     log.push_back(a->name() + " > " + d->name() + " : " + m.name + " ratée");
     return -1;
   }
   float eff = moveEff(m, d->S());
   if (eff <= 0) {
     pop(d, "Aucun effet", GREY);
+    sound("rate");
     return 0;
   }
   float A = magic ? a->eMag() : a->eAtk();
@@ -648,6 +657,7 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m) {
   int dmg = std::max(1, int(((2 * a->lvl / 5.f + 2) * m.power * A / std::max(1.f, D) / float(R.dmgDivisor) + 2) * stab * eff * spread * k));
   d->hp = std::max(0, d->hp - dmg);
   setBlink(d);
+  sound(crit ? "critique" : magic ? "sort" : "coup");
   pop(d, std::to_string(dmg), eff > 1 ? GOLD : eff < 1 ? GREY : WHITE);
   if (crit) pop(d, "Critique !", RED);
   if (eff > 1) pop(d, "Efficace !", GOLD);
@@ -671,6 +681,7 @@ void Battle::applyEffect(const FighterP& t, const Effect& e) {
       t->status = e.status;
       t->statusTurns = e.status == Status::Sleep ? irand(rules().sleepMin, rules().sleepMax) : 0;
       pop(t, statusName(e.status), rgb(statusColor(e.status)));
+      sound("statut");
       log.push_back("  " + t->name() + " : " + statusName(e.status));
     }
   }
@@ -679,6 +690,7 @@ void Battle::applyEffect(const FighterP& t, const Effect& e) {
     t->stage[e.stat] = std::clamp(old + e.stages, -3, 3);
     if (t->stage[e.stat] != old) {
       pop(t, std::string(stageName(e.stat)) + (e.stages > 0 ? " +" : " -"), e.stages > 0 ? BLUE : GREY);
+      sound(e.stages > 0 ? "bonus" : "malus");
       log.push_back("  " + t->name() + " : " + stageName(e.stat) + " " + std::to_string(t->stage[e.stat]));
     }
   }
@@ -709,6 +721,8 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
   sc.say(isLimit ? "LIMITE — " + a->name() + " : " + m.name + " !" : a->name() + " : " + m.name, isLimit ? .9f : .55f);
   auto ko = std::make_shared<std::vector<FighterP>>();
   sc.call([this, a, targets, &m, isLimit, ko] {
+    if (isLimit) sound("limite");
+    if (m.kind == Kind::Heal || m.kind == Kind::Revive) sound("soin");
     if (isLimit || m.target == Target::AllEnemies) {
       flashT = G.time;
       flashCol = m.kind == Kind::Heal ? rgb(0xfff4c0) : isLimit ? rgb(0xff8ac8) : rgb(0xffffff);
@@ -763,6 +777,7 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
   });
   sc.wait(.75f);
   sc.call([this, ko] {
+    if (!ko->empty()) sound("ko");
     for (auto& f : *ko) sc.say(f->name() + (isAlly(f) || duel() ? " est K.O. !" : " est vaincu !"), .75f);
   });
   float gauge = isLimit ? 0.f : paceGauge(m);
@@ -784,6 +799,7 @@ void Battle::useItem(FighterP a, const std::string& id, FighterP t) {
   sc.say(a->name() + " utilise : " + d.name, .7f);
   sc.call([this, a, id, t] {
     const ItemDef& d = item(id);
+    sound(d.capture > 0 ? "lancer" : "soin");
     if (d.revive) {
       t->clearBattle();
       t->hp = std::max(1, t->mhp * d.revive / 100);
@@ -818,8 +834,12 @@ void Battle::useItem(FighterP a, const std::string& id, FighterP t) {
         t->lim = 0;
         t->atb = 0;
         G.team.push_back(t);
+        sc.call([this] { sound("capture"); });
         sc.say("Capturé ! " + t->name() + " rejoint l'équipe" + ((int)G.team.size() > rules().frontSize ? " (en réserve)." : "."), 1.5f);
-      } else sc.say(t->name() + " s'échappe de la lumière !", 1.0f);
+      } else {
+        sc.call([this] { sound("capture_rate"); });
+        sc.say(t->name() + " s'échappe de la lumière !", 1.0f);
+      }
     }
   });
   sc.wait(.4f);
@@ -846,6 +866,7 @@ void Battle::tryFlee(FighterP a) {
   G.menus.clear();
   sc.call([this, a] {
     if (frand() < rules().flee) {
+      sound("fuite");
       sc.say("L'équipe prend la fuite !", 1.0f);
       sc.call([this] { finish(BattleResult::Fled); });
     } else {
@@ -865,6 +886,7 @@ void Battle::afterAction(FighterP a, float gauge) {
     a->hp = std::max(0, a->hp - dmg);
     setBlink(a);
     pop(a, std::to_string(dmg), rgb(statusColor(a->status)));
+    sound("statut");
     log.push_back("  " + a->name() + " : " + statusName(a->status) + " " + std::to_string(dmg));
     sc.say(a->name() + (poison ? " souffre du poison." : " souffre de sa brûlure."), .6f);
     if (!a->alive()) {
@@ -880,6 +902,7 @@ void Battle::checkEnd() {
     if (!alive(foes).empty() && !alive(allies).empty()) return;
     bool won = alive(foes).empty();
     ending_ = true;
+    sound(won ? "victoire" : "defaite", false);
     sc.say(names_[won ? 0 : 1] + " remporte le duel !", 1.8f);
     sc.call([this, won] { finish(won ? BattleResult::Win : BattleResult::Lose); });
     return;
@@ -902,6 +925,7 @@ void Battle::checkEnd() {
   if (alive(foes).empty()) victory();
   else if (alive(allies).empty()) {
     ending_ = true;
+    sound("defaite", false);
     sc.say("Toute l'équipe est à terre…", 1.6f);
     sc.call([this] { finish(BattleResult::Lose); });
   }
@@ -915,6 +939,7 @@ void Battle::victory() {
     total += d->lvl * R.xpPerLevel * (d->boss ? R.xpBoss : 1);
     goldGain += d->lvl * R.goldPerLevel * (d->boss ? R.goldBoss : 1);
   }
+  sound("victoire", false);  // chacun joue la fin chez lui
   sc.say("Victoire !", .9f);
   if (total > 0) {
     int share = int(total * R.xpFront + 1e-6), res = int(total * R.xpReserve + 1e-6);
@@ -922,7 +947,10 @@ void Battle::victory() {
     sc.call([this, share, res] {
       for (auto& a : alive(allies))
         if (mineToCommand(a))  // gardien à plusieurs : chacun ne fait progresser que ses combattants
-          for (auto& msg : gainXp(*a, share)) sc.say(msg, 1.3f);
+          for (auto& msg : gainXp(*a, share)) {
+            sc.call([this] { sound("niveau", false); });
+            sc.say(msg, 1.3f);
+          }
       for (auto& m : G.team)
         if (!isAlly(m) && m->alive()) gainXp(*m, res);
     });
@@ -1214,6 +1242,7 @@ void Battle::netMessage(const Json& m) {
   std::string k = jget<std::string>(m, "t", "");
   if (follower()) {
     if (net_ == Net::Follow && jget(m, "de", -1) != leader_) return;  // seul le chef décrit le combat
+    if (k == "son") return sound(jget<std::string>(m, "s", ""), false);
     if (ending_) return;                                               // la fin se joue chez chacun
     if (k == "etat") {
       // Duel : « a » est l'équipe de l'hôte (mes ennemis), « b » la mienne. Gardien : « a » les alliés, « b » les ennemis
@@ -1312,6 +1341,7 @@ void Battle::netMessage(const Json& m) {
 void Battle::netEnd(bool won) {
   if (finished_) return;
   G.menus.clear();
+  if (duel()) sound(won ? "victoire" : "defaite", false);
   finish(won ? BattleResult::Win : BattleResult::Lose);
 }
 

@@ -15,6 +15,7 @@
 #include <fstream>
 #include <string>
 
+#include "audio.hpp"
 #include "events.hpp"
 #include "game.hpp"
 #include "world.hpp"
@@ -25,6 +26,7 @@ static std::string loadAll() {
     loadData();
     loadMaps();
     loadEvents();
+    audio::loadSounds();
   } catch (const std::exception& e) {
     return e.what();
   }
@@ -33,7 +35,7 @@ static std::string loadAll() {
 // Problèmes de cohérence (référence inconnue, lieu inaccessible…)
 static std::vector<std::string> problems() {
   std::vector<std::string> p = checkData();
-  for (auto& v : {checkMaps(), checkEvents()}) p.insert(p.end(), v.begin(), v.end());
+  for (auto& v : {checkMaps(), checkEvents(), audio::checkSounds()}) p.insert(p.end(), v.begin(), v.end());
   return p;
 }
 
@@ -239,6 +241,8 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
+  audio::init();
+  audio::setVolumes(6, 7);
   {
     Screen screen(r);
     Game game(r);
@@ -290,6 +294,7 @@ int main(int argc, char* argv[]) {
       SDL_Delay(1);
     }
   }
+  audio::shutdown();
   SDL_DestroyRenderer(r);
   SDL_DestroyWindow(win);
   SDL_Quit();

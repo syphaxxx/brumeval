@@ -101,6 +101,7 @@ class Game {
   void encounter();
   void defeat();
   void showRegionBanner();
+  void updateMusic();  // musique du lieu, du combat ou de l'écran titre
 
   // Menus
   void titleMenu();

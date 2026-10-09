@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "arena.hpp"
+#include "audio.hpp"
 #include "battle.hpp"
 #include "expedition.hpp"
 #include "mapedit.hpp"
@@ -223,7 +224,17 @@ void Game::update(float dt) {
       break;
     }
   }
+  updateMusic();
   in.endFrame();
+}
+
+// Musique selon l'écran : celle du lieu (thème de la carte), du combat ou du boss ; silence
+// pendant la fin d'un combat (la fanfare de victoire ou de défaite se joue seule)
+void Game::updateMusic() {
+  std::string t = "titre";
+  if (mode == Mode::Battle && battle_) t = battle_->ending_ ? "" : battle_->boss ? "boss" : "combat";
+  else if (mode == Mode::Map && mapId >= 0 && mapId < (int)maps().size()) t = audio::musicForPlace(themeName(M().theme));
+  audio::music(t);
 }
 
 // ---------------------------------------------------------------------------
@@ -263,6 +274,7 @@ void Game::startBattle(BattleSetup setup, std::function<void(BattleResult)> afte
   battle_ = std::make_unique<Battle>(*this, std::move(setup), th);
   mode = Mode::Battle;
   menus.clear();
+  audio::play("rencontre");
 }
 void Game::startBattle(std::vector<FighterP> foes, bool boss, std::function<void(BattleResult)> after, bool canFlee, bool canCapture) {
   BattleSetup s;
@@ -420,7 +432,10 @@ void Game::interact() {
   for (auto& b : m.bosses)
     if (bossAlive(b) && fx >= b.x && fx <= b.x + 1 && fy >= b.y && fy <= b.y + 1) return bossTouched(b);
   for (auto& b : m.buildings)
-    if (fx == b.doorX() && fy == b.doorY()) return runEvent(b.event);
+    if (fx == b.doorX() && fy == b.doorY()) {
+      audio::play("porte");
+      return runEvent(b.event);
+    }
 }
 
 // Drapeau d'un coffre ouvert : carte et position (reste valable si on ajoute des coffres)
@@ -433,6 +448,7 @@ void Game::openChest(int i) {
   std::string key = chestFlag(i);
   if (has(key)) return sc.say("Le coffre est vide.");
   flags.insert(key);
+  audio::play("coffre");
   const Chest& c = M().chests[i];
   if (c.item.empty()) {
     gold += c.qty;
@@ -722,6 +738,7 @@ void Game::itemMenuAt(int sel) {
                            return f.alive() && ((d.healHp && f.hp < f.mhp) || (d.healMp && f.mp < f.mmp));
                          }, [this, id, myIdx](Fighter& f) {
                            const ItemDef& d = item(id);
+                           audio::play("soin");
                            items[id]--;
                            if (d.revive) f.hp = std::max(1, f.mhp * d.revive / 100);
                            else {
@@ -764,6 +781,7 @@ void Game::magicMenu() {
                                                 auto cast = [this, caster, id](Fighter* target) {
                                                   const Move& mv = moveInfo(id);
                                                   caster->mp -= mv.cost;
+                                                  audio::play("soin");
                                                   auto healOne = [&](Fighter& t) {
                                                     if (mv.kind == Kind::Revive) {
                                                       if (!t.alive()) t.hp = std::max(1, t.mhp * mv.power / 100);
@@ -805,9 +823,11 @@ void Game::shopMenuAt(const std::vector<std::string>& stock, int sel) {
                        [this, stock, id, i] {
                          const ItemDef& d = item(id);
                          if (gold < d.price) {
+                           audio::play("refus");
                            notice("Pas assez d'or.");
                            return;
                          }
+                         audio::play("achat");
                          gold -= d.price;
                          items[id]++;
                          notice("Acheté : " + d.name + ".");
