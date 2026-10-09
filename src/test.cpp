@@ -325,6 +325,56 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
           "intérieurs : la porte fait entrer dans la maison de soin (musique de l'intérieur), la guérisseuse soigne, le tapis fait ressortir");
   }
 
+  // --- Intérieurs : on entre et on ressort de chaque maison, plusieurs fois, aussi après un combat et un chargement ---
+  {
+    std::string failed;
+    auto visit = [&](int round) {
+      for (int mi2 = 0; mi2 < (int)maps().size(); mi2++) {
+        if (maps()[mi2].theme == Theme::Interieur) continue;
+        for (size_t bi = 0; bi < maps()[mi2].buildings.size(); bi++) {
+          const Building b = maps()[mi2].buildings[bi];
+          if (b.interior.empty()) continue;
+          changeMap(mi2, b.doorX(), b.doorY() + 1, UP);
+          menus.clear();
+          sc.clear();
+          if (round % 2) {
+            interact();  // Entrée devant la porte
+          } else {
+            in.press[UP] = true;  // ou marcher dans la porte
+            tryMove(UP);
+          }
+          run(.1f);
+          bool inside = M().id == b.interior;
+          int wx = -1, wy = -1;
+          for (auto& w : M().warps) wx = w.x, wy = w.y;
+          px = wx, py = wy - 1, dir = DOWN;
+          moving = false;
+          in.press[DOWN] = true;
+          tryMove(DOWN);
+          for (int i = 0; i < 30 && moving; i++) frame();
+          run(.1f);
+          bool out = M().id == maps()[mi2].id && px == b.doorX() && py == b.doorY() + 1;
+          if (!inside || !out) failed += "tour " + std::to_string(round) + " : " + b.interior + (inside ? " (sortie)" : " (entrée)") + " ; ";
+        }
+      }
+    };
+    visit(1);
+    visit(2);
+    startBattle({makeFighter("mulotin", 2)}, false, nullptr);  // un combat entre deux visites
+    for (int i = 0; i < 60 * 60 && mode == Mode::Battle; i++) {
+      in.confirm = true;
+      frame();
+    }
+    skipScript();
+    visit(3);
+    saveGame();
+    loadGame();
+    mode = Mode::Map;
+    visit(4);
+    check(failed.empty(), "intérieurs : on entre et ressort de chaque maison, encore et encore (aussi après un combat et un chargement)" +
+                              (failed.empty() ? std::string() : " — " + failed));
+  }
+
   // --- Quête annexe : le médaillon (accepter, journal, coffre du Bois Murmurant, récompense) ---
   {
     auto answer = [&] {  // Entrée sur chaque message ; « Oui » (premier choix) aux questions

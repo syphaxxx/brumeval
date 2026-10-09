@@ -100,6 +100,7 @@ class Game {
   void tryMove(int d);
   void arrive();
   void interact();
+  void enterDoor(const Building& b);
   void talk(const Npc& n);
   void openChest(int idx);
   std::string chestFlag(int idx) const;

@@ -471,7 +471,7 @@ void Game::tryMove(int d) {
   if (blocked(nx, ny)) {
     if (!fresh) return;
     for (auto& b : M().buildings)
-      if (nx == b.doorX() && ny == b.doorY()) return runEvent(b.event);
+      if (nx == b.doorX() && ny == b.doorY()) return enterDoor(b);
     for (auto& b : M().bosses)
       if (bossAlive(b) && nx >= b.x && nx <= b.x + 1 && ny >= b.y && ny <= b.y + 1) return bossTouched(b);
     for (auto& w : M().warps)
@@ -574,12 +574,15 @@ void Game::interact() {
   for (auto& b : m.bosses)
     if (bossAlive(b) && fx >= b.x && fx <= b.x + 1 && fy >= b.y && fy <= b.y + 1) return bossTouched(b);
   for (auto& b : m.buildings)
-    if (fx == b.doorX() && fy == b.doorY()) {
-      audio::play("porte");
-      int in = mapIndex(b.interior), ex, ey;
-      if (in >= 0 && interiorEntry(maps()[in], M().id, ex, ey)) return changeMap(in, ex, ey, UP);  // on entre
-      return runEvent(b.event);
-    }
+    if (fx == b.doorX() && fy == b.doorY()) return enterDoor(b);
+}
+
+// Porte d'un bâtiment (Entrée devant elle ou marcher dedans) : on entre s'il a un intérieur, sinon son événement
+void Game::enterDoor(const Building& b) {
+  audio::play("porte");
+  int in = mapIndex(b.interior), ex, ey;
+  if (in >= 0 && interiorEntry(maps()[in], M().id, ex, ey)) return changeMap(in, ex, ey, UP);
+  runEvent(b.event);
 }
 
 // Drapeau d'un coffre ouvert : carte et position (reste valable si on ajoute des coffres)
