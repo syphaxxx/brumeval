@@ -301,6 +301,7 @@ void Online::disconnect(const std::string& why) {
   ready_ = 0;
   sent_ = Json();
   battleIds_.clear();
+  trade_ = Trade{};
   if (!why.empty()) status_ = why;
 }
 
@@ -362,6 +363,9 @@ void Online::salon(int sel) {
                        [this] { startRun(session_.seed, session_.text, session_.region, session_.world); }});
   } else
     m.items.push_back({"Prêt !", "", nameOf(0) + " choisit : duel ou expédition.", false, nullptr});
+  m.items.push_back({"Échanger", "", "Échanger une créature de votre partie principale avec un autre joueur, ou lui en offrir une.",
+                     !players_.empty(), [this] { tradeMenu(); }});
+  m.rows = (int)m.items.size() + 1;
   m.items.push_back({"Quitter", "", "Se déconnecter.", true, [this] {
                        disconnect("");
                        menu();
@@ -451,7 +455,10 @@ void Online::update(float dt) {
     }
     if (p && p->conn->closed()) lost(id, p->conn->error);
   }
-  if (myId_ >= 0 && (host_ || !peers_.empty())) syncGroup(dt);
+  if (myId_ >= 0 && (host_ || !peers_.empty())) {
+    syncGroup(dt);
+    updateTrade();
+  }
   // État du combat dix fois par seconde : l'hôte d'un duel à l'invité, le chef du gardien aux autres
   bool duel = host_ && state_ == State::Duel && G.battle_ && G.duelBattle_;
   bool lead = G.battle_ && G.groupBattle_ && G.battle_->online() == Battle::Net::Lead && battleIds_.size() > 1;
@@ -524,6 +531,7 @@ void Online::onMessage(int from, Json m) {
     ended_.clear();
     if (state_ == State::Salon) startRun(session_.seed, session_.text, session_.region, session_.world);
   } else if (k == "ou") onStatus(de, m);
+  else if (k == "echange") onTrade(de, m);
   else if (k == "gardien") onGuardian(m);
   else if (k == "absent") {
     if (G.battle_ && G.groupBattle_) G.battle_->dropPlayer(de);
@@ -667,7 +675,8 @@ void Online::draw(Gfx& g) {
     for (size_t i = 0; i < lines.size(); i++) g.text(172, 45 + 12 * (int)i, lines[i].first, lines[i].second);
   }
   if (!status_.empty()) {
-    bool good = status_.find("Victoire") != std::string::npos || status_.find("onnecté") != std::string::npos;
+    bool good = status_.find("Victoire") != std::string::npos || status_.find("onnecté") != std::string::npos ||
+                status_.rfind("Échange fait", 0) == 0 || status_.rfind("Cadeau", 0) == 0;
     auto ls = Gfx::wrap(status_, 284);
     int h = 9 + 11 * (int)ls.size();
     g.window(14, 158, 292, h);

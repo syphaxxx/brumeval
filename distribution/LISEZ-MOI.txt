@@ -57,6 +57,11 @@ région se combat ensemble : le premier arrivé attend les autres devant lui
 (Échap > Groupe pour voir où ils en sont). Perdre un combat seul ramène au
 village (moitié de l'or) ; perdre contre le gardien arrête l'expédition.
 
+Échanger des créatures : dans le salon (« Échanger », créatures de votre
+partie principale) ou pendant l'expédition (Échap > Groupe > « Échanger une
+créature »). Une créature contre une, ou en cadeau. Les héros ne s'échangent
+pas.
+
 Chacun chez soi, le plus simple est d'installer tous les deux Tailscale
 (https://tailscale.com, gratuit) et d'être dans le même réseau Tailscale :
 l'adresse de l'hôte commence alors par 100. Sinon, l'hôte ouvre le port
