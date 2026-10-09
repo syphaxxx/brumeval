@@ -81,6 +81,16 @@ jobs:
             exit 1
           fi
 
+      - name: Partie automatique (toute l'histoire jouée par le joueur automatique)
+        shell: bash
+        run: |
+          case "$RUNNER_OS" in
+            Windows) EXE=build/Release/brumeval.exe ;;
+            macOS) EXE=build/Brumeval.app/Contents/MacOS/Brumeval ;;
+            *) EXE=build/brumeval ;;
+          esac
+          "$EXE" --partie partie
+
       - name: Paquet à télécharger
         shell: bash
         run: |
@@ -133,3 +143,20 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           sed "s/VERSION/$VERSION/g" distribution/notes.md > notes.md
           gh release create "$GITHUB_REF_NAME" dist/* --title "Brumeval $VERSION" --notes-file notes.md
+      # Annonce sur le canal Discord (adresse du webhook dans le secret DISCORD_WEBHOOK, jamais dans le code :
+      # le dépôt est public). Une erreur de Discord n'empêche pas la publication.
+      - name: Annoncer la version sur Discord
+        continue-on-error: true
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK" ]; then echo "Pas de webhook Discord : rien à annoncer"; exit 0; fi
+          VERSION="${GITHUB_REF_NAME#v}"
+          git fetch --force origin "refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME"
+          RESUME="$(git tag -l --format='%(contents:subject)' "$GITHUB_REF_NAME")"
+          URL="https://github.com/$GITHUB_REPOSITORY/releases/tag/$GITHUB_REF_NAME"
+          TEXTE="🎮 **Brumeval $VERSION** est sortie !"
+          [ -n "$RESUME" ] && TEXTE="$TEXTE"$'\n'"$RESUME"
+          TEXTE="$TEXTE"$'\n'"Télécharger (Windows, Mac, Linux) : $URL"
+          jq -n --arg c "$TEXTE" '{content: $c, username: "Brumeval"}' |
+            curl --fail -sS -H "Content-Type: application/json" -d @- "$DISCORD_WEBHOOK"

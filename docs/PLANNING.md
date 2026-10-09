@@ -1,15 +1,15 @@
 # Planning de la suite de Brumeval
 
-État au 9 octobre 2026 : version **1.3** prête sur la branche
-`chantier-complet` (son, options, manette, animations d'attaque, Ignarok
-redessiné, intérieurs, équipement, quêtes annexes, corrections de l'audit,
-documentation). Elle n'est pas encore fusionnée ni publiée.
+État au 9 octobre 2026 : version **1.5** publiée (boss renforcés, compagnons).
+Avant elle : 1.3 (son, options, manette, animations d'attaque, Ignarok
+redessiné, intérieurs, équipement, quêtes annexes), 1.3.1 (musique) et 1.4
+(gardien à plusieurs, équipement en expédition et en duel).
 
 Les durées sont données en **séances de travail avec Claude** (une séance :
 une demande comme « ajoute l'équipement », avec ses tests). Les étapes sont
 dans l'ordre conseillé ; chacune finit par une version publiée.
 
-## Étape 0 — Publier la 1.3 (tout de suite)
+## Étape 0 — Publier la 1.3 (fait : 1.3 à 1.5 publiées)
 
 - Relire la branche (PR), essayer le jeu, fusionner, publier `v1.3`.
 - Essayer **une fois** dans VS Code : F7, Maj+F5, F5 (voir CLAUDE.md, À faire).
@@ -23,10 +23,21 @@ créature, qui agit seule).
 
 ## Étape 1 — Essais et finitions (1 à 2 séances)
 
-- Partie complète par un vrai joueur, et le multijoueur entre **deux
+- Fait : **joueur automatique** (`brumeval --partie`, `--demo`, Outils >
+  Démo). Il finit l'histoire à chaque fois (12 parties sur 12) ; il a trouvé
+  un message trop large après l'écran de fin (corrigé). Reste : une partie
+  complète par un vrai joueur, et le multijoueur entre **deux
   ordinateurs** (jamais essayé : seulement deux fenêtres sur le même PC).
-- Mesurer l'équilibrage **avec l'équipement** (les simulations jouent sans) et
-  ajuster les prix si le jeu devient trop facile.
+- À décider : la victoire contre le Givrecorne (vraie fin) n'affiche pas
+  d'écran de fin, seulement celle contre Ignarok.
+- Idée : faire jouer aussi l'Expédition au joueur automatique.
+- Fait en 1.5 : équilibrage des boss **avec l'équipement** (`simGear` dans
+  test.cpp ; chiffres dans CLAUDE.md, section Équilibrage).
+- Mode auto (Tab) : un joueur a vu le menu s'ouvrir quand même pour Lior
+  (combats d'histoire et boss). Pas reproduit, ni par les tests ni avec une
+  version qui l'enregistrait : si ça revient, noter le combat exact.
+- Fait en 1.5 : marcher dans une porte fait entrer dans la maison (avant,
+  seulement Entrée).
 
 - Petits plus du retour des joueurs.
 

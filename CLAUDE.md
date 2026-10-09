@@ -36,7 +36,7 @@ chaque envoi sur GitHub, lance le mode test sur les trois, et fabrique les
 paquets (exécutable + `data/` + `distribution/LISEZ-MOI.txt`). Pour publier :
 augmenter `BRUMEVAL_VERSION` dans `src/version.hpp`, fusionner dans `main`,
 puis `git tag v1.2` et `git push origin v1.2` : la page Releases est créée avec
-le texte de `distribution/notes.md`. Sous Windows, la bibliothèque C++ est
+le texte de `distribution/notes.md`, puis la version est annoncée sur le canal Discord de l'utilisateur (webhook rangé dans le secret GitHub `DISCORD_WEBHOOK`, jamais dans le code : le dépôt est public ; texte = première ligne du message de l'étiquette, donc écrire `git tag -a v1.6 -m "Version 1.6 : …"`). Sous Windows, la bibliothèque C++ est
 intégrée (`CMAKE_MSVC_RUNTIME_LIBRARY`, `SDL_FORCE_STATIC_VCRT`) ; sous Linux,
 `-static-libstdc++`. Sur Mac, `data/` va dans `Contents/Resources` (trouvé par
 `SDL_GetBasePath`). Pour essayer une version Release ici : `cmake -S . -B
@@ -60,6 +60,40 @@ posée de travers sur une autre ou hors de l'écran, libellé de menu coupé. Le
 problèmes sont listés avec la dernière capture (« après 05_equipe : … »). Le
 « tour des menus » de test.cpp ouvre en plus la plupart des menus avec les noms
 les plus longs : y ajouter tout nouvel écran.
+
+### Joueur automatique (à lancer après un changement d'histoire, de cartes ou d'équilibrage)
+
+```bash
+cmake --build build-release --config Release
+build-release/Release/brumeval --partie partie   # toute l'histoire, sans fenêtre, ~10 s
+brumeval --demo                                  # la même chose dans la fenêtre (aussi Outils > Démo)
+```
+
+`src/pilot.hpp/.cpp` : un joueur qui joue avec les **mêmes touches** qu'un
+humain (marcher, Entrée, menus ; en combat, l'IA `autoCommand` ou une
+lanterne). Rien n'est écrit d'avance : à chaque décision, `Pilot::goals`
+liste ce qu'il y a à faire sur toutes les cartes (habitant dont la réponse a
+changé : signature `Pilot::inspect` = page + conditions ; coffre, panneau,
+porte sans intérieur, boss, carte jamais vue), et `plan` va au plus proche
+(Dijkstra sur toutes les cartes, passages et portes compris). Ordre : se
+soigner si besoin, boutique (meilleur équipement, lanternes, potions),
+le reste, puis les combats difficiles quand l'équipe est prête (niveau du
+combat −2 pour un boss, −3 sinon, +2 par défaite), sinon entraînement dans
+les hautes herbes. Il capture des créatures tant que les héros manquent de
+compagnons (mode auto coupé pour ces combats). Il passe l'écran de fin
+(Ignarok) et s'arrête quand il n'y a plus rien à faire.
+Rapport : journal à l'écran et `partie/rapport.txt`, captures `.bmp` des
+moments marquants, problèmes de mise en page ; code 0 si l'histoire est finie.
+« BLOQUÉ » : plus rien à faire sans écran de fin, 30 minutes de jeu sans
+progrès, ou 8 défaites contre le même combat. `BRUMEVAL_TRACE=1` affiche
+chaque décision ; `BRUMEVAL_COMPAGNON=gouttelin` choisit le premier
+compagnon. Fichiers : `sauvegarde_partie_auto.txt`, `sauvegarde_demo.txt`
+(jamais la vraie partie). En démo, une touche rend la main au joueur. La
+vérification GitHub lance aussi `--partie`. Mesuré le 2026-10-09 (12 parties,
+3 premiers compagnons) : toujours finie, 45 à 60 minutes de jeu, niveau ~48.
+Un nouveau genre d'interaction (objet à utiliser, énigme…) demande d'ajouter
+un objectif dans `Pilot::goals`. Méthode réutilisable pour d'autres jeux :
+compétence `joueur-automatique` de Claude Code.
 
 ## Architecture (src/)
 
@@ -91,6 +125,7 @@ les plus longs : y ajouter tout nouvel écran.
 | `events.hpp/.cpp` (quêtes) | Quêtes annexes : `quests()`, `findQuest`, `questFlag` ; action `quete` |
 | `version.hpp` | Numéro de version (`BRUMEVAL_VERSION`), affiché sur l'écran titre et comparé en multijoueur |
 | `test.cpp` | Mode test automatique |
+| `pilot.hpp/.cpp` | Joueur automatique : partie rapide (`--partie`), démo (`--demo`, Outils > Démo) |
 
 ### Principes à connaître
 
@@ -147,7 +182,8 @@ les plus longs : y ajouter tout nouvel écran.
   (`s.allies = mine`) ; gardien à plusieurs : `myFighters` suit `front()`
   (un héros et son compagnon à deux joueurs).
 - Équipe : `Game::team` (8 membres maximum par capture, les humains s'ajoutent
-  toujours). Les 3 premiers membres valides combattent (`Game::front()`).
+  toujours). Les combattants sont choisis par `Game::front()` (`frontOf` : héros
+  et compagnons, voir Compagnons ci-dessus).
 - Progression : `Game::flags` (`boss1`, `golem`, `boss2`, `maelle`, `brann`,
   `isra`, `pecheur`, `coffre:<carte>:<index>`).
 - Sauvegarde : fichier texte `sauvegarde.txt` dans `SDL_GetPrefPath("Brumeval",
@@ -273,8 +309,9 @@ les plus longs : y ajouter tout nouvel écran.
   par leur numéro (ordre alphabétique des fichiers).
 - Intérieurs : thème `Theme::Interieur` (parquet, murs, meubles `p t h e o v`,
   dessinés dans sprites.cpp). Une porte de bâtiment avec `interieur` fait entrer
-  dans cette carte (`Game::interact`, case d'arrivée `interiorEntry` : au-dessus
-  du passage de sortie) ; `checkMaps` vérifie la sortie et part de cette case
+  dans cette carte (`Game::enterDoor`, appelé par `interact` avec Entrée et par
+  `tryMove` quand on marche dans la porte ; case d'arrivée `interiorEntry` :
+  au-dessus du passage de sortie) ; `checkMaps` vérifie la sortie et part de cette case
   pour l'accessibilité. Une carte moins haute que l'écran est centrée
   (`drawMap`). Les 12 intérieurs des villages sont `data/cartes/<village>_<lieu>.json`.
 - Quêtes annexes : `data/quetes.json` (lu par `loadEvents`, vérifié par
@@ -419,7 +456,8 @@ achat de la boutique de la région pour chaque membre, borne haute) : Sylvarque
 75 → 100 %, Ronce-Mère 73 → 93 %, Ignarok 25 → 90 %, Givrecorne 35 → 92 %
 (sans tactiques) ; gardiens de l'Expédition : région 5 graine 33 6 → 40 %,
 région 8 graine 11 73 → 93 %. Tout acheter rend les boss d'Ignarok et du
-Givrecorne faciles ; pas encore ajusté (à décider avec l'utilisateur).
+Givrecorne faciles : réglé en 1.5 (boss renforcés, voir plus haut ; ces
+chiffres-ci sont ceux d'avant le renfort).
 Duel avec l'équipement (`Online::Member::gear`, équipe `[espèce, niveau,
 équipement]`), décision du 2026-10-09.
 
@@ -434,4 +472,4 @@ La suite du projet, étape par étape : `docs/PLANNING.md`.
    --config Debug --target ALL_BUILD` (ce que fait F7) réussit. Reste à appuyer
    une fois sur F7, Maj+F5 et F5 dans VS Code pour le confirmer de visu.
 2. Fait le 2026-10-09 : son, options, manette, animations d'attaque, Ignarok
-   (forme `magma`), intérieurs, équipement, quêtes annexes.
+   (forme `magma`), intérieurs, équipement, quêtes annexes (version 1.3).

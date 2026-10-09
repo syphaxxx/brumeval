@@ -221,6 +221,8 @@ cache à effacer, faites **Ctrl+Maj+P > CMake: Delete Cache and Reconfigure**
 
 Depuis l'écran titre, **Outils** donne accès à :
 
+- **Démo** : le jeu joue tout seul une nouvelle partie, du début à la fin
+  (appuyez sur une touche pour reprendre la main ; sa sauvegarde est à part).
 - **Arène de combat** : composez deux équipes (espèces, niveaux, PV des boss,
   renforts, décor), puis **Combattre !** pour jouer vous-même ou **Simuler**
   pour faire jouer des dizaines de combats à l'ordinateur et voir le taux de
@@ -276,6 +278,14 @@ build\Debug\brumeval.exe --test captures
 
 Le mode test vérifie les données, joue quelques scènes, simule des combats pour
 l'équilibrage et enregistre des captures d'écran dans `captures/`.
+
+```
+build-release\Release\brumeval.exe --partie partie
+```
+
+Le joueur automatique joue toute l'histoire en une dizaine de secondes (version
+Release) et écrit son journal dans `partie\rapport.txt`, avec des captures des
+moments marquants. `brumeval --demo` le montre jouer dans la fenêtre.
 
 ## Organisation
 

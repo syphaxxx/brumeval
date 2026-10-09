@@ -11,6 +11,7 @@
 #include "expedition.hpp"
 #include "mapedit.hpp"
 #include "online.hpp"
+#include "pilot.hpp"
 #include "options.hpp"
 #include "settings.hpp"
 #include "storyedit.hpp"
@@ -89,6 +90,12 @@ void Game::padDirection(int d, bool on) {
 }
 
 void Game::onKey(SDL_Scancode k, bool down, bool repeat) {
+  if (pilot_ && pilot_->demo() && down) {  // démo : une touche rend la main au joueur
+    pilot_.reset();
+    for (bool& h : in.hold) h = false;
+    notice("Vous reprenez la main (sauvegarde à part : " + saveName_ + ").");
+    return;
+  }
   in.ctrl = (SDL_GetModState() & KMOD_CTRL) != 0;
   in.shift = (SDL_GetModState() & KMOD_SHIFT) != 0;
   SDL_Keycode kc = SDL_GetKeyFromScancode(k);  // touche selon la disposition du clavier (AZERTY…)
@@ -280,6 +287,7 @@ void Game::update(float dt) {
       }
     }
   if (online_) online_->update(dt);  // réseau du multijoueur, dans tous les écrans
+  if (pilot_) pilot_->update(dt);    // joueur automatique : il choisit les touches de cette image
   banner -= dt;
   noticeT_ -= dt;
   switch (mode) {
@@ -433,6 +441,7 @@ void Game::defeat() {
     if (expedition_->group() && !groupBattle_) return expedition_->knockedOut();
     return expedition_->onDefeat();
   }
+  defeats_++;
   healAll();
   changeMap(respawnMap, respawnX, respawnY, DOWN);
   sc.say("Vous reprenez connaissance chez la guérisseuse. Toute l'équipe est soignée.");
@@ -444,8 +453,8 @@ void Game::defeat() {
 bool Game::npcVisible(const Npc& n) const { return n.hideIf.empty() || !has(n.hideIf); }
 bool Game::bossAlive(const BossSpot& b) const { return !has(b.flag); }
 
-bool Game::blocked(int x, int y) const {
-  const MapDef& m = M();
+bool Game::blocked(int x, int y) const { return blockedOn(M(), x, y); }
+bool Game::blockedOn(const MapDef& m, int x, int y) const {
   if (x < 0 || y < 0 || x >= m.w() || y >= m.h()) return true;
   if (!tileWalkable(m.rows[y][x])) return true;
   for (auto& b : m.buildings)
@@ -697,6 +706,8 @@ void Game::toolsMenu() {
                        mode = Mode::Story;
                        story_->open();
                      }});
+  m.items.push_back({"Démo", "", "Le jeu joue tout seul une nouvelle partie. Une touche pour reprendre la main.", true,
+                     [this] { startPilot(true); }});
   m.items.push_back({"Retour", "", "", true, [this] { menus.pop(); }});
   menus.push(m);
 }
@@ -1329,6 +1340,12 @@ void Game::draw() {
   }
   if (textOn_) drawTextEdit();
   if (bindKey_ >= 0) drawKeyPrompt();
+  if (pilot_ && pilot_->demo()) {  // bandeau de la démo, en haut de l'écran
+    std::string s = "DÉMO · " + pilot_->status;
+    if (s.size() > 60) s = utf8Prefix(s, 44) + "…";
+    g.rect(g.left(), 0, g.fullW, 11, rgb(0x000010, 170));
+    g.text(160, 2, s, rgb(0xffd34d), 1);
+  }
 }
 
 void Game::drawTitle() {
@@ -1487,10 +1504,12 @@ void Game::drawMap() {
     for (size_t i = 0; i < lines.size(); i++) g.text(10, 236 - h + 4 + i * 11, lines[i], MUTED);
     noticeY = std::min(noticeY, 236 - h - 22);  // le petit message passe au-dessus de l'aide
   }
-  if (noticeT_ > 0) {
-    int w = Gfx::textW(notice_) + 20;
-    g.window(160 - w / 2, noticeY, w, 20);
-    g.text(160, noticeY + 4, notice_, WHITE, 1);
+  if (noticeT_ > 0) {  // un message trop long passe sur deux lignes (le bas de la fenêtre ne bouge pas)
+    auto lines = Gfx::wrap(notice_, 290);
+    int w = 20, h = 9 + 11 * (int)lines.size(), top = noticeY + 20 - h;
+    for (auto& l : lines) w = std::max(w, Gfx::textW(l) + 20);
+    g.window(160 - w / 2, top, w, h);
+    for (size_t i = 0; i < lines.size(); i++) g.text(160, top + 4 + i * 11, lines[i], WHITE, 1);
   }
 }
 

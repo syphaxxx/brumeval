@@ -97,7 +97,8 @@ MODIFIER LE JEU
 Tout le contenu (créatures, techniques, objets, cartes, dialogues, règles) est
 dans le dossier data/ (sur Mac : clic droit sur Brumeval.app > Afficher le
 contenu du paquet > Contents/Resources/data). Le jeu a aussi ses propres
-outils : écran titre > Outils. Attention : pour jouer en ligne, les deux
+outils : écran titre > Outils (dont une Démo où le jeu joue tout seul ; une
+touche pour reprendre la main). Attention : pour jouer en ligne, les deux
 joueurs doivent avoir les mêmes données.
 
 Code source : https://github.com/syphaxxx/brumeval
