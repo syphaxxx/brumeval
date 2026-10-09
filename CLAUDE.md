@@ -234,6 +234,11 @@ les plus longs : y ajouter tout nouvel écran.
   `Game::onPad` / `onStick` (appelés par main.cpp, qui ouvre les manettes
   branchées) remplissent le même `Input` ; une direction tenue se répète
   (`padRepeat_`). Plein écran : `options().fullscreen`, appliqué par main.cpp.
+- Animations de combat : `Battle::startAnim` (appelé par `useMove` et
+  `useItem`) retient le lanceur, les cibles, l'effet (`Battle::Fx` : coup,
+  sort, soin, statut, capture) et la couleur du type ; `offset` décale le dessin
+  (élan, secousse quand on est touché) et `drawAnim` dessine l'effet. En ligne,
+  l'hôte ou le chef envoie `anim` aux autres.
 - Police : `gfx.cpp`, fonction `buildFont()`. Un caractère absent s'affiche « ? » ;
   ajoute son dessin si tu utilises un nouveau symbole.
 - Données : tout le contenu est dans `data/` (voir `data/LISEZMOI.md`), chargé au

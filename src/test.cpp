@@ -215,6 +215,19 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   frame();
   run(.45f);
   snap("11_combat_degats");
+  if (battle_) {  // animations : sort (anneaux de la couleur du type) et soin (étincelles)
+    Battle& B = *battle_;
+    B.startAnim(B.allies[0], {B.foes[1]}, Battle::Fx::Magic, rgb(0x5aa0ff));
+    for (int i = 0; i < 22; i++) frame();
+    snap("89_anim_sort");
+    B.startAnim(B.allies[2], {B.allies[0], B.allies[1]}, Battle::Fx::Heal, rgb(0x7dffa8));
+    for (int i = 0; i < 8; i++) frame();
+    Pt lunge = B.offset(B.allies[2]);
+    bool two = B.anim_.targets.size() == 2;
+    for (int i = 0; i < 18; i++) frame();
+    snap("90_anim_soin");
+    check(lunge.y < 0 && two, "combat : animations (élan du lanceur, effet sur chaque cible)");
+  }
   for (int i = 0; i < 60 * 300 && mode == Mode::Battle; i++) {
     if (menus.active() || sc.busy() || (battle_ && battle_->sc.busy())) in.confirm = true;
     frame();

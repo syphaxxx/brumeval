@@ -104,6 +104,103 @@ void Battle::pop(const FighterP& f, const std::string& t, Color c) {
 }
 
 bool Battle::shown() const { return G.battle_.get() == this; }
+
+static Battle::Fx fxOf(const Move& m) {
+  switch (m.kind) {
+    case Kind::Physical: return Battle::Fx::Hit;
+    case Kind::Magic: return Battle::Fx::Magic;
+    case Kind::Heal:
+    case Kind::Revive: return Battle::Fx::Heal;
+    case Kind::Status: return Battle::Fx::Status;
+  }
+  return Battle::Fx::Hit;
+}
+
+void Battle::startAnim(const FighterP& a, const std::vector<FighterP>& targets, Fx fx, Color col, bool limit) {
+  anim_ = Anim{a, targets, fx, col, limit, G.time};
+  if (net_ == Net::Host || net_ == Net::Lead) {
+    Json c = Json::array();
+    for (auto& f : targets) c.push_back(mine(f));
+    send_(-1, Json{{"t", "anim"}, {"a", mine(a)}, {"c", c}, {"fx", (int)fx}, {"col", Json::array({col.r, col.g, col.b})}, {"l", limit}});
+  }
+}
+
+// Élan : le lanceur avance vers ses adversaires (coup) ou fait un petit bond (sort, soin) ; le
+// combattant touché tremble un instant
+Pt Battle::offset(const FighterP& f) const {
+  Pt o{0, 0};
+  float e = G.time - anim_.t0;
+  if (anim_.actor == f && e >= 0 && e < .4f) {
+    float k = std::sin(3.14159f * e / .4f);
+    if (anim_.fx == Fx::Hit) o.x = (isAlly(f) ? -16.f : 16.f) * k;
+    else o.y = -6 * k;
+  }
+  if (blink == f && G.time - blinkT < .3f) o.x += std::sin((G.time - blinkT) * 70) * 2.5f;
+  return o;
+}
+
+void Battle::drawAnim() {
+  Gfx& g = G.g;
+  float e = G.time - anim_.t0 - .2f;  // l'effet arrive sur la cible juste après l'élan
+  if (e < 0 || e > .6f) return;
+  float k = e / .6f;  // 0 au début, 1 à la fin
+  auto fade = [](Color c, float a) {
+    c.a = uint8_t(std::clamp(a, 0.f, 1.f) * 255);
+    return c;
+  };
+  for (auto& f : anim_.targets) {
+    Pt p = pos(f);
+    p.y -= 4;
+    Color c = anim_.col, white = rgb(0xffffff);
+    switch (anim_.fx) {
+      case Fx::Hit: {
+        for (int i = 0; i < 3; i++) {  // trois entailles qui apparaissent l'une après l'autre
+          float a = std::clamp(k * 3 - i * .5f, 0.f, 1.f), x = -10 + i * 7.f;
+          if (a <= 0) continue;
+          g.line(p.x + x - 6, p.y - 14, p.x + x - 6 + 16 * a, p.y - 14 + 24 * a, 2, fade(white, 1.2f - k));
+          g.line(p.x + x - 5, p.y - 13, p.x + x - 5 + 15 * a, p.y - 13 + 22 * a, 1, fade(c, 1.2f - k));
+        }
+        for (int i = 0; i < 8; i++) {  // éclat de l'impact
+          float ang = i * .785f + .3f, r0 = 4 + k * 10, r1 = r0 + 6 * (1 - k);
+          g.line(p.x + std::cos(ang) * r0, p.y + std::sin(ang) * r0, p.x + std::cos(ang) * r1, p.y + std::sin(ang) * r1, 1.5f,
+                 fade(i % 2 ? c : white, 1 - k));
+        }
+        break;
+      }
+      case Fx::Magic:
+        for (int ring = 0; ring < 2; ring++) {  // anneaux de la couleur du type qui s'élargissent
+          float r = 4 + (k - ring * .25f) * 34;
+          if (r < 4) continue;
+          for (int i = 0; i < 16; i++) {
+            float ang = i * .3927f + G.time * 3;
+            g.rect(p.x + std::cos(ang) * r - 1, p.y + std::sin(ang) * r * .6f - 1, 2, 2, fade(i % 2 ? white : c, 1 - k));
+          }
+        }
+        g.ellipse(p.x, p.y, 10 * (1 - k) + 2, 8 * (1 - k) + 2, fade(c, .7f * (1 - k)));
+        break;
+      case Fx::Heal:
+      case Fx::Capture:
+        for (int i = 0; i < 7; i++) {  // étincelles qui montent
+          float x = std::sin(i * 2.4f) * 13, y = 12 - std::fmod(k * 40 + i * 6, 40.f);
+          g.ellipse(p.x + x, p.y + y, 1.6f, 1.6f, fade(i % 2 ? white : c, 1 - k * .8f));
+          g.rect(p.x + x - .5f, p.y + y - 3, 1, 6, fade(white, .6f * (1 - k)));
+        }
+        if (anim_.fx == Fx::Capture) g.ellipse(p.x, p.y, 18 * k + 4, 16 * k + 4, fade(rgb(0xfff0a0), .5f * (1 - k)));
+        break;
+      case Fx::Status:
+        for (int i = 0; i < 6; i++) {  // tourbillon autour de la cible
+          float ang = i * 1.047f + k * 9, r = 16 - k * 8;
+          g.ellipse(p.x + std::cos(ang) * r, p.y - 6 + std::sin(ang) * r * .5f, 2, 2, fade(c, 1 - k));
+        }
+        break;
+    }
+    if (anim_.limit)  // Limite : grande étoile dorée
+      for (int i = 0; i < 12; i++) {
+        float ang = i * .5236f, r = 6 + k * 30;
+        g.line(p.x, p.y, p.x + std::cos(ang) * r, p.y + std::sin(ang) * r, 1.5f, fade(rgb(0xffd34d), 1 - k));
+      }
+  }
+}
 void Battle::sound(const std::string& id, bool share) {
   if (shown()) audio::play(id);
   if (share && (net_ == Net::Host || net_ == Net::Lead)) send_(-1, Json{{"t", "son"}, {"s", id}});
@@ -718,6 +815,7 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
   const Move& m = moveInfo(id);
   if (m.cost > 0) a->mp = std::max(0, a->mp - m.cost);
   if (isLimit) a->lim = 0;
+  startAnim(a, targets, fxOf(m), rgb(types()[m.type].color), isLimit);
   sc.say(isLimit ? "LIMITE — " + a->name() + " : " + m.name + " !" : a->name() + " : " + m.name, isLimit ? .9f : .55f);
   auto ko = std::make_shared<std::vector<FighterP>>();
   sc.call([this, a, targets, &m, isLimit, ko] {
@@ -796,6 +894,7 @@ void Battle::useItem(FighterP a, const std::string& id, FighterP t) {
   }
   if (mineToCommand(a)) G.items[id]--;  // l'objet d'un autre joueur a déjà été pris dans son sac
   const ItemDef& d = item(id);
+  startAnim(a, {t}, d.capture > 0 ? Fx::Capture : Fx::Heal, d.capture > 0 ? rgb(0xffe27a) : rgb(0x7dffa8));
   sc.say(a->name() + " utilise : " + d.name, .7f);
   sc.call([this, a, id, t] {
     const ItemDef& d = item(id);
@@ -1063,7 +1162,8 @@ void Battle::draw() {
     if (!f->alive()) continue;
     Pt p = pos(f);
     float s = f->boss ? 1.45f : f->sp == "brumelin" ? .85f : 1.f;
-    if (!(blinking && blink == f)) drawFighterSprite(g, *f, p.x, p.y, s, true, t + p.x * .01f);
+    Pt o = offset(f);
+    if (!(blinking && blink == f)) drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, s, true, t + p.x * .01f);
     float bw = f->boss ? 24 : 15, by = p.y - (f->boss ? 42 : 26);
     g.rect(p.x - bw - 1, by - 1, bw * 2 + 2, 4, rgb(0x0a0f33));
     g.rect(p.x - bw, by, bw * 2 * f->hp / f->mhp, 2, rgb(0xff8a7a));
@@ -1077,12 +1177,14 @@ void Battle::draw() {
   for (auto& a : allies) {
     Pt p = pos(a);
     if (!a->alive()) g.alpha = .35f;
-    if (!(blinking && blink == a)) drawFighterSprite(g, *a, p.x, p.y, 1, false, t + p.x * .01f);
+    Pt o = offset(a);
+    if (!(blinking && blink == a)) drawFighterSprite(g, *a, p.x + o.x, p.y + o.y, 1, false, t + p.x * .01f);
     g.alpha = 1;
     drawStatusTag(*a, p.x - 26, p.y - 18);
     if (actor == a) g.tri(p.x - 4, p.y - 34, p.x + 4, p.y - 34, p.x, p.y - 28, rgb(0xffd34d));
     if (cursor == a) g.cursor(p.x - 24, p.y - 4);
   }
+  drawAnim();
   // Nombres flottants
   pops.erase(std::remove_if(pops.begin(), pops.end(), [&](const Pop& p) { return t - p.t > 1.f; }), pops.end());
   for (auto& p : pops) g.text(p.x, p.y - std::min(1.f, (t - p.t) * 3) * 8, p.text, p.col, 1);
@@ -1243,6 +1345,18 @@ void Battle::netMessage(const Json& m) {
   if (follower()) {
     if (net_ == Net::Follow && jget(m, "de", -1) != leader_) return;  // seul le chef décrit le combat
     if (k == "son") return sound(jget<std::string>(m, "s", ""), false);
+    if (k == "anim") {  // animation d'une action, décidée chez l'hôte ou le chef
+      std::vector<FighterP> c;
+      Json cs = m.value("c", Json::array()), col = m.value("col", Json::array({255, 255, 255}));
+      for (auto& x : cs)
+        if (FighterP f = other(x)) c.push_back(f);
+      FighterP a = other(m.value("a", Json()));
+      if (a && col.size() == 3) {
+        Color cc = rgb(uint32_t(col[0].get<int>()) << 16 | uint32_t(col[1].get<int>()) << 8 | uint32_t(col[2].get<int>()));
+        anim_ = Anim{a, c, Fx(std::clamp(jget(m, "fx", 0), 0, 4)), cc, jget(m, "l", false), G.time};
+      }
+      return;
+    }
     if (ending_) return;                                               // la fin se joue chez chacun
     if (k == "etat") {
       // Duel : « a » est l'équipe de l'hôte (mes ennemis), « b » la mienne. Gardien : « a » les alliés, « b » les ennemis

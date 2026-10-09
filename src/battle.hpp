@@ -41,6 +41,7 @@ class Battle {
   bool autoPlay = false;    // les alliés jouent tout seuls (mode test, simulations de l'Arène)
   bool simTactics = false;  // avec autoPlay : les alliés suivent d'abord leurs tactiques
   std::vector<std::string> log;  // journal détaillé des actions (mode test, Arène)
+  enum class Fx { Hit, Magic, Heal, Status, Capture };  // effet d'une action sur sa cible (animation)
 
   // Duel en ligne (online.hpp) : l'hôte calcule tout le combat ; l'invité affiche l'état
   // reçu et envoie ses ordres. Les « ennemis » de l'hôte sont l'équipe de l'invité.
@@ -95,6 +96,20 @@ class Battle {
   // share : l'hôte ou le chef le fait aussi entendre aux autres joueurs
   void sound(const std::string& id, bool share = true);
   bool shown() const;  // c'est le combat affiché à l'écran
+  // Animation d'une action : élan du lanceur vers ses cibles, puis effet sur elles selon le
+  // genre de l'action (Fx, plus haut) et la couleur de son type
+  struct Anim {
+    FighterP actor;
+    std::vector<FighterP> targets;
+    Fx fx = Fx::Hit;
+    Color col;
+    bool limit = false;
+    float t0 = -10;
+  };
+  Anim anim_;
+  void startAnim(const FighterP& a, const std::vector<FighterP>& targets, Fx fx, Color col, bool limit = false);
+  Pt offset(const FighterP& f) const;  // décalage du dessin : élan, ou secousse quand il est touché
+  void drawAnim();
 
   void tickATB(float dt);
   bool skipTurn(FighterP f);  // sommeil ou paralysie : le tour est perdu
