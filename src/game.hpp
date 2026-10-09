@@ -113,6 +113,11 @@ class Game {
   void itemMenu();
   void magicMenu();
   void shopMenu(const std::vector<std::string>& stock);
+  void optionsMenu(int sel = 0);
+  void keysMenu(int sel = 0);
+  int bindKey_ = -1;  // Options > Touches : action qui attend sa nouvelle touche
+  void bindKey(SDL_Scancode k);
+  void drawKeyPrompt();
   void pickMember(const std::string& title, std::function<bool(const Fighter&)> ok, std::function<void(Fighter&)> use);
   void ask(const std::string& q, std::function<void()> yes, std::function<void()> no = nullptr);
   void execAction(const Json& a);

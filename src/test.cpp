@@ -16,6 +16,7 @@
 #include "game.hpp"
 #include "mapedit.hpp"
 #include "online.hpp"
+#include "options.hpp"
 #include "settings.hpp"
 #include "sprites.hpp"
 #include "storyedit.hpp"
@@ -87,6 +88,48 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     for (int t = 0; t <= (int)Theme::Neige; t++) places = places && !audio::musicForPlace(themeName(Theme(t))).empty();
     check(bad.empty() && places, "son : chaque morceau et chaque effet s'entend sans saturer, chaque thème de carte a sa musique" +
                                      (bad.empty() ? std::string() : " (problème :" + bad + ")"));
+  }
+
+  // --- Options (fichier à part) : volume, nouvelle touche, relecture ---
+  {
+    std::string realFile = optionsFile;
+    optionsFile = "options_test.txt";
+    loadOptions();
+    titleMenu();
+    menus.top().sel = 5;  // Options
+    in.confirm = true;
+    frame();
+    bool opened = menus.top().title == "Options";
+    int vol = options().music;
+    in.press[RIGHT] = true;  // Musique : plus fort
+    frame();
+    snap("86_options");
+    bool louder = options().music == std::min(10, vol + 1);
+    menus.top().sel = 3;  // Touches
+    in.confirm = true;
+    frame();
+    snap("87_touches");
+    in.confirm = true;  // Haut : attend la nouvelle touche
+    frame();
+    snap("88_touche_attente");
+    bool waiting = bindKey_ == K_UP;
+    onKey(SDL_SCANCODE_I, true, false);
+    onKey(SDL_SCANCODE_I, false, false);
+    onKey(SDL_SCANCODE_I, true, false);
+    bool bound = bindKey_ < 0 && options().keys[K_UP] == SDL_SCANCODE_I && in.press[UP];
+    onKey(SDL_SCANCODE_I, false, false);
+    in.endFrame();
+    options() = Options{};
+    loadOptions();
+    bool reread = options().keys[K_UP] == SDL_SCANCODE_I && options().music == std::min(10, vol + 1);
+    check(opened && louder && waiting && bound && reread,
+          "options : écran titre > Options, volume de la musique, nouvelle touche pour « Haut », relues depuis le fichier");
+    char* pp = SDL_GetPrefPath("Brumeval", "Brumeval");
+    std::remove((std::string(pp ? pp : "") + optionsFile).c_str());
+    SDL_free(pp);
+    optionsFile = realFile;
+    options() = Options{};
+    titleMenu();
   }
 
   // --- Écran titre et début de partie ---

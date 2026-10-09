@@ -11,6 +11,7 @@
 #include "expedition.hpp"
 #include "mapedit.hpp"
 #include "online.hpp"
+#include "options.hpp"
 #include "settings.hpp"
 #include "storyedit.hpp"
 #include "sprites.hpp"
@@ -65,11 +66,17 @@ void Game::onKey(SDL_Scancode k, bool down, bool repeat) {
     }
     return;
   }
+  if (bindKey_ >= 0) {  // Options > Touches : la prochaine touche appuyée remplace celle de l'action
+    if (down && !repeat) bindKey(k);
+    return;
+  }
+  // Touches choisies dans les options ; les flèches, Entrée et Échap marchent toujours
+  const auto& K = options().keys;
   int d = -1;
-  if (k == SDL_SCANCODE_UP || k == SDL_SCANCODE_W) d = UP;
-  if (k == SDL_SCANCODE_DOWN || k == SDL_SCANCODE_S) d = DOWN;
-  if (k == SDL_SCANCODE_LEFT || k == SDL_SCANCODE_A) d = LEFT;
-  if (k == SDL_SCANCODE_RIGHT || k == SDL_SCANCODE_D) d = RIGHT;
+  if (k == SDL_SCANCODE_UP || k == K[K_UP]) d = UP;
+  if (k == SDL_SCANCODE_DOWN || k == K[K_DOWN]) d = DOWN;
+  if (k == SDL_SCANCODE_LEFT || k == K[K_LEFT]) d = LEFT;
+  if (k == SDL_SCANCODE_RIGHT || k == K[K_RIGHT]) d = RIGHT;
   if (d >= 0) {
     if (!repeat) in.hold[d] = down;
     if (down) in.press[d] = true;
@@ -79,9 +86,92 @@ void Game::onKey(SDL_Scancode k, bool down, bool repeat) {
   if (down && k == SDL_SCANCODE_PAGEDOWN) in.next = true;
   if (down && k == SDL_SCANCODE_DELETE) in.del = true;
   if (!down || repeat) return;
-  if (k == SDL_SCANCODE_RETURN || k == SDL_SCANCODE_KP_ENTER || k == SDL_SCANCODE_SPACE) in.confirm = true;
-  if (k == SDL_SCANCODE_ESCAPE || k == SDL_SCANCODE_BACKSPACE) in.cancel = in.menu = true;
-  if (k == SDL_SCANCODE_TAB) in.menu = in.tab = true;
+  if (k == SDL_SCANCODE_RETURN || k == SDL_SCANCODE_KP_ENTER || k == K[K_OK]) in.confirm = true;
+  if (k == SDL_SCANCODE_ESCAPE || k == K[K_BACK]) in.cancel = in.menu = true;
+  if (k == K[K_AUTO]) in.menu = in.tab = true;
+}
+
+// ---------------------------------------------------------------------------
+// Options : volumes, plein écran, touches (options.hpp)
+// ---------------------------------------------------------------------------
+void Game::optionsMenu(int sel) {
+  int panel = panelMode_;
+  panelMode_ = 0;  // le menu prend la place du résumé de l'équipe
+  Menu m;
+  m.title = "Options";
+  m.x = 60, m.y = 40, m.w = 200, m.rows = 5, m.sel = sel;
+  auto volume = [this](const std::string& label, int* v, const std::string& help) {
+    MenuItem it{label, "", help, true, nullptr};
+    it.adjust = [v](int d) {
+      *v = std::clamp(*v + d, 0, 10);
+      applyVolumes();
+      saveOptions();
+    };
+    it.rightFn = [v] { return *v ? std::to_string(*v) + " / 10" : std::string("coupé"); };
+    return it;
+  };
+  m.items.push_back(volume("Musique", &options().music, "Gauche / droite : volume de la musique."));
+  m.items.push_back(volume("Effets sonores", &options().effects, "Gauche / droite : volume des bruitages."));
+  auto full = [] {
+    options().fullscreen = !options().fullscreen;
+    saveOptions();
+  };
+  MenuItem fs{"Plein écran", "", "Aussi avec F11 ou Alt+Entrée.", true, full};
+  fs.adjust = [full](int) { full(); };
+  fs.rightFn = [] { return std::string(options().fullscreen ? "Oui" : "Non"); };
+  m.items.push_back(fs);
+  m.items.push_back({"Touches", "", "Changer les touches du clavier. La manette se branche toute seule.", true, [this] { keysMenu(); }});
+  m.items.push_back({"Retour", "", "", true, [this, panel] {
+                       panelMode_ = panel;
+                       menus.pop();
+                     }});
+  m.onCancel = m.items.back().act;
+  menus.push(m);
+}
+
+void Game::keysMenu(int sel) {
+  Menu m;
+  m.title = "Touches";
+  m.x = 72, m.y = 52, m.w = 210, m.rows = 9, m.sel = sel;
+  const std::string help = "Entrée : appuyer ensuite sur la nouvelle touche. Les flèches, Entrée et Échap marchent toujours.";
+  for (int a = 0; a < N_KEYS; a++) {
+    MenuItem it{keyActionName(a), "", help, true, [this, a] { bindKey_ = a; }};
+    it.rightFn = [a] { return keyName(options().keys[a]); };
+    m.items.push_back(it);
+  }
+  m.items.push_back({"Touches par défaut", "", "ZQSD (WASD en QWERTY), Espace, Retour arrière et Tab.", true, [this] {
+                       options().keys = Options::defaultKeys();
+                       saveOptions();
+                       notice("Touches par défaut remises.");
+                     }});
+  m.items.push_back({"Retour", "", "", true, [this] { menus.pop(); }});
+  menus.push(m);
+}
+
+// Nouvelle touche pour l'action bindKey_ (Échap : annuler). Si une autre action l'avait, elle prend l'ancienne.
+void Game::bindKey(SDL_Scancode k) {
+  int a = bindKey_;
+  bindKey_ = -1;
+  in.endFrame();
+  if (k == SDL_SCANCODE_ESCAPE) return;
+  if (k == SDL_SCANCODE_RETURN || k == SDL_SCANCODE_KP_ENTER || k == SDL_SCANCODE_F11 || k == SDL_SCANCODE_UP || k == SDL_SCANCODE_DOWN ||
+      k == SDL_SCANCODE_LEFT || k == SDL_SCANCODE_RIGHT)
+    return notice("Cette touche marche déjà toute seule.");
+  auto& K = options().keys;
+  for (auto& other : K)
+    if (other == k) other = K[a];
+  K[a] = k;
+  saveOptions();
+  notice(std::string(keyActionName(a)) + " : " + keyName(k) + ".");
+}
+
+void Game::drawKeyPrompt() {
+  g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0x000010, 120));
+  g.newLayer();  // fenêtre modale : le reste est assombri derrière
+  g.window(40, 96, 240, 46);
+  g.text(160, 102, "Nouvelle touche pour « " + std::string(keyActionName(bindKey_)) + " »", rgb(0xffd34d), 1);
+  g.text(160, 116, "Appuyez sur la touche voulue…", WHITE, 1);
+  g.text(160, 128, "Échap : annuler", MUTED, 1);
 }
 
 // ---------------------------------------------------------------------------
@@ -501,7 +591,7 @@ void Game::titleMenu() {
   editorTest_ = storyTest_ = false;
   menus.clear();
   Menu m;
-  m.x = 102, m.y = 128, m.w = 116, m.rows = 6, m.cancelable = false;
+  m.x = 102, m.y = 122, m.w = 116, m.rows = 7, m.cancelable = false;
   m.items.push_back({"Nouvelle partie", "", "", true, [this] { starterMenu(); }});
   bool can = saveExists();
   m.items.push_back({"Continuer", "", "", can, [this] {
@@ -520,6 +610,7 @@ void Game::titleMenu() {
                        online_->menu();
                      }});
   m.items.push_back({"Outils", "", "Arène, réglages et éditeurs.", true, [this] { toolsMenu(); }});
+  m.items.push_back({"Options", "", "Volumes, plein écran et touches.", true, [this] { optionsMenu(); }});
   m.items.push_back({"Quitter", "", "", true, [this] { quit = true; }});
   if (can) m.sel = 1;
   menus.push(m);
@@ -619,7 +710,9 @@ void Game::pauseMenu() {
                          ask("Revenir à l'écran titre ? (pensez à sauvegarder)", [this] { titleMenu(); });
                        }});
   }
+  m.items.push_back({"Options", "", "Volumes, plein écran et touches.", true, [this] { optionsMenu(); }});
   m.items.push_back({"Reprendre", "", "", true, [this] { menus.clear(); }});
+  m.rows = (int)m.items.size();
   menus.push(m);
 }
 
@@ -972,6 +1065,7 @@ void Game::draw() {
       break;
   }
   if (textOn_) drawTextEdit();
+  if (bindKey_ >= 0) drawKeyPrompt();
 }
 
 void Game::drawTitle() {
@@ -1120,16 +1214,18 @@ void Game::drawMap() {
   if (panelMode_ && menus.active()) drawTeamPanel(panelMode_ == 1 ? 114 : 146, 8, panelMode_ == 2 ? teamPanelSel_ : -1);
   if (menus.active()) menus.draw(g, time);
   drawDialogue();
+  int noticeY = 190;
   if (menus.active() && askText_.empty() && !menus.help().empty()) {
     auto lines = Gfx::wrap(menus.help(), 300);
     int h = 10 + 11 * (int)lines.size();
     g.window(4, 236 - h, 312, h);
     for (size_t i = 0; i < lines.size(); i++) g.text(10, 236 - h + 4 + i * 11, lines[i], MUTED);
+    noticeY = std::min(noticeY, 236 - h - 22);  // le petit message passe au-dessus de l'aide
   }
   if (noticeT_ > 0) {
     int w = Gfx::textW(notice_) + 20;
-    g.window(160 - w / 2, 190, w, 20);
-    g.text(160, 194, notice_, WHITE, 1);
+    g.window(160 - w / 2, noticeY, w, 20);
+    g.text(160, noticeY + 4, notice_, WHITE, 1);
   }
 }
 

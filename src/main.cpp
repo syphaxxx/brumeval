@@ -12,12 +12,12 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
-#include <fstream>
 #include <string>
 
 #include "audio.hpp"
 #include "events.hpp"
 #include "game.hpp"
+#include "options.hpp"
 #include "world.hpp"
 
 // Charge tout le dossier data/. Renvoie le message d'erreur (vide si tout va bien).
@@ -148,26 +148,6 @@ static void fitWindow(SDL_Window* win) {
   SDL_SetWindowPosition(win, ub.x + left + (ub.w - left - right - w) / 2, ub.y + top + (ub.h - top - bottom - h) / 2);
 }
 
-// Préférence plein écran, gardée d'une partie à l'autre (options.txt, à côté de la sauvegarde)
-static std::string optionsPath() {
-  char* p = SDL_GetPrefPath("Brumeval", "Brumeval");
-  std::string s = p ? p : "";
-  SDL_free(p);
-  return s + "options.txt";
-}
-static bool loadFullscreen() {
-  std::ifstream f(optionsPath());
-  std::string k;
-  int v = 0;
-  while (f >> k >> v)
-    if (k == "plein_ecran") return v != 0;
-  return false;
-}
-static void saveFullscreen(bool on) {
-  std::ofstream f(optionsPath());
-  f << "plein_ecran " << (on ? 1 : 0) << '\n';
-}
-
 static int runTests(const char* outDir) {
   std::setvbuf(stdout, nullptr, _IONBF, 0);  // affichage immédiat, même en cas de plantage
   SDL_Init(0);
@@ -232,7 +212,8 @@ int main(int argc, char* argv[]) {
   fitWindow(win);
   SDL_SetWindowMinimumSize(win, SCREEN_W, SCREEN_H);
   SDL_ShowWindow(win);
-  bool fullscreen = loadFullscreen();
+  loadOptions();  // volumes, plein écran, touches (options.hpp)
+  bool fullscreen = options().fullscreen;
   if (fullscreen) SDL_SetWindowFullscreen(win, SDL_WINDOW_FULLSCREEN_DESKTOP);
   SDL_Renderer* r = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
   if (!r) r = SDL_CreateRenderer(win, -1, SDL_RENDERER_SOFTWARE | SDL_RENDERER_TARGETTEXTURE);
@@ -242,7 +223,7 @@ int main(int argc, char* argv[]) {
   }
 
   audio::init();
-  audio::setVolumes(6, 7);
+  applyVolumes();
   {
     Screen screen(r);
     Game game(r);
@@ -277,12 +258,15 @@ int main(int argc, char* argv[]) {
         SDL_Scancode k = e.key.keysym.scancode;
         bool alt = (e.key.keysym.mod & KMOD_ALT) != 0;
         if (e.type == SDL_KEYDOWN && !e.key.repeat && (k == SDL_SCANCODE_F11 || (alt && k == SDL_SCANCODE_RETURN))) {
-          fullscreen = !fullscreen;  // F11 ou Alt+Entrée : plein écran (gardé pour la prochaine fois)
-          SDL_SetWindowFullscreen(win, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
-          saveFullscreen(fullscreen);
+          options().fullscreen = !options().fullscreen;  // F11 ou Alt+Entrée : plein écran (gardé pour la prochaine fois)
+          saveOptions();
           continue;
         }
         game.onKey(k, e.type == SDL_KEYDOWN, e.key.repeat != 0);
+      }
+      if (options().fullscreen != fullscreen) {  // F11 ou menu Options
+        fullscreen = options().fullscreen;
+        SDL_SetWindowFullscreen(win, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
       }
       Uint64 now = SDL_GetPerformanceCounter();
       float dt = std::min(.05f, float(now - last) / float(SDL_GetPerformanceFrequency()));
