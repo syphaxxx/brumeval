@@ -281,7 +281,13 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   startBattle({makeFighter("mulotin", 4), makeFighter("champichou", 5), makeFighter("piafouine", 4)}, false, nullptr);
   for (int i = 0; i < 1500 && !menus.active(); i++) frame();
   check(menus.active(), "le menu de commande s'ouvre quand une jauge ATB est pleine");
-  check(audio::currentMusic() == "combat" && audio::lastEffect != "", "son : musique de combat, bruitages (dernier : « " + audio::lastEffect + " »)");
+  {
+    // La musique de combat joue vraiment : le mélangeur passe de la vallée au combat (fondu), puis on l'entend
+    audio::runMixer(1.f);
+    float level = audio::runMixer(1.f);
+    check(audio::currentMusic() == "combat" && level > .02f && audio::lastEffect != "",
+          "son : la musique de combat joue vraiment (niveau " + std::to_string(level) + "), bruitages (dernier : « " + audio::lastEffect + " »)");
+  }
   snap("07_combat_commande");
   if (battle_ && battle_->actor && !battle_->actor->spells().empty()) {
     in.press[DOWN] = true;
