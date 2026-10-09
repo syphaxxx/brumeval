@@ -198,6 +198,12 @@ autoriser Brumeval sur le réseau : cochez **privé et public** puis
    Internet et quelques minutes.
 4. **F7** pour compiler, puis **Maj+F5** pour lancer le jeu (ou le bouton ▶ de
    la barre d'état en bas).
+5. Pour déboguer (points d'arrêt) : **F5**, configuration « Brumeval
+   (Windows, MSVC) ».
+
+En cas de souci : si CMake Tools parle d'un « generator » différent ou d'un
+cache à effacer, faites **Ctrl+Maj+P > CMake: Delete Cache and Reconfigure**
+(ou supprimez le dossier `build`), puis F7.
 
 ## Outils
 

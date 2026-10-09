@@ -370,9 +370,12 @@ sinon Maëlle, ciblée en priorité par l'IA, tombe dès le début contre Sylvar
 
 ## À faire / pistes
 
-1. Windows : la compilation MSVC (générateurs Visual Studio et Ninja) et le mode
-   test marchent en ligne de commande. Reste à confirmer dans VS Code même :
-   F7, Maj+F5 et le débogueur (`cppvsdbg`).
+1. Windows / VS Code (vérifié le 2026-10-09, sans l'interface) : extensions
+   C/C++ 1.34 et CMake Tools 1.24 installées, kits Build Tools 2022 détectés,
+   débogueur `vsdbg` présent, `build/` configuré avec « Visual Studio 17 2022 »
+   (le kit choisi par défaut, Ninja n'étant pas installé), `cmake --build build
+   --config Debug --target ALL_BUILD` (ce que fait F7) réussit. Reste à appuyer
+   une fois sur F7, Maj+F5 et F5 dans VS Code pour le confirmer de visu.
 2. Ajouter musique et effets sonores (SDL2_mixer via FetchContent, ou l'audio de SDL).
 3. Rendre le sprite d'Ignarok plus lisible (aujourd'hui un bloc rouge).
 4. Idées : intérieurs des maisons, quêtes annexes, équipement, menu d'options,
