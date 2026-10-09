@@ -80,8 +80,8 @@ soigner si besoin, boutique (meilleur équipement, lanternes, potions),
 le reste, puis les combats difficiles quand l'équipe est prête (niveau du
 combat −2 pour un boss, −3 sinon, +2 par défaite), sinon entraînement dans
 les hautes herbes. Il capture des créatures tant que les héros manquent de
-compagnons (mode auto coupé pour ces combats). Il passe l'écran de fin
-(Ignarok) et s'arrête quand il n'y a plus rien à faire.
+compagnons (mode auto coupé pour ces combats). Il passe les écrans de fin
+(Ignarok, puis Givrecorne) et s'arrête quand il n'y a plus rien à faire.
 Rapport : journal à l'écran et `partie/rapport.txt`, captures `.bmp` des
 moments marquants, problèmes de mise en page ; code 0 si l'histoire est finie.
 « BLOQUÉ » : plus rien à faire sans écran de fin, 30 minutes de jeu sans

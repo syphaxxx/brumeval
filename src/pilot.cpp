@@ -638,8 +638,14 @@ void Pilot::update(float dt) {
   for (bool& h : G.in.hold) h = false;
   if (over()) return;
   if (G.mode == Mode::Ending) {  // écran de fin : il peut y avoir une suite (régions ouvertes après un boss)
-    if (!endingNow_) note("Écran de fin (" + std::to_string(++endings_) + ")", "fin" + std::to_string(endings_));
-    endingNow_ = true;
+    if (!endingNow_) {  // la capture se prend à cette image : on ne valide qu'à la suivante
+      endings_++;
+      note("Écran de fin (" + std::to_string(endings_) + ")", "fin" + std::to_string(endings_));
+      endingNow_ = true;
+      wait_ = demo_ ? 4 : 0;  // démo : le temps de lire
+      return;
+    }
+    if (demo_ && (wait_ -= dt) > 0) return;
     G.in.confirm = true;
     return;
   }

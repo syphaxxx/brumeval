@@ -1606,15 +1606,16 @@ void Game::drawTeamPanel(int x, int y, int sel) {
 void Game::drawEnding() {
   float L = g.left(), W = (float)g.fullW;
   g.gradV(L, 0, W, SCREEN_H, rgb(0x0e1550), rgb(0x3a6fb0));
-  g.ellipse(250, 60, 22, 22, rgb(0xfff4c0));
+  g.ellipse(272, 36, 18, 18, rgb(0xfff4c0));  // au-dessus du texte
   g.poly({{L, 200}, {L, 170}, {0, 200}, {80, 150}, {150, 190}, {230, 140}, {320, 190}, {L + W, 160}, {L + W, 240}, {L, 240}}, rgb(0x2e6b3a));
   g.textBig(160, 30, "FIN", GOLD, 3, 1);
-  const char* lines[] = {"Brumeval et les Monts Cendrelune", "sont libérés de la brume et du feu.", "",
-                         "Un jeu créé avec Claude", "C++ et SDL2", "", "Appuyez sur Entrée pour continuer"};
-  for (int i = 0; i < 7; i++) g.text(160, 80 + i * 13, lines[i], WHITE, 1);
-  float x = 60;
-  for (auto& f : front()) {
+  auto lines = Gfx::wrap(endingText_.empty() ? "La brume se lève enfin sur Brumeval." : endingText_, 280);
+  for (const char* l : {"", "Un jeu créé avec Claude", "C++ et SDL2", "", "Appuyez sur Entrée pour continuer"}) lines.push_back(l);
+  for (size_t i = 0; i < lines.size(); i++) g.text(160, 74 + i * 13, lines[i], WHITE, 1);
+  auto team = front();  // jusqu'à six combattants (héros et compagnons) : l'écart s'adapte
+  float gap = team.size() > 1 ? std::min(100.f, 260.f / (team.size() - 1)) : 0, x = 160 - gap * (team.size() - 1) / 2;
+  for (auto& f : team) {
     drawFighterSprite(g, *f, x, 205, 1, true, time);
-    x += 100;
+    x += gap;
   }
 }

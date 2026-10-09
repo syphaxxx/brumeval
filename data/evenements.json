@@ -31,7 +31,10 @@
         "action": "dire",
         "texte": "Mais au nord des Monts Cendrelune, un vent glacé se lève sur le col des Pics Givrés…"
       },
-      {"action": "fin"}
+      {
+        "action": "fin",
+        "texte": "Brumeval et les Monts Cendrelune sont libérés de la brume et du feu."
+      }
     ]
   },
   "ancien": {
@@ -835,7 +838,11 @@
                 "action": "dire",
                 "texte": "Le feu du volcan et la glace des Pics ont retrouvé leur équilibre."
               },
-              {"action": "dire", "texte": "Brumeval, Cendrelune et Givreval peuvent enfin vivre en paix."}
+              {"action": "dire", "texte": "Brumeval, Cendrelune et Givreval peuvent enfin vivre en paix."},
+              {
+                "action": "fin",
+                "texte": "Brumeval, Cendrelune et Givreval vivent enfin en paix. Le feu et la glace ont retrouvé leur équilibre."
+              }
             ]
           }
         ]
