@@ -165,6 +165,8 @@ struct Rules {
   // Formules des statistiques
   int hpDiv = 20, hpPerLvl = 1, hpBase = 10, mpDiv = 30, mpBase = 5, statDiv = 25, statBase = 5, xpBase = 10;
   double xpSquare = 1.2;
+  // Multijoueur : gardien à plusieurs, PV en plus par joueur au-delà du premier (0.2 : +20 %)
+  double coopGuardian = .15;
   // Tactiques : lignes disponibles (départ, une de plus tous les n niveaux, maximum) et règles de départ
   int tacticStart = 4, tacticPerLvl = 6, tacticMax = 10;
   std::vector<Tactic> tactics;
@@ -263,6 +265,12 @@ float frand();              // nombre entre 0 et 1
 int irand(int lo, int hi);  // entier entre lo et hi inclus
 
 FighterP makeFighter(const std::string& id, int lvl);
+// Multiplicateur des PV du gardien et de ses acolytes à plusieurs (coop.cpp) : ×alliés/3 au-delà de
+// trois alliés, puis +coopGuardian par joueur en plus
+float guardianScale(int allies, int players);
+// Équipement dans un message réseau : ["epee_fer", "", "amulette_vie"] ; lu en vérifiant chaque objet
+Json gearJson(const Fighter& f);
+void applyGear(Fighter& f, const Json& gear);
 bool canEquip(const Fighter& f, const ItemDef& d);  // emplacement permis pour ce combattant
 // Gagne de l'expérience ; renvoie les messages de montée de niveau.
 std::vector<std::string> gainXp(Fighter& f, int xp);

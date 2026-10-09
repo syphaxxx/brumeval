@@ -63,14 +63,15 @@ class Online {
   void loadSettings();
   void saveSettings() const;
   static std::string dataHash();  // empreinte des données du jeu (mêmes données des deux côtés)
+  struct Member {  // un membre de l'équipe d'un autre joueur (duel)
+    std::string sp;
+    int lvl;
+    Json gear;  // son équipement
+  };
 
  private:
   friend class Game;  // le mode test pilote plusieurs joueurs
   enum class State { Menu, Joining, Salon, Duel, Expedition };
-  struct Member {
-    std::string sp;
-    int lvl;
-  };
   // Un autre joueur, tel que ce joueur le connaît
   struct Player {
     int id = 0;

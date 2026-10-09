@@ -157,6 +157,7 @@ std::vector<RuleField> ruleFields(Rules& r) {
       I("formules", "stat_base", "Stats : base", r.statBase, 0, 100, 1),
       I("formules", "xp_base", "Expérience : base", r.xpBase, 0, 1000, 1),
       D("formules", "xp_carre", "Expérience : facteur niveau²", r.xpSquare, .1, 10, .1),
+      D("multijoueur", "gardien_par_joueur", "Gardien à plusieurs : PV en plus par joueur", r.coopGuardian, 0, 2, .05),
       I("tactiques", "lignes_depart", "Lignes de tactiques au départ", r.tacticStart, 1, 20, 1),
       I("tactiques", "niveaux_par_ligne", "Niveaux pour une ligne de plus", r.tacticPerLvl, 1, 50, 1),
       I("tactiques", "lignes_max", "Lignes de tactiques au maximum", r.tacticMax, 1, 20, 1),
@@ -477,6 +478,24 @@ std::string ItemDef::bonusText() const {
   return t;
 }
 bool canEquip(const Fighter& f, const ItemDef& d) { return d.slot == G_ACCESSORY || (d.slot >= 0 && f.S().human); }
+
+float guardianScale(int allies, int players) {
+  return std::max(1.f, allies / 3.f) * float(1 + RULES.coopGuardian * std::max(0, players - 1));
+}
+
+Json gearJson(const Fighter& f) {
+  Json g = Json::array();
+  for (auto& id : f.gear) g.push_back(id);
+  return g;
+}
+void applyGear(Fighter& f, const Json& gear) {
+  if (!gear.is_array()) return;
+  for (size_t i = 0; i < gear.size() && i < f.gear.size(); i++) {
+    std::string id = gear[i].is_string() ? gear[i].get<std::string>() : "";
+    f.gear[i] = hasItem(id) && item(id).slot == (int)i && canEquip(f, item(id)) ? id : "";
+  }
+  f.recalc();
+}
 void Fighter::clearBattle() {
   status = Status::None;
   statusTurns = 0;

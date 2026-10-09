@@ -365,7 +365,7 @@ void Battle::command(FighterP a) {
                        G.menus.push(t);
                      }});
   if (canFlee) m.items.push_back({"Fuir", "", "Tenter de fuir avec toute l'équipe.", true, [this, a] { tryFlee(a); }});
-  // Duel : ni objets ni remplaçants, à armes égales ; gardien à plusieurs : pas de remplaçants
+  // Duel : ni objets ni remplaçants (l'équipement compte) ; gardien à plusieurs : pas de remplaçants
   if (net_ != Net::None) {
     bool d = duel();
     m.items.erase(std::remove_if(m.items.begin(), m.items.end(),

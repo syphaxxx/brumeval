@@ -193,7 +193,9 @@ les plus longs : y ajouter tout nouvel écran.
   envoie `gardien` (groupe, combattants, chef = plus petit numéro). Chez chacun,
   le combat a les mêmes alliés dans le même ordre (`BattleSetup::allies` : ses
   vrais combattants, des copies pour ceux des autres ; 3 seul, 2 chacun à deux,
-  1 chacun à trois ou quatre ; PV des ennemis ×alliés/3 au-delà de trois). Le
+  1 chacun à trois ou quatre ; PV des ennemis × `guardianScale` : alliés/3
+  au-delà de trois, puis +`coopGuardian` (règle `multijoueur.gardien_par_joueur`,
+  0.15) par joueur en plus ; l'équipement de chacun passe dans `m` → `eq`). Le
   chef (`Net::Lead`) calcule le combat comme l'hôte d'un duel, envoie `tour`
   au joueur de l'allié (`Battle::owner`), vérifie son `ordre` (technique, ou
   objet déjà pris dans son sac), envoie `renfort` et `issue` ; ceux qui suivent
@@ -382,12 +384,15 @@ habitants donnent son point faible). Réglages du gardien dans
 Le Vent fait ×4 à Plante/Poison et le Métal ×4 à Glace/Roche : la Ronce-Mère et
 le Givrecorne ont une résistance propre pour ramener cela à ×2. La Lumière fait ×2 à l'Ombre mais l'Ombre est neutre sur la Lumière :
 sinon Maëlle, ciblée en priorité par l'IA, tombe dès le début contre Sylvarque.
-Gardien à plusieurs (mesuré le 2026-10-09, 15 combats par ligne) : jamais plus
-dur qu'en solo, souvent plus facile (région 5, graine 33 : 13 % seul, 100 % à
-2, 3 ou 4 joueurs) ; plusieurs héros différents couvrent plus de types, et
-×4/3 PV à quatre ne compense pas. Pas encore rééquilibré (à décider avec
-l'utilisateur). Les simulations n'utilisent pas l'équipement : il rend le jeu
-un peu plus facile que ces chiffres.
+Gardien à plusieurs : sans renfort, il était souvent plus facile qu'en solo
+(région 5, graine 33 : 13 % seul, 100 % à 2, 3 ou 4 joueurs). Renforcé « un
+peu » à la demande de l'utilisateur (2026-10-09) : +15 % de PV par joueur en
+plus. Mesuré ensuite (15 combats par ligne, moyenne des graines 11/22/33) :
+région 3 : 100 % seul, 84-93 % à plusieurs ; région 5 : 42 % seul, 55-64 % à
+plusieurs. +20 % rendait le groupe plus dur que le solo en région 3. Les
+simulations n'utilisent pas l'équipement : il rend le jeu un peu plus facile.
+Duel avec l'équipement (`Online::Member::gear`, équipe `[espèce, niveau,
+équipement]`), décision du 2026-10-09.
 
 ## À faire / pistes
 

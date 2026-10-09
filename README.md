@@ -80,7 +80,8 @@ un **accessoire**. Armes et armures sont réservées aux héros ; un accessoire
 va aussi à une créature. Les boutiques de la vallée, de Forgeroc et de
 Givreval en vendent de plus en plus puissants (bonus d'Attaque, de Magie, de
 PV…). La fiche à droite montre les statistiques qui changent en direct.
-L'équipement est gardé par la sauvegarde (pas en duel : à armes égales).
+L'équipement est gardé par la sauvegarde ; il compte aussi en duel et dans
+l'Expédition, dont les boutiques en vendent.
 
 ## Quêtes annexes
 
@@ -133,7 +134,9 @@ tout le monde part dans le même monde généré.
 - Le **gardien** de chaque région se combat **ensemble** : le premier arrivé
   attend devant lui les joueurs qui ne l'ont pas encore battu (Échap > Groupe
   pour voir où ils en sont). À deux, chacun envoie deux combattants ; à trois
-  ou quatre, un chacun. Le gardien est plus robuste quand il y a quatre alliés.
+  ou quatre, un chacun. Le gardien est plus robuste à plusieurs : ses PV
+  augmentent de 15 % par joueur en plus (Réglages > Règles > Multijoueur), et
+  encore avec quatre alliés.
   Chacun commande ses combattants et peut utiliser ses objets.
 - Une défaite en solo ramène au village de la région, en perdant la moitié de
   son or. Seule une défaite contre le gardien, à plusieurs, arrête l'expédition
@@ -146,8 +149,8 @@ tout le monde part dans le même monde généré.
 **Duel** (à deux). Chacun combat avec les trois premiers membres de l'équipe de
 sa partie principale (ou, sans partie, le héros et deux compagnons de départ).
 L'hôte peut mettre tous les combattants au niveau 50 (« Niveaux : égaux »).
-Chacun commande son équipe ; Tab active le mode auto (tactiques). Ni objets ni
-fuite.
+Chacun commande son équipe, avec son équipement ; Tab active le mode auto
+(tactiques). Ni objets ni fuite.
 
 **Échanger des créatures.** Dans le salon (**Échanger**), avec les créatures de
 sa partie principale ; pendant une expédition à plusieurs (Échap > Groupe >

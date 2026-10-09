@@ -1327,7 +1327,12 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
             "expédition : la même graine redonne exactement le même monde");
       // À plusieurs, chaque joueur génère le monde chez lui : l'empreinte doit être la même sous Windows, Mac et Linux
       std::string wh = Expedition::worldHash(2026, 3);
-      check(wh == "536d1b3aad5321ce", "expédition : la graine 2026 donne le même monde sur tous les systèmes (empreinte " + wh + ")");
+      check(wh == "cfd72e364d1f7167", "expédition : la graine 2026 donne le même monde sur tous les systèmes (empreinte " + wh + ")");
+      procgen::Content c1 = procgen::generateBase(7), c6 = c1;
+      std::string shop1 = procgen::generateRegion(7, 1, c1).events.dump(), shop6;
+      for (int k = 1; k <= 6; k++) shop6 = procgen::generateRegion(7, k, c6).events.dump();
+      check(shop1.find("epee_fer") != std::string::npos && shop6.find("lame_givre") != std::string::npos,
+            "expédition : les boutiques vendent de l'équipement, plus fort dans les régions lointaines");
     }
     // Écran titre > Expédition, choix du héros puis de la créature
     titleMenu();
@@ -1584,6 +1589,19 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     // Version différente : refusée
     H.onHello(9, Json{{"t", "bonjour"}, {"version", "0.1"}, {"donnees", H.hash_}, {"pseudo", "Ancien"}});
     check(H.status_.find("Versions différentes") != std::string::npos, "multijoueur : une autre version du jeu est refusée");
+    {
+      // Équipement transmis (duel, gardien) : le même chez l'autre joueur ; pas d'arme pour une créature
+      auto mine = makeFighter("lior", 10);
+      mine->gear = {"epee_fer", "tunique_cuir", "amulette_vie"};
+      mine->recalc();
+      auto copy = makeFighter("lior", 10);
+      applyGear(*copy, gearJson(*mine));
+      auto beast = makeFighter(rules().starters.at(0), 10);
+      applyGear(*beast, gearJson(*mine));
+      check(copy->gear == mine->gear && copy->atk == mine->atk && copy->mhp == mine->mhp && beast->gear[G_WEAPON].empty() &&
+                beast->gear[G_ACCESSORY] == "amulette_vie" && guardianScale(4, 2) > guardianScale(4, 1),
+            "multijoueur : l'équipement passe tel quel (duel, gardien), vérifié à l'arrivée ; gardien plus robuste par joueur");
+    }
     // Message mal formé (un nombre à la place d'un texte) envoyé par un autre programme : seule cette connexion est coupée
     {
       std::string err;
@@ -1996,7 +2014,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         std::string name = "Région " + std::to_string(k) + " (graine " + std::to_string(seed) + ", N." + std::to_string(lvl) + ")";
         simSetup(name.c_str(), party, mk, 15);
         // Gardien à plusieurs (coop.cpp) : 2 combattants chacun à deux, 1 chacun à trois ou quatre ;
-        // PV des ennemis × alliés / 3 au-delà de trois alliés. Chaque joueur a son héros et sa créature.
+        // PV des ennemis × guardianScale (comme en jeu). Chaque joueur a son héros et sa créature.
         if (k != 2 && k != 8)
           for (int players : {2, 3, 4}) {
             size_t per = players == 2 ? 2 : 1;
@@ -2008,7 +2026,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
                 s.allies.push_back(makeFighter(H[(size_t)p % H.size()], lvl));
                 if (per > 1) s.allies.push_back(makeFighter(S[(size_t)p % S.size()], lvl));
               }
-              float scale = std::max(1.f, s.allies.size() / 3.f);
+              float scale = guardianScale((int)s.allies.size(), players);
               for (auto* v : {&s.foes, &s.reserve})
                 for (auto& f : *v) {
                   f->mhp = std::max(1, int(f->mhp * scale + 1e-4f));

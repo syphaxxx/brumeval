@@ -771,6 +771,13 @@ static Json shopStock(int k) {
   Json s = Json::array({"potion", "remede", "lanterne", "ether", "plume"});
   if (k >= 3) s.push_back("superpotion"), s.push_back("lanterne_argent");
   if (k >= 6) s.push_back("elixir"), s.push_back("lanterne_or");
+  // Équipement des boutiques du jeu, de plus en plus fort selon la région (si les données l'ont)
+  static const std::vector<std::vector<const char*>> GEAR = {
+      {"epee_fer", "baton_chene", "tunique_cuir", "amulette_vie"},
+      {"hache_braise", "baton_lune", "arc_frene", "cotte_mailles", "robe_mage", "bague_vif", "talisman_esprit"},
+      {"lame_givre", "sceptre_aurore", "armure_givre", "plume_ange", "pendentif_brume"}};
+  for (const char* id : GEAR[k >= 6 ? 2 : k >= 3 ? 1 : 0])
+    if (hasItem(id)) s.push_back(id);
   return s;
 }
 
