@@ -151,6 +151,9 @@ static void fitWindow(SDL_Window* win) {
 
 static int runTests(const char* outDir) {
   std::setvbuf(stdout, nullptr, _IONBF, 0);  // affichage immédiat, même en cas de plantage
+#ifdef _WIN32
+  SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX);  // plantage : on s'arrête tout de suite, sans fenêtre de Windows
+#endif
   SDL_Init(0);
   std::string err = loadAll();
   if (!err.empty()) {

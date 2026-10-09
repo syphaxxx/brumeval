@@ -29,7 +29,9 @@ enum class BattleResult { Win, Lose, Fled };
 
 // Lit une ligne d'un membre de l'équipe dans une sauvegarde (voir game.cpp) ; faux si la ligne
 // est d'un autre genre. Sert à Game::loadGame et au multijoueur (équipe du duel).
-bool readMemberLine(const std::string& key, std::istream& s, std::vector<FighterP>& team);
+// links (facultatif) : reçoit les lignes « compagnon » (rang du héros, rang de sa créature)
+bool readMemberLine(const std::string& key, std::istream& s, std::vector<FighterP>& team,
+                    std::vector<std::pair<size_t, int>>* links = nullptr);
 
 class Game {
  public:
@@ -121,6 +123,7 @@ class Game {
   void magicMenu();
   void shopMenu(const std::vector<std::string>& stock);
   void journalMenu();
+  void companionsMenu(int sel = 0);  // la créature compagnon de chaque héros
   void gearMenu(int sel = 0);
   void gearSlots(FighterP f, int who, int sel = 0);
   void gearPick(FighterP f, int who, int slot);

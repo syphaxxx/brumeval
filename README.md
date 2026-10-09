@@ -73,6 +73,15 @@ maximum). Une règle grise ne peut pas encore servir (sort pas encore appris),
 une règle orange ne marchera pas (par exemple une attaque avec une condition
 « Allié »).
 
+## Compagnons
+
+Chaque héros combat avec une **créature compagnon** à ses côtés : jusqu'à
+3 héros et leurs 3 compagnons sur le terrain. Vous commandez les héros ; chaque
+compagnon agit tout seul, avec ses tactiques, un peu moins souvent qu'un héros.
+Échap > **Compagnons** : choisir la créature de chaque héros (sinon, la
+première créature libre de l'équipe). Les créatures capturées en plus restent
+en réserve. Les boss sont réglés pour une équipe complète et **équipée**.
+
 ## Équipement
 
 Échap > **Équipement** : chaque membre porte une **arme**, une **armure** et

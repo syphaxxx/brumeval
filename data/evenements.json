@@ -266,7 +266,7 @@
             "action": "combat",
             "ennemis": [
               {"espece": "brumelin", "niveau": 9},
-              {"espece": "sylvarque", "niveau": 13, "pv": 5.5, "boss": true},
+              {"espece": "sylvarque", "niveau": 15, "pv": 6.5, "boss": true},
               {"espece": "brumelin", "niveau": 9}
             ],
             "boss": true,
@@ -300,7 +300,7 @@
         "oui": [
           {
             "action": "combat",
-            "ennemis": [{"espece": "golem", "niveau": 20, "pv": 7, "boss": true}],
+            "ennemis": [{"espece": "golem", "niveau": 24, "pv": 12, "boss": true}],
             "boss": true,
             "fuite": false,
             "capture": false,
@@ -327,7 +327,7 @@
             "action": "combat",
             "ennemis": [
               {"espece": "tisonnel", "niveau": 19},
-              {"espece": "ignarok", "niveau": 23, "pv": 5, "boss": true},
+              {"espece": "ignarok", "niveau": 24, "pv": 7, "boss": true},
               {"espece": "tisonnel", "niveau": 19}
             ],
             "boss": true,
@@ -601,7 +601,7 @@
             "action": "combat",
             "ennemis": [
               {"espece": "serpentin", "niveau": 14},
-              {"espece": "ronce_mere", "niveau": 18, "pv": 5, "boss": true},
+              {"espece": "ronce_mere", "niveau": 21, "pv": 7, "boss": true},
               {"espece": "serpentin", "niveau": 14}
             ],
             "renforts": [{"espece": "crapoison", "niveau": 13}],
@@ -818,7 +818,7 @@
             "action": "combat",
             "ennemis": [
               {"espece": "givrelin", "niveau": 27},
-              {"espece": "givrecorne", "niveau": 31, "pv": 7, "boss": true},
+              {"espece": "givrecorne", "niveau": 36, "pv": 10, "boss": true},
               {"espece": "givrelin", "niveau": 27}
             ],
             "renforts": [{"espece": "cristallin", "niveau": 26}],

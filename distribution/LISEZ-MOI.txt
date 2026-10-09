@@ -40,7 +40,10 @@ COMMANDES
   La souris marche aussi dans les menus.
 
   Échap > Équipement : arme, armure et accessoire de chaque membre (en
-  vente dans les boutiques).
+  vente dans les boutiques). Équipez-vous avant chaque boss !
+
+  Échap > Compagnons : la créature qui combat aux côtés de chaque héros.
+  Elle agit toute seule en combat ; vous commandez les héros.
 
   Options (écran titre, ou Échap > Options) : volume de la musique et des
   effets, plein écran, touches du clavier.

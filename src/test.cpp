@@ -202,6 +202,53 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     items.erase("epee_fer");
   }
 
+  // --- Compagnons : chaque héros combat avec sa créature, qui agit seule ; choix gardé par la sauvegarde ---
+  {
+    auto keep = team;
+    const Rules& r = rules();
+    team = {makeFighter("lior", 20), makeFighter("maelle", 20), makeFighter("isra", 20), makeFighter(r.starters.at(0), 19),
+            makeFighter(r.starters.at(1), 19), makeFighter(r.starters.at(2), 19)};
+    team[1]->companion = team[5];  // Maëlle choisit la troisième créature ; les autres vont aux héros dans l'ordre
+    auto fr = front();
+    bool pairs = fr.size() == 6 && fr[0] == team[0] && fr[1] == team[3] && fr[2] == team[1] && fr[3] == team[5] && fr[4] == team[2] &&
+                 fr[5] == team[4] && companionOf(team, team[1]) == team[5];
+    pauseMenu();
+    companionsMenu();
+    run(.1f);
+    snap("95_compagnons_menu");
+    menus.clear();
+    panelMode_ = 0;
+    saveGame();
+    team.clear();
+    loadGame();
+    bool kept = team.size() == 6 && team[1]->companion.lock() == team[5];
+    startBattle({makeFighter("tisonnel", 18), makeFighter("tisonnel", 18)}, false, nullptr);
+    bool onlyHeroes = true;
+    int turns = 0;
+    for (int i = 0; i < 60 * 20 && mode == Mode::Battle && turns < 4; i++) {
+      if (menus.active() && battle_ && battle_->actor) {
+        onlyHeroes = onlyHeroes && battle_->actor->S().human;
+        if (turns++ == 0) snap("94_compagnons_combat");
+        menus.clear();  // on laisse passer le tour du héros
+        battle_->actor->atb = 0;
+        battle_->actor = nullptr;
+      }
+      frame();
+    }
+    bool six = battle_ && battle_->allies.size() == 6;
+    int companionActs = 0;
+    if (battle_)
+      for (auto& l : battle_->log)
+        for (int k = 3; k < 6; k++) companionActs += l.rfind(team[k]->name() + " > ", 0) == 0;
+    check(pairs && kept && six && onlyHeroes && turns > 0 && companionActs > 0,
+          "compagnons : chaque héros avec sa créature (choisie ou la première libre), 6 alliés en combat, les compagnons agissent seuls (" +
+              std::to_string(companionActs) + " actions), choix gardé par la sauvegarde");
+    battle_.reset();
+    mode = Mode::Map;
+    menus.clear();
+    team = keep;
+  }
+
   // --- Dialogue et recrutement de Maëlle ---
   changeMap(mi("vallee"), 7, 16, UP);
   interact();
@@ -1935,8 +1982,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       group({"champichou", "mulotin", "lucioline", "piafouine"}, 4, 7, 3), false, 30);
   sim("Bosquet du col (N.10 contre N.7-10)", {{"lior", 10}, {"maelle", 10}, {"gouttelin", 10}},
       group({"rocaillou", "grenouillon", "lucioline", "brumelin"}, 7, 10, 3), false, 30);
-  simSetup("Boss Sylvarque (équipe N.11)", {{"lior", 11}, {"maelle", 11}, {"gouttelin", 11}}, bossEvent("sylvarque"), 40);
-  sim("Duel contre Brann (équipe N.14)", {{"lior", 14}, {"maelle", 14}, {"ronceau", 14}}, [&] {
+  simSetup("Boss Sylvarque (équipe N.11)", {{"lior", 11}, {"maelle", 11}, {"braisenard", 11}, {"gouttelin", 11}}, bossEvent("sylvarque"), 40);
+  sim("Duel contre Brann (équipe N.14)", {{"lior", 14}, {"maelle", 14}, {"ronceau", 14}, {"braisenard", 14}}, [&] {
     auto b = makeFighter("brann", 14);
     b->mhp = b->mhp * 5 / 2;
     b->hp = b->mhp;
@@ -1945,7 +1992,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   }, true, 20);
   sim("Cendrelune (N.15 contre N.12-15)", {{"lior", 15}, {"maelle", 15}, {"brann", 15}},
       group({"tisonnel", "galetor", "voltigeon", "glaconnet"}, 12, 15, 3), false, 30);
-  simSetup("Golem de suie (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"brann", 16}}, bossEvent("golem"), 20);
+  simSetup("Golem de suie (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"brann", 16}, {"braisenard", 16}, {"gouttelin", 16}}, bossEvent("golem"), 20);
   simSetup("Bandit de la forêt (équipe N.12)", {{"lior", 12}, {"maelle", 12}, {"braisenard", 12}}, [] {
     BattleSetup s;
     s.foes = {makeFighter("bandit", 12), makeFighter("louvet", 11)};
@@ -1964,8 +2011,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     s.canFlee = s.canCapture = false;
     return s;
   }, 30);
-  simSetup("Ronce-Mère (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"kael", 16}}, bossEvent("ronce_mere"), 30);
-  simSetup("Boss Ignarok (équipe N.22)", {{"lior", 22}, {"maelle", 22}, {"isra", 22}}, bossEvent("ignarok"), 40);
+  simSetup("Ronce-Mère (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"kael", 16}, {"braisenard", 16}, {"gouttelin", 16}}, bossEvent("ronce_mere"), 30);
+  simSetup("Boss Ignarok (équipe N.22)", {{"lior", 22}, {"maelle", 22}, {"isra", 22}, {"braisenard", 22}, {"gouttelin", 22}, {"ronceau", 22}}, bossEvent("ignarok"), 40);
   sim("Pics Givrés (N.25 contre N.21-24)", {{"lior", 25}, {"maelle", 25}, {"isra", 25}},
       group({"givrelin", "zephyrin", "ferrolin", "cristallin", "etincelot"}, 21, 24, 3), false, 30);
   simSetup("Chevalier du givre (équipe N.25)", {{"lior", 25}, {"maelle", 25}, {"isra", 25}}, [] {
@@ -1976,7 +2023,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     s.canFlee = s.canCapture = false;
     return s;
   }, 30);
-  simSetup("Duel contre Sélène (équipe N.26)", {{"lior", 26}, {"maelle", 26}, {"isra", 26}}, [&] {
+  simSetup("Duel contre Sélène (équipe N.26)", {{"lior", 26}, {"maelle", 26}, {"isra", 26}, {"braisenard", 26}, {"gouttelin", 26}, {"ronceau", 26}}, [&] {
     BattleSetup s;
     s.foes = {bossF("selene", 26, 3)};
     s.foeName = "Sélène";
@@ -1984,31 +2031,31 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     s.canFlee = s.canCapture = false;
     return s;
   }, 30);
-  simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}}, bossEvent("givrecorne"), 40);
+  simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}, {"braisenard", 30}, {"gouttelin", 30}, {"ronceau", 30}}, bossEvent("givrecorne"), 40);
 
   std::printf("\nMêmes combats, alliés guidés par les tactiques de départ :\n");
   sim("Bois (N.8 contre 3 x N.4-7)", {{"lior", 8}, {"maelle", 8}, {"braisenard", 8}},
       group({"champichou", "mulotin", "lucioline", "piafouine"}, 4, 7, 3), false, 30, true);
-  simSetup("Boss Sylvarque (équipe N.11)", {{"lior", 11}, {"maelle", 11}, {"gouttelin", 11}}, bossEvent("sylvarque"), 30, true);
-  simSetup("Boss Ignarok (équipe N.22)", {{"lior", 22}, {"maelle", 22}, {"isra", 22}}, bossEvent("ignarok"), 30, true);
-  simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}}, bossEvent("givrecorne"), 30, true);
+  simSetup("Boss Sylvarque (équipe N.11)", {{"lior", 11}, {"maelle", 11}, {"braisenard", 11}, {"gouttelin", 11}}, bossEvent("sylvarque"), 30, true);
+  simSetup("Boss Ignarok (équipe N.22)", {{"lior", 22}, {"maelle", 22}, {"isra", 22}, {"braisenard", 22}, {"gouttelin", 22}, {"ronceau", 22}}, bossEvent("ignarok"), 30, true);
+  simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}, {"braisenard", 30}, {"gouttelin", 30}, {"ronceau", 30}}, bossEvent("givrecorne"), 30, true);
 
   std::printf("\nMêmes boss, équipe équipée par les boutiques de sa région (meilleur achat possible) :\n");
   simGear = 1;
-  simSetup("Boss Sylvarque (équipe N.11)", {{"lior", 11}, {"maelle", 11}, {"gouttelin", 11}}, bossEvent("sylvarque"), 40);
-  sim("Duel contre Brann (équipe N.14)", {{"lior", 14}, {"maelle", 14}, {"ronceau", 14}}, [&] {
+  simSetup("Boss Sylvarque (équipe N.11)", {{"lior", 11}, {"maelle", 11}, {"braisenard", 11}, {"gouttelin", 11}}, bossEvent("sylvarque"), 40);
+  sim("Duel contre Brann (équipe N.14)", {{"lior", 14}, {"maelle", 14}, {"ronceau", 14}, {"braisenard", 14}}, [&] {
     auto b = makeFighter("brann", 14);
     b->mhp = b->mhp * 5 / 2;
     b->hp = b->mhp;
     b->boss = true;
     return std::vector<FighterP>{b};
   }, true, 20);
-  simSetup("Ronce-Mère (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"kael", 16}}, bossEvent("ronce_mere"), 30);
+  simSetup("Ronce-Mère (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"kael", 16}, {"braisenard", 16}, {"gouttelin", 16}}, bossEvent("ronce_mere"), 30);
   simGear = 2;
-  simSetup("Golem de suie (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"brann", 16}}, bossEvent("golem"), 20);
-  simSetup("Boss Ignarok (équipe N.22)", {{"lior", 22}, {"maelle", 22}, {"isra", 22}}, bossEvent("ignarok"), 40);
+  simSetup("Golem de suie (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"brann", 16}, {"braisenard", 16}, {"gouttelin", 16}}, bossEvent("golem"), 20);
+  simSetup("Boss Ignarok (équipe N.22)", {{"lior", 22}, {"maelle", 22}, {"isra", 22}, {"braisenard", 22}, {"gouttelin", 22}, {"ronceau", 22}}, bossEvent("ignarok"), 40);
   simGear = 3;
-  simSetup("Duel contre Sélène (équipe N.26)", {{"lior", 26}, {"maelle", 26}, {"isra", 26}}, [&] {
+  simSetup("Duel contre Sélène (équipe N.26)", {{"lior", 26}, {"maelle", 26}, {"isra", 26}, {"braisenard", 26}, {"gouttelin", 26}, {"ronceau", 26}}, [&] {
     BattleSetup s;
     s.foes = {bossF("selene", 26, 3)};
     s.foeName = "Sélène";
@@ -2016,7 +2063,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     s.canFlee = s.canCapture = false;
     return s;
   }, 30);
-  simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}}, bossEvent("givrecorne"), 40);
+  simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}, {"braisenard", 30}, {"gouttelin", 30}, {"ronceau", 30}}, bossEvent("givrecorne"), 40);
   simGear = 0;
 
   // Expédition : gardien de chaque région contre une équipe générée (héros, créature de départ,

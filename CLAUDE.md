@@ -134,6 +134,18 @@ les plus longs : y ajouter tout nouvel écran.
   `Fighter::recalc` ; `canEquip` (armes et armures : humains seulement). Menu
   `Game::gearMenu` > `gearSlots` > `gearPick` ; ligne `equipement` après
   `membre` dans la sauvegarde ; un échange emporte l'équipement de la créature.
+- Compagnons (décision du 2026-10-09) : chaque héros combat avec une créature
+  (`Fighter::companion`, faible lien vers une créature de l'équipe ; ligne
+  `compagnon <rang>` après le héros dans la sauvegarde). `frontOf` (data.cpp)
+  choisit les combattants : les 3 premiers héros valides, chacun suivi de son
+  compagnon (choisi, sinon la première créature libre) ; une équipe sans héros
+  combat comme avant. En combat (`Battle::companion`, `hasHero_`), le compagnon
+  agit seul (`companionTurn` : tactiques, sinon l'ordinateur), sa jauge ATB va
+  à `compagnon_atb` (0,5) ; jusqu'à 6 alliés (placement `HERO`/`COMP`, fenêtre
+  d'état plus haute) ; « Changer » remplace un héros par un héros. Menu
+  `Game::companionsMenu`. Duel : les combattants gardent l'ordre envoyé
+  (`s.allies = mine`) ; gardien à plusieurs : `myFighters` suit `front()`
+  (un héros et son compagnon à deux joueurs).
 - Équipe : `Game::team` (8 membres maximum par capture, les humains s'ajoutent
   toujours). Les 3 premiers membres valides combattent (`Game::front()`).
 - Progression : `Game::flags` (`boss1`, `golem`, `boss2`, `maelle`, `brann`,
@@ -365,14 +377,16 @@ réécrits par `writeJson` (petites listes sur une ligne) : garder ce format.
   dans les JSON.
 
 **Boss renforcés le 2026-10-09** (demande de l'utilisateur : « obligé de se
-stuffer avant les boss ») : il faut l'équipement de la région pour les battre.
-Réglages (`evenements.json`, niveau et `pv`) : Sylvarque N.13 ×5,5, Golem N.20
-×7, Ronce-Mère N.18 ×5, Ignarok N.23 ×5, Givrecorne N.31 ×7. Mesuré
+stuffer avant les boss »), puis réglés pour les compagnons (équipes des
+simulations : héros de ce moment de l'histoire + 2 ou 3 créatures). Réglages
+(`evenements.json`, niveau et `pv`) : Sylvarque N.15 ×6,5, Golem N.24 ×12,
+Ronce-Mère N.21 ×7, Ignarok N.24 ×7, Givrecorne N.36 ×10. Mesuré
 (`BRUMEVAL_SIMULATIONS=2`, sans / avec le meilleur équipement de la boutique de
-la région) : Sylvarque 36 / 26 %, Golem 32 / 70 %, Ronce-Mère 26 / 51 %,
-Ignarok 6 / 73 %, Givrecorne 5 / 72 %. Sylvarque : l'équipement de la vallée
-(+3) ne change presque rien, il reste un défi à part. Le mode test lit les boss
-dans les événements (`bossEvent`) : ses mesures suivent toujours le jeu.
+la région) : Sylvarque 12 / 42 %, Golem 55 / 70 %, Ronce-Mère 21 / 46 %,
+Ignarok 32 / 56 %, Givrecorne 26-36 / 72 %. Sans les compagnons ralentis
+(`compagnon_atb` 1), tout passait à ~100 %. Le Golem réagit peu à
+l'équipement. Le mode test lit les boss dans les événements (`bossEvent`) :
+ses mesures suivent toujours le jeu.
 Avant ce renfort (IA automatique, sans objets) : combats
 normaux, bandits, chevaliers et duels gagnés à ~95-100 %, Sylvarque ≈ 80 %
 (N.11), Ronce-Mère ≈ 55-70 % (N.16), Ignarok ≈ 30-45 % (N.22), Givrecorne

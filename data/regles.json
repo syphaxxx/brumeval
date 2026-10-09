@@ -28,7 +28,8 @@
     "esquive_base": 2,
     "critique_base": 5,
     "jauge_rapide": 25,
-    "retard_lourde": 25
+    "retard_lourde": 25,
+    "compagnon_atb": 0.5
   },
   "etats": {
     "poison_degats": 0.1,

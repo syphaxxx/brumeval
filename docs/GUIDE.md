@@ -81,9 +81,12 @@ moitié écrit). Le mode test utilise des noms en `_test`.
 
 **La sauvegarde** (`sauvegarde.txt`) est un texte, une information par ligne :
 `carte`, `reveil`, `or`, `drapeau`, `objet`, `auto`, puis pour chaque membre
-`membre`, `equipement`, `tactiques` et ses lignes `tactique` (lues par
+`membre`, `equipement`, `compagnon` (héros), `tactiques` et ses lignes `tactique` (lues par
 `readMemberLine`, partagé avec le multijoueur). La progression de l'histoire,
 les coffres ouverts et les quêtes sont des **drapeaux** (`Game::flags`).
+
+**Qui combat** : `frontOf` (data.cpp) — les 3 premiers héros valides, chacun
+suivi de sa créature compagnon. Les compagnons agissent seuls en combat.
 
 ## 4. Recettes
 
