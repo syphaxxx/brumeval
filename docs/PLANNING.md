@@ -25,9 +25,7 @@ créature, qui agit seule).
 
 - Fait : **joueur automatique** (`brumeval --partie`, `--demo`, Outils >
   Démo). Il finit l'histoire à chaque fois (12 parties sur 12) ; il a trouvé
-  un message trop large après l'écran de fin (corrigé). Reste : une partie
-  complète par un vrai joueur, et le multijoueur entre **deux
-  ordinateurs** (jamais essayé : seulement deux fenêtres sur le même PC).
+  un message trop large après l'écran de fin (corrigé). Fait le 2026-10-09 : multijoueur entre **deux vrais ordinateurs** (via Tailscale ; « délai dépassé » en réseau local à cause de NordVPN sur l'hôte). Reste : une partie complète par un vrai joueur.
 - À décider : la victoire contre le Givrecorne (vraie fin) n'affiche pas
   d'écran de fin, seulement celle contre Ignarok.
 - Idée : faire jouer aussi l'Expédition au joueur automatique.

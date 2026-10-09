@@ -189,6 +189,8 @@ adresse publique. La première fois qu'on héberge, Windows demande s'il faut
 autoriser Brumeval sur le réseau : cochez **privé et public** puis
 **Autoriser**. Sur le même Wi-Fi, l'adresse locale (`192.168.…`) suffit.
 
+« Délai dépassé : personne ne répond » : un VPN (NordVPN…) sur l'ordinateur de l'hôte bloque souvent les connexions, même sur le même Wi-Fi. Quittez-le pendant la partie, inversez les rôles, ou passez par Tailscale sur les deux ordinateurs (même compte) avec l'adresse en `100.`.
+
 ## Installer et lancer sous Windows avec VS Code
 
 1. Installez les outils (une seule fois) :
