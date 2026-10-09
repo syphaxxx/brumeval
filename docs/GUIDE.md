@@ -163,6 +163,12 @@ fait avancer le jeu (`frame()`, `run(secondes)`, `in.confirm = true` pour
 appuyer sur Entrée), puis `check(condition, "description")`. Les tests
 touchent seulement des fichiers `_test`.
 
+**Partie complète** : `brumeval --partie DOSSIER` (version Release : une
+dizaine de secondes) fait jouer toute l'histoire au joueur automatique
+(`src/pilot.cpp`, voir CLAUDE.md) ; il dit où il reste bloqué. À lancer après
+un changement d'histoire, de cartes ou d'équilibrage. `brumeval --demo` : la
+même chose à l'écran.
+
 `BRUMEVAL_LARGEUR=384` (captures en écran large), `BRUMEVAL_SIMULATIONS=5`
 (mesures d'équilibrage plus précises), `BRUMEVAL_JOURNAL=Sylvarque` (journal
 détaillé d'un combat simulé), `BRUMEVAL_MONDE=brume` (monde d'une graine).

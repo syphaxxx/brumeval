@@ -169,4 +169,5 @@ class Battle {
   void moveTarget(FighterP a, const std::string& mv);
   void drawStatusTag(const Fighter& f, float x, float y);
   friend class Game;
+  friend class Pilot;
 };

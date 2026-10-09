@@ -23,8 +23,14 @@ créature, qui agit seule).
 
 ## Étape 1 — Essais et finitions (1 à 2 séances)
 
-- Partie complète par un vrai joueur, et le multijoueur entre **deux
+- Fait : **joueur automatique** (`brumeval --partie`, `--demo`, Outils >
+  Démo). Il finit l'histoire à chaque fois (12 parties sur 12) ; il a trouvé
+  un message trop large après l'écran de fin (corrigé). Reste : une partie
+  complète par un vrai joueur, et le multijoueur entre **deux
   ordinateurs** (jamais essayé : seulement deux fenêtres sur le même PC).
+- À décider : la victoire contre le Givrecorne (vraie fin) n'affiche pas
+  d'écran de fin, seulement celle contre Ignarok.
+- Idée : faire jouer aussi l'Expédition au joueur automatique.
 - Fait en 1.5 : équilibrage des boss **avec l'équipement** (`simGear` dans
   test.cpp ; chiffres dans CLAUDE.md, section Équilibrage).
 - Mode auto (Tab) : un joueur a vu le menu s'ouvrir quand même pour Lior

@@ -24,6 +24,7 @@ class MapEditor;
 class StoryEditor;
 class Expedition;
 class Online;
+class Pilot;
 enum class Mode { Title, Map, Battle, Ending, Arena, Settings, Editor, Story };
 enum class BattleResult { Win, Lose, Fled };
 
@@ -53,6 +54,10 @@ class Game {
 
   // Mode test automatique (voir main.cpp) : rejoue des situations et enregistre des captures
   int selfTest(SDL_Surface* target, const std::string& outDir);
+  // Joueur automatique (pilot.hpp) : demo = dans la fenêtre, à vitesse normale ; autoGame :
+  // partie rapide sans fenêtre (brumeval --partie DIR), rapport et captures dans DIR
+  void startPilot(bool demo);
+  int autoGame(SDL_Surface* target, const std::string& outDir);
 
   // ---- État partagé avec le combat ----
   Gfx g;
@@ -95,6 +100,7 @@ class Game {
   std::string bannerText;
 
   bool blocked(int x, int y) const;
+  bool blockedOn(const MapDef& m, int x, int y) const;  // case occupée sur cette carte
   bool npcVisible(const Npc& n) const;
   bool bossAlive(const BossSpot& b) const;
   void tryMove(int d);
@@ -110,6 +116,7 @@ class Game {
   void changeMap(int m, int x, int y, int d);
   void encounter();
   void defeat();
+  int defeats_ = 0;  // défaites dans la partie principale (joueur automatique)
   void showRegionBanner();
   void updateMusic();  // musique du lieu, du combat ou de l'écran titre
 
@@ -168,6 +175,7 @@ class Game {
   bool storyTest_ = false;              // événement joué depuis l'éditeur d'histoire
   std::unique_ptr<Expedition> expedition_;  // mode Expédition (écran titre), voir expedition.hpp
   std::unique_ptr<Online> online_;          // multijoueur (écran titre), voir online.hpp
+  std::unique_ptr<Pilot> pilot_;            // joueur automatique (démo, partie rapide), voir pilot.hpp
   bool duelBattle_ = false;                 // le combat en cours est un duel en ligne
   bool groupBattle_ = false;                // le combat en cours est celui d'un gardien, à plusieurs (coop.cpp)
   void bossTouched(const BossSpot& b);      // un gardien d'expédition à plusieurs attend tout le groupe
@@ -192,4 +200,5 @@ class Game {
   friend class StoryEditor;
   friend class Expedition;
   friend class Online;
+  friend class Pilot;
 };

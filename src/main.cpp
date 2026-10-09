@@ -2,6 +2,9 @@
 //   brumeval            lance le jeu
 //   brumeval --test DIR mode test : rejoue des situations, vérifie l'équilibrage
 //                       et enregistre des captures d'écran dans DIR
+//   brumeval --partie DIR  le joueur automatique joue toute l'histoire, sans fenêtre
+//                          (rapport et captures dans DIR, voir pilot.hpp)
+//   brumeval --demo     la fenêtre du jeu, où le joueur automatique joue une partie
 #include <SDL.h>
 #ifdef _WIN32
 #define NOMINMAX
@@ -149,7 +152,8 @@ static void fitWindow(SDL_Window* win) {
   SDL_SetWindowPosition(win, ub.x + left + (ub.w - left - right - w) / 2, ub.y + top + (ub.h - top - bottom - h) / 2);
 }
 
-static int runTests(const char* outDir) {
+// partie = false : mode test ; true : partie automatique (joueur automatique)
+static int runTests(const char* outDir, bool partie = false) {
   std::setvbuf(stdout, nullptr, _IONBF, 0);  // affichage immédiat, même en cas de plantage
 #ifdef _WIN32
   SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX);  // plantage : on s'arrête tout de suite, sans fenêtre de Windows
@@ -171,7 +175,7 @@ static int runTests(const char* outDir) {
     Game game(r);
     game.g.fullW = w;
     game.g.ox = (w - SCREEN_W) / 2;
-    code = game.selfTest(surf, outDir);
+    code = partie ? game.autoGame(surf, outDir) : game.selfTest(surf, outDir);
   }
   SDL_DestroyRenderer(r);
   SDL_FreeSurface(surf);
@@ -181,6 +185,8 @@ static int runTests(const char* outDir) {
 
 int main(int argc, char* argv[]) {
   if (argc > 1 && std::string(argv[1]) == "--test") return runTests(argc > 2 ? argv[2] : "captures");
+  if (argc > 1 && std::string(argv[1]) == "--partie") return runTests(argc > 2 ? argv[2] : "partie", true);
+  bool demo = argc > 1 && std::string(argv[1]) == "--demo";
 
 #ifdef _WIN32
   // Lancé par un double-clic, le jeu reçoit une console noire à lui seul : on la ferme.
@@ -233,6 +239,7 @@ int main(int argc, char* argv[]) {
   {
     Screen screen(r);
     Game game(r);
+    if (demo) game.startPilot(true);
     Uint64 last = SDL_GetPerformanceCounter();
     while (!game.quit) {
       SDL_Event e;

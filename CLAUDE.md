@@ -61,6 +61,40 @@ problèmes sont listés avec la dernière capture (« après 05_equipe : … »)
 « tour des menus » de test.cpp ouvre en plus la plupart des menus avec les noms
 les plus longs : y ajouter tout nouvel écran.
 
+### Joueur automatique (à lancer après un changement d'histoire, de cartes ou d'équilibrage)
+
+```bash
+cmake --build build-release --config Release
+build-release/Release/brumeval --partie partie   # toute l'histoire, sans fenêtre, ~10 s
+brumeval --demo                                  # la même chose dans la fenêtre (aussi Outils > Démo)
+```
+
+`src/pilot.hpp/.cpp` : un joueur qui joue avec les **mêmes touches** qu'un
+humain (marcher, Entrée, menus ; en combat, l'IA `autoCommand` ou une
+lanterne). Rien n'est écrit d'avance : à chaque décision, `Pilot::goals`
+liste ce qu'il y a à faire sur toutes les cartes (habitant dont la réponse a
+changé : signature `Pilot::inspect` = page + conditions ; coffre, panneau,
+porte sans intérieur, boss, carte jamais vue), et `plan` va au plus proche
+(Dijkstra sur toutes les cartes, passages et portes compris). Ordre : se
+soigner si besoin, boutique (meilleur équipement, lanternes, potions),
+le reste, puis les combats difficiles quand l'équipe est prête (niveau du
+combat −2 pour un boss, −3 sinon, +2 par défaite), sinon entraînement dans
+les hautes herbes. Il capture des créatures tant que les héros manquent de
+compagnons (mode auto coupé pour ces combats). Il passe l'écran de fin
+(Ignarok) et s'arrête quand il n'y a plus rien à faire.
+Rapport : journal à l'écran et `partie/rapport.txt`, captures `.bmp` des
+moments marquants, problèmes de mise en page ; code 0 si l'histoire est finie.
+« BLOQUÉ » : plus rien à faire sans écran de fin, 30 minutes de jeu sans
+progrès, ou 8 défaites contre le même combat. `BRUMEVAL_TRACE=1` affiche
+chaque décision ; `BRUMEVAL_COMPAGNON=gouttelin` choisit le premier
+compagnon. Fichiers : `sauvegarde_partie_auto.txt`, `sauvegarde_demo.txt`
+(jamais la vraie partie). En démo, une touche rend la main au joueur. La
+vérification GitHub lance aussi `--partie`. Mesuré le 2026-10-09 (12 parties,
+3 premiers compagnons) : toujours finie, 45 à 60 minutes de jeu, niveau ~48.
+Un nouveau genre d'interaction (objet à utiliser, énigme…) demande d'ajouter
+un objectif dans `Pilot::goals`. Méthode réutilisable pour d'autres jeux :
+compétence `joueur-automatique` de Claude Code.
+
 ## Architecture (src/)
 
 | Fichier | Rôle |
@@ -91,6 +125,7 @@ les plus longs : y ajouter tout nouvel écran.
 | `events.hpp/.cpp` (quêtes) | Quêtes annexes : `quests()`, `findQuest`, `questFlag` ; action `quete` |
 | `version.hpp` | Numéro de version (`BRUMEVAL_VERSION`), affiché sur l'écran titre et comparé en multijoueur |
 | `test.cpp` | Mode test automatique |
+| `pilot.hpp/.cpp` | Joueur automatique : partie rapide (`--partie`), démo (`--demo`, Outils > Démo) |
 
 ### Principes à connaître
 

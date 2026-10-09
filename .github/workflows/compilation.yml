@@ -81,6 +81,16 @@ jobs:
             exit 1
           fi
 
+      - name: Partie automatique (toute l'histoire jouée par le joueur automatique)
+        shell: bash
+        run: |
+          case "$RUNNER_OS" in
+            Windows) EXE=build/Release/brumeval.exe ;;
+            macOS) EXE=build/Brumeval.app/Contents/MacOS/Brumeval ;;
+            *) EXE=build/brumeval ;;
+          esac
+          "$EXE" --partie partie
+
       - name: Paquet à télécharger
         shell: bash
         run: |
