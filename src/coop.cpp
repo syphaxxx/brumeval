@@ -124,7 +124,7 @@ Json Online::myStatus() const {
   std::string hero;  // vide tant qu'il choisit son héros
   if (!X->onScreen())
     for (auto& f : G.team)
-      if (f->S().human) {
+      if (hasSpecies(f->sp) && f->S().human) {  // (mode test : l'autre jeu a pu remettre les données du jeu)
         hero = f->sp;
         break;
       }
