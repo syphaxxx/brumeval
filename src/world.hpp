@@ -11,6 +11,8 @@
 //   k  entrée de grotte c  sol de grotte (rencontres)   x  cristal
 //   d  arbre mort       i  glace                        n  neige profonde (rencontres)
 //   z  marais (rencontres)
+// Intérieurs (thème « interieur ») :
+//   p  tapis (praticable)   t  table   h  lit   e  étagère   o  comptoir   v  tonneau
 // Le dessin de certaines tuiles dépend du thème de la carte (arbres, chemins, parois).
 #pragma once
 #include <string>
@@ -18,7 +20,8 @@
 
 #include "store.hpp"
 
-enum class Theme { Vallee, Cendres, Grotte, Foret, Neige };
+enum class Theme { Vallee, Cendres, Grotte, Foret, Neige, Interieur };
+constexpr int N_THEMES = 6;
 Theme themeOf(const std::string& s);
 const char* themeName(Theme t);
 
@@ -27,7 +30,8 @@ struct Building {
   std::string kind;   // apparence : "soin", "boutique1", "boutique2", "forge", "chapelle", "maison", "auberge"
   std::string name;
   unsigned roof;
-  std::string event;  // événement lancé à la porte (par défaut : le genre)
+  std::string event;     // événement lancé à la porte (par défaut : le genre)
+  std::string interior;  // carte de l'intérieur : la porte y fait entrer (l'événement est alors celui d'un habitant)
   int doorX() const { return x + w / 2; }
   int doorY() const { return y + h - 1; }
 };
@@ -109,6 +113,9 @@ MapDef mapFromJson(const Json& j);
 void saveMap(const MapDef& m);  // écrit data/cartes/<id>.json
 // Vérifie les références (espèces, objets, cartes) et que tout est accessible à pied.
 std::vector<std::string> checkMaps();
+// Case où l'on arrive en entrant dans l'intérieur « in » depuis la carte « outside » : juste
+// au-dessus de son passage de sortie vers cette carte. Faux si l'intérieur n'a pas de sortie.
+bool interiorEntry(const MapDef& in, const std::string& outside, int& x, int& y);
 
 bool tileWalkable(char c);
 bool tileEncounter(char c);

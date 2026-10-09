@@ -13,7 +13,7 @@
 
 static const Color WHITE = rgb(0xffffff), GOLD = rgb(0xffd34d), MUTED = rgb(0xaab3d8), GREEN = rgb(0x7dffa8), RED = rgb(0xff8a7a);
 static const char* THEME_NAMES[] = {"Vallée", "Cendres", "Grotte", "Forêt", "Neige"};
-static const int N_THEMES = 5;
+static const int N_BATTLE_THEMES = 5;  // décors de combat (pas d'intérieur)
 
 // Menu principal : position des éléments
 enum { I_ALLY = 1, I_FOE = 8, I_LEVEL = 15, I_THEME, I_ITEMS, I_AI, I_SIM, I_FIGHT, I_PRESETS, I_LOG, I_QUIT };
@@ -350,7 +350,7 @@ void Arena::menuMain(int sel) {
   }
   {
     MenuItem it{"Décor", "", "Gauche/droite : décor du combat.", true, nullptr, unhover};
-    it.adjust = [this](int d) { theme = (theme + d + N_THEMES) % N_THEMES; };
+    it.adjust = [this](int d) { theme = (theme + d + N_BATTLE_THEMES) % N_BATTLE_THEMES; };
     it.rightFn = [this] { return std::string("< ") + THEME_NAMES[theme] + " >"; };
     m.items.push_back(it);
   }

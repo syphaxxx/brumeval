@@ -85,7 +85,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     for (auto& t : audio::trackNames()) audible(t, true);
     for (auto& e : audio::effectNames()) audible(e, false);
     bool places = true;
-    for (int t = 0; t <= (int)Theme::Neige; t++) places = places && !audio::musicForPlace(themeName(Theme(t))).empty();
+    for (int t = 0; t < N_THEMES; t++) places = places && !audio::musicForPlace(themeName(Theme(t))).empty();
     check(bad.empty() && places, "son : chaque morceau et chaque effet s'entend sans saturer, chaque thème de carte a sa musique" +
                                      (bad.empty() ? std::string() : " (problème :" + bad + ")"));
   }
@@ -187,6 +187,36 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   interact();
   skipScript();
   check(has("maelle") && team.size() == 3, "Maëlle rejoint l'équipe avec l'herbe lunaire");
+
+  // --- Intérieurs : la porte de la maison de soin fait entrer, la guérisseuse soigne, le tapis fait sortir ---
+  {
+    int village = mi("vallee");
+    const Building* soin = nullptr;
+    for (auto& b : maps()[village].buildings)
+      if (b.kind == "soin") soin = &b;
+    changeMap(village, soin->doorX(), soin->doorY() + 1, UP);
+    team.at(0)->hp = 1;
+    interact();
+    run(.3f);
+    bool inside = M().id == soin->interior && M().theme == Theme::Interieur;
+    snap("91_interieur_soin");
+    bool music = audio::currentMusic() == audio::musicForPlace("interieur");
+    const Npc& healer = M().npcs.at(0);
+    px = healer.x, py = healer.y + 1, dir = UP;
+    interact();
+    skipScript();
+    bool healed = team.at(0)->hp == team.at(0)->mhp;
+    int dx = 0, dy = 0;
+    for (auto& w : M().warps) dx = w.x, dy = w.y;
+    px = dx, py = dy - 1, dir = DOWN;
+    in.press[DOWN] = true;
+    tryMove(DOWN);
+    for (int i = 0; i < 30 && moving; i++) frame();
+    run(.2f);
+    bool out = M().id == "vallee" && px == soin->doorX() && py == soin->doorY() + 1;
+    check(inside && music && healed && out,
+          "intérieurs : la porte fait entrer dans la maison de soin (musique de l'intérieur), la guérisseuse soigne, le tapis fait ressortir");
+  }
 
   // --- Combat piloté par les menus ---
   startBattle({makeFighter("mulotin", 4), makeFighter("champichou", 5), makeFighter("piafouine", 4)}, false, nullptr);

@@ -1,0 +1,25 @@
+{
+  "id": "vallee_boutique",
+  "nom": "Boutique",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#eeeeeeeee#",
+    "#.........#",
+    "#ooo...ooo#",
+    "#.........#",
+    "#v.......v#",
+    "#.........#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [
+    {"x": 5, "y": 3, "apparence": "villageois", "evenement": "boutique1", "direction": "bas"}
+  ],
+  "coffres": [],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "vallee", "tx": 20, "ty": 7, "direction": "bas"}],
+  "zones": [],
+  "boss": []
+}

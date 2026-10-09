@@ -1,0 +1,25 @@
+{
+  "id": "cendrelune_auberge",
+  "nom": "Auberge du Tison",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#hh.e.e.hh#",
+    "#.........#",
+    "#.t.....t.#",
+    "#.........#",
+    "#vv.....vv#",
+    "#.........#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [
+    {"x": 5, "y": 3, "apparence": "villageois", "evenement": "auberge", "direction": "bas"}
+  ],
+  "coffres": [],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "cendrelune", "tx": 21, "ty": 31, "direction": "bas"}],
+  "zones": [],
+  "boss": []
+}

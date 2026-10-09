@@ -1,0 +1,25 @@
+{
+  "id": "pics_auberge",
+  "nom": "Auberge du Flocon",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#hh.e.e.hh#",
+    "#.........#",
+    "#.t.....t.#",
+    "#.........#",
+    "#vv.....vv#",
+    "#.........#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [
+    {"x": 5, "y": 3, "apparence": "montagnard", "evenement": "auberge", "direction": "bas"}
+  ],
+  "coffres": [],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "pics", "tx": 37, "ty": 32, "direction": "bas"}],
+  "zones": [],
+  "boss": []
+}

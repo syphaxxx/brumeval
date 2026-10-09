@@ -21,7 +21,8 @@ const std::vector<TileInfo>& tilePalette() {
       {'.', "Sol"},           {',', "Hautes herbes"},  {'=', "Chemin"},        {'T', "Arbre"},         {'F', "Fleurs"},  {'R', "Rocher"},
       {'~', "Eau"},           {'B', "Pont de bois"},   {'W', "Fontaine"},      {'#', "Paroi"},         {'m', "Montagne"}, {'k', "Entrée de grotte"},
       {'a', "Cendre"},        {'g', "Herbes sèches"},  {'l', "Lave"},          {'b', "Pont de pierre"}, {'c', "Sol de grotte"}, {'x', "Cristal"},
-      {'d', "Arbre mort"},    {'i', "Glace"},          {'n', "Neige profonde"}, {'z', "Marais"}};
+      {'d', "Arbre mort"},    {'i', "Glace"},          {'n', "Neige profonde"}, {'z', "Marais"},        {'p', "Tapis"},   {'t', "Table"},
+      {'h', "Lit"},           {'e', "Étagère"},        {'o', "Comptoir"},      {'v', "Tonneau"}};
   return v;
 }
 static std::string tileName(char c) {
@@ -36,7 +37,7 @@ static int tileIndex(char c) {
   return 0;
 }
 
-static const char* THEMES_FR[] = {"Vallée", "Cendres", "Grotte", "Forêt", "Neige"};
+static const char* THEMES_FR[N_THEMES] = {"Vallée", "Cendres", "Grotte", "Forêt", "Neige", "Intérieur"};
 static const char* AMBIANCES[] = {"", "brume", "cendres", "obscurite", "neige", "lucioles"};
 static const char* AMBIANCES_FR[] = {"aucune", "Brume", "Cendres", "Obscurité", "Neige", "Lucioles"};
 static const char* KINDS[] = {"maison", "soin", "boutique1", "boutique2", "auberge", "chapelle", "forge"};
@@ -47,7 +48,8 @@ static const uint32_t ZONE_COLORS[] = {0xff6a6a, 0x6aff9a, 0x6aa8ff, 0xffd34d, 0
 
 // Couleur simplifiée d'une tuile (vue éloignée)
 static uint32_t tileColor(char c, Theme th) {
-  uint32_t ground = th == Theme::Cendres ? 0x6e625c : th == Theme::Grotte ? 0x4a4252 : th == Theme::Foret ? 0x3f7d45 : th == Theme::Neige ? 0xe8eef6 : 0x67b35d;
+  uint32_t ground = th == Theme::Cendres ? 0x6e625c : th == Theme::Grotte ? 0x4a4252 : th == Theme::Foret ? 0x3f7d45 : th == Theme::Neige ? 0xe8eef6
+                    : th == Theme::Interieur ? 0xb07a48 : 0x67b35d;
   switch (c) {
     case ',': return th == Theme::Foret ? 0x2f6236 : 0x4a9446;
     case '=': return th == Theme::Neige ? 0xc4cedc : (th == Theme::Vallee || th == Theme::Foret) ? 0xd9c08a : 0x8a7f78;
@@ -57,7 +59,13 @@ static uint32_t tileColor(char c, Theme th) {
     case 'R': return 0x8a8a92;
     case 'F': return 0xf29bb5;
     case 'W': return 0x5ea0dc;
-    case '#': return th == Theme::Grotte ? 0x241e2e : th == Theme::Neige ? 0x7fa8c8 : 0x8a7a66;
+    case '#': return th == Theme::Grotte ? 0x241e2e : th == Theme::Neige ? 0x7fa8c8 : th == Theme::Interieur ? 0xe8d8b0 : 0x8a7a66;
+    case 'p': return 0xa83a3a;
+    case 't': return 0x9a6a3a;
+    case 'h': return 0x5a7ac8;
+    case 'e': return 0x6b4a2f;
+    case 'o': return 0x8a5f3a;
+    case 'v': return 0x7a5230;
     case 'g': return 0x7a6a50;
     case 'l': return 0xc8441a;
     case 'b': return 0x9a9090;
@@ -825,13 +833,30 @@ void MapEditor::editBuilding(int i, int sel) {
                                 Bd().roof = ROOFS[v];
                               },
                               nr, [](int v) { return "couleur " + std::to_string(v + 1); }));
-  MenuItem ev{"Événement de la porte", "", "Par défaut : celui du genre (soin, boutique…).", true};
+  // Intérieur : une carte au thème « intérieur » qui a une sortie vers celle-ci (ou aucun)
+  std::vector<std::string> rooms{""};
+  for (auto& mp : maps()) {
+    int ex, ey;
+    if (mp.theme == Theme::Interieur && interiorEntry(mp, M().id, ex, ey)) rooms.push_back(mp.id);
+  }
+  m.items.push_back(cycleItem("Intérieur", "Carte où la porte fait entrer (thème Intérieur, avec un passage de sortie vers cette carte).",
+                              [Bd, rooms] {
+                                for (size_t k = 0; k < rooms.size(); k++)
+                                  if (Bd().interior == rooms[k]) return (int)k;
+                                return 0;
+                              },
+                              [this, Bd, rooms](int v) {
+                                begin();
+                                Bd().interior = rooms[(size_t)v];
+                              },
+                              (int)rooms.size(), [rooms](int v) { return rooms[(size_t)v].empty() ? std::string("aucun") : rooms[(size_t)v]; }));
+  MenuItem ev{"Événement de la porte", "", "Par défaut : celui du genre (soin, boutique…). Sans effet s'il y a un intérieur.", true};
   ev.rightFn = [Bd] { return utf8Prefix(Bd().event, 12); };
   ev.act = [this, Bd, i] {
     pickEvent(Bd().event, [this, Bd, i](const std::string& id) {
       begin();
       Bd().event = id.empty() ? Bd().kind : id;
-      editBuilding(i, 5);
+      editBuilding(i, 6);
     });
   };
   m.items.push_back(ev);
@@ -1114,7 +1139,7 @@ void MapEditor::menuProps(int sel) {
                                 begin();
                                 M().theme = Theme(v);
                               },
-                              5, [](int v) { return std::string(THEMES_FR[v]); }));
+                              N_THEMES, [](int v) { return std::string(THEMES_FR[v]); }));
   m.items.push_back(cycleItem("Ambiance", "",
                               [this] {
                                 for (int k = 0; k < 6; k++)

@@ -1,0 +1,25 @@
+{
+  "id": "cendrelune_boutique",
+  "nom": "Boutique",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#eeeeeeeee#",
+    "#.........#",
+    "#ooo...ooo#",
+    "#.........#",
+    "#v.......v#",
+    "#.........#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [
+    {"x": 5, "y": 3, "apparence": "montagnard", "evenement": "boutique2", "direction": "bas"}
+  ],
+  "coffres": [],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "cendrelune", "tx": 14, "ty": 31, "direction": "bas"}],
+  "zones": [],
+  "boss": []
+}

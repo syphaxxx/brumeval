@@ -330,6 +330,13 @@ static void ground(Gfx& g, Theme th, int sx, int sy, int h) {
     g.rect(sx, sy, 16, 16, rgb(0xe8eef6));
     g.rect(sx + h % 13, sy + (h >> 4) % 13, 2, 1, rgb(0xcdd8e8));
     g.rect(sx + (h >> 8) % 12 + 2, sy + (h >> 12) % 12 + 2, 1, 1, rgb(0xffffff));
+  } else if (th == Theme::Interieur) {  // parquet : quatre lames par case, joints décalés
+    g.rect(sx, sy, 16, 16, rgb(0xb07a48));
+    for (int i = 0; i < 4; i++) {
+      g.rect(sx, sy + i * 4 + 3, 16, 1, rgb(0x8f5f36));
+      g.rect(sx + (h >> (i * 3)) % 14 + 1, sy + i * 4, 1, 3, rgb(0x8f5f36));
+    }
+    g.rect(sx + h % 12 + 2, sy + 1 + (h >> 5) % 2 * 8, 2, 1, rgb(0xc48c58));
   } else {
     g.rect(sx, sy, 16, 16, rgb(0x4a4252));
     g.rect(sx + h % 13, sy + (h >> 4) % 13, 2, 1, rgb(0x3f3847));
@@ -470,7 +477,22 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
       break;
     }
     case '#':
-      if (th == Theme::Neige) {
+      if (th == Theme::Interieur) {
+        if (at(x, y + 1) == '#' || at(x, y + 1) == ' ') {  // dessus du mur, vu d'en haut
+          g.rect(sx, sy, 16, 16, rgb(0x3a2a22));
+          if (at(x, y + 1) == '#' && at(x, y + 2) != '#' && at(x, y + 2) != ' ') g.rect(sx, sy + 14, 16, 2, rgb(0x5a4232));
+        } else {  // face du mur : papier peint rayé et lambris
+          g.rect(sx, sy, 16, 16, rgb(0xe8d8b0));
+          for (int i = 2; i < 16; i += 5) g.rect(sx + i, sy, 1, 11, rgb(0xd6c294));
+          g.rect(sx, sy + 11, 16, 5, rgb(0x8a5a32));
+          g.rect(sx, sy + 11, 16, 1, rgb(0xa8743f));
+          if ((x * 7 + y) % 9 == 0) {  // un cadre de temps en temps
+            g.rect(sx + 4, sy + 2, 8, 7, rgb(0x7a5230));
+            g.rect(sx + 5, sy + 3, 6, 5, rgb(0x7fb0d8));
+            g.rect(sx + 5, sy + 6, 6, 2, rgb(0x5f9a52));
+          }
+        }
+      } else if (th == Theme::Neige) {
         g.rect(sx, sy, 16, 16, rgb(0x7fa8c8));
         g.rect(sx, sy + 5, 16, 1, rgb(0x6a92b4));
         g.rect(sx, sy + 11, 16, 1, rgb(0x6a92b4));
@@ -528,6 +550,60 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
       g.poly({{sx + 9.f, sy + 15.f}, {sx + 10.f, sy + 7.f}, {sx + 13.f, sy + 4.f}, {sx + 13.f, sy + 15.f}}, rgb(0xa8e6ff));
       break;
     }
+    // Meubles des intérieurs
+    case 'p': {  // tapis
+      ground(g, th, sx, sy, h);
+      bool l = at(x - 1, y) == 'p', r = at(x + 1, y) == 'p', u = at(x, y - 1) == 'p', d = at(x, y + 1) == 'p';
+      int x0 = l ? 0 : 1, x1 = r ? 16 : 15, y0 = u ? 0 : 1, y1 = d ? 16 : 15;
+      g.rect(sx + x0, sy + y0, x1 - x0, y1 - y0, rgb(0xa83a3a));
+      if (!l) g.rect(sx + 2, sy + y0, 1, y1 - y0, rgb(0xd9a53a));
+      if (!r) g.rect(sx + 13, sy + y0, 1, y1 - y0, rgb(0xd9a53a));
+      if (!u) g.rect(sx + x0, sy + 2, x1 - x0, 1, rgb(0xd9a53a));
+      if (!d) g.rect(sx + x0, sy + 13, x1 - x0, 1, rgb(0xd9a53a));
+      if ((x + y) % 2) g.rect(sx + 7, sy + 7, 2, 2, rgb(0xd9a53a));
+      break;
+    }
+    case 't':  // table
+      ground(g, th, sx, sy, h);
+      g.rect(sx + 3, sy + 10, 2, 5, rgb(0x6b4a2f));
+      g.rect(sx + 11, sy + 10, 2, 5, rgb(0x6b4a2f));
+      g.rect(sx + 1, sy + 4, 14, 7, rgb(0x9a6a3a));
+      g.rect(sx + 1, sy + 4, 14, 1, rgb(0xb88a52));
+      g.rect(sx + 1, sy + 10, 14, 1, rgb(0x6b4a2f));
+      if (h % 3 == 0) g.ellipse(sx + 8, sy + 6, 2, 1.5f, rgb(0xefe2c6));  // une tasse
+      break;
+    case 'h':  // lit
+      ground(g, th, sx, sy, h);
+      g.rect(sx + 1, sy + 1, 14, 15, rgb(0x7a5230));
+      g.rect(sx + 2, sy + 2, 12, 13, rgb(0xf2ece0));
+      g.rect(sx + 3, sy + 3, 10, 3, rgb(0xffffff));
+      g.rect(sx + 2, sy + 7, 12, 8, rgb(0x5a7ac8));
+      g.rect(sx + 2, sy + 7, 12, 1, rgb(0x7a9ae0));
+      break;
+    case 'e': {  // étagère (contre le mur) : livres et fioles
+      g.rect(sx, sy, 16, 16, rgb(0x6b4a2f));
+      static const uint32_t cols[] = {0xc84a3a, 0x3a6ab0, 0x5f9a52, 0xd9a53a, 0x8a5ab8};
+      for (int r = 0; r < 3; r++) {
+        g.rect(sx + 1, sy + 1 + r * 5, 14, 4, rgb(0x3a2a22));
+        for (int i = 0; i < 4; i++)
+          g.rect(sx + 2 + i * 3, sy + 2 + r * 5 + ((h >> (r * 4 + i)) & 1), 2, 3 - ((h >> (r * 4 + i)) & 1), rgb(cols[(h >> (r * 3 + i)) % 5]));
+      }
+      break;
+    }
+    case 'o':  // comptoir
+      g.rect(sx, sy, 16, 16, rgb(0x8a5f3a));
+      g.rect(sx, sy, 16, 5, rgb(0xb88a52));
+      g.rect(sx, sy + 5, 16, 1, rgb(0x6b4a2f));
+      g.rect(sx + 4, sy + 8, 8, 6, rgb(0x7a5230));
+      break;
+    case 'v':  // tonneau
+      ground(g, th, sx, sy, h);
+      g.ellipse(sx + 8, sy + 14, 6, 2, rgb(0, 50));
+      g.rect(sx + 3, sy + 3, 10, 11, rgb(0x8a5a2a));
+      g.ellipse(sx + 8, sy + 3, 5, 2, rgb(0xa06a32));
+      g.rect(sx + 3, sy + 6, 10, 1, rgb(0x4a4a52));
+      g.rect(sx + 3, sy + 11, 10, 1, rgb(0x4a4a52));
+      break;
     default: ground(g, th, sx, sy, h);
   }
 }

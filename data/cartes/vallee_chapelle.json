@@ -1,0 +1,25 @@
+{
+  "id": "vallee_chapelle",
+  "nom": "Chapelle",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#e..ooo..e#",
+    "#.........#",
+    "#....p....#",
+    "#t.t.p.t.t#",
+    "#t.t.p.t.t#",
+    "#....p....#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [
+    {"x": 5, "y": 3, "apparence": "ancien", "evenement": "chapelle", "direction": "bas"}
+  ],
+  "coffres": [],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "vallee", "tx": 6, "ty": 15, "direction": "bas"}],
+  "zones": [],
+  "boss": []
+}

@@ -581,6 +581,8 @@ void Game::interact() {
   for (auto& b : m.buildings)
     if (fx == b.doorX() && fy == b.doorY()) {
       audio::play("porte");
+      int in = mapIndex(b.interior), ex, ey;
+      if (in >= 0 && interiorEntry(maps()[in], M().id, ex, ey)) return changeMap(in, ex, ey, UP);  // on entre
       return runEvent(b.event);
     }
 }
@@ -1162,8 +1164,10 @@ void Game::drawMap() {
   // camX : position dans la carte du bord gauche de la zone du milieu ; l'écran montre de camX + left() à camX + right()
   float lo = -g.left(), hi = m.w() * 16 - g.right();
   int camX = hi >= lo ? (int)std::clamp(ppx - SCREEN_W / 2 + 8, lo, hi) : (int)((m.w() * 16 - SCREEN_W) / 2);
-  int camY = (int)std::clamp(ppy - SCREEN_H / 2 + 8, 0.f, float(m.h() * 16 - SCREEN_H));
-  int tx0 = std::max(0, (int)std::floor((camX + g.left()) / 16)), tx1 = (int)((camX + g.right()) / 16), ty0 = camY / 16;
+  // Carte moins haute que l'écran (intérieur) : centrée, comme une carte trop étroite
+  float vhi = float(m.h() * 16 - SCREEN_H);
+  int camY = vhi >= 0 ? (int)std::clamp(ppy - SCREEN_H / 2 + 8, 0.f, vhi) : (int)(vhi / 2);
+  int tx0 = std::max(0, (int)std::floor((camX + g.left()) / 16)), tx1 = (int)((camX + g.right()) / 16), ty0 = std::max(0, camY / 16);
   for (int y = ty0; y <= ty0 + SCREEN_H / 16 && y < m.h(); y++)
     for (int x = tx0; x <= tx1 && x < m.w(); x++) drawTile(g, m, x, y, x * 16 - camX, y * 16 - camY, time);
   for (auto& b : m.buildings) drawBuilding(g, b, b.x * 16 - camX, b.y * 16 - camY);

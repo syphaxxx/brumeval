@@ -1,0 +1,25 @@
+{
+  "id": "cendrelune_maison",
+  "nom": "Maison",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#hh.e..e..#",
+    "#.........#",
+    "#..tt.....#",
+    "#..tt.....#",
+    "#........v#",
+    "#.........#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [
+    {"x": 7, "y": 4, "apparence": "montagnard", "dialogue": ["Ici, à Forgeroc, on vit au rythme du volcan.", "Brann ? Le meilleur forgeron de la ville… et le plus têtu !"], "direction": "bas"}
+  ],
+  "coffres": [{"x": 1, "y": 7, "objet": "ether", "quantite": 1}],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "cendrelune", "tx": 20, "ty": 39, "direction": "bas"}],
+  "zones": [],
+  "boss": []
+}

@@ -150,8 +150,18 @@ Chaque ligne de `tuiles` est une rangée de cases, toutes de même longueur :
 | `d` | arbre mort | `i` | glace |
 | `n` | neige profonde (rencontres) | `z` | marais (rencontres) |
 
-- `theme` : `vallee`, `cendres`, `grotte`, `foret` ou `neige` (couleur du sol,
-  arbres, chemins, parois et décor des combats).
+Meubles des intérieurs (thème `interieur`) : `p` tapis (praticable), `t`
+table, `h` lit, `e` étagère, `o` comptoir, `v` tonneau.
+
+- `theme` : `vallee`, `cendres`, `grotte`, `foret`, `neige` ou `interieur`
+  (couleur du sol, arbres, chemins, parois et décor des combats ; `interieur` :
+  parquet, murs tapissés et meubles).
+- `batiments` : `genre` (apparence et enseigne), `nom`, `toit`, `evenement`
+  (lancé à la porte) ou `interieur` : l'identifiant d'une carte au thème
+  `interieur`, où la porte fait entrer. Cette carte a un `passage` vers le
+  village, sur la case de sa porte (souvent un tapis `p`) ; on arrive juste
+  au-dessus. Le service (soins, boutique…) est alors l'`evenement` d'un
+  habitant de l'intérieur.
 - `ambiance` : `brume`, `cendres`, `obscurite`, `neige` ou `lucioles`, avec
   `jusqua` pour la faire disparaître quand un drapeau est posé.
 - `passages` : `condition` (mêmes conditions que `si` dans les événements) et

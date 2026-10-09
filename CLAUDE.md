@@ -246,6 +246,12 @@ les plus longs : y ajouter tout nouvel écran.
   ne doit être écrite en dur dans le code : ajouter un champ au JSON et au
   chargeur. Les cartes sont désignées par leur identifiant (`MapDef::id`), pas
   par leur numéro (ordre alphabétique des fichiers).
+- Intérieurs : thème `Theme::Interieur` (parquet, murs, meubles `p t h e o v`,
+  dessinés dans sprites.cpp). Une porte de bâtiment avec `interieur` fait entrer
+  dans cette carte (`Game::interact`, case d'arrivée `interiorEntry` : au-dessus
+  du passage de sortie) ; `checkMaps` vérifie la sortie et part de cette case
+  pour l'accessibilité. Une carte moins haute que l'écran est centrée
+  (`drawMap`). Les 12 intérieurs des villages sont `data/cartes/<village>_<lieu>.json`.
 - Événements : habitants (`evenement`), portes des bâtiments (genre ou
   `evenement`) et boss lancent un événement de `data/evenements.json`. Les
   actions sont exécutées par `Game::execAction` (events.cpp) via le `Script` ;

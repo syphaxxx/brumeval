@@ -50,11 +50,11 @@
     "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"
   ],
   "batiments": [
-    {"x": 5, "y": 27, "l": 5, "h": 4, "genre": "soin", "nom": "Maison de soin", "toit": "#b8483e"},
-    {"x": 12, "y": 27, "l": 5, "h": 4, "genre": "boutique2", "nom": "Boutique", "toit": "#3f6fb0"},
-    {"x": 19, "y": 27, "l": 5, "h": 4, "genre": "auberge", "nom": "Auberge du Tison", "toit": "#9a5a2a"},
+    {"x": 5, "y": 27, "l": 5, "h": 4, "genre": "soin", "nom": "Maison de soin", "toit": "#b8483e", "interieur": "cendrelune_soin"},
+    {"x": 12, "y": 27, "l": 5, "h": 4, "genre": "boutique2", "nom": "Boutique", "toit": "#3f6fb0", "interieur": "cendrelune_boutique"},
+    {"x": 19, "y": 27, "l": 5, "h": 4, "genre": "auberge", "nom": "Auberge du Tison", "toit": "#9a5a2a", "interieur": "cendrelune_auberge"},
     {"x": 6, "y": 35, "l": 6, "h": 4, "genre": "forge", "nom": "Forge de Brann", "toit": "#4a4a52"},
-    {"x": 18, "y": 35, "l": 5, "h": 4, "genre": "maison", "nom": "Maison", "toit": "#7a6a4a"}
+    {"x": 18, "y": 35, "l": 5, "h": 4, "genre": "maison", "nom": "Maison", "toit": "#7a6a4a", "interieur": "cendrelune_maison"}
   ],
   "habitants": [
     {

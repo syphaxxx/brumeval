@@ -1,0 +1,25 @@
+{
+  "id": "pics_maison",
+  "nom": "Maison",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#hh.e..e..#",
+    "#.........#",
+    "#..tt.....#",
+    "#..tt.....#",
+    "#........v#",
+    "#.........#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [
+    {"x": 7, "y": 4, "apparence": "villageoise", "dialogue": ["Le froid s'est installé depuis la chute d'Ignarok.", "Une tisane bien chaude ? … Non ? Tant pis, j'en boirai deux."], "direction": "bas"}
+  ],
+  "coffres": [{"x": 1, "y": 7, "objet": "superpotion", "quantite": 1}],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "pics", "tx": 22, "ty": 39, "direction": "bas"}],
+  "zones": [],
+  "boss": []
+}

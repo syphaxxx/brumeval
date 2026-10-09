@@ -1,0 +1,25 @@
+{
+  "id": "cendrelune_soin",
+  "nom": "Maison de soin",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#ee.....hh#",
+    "#.........#",
+    "#...ppp...#",
+    "#...ppp..v#",
+    "#t........#",
+    "#.........#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [
+    {"x": 5, "y": 3, "apparence": "villageoise", "evenement": "soin", "direction": "bas"}
+  ],
+  "coffres": [],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "cendrelune", "tx": 7, "ty": 31, "direction": "bas"}],
+  "zones": [],
+  "boss": []
+}

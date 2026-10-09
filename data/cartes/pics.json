@@ -50,7 +50,7 @@
     "##############################==############################"
   ],
   "batiments": [
-    {"x": 18, "y": 28, "l": 5, "h": 4, "genre": "soin", "nom": "Maison de soin", "toit": "#b8483e"},
+    {"x": 18, "y": 28, "l": 5, "h": 4, "genre": "soin", "nom": "Maison de soin", "toit": "#b8483e", "interieur": "pics_soin"},
     {
       "x": 25,
       "y": 28,
@@ -59,10 +59,11 @@
       "genre": "boutique2",
       "nom": "Boutique",
       "toit": "#3f6fb0",
-      "evenement": "boutique3"
+      "evenement": "boutique3",
+      "interieur": "pics_boutique"
     },
-    {"x": 34, "y": 28, "l": 6, "h": 4, "genre": "auberge", "nom": "Auberge du Flocon", "toit": "#9a5a2a"},
-    {"x": 20, "y": 36, "l": 5, "h": 3, "genre": "maison", "nom": "Maison", "toit": "#7a6a8a"},
+    {"x": 34, "y": 28, "l": 6, "h": 4, "genre": "auberge", "nom": "Auberge du Flocon", "toit": "#9a5a2a", "interieur": "pics_auberge"},
+    {"x": 20, "y": 36, "l": 5, "h": 3, "genre": "maison", "nom": "Maison", "toit": "#7a6a8a", "interieur": "pics_maison"},
     {
       "x": 35,
       "y": 36,
