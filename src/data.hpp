@@ -71,7 +71,7 @@ struct Move {
 
 struct Learn { int lvl; std::string move; };
 
-enum class Shape { Fox, Drop, Bud, Bird, Mouse, Bug, Frog, Mush, Rock, Wisp, Boss, Lizard, Golem, Snake, Bat, Wolf, Turtle, Ghost, Crystal, Human };
+enum class Shape { Fox, Drop, Bud, Bird, Mouse, Bug, Frog, Mush, Rock, Wisp, Boss, Lizard, Golem, Snake, Bat, Wolf, Turtle, Ghost, Crystal, Magma, Human };
 
 // Apparence d'un humain (héros ou habitant)
 struct Look {
@@ -112,6 +112,14 @@ struct Species {
   std::vector<Tactic> tactics;  // tactiques de départ propres (vide : celles des règles)
 };
 
+// Équipement : une arme, une armure et un accessoire par combattant. Armes et armures sont
+// pour les héros (humains) ; un accessoire va à tout le monde.
+enum GearSlot { G_WEAPON, G_ARMOR, G_ACCESSORY, N_GEAR };
+// Bonus d'un équipement : PV, PM, Attaque, Défense, Magie, Résistance, Vitesse, Précision, Esquive, Critique
+enum GearStat { GS_HP, GS_MP, GS_ATK, GS_DEF, GS_MAG, GS_RES, GS_SPD, GS_ACC, GS_EVA, GS_CRIT, N_GEAR_STATS };
+const char* gearSlotName(int s);  // « Arme »…
+const char* gearStatName(int s);  // « Attaque »…
+
 struct ItemDef {
   std::string id, name, desc;
   int price;
@@ -122,6 +130,9 @@ struct ItemDef {
   int revive = 0;              // relève un K.O. avec ce pourcentage de PV
   float capture = 0;           // > 0 : lanterne de capture (multiplicateur)
   bool cure = false;           // guérit les états
+  int slot = -1;               // équipement : emplacement (GearSlot) ; -1 : pas un équipement
+  std::array<int, N_GEAR_STATS> bonus{};
+  std::string bonusText() const;  // « +4 Attaque, +10 PV »
 };
 
 // Règles du jeu (data/regles.json). Les valeurs numériques sont décrites dans
@@ -229,6 +240,7 @@ struct Fighter {
   // Tactiques (alliés) : jouées en combat quand le mode auto est actif
   std::vector<Tactic> tactics;
   bool tacticsOn = true;
+  std::array<std::string, N_GEAR> gear;  // équipement porté (objets de data/objets.json, vide : rien)
 
   const Species& S() const { return species(sp); }
   std::string name() const;
@@ -251,5 +263,6 @@ float frand();              // nombre entre 0 et 1
 int irand(int lo, int hi);  // entier entre lo et hi inclus
 
 FighterP makeFighter(const std::string& id, int lvl);
+bool canEquip(const Fighter& f, const ItemDef& d);  // emplacement permis pour ce combattant
 // Gagne de l'expérience ; renvoie les messages de montée de niveau.
 std::vector<std::string> gainXp(Fighter& f, int xp);

@@ -1,0 +1,25 @@
+{
+  "id": "vallee_ancien",
+  "nom": "Maison de l'ancien",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#hh.e..e..#",
+    "#.........#",
+    "#..tt.....#",
+    "#..tt.....#",
+    "#........v#",
+    "#.........#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [
+    {"x": 7, "y": 4, "apparence": "enfant", "evenement": "quete_medaillon", "direction": "bas"}
+  ],
+  "coffres": [{"x": 1, "y": 7, "objet": "potion", "quantite": 2}],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "vallee", "tx": 19, "ty": 15, "direction": "bas"}],
+  "zones": [],
+  "boss": []
+}

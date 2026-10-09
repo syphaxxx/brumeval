@@ -6,10 +6,12 @@
 #include <sstream>
 
 #include "arena.hpp"
+#include "audio.hpp"
 #include "battle.hpp"
 #include "expedition.hpp"
 #include "mapedit.hpp"
 #include "online.hpp"
+#include "options.hpp"
 #include "settings.hpp"
 #include "storyedit.hpp"
 #include "sprites.hpp"
@@ -38,6 +40,54 @@ void Game::onWheel(int dy) {
   in.mouseOn = true;
 }
 
+// Manette : croix ou stick pour se déplacer, A valider, B annuler, Start menu, Select mode auto (Tab),
+// gâchettes hautes page précédente / suivante (éditeurs)
+void Game::onPad(int button, bool down) {
+  if (textOn_ || bindKey_ >= 0) return;
+  switch (button) {
+    case SDL_CONTROLLER_BUTTON_DPAD_UP: return padDirection(UP, down);
+    case SDL_CONTROLLER_BUTTON_DPAD_DOWN: return padDirection(DOWN, down);
+    case SDL_CONTROLLER_BUTTON_DPAD_LEFT: return padDirection(LEFT, down);
+    case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: return padDirection(RIGHT, down);
+    default: break;
+  }
+  if (!down) return;
+  in.mouseOn = false;
+  switch (button) {
+    case SDL_CONTROLLER_BUTTON_A: in.confirm = true; break;
+    case SDL_CONTROLLER_BUTTON_B: in.cancel = in.menu = true; break;
+    case SDL_CONTROLLER_BUTTON_START: in.menu = true; break;
+    case SDL_CONTROLLER_BUTTON_BACK:
+    case SDL_CONTROLLER_BUTTON_Y: in.menu = in.tab = true; break;
+    case SDL_CONTROLLER_BUTTON_LEFTSHOULDER: in.prev = true; break;
+    case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER: in.next = true; break;
+    default: break;
+  }
+}
+void Game::onStick(int axis, int value) {
+  if (axis != SDL_CONTROLLER_AXIS_LEFTX && axis != SDL_CONTROLLER_AXIS_LEFTY) return;
+  int neg = axis == SDL_CONTROLLER_AXIS_LEFTX ? LEFT : UP, pos = axis == SDL_CONTROLLER_AXIS_LEFTX ? RIGHT : DOWN;
+  // Seuils différents pour pousser et relâcher : pas de tremblement autour de la limite
+  for (int d : {neg, pos}) {
+    bool push = d == neg ? value < -16000 : value > 16000, keep = d == neg ? value < -8000 : value > 8000;
+    bool on = stickDir_[d] ? keep : push;
+    if (on != stickDir_[d]) {
+      stickDir_[d] = on;
+      padDirection(d, on || padDir_[d]);
+    }
+  }
+}
+void Game::padDirection(int d, bool on) {
+  if (on && !in.hold[d]) {
+    in.press[d] = true;
+    padRepeat_[d] = .35f;  // premier délai avant la répétition
+  }
+  in.hold[d] = on;
+  if (!on) padDir_[d] = stickDir_[d] = false;
+  if (on && !stickDir_[d]) padDir_[d] = true;
+  in.mouseOn = false;
+}
+
 void Game::onKey(SDL_Scancode k, bool down, bool repeat) {
   in.ctrl = (SDL_GetModState() & KMOD_CTRL) != 0;
   in.shift = (SDL_GetModState() & KMOD_SHIFT) != 0;
@@ -64,11 +114,17 @@ void Game::onKey(SDL_Scancode k, bool down, bool repeat) {
     }
     return;
   }
+  if (bindKey_ >= 0) {  // Options > Touches : la prochaine touche appuyée remplace celle de l'action
+    if (down && !repeat) bindKey(k);
+    return;
+  }
+  // Touches choisies dans les options ; les flèches, Entrée et Échap marchent toujours
+  const auto& K = options().keys;
   int d = -1;
-  if (k == SDL_SCANCODE_UP || k == SDL_SCANCODE_W) d = UP;
-  if (k == SDL_SCANCODE_DOWN || k == SDL_SCANCODE_S) d = DOWN;
-  if (k == SDL_SCANCODE_LEFT || k == SDL_SCANCODE_A) d = LEFT;
-  if (k == SDL_SCANCODE_RIGHT || k == SDL_SCANCODE_D) d = RIGHT;
+  if (k == SDL_SCANCODE_UP || k == K[K_UP]) d = UP;
+  if (k == SDL_SCANCODE_DOWN || k == K[K_DOWN]) d = DOWN;
+  if (k == SDL_SCANCODE_LEFT || k == K[K_LEFT]) d = LEFT;
+  if (k == SDL_SCANCODE_RIGHT || k == K[K_RIGHT]) d = RIGHT;
   if (d >= 0) {
     if (!repeat) in.hold[d] = down;
     if (down) in.press[d] = true;
@@ -78,9 +134,92 @@ void Game::onKey(SDL_Scancode k, bool down, bool repeat) {
   if (down && k == SDL_SCANCODE_PAGEDOWN) in.next = true;
   if (down && k == SDL_SCANCODE_DELETE) in.del = true;
   if (!down || repeat) return;
-  if (k == SDL_SCANCODE_RETURN || k == SDL_SCANCODE_KP_ENTER || k == SDL_SCANCODE_SPACE) in.confirm = true;
-  if (k == SDL_SCANCODE_ESCAPE || k == SDL_SCANCODE_BACKSPACE) in.cancel = in.menu = true;
-  if (k == SDL_SCANCODE_TAB) in.menu = in.tab = true;
+  if (k == SDL_SCANCODE_RETURN || k == SDL_SCANCODE_KP_ENTER || k == K[K_OK]) in.confirm = true;
+  if (k == SDL_SCANCODE_ESCAPE || k == K[K_BACK]) in.cancel = in.menu = true;
+  if (k == K[K_AUTO]) in.menu = in.tab = true;
+}
+
+// ---------------------------------------------------------------------------
+// Options : volumes, plein écran, touches (options.hpp)
+// ---------------------------------------------------------------------------
+void Game::optionsMenu(int sel) {
+  int panel = panelMode_;
+  panelMode_ = 0;  // le menu prend la place du résumé de l'équipe
+  Menu m;
+  m.title = "Options";
+  m.x = 60, m.y = 40, m.w = 200, m.rows = 5, m.sel = sel;
+  auto volume = [this](const std::string& label, int* v, const std::string& help) {
+    MenuItem it{label, "", help, true, nullptr};
+    it.adjust = [v](int d) {
+      *v = std::clamp(*v + d, 0, 10);
+      applyVolumes();
+      saveOptions();
+    };
+    it.rightFn = [v] { return *v ? std::to_string(*v) + " / 10" : std::string("coupé"); };
+    return it;
+  };
+  m.items.push_back(volume("Musique", &options().music, "Gauche / droite : volume de la musique."));
+  m.items.push_back(volume("Effets sonores", &options().effects, "Gauche / droite : volume des bruitages."));
+  auto full = [] {
+    options().fullscreen = !options().fullscreen;
+    saveOptions();
+  };
+  MenuItem fs{"Plein écran", "", "Aussi avec F11 ou Alt+Entrée.", true, full};
+  fs.adjust = [full](int) { full(); };
+  fs.rightFn = [] { return std::string(options().fullscreen ? "Oui" : "Non"); };
+  m.items.push_back(fs);
+  m.items.push_back({"Touches", "", "Changer les touches du clavier. La manette se branche toute seule.", true, [this] { keysMenu(); }});
+  m.items.push_back({"Retour", "", "", true, [this, panel] {
+                       panelMode_ = panel;
+                       menus.pop();
+                     }});
+  m.onCancel = m.items.back().act;
+  menus.push(m);
+}
+
+void Game::keysMenu(int sel) {
+  Menu m;
+  m.title = "Touches";
+  m.x = 72, m.y = 52, m.w = 210, m.rows = 9, m.sel = sel;
+  const std::string help = "Entrée : appuyer ensuite sur la nouvelle touche. Les flèches, Entrée et Échap marchent toujours.";
+  for (int a = 0; a < N_KEYS; a++) {
+    MenuItem it{keyActionName(a), "", help, true, [this, a] { bindKey_ = a; }};
+    it.rightFn = [a] { return keyName(options().keys[a]); };
+    m.items.push_back(it);
+  }
+  m.items.push_back({"Touches par défaut", "", "ZQSD (WASD en QWERTY), Espace, Retour arrière et Tab.", true, [this] {
+                       options().keys = Options::defaultKeys();
+                       saveOptions();
+                       notice("Touches par défaut remises.");
+                     }});
+  m.items.push_back({"Retour", "", "", true, [this] { menus.pop(); }});
+  menus.push(m);
+}
+
+// Nouvelle touche pour l'action bindKey_ (Échap : annuler). Si une autre action l'avait, elle prend l'ancienne.
+void Game::bindKey(SDL_Scancode k) {
+  int a = bindKey_;
+  bindKey_ = -1;
+  in.endFrame();
+  if (k == SDL_SCANCODE_ESCAPE) return;
+  if (k == SDL_SCANCODE_RETURN || k == SDL_SCANCODE_KP_ENTER || k == SDL_SCANCODE_F11 || k == SDL_SCANCODE_UP || k == SDL_SCANCODE_DOWN ||
+      k == SDL_SCANCODE_LEFT || k == SDL_SCANCODE_RIGHT)
+    return notice("Cette touche marche déjà toute seule.");
+  auto& K = options().keys;
+  for (auto& other : K)
+    if (other == k) other = K[a];
+  K[a] = k;
+  saveOptions();
+  notice(std::string(keyActionName(a)) + " : " + keyName(k) + ".");
+}
+
+void Game::drawKeyPrompt() {
+  g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0x000010, 120));
+  g.newLayer();  // fenêtre modale : le reste est assombri derrière
+  g.window(40, 96, 240, 46);
+  g.text(160, 102, "Nouvelle touche pour « " + std::string(keyActionName(bindKey_)) + " »", rgb(0xffd34d), 1);
+  g.text(160, 116, "Appuyez sur la touche voulue…", WHITE, 1);
+  g.text(160, 128, "Échap : annuler", MUTED, 1);
 }
 
 // ---------------------------------------------------------------------------
@@ -131,6 +270,15 @@ void Game::drawTextEdit() {
 // ---------------------------------------------------------------------------
 void Game::update(float dt) {
   time += dt;
+  // Manette : une direction tenue se répète (comme une touche du clavier), pour parcourir les menus
+  for (int d = 0; d < 4; d++)
+    if (padDir_[d] || stickDir_[d]) {
+      padRepeat_[d] -= dt;
+      if (padRepeat_[d] <= 0) {
+        in.press[d] = true;
+        padRepeat_[d] = .09f;
+      }
+    }
   if (online_) online_->update(dt);  // réseau du multijoueur, dans tous les écrans
   banner -= dt;
   noticeT_ -= dt;
@@ -223,7 +371,17 @@ void Game::update(float dt) {
       break;
     }
   }
+  updateMusic();
   in.endFrame();
+}
+
+// Musique selon l'écran : celle du lieu (thème de la carte), du combat ou du boss ; silence
+// pendant la fin d'un combat (la fanfare de victoire ou de défaite se joue seule)
+void Game::updateMusic() {
+  std::string t = "titre";
+  if (mode == Mode::Battle && battle_) t = battle_->ending_ ? "" : battle_->boss ? "boss" : "combat";
+  else if (mode == Mode::Map && mapId >= 0 && mapId < (int)maps().size()) t = audio::musicForPlace(themeName(M().theme));
+  audio::music(t);
 }
 
 // ---------------------------------------------------------------------------
@@ -263,6 +421,7 @@ void Game::startBattle(BattleSetup setup, std::function<void(BattleResult)> afte
   battle_ = std::make_unique<Battle>(*this, std::move(setup), th);
   mode = Mode::Battle;
   menus.clear();
+  audio::play("rencontre");
 }
 void Game::startBattle(std::vector<FighterP> foes, bool boss, std::function<void(BattleResult)> after, bool canFlee, bool canCapture) {
   BattleSetup s;
@@ -420,7 +579,12 @@ void Game::interact() {
   for (auto& b : m.bosses)
     if (bossAlive(b) && fx >= b.x && fx <= b.x + 1 && fy >= b.y && fy <= b.y + 1) return bossTouched(b);
   for (auto& b : m.buildings)
-    if (fx == b.doorX() && fy == b.doorY()) return runEvent(b.event);
+    if (fx == b.doorX() && fy == b.doorY()) {
+      audio::play("porte");
+      int in = mapIndex(b.interior), ex, ey;
+      if (in >= 0 && interiorEntry(maps()[in], M().id, ex, ey)) return changeMap(in, ex, ey, UP);  // on entre
+      return runEvent(b.event);
+    }
 }
 
 // Drapeau d'un coffre ouvert : carte et position (reste valable si on ajoute des coffres)
@@ -433,6 +597,7 @@ void Game::openChest(int i) {
   std::string key = chestFlag(i);
   if (has(key)) return sc.say("Le coffre est vide.");
   flags.insert(key);
+  audio::play("coffre");
   const Chest& c = M().chests[i];
   if (c.item.empty()) {
     gold += c.qty;
@@ -485,7 +650,7 @@ void Game::titleMenu() {
   editorTest_ = storyTest_ = false;
   menus.clear();
   Menu m;
-  m.x = 102, m.y = 128, m.w = 116, m.rows = 6, m.cancelable = false;
+  m.x = 102, m.y = 122, m.w = 116, m.rows = 7, m.cancelable = false;
   m.items.push_back({"Nouvelle partie", "", "", true, [this] { starterMenu(); }});
   bool can = saveExists();
   m.items.push_back({"Continuer", "", "", can, [this] {
@@ -499,11 +664,12 @@ void Game::titleMenu() {
                        if (!expedition_) expedition_ = std::make_unique<Expedition>(*this);
                        expedition_->menu();
                      }});
-  m.items.push_back({"Multijoueur", "", "Avec des amis, en ligne : duel ou expédition à plusieurs.", true, [this] {
+  m.items.push_back({"Multijoueur", "", "Avec des amis : duel, expédition, échanges.", true, [this] {
                        if (!online_) online_ = std::make_unique<Online>(*this);
                        online_->menu();
                      }});
   m.items.push_back({"Outils", "", "Arène, réglages et éditeurs.", true, [this] { toolsMenu(); }});
+  m.items.push_back({"Options", "", "Volumes, plein écran et touches.", true, [this] { optionsMenu(); }});
   m.items.push_back({"Quitter", "", "", true, [this] { quit = true; }});
   if (can) m.sel = 1;
   menus.push(m);
@@ -582,6 +748,8 @@ void Game::pauseMenu() {
                        }});
   m.items.push_back({"Équipe", "", "Ordre de combat et fiches.", true, [this] { teamMenu(); }});
   m.items.push_back({"Tactiques", "", "Ce que chaque membre fait tout seul en combat (mode auto : touche Tab).", true, [this] { tacticsMenu(); }});
+  m.items.push_back({"Équipement", "", "Armes, armures et accessoires.", true, [this] { gearMenu(); }});
+  m.items.push_back({"Journal", "", "Les quêtes en cours et terminées.", true, [this] { journalMenu(); }});
   m.items.push_back({"Objets", "", "Utiliser un objet.", true, [this] { itemMenu(); }});
   m.items.push_back({"Magie", "", "Lancer un sort de soin.", true, [this] { magicMenu(); }});
   if (inExpedition()) {
@@ -603,7 +771,9 @@ void Game::pauseMenu() {
                          ask("Revenir à l'écran titre ? (pensez à sauvegarder)", [this] { titleMenu(); });
                        }});
   }
+  m.items.push_back({"Options", "", "Volumes, plein écran et touches.", true, [this] { optionsMenu(); }});
   m.items.push_back({"Reprendre", "", "", true, [this] { menus.clear(); }});
+  m.rows = (int)m.items.size();
   menus.push(m);
 }
 
@@ -643,6 +813,111 @@ void Game::tacticsMenu(int sel) {
     };
     m.items.push_back(it);
   }
+  m.onCancel = [this] {
+    panelMode_ = 1;
+    menus.pop();
+  };
+  menus.push(m);
+}
+
+// ---------------------------------------------------------------------------
+// Équipement : qui, puis quel emplacement, puis quel objet du sac
+// ---------------------------------------------------------------------------
+void Game::gearMenu(int sel) {
+  panelMode_ = 2;  // fiche détaillée à droite : les statistiques changent en direct
+  Menu m;
+  m.title = "Équipement";
+  m.x = 8, m.y = 8, m.w = 132, m.rows = 9, m.sel = sel;
+  for (size_t i = 0; i < team.size(); i++) {
+    FighterP f = team[i];
+    int n = 0;
+    for (auto& g : f->gear) n += !g.empty();
+    m.items.push_back({f->name(), n ? std::to_string(n) + "/3" : "", "Entrée : changer son équipement.", true,
+                       [this, f, i] { gearSlots(f, (int)i); }, [this, i] { teamPanelSel_ = (int)i; }});
+  }
+  m.onCancel = [this] {
+    panelMode_ = 1;
+    menus.pop();
+  };
+  if (sel < (int)team.size()) teamPanelSel_ = sel;
+  menus.push(m);
+}
+
+void Game::gearSlots(FighterP f, int who, int sel) {
+  Menu m;
+  m.title = f->name();
+  m.x = 8, m.y = 8, m.w = 132, m.rows = 7;
+  for (int s = 0; s < N_GEAR; s++) {  // chaque emplacement : son titre, puis l'objet porté
+    const std::string& id = f->gear[(size_t)s];
+    bool ok = s == G_ACCESSORY || f->S().human;
+    m.items.push_back(menuHeader(gearSlotName(s)));
+    MenuItem it{ok ? (id.empty() ? "(rien)" : item(id).name) : "(héros seulement)", "",
+                ok ? (id.empty() ? "Entrée : choisir dans le sac." : item(id).bonusText() + ". Entrée : changer ou retirer.")
+                   : "Seuls les héros portent armes et armures.",
+                ok, [this, f, who, s] { gearPick(f, who, s); }};
+    it.shrink = true;
+    m.items.push_back(it);
+  }
+  m.sel = 1 + 2 * std::clamp(sel, 0, N_GEAR - 1);
+  m.items.push_back({"Retour", "", "", true, [this] { menus.pop(); }});
+  teamPanelSel_ = who;
+  menus.push(m);
+}
+
+// Choix d'un objet du sac pour l'emplacement s (ou retirer celui qui est porté)
+void Game::gearPick(FighterP f, int who, int s) {
+  auto equip = [this, f, who, s](const std::string& id) {
+    std::string& cur = f->gear[(size_t)s];
+    if (!cur.empty()) items[cur]++;
+    if (!id.empty()) items[id]--;
+    int lostHp = f->mhp - f->hp, lostMp = f->mmp - f->mp;
+    cur = id;
+    f->recalc();
+    f->hp = std::clamp(f->mhp - lostHp, f->alive() ? 1 : 0, f->mhp);  // les PV perdus restent perdus
+    f->mp = std::clamp(f->mmp - lostMp, 0, f->mmp);
+    audio::play("achat");
+    menus.pop();
+    menus.pop();
+    gearSlots(f, who, s);
+  };
+  Menu m;
+  m.title = gearSlotName(s);
+  m.x = 8, m.y = 8, m.w = 132, m.rows = 8;
+  for (auto& d : allItems()) {
+    int n = items.count(d.id) ? items[d.id] : 0;
+    if (d.slot != s || n <= 0 || !canEquip(*f, d)) continue;
+    std::string id = d.id;
+    MenuItem it{d.name, "×" + std::to_string(n), d.bonusText() + ". " + d.desc, true, [equip, id] { equip(id); }};
+    it.shrink = true;
+    m.items.push_back(it);
+  }
+  if (!f->gear[(size_t)s].empty()) m.items.push_back({"Retirer", "", "Remettre " + item(f->gear[(size_t)s]).name + " dans le sac.", true, [equip] { equip(""); }});
+  if (m.items.empty()) m.items.push_back({"(rien dans le sac)", "", "Les boutiques vendent armes, armures et accessoires.", false, nullptr});
+  menus.push(m);
+}
+
+// Journal des quêtes : celles qui ont commencé ; l'aide montre l'étape où l'on en est
+void Game::journalMenu() {
+  panelMode_ = 0;
+  Menu m;
+  m.title = "Journal";
+  m.x = 8, m.y = 8, m.w = 220, m.rows = 9;
+  for (auto& q : quests()) {
+    std::string id = jget<std::string>(q, "id", "");
+    if (!has(questFlag(id))) continue;
+    bool done = has(questFlag(id, true));
+    std::string help = jget<std::string>(q, "fin_texte", "Quête terminée.");
+    if (!done) {
+      Json steps = q.value("etapes", Json::array());
+      for (auto& s : steps)  // la dernière étape dont la condition est vraie
+        if (!s.contains("si") || checkCond(s["si"])) help = jget<std::string>(s, "texte", "");
+    }
+    MenuItem it{jget<std::string>(q, "nom", id), done ? "terminée" : "en cours", jget<std::string>(q, "lieu", "") + " — " + help, true, nullptr};
+    it.color = done ? 0xaab3d8 : 0;
+    it.shrink = true;
+    m.items.push_back(it);
+  }
+  if (m.items.empty()) m.items.push_back({"(aucune quête)", "", "Parlez aux habitants : certains ont besoin d'aide.", false, nullptr});
   m.onCancel = [this] {
     panelMode_ = 1;
     menus.pop();
@@ -714,7 +989,8 @@ void Game::itemMenuAt(int sel) {
     if (n <= 0) continue;
     std::string id = d.id;
     int myIdx = idx++;
-    m.items.push_back({d.name, "×" + std::to_string(n), d.desc + (d.field ? "" : d.key ? " (objet important)" : " (en combat)"), d.field,
+    std::string note = d.field ? "" : d.slot >= 0 ? " (équipement : Échap > Équipement)" : d.key ? " (objet important)" : " (en combat)";
+    m.items.push_back({d.name, "×" + std::to_string(n), d.desc + note, d.field,
                        [this, id, myIdx] {
                          pickMember("Sur qui ?", [id](const Fighter& f) {
                            const ItemDef& d = item(id);
@@ -722,6 +998,7 @@ void Game::itemMenuAt(int sel) {
                            return f.alive() && ((d.healHp && f.hp < f.mhp) || (d.healMp && f.mp < f.mmp));
                          }, [this, id, myIdx](Fighter& f) {
                            const ItemDef& d = item(id);
+                           audio::play("soin");
                            items[id]--;
                            if (d.revive) f.hp = std::max(1, f.mhp * d.revive / 100);
                            else {
@@ -764,6 +1041,7 @@ void Game::magicMenu() {
                                                 auto cast = [this, caster, id](Fighter* target) {
                                                   const Move& mv = moveInfo(id);
                                                   caster->mp -= mv.cost;
+                                                  audio::play("soin");
                                                   auto healOne = [&](Fighter& t) {
                                                     if (mv.kind == Kind::Revive) {
                                                       if (!t.alive()) t.hp = std::max(1, t.mhp * mv.power / 100);
@@ -805,9 +1083,11 @@ void Game::shopMenuAt(const std::vector<std::string>& stock, int sel) {
                        [this, stock, id, i] {
                          const ItemDef& d = item(id);
                          if (gold < d.price) {
+                           audio::play("refus");
                            notice("Pas assez d'or.");
                            return;
                          }
+                         audio::play("achat");
                          gold -= d.price;
                          items[id]++;
                          notice("Acheté : " + d.name + ".");
@@ -822,19 +1102,13 @@ void Game::shopMenuAt(const std::vector<std::string>& stock, int sel) {
 // ---------------------------------------------------------------------------
 // Sauvegarde (fichier texte dans le dossier de l'utilisateur)
 // ---------------------------------------------------------------------------
-std::string Game::savePath() const {
-  char* p = SDL_GetPrefPath("Brumeval", "Brumeval");
-  std::string s = p ? p : "";
-  SDL_free(p);
-  return s + (inExpedition() ? expedition_->saveFile() : saveName_);
-}
+std::string Game::savePath() const { return userFile(inExpedition() ? expedition_->saveFile() : saveName_); }
 bool Game::saveExists() const {
   std::ifstream f(savePath());
   return f.good();
 }
 bool Game::saveGame() {
-  std::ofstream f(savePath());
-  if (!f) return false;
+  std::ostringstream f;
   f << "BRUMEVAL 1\n";
   if (inExpedition()) expedition_->writeSave(f);  // en premier : le chargement génère d'abord le monde
   f << "carte " << M().id << ' ' << px << ' ' << py << ' ' << dir << '\n';
@@ -847,11 +1121,57 @@ bool Game::saveGame() {
   static const char KIND[] = {'a', 't', 'o'};  // action automatique, technique, objet
   for (auto& m : team) {
     f << "membre " << m->sp << ' ' << m->lvl << ' ' << m->xp << ' ' << m->hp << ' ' << m->mp << ' ' << m->lim << '\n';
+    if (m->gear != decltype(m->gear){}) {
+      f << "equipement";
+      for (auto& g : m->gear) f << ' ' << (g.empty() ? "-" : g);
+      f << '\n';
+    }
     f << "tactiques " << m->tacticsOn << '\n';
     for (auto& t : m->tactics) f << "tactique " << t.on << ' ' << t.cond << ' ' << t.value << ' ' << KIND[(int)t.kind] << ' ' << t.act << '\n';
   }
+  return writeUserFile(inExpedition() ? expedition_->saveFile() : saveName_, f.str());
+}
+// Lignes d'un membre de l'équipe : « membre » (espèce, niveau, expérience, PV, PM, Limite), puis
+// « equipement », « tactiques » et ses lignes « tactique ». Une espèce inconnue ajoute nullptr :
+// les lignes qui la suivent sont ignorées (à retirer ensuite).
+bool readMemberLine(const std::string& k, std::istream& s, std::vector<FighterP>& team) {
+  if (k == "membre") {
+    std::string sp;
+    int lvl = 1, xp = 0, hp = 1, mp = 0;
+    float lim = 0;
+    s >> sp >> lvl >> xp >> hp >> mp >> lim;
+    if (!hasSpecies(sp)) {
+      team.push_back(nullptr);
+      return true;
+    }
+    auto m = makeFighter(sp, lvl);
+    m->xp = xp, m->hp = hp, m->mp = mp, m->lim = lim;  // à borner une fois l'équipement lu
+    team.push_back(m);
+    return true;
+  }
+  if (k != "equipement" && k != "tactiques" && k != "tactique") return false;
+  if (team.empty() || !team.back()) return true;
+  Fighter& m = *team.back();
+  if (k == "equipement") {
+    for (auto& g : m.gear) {
+      std::string id;
+      s >> id;
+      g = id != "-" && hasItem(id) && canEquip(m, item(id)) ? id : "";
+    }
+    m.recalc();
+  } else if (k == "tactiques") {  // les anciennes sauvegardes gardent les tactiques de départ
+    s >> m.tacticsOn;
+    m.tactics.clear();
+  } else {
+    Tactic t;
+    char kind = 'a';
+    s >> t.on >> t.cond >> t.value >> kind >> t.act;
+    t.kind = kind == 't' ? Tactic::Act::Move : kind == 'o' ? Tactic::Act::Item : Tactic::Act::Auto;
+    if (s && findTacticCond(t.cond)) m.tactics.push_back(t);
+  }
   return true;
 }
+
 bool Game::loadGame() {
   std::ifstream f(savePath());
   std::string head;
@@ -894,26 +1214,10 @@ bool Game::loadGame() {
       int n;
       s >> id >> n;
       items[id] = n;
-    } else if (k == "membre") {
-      std::string sp;
-      int lvl, xp, hp, mp;
-      float lim;
-      s >> sp >> lvl >> xp >> hp >> mp >> lim;
-      auto m = makeFighter(sp, lvl);
-      m->xp = xp, m->hp = std::min(hp, m->mhp), m->mp = std::min(mp, m->mmp), m->lim = lim;
-      team.push_back(m);
     } else if (k == "auto") s >> tacticsAuto;
-    else if (k == "tactiques" && !team.empty()) {  // les anciennes sauvegardes gardent les tactiques de départ
-      s >> team.back()->tacticsOn;
-      team.back()->tactics.clear();
-    } else if (k == "tactique" && !team.empty()) {
-      Tactic t;
-      char kind = 'a';
-      s >> t.on >> t.cond >> t.value >> kind >> t.act;
-      t.kind = kind == 't' ? Tactic::Act::Move : kind == 'o' ? Tactic::Act::Item : Tactic::Act::Auto;
-      if (s && findTacticCond(t.cond)) team.back()->tactics.push_back(t);
-    }
+    else readMemberLine(k, s, team);
   }
+  team.erase(std::remove(team.begin(), team.end(), nullptr), team.end());  // espèces qui n'existent plus
   for (auto& v : oldChests) {
     int m = mapOf(v.substr(7, v.find(':', 7) - 7));
     int i = std::atoi(v.substr(v.rfind(':') + 1).c_str());
@@ -925,6 +1229,7 @@ bool Game::loadGame() {
   moving = false;
   steps = 0;
   sc.clear();
+  for (auto& m : team) m->hp = std::min(m->hp, m->mhp), m->mp = std::min(m->mp, m->mmp);
   return !team.empty();
 }
 
@@ -952,6 +1257,7 @@ void Game::draw() {
       break;
   }
   if (textOn_) drawTextEdit();
+  if (bindKey_ >= 0) drawKeyPrompt();
 }
 
 void Game::drawTitle() {
@@ -991,8 +1297,10 @@ void Game::drawMap() {
   // camX : position dans la carte du bord gauche de la zone du milieu ; l'écran montre de camX + left() à camX + right()
   float lo = -g.left(), hi = m.w() * 16 - g.right();
   int camX = hi >= lo ? (int)std::clamp(ppx - SCREEN_W / 2 + 8, lo, hi) : (int)((m.w() * 16 - SCREEN_W) / 2);
-  int camY = (int)std::clamp(ppy - SCREEN_H / 2 + 8, 0.f, float(m.h() * 16 - SCREEN_H));
-  int tx0 = std::max(0, (int)std::floor((camX + g.left()) / 16)), tx1 = (int)((camX + g.right()) / 16), ty0 = camY / 16;
+  // Carte moins haute que l'écran (intérieur) : centrée, comme une carte trop étroite
+  float vhi = float(m.h() * 16 - SCREEN_H);
+  int camY = vhi >= 0 ? (int)std::clamp(ppy - SCREEN_H / 2 + 8, 0.f, vhi) : (int)(vhi / 2);
+  int tx0 = std::max(0, (int)std::floor((camX + g.left()) / 16)), tx1 = (int)((camX + g.right()) / 16), ty0 = std::max(0, camY / 16);
   for (int y = ty0; y <= ty0 + SCREEN_H / 16 && y < m.h(); y++)
     for (int x = tx0; x <= tx1 && x < m.w(); x++) drawTile(g, m, x, y, x * 16 - camX, y * 16 - camY, time);
   for (auto& b : m.buildings) drawBuilding(g, b, b.x * 16 - camX, b.y * 16 - camY);
@@ -1100,16 +1408,18 @@ void Game::drawMap() {
   if (panelMode_ && menus.active()) drawTeamPanel(panelMode_ == 1 ? 114 : 146, 8, panelMode_ == 2 ? teamPanelSel_ : -1);
   if (menus.active()) menus.draw(g, time);
   drawDialogue();
+  int noticeY = 190;
   if (menus.active() && askText_.empty() && !menus.help().empty()) {
     auto lines = Gfx::wrap(menus.help(), 300);
     int h = 10 + 11 * (int)lines.size();
     g.window(4, 236 - h, 312, h);
     for (size_t i = 0; i < lines.size(); i++) g.text(10, 236 - h + 4 + i * 11, lines[i], MUTED);
+    noticeY = std::min(noticeY, 236 - h - 22);  // le petit message passe au-dessus de l'aide
   }
   if (noticeT_ > 0) {
     int w = Gfx::textW(notice_) + 20;
-    g.window(160 - w / 2, 190, w, 20);
-    g.text(160, 194, notice_, WHITE, 1);
+    g.window(160 - w / 2, noticeY, w, 20);
+    g.text(160, noticeY + 4, notice_, WHITE, 1);
   }
 }
 

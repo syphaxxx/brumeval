@@ -14,18 +14,20 @@
 static const Color WHITE = rgb(0xffffff), GOLD = rgb(0xffd34d), MUTED = rgb(0xaab3d8), RED = rgb(0xff8a7a), GREEN = rgb(0x7dffa8);
 
 static const char* ACTIONS[] = {"dire",     "donner",   "retirer", "or",     "drapeau",    "recruter", "combat",   "question",
-                                "si",       "soigner",  "boutique", "reveil", "teleporter", "evenement", "attendre", "fin"};
+                                "si",       "soigner",  "boutique", "reveil", "teleporter", "evenement", "attendre", "fin", "quete"};
 static const char* ACTIONS_FR[] = {"Dire un message",       "Donner un objet",    "Retirer un objet", "Gagner ou payer de l'or",
                                    "Poser un drapeau",      "Recruter",           "Combat",           "Question Oui / Non",
                                    "Si (condition)",        "Soigner l'équipe",   "Boutique",         "Point de réveil",
-                                   "Aller sur une carte",   "Lancer un événement", "Attendre",        "Écran de fin"};
+                                   "Aller sur une carte",   "Lancer un événement", "Attendre",        "Écran de fin",
+                                   "Quête (début ou fin)"};
 static const char* ACTIONS_HELP[] = {
     "Affiche un message. {heros}, {compagnon} et {or} sont remplacés.", "Ajoute un objet au sac (avec un message).",
     "Enlève un objet du sac.", "Quantité positive : gagner ; négative : payer.", "Retient qu'une chose a eu lieu (pour les conditions).",
     "Un personnage ou une créature rejoint l'équipe.", "Lance un combat, avec des suites en cas de victoire ou de défaite.",
     "Pose une question avec une suite pour Oui et une pour Non.", "Joue « alors » si la condition est vraie, sinon « sinon ».",
     "Rend les PV et/ou les PM de toute l'équipe.", "Ouvre une boutique.", "Le joueur se réveillera ici après une défaite.",
-    "Emmène le joueur sur une carte.", "Joue un autre événement.", "Une courte pause.", "Affiche l'écran de fin."};
+    "Emmène le joueur sur une carte.", "Joue un autre événement.", "Une courte pause.", "Affiche l'écran de fin.",
+    "Commence une quête de data/quetes.json (elle apparaît dans le journal), ou la termine."};
 static const std::set<std::string> LIST_KEYS = {"actions", "oui", "non", "alors", "sinon", "victoire", "defaite"};
 
 // ---------------------------------------------------------------------------
@@ -106,6 +108,11 @@ std::string actionSummary(const Json& a) {
   if (k == "evenement") return "Lancer l'événement « " + jget<std::string>(a, "id", "") + " »";
   if (k == "attendre") return "Attendre " + fmtNum(jget(a, "secondes", .5)) + " s";
   if (k == "fin") return "Écran de fin";
+  if (k == "quete") {
+    std::string id = jget<std::string>(a, "id", "");
+    const Json* q = findQuest(id);
+    return std::string(jget(a, "fin", false) ? "Terminer" : "Commencer") + " la quête « " + (q ? jget<std::string>(*q, "nom", id) : id) + " »";
+  }
   return "Action inconnue : " + k;
 }
 
@@ -564,7 +571,7 @@ void StoryEditor::addAction(const std::string& listPtr) {
   Menu m;
   m.title = "Nouvelle action";
   m.x = 40, m.y = 20, m.w = 200, m.rows = 12;
-  for (int k = 0; k < 16; k++) {
+  for (int k = 0; k < (int)(sizeof ACTIONS / sizeof *ACTIONS); k++) {
     std::string type = ACTIONS[k];
     m.items.push_back({ACTIONS_FR[k], "", ACTIONS_HELP[k], true, [this, listPtr, type] {
                          Json a = {{"action", type}};
@@ -590,6 +597,7 @@ void StoryEditor::addAction(const std::string& listPtr) {
                          if (type == "teleporter") a["carte"] = rules().startMap, a["x"] = rules().startX, a["y"] = rules().startY, a["direction"] = "bas";
                          if (type == "evenement") a["id"] = firstEvent;
                          if (type == "attendre") a["secondes"] = 1.0;
+                         if (type == "quete") a["id"] = quests().empty() ? std::string("?") : jget<std::string>(quests()[0], "id", "?");
                          int at = 0;
                          change([listPtr, a, &at](Json& ev) {
                            Json& l = ev[Json::json_pointer(listPtr)];
@@ -717,6 +725,11 @@ void StoryEditor::editAction(const std::string& ptr, int sel) {
     cycleIds("Événement", "id", evIds, evIds);
   } else if (k == "attendre") {
     num("Secondes", "secondes", .5, .5, .5, 10, false);
+  } else if (k == "quete") {
+    std::vector<std::string> qIds, qNames;
+    for (auto& q : quests()) qIds.push_back(jget<std::string>(q, "id", "")), qNames.push_back(jget<std::string>(q, "nom", ""));
+    cycleIds("Quête", "id", qIds, qNames);
+    toggle("La terminer", "fin", false, "Non : la quête commence. Oui : elle est terminée.");
   } else {
     m.items.push_back({"(pas de réglage)", "", "", false});
   }

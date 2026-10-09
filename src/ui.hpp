@@ -116,7 +116,5 @@ class MenuStack {
   std::vector<Menu> st_;
 };
 
-// Utilitaire : texte « à gauche / à droite » dans une ligne de menu
-std::string fmtInt(int v);
 // Les n premiers caractères d'un texte UTF-8 (effet machine à écrire)
 std::string utf8Prefix(const std::string& s, int n);

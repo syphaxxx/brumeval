@@ -4,6 +4,9 @@ Petit RPG 2D en C++17 avec SDL2, inspiré de Final Fantasy 7 (combat ATB à troi
 combattants, Limites, magie) et de Pokémon (capture de créatures). Tout le contenu
 est original. Le projet a été démarré dans l'app Claude puis transféré ici.
 
+Voir aussi `docs/GUIDE.md` (vue d'ensemble, recettes pour ajouter du contenu,
+pièges) et `docs/PLANNING.md` (la suite du projet).
+
 ## L'utilisateur
 
 - Il est francophone et débute en programmation : réponds en français, explique
@@ -71,6 +74,7 @@ les plus longs : y ajouter tout nouvel écran.
 | `world.hpp/.cpp` | Structures des cartes (thèmes, passages avec condition, zones déclencheuses), lecture/écriture de data/cartes/, vérification d'accessibilité (`checkMaps`) |
 | `events.hpp/.cpp` | Événements de l'histoire : chargement, vérification et exécution des actions (`Game::runEvent`) |
 | `sprites.hpp/.cpp` | Dessin en code des créatures (19 formes), humains (coiffes, armes), tuiles selon le thème, bâtiments (aucune image externe) |
+| `audio.hpp/.cpp` | Son fabriqué par le programme (synthèse) : musiques et bruitages décrits dans `data/sons.json`, mélangés dans le fil audio de SDL (`Mixer`) |
 | `gfx.hpp/.cpp` | Primitives de dessin (ellipses, polygones, dégradés), police pixel intégrée avec accents, fenêtres bleues |
 | `ui.hpp/.cpp` | Clavier, `Script` (file de messages/actions) et `MenuStack` (menus à curseur ; `MenuItem::adjust` pour régler une valeur avec gauche/droite, `rightFn` pour un texte recalculé, `menuHeader` pour un titre de section) |
 | `settings.hpp/.cpp` | Réglages (écran titre > Outils) : éditeurs des règles, espèces, techniques, types (grille) et objets ; chaque modification passe par `Settings::change` (document JSON puis `rebuildData`) |
@@ -83,6 +87,8 @@ les plus longs : y ajouter tout nouvel écran.
 | `online.hpp/.cpp` | Multijoueur (écran titre) : héberger une partie (jusqu'à 4 joueurs), rejoindre, salon, vérification de la version et des données (`dataHash`), relais des messages par l'hôte, duel en ligne |
 | `coop.cpp` | Expédition à plusieurs (fonctions de `Online`) : lancement d'une graine pour tous, état de chaque joueur (message `ou`), autres joueurs sur la carte (`avatars`), attente et combat du gardien à plusieurs |
 | `trade.cpp` | Échange de créatures (fonctions de `Online`) : dans le salon (partie principale) ou pendant l'expédition à plusieurs, une contre une ou en cadeau |
+| `options.hpp/.cpp` | Options du joueur (`options()`, fichier `options.txt`) : volumes, plein écran, touches choisies (`K_UP`…) |
+| `events.hpp/.cpp` (quêtes) | Quêtes annexes : `quests()`, `findQuest`, `questFlag` ; action `quete` |
 | `version.hpp` | Numéro de version (`BRUMEVAL_VERSION`), affiché sur l'écran titre et comparé en multijoueur |
 | `test.cpp` | Mode test automatique |
 
@@ -123,6 +129,11 @@ les plus longs : y ajouter tout nouvel écran.
   (Réglages, Arène) se cachent quand `menus.maxRight()` dépasse 158. Une
   fenêtre modale sur fond assombri appelle `g.newLayer()`. Largeur d'un
   caractère : 6 px ; un libellé commence 13 px après le bord du menu.
+- Équipement : `Fighter::gear` (arme, armure, accessoire : identifiants d'objets
+  avec `ItemDef::slot` et `bonus`), ajouté aux statistiques par
+  `Fighter::recalc` ; `canEquip` (armes et armures : humains seulement). Menu
+  `Game::gearMenu` > `gearSlots` > `gearPick` ; ligne `equipement` après
+  `membre` dans la sauvegarde ; un échange emporte l'équipement de la créature.
 - Équipe : `Game::team` (8 membres maximum par capture, les humains s'ajoutent
   toujours). Les 3 premiers membres valides combattent (`Game::front()`).
 - Progression : `Game::flags` (`boss1`, `golem`, `boss2`, `maelle`, `brann`,
@@ -203,8 +214,10 @@ les plus longs : y ajouter tout nouvel écran.
 - Échange de créatures (trade.cpp, `Online::trade_`) : message `echange`, champ
   `e` : `offre` (créature, `cadeau`, `run` : pendant l'expédition), puis
   `contre` (créature en retour) ou `accepte` (cadeau), `fait`, `refus`
-  (`raison`). Celui qui a proposé fait l'échange chez lui en premier
-  (`commitTrade`), puis envoie `fait` ; l'autre le fait alors. Une créature dans
+  (`raison`). Quand tout est d'accord, celui qui a proposé envoie `go` : l'autre
+  fait l'échange chez lui (`commitTrade`) et répond `fait`, puis celui qui a
+  proposé le fait à son tour (une coupure donne au pire un double, jamais une
+  perte). Une créature dans
   un message : `creatureJson` / `creatureFrom` (vérifiée : espèce connue ici,
   pas un humain). Au salon, l'équipe est lue et réécrite dans la sauvegarde de
   la partie principale (`loadMine` = `Game::loadGame`, puis `saveGame`) ;
@@ -219,6 +232,24 @@ les plus longs : y ajouter tout nouvel écran.
   commande s'ouvre. Ajouter une condition : l'entrée dans `CONDS`
   (tactics.cpp) et son test dans `holds` (battle.cpp). Les simulations
   (`autoPlay`) n'utilisent les tactiques que si `simTactics` est vrai.
+- Son (audio.hpp) : `audio::play("coup")` joue un bruitage, `audio::music("combat")`
+  change de morceau (fondu ; le même morceau continue). `Game::updateMusic`
+  choisit la musique à chaque image (lieu selon `themeName`, combat, boss,
+  silence pendant la fanfare de fin). En combat, passer par `Battle::sound`
+  (seulement le combat affiché, pas les simulations ; l'hôte ou le chef envoie
+  `son` aux autres). Les menus font leurs bruits eux-mêmes (`MenuStack::update`).
+  Le mode test n'ouvre pas de sortie son mais fabrique chaque morceau et chaque
+  effet (`audio::render`) pour vérifier qu'ils s'entendent.
+- Commandes : `Game::onKey` lit les touches choisies (`options().keys`) en plus
+  des flèches, d'Entrée et d'Échap (toujours actives). Manette :
+  `Game::onPad` / `onStick` (appelés par main.cpp, qui ouvre les manettes
+  branchées) remplissent le même `Input` ; une direction tenue se répète
+  (`padRepeat_`). Plein écran : `options().fullscreen`, appliqué par main.cpp.
+- Animations de combat : `Battle::startAnim` (appelé par `useMove` et
+  `useItem`) retient le lanceur, les cibles, l'effet (`Battle::Fx` : coup,
+  sort, soin, statut, capture) et la couleur du type ; `offset` décale le dessin
+  (élan, secousse quand on est touché) et `drawAnim` dessine l'effet. En ligne,
+  l'hôte ou le chef envoie `anim` aux autres.
 - Police : `gfx.cpp`, fonction `buildFont()`. Un caractère absent s'affiche « ? » ;
   ajoute son dessin si tu utilises un nouveau symbole.
 - Données : tout le contenu est dans `data/` (voir `data/LISEZMOI.md`), chargé au
@@ -226,6 +257,17 @@ les plus longs : y ajouter tout nouvel écran.
   ne doit être écrite en dur dans le code : ajouter un champ au JSON et au
   chargeur. Les cartes sont désignées par leur identifiant (`MapDef::id`), pas
   par leur numéro (ordre alphabétique des fichiers).
+- Intérieurs : thème `Theme::Interieur` (parquet, murs, meubles `p t h e o v`,
+  dessinés dans sprites.cpp). Une porte de bâtiment avec `interieur` fait entrer
+  dans cette carte (`Game::interact`, case d'arrivée `interiorEntry` : au-dessus
+  du passage de sortie) ; `checkMaps` vérifie la sortie et part de cette case
+  pour l'accessibilité. Une carte moins haute que l'écran est centrée
+  (`drawMap`). Les 12 intérieurs des villages sont `data/cartes/<village>_<lieu>.json`.
+- Quêtes annexes : `data/quetes.json` (lu par `loadEvents`, vérifié par
+  `checkEvents`), action `quete` (drapeaux `quete:<id>` et `quete:<id>:fin`,
+  `questFlag`), journal `Game::journalMenu`. Trois quêtes : `medaillon`
+  (vallée), `braises` (Forgeroc, boss de carte `tisonnels`), `tisane` (Givreval) ;
+  leurs habitants sont dans les intérieurs.
 - Événements : habitants (`evenement`), portes des bâtiments (genre ou
   `evenement`) et boss lancent un événement de `data/evenements.json`. Les
   actions sont exécutées par `Game::execAction` (events.cpp) via le `Script` ;
@@ -307,6 +349,16 @@ réécrits par `writeJson` (petites listes sur une ligne) : garder ce format.
 - 13 types (dont Glace, Roche, Vent, Poison, Métal, Esprit). Héros : Lior,
   Maëlle, Brann, Isra, Kael, Sélène. Starters : Braisenard, Gouttelin, Ronceau.
   23 créatures sauvages capturables, 5 boss, 5 sortes d'ennemis humains.
+- **Intérieurs** : 12 pièces dans les trois villages (soins, boutiques,
+  auberges, chapelle, maisons habitées avec un coffre).
+- **Quêtes annexes** : le médaillon de l'ancien (vallée), les Tisonnels enragés
+  (boss de carte au nord-ouest de Forgeroc), une tisane contre le froid
+  (Givreval). Journal : Échap > Journal.
+- **Équipement** : 16 armes, armures et accessoires en vente (vallée,
+  Forgeroc, Givreval).
+- **Son** : 9 musiques (titre, 5 lieux, intérieur, combat, boss) et 25
+  bruitages, fabriqués par le jeu (`data/sons.json`). Options (volumes,
+  plein écran, touches) et manette.
 - Les cartes se modifient avec l'éditeur de cartes (Outils) ou directement
   dans les JSON.
 
@@ -330,13 +382,22 @@ habitants donnent son point faible). Réglages du gardien dans
 Le Vent fait ×4 à Plante/Poison et le Métal ×4 à Glace/Roche : la Ronce-Mère et
 le Givrecorne ont une résistance propre pour ramener cela à ×2. La Lumière fait ×2 à l'Ombre mais l'Ombre est neutre sur la Lumière :
 sinon Maëlle, ciblée en priorité par l'IA, tombe dès le début contre Sylvarque.
+Gardien à plusieurs (mesuré le 2026-10-09, 15 combats par ligne) : jamais plus
+dur qu'en solo, souvent plus facile (région 5, graine 33 : 13 % seul, 100 % à
+2, 3 ou 4 joueurs) ; plusieurs héros différents couvrent plus de types, et
+×4/3 PV à quatre ne compense pas. Pas encore rééquilibré (à décider avec
+l'utilisateur). Les simulations n'utilisent pas l'équipement : il rend le jeu
+un peu plus facile que ces chiffres.
 
 ## À faire / pistes
 
-1. Windows : la compilation MSVC (générateurs Visual Studio et Ninja) et le mode
-   test marchent en ligne de commande. Reste à confirmer dans VS Code même :
-   F7, Maj+F5 et le débogueur (`cppvsdbg`).
-2. Ajouter musique et effets sonores (SDL2_mixer via FetchContent, ou l'audio de SDL).
-3. Rendre le sprite d'Ignarok plus lisible (aujourd'hui un bloc rouge).
-4. Idées : intérieurs des maisons, quêtes annexes, équipement, menu d'options,
-   manette (SDL_GameController), animations d'attaque.
+La suite du projet, étape par étape : `docs/PLANNING.md`.
+
+1. Windows / VS Code (vérifié le 2026-10-09, sans l'interface) : extensions
+   C/C++ 1.34 et CMake Tools 1.24 installées, kits Build Tools 2022 détectés,
+   débogueur `vsdbg` présent, `build/` configuré avec « Visual Studio 17 2022 »
+   (le kit choisi par défaut, Ninja n'étant pas installé), `cmake --build build
+   --config Debug --target ALL_BUILD` (ce que fait F7) réussit. Reste à appuyer
+   une fois sur F7, Maj+F5 et F5 dans VS Code pour le confirmer de visu.
+2. Fait le 2026-10-09 : son, options, manette, animations d'attaque, Ignarok
+   (forme `magma`), intérieurs, équipement, quêtes annexes.

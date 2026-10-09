@@ -8,15 +8,15 @@
 
 bool tileWalkable(char c) {
   return c == '.' || c == ',' || c == '=' || c == 'F' || c == 'B' || c == 'a' || c == 'g' || c == 'b' || c == 'k' || c == 'c' || c == 'i' ||
-         c == 'n' || c == 'z';
+         c == 'n' || c == 'z' || c == 'p';
 }
 bool tileEncounter(char c) { return c == ',' || c == 'g' || c == 'c' || c == 'n' || c == 'z'; }
 
-static const char* THEMES[] = {"vallee", "cendres", "grotte", "foret", "neige"};
+static const char* THEMES[N_THEMES] = {"vallee", "cendres", "grotte", "foret", "neige", "interieur"};
 Theme themeOf(const std::string& s) {
-  for (int i = 0; i < 5; i++)
+  for (int i = 0; i < N_THEMES; i++)
     if (s == THEMES[i]) return Theme(i);
-  throw std::runtime_error("Thème inconnu : « " + s + " » (possibles : vallee, cendres, grotte, foret, neige)");
+  throw std::runtime_error("Thème inconnu : « " + s + " » (possibles : vallee, cendres, grotte, foret, neige, interieur)");
 }
 const char* themeName(Theme t) { return THEMES[(int)t]; }
 
@@ -48,6 +48,7 @@ MapDef mapFromJson(const Json& j) {
     Building b{o.at("x").get<int>(), o.at("y").get<int>(), o.at("l").get<int>(), o.at("h").get<int>(),
                o.at("genre").get<std::string>(), jget<std::string>(o, "nom", ""), parseColor(o.value("toit", Json("#7a8a4a")))};
     b.event = jget<std::string>(o, "evenement", b.kind);
+    b.interior = jget<std::string>(o, "interieur", "");
     m.buildings.push_back(b);
   }
   for (auto& o : j.value("habitants", Json::array())) {
@@ -101,6 +102,7 @@ Json mapToJson(const MapDef& m) {
   for (auto& x : m.buildings) {
     Json p = {{"x", x.x}, {"y", x.y}, {"l", x.w}, {"h", x.h}, {"genre", x.kind}, {"nom", x.name}, {"toit", colorStr(x.roof)}};
     if (x.event != x.kind) p["evenement"] = x.event;
+    if (!x.interior.empty()) p["interieur"] = x.interior;
     b.push_back(p);
   }
   o["batiments"] = b;
@@ -178,6 +180,15 @@ void saveMap(const MapDef& m) { writeJson("cartes/" + m.id + ".json", mapToJson(
 // ---------------------------------------------------------------------------
 // Vérifications
 // ---------------------------------------------------------------------------
+bool interiorEntry(const MapDef& in, const std::string& outside, int& x, int& y) {
+  for (auto& w : in.warps)
+    if (w.map == outside && w.y > 0) {
+      x = w.x, y = w.y - 1;
+      return true;
+    }
+  return false;
+}
+
 std::vector<std::string> checkMaps() {
   std::vector<std::string> err;
   const Rules& r = rules();
@@ -194,6 +205,13 @@ std::vector<std::string> checkMaps() {
       if (!c.item.empty() && !hasItem(c.item)) E("objet inconnu dans un coffre " + at(c.x, c.y) + " : " + c.item);
     for (auto& b : m.bosses)
       if (!hasSpecies(b.id)) E("boss inconnu : " + b.id);
+    for (auto& b : m.buildings) {
+      int t = mapIndex(b.interior);
+      int ex, ey;
+      if (b.interior.empty()) continue;
+      if (t < 0) E("bâtiment « " + b.name + " » : intérieur inconnu : " + b.interior);
+      else if (!interiorEntry(MAPS[t], m.id, ex, ey)) E("bâtiment « " + b.name + " » : l'intérieur " + b.interior + " n'a pas de sortie vers cette carte");
+    }
     for (auto& w : m.warps) {
       int t = mapIndex(w.map);
       if (t < 0) E("passage " + at(w.x, w.y) + " vers une carte inconnue : " + w.map);
@@ -215,9 +233,13 @@ std::vector<std::string> checkMaps() {
     std::vector<std::pair<int, int>> starts;
     if (m.id == r.startMap) starts.push_back({r.startX, r.startY});
     if (m.id == r.respawnMap) starts.push_back({r.respawnX, r.respawnY});
-    for (auto& o : MAPS)
+    for (auto& o : MAPS) {
       for (auto& w : o.warps)
         if (w.map == m.id) starts.push_back({w.tx, w.ty});
+      int ex, ey;
+      for (auto& b : o.buildings)  // intérieur : on y entre par la porte d'un bâtiment
+        if (b.interior == m.id && interiorEntry(m, o.id, ex, ey)) starts.push_back({ex, ey});
+    }
     if (starts.empty()) continue;  // carte sans entrée : rien à vérifier
     auto bfs = [&](bool passBoss) {
       std::set<std::pair<int, int>> seen;

@@ -12,11 +12,13 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
-#include <fstream>
 #include <string>
+#include <vector>
 
+#include "audio.hpp"
 #include "events.hpp"
 #include "game.hpp"
+#include "options.hpp"
 #include "world.hpp"
 
 // Charge tout le dossier data/. Renvoie le message d'erreur (vide si tout va bien).
@@ -25,6 +27,7 @@ static std::string loadAll() {
     loadData();
     loadMaps();
     loadEvents();
+    audio::loadSounds();
   } catch (const std::exception& e) {
     return e.what();
   }
@@ -33,7 +36,7 @@ static std::string loadAll() {
 // Problèmes de cohérence (référence inconnue, lieu inaccessible…)
 static std::vector<std::string> problems() {
   std::vector<std::string> p = checkData();
-  for (auto& v : {checkMaps(), checkEvents()}) p.insert(p.end(), v.begin(), v.end());
+  for (auto& v : {checkMaps(), checkEvents(), audio::checkSounds()}) p.insert(p.end(), v.begin(), v.end());
   return p;
 }
 
@@ -146,26 +149,6 @@ static void fitWindow(SDL_Window* win) {
   SDL_SetWindowPosition(win, ub.x + left + (ub.w - left - right - w) / 2, ub.y + top + (ub.h - top - bottom - h) / 2);
 }
 
-// Préférence plein écran, gardée d'une partie à l'autre (options.txt, à côté de la sauvegarde)
-static std::string optionsPath() {
-  char* p = SDL_GetPrefPath("Brumeval", "Brumeval");
-  std::string s = p ? p : "";
-  SDL_free(p);
-  return s + "options.txt";
-}
-static bool loadFullscreen() {
-  std::ifstream f(optionsPath());
-  std::string k;
-  int v = 0;
-  while (f >> k >> v)
-    if (k == "plein_ecran") return v != 0;
-  return false;
-}
-static void saveFullscreen(bool on) {
-  std::ofstream f(optionsPath());
-  f << "plein_ecran " << (on ? 1 : 0) << '\n';
-}
-
 static int runTests(const char* outDir) {
   std::setvbuf(stdout, nullptr, _IONBF, 0);  // affichage immédiat, même en cas de plantage
   SDL_Init(0);
@@ -230,7 +213,8 @@ int main(int argc, char* argv[]) {
   fitWindow(win);
   SDL_SetWindowMinimumSize(win, SCREEN_W, SCREEN_H);
   SDL_ShowWindow(win);
-  bool fullscreen = loadFullscreen();
+  loadOptions();  // volumes, plein écran, touches (options.hpp)
+  bool fullscreen = options().fullscreen;
   if (fullscreen) SDL_SetWindowFullscreen(win, SDL_WINDOW_FULLSCREEN_DESKTOP);
   SDL_Renderer* r = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
   if (!r) r = SDL_CreateRenderer(win, -1, SDL_RENDERER_SOFTWARE | SDL_RENDERER_TARGETTEXTURE);
@@ -239,6 +223,10 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
+  audio::init();
+  applyVolumes();
+  SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER);  // manettes : ouvertes quand elles sont branchées (ci-dessous)
+  std::vector<SDL_GameController*> pads;
   {
     Screen screen(r);
     Game game(r);
@@ -269,16 +257,40 @@ int main(int argc, char* argv[]) {
           game.onWheel(e.wheel.y);
           continue;
         }
+        if (e.type == SDL_CONTROLLERDEVICEADDED) {  // aussi pour les manettes déjà branchées au démarrage
+          if (SDL_GameController* c = SDL_GameControllerOpen(e.cdevice.which)) pads.push_back(c);
+          continue;
+        }
+        if (e.type == SDL_CONTROLLERDEVICEREMOVED) {
+          for (auto it = pads.begin(); it != pads.end(); ++it)
+            if (SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(*it)) == e.cdevice.which) {
+              SDL_GameControllerClose(*it);
+              pads.erase(it);
+              break;
+            }
+          continue;
+        }
+        if (e.type == SDL_CONTROLLERBUTTONDOWN || e.type == SDL_CONTROLLERBUTTONUP) {
+          game.onPad(e.cbutton.button, e.type == SDL_CONTROLLERBUTTONDOWN);
+          continue;
+        }
+        if (e.type == SDL_CONTROLLERAXISMOTION) {
+          game.onStick(e.caxis.axis, e.caxis.value);
+          continue;
+        }
         if (e.type != SDL_KEYDOWN && e.type != SDL_KEYUP) continue;
         SDL_Scancode k = e.key.keysym.scancode;
         bool alt = (e.key.keysym.mod & KMOD_ALT) != 0;
         if (e.type == SDL_KEYDOWN && !e.key.repeat && (k == SDL_SCANCODE_F11 || (alt && k == SDL_SCANCODE_RETURN))) {
-          fullscreen = !fullscreen;  // F11 ou Alt+Entrée : plein écran (gardé pour la prochaine fois)
-          SDL_SetWindowFullscreen(win, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
-          saveFullscreen(fullscreen);
+          options().fullscreen = !options().fullscreen;  // F11 ou Alt+Entrée : plein écran (gardé pour la prochaine fois)
+          saveOptions();
           continue;
         }
         game.onKey(k, e.type == SDL_KEYDOWN, e.key.repeat != 0);
+      }
+      if (options().fullscreen != fullscreen) {  // F11 ou menu Options
+        fullscreen = options().fullscreen;
+        SDL_SetWindowFullscreen(win, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
       }
       Uint64 now = SDL_GetPerformanceCounter();
       float dt = std::min(.05f, float(now - last) / float(SDL_GetPerformanceFrequency()));
@@ -290,6 +302,8 @@ int main(int argc, char* argv[]) {
       SDL_Delay(1);
     }
   }
+  for (auto* c : pads) SDL_GameControllerClose(c);
+  audio::shutdown();
   SDL_DestroyRenderer(r);
   SDL_DestroyWindow(win);
   SDL_Quit();

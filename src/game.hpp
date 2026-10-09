@@ -27,6 +27,10 @@ class Online;
 enum class Mode { Title, Map, Battle, Ending, Arena, Settings, Editor, Story };
 enum class BattleResult { Win, Lose, Fled };
 
+// Lit une ligne d'un membre de l'équipe dans une sauvegarde (voir game.cpp) ; faux si la ligne
+// est d'un autre genre. Sert à Game::loadGame et au multijoueur (équipe du duel).
+bool readMemberLine(const std::string& key, std::istream& s, std::vector<FighterP>& team);
+
 class Game {
  public:
   explicit Game(SDL_Renderer* r);
@@ -35,6 +39,9 @@ class Game {
   void onText(const char* utf8);  // caractères tapés (saisie de texte des éditeurs)
   void onMouse(int x, int y, int button, bool down);  // button -1 : simple déplacement
   void onWheel(int dy);
+  // Manette (SDL_GameController) : bouton appuyé ou relâché ; stick gauche (axe 0 : horizontal, 1 : vertical)
+  void onPad(int button, bool down);
+  void onStick(int axis, int value);
   // Saisie de texte : affiche une fenêtre ; Entrée valide (done), Échap annule
   void editText(const std::string& title, const std::string& initial, int maxChars, std::function<void(const std::string&)> done);
   bool editingText() const { return textOn_; }
@@ -101,6 +108,7 @@ class Game {
   void encounter();
   void defeat();
   void showRegionBanner();
+  void updateMusic();  // musique du lieu, du combat ou de l'écran titre
 
   // Menus
   void titleMenu();
@@ -112,6 +120,18 @@ class Game {
   void itemMenu();
   void magicMenu();
   void shopMenu(const std::vector<std::string>& stock);
+  void journalMenu();
+  void gearMenu(int sel = 0);
+  void gearSlots(FighterP f, int who, int sel = 0);
+  void gearPick(FighterP f, int who, int slot);
+  void optionsMenu(int sel = 0);
+  void keysMenu(int sel = 0);
+  bool padDir_[4] = {}, stickDir_[4] = {};  // directions tenues à la manette (croix, stick)
+  float padRepeat_[4] = {};                  // répétition d'une direction tenue (menus)
+  void padDirection(int d, bool on);
+  int bindKey_ = -1;  // Options > Touches : action qui attend sa nouvelle touche
+  void bindKey(SDL_Scancode k);
+  void drawKeyPrompt();
   void pickMember(const std::string& title, std::function<bool(const Fighter&)> ok, std::function<void(Fighter&)> use);
   void ask(const std::string& q, std::function<void()> yes, std::function<void()> no = nullptr);
   void execAction(const Json& a);

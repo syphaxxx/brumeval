@@ -4,6 +4,7 @@
 #include <cmath>
 #include <map>
 
+#include "audio.hpp"
 #include "game.hpp"
 #include "sprites.hpp"
 #include "tactics.hpp"
@@ -100,6 +101,109 @@ void Battle::pop(const FighterP& f, const std::string& t, Color c) {
     if (q.x == p.x && G.time - q.t < .3f) stack++;
   pops.push_back({p.x, p.y - 22 - 11.f * stack, t, c, G.time});
   if (net_ == Net::Host || net_ == Net::Lead) send_(-1, Json{{"t", "pop"}, {"f", mine(f)}, {"txt", t}, {"c", Json::array({c.r, c.g, c.b})}});
+}
+
+bool Battle::shown() const { return G.battle_.get() == this; }
+
+static Battle::Fx fxOf(const Move& m) {
+  switch (m.kind) {
+    case Kind::Physical: return Battle::Fx::Hit;
+    case Kind::Magic: return Battle::Fx::Magic;
+    case Kind::Heal:
+    case Kind::Revive: return Battle::Fx::Heal;
+    case Kind::Status: return Battle::Fx::Status;
+  }
+  return Battle::Fx::Hit;
+}
+
+void Battle::startAnim(const FighterP& a, const std::vector<FighterP>& targets, Fx fx, Color col, bool limit) {
+  anim_ = Anim{a, targets, fx, col, limit, G.time};
+  if (net_ == Net::Host || net_ == Net::Lead) {
+    Json c = Json::array();
+    for (auto& f : targets) c.push_back(mine(f));
+    send_(-1, Json{{"t", "anim"}, {"a", mine(a)}, {"c", c}, {"fx", (int)fx}, {"col", Json::array({col.r, col.g, col.b})}, {"l", limit}});
+  }
+}
+
+// Élan : le lanceur avance vers ses adversaires (coup) ou fait un petit bond (sort, soin) ; le
+// combattant touché tremble un instant
+Pt Battle::offset(const FighterP& f) const {
+  Pt o{0, 0};
+  float e = G.time - anim_.t0;
+  if (anim_.actor == f && e >= 0 && e < .4f) {
+    float k = std::sin(3.14159f * e / .4f);
+    if (anim_.fx == Fx::Hit) o.x = (isAlly(f) ? -16.f : 16.f) * k;
+    else o.y = -6 * k;
+  }
+  if (blink == f && G.time - blinkT < .3f) o.x += std::sin((G.time - blinkT) * 70) * 2.5f;
+  return o;
+}
+
+void Battle::drawAnim() {
+  Gfx& g = G.g;
+  float e = G.time - anim_.t0 - .2f;  // l'effet arrive sur la cible juste après l'élan
+  if (e < 0 || e > .6f) return;
+  float k = e / .6f;  // 0 au début, 1 à la fin
+  auto fade = [](Color c, float a) {
+    c.a = uint8_t(std::clamp(a, 0.f, 1.f) * 255);
+    return c;
+  };
+  for (auto& f : anim_.targets) {
+    Pt p = pos(f);
+    p.y -= 4;
+    Color c = anim_.col, white = rgb(0xffffff);
+    switch (anim_.fx) {
+      case Fx::Hit: {
+        for (int i = 0; i < 3; i++) {  // trois entailles qui apparaissent l'une après l'autre
+          float a = std::clamp(k * 3 - i * .5f, 0.f, 1.f), x = -10 + i * 7.f;
+          if (a <= 0) continue;
+          g.line(p.x + x - 6, p.y - 14, p.x + x - 6 + 16 * a, p.y - 14 + 24 * a, 2, fade(white, 1.2f - k));
+          g.line(p.x + x - 5, p.y - 13, p.x + x - 5 + 15 * a, p.y - 13 + 22 * a, 1, fade(c, 1.2f - k));
+        }
+        for (int i = 0; i < 8; i++) {  // éclat de l'impact
+          float ang = i * .785f + .3f, r0 = 4 + k * 10, r1 = r0 + 6 * (1 - k);
+          g.line(p.x + std::cos(ang) * r0, p.y + std::sin(ang) * r0, p.x + std::cos(ang) * r1, p.y + std::sin(ang) * r1, 1.5f,
+                 fade(i % 2 ? c : white, 1 - k));
+        }
+        break;
+      }
+      case Fx::Magic:
+        for (int ring = 0; ring < 2; ring++) {  // anneaux de la couleur du type qui s'élargissent
+          float r = 4 + (k - ring * .25f) * 34;
+          if (r < 4) continue;
+          for (int i = 0; i < 16; i++) {
+            float ang = i * .3927f + G.time * 3;
+            g.rect(p.x + std::cos(ang) * r - 1, p.y + std::sin(ang) * r * .6f - 1, 2, 2, fade(i % 2 ? white : c, 1 - k));
+          }
+        }
+        g.ellipse(p.x, p.y, 10 * (1 - k) + 2, 8 * (1 - k) + 2, fade(c, .7f * (1 - k)));
+        break;
+      case Fx::Heal:
+      case Fx::Capture:
+        for (int i = 0; i < 7; i++) {  // étincelles qui montent
+          float x = std::sin(i * 2.4f) * 13, y = 12 - std::fmod(k * 40 + i * 6, 40.f);
+          g.ellipse(p.x + x, p.y + y, 1.6f, 1.6f, fade(i % 2 ? white : c, 1 - k * .8f));
+          g.rect(p.x + x - .5f, p.y + y - 3, 1, 6, fade(white, .6f * (1 - k)));
+        }
+        if (anim_.fx == Fx::Capture) g.ellipse(p.x, p.y, 18 * k + 4, 16 * k + 4, fade(rgb(0xfff0a0), .5f * (1 - k)));
+        break;
+      case Fx::Status:
+        for (int i = 0; i < 6; i++) {  // tourbillon autour de la cible
+          float ang = i * 1.047f + k * 9, r = 16 - k * 8;
+          g.ellipse(p.x + std::cos(ang) * r, p.y - 6 + std::sin(ang) * r * .5f, 2, 2, fade(c, 1 - k));
+        }
+        break;
+    }
+    if (anim_.limit)  // Limite : grande étoile dorée
+      for (int i = 0; i < 12; i++) {
+        float ang = i * .5236f, r = 6 + k * 30;
+        g.line(p.x, p.y, p.x + std::cos(ang) * r, p.y + std::sin(ang) * r, 1.5f, fade(rgb(0xffd34d), 1 - k));
+      }
+  }
+}
+void Battle::sound(const std::string& id, bool share) {
+  if (shown()) audio::play(id);
+  if (share && (net_ == Net::Host || net_ == Net::Lead)) send_(-1, Json{{"t", "son"}, {"s", id}});
 }
 
 // ---------------------------------------------------------------------------
@@ -631,12 +735,14 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m) {
   float hit = m.acc / 100.f * a->acc / 100.f - (magic ? 0 : d->eva / 100.f);
   if (frand() >= hit) {
     pop(d, "Raté", GREY);
+    sound("rate");
     log.push_back(a->name() + " > " + d->name() + " : " + m.name + " ratée");
     return -1;
   }
   float eff = moveEff(m, d->S());
   if (eff <= 0) {
     pop(d, "Aucun effet", GREY);
+    sound("rate");
     return 0;
   }
   float A = magic ? a->eMag() : a->eAtk();
@@ -648,6 +754,7 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m) {
   int dmg = std::max(1, int(((2 * a->lvl / 5.f + 2) * m.power * A / std::max(1.f, D) / float(R.dmgDivisor) + 2) * stab * eff * spread * k));
   d->hp = std::max(0, d->hp - dmg);
   setBlink(d);
+  sound(crit ? "critique" : magic ? "sort" : "coup");
   pop(d, std::to_string(dmg), eff > 1 ? GOLD : eff < 1 ? GREY : WHITE);
   if (crit) pop(d, "Critique !", RED);
   if (eff > 1) pop(d, "Efficace !", GOLD);
@@ -671,6 +778,7 @@ void Battle::applyEffect(const FighterP& t, const Effect& e) {
       t->status = e.status;
       t->statusTurns = e.status == Status::Sleep ? irand(rules().sleepMin, rules().sleepMax) : 0;
       pop(t, statusName(e.status), rgb(statusColor(e.status)));
+      sound("statut");
       log.push_back("  " + t->name() + " : " + statusName(e.status));
     }
   }
@@ -679,6 +787,7 @@ void Battle::applyEffect(const FighterP& t, const Effect& e) {
     t->stage[e.stat] = std::clamp(old + e.stages, -3, 3);
     if (t->stage[e.stat] != old) {
       pop(t, std::string(stageName(e.stat)) + (e.stages > 0 ? " +" : " -"), e.stages > 0 ? BLUE : GREY);
+      sound(e.stages > 0 ? "bonus" : "malus");
       log.push_back("  " + t->name() + " : " + stageName(e.stat) + " " + std::to_string(t->stage[e.stat]));
     }
   }
@@ -706,9 +815,12 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
   const Move& m = moveInfo(id);
   if (m.cost > 0) a->mp = std::max(0, a->mp - m.cost);
   if (isLimit) a->lim = 0;
+  startAnim(a, targets, fxOf(m), rgb(types()[m.type].color), isLimit);
   sc.say(isLimit ? "LIMITE — " + a->name() + " : " + m.name + " !" : a->name() + " : " + m.name, isLimit ? .9f : .55f);
   auto ko = std::make_shared<std::vector<FighterP>>();
   sc.call([this, a, targets, &m, isLimit, ko] {
+    if (isLimit) sound("limite");
+    if (m.kind == Kind::Heal || m.kind == Kind::Revive) sound("soin");
     if (isLimit || m.target == Target::AllEnemies) {
       flashT = G.time;
       flashCol = m.kind == Kind::Heal ? rgb(0xfff4c0) : isLimit ? rgb(0xff8ac8) : rgb(0xffffff);
@@ -763,6 +875,7 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
   });
   sc.wait(.75f);
   sc.call([this, ko] {
+    if (!ko->empty()) sound("ko");
     for (auto& f : *ko) sc.say(f->name() + (isAlly(f) || duel() ? " est K.O. !" : " est vaincu !"), .75f);
   });
   float gauge = isLimit ? 0.f : paceGauge(m);
@@ -781,9 +894,11 @@ void Battle::useItem(FighterP a, const std::string& id, FighterP t) {
   }
   if (mineToCommand(a)) G.items[id]--;  // l'objet d'un autre joueur a déjà été pris dans son sac
   const ItemDef& d = item(id);
+  startAnim(a, {t}, d.capture > 0 ? Fx::Capture : Fx::Heal, d.capture > 0 ? rgb(0xffe27a) : rgb(0x7dffa8));
   sc.say(a->name() + " utilise : " + d.name, .7f);
   sc.call([this, a, id, t] {
     const ItemDef& d = item(id);
+    sound(d.capture > 0 ? "lancer" : "soin");
     if (d.revive) {
       t->clearBattle();
       t->hp = std::max(1, t->mhp * d.revive / 100);
@@ -818,8 +933,12 @@ void Battle::useItem(FighterP a, const std::string& id, FighterP t) {
         t->lim = 0;
         t->atb = 0;
         G.team.push_back(t);
+        sc.call([this] { sound("capture"); });
         sc.say("Capturé ! " + t->name() + " rejoint l'équipe" + ((int)G.team.size() > rules().frontSize ? " (en réserve)." : "."), 1.5f);
-      } else sc.say(t->name() + " s'échappe de la lumière !", 1.0f);
+      } else {
+        sc.call([this] { sound("capture_rate"); });
+        sc.say(t->name() + " s'échappe de la lumière !", 1.0f);
+      }
     }
   });
   sc.wait(.4f);
@@ -846,6 +965,7 @@ void Battle::tryFlee(FighterP a) {
   G.menus.clear();
   sc.call([this, a] {
     if (frand() < rules().flee) {
+      sound("fuite");
       sc.say("L'équipe prend la fuite !", 1.0f);
       sc.call([this] { finish(BattleResult::Fled); });
     } else {
@@ -865,6 +985,7 @@ void Battle::afterAction(FighterP a, float gauge) {
     a->hp = std::max(0, a->hp - dmg);
     setBlink(a);
     pop(a, std::to_string(dmg), rgb(statusColor(a->status)));
+    sound("statut");
     log.push_back("  " + a->name() + " : " + statusName(a->status) + " " + std::to_string(dmg));
     sc.say(a->name() + (poison ? " souffre du poison." : " souffre de sa brûlure."), .6f);
     if (!a->alive()) {
@@ -880,6 +1001,7 @@ void Battle::checkEnd() {
     if (!alive(foes).empty() && !alive(allies).empty()) return;
     bool won = alive(foes).empty();
     ending_ = true;
+    sound(won ? "victoire" : "defaite", false);
     sc.say(names_[won ? 0 : 1] + " remporte le duel !", 1.8f);
     sc.call([this, won] { finish(won ? BattleResult::Win : BattleResult::Lose); });
     return;
@@ -902,6 +1024,7 @@ void Battle::checkEnd() {
   if (alive(foes).empty()) victory();
   else if (alive(allies).empty()) {
     ending_ = true;
+    sound("defaite", false);
     sc.say("Toute l'équipe est à terre…", 1.6f);
     sc.call([this] { finish(BattleResult::Lose); });
   }
@@ -915,6 +1038,7 @@ void Battle::victory() {
     total += d->lvl * R.xpPerLevel * (d->boss ? R.xpBoss : 1);
     goldGain += d->lvl * R.goldPerLevel * (d->boss ? R.goldBoss : 1);
   }
+  sound("victoire", false);  // chacun joue la fin chez lui
   sc.say("Victoire !", .9f);
   if (total > 0) {
     int share = int(total * R.xpFront + 1e-6), res = int(total * R.xpReserve + 1e-6);
@@ -922,7 +1046,10 @@ void Battle::victory() {
     sc.call([this, share, res] {
       for (auto& a : alive(allies))
         if (mineToCommand(a))  // gardien à plusieurs : chacun ne fait progresser que ses combattants
-          for (auto& msg : gainXp(*a, share)) sc.say(msg, 1.3f);
+          for (auto& msg : gainXp(*a, share)) {
+            sc.call([this] { sound("niveau", false); });
+            sc.say(msg, 1.3f);
+          }
       for (auto& m : G.team)
         if (!isAlly(m) && m->alive()) gainXp(*m, res);
     });
@@ -1035,7 +1162,8 @@ void Battle::draw() {
     if (!f->alive()) continue;
     Pt p = pos(f);
     float s = f->boss ? 1.45f : f->sp == "brumelin" ? .85f : 1.f;
-    if (!(blinking && blink == f)) drawFighterSprite(g, *f, p.x, p.y, s, true, t + p.x * .01f);
+    Pt o = offset(f);
+    if (!(blinking && blink == f)) drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, s, true, t + p.x * .01f);
     float bw = f->boss ? 24 : 15, by = p.y - (f->boss ? 42 : 26);
     g.rect(p.x - bw - 1, by - 1, bw * 2 + 2, 4, rgb(0x0a0f33));
     g.rect(p.x - bw, by, bw * 2 * f->hp / f->mhp, 2, rgb(0xff8a7a));
@@ -1049,12 +1177,14 @@ void Battle::draw() {
   for (auto& a : allies) {
     Pt p = pos(a);
     if (!a->alive()) g.alpha = .35f;
-    if (!(blinking && blink == a)) drawFighterSprite(g, *a, p.x, p.y, 1, false, t + p.x * .01f);
+    Pt o = offset(a);
+    if (!(blinking && blink == a)) drawFighterSprite(g, *a, p.x + o.x, p.y + o.y, 1, false, t + p.x * .01f);
     g.alpha = 1;
     drawStatusTag(*a, p.x - 26, p.y - 18);
     if (actor == a) g.tri(p.x - 4, p.y - 34, p.x + 4, p.y - 34, p.x, p.y - 28, rgb(0xffd34d));
     if (cursor == a) g.cursor(p.x - 24, p.y - 4);
   }
+  drawAnim();
   // Nombres flottants
   pops.erase(std::remove_if(pops.begin(), pops.end(), [&](const Pop& p) { return t - p.t > 1.f; }), pops.end());
   for (auto& p : pops) g.text(p.x, p.y - std::min(1.f, (t - p.t) * 3) * 8, p.text, p.col, 1);
@@ -1214,6 +1344,19 @@ void Battle::netMessage(const Json& m) {
   std::string k = jget<std::string>(m, "t", "");
   if (follower()) {
     if (net_ == Net::Follow && jget(m, "de", -1) != leader_) return;  // seul le chef décrit le combat
+    if (k == "son") return sound(jget<std::string>(m, "s", ""), false);
+    if (k == "anim") {  // animation d'une action, décidée chez l'hôte ou le chef
+      std::vector<FighterP> c;
+      Json cs = m.value("c", Json::array()), col = m.value("col", Json::array({255, 255, 255}));
+      for (auto& x : cs)
+        if (FighterP f = other(x)) c.push_back(f);
+      FighterP a = other(m.value("a", Json()));
+      if (a && col.size() == 3) {
+        Color cc = rgb(uint32_t(col[0].get<int>()) << 16 | uint32_t(col[1].get<int>()) << 8 | uint32_t(col[2].get<int>()));
+        anim_ = Anim{a, c, Fx(std::clamp(jget(m, "fx", 0), 0, 4)), cc, jget(m, "l", false), G.time};
+      }
+      return;
+    }
     if (ending_) return;                                               // la fin se joue chez chacun
     if (k == "etat") {
       // Duel : « a » est l'équipe de l'hôte (mes ennemis), « b » la mienne. Gardien : « a » les alliés, « b » les ennemis
@@ -1221,9 +1364,10 @@ void Battle::netMessage(const Json& m) {
         for (size_t i = 0; i < v.size() && i < a.size(); i++) {
           const Json& x = a[i];
           Fighter& f = *v[i];
-          f.hp = x[0].get<int>(), f.mp = x[1].get<int>(), f.atb = x[2].get<float>(), f.lim = x[3].get<float>();
-          f.status = Status(std::clamp(x[4].get<int>(), 0, 4));
-          for (int s = 0; s < N_STAGES && s < (int)x[5].size(); s++) f.stage[s] = x[5][(size_t)s].get<int>();
+          // at() : une liste trop courte lève une erreur (rattrapée par Online::update) au lieu de lire n'importe quoi
+          f.hp = x.at(0).get<int>(), f.mp = x.at(1).get<int>(), f.atb = x.at(2).get<float>(), f.lim = x.at(3).get<float>();
+          f.status = Status(std::clamp(x.at(4).get<int>(), 0, 4));
+          for (int s = 0; s < N_STAGES && s < (int)x.at(5).size(); s++) f.stage[s] = x.at(5).at((size_t)s).get<int>();
         }
       };
       apply(duel() ? foes : allies, m.value("a", Json::array()));
@@ -1242,7 +1386,7 @@ void Battle::netMessage(const Json& m) {
       if (FighterP f = other(m.value("f", Json()))) {
         Json c = m.value("c", Json::array({255, 255, 255}));
         Color col;
-        col.r = c[0].get<uint8_t>(), col.g = c[1].get<uint8_t>(), col.b = c[2].get<uint8_t>();
+        col.r = c.at(0).get<uint8_t>(), col.g = c.at(1).get<uint8_t>(), col.b = c.at(2).get<uint8_t>();
         // même empilement que Battle::pop, sans renvoyer le message
         Net keep = net_;
         net_ = Net::None;
@@ -1254,7 +1398,7 @@ void Battle::netMessage(const Json& m) {
     } else if (k == "eclair") {
       Json c = m.value("c", Json::array({255, 255, 255}));
       flashT = G.time;
-      flashCol = rgb(uint32_t(c[0].get<int>()) << 16 | uint32_t(c[1].get<int>()) << 8 | uint32_t(c[2].get<int>()));
+      flashCol = rgb(uint32_t(c.at(0).get<int>()) << 16 | uint32_t(c.at(1).get<int>()) << 8 | uint32_t(c.at(2).get<int>()));
     } else if (k == "renfort") {  // gardien : un renfort prend la place d'un ennemi tombé
       int i = jget(m, "i", -1);
       if (i >= 0 && i < (int)foes.size() && !reserve.empty()) {
@@ -1312,6 +1456,7 @@ void Battle::netMessage(const Json& m) {
 void Battle::netEnd(bool won) {
   if (finished_) return;
   G.menus.clear();
+  if (duel()) sound(won ? "victoire" : "defaite", false);
   finish(won ? BattleResult::Win : BattleResult::Lose);
 }
 

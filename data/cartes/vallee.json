@@ -50,10 +50,10 @@
     "TTTTTTTTTTTTTTTTTTTTTTTTTTT~~TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
   ],
   "batiments": [
-    {"x": 5, "y": 3, "l": 5, "h": 4, "genre": "soin", "nom": "Maison de soin", "toit": "#b8483e"},
-    {"x": 18, "y": 3, "l": 5, "h": 4, "genre": "boutique1", "nom": "Boutique", "toit": "#3f6fb0"},
-    {"x": 4, "y": 11, "l": 5, "h": 4, "genre": "chapelle", "nom": "Chapelle", "toit": "#8a6fb8"},
-    {"x": 17, "y": 11, "l": 5, "h": 4, "genre": "maison", "nom": "Maison de l'ancien", "toit": "#7a8a4a"}
+    {"x": 5, "y": 3, "l": 5, "h": 4, "genre": "soin", "nom": "Maison de soin", "toit": "#b8483e", "interieur": "vallee_soin"},
+    {"x": 18, "y": 3, "l": 5, "h": 4, "genre": "boutique1", "nom": "Boutique", "toit": "#3f6fb0", "interieur": "vallee_boutique"},
+    {"x": 4, "y": 11, "l": 5, "h": 4, "genre": "chapelle", "nom": "Chapelle", "toit": "#8a6fb8", "interieur": "vallee_chapelle"},
+    {"x": 17, "y": 11, "l": 5, "h": 4, "genre": "maison", "nom": "Maison de l'ancien", "toit": "#7a8a4a", "interieur": "vallee_ancien"}
   ],
   "habitants": [
     {
@@ -121,6 +121,7 @@
     }
   ],
   "coffres": [
+    {"x": 12, "y": 24, "objet": "medaillon", "quantite": 1},
     {"x": 7, "y": 39, "objet": "herbe", "quantite": 1},
     {"x": 17, "y": 24, "objet": "potion", "quantite": 2},
     {"x": 61, "y": 2, "objet": "ether", "quantite": 1},

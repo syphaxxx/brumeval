@@ -10,7 +10,7 @@
 //     {"actions": [{"action": "dire", "texte": "Pêcheur : Le lac est calme."}]}]}
 //
 // Actions : dire, donner, retirer, or, drapeau, recruter, combat, question, si,
-// soigner, boutique, reveil, teleporter, evenement, attendre, fin.
+// soigner, boutique, reveil, teleporter, evenement, attendre, fin, quete.
 // Conditions (toutes doivent être vraies) : drapeau, sans_drapeau, objet,
 // sans_objet, or_min, membre.
 // Le détail de chaque action est dans events.cpp (Game::execAction).
@@ -26,3 +26,10 @@ const Json* findEvent(const std::string& id);
 void saveEvents();
 // Vérifie toutes les actions et que les événements cités par les cartes existent.
 std::vector<std::string> checkEvents();
+
+// Quêtes annexes (data/quetes.json, lu avec les événements). Une quête commence avec
+// l'action {"action": "quete", "id": …} et se termine avec "fin": true ; ses étapes
+// (texte, condition « si ») s'affichent dans le journal (menu de pause > Journal).
+const Json& quests();
+const Json* findQuest(const std::string& id);
+std::string questFlag(const std::string& id, bool done = false);  // « quete:<id> » ou « quete:<id>:fin »

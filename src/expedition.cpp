@@ -40,12 +40,7 @@ int Expedition::upgradeCost(int u) const { return UPGRADES[u].cost * (progress.u
 // ---------------------------------------------------------------------------
 // Fichiers
 // ---------------------------------------------------------------------------
-std::string Expedition::path(const std::string& name) const {
-  char* p = SDL_GetPrefPath("Brumeval", "Brumeval");
-  std::string s = p ? p : "";
-  SDL_free(p);
-  return s + name;
-}
+std::string Expedition::path(const std::string& name) const { return userFile(name); }
 void Expedition::loadProgress() {
   progress = Progress{};
   std::ifstream f(path(progressName));
@@ -68,10 +63,11 @@ void Expedition::loadProgress() {
   }
 }
 void Expedition::saveProgress() const {
-  std::ofstream f(path(progressName));
+  std::ostringstream f;
   f << "PROGRES 1\n";
   f << "record " << progress.record << "\nexpeditions " << progress.runs << "\neclats " << progress.shards << "\ntotal " << progress.total << '\n';
   for (int u = 0; u < N_UPGRADES; u++) f << "amelioration " << UPGRADE_IDS[u] << ' ' << progress.up[u] << '\n';
+  writeUserFile(progressName, f.str());
 }
 std::string Expedition::groupFile() const {
   size_t dot = groupName.rfind('.');
@@ -356,21 +352,16 @@ bool Expedition::beaten() const { return active_ && G.has(current_.bossFlag); }
 
 std::string Expedition::worldHash(uint64_t seed, int regions) {
   procgen::Content c = procgen::generateBase(seed);
-  uint64_t h = 1469598103934665603ull;
-  auto mix = [&](const std::string& s) {
-    for (unsigned char ch : s) h = (h ^ ch) * 1099511628211ull;
-  };
-  mix(c.moves.dump());
-  mix(c.species.dump());
-  for (auto& l : c.looks) mix(l.dump());
+  Fingerprint h;
+  h.add(c.moves.dump());
+  h.add(c.species.dump());
+  for (auto& l : c.looks) h.add(l.dump());
   for (int k = 1; k <= regions; k++) {
     procgen::Region r = procgen::generateRegion(seed, k, c);
-    mix(r.map.dump());
-    mix(r.events.dump());
+    h.add(r.map.dump());
+    h.add(r.events.dump());
   }
-  char buf[20];
-  std::snprintf(buf, sizeof buf, "%016llx", (unsigned long long)h);
-  return buf;
+  return h.hex();
 }
 
 void Expedition::quickStart(uint64_t seed, int hero, int starter) {

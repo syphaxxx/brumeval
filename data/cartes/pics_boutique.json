@@ -1,0 +1,25 @@
+{
+  "id": "pics_boutique",
+  "nom": "Boutique",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#eeeeeeeee#",
+    "#.........#",
+    "#ooo...ooo#",
+    "#.........#",
+    "#v.......v#",
+    "#.........#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [
+    {"x": 5, "y": 3, "apparence": "villageois", "evenement": "boutique3", "direction": "bas"}
+  ],
+  "coffres": [],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "pics", "tx": 27, "ty": 32, "direction": "bas"}],
+  "zones": [],
+  "boss": []
+}

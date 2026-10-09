@@ -2,18 +2,21 @@
 // vérifie les données, simule des combats pour l'équilibrage et enregistre
 // des captures d'écran (.bmp) dans DOSSIER. Renvoie 0 si tout va bien.
 #include <algorithm>
+#include <cmath>
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
 
 #include "arena.hpp"
+#include "audio.hpp"
 #include "battle.hpp"
 #include "events.hpp"
 #include "expedition.hpp"
 #include "game.hpp"
 #include "mapedit.hpp"
 #include "online.hpp"
+#include "options.hpp"
 #include "settings.hpp"
 #include "sprites.hpp"
 #include "storyedit.hpp"
@@ -68,6 +71,88 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     check(same, "les cartes se relisent à l'identique après écriture");
   }
 
+  // --- Son (data/sons.json) : chaque musique et chaque effet donne un son audible, sans saturer ---
+  report(audio::checkSounds(), std::to_string(audio::trackNames().size()) + " musiques et " + std::to_string(audio::effectNames().size()) +
+                                   " effets sonores décrits");
+  {
+    std::string bad;
+    auto audible = [&](const std::string& name, bool isMusic) {
+      auto v = audio::render(name, isMusic, isMusic ? 4.f : 2.f);
+      float peak = 0;
+      for (float x : v) peak = std::max(peak, std::fabs(x));
+      if (peak < .02f || peak >= 1.f) bad += " " + name + "(" + std::to_string(peak) + ")";
+    };
+    for (auto& t : audio::trackNames()) audible(t, true);
+    for (auto& e : audio::effectNames()) audible(e, false);
+    bool places = true;
+    for (int t = 0; t < N_THEMES; t++) places = places && !audio::musicForPlace(themeName(Theme(t))).empty();
+    check(bad.empty() && places, "son : chaque morceau et chaque effet s'entend sans saturer, chaque thème de carte a sa musique" +
+                                     (bad.empty() ? std::string() : " (problème :" + bad + ")"));
+  }
+
+  // --- Options (fichier à part) : volume, nouvelle touche, relecture ---
+  {
+    std::string realFile = optionsFile;
+    optionsFile = "options_test.txt";
+    loadOptions();
+    titleMenu();
+    menus.top().sel = 5;  // Options
+    in.confirm = true;
+    frame();
+    bool opened = menus.top().title == "Options";
+    int vol = options().music;
+    in.press[RIGHT] = true;  // Musique : plus fort
+    frame();
+    snap("86_options");
+    bool louder = options().music == std::min(10, vol + 1);
+    menus.top().sel = 3;  // Touches
+    in.confirm = true;
+    frame();
+    snap("87_touches");
+    in.confirm = true;  // Haut : attend la nouvelle touche
+    frame();
+    snap("88_touche_attente");
+    bool waiting = bindKey_ == K_UP;
+    onKey(SDL_SCANCODE_I, true, false);
+    onKey(SDL_SCANCODE_I, false, false);
+    onKey(SDL_SCANCODE_I, true, false);
+    bool bound = bindKey_ < 0 && options().keys[K_UP] == SDL_SCANCODE_I && in.press[UP];
+    onKey(SDL_SCANCODE_I, false, false);
+    in.endFrame();
+    options() = Options{};
+    loadOptions();
+    bool reread = options().keys[K_UP] == SDL_SCANCODE_I && options().music == std::min(10, vol + 1);
+    check(opened && louder && waiting && bound && reread,
+          "options : écran titre > Options, volume de la musique, nouvelle touche pour « Haut », relues depuis le fichier");
+    std::remove(userFile(optionsFile).c_str());
+    optionsFile = realFile;
+    options() = Options{};
+    titleMenu();
+    // Manette : croix vers le bas (tenue : elle se répète), A valide, B revient
+    menus.top().sel = 0;
+    onPad(SDL_CONTROLLER_BUTTON_DPAD_DOWN, true);
+    frame();
+    int one = menus.top().sel;
+    run(.5f);
+    int more = menus.top().sel;
+    onPad(SDL_CONTROLLER_BUTTON_DPAD_DOWN, false);
+    frame();
+    menus.top().sel = 4;  // Outils
+    onPad(SDL_CONTROLLER_BUTTON_A, true);
+    frame();
+    bool tools = menus.top().title == "Outils";
+    onPad(SDL_CONTROLLER_BUTTON_B, true);
+    frame();
+    onStick(SDL_CONTROLLER_AXIS_LEFTY, -30000);  // stick vers le haut
+    frame();
+    int up = menus.top().sel;
+    onStick(SDL_CONTROLLER_AXIS_LEFTY, 0);
+    frame();
+    check(one == 1 && more > 2 && tools && menus.depth() == 1 && up == 3 && !in.hold[UP],
+          "manette : la croix déplace le curseur (et se répète), A valide, B revient, le stick marche aussi");
+    titleMenu();
+  }
+
   // --- Écran titre et début de partie ---
   run(.5f);
   snap("01_titre");
@@ -78,6 +163,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   run(.3f);
   snap("03_village");
   check(mode == Mode::Map && team.size() == 2, "nouvelle partie : Lior et son compagnon sur la carte");
+  check(audio::currentMusic() == audio::musicForPlace("vallee"), "son : la musique de la vallée joue sur la carte (« " + audio::currentMusic() + " »)");
   check(fillText("Lior part avec {compagnon}.") == "Lior part avec Braisenard.", "les textes remplacent {compagnon} par son nom");
 
   in.menu = true;
@@ -88,6 +174,33 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   snap("05_equipe");
   menus.clear();
   panelMode_ = 0;
+
+  // --- Équipement : une épée pour Lior (par les menus), gardée par la sauvegarde ; pas d'arme pour une créature ---
+  {
+    items["epee_fer"] = 1;
+    int atk0 = team.at(0)->atk;
+    pauseMenu();
+    gearMenu();
+    in.confirm = true;  // Lior
+    frame();
+    in.confirm = true;  // Arme
+    frame();
+    in.confirm = true;  // Épée de fer
+    frame();
+    snap("92_equipement");
+    bool equipped = team[0]->gear[G_WEAPON] == "epee_fer" && team[0]->atk == atk0 + 3 && items["epee_fer"] == 0;
+    bool noWeapon = !canEquip(*team.at(1), item("epee_fer")) && canEquip(*team.at(1), item("amulette_vie"));
+    menus.clear();
+    panelMode_ = 0;
+    saveGame();
+    team.clear();
+    loadGame();
+    bool kept = team.at(0)->gear[G_WEAPON] == "epee_fer" && team[0]->atk == atk0 + 3;
+    check(equipped && noWeapon && kept, "équipement : Échap > Équipement, l'épée donne +3 en Attaque, gardée par la sauvegarde ; pas d'arme pour une créature");
+    team[0]->gear[G_WEAPON].clear();
+    team[0]->recalc();
+    items.erase("epee_fer");
+  }
 
   // --- Dialogue et recrutement de Maëlle ---
   changeMap(mi("vallee"), 7, 16, UP);
@@ -100,10 +213,75 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   skipScript();
   check(has("maelle") && team.size() == 3, "Maëlle rejoint l'équipe avec l'herbe lunaire");
 
+  // --- Intérieurs : la porte de la maison de soin fait entrer, la guérisseuse soigne, le tapis fait sortir ---
+  {
+    int village = mi("vallee");
+    const Building* soin = nullptr;
+    for (auto& b : maps()[village].buildings)
+      if (b.kind == "soin") soin = &b;
+    changeMap(village, soin->doorX(), soin->doorY() + 1, UP);
+    team.at(0)->hp = 1;
+    interact();
+    run(.3f);
+    bool inside = M().id == soin->interior && M().theme == Theme::Interieur;
+    snap("91_interieur_soin");
+    bool music = audio::currentMusic() == audio::musicForPlace("interieur");
+    const Npc& healer = M().npcs.at(0);
+    px = healer.x, py = healer.y + 1, dir = UP;
+    interact();
+    skipScript();
+    bool healed = team.at(0)->hp == team.at(0)->mhp;
+    int dx = 0, dy = 0;
+    for (auto& w : M().warps) dx = w.x, dy = w.y;
+    px = dx, py = dy - 1, dir = DOWN;
+    in.press[DOWN] = true;
+    tryMove(DOWN);
+    for (int i = 0; i < 30 && moving; i++) frame();
+    run(.2f);
+    bool out = M().id == "vallee" && px == soin->doorX() && py == soin->doorY() + 1;
+    check(inside && music && healed && out,
+          "intérieurs : la porte fait entrer dans la maison de soin (musique de l'intérieur), la guérisseuse soigne, le tapis fait ressortir");
+  }
+
+  // --- Quête annexe : le médaillon (accepter, journal, coffre du Bois Murmurant, récompense) ---
+  {
+    auto answer = [&] {  // Entrée sur chaque message ; « Oui » (premier choix) aux questions
+      for (int i = 0; i < 3000 && (sc.busy() || menus.active()); i++) {
+        in.confirm = true;
+        frame();
+      }
+    };
+    int gold0 = gold;
+    runEvent("quete_medaillon");
+    answer();
+    bool started = has(questFlag("medaillon")) && !has(questFlag("medaillon", true));
+    pauseMenu();
+    journalMenu();
+    run(.1f);
+    snap("93_journal");
+    bool listed = menus.top().title == "Journal" && menus.top().items.at(0).right == "en cours" &&
+                  menus.top().items.at(0).help.find("Bois Murmurant") != std::string::npos;
+    menus.clear();
+    panelMode_ = 0;
+    int village = mi("vallee"), chest = -1;
+    changeMap(village, 12, 25, UP);
+    for (size_t i = 0; i < M().chests.size(); i++)
+      if (M().chests[i].item == "medaillon") chest = (int)i;
+    if (chest >= 0) openChest(chest);
+    answer();
+    runEvent("quete_medaillon");
+    answer();
+    bool done = has(questFlag("medaillon", true)) && items["medaillon"] == 0 && items["amulette_vie"] == 1 && gold == gold0 + 200;
+    check(started && listed && chest >= 0 && done,
+          "quête annexe : le médaillon (acceptée, inscrite au journal, trouvée dans un coffre, rendue contre une récompense)");
+    items.erase("amulette_vie");
+  }
+
   // --- Combat piloté par les menus ---
   startBattle({makeFighter("mulotin", 4), makeFighter("champichou", 5), makeFighter("piafouine", 4)}, false, nullptr);
   for (int i = 0; i < 1500 && !menus.active(); i++) frame();
   check(menus.active(), "le menu de commande s'ouvre quand une jauge ATB est pleine");
+  check(audio::currentMusic() == "combat" && audio::lastEffect != "", "son : musique de combat, bruitages (dernier : « " + audio::lastEffect + " »)");
   snap("07_combat_commande");
   if (battle_ && battle_->actor && !battle_->actor->spells().empty()) {
     in.press[DOWN] = true;
@@ -126,6 +304,19 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   frame();
   run(.45f);
   snap("11_combat_degats");
+  if (battle_) {  // animations : sort (anneaux de la couleur du type) et soin (étincelles)
+    Battle& B = *battle_;
+    B.startAnim(B.allies[0], {B.foes[1]}, Battle::Fx::Magic, rgb(0x5aa0ff));
+    for (int i = 0; i < 22; i++) frame();
+    snap("89_anim_sort");
+    B.startAnim(B.allies[2], {B.allies[0], B.allies[1]}, Battle::Fx::Heal, rgb(0x7dffa8));
+    for (int i = 0; i < 8; i++) frame();
+    Pt lunge = B.offset(B.allies[2]);
+    bool two = B.anim_.targets.size() == 2;
+    for (int i = 0; i < 18; i++) frame();
+    snap("90_anim_soin");
+    check(lunge.y < 0 && two, "combat : animations (élan du lanceur, effet sur chaque cible)");
+  }
   for (int i = 0; i < 60 * 300 && mode == Mode::Battle; i++) {
     if (menus.active() || sc.busy() || (battle_ && battle_->sc.busy())) in.confirm = true;
     frame();
@@ -163,6 +354,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   battle_->foes[1]->boss = true;
   for (int i = 0; i < 1500 && !menus.active(); i++) frame();
   snap("18_boss_ignarok");
+  check(audio::currentMusic() == "boss", "son : musique du boss");
   battle_->autoPlay = true;
   menus.clear();
   battle_->actor->atb = 0;
@@ -1386,6 +1578,22 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     // Version différente : refusée
     H.onHello(9, Json{{"t", "bonjour"}, {"version", "0.1"}, {"donnees", H.hash_}, {"pseudo", "Ancien"}});
     check(H.status_.find("Versions différentes") != std::string::npos, "multijoueur : une autre version du jeu est refusée");
+    // Message mal formé (un nombre à la place d'un texte) envoyé par un autre programme : seule cette connexion est coupée
+    {
+      std::string err;
+      auto bad = net::Conn::connect("127.0.0.1", H.port, err);
+      for (int i = 0; bad && i < 60 && bad->connecting(); i++) {
+        bad->poll();
+        both(1);
+      }
+      if (bad) bad->send(Json{{"t", "bonjour"}, {"version", 2}, {"pseudo", 3}});
+      for (int i = 0; bad && i < 60 && !bad->closed(); i++) {
+        bad->poll();
+        both(1);
+      }
+      check(bad && bad->closed() && H.state_ == Online::State::Salon && H.players_.empty() && H.server_.open(),
+            "multijoueur : un message mal formé coupe seulement cette connexion, l'hôte continue");
+    }
 
     // --- Expédition à plusieurs : même monde, chacun de son côté, le gardien ensemble ---
     Expedition& XH = *expedition_;  // fichiers « _test » (tests de l'expédition)
@@ -1781,6 +1989,30 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         std::vector<std::pair<std::string, int>> party = {{X.content_.heroes[0], lvl}, {X.content_.starters[0], lvl}, {"x1r", lvl}};
         std::string name = "Région " + std::to_string(k) + " (graine " + std::to_string(seed) + ", N." + std::to_string(lvl) + ")";
         simSetup(name.c_str(), party, mk, 15);
+        // Gardien à plusieurs (coop.cpp) : 2 combattants chacun à deux, 1 chacun à trois ou quatre ;
+        // PV des ennemis × alliés / 3 au-delà de trois alliés. Chaque joueur a son héros et sa créature.
+        if (k != 2 && k != 8)
+          for (int players : {2, 3, 4}) {
+            size_t per = players == 2 ? 2 : 1;
+            auto& H = X.content_.heroes;
+            auto& S = X.content_.starters;
+            auto coop = [mk, players, per, H, S, lvl] {
+              BattleSetup s = mk();
+              for (int p = 0; p < players; p++) {
+                s.allies.push_back(makeFighter(H[(size_t)p % H.size()], lvl));
+                if (per > 1) s.allies.push_back(makeFighter(S[(size_t)p % S.size()], lvl));
+              }
+              float scale = std::max(1.f, s.allies.size() / 3.f);
+              for (auto* v : {&s.foes, &s.reserve})
+                for (auto& f : *v) {
+                  f->mhp = std::max(1, int(f->mhp * scale + 1e-4f));
+                  f->hp = f->mhp;
+                }
+              return s;
+            };
+            std::string cn = "  à " + std::to_string(players) + " (" + std::to_string(players * (int)per) + " alliés)";
+            simSetup(cn.c_str(), party, coop, 15);
+          }
         if (seed == 11) {
           // Combats ordinaires de la même région : un dresseur, puis un groupe sauvage de la zone la plus forte
           for (auto& [id, ev] : X.current_.events.items())

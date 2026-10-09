@@ -17,11 +17,50 @@ toutes les références existent et que chaque lieu des cartes est accessible.
 | `types.json` | Les 13 types (Feu, Eau, Glace, Roche, Vent, Poison, Métal, Esprit…), leur couleur, leurs immunités et la table d'efficacité |
 | `techniques.json` | Techniques, sorts et Limites |
 | `especes.json` | Héros, créatures et boss : statistiques de base, techniques apprises |
-| `objets.json` | Objets : prix, effets (soin, PM, réanimation, capture) |
+| `objets.json` | Objets : prix, effets (soin, PM, réanimation, capture), équipement (`equipement` : `arme`, `armure` ou `accessoire`, et `bonus` : `pv`, `pm`, `attaque`, `defense`, `magie`, `resistance`, `vitesse`, `precision`, `esquive`, `critique`) |
 | `apparences.json` | Couleurs et accessoires des personnages |
 | `regles.json` | Départ de la partie, rencontres, formules de combat, récompenses, tactiques de départ… |
 | `evenements.json` | Dialogues et événements de l'histoire |
 | `cartes/*.json` | Une carte par fichier : tuiles, bâtiments, habitants, coffres… |
+| `sons.json` | Musiques et bruitages (fabriqués par le jeu, sans fichier audio) |
+| `quetes.json` | Quêtes annexes : nom, lieu, étapes affichées dans le journal |
+
+## Le son (`sons.json`)
+
+Le jeu fabrique lui-même ses sons, comme les vieilles consoles : aucune
+musique enregistrée, seulement des partitions et des recettes de bruitages.
+
+**Ondes** (`onde`) : `carree` (son de console, `rapport` de 0.05 à 0.95 change
+son timbre), `triangle` (doux, bon pour les basses), `scie` (dur), `sinus`
+(très doux, cloches) et `bruit` (souffle, percussions).
+
+**Musiques** (`musiques`) : `tempo` (temps par minute), `pas_par_temps` (2 par
+défaut : chaque case de la partition dure une croche) et une liste de `voix`.
+Chaque voix a son `onde`, son `volume` (0 à 1) et ses `notes`, une case par
+mot :
+
+- une note : `A4`, `C#5`, `Bb3` (lettre anglaise A–G, dièse `#` ou bémol `b`,
+  octave ; `A4` = le la du diapason) ;
+- `.` prolonge la note précédente, `-` est un silence ;
+- `x` : un coup de percussion (voix `bruit`, hauteur réglée par `frequence`) ;
+- `|` sépare les mesures, seulement pour s'y retrouver.
+
+Toutes les voix d'un morceau devraient avoir le même nombre de cases (il
+tourne en boucle). `extinction` (en secondes) fait s'éteindre chaque note
+toute seule, comme une corde pincée.
+
+**Lieux** (`lieux`) : la musique de chaque thème de carte (`vallee`, `foret`,
+`cendres`, `grotte`, `neige`, `interieur`). Les morceaux `titre`, `combat` et
+`boss` sont joués à l'écran titre et en combat.
+
+**Effets** (`effets`) : une liste de sons simples joués l'un après l'autre :
+`onde`, `de` et `a` (fréquence en Hz ou note, la hauteur glisse de l'une à
+l'autre), `duree` (secondes), `volume`. `depart` (secondes) place un son à un
+moment précis : deux sons avec `"depart": 0` jouent ensemble. Le jeu utilise
+`curseur`, `valider`, `retour`, `refus` (menus), `coup`, `critique`, `sort`,
+`soin`, `rate`, `ko`, `statut`, `bonus`, `malus`, `lancer`, `capture`,
+`capture_rate`, `limite`, `fuite`, `niveau`, `victoire`, `defaite`,
+`rencontre` (combat), `coffre`, `achat` et `porte`.
 
 ## Le combat
 
@@ -112,8 +151,18 @@ Chaque ligne de `tuiles` est une rangée de cases, toutes de même longueur :
 | `d` | arbre mort | `i` | glace |
 | `n` | neige profonde (rencontres) | `z` | marais (rencontres) |
 
-- `theme` : `vallee`, `cendres`, `grotte`, `foret` ou `neige` (couleur du sol,
-  arbres, chemins, parois et décor des combats).
+Meubles des intérieurs (thème `interieur`) : `p` tapis (praticable), `t`
+table, `h` lit, `e` étagère, `o` comptoir, `v` tonneau.
+
+- `theme` : `vallee`, `cendres`, `grotte`, `foret`, `neige` ou `interieur`
+  (couleur du sol, arbres, chemins, parois et décor des combats ; `interieur` :
+  parquet, murs tapissés et meubles).
+- `batiments` : `genre` (apparence et enseigne), `nom`, `toit`, `evenement`
+  (lancé à la porte) ou `interieur` : l'identifiant d'une carte au thème
+  `interieur`, où la porte fait entrer. Cette carte a un `passage` vers le
+  village, sur la case de sa porte (souvent un tapis `p`) ; on arrive juste
+  au-dessus. Le service (soins, boutique…) est alors l'`evenement` d'un
+  habitant de l'intérieur.
 - `ambiance` : `brume`, `cendres`, `obscurite`, `neige` ou `lucioles`, avec
   `jusqua` pour la faire disparaître quand un drapeau est posé.
 - `passages` : `condition` (mêmes conditions que `si` dans les événements) et
@@ -168,6 +217,14 @@ page dont la condition `si` est vraie.
 | `evenement` | Lance un autre événement | `id` |
 | `attendre` | Pause | `secondes` |
 | `fin` | Écran de fin | |
+| `quete` | Commence une quête (elle s'inscrit au journal), ou la termine avec `"fin": true` | `id`, `fin` |
+
+**Quêtes annexes** (`quetes.json`) : une liste de quêtes, chacune avec `id`,
+`nom`, `lieu`, `etapes` et `fin_texte`. Une étape a un `texte` et peut avoir
+une condition `si` ; le journal montre la dernière étape dont la condition est
+vraie. Une quête commencée pose le drapeau `quete:<id>`, une quête terminée
+`quete:<id>:fin` : les pages des événements s'en servent (voir
+`quete_medaillon` dans `evenements.json`).
 
 Conditions possibles (toutes doivent être vraies) : `drapeau`, `sans_drapeau`,
 `objet`, `sans_objet`, `or_min`, `membre` (une espèce présente dans l'équipe).

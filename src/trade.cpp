@@ -16,7 +16,10 @@
 static Json creatureJson(const Fighter& f) {
   Json tac = Json::array();
   for (auto& t : f.tactics) tac.push_back(Json::array({t.on, t.cond, t.value, (int)t.kind, t.act}));
-  return Json{{"sp", f.sp}, {"lvl", f.lvl}, {"xp", f.xp}, {"hp", f.hp}, {"mp", f.mp}, {"lim", (int)f.lim}, {"auto", f.tacticsOn}, {"tac", tac}};
+  Json gear = Json::array();
+  for (auto& g : f.gear) gear.push_back(g);
+  return Json{{"sp", f.sp}, {"lvl", f.lvl}, {"xp", f.xp}, {"hp", f.hp}, {"mp", f.mp}, {"lim", (int)f.lim}, {"auto", f.tacticsOn}, {"tac", tac},
+              {"equipement", gear}};
 }
 
 // Une créature reçue, vérifiée : espèce connue ici (à plusieurs, une créature d'une région pas
@@ -26,6 +29,12 @@ static FighterP creatureFrom(const Json& j) {
   std::string sp = jget<std::string>(j, "sp", "");
   if (!hasSpecies(sp) || species(sp).human) return nullptr;
   FighterP f = makeFighter(sp, std::clamp(jget(j, "lvl", 1), 1, 100));
+  Json gear = j.value("equipement", Json::array());  // l'accessoire d'une créature part avec elle
+  for (size_t i = 0; i < gear.size() && i < f->gear.size(); i++)
+    if (gear[i].is_string() && hasItem(gear[i].get<std::string>()) && item(gear[i].get<std::string>()).slot == (int)i &&
+        canEquip(*f, item(gear[i].get<std::string>())))
+      f->gear[i] = gear[i].get<std::string>();
+  f->recalc();
   f->xp = std::clamp(jget(j, "xp", 0), 0, f->need());
   f->hp = std::clamp(jget(j, "hp", f->mhp), 0, f->mhp);
   f->mp = std::clamp(jget(j, "mp", f->mmp), 0, f->mmp);
@@ -197,6 +206,7 @@ void Online::offerTrade(int with, int slot, bool gift) {
     return tradeNote(why.empty() ? "Échange impossible pour le moment." : why);
   trade_ = Trade{};
   trade_.step = Trade::Step::Offered;
+  trade_.asked = true;
   trade_.with = with;
   trade_.run = state_ == State::Expedition;
   trade_.gift = gift;
@@ -269,21 +279,27 @@ void Online::onTrade(int from, const Json& m) {
     trade_.with = -1;  // pas de réponse au refus
     return endTrade(jget<std::string>(m, "raison", name + " refuse l'échange."));
   }
+  // Celui qui reçoit la proposition fait l'échange chez lui en premier (« go »), puis prévient
+  // (« fait ») : si la connexion coupe entre les deux, la créature est en double, jamais perdue.
   if (e == "accepte" && trade_.step == Trade::Step::Offered && trade_.gift) {
-    std::string what = label(trade_.mine);
-    if (!commitTrade()) return endTrade("Échange impossible : la créature n'est plus là.", "Le cadeau n'a pas pu être fait.");
+    sendTo(from, Json{{"t", "echange"}, {"e", "go"}});
+    trade_.step = Trade::Step::Waiting;
+  } else if (e == "go" && trade_.step == Trade::Step::Waiting && !trade_.asked) {
+    std::string got = label(trade_.theirs), gave = trade_.gift ? "" : label(trade_.mine);
+    if (!commitTrade()) return endTrade("L'échange n'a pas pu être enregistré.", "L'échange n'a pas pu être fait chez " + me_ + ".");
     sendTo(from, Json{{"t", "echange"}, {"e", "fait"}});
-    endTrade("Cadeau envoyé : " + what + " part chez " + name + ".");
+    if (trade_.gift) endTrade("Cadeau reçu : " + got + ", de la part de " + name + ".");
+    else endTrade("Échange fait : " + gave + " contre " + got + ".");
+  } else if (e == "fait" && trade_.step == Trade::Step::Waiting && trade_.asked) {
+    std::string gave = label(trade_.mine), got = trade_.gift ? "" : label(trade_.theirs);
+    if (!commitTrade()) endTrade("L'échange n'a pas pu être enregistré chez vous.");
+    else if (trade_.gift) endTrade("Cadeau envoyé : " + gave + " part chez " + name + ".");
+    else endTrade("Échange fait : " + gave + " contre " + got + ".");
   } else if (e == "contre" && trade_.step == Trade::Step::Offered && !trade_.gift) {
     Json c = m.value("creature", Json());
     if (!creatureFrom(c)) return endTrade("Vous n'avez pas encore atteint la région de la créature proposée.", me_ + " n'a pas encore atteint la région de cette créature.");
     trade_.theirs = c;
     trade_.step = Trade::Step::Countered;
-  } else if (e == "fait" && trade_.step == Trade::Step::Waiting) {
-    std::string got = label(trade_.theirs), gave = trade_.gift ? "" : label(trade_.mine);
-    if (!commitTrade()) endTrade("L'échange n'a pas pu être enregistré.");
-    else if (trade_.gift) endTrade("Cadeau reçu : " + got + ", de la part de " + name + ".");
-    else endTrade("Échange fait : " + gave + " contre " + got + ".");
   }
 }
 
@@ -359,11 +375,9 @@ void Online::showTrade() {
       info("Vous donnez", label(trade_.mine), describe(trade_.mine));
       info("Vous recevez", label(trade_.theirs), describe(trade_.theirs));
       m.items.push_back({"Accepter", "", "Faire l'échange.", true, [this] {
-                           std::string gave = label(trade_.mine), got = label(trade_.theirs);
-                           int with = trade_.with;
-                           if (!commitTrade()) return endTrade("Échange impossible : la créature n'est plus là.", "L'échange n'a pas pu être fait.");
-                           sendTo(with, Json{{"t", "echange"}, {"e", "fait"}});
-                           endTrade("Échange fait : " + gave + " contre " + got + ".");
+                           sendTo(trade_.with, Json{{"t", "echange"}, {"e", "go"}});  // l'autre le fait d'abord (voir onTrade)
+                           trade_.step = Trade::Step::Waiting;
+                           showTrade();
                          }});
       m.items.push_back({"Refuser", "", "", true, refuse});
       m.onCancel = refuse;

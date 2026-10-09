@@ -3,11 +3,20 @@
 #include <algorithm>
 #include <map>
 
+#include "audio.hpp"
 #include "data.hpp"
 #include "game.hpp"
 #include "world.hpp"
 
 static Json EVENTS = Json::object();
+static Json QUESTS = Json::array();
+const Json& quests() { return QUESTS; }
+const Json* findQuest(const std::string& id) {
+  for (auto& q : QUESTS)
+    if (jget<std::string>(q, "id", "") == id) return &q;
+  return nullptr;
+}
+std::string questFlag(const std::string& id, bool done) { return "quete:" + id + (done ? ":fin" : ""); }
 Json& events() { return EVENTS; }
 const Json* findEvent(const std::string& id) {
   auto it = EVENTS.find(id);
@@ -16,6 +25,8 @@ const Json* findEvent(const std::string& id) {
 void loadEvents() {
   EVENTS = readJson("evenements.json");
   if (!EVENTS.is_object()) throw std::runtime_error("data/evenements.json doit contenir un objet { identifiant : événement }");
+  QUESTS = readJson("quetes.json");
+  if (!QUESTS.is_array()) throw std::runtime_error("data/quetes.json doit contenir une liste de quêtes");
 }
 void saveEvents() { writeJson("evenements.json", EVENTS); }
 
@@ -96,7 +107,9 @@ static void checkAction(const Json& a, const std::string& where, std::vector<std
   } else if (k == "evenement") {
     if (need("id") && !findEvent(a["id"].get<std::string>())) err.push_back(w + " : événement inconnu « " + a["id"].get<std::string>() + " »");
   } else if (k == "attendre") need("secondes");
-  else if (k != "soigner" && k != "reveil" && k != "fin") err.push_back(where + " : action inconnue « " + k + " »");
+  else if (k == "quete") {
+    if (need("id") && !findQuest(a["id"].get<std::string>())) err.push_back(w + " : quête inconnue « " + a["id"].get<std::string>() + " »");
+  } else if (k != "soigner" && k != "reveil" && k != "fin") err.push_back(where + " : action inconnue « " + k + " »");
 }
 
 static void checkList(const Json& list, const std::string& where, std::vector<std::string>& err) {
@@ -124,6 +137,19 @@ std::vector<std::string> checkEvents() {
     for (auto& b : m.bosses) ref(b.event, m.name + ", boss « " + b.id + " »");
   }
   ref(rules().startEvent, "Règles, départ");
+  std::vector<std::string> seen;
+  for (auto& q : QUESTS) {
+    std::string id = jget<std::string>(q, "id", ""), where = "Quête « " + id + " »";
+    if (id.empty() || !q.contains("nom")) err.push_back("Quête sans « id » ou sans « nom »");
+    if (std::find(seen.begin(), seen.end(), id) != seen.end()) err.push_back(where + " : identifiant en double");
+    seen.push_back(id);
+    Json steps = q.value("etapes", Json::array());
+    if (steps.empty()) err.push_back(where + " : aucune étape");
+    for (auto& s : steps) {
+      if (!s.contains("texte")) err.push_back(where + " : étape sans « texte »");
+      if (s.contains("si")) checkCondition(s["si"], where, err);
+    }
+  }
   return err;
 }
 
@@ -187,7 +213,17 @@ void Game::runActions(const Json& list) {
 
 void Game::execAction(const Json& a) {
   std::string k = jget<std::string>(a, "action", "");
-  if (k == "donner") {
+  if (k == "quete") {  // une quête commence, ou se termine ("fin": true)
+    std::string id = a["id"].get<std::string>();
+    const Json* q = findQuest(id);
+    std::string name = q ? jget<std::string>(*q, "nom", id) : id;
+    bool done = jget(a, "fin", false);
+    if (has(questFlag(id, done))) return;
+    flags.insert(questFlag(id));
+    if (done) flags.insert(questFlag(id, true));
+    sc.call([done] { audio::play(done ? "victoire" : "niveau"); });
+    sc.say((done ? "Quête terminée : " : "Nouvelle quête : ") + name + (done ? " !" : " (Échap > Journal)"));
+  } else if (k == "donner") {
     std::string id = a["objet"].get<std::string>();
     int q = jget(a, "quantite", 1);
     items[id] += q;

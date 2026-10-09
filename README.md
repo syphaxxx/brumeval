@@ -24,6 +24,12 @@ Windows et de macOS, normaux pour un jeu non signé).
 | Tab (en combat) | Mode auto : les tactiques jouent à votre place, ou vous reprenez la main |
 | F11 ou Alt+Entrée | Plein écran ou fenêtre (le choix est gardé pour la prochaine fois). L'image s'adapte à la forme de l'écran ou de la fenêtre, sans bandes noires |
 
+Les touches se changent dans **Options** (écran titre, ou Échap > Options),
+avec le volume de la musique et des effets sonores ; les flèches, Entrée et
+Échap marchent toujours. **Manette** : branchez-la, même en cours de partie.
+Croix ou stick gauche pour se déplacer, **A** valider, **B** annuler,
+**Start** menu, **Select** (ou **Y**) mode auto en combat.
+
 ## Techniques rapides et lourdes
 
 Chaque technique a un rythme, indiqué dans l'aide en bas de l'écran :
@@ -66,6 +72,22 @@ personnage a 4 lignes au départ, puis une de plus tous les 6 niveaux (10 au
 maximum). Une règle grise ne peut pas encore servir (sort pas encore appris),
 une règle orange ne marchera pas (par exemple une attaque avec une condition
 « Allié »).
+
+## Équipement
+
+Échap > **Équipement** : chaque membre porte une **arme**, une **armure** et
+un **accessoire**. Armes et armures sont réservées aux héros ; un accessoire
+va aussi à une créature. Les boutiques de la vallée, de Forgeroc et de
+Givreval en vendent de plus en plus puissants (bonus d'Attaque, de Magie, de
+PV…). La fiche à droite montre les statistiques qui changent en direct.
+L'équipement est gardé par la sauvegarde (pas en duel : à armes égales).
+
+## Quêtes annexes
+
+Certains habitants ont besoin d'aide : un médaillon perdu dans la vallée, des
+Tisonnels enragés près de Forgeroc, une fleur de givre pour Givreval. Les
+quêtes acceptées s'inscrivent dans le **Journal** (Échap > Journal), avec
+l'étape où vous en êtes. Elles rapportent or et équipement.
 
 ## Mode Expédition (roguelite)
 
@@ -176,6 +198,12 @@ autoriser Brumeval sur le réseau : cochez **privé et public** puis
    Internet et quelques minutes.
 4. **F7** pour compiler, puis **Maj+F5** pour lancer le jeu (ou le bouton ▶ de
    la barre d'état en bas).
+5. Pour déboguer (points d'arrêt) : **F5**, configuration « Brumeval
+   (Windows, MSVC) ».
+
+En cas de souci : si CMake Tools parle d'un « generator » différent ou d'un
+cache à effacer, faites **Ctrl+Maj+P > CMake: Delete Cache and Reconfigure**
+(ou supprimez le dossier `build`), puis F7.
 
 ## Outils
 
@@ -222,6 +250,10 @@ Ouvrez un terminal dans le dossier du projet (dans VS Code : **Terminal >
 Nouveau terminal**) et lancez `claude`. Le fichier `CLAUDE.md` lui donne tout le
 contexte : architecture, commandes, état du projet et idées pour la suite.
 
+Pour reprendre le projet soi-même : **`docs/GUIDE.md`** explique comment le
+programme est construit et comment ajouter une créature, une carte, une quête,
+une musique… ; **`docs/PLANNING.md`** donne la suite prévue.
+
 ## Tester
 
 ```
@@ -239,6 +271,7 @@ l'équilibrage et enregistre des captures d'écran dans `captures/`.
 - `data/` : tout le contenu du jeu (créatures, techniques, objets, cartes,
   dialogues, règles) en fichiers JSON modifiables, lus à chaque démarrage. Voir
   `data/LISEZMOI.md`.
+- `docs/` : guide pour reprendre le projet et planning.
 - La sauvegarde est écrite dans `%APPDATA%\Brumeval\Brumeval\sauvegarde.txt`,
-  le choix plein écran / fenêtre dans `options.txt` à côté
+  les options (volumes, plein écran, touches) dans `options.txt` à côté
   (le mode test utilise `sauvegarde_test.txt` et l'efface à la fin)
