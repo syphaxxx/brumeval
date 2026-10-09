@@ -24,6 +24,12 @@ Windows et de macOS, normaux pour un jeu non signé).
 | Tab (en combat) | Mode auto : les tactiques jouent à votre place, ou vous reprenez la main |
 | F11 ou Alt+Entrée | Plein écran ou fenêtre (le choix est gardé pour la prochaine fois). L'image s'adapte à la forme de l'écran ou de la fenêtre, sans bandes noires |
 
+Les touches se changent dans **Options** (écran titre, ou Échap > Options),
+avec le volume de la musique et des effets sonores ; les flèches, Entrée et
+Échap marchent toujours. **Manette** : branchez-la, même en cours de partie.
+Croix ou stick gauche pour se déplacer, **A** valider, **B** annuler,
+**Start** menu, **Select** (ou **Y**) mode auto en combat.
+
 ## Techniques rapides et lourdes
 
 Chaque technique a un rythme, indiqué dans l'aide en bas de l'écran :

@@ -13,6 +13,7 @@
 #include <cmath>
 #include <cstdio>
 #include <string>
+#include <vector>
 
 #include "audio.hpp"
 #include "events.hpp"
@@ -224,6 +225,8 @@ int main(int argc, char* argv[]) {
 
   audio::init();
   applyVolumes();
+  SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER);  // manettes : ouvertes quand elles sont branchées (ci-dessous)
+  std::vector<SDL_GameController*> pads;
   {
     Screen screen(r);
     Game game(r);
@@ -254,6 +257,27 @@ int main(int argc, char* argv[]) {
           game.onWheel(e.wheel.y);
           continue;
         }
+        if (e.type == SDL_CONTROLLERDEVICEADDED) {  // aussi pour les manettes déjà branchées au démarrage
+          if (SDL_GameController* c = SDL_GameControllerOpen(e.cdevice.which)) pads.push_back(c);
+          continue;
+        }
+        if (e.type == SDL_CONTROLLERDEVICEREMOVED) {
+          for (auto it = pads.begin(); it != pads.end(); ++it)
+            if (SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(*it)) == e.cdevice.which) {
+              SDL_GameControllerClose(*it);
+              pads.erase(it);
+              break;
+            }
+          continue;
+        }
+        if (e.type == SDL_CONTROLLERBUTTONDOWN || e.type == SDL_CONTROLLERBUTTONUP) {
+          game.onPad(e.cbutton.button, e.type == SDL_CONTROLLERBUTTONDOWN);
+          continue;
+        }
+        if (e.type == SDL_CONTROLLERAXISMOTION) {
+          game.onStick(e.caxis.axis, e.caxis.value);
+          continue;
+        }
         if (e.type != SDL_KEYDOWN && e.type != SDL_KEYUP) continue;
         SDL_Scancode k = e.key.keysym.scancode;
         bool alt = (e.key.keysym.mod & KMOD_ALT) != 0;
@@ -278,6 +302,7 @@ int main(int argc, char* argv[]) {
       SDL_Delay(1);
     }
   }
+  for (auto* c : pads) SDL_GameControllerClose(c);
   audio::shutdown();
   SDL_DestroyRenderer(r);
   SDL_DestroyWindow(win);

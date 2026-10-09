@@ -130,6 +130,29 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     optionsFile = realFile;
     options() = Options{};
     titleMenu();
+    // Manette : croix vers le bas (tenue : elle se répète), A valide, B revient
+    menus.top().sel = 0;
+    onPad(SDL_CONTROLLER_BUTTON_DPAD_DOWN, true);
+    frame();
+    int one = menus.top().sel;
+    run(.5f);
+    int more = menus.top().sel;
+    onPad(SDL_CONTROLLER_BUTTON_DPAD_DOWN, false);
+    frame();
+    menus.top().sel = 4;  // Outils
+    onPad(SDL_CONTROLLER_BUTTON_A, true);
+    frame();
+    bool tools = menus.top().title == "Outils";
+    onPad(SDL_CONTROLLER_BUTTON_B, true);
+    frame();
+    onStick(SDL_CONTROLLER_AXIS_LEFTY, -30000);  // stick vers le haut
+    frame();
+    int up = menus.top().sel;
+    onStick(SDL_CONTROLLER_AXIS_LEFTY, 0);
+    frame();
+    check(one == 1 && more > 2 && tools && menus.depth() == 1 && up == 3 && !in.hold[UP],
+          "manette : la croix déplace le curseur (et se répète), A valide, B revient, le stick marche aussi");
+    titleMenu();
   }
 
   // --- Écran titre et début de partie ---

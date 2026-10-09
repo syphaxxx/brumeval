@@ -35,6 +35,9 @@ class Game {
   void onText(const char* utf8);  // caractères tapés (saisie de texte des éditeurs)
   void onMouse(int x, int y, int button, bool down);  // button -1 : simple déplacement
   void onWheel(int dy);
+  // Manette (SDL_GameController) : bouton appuyé ou relâché ; stick gauche (axe 0 : horizontal, 1 : vertical)
+  void onPad(int button, bool down);
+  void onStick(int axis, int value);
   // Saisie de texte : affiche une fenêtre ; Entrée valide (done), Échap annule
   void editText(const std::string& title, const std::string& initial, int maxChars, std::function<void(const std::string&)> done);
   bool editingText() const { return textOn_; }
@@ -115,6 +118,9 @@ class Game {
   void shopMenu(const std::vector<std::string>& stock);
   void optionsMenu(int sel = 0);
   void keysMenu(int sel = 0);
+  bool padDir_[4] = {}, stickDir_[4] = {};  // directions tenues à la manette (croix, stick)
+  float padRepeat_[4] = {};                  // répétition d'une direction tenue (menus)
+  void padDirection(int d, bool on);
   int bindKey_ = -1;  // Options > Touches : action qui attend sa nouvelle touche
   void bindKey(SDL_Scancode k);
   void drawKeyPrompt();

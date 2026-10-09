@@ -40,6 +40,54 @@ void Game::onWheel(int dy) {
   in.mouseOn = true;
 }
 
+// Manette : croix ou stick pour se déplacer, A valider, B annuler, Start menu, Select mode auto (Tab),
+// gâchettes hautes page précédente / suivante (éditeurs)
+void Game::onPad(int button, bool down) {
+  if (textOn_ || bindKey_ >= 0) return;
+  switch (button) {
+    case SDL_CONTROLLER_BUTTON_DPAD_UP: return padDirection(UP, down);
+    case SDL_CONTROLLER_BUTTON_DPAD_DOWN: return padDirection(DOWN, down);
+    case SDL_CONTROLLER_BUTTON_DPAD_LEFT: return padDirection(LEFT, down);
+    case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: return padDirection(RIGHT, down);
+    default: break;
+  }
+  if (!down) return;
+  in.mouseOn = false;
+  switch (button) {
+    case SDL_CONTROLLER_BUTTON_A: in.confirm = true; break;
+    case SDL_CONTROLLER_BUTTON_B: in.cancel = in.menu = true; break;
+    case SDL_CONTROLLER_BUTTON_START: in.menu = true; break;
+    case SDL_CONTROLLER_BUTTON_BACK:
+    case SDL_CONTROLLER_BUTTON_Y: in.menu = in.tab = true; break;
+    case SDL_CONTROLLER_BUTTON_LEFTSHOULDER: in.prev = true; break;
+    case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER: in.next = true; break;
+    default: break;
+  }
+}
+void Game::onStick(int axis, int value) {
+  if (axis != SDL_CONTROLLER_AXIS_LEFTX && axis != SDL_CONTROLLER_AXIS_LEFTY) return;
+  int neg = axis == SDL_CONTROLLER_AXIS_LEFTX ? LEFT : UP, pos = axis == SDL_CONTROLLER_AXIS_LEFTX ? RIGHT : DOWN;
+  // Seuils différents pour pousser et relâcher : pas de tremblement autour de la limite
+  for (int d : {neg, pos}) {
+    bool push = d == neg ? value < -16000 : value > 16000, keep = d == neg ? value < -8000 : value > 8000;
+    bool on = stickDir_[d] ? keep : push;
+    if (on != stickDir_[d]) {
+      stickDir_[d] = on;
+      padDirection(d, on || padDir_[d]);
+    }
+  }
+}
+void Game::padDirection(int d, bool on) {
+  if (on && !in.hold[d]) {
+    in.press[d] = true;
+    padRepeat_[d] = .35f;  // premier délai avant la répétition
+  }
+  in.hold[d] = on;
+  if (!on) padDir_[d] = stickDir_[d] = false;
+  if (on && !stickDir_[d]) padDir_[d] = true;
+  in.mouseOn = false;
+}
+
 void Game::onKey(SDL_Scancode k, bool down, bool repeat) {
   in.ctrl = (SDL_GetModState() & KMOD_CTRL) != 0;
   in.shift = (SDL_GetModState() & KMOD_SHIFT) != 0;
@@ -222,6 +270,15 @@ void Game::drawTextEdit() {
 // ---------------------------------------------------------------------------
 void Game::update(float dt) {
   time += dt;
+  // Manette : une direction tenue se répète (comme une touche du clavier), pour parcourir les menus
+  for (int d = 0; d < 4; d++)
+    if (padDir_[d] || stickDir_[d]) {
+      padRepeat_[d] -= dt;
+      if (padRepeat_[d] <= 0) {
+        in.press[d] = true;
+        padRepeat_[d] = .09f;
+      }
+    }
   if (online_) online_->update(dt);  // réseau du multijoueur, dans tous les écrans
   banner -= dt;
   noticeT_ -= dt;
@@ -605,7 +662,7 @@ void Game::titleMenu() {
                        if (!expedition_) expedition_ = std::make_unique<Expedition>(*this);
                        expedition_->menu();
                      }});
-  m.items.push_back({"Multijoueur", "", "Avec des amis, en ligne : duel ou expédition à plusieurs.", true, [this] {
+  m.items.push_back({"Multijoueur", "", "Avec des amis : duel, expédition, échanges.", true, [this] {
                        if (!online_) online_ = std::make_unique<Online>(*this);
                        online_->menu();
                      }});
