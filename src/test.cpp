@@ -375,6 +375,65 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
                               (failed.empty() ? std::string() : " — " + failed));
   }
 
+  // --- Réserve : une capture avec l'équipe complète y va ; sauvegarde, échange (le compagnon suit), vente ---
+  {
+    auto keepTeam = team;
+    auto keepItems = items;
+    int keepGold = gold;
+    bool keepAuto = tacticsAuto;
+    team = {makeFighter("lior", 10)};
+    while ((int)team.size() < rules().maxTeam) team.push_back(makeFighter("ronceau", 5));
+    reserve.clear();
+    items["lanterne_or"] = 99;
+    tacticsAuto = false;
+    menus.clear();
+    sc.clear();
+    mode = Mode::Map;
+    auto foe = makeFighter("mulotin", 2);
+    foe->mhp *= 60, foe->hp = foe->mhp;  // assez solide pour ne pas tomber avant d'être capturé
+    startBattle({foe}, false, nullptr);
+    for (int i = 0; i < 60 * 300 && mode == Mode::Battle; i++) {
+      if (battle_ && menus.active() && battle_->actor && battle_->isAlly(battle_->actor) && !battle_->sc.busy()) {
+        menus.clear();
+        battle_->useItem(battle_->actor, "lanterne_or", foe);  // comme Objet > Lanterne d'or > cible
+      }
+      if (battle_ && battle_->sc.busy()) in.confirm = true;
+      frame();
+    }
+    skipScript();
+    bool captured = reserve.size() == 1 && reserve[0] == foe && (int)team.size() == rules().maxTeam;
+    saveGame();
+    loadGame();
+    bool kept = reserve.size() == 1 && reserve[0]->sp == "mulotin" && (int)team.size() == rules().maxTeam;
+    team[0]->companion = team[1];
+    FighterP out = team[1], arrive = reserve[0];
+    swapReserve(out, arrive);
+    bool swapped = team[1] == arrive && reserve.size() == 1 && reserve[0] == out && team[0]->companion.lock() == arrive;
+    swapReserve(team[2], nullptr);  // déposer, puis reprendre
+    swapReserve(nullptr, reserve.back());
+    bool back = reserve.size() == 1 && (int)team.size() == rules().maxTeam;
+    check(captured && kept && swapped && back, "réserve : capture avec l'équipe complète, sauvegarde, échange (le compagnon suit), dépôt et retour");
+    items = {{"potion", 2}};
+    gold = 0;
+    shopMenu({"potion"});
+    menus.top().sel = 1;  // Vendre…
+    in.confirm = true;
+    frame();
+    in.confirm = true;  // vendre une potion
+    frame();
+    check(gold == item("potion").price / 2 && items["potion"] == 1 && menus.top().title.rfind("Vendre", 0) == 0,
+          "boutique : vendre un objet rapporte la moitié de son prix");
+    in.cancel = true;  // retour à la boutique
+    frame();
+    check(menus.active() && menus.top().title.rfind("Boutique", 0) == 0, "boutique : Échap dans « Vendre » revient à la boutique");
+    menus.clear();
+    team = keepTeam;
+    reserve.clear();
+    items = keepItems;
+    gold = keepGold;
+    tacticsAuto = keepAuto;
+  }
+
   // --- Quête annexe : le médaillon (accepter, journal, coffre du Bois Murmurant, récompense) ---
   {
     auto answer = [&] {  // Entrée sur chaque message ; « Oui » (premier choix) aux questions
@@ -1283,7 +1342,17 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       if (d.price > 0) stock.push_back(d.id);
     shopMenu(stock);
     show("boutique");
+    menus.top().sel = (int)stock.size();  // Vendre…
+    in.confirm = true;
+    show("boutique : vendre");
     menus.clear();
+    reserve = {makeFighter("carapierre", 40), makeFighter("cristallin", 40), makeFighter("braisenard", 12)};
+    reserveMenu(1);
+    show("réserve");
+    in.confirm = true;  // équipe complète : échanger contre…
+    show("réserve : échanger");
+    menus.clear();
+    reserve.clear();
     tacticsMenu();
     show("tactiques");
     for (int k = 0; k < 3; k++) {  // éditeur de Lior, Ronceau et Isra : liste, condition, action

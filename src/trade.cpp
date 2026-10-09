@@ -119,8 +119,10 @@ bool Online::commitTrade() {
     if (trade_.slot >= (int)team.size() || team[(size_t)trade_.slot]->sp != trade_.sp) return false;
     if (in) team[(size_t)trade_.slot] = in;
     else team.erase(team.begin() + trade_.slot);
-  } else if (!in || (int)team.size() >= rules().maxTeam)
+  } else if (!in)
     return false;
+  else if ((int)team.size() >= rules().maxTeam)
+    G.reserve.push_back(in);  // équipe complète : la créature reçue va dans la réserve
   else
     team.push_back(in);
   return G.saveGame();
@@ -225,8 +227,6 @@ void Online::answerTrade(int slot) {
   std::string why;
   if (!loadMine(why)) return endTrade(why, me_ + " ne peut pas échanger.");
   if (trade_.gift) {
-    if ((int)G.team.size() >= rules().maxTeam)
-      return endTrade("Votre équipe est complète.", "L'équipe de " + me_ + " est complète (" + std::to_string(rules().maxTeam) + " membres).");
     sendTo(trade_.with, Json{{"t", "echange"}, {"e", "accepte"}});
   } else {
     if (slot < 0 || slot >= (int)G.team.size() || G.team[(size_t)slot]->S().human) return;
@@ -261,8 +261,6 @@ void Online::onTrade(int from, const Json& m) {
       return refuse(me_ + " ne peut pas échanger pour le moment : réessayez plus tard.");
     if (!creatureFrom(c)) return refuse(me_ + " n'a pas encore atteint la région de cette créature.");
     if (!loadMine(why)) return refuse(me_ + " n'a pas de partie sauvegardée.");
-    if (gift && (int)G.team.size() >= rules().maxTeam)
-      return refuse("L'équipe de " + me_ + " est complète (" + std::to_string(rules().maxTeam) + " membres).");
     bool any = false;
     for (auto& f : G.team) any = any || !f->S().human;
     if (!gift && !any) return refuse(me_ + " n'a aucune créature à donner en retour.");
