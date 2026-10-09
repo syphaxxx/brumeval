@@ -283,7 +283,8 @@ void Game::execAction(const Json& a) {
     if (m >= 0) changeMap(m, a["x"].get<int>(), a["y"].get<int>(), dirOf(jget<std::string>(a, "direction", "bas")));
   } else if (k == "evenement") {
     runEvent(a["id"].get<std::string>());
-  } else if (k == "fin") {
+  } else if (k == "fin") {  // écran de fin, avec son texte (vide : texte par défaut)
+    endingText_ = fillText(jget<std::string>(a, "texte", ""));
     mode = Mode::Ending;
   }
 }

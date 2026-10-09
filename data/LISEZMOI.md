@@ -222,7 +222,7 @@ page dont la condition `si` est vraie.
 | `teleporter` | Change de carte | `carte`, `x`, `y`, `direction` |
 | `evenement` | Lance un autre événement | `id` |
 | `attendre` | Pause | `secondes` |
-| `fin` | Écran de fin | |
+| `fin` | Écran de fin, avec son texte (vide : texte par défaut) ; le joueur peut ensuite continuer à explorer | `texte` |
 | `quete` | Commence une quête (elle s'inscrit au journal), ou la termine avec `"fin": true` | `id`, `fin` |
 
 **Quêtes annexes** (`quetes.json`) : une liste de quêtes, chacune avec `id`,

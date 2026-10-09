@@ -159,6 +159,7 @@ class Game {
   void drawMap();
   void drawDialogue();
   void drawEnding();
+  std::string endingText_;  // texte de l'écran de fin (action « fin »)
   void drawTeamPanel(int x, int y, int sel);
 
   bool textOn_ = false;

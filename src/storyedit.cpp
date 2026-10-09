@@ -107,7 +107,7 @@ std::string actionSummary(const Json& a) {
   }
   if (k == "evenement") return "Lancer l'événement « " + jget<std::string>(a, "id", "") + " »";
   if (k == "attendre") return "Attendre " + fmtNum(jget(a, "secondes", .5)) + " s";
-  if (k == "fin") return "Écran de fin";
+  if (k == "fin") return "Écran de fin" + (jget<std::string>(a, "texte", "").empty() ? std::string() : " : " + jget<std::string>(a, "texte", ""));
   if (k == "quete") {
     std::string id = jget<std::string>(a, "id", "");
     const Json* q = findQuest(id);
@@ -725,6 +725,8 @@ void StoryEditor::editAction(const std::string& ptr, int sel) {
     cycleIds("Événement", "id", evIds, evIds);
   } else if (k == "attendre") {
     num("Secondes", "secondes", .5, .5, .5, 10, false);
+  } else if (k == "fin") {
+    m.items.push_back(textField(ptr, "texte", "Texte", "Texte de l'écran de fin (vide : texte par défaut)", 160, row));
   } else if (k == "quete") {
     std::vector<std::string> qIds, qNames;
     for (auto& q : quests()) qIds.push_back(jget<std::string>(q, "id", "")), qNames.push_back(jget<std::string>(q, "nom", ""));
