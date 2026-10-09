@@ -249,6 +249,41 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     team = keep;
   }
 
+  // --- Mode auto (Tab) : chaque héros joue ses tactiques sans ouvrir le menu de commande ---
+  {
+    auto keep = team;
+    bool keepAuto = tacticsAuto;
+    team = {makeFighter("lior", 14), makeFighter(rules().starters.at(0), 14), makeFighter("maelle", 14)};
+    tacticsAuto = true;
+    startBattle({makeFighter("tisonnel", 13), makeFighter("tisonnel", 13), makeFighter("tisonnel", 13)}, false, nullptr);
+    std::string opened;  // ceux pour qui le menu s'est ouvert quand même
+    std::vector<std::string> log;
+    for (int i = 0; i < 60 * 40 && mode == Mode::Battle; i++) {
+      if (menus.active() && battle_ && battle_->actor) {
+        if (opened.find(battle_->actor->name()) == std::string::npos) opened += battle_->actor->name() + " ";
+        menus.clear();
+        battle_->actor->atb = 0;
+        battle_->actor = nullptr;
+      }
+      if (battle_ && battle_->sc.busy()) in.confirm = true;
+      if (battle_) log = battle_->log;
+      frame();
+    }
+    std::string acted;
+    {
+      for (auto& l : log)
+        if (l.find(" : tactique ") != std::string::npos && acted.find(l.substr(0, l.find(" : "))) == std::string::npos)
+          acted += l.substr(0, l.find(" : ")) + " ";
+    }
+    check(opened.empty(), "mode auto : les héros jouent leurs tactiques sans ouvrir le menu (menu ouvert pour : « " + opened +
+                              "», tactiques jouées par : « " + acted + "»)");
+    battle_.reset();
+    mode = Mode::Map;
+    menus.clear();
+    team = keep;
+    tacticsAuto = keepAuto;
+  }
+
   // --- Dialogue et recrutement de Maëlle ---
   changeMap(mi("vallee"), 7, 16, UP);
   interact();
