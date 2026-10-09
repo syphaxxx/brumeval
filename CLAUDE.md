@@ -333,11 +333,11 @@ réécrits par `writeJson` (petites listes sur une ligne) : garder ce format.
 
 - **Vallée de Brumeval** (64x44) : village (soin, boutique, chapelle, ancien),
   Bois Murmurant (herbe lunaire pour recruter Maëlle), lac et pêcheur, prairies,
-  bosquet, col gardé par **Sylvarque** (N.12, Ombre) et deux Brumelins.
+  bosquet, col gardé par **Sylvarque** (N.13, Ombre) et deux Brumelins.
 - **Monts Cendrelune** (64x44) : ville de Forgeroc (soin, boutique, auberge,
   forge), duel contre **Brann** pour le recruter, champs de cendres, rivières de
   lave, cratère d'**Ignarok** (N.23, Feu, boss final).
-- **Grotte des Échos** (32x24) : **Golem de suie** (N.16), puis **Isra** rejoint
+- **Grotte des Échos** (32x24) : **Golem de suie** (N.20), puis **Isra** rejoint
   l'équipe.
 - **Forêt de Sylve-Noire** (56x40, ouverte après Sylvarque, entrée à l'ouest du
   village) : bandits dresseurs, chef des bandits qui retient **Kael** (archer,
@@ -364,7 +364,16 @@ réécrits par `writeJson` (petites listes sur une ligne) : garder ce format.
 - Les cartes se modifient avec l'éditeur de cartes (Outils) ou directement
   dans les JSON.
 
-Équilibrage mesuré par le mode test (IA automatique, sans objets) : combats
+**Boss renforcés le 2026-10-09** (demande de l'utilisateur : « obligé de se
+stuffer avant les boss ») : il faut l'équipement de la région pour les battre.
+Réglages (`evenements.json`, niveau et `pv`) : Sylvarque N.13 ×5,5, Golem N.20
+×7, Ronce-Mère N.18 ×5, Ignarok N.23 ×5, Givrecorne N.31 ×7. Mesuré
+(`BRUMEVAL_SIMULATIONS=2`, sans / avec le meilleur équipement de la boutique de
+la région) : Sylvarque 36 / 26 %, Golem 32 / 70 %, Ronce-Mère 26 / 51 %,
+Ignarok 6 / 73 %, Givrecorne 5 / 72 %. Sylvarque : l'équipement de la vallée
+(+3) ne change presque rien, il reste un défi à part. Le mode test lit les boss
+dans les événements (`bossEvent`) : ses mesures suivent toujours le jeu.
+Avant ce renfort (IA automatique, sans objets) : combats
 normaux, bandits, chevaliers et duels gagnés à ~95-100 %, Sylvarque ≈ 80 %
 (N.11), Ronce-Mère ≈ 55-70 % (N.16), Ignarok ≈ 30-45 % (N.22), Givrecorne
 ≈ 35 % (N.30, avec Sélène). Un boss trop facile vient souvent de sa lenteur ou

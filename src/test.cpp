@@ -1892,6 +1892,36 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     f->boss = true;
     return f;
   };
+  // Combat d'un boss tel qu'il est dans data/evenements.json (première action « combat » de l'événement)
+  auto bossEvent = [&](const std::string& id) -> std::function<BattleSetup()> {
+    std::function<Json(const Json&)> find = [&](const Json& j) -> Json {
+      if (j.is_object() && jget<std::string>(j, "action", "") == "combat") return j;
+      if (j.is_object() || j.is_array())
+        for (auto& v : j) {
+          Json r = find(v);
+          if (!r.is_null()) return r;
+        }
+      return Json();
+    };
+    Json f = find(*findEvent(id));
+    return [f] {
+      BattleSetup s;
+      auto make = [](const Json& e) {
+        auto x = makeFighter(e.at("espece").get<std::string>(), jget(e, "niveau", 1));
+        float mult = jget(e, "pv", 1.f);
+        if (mult != 1.f) x->mhp = std::max(1, int(x->mhp * mult + 1e-4f));
+        x->hp = x->mhp;
+        x->boss = jget(e, "boss", false);
+        return x;
+      };
+      Json foes = f.value("ennemis", Json::array()), more = f.value("renforts", Json::array());
+      for (auto& e : foes) s.foes.push_back(make(e));
+      for (auto& e : more) s.reserve.push_back(make(e));
+      s.boss = true;
+      s.canFlee = s.canCapture = false;
+      return s;
+    };
+  };
   sim("Début (N.5 contre N.2-4)", {{"lior", 5}, {"braisenard", 5}}, group({"piafouine", "mulotin", "champichou"}, 2, 4, 2), false, 30);
   simSetup("Braconnier (équipe N.6)", {{"lior", 6}, {"braisenard", 6}}, [] {
     BattleSetup s;
@@ -1905,8 +1935,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       group({"champichou", "mulotin", "lucioline", "piafouine"}, 4, 7, 3), false, 30);
   sim("Bosquet du col (N.10 contre N.7-10)", {{"lior", 10}, {"maelle", 10}, {"gouttelin", 10}},
       group({"rocaillou", "grenouillon", "lucioline", "brumelin"}, 7, 10, 3), false, 30);
-  sim("Boss Sylvarque (équipe N.11)", {{"lior", 11}, {"maelle", 11}, {"gouttelin", 11}},
-      [&] { return std::vector<FighterP>{makeFighter("brumelin", 9), bossF("sylvarque", 12, 3.5f), makeFighter("brumelin", 9)}; }, true, 40);
+  simSetup("Boss Sylvarque (équipe N.11)", {{"lior", 11}, {"maelle", 11}, {"gouttelin", 11}}, bossEvent("sylvarque"), 40);
   sim("Duel contre Brann (équipe N.14)", {{"lior", 14}, {"maelle", 14}, {"ronceau", 14}}, [&] {
     auto b = makeFighter("brann", 14);
     b->mhp = b->mhp * 5 / 2;
@@ -1916,8 +1945,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   }, true, 20);
   sim("Cendrelune (N.15 contre N.12-15)", {{"lior", 15}, {"maelle", 15}, {"brann", 15}},
       group({"tisonnel", "galetor", "voltigeon", "glaconnet"}, 12, 15, 3), false, 30);
-  sim("Golem de suie (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"brann", 16}},
-      [&] { return std::vector<FighterP>{bossF("golem", 16, 3)}; }, true, 20);
+  simSetup("Golem de suie (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"brann", 16}}, bossEvent("golem"), 20);
   simSetup("Bandit de la forêt (équipe N.12)", {{"lior", 12}, {"maelle", 12}, {"braisenard", 12}}, [] {
     BattleSetup s;
     s.foes = {makeFighter("bandit", 12), makeFighter("louvet", 11)};
@@ -1936,16 +1964,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     s.canFlee = s.canCapture = false;
     return s;
   }, 30);
-  simSetup("Ronce-Mère (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"kael", 16}}, [&] {
-    BattleSetup s;
-    s.foes = {makeFighter("serpentin", 14), bossF("ronce_mere", 18, 4), makeFighter("serpentin", 14)};
-    s.reserve = {makeFighter("crapoison", 13)};
-    s.boss = true;
-    s.canFlee = s.canCapture = false;
-    return s;
-  }, 30);
-  sim("Boss Ignarok (équipe N.22)", {{"lior", 22}, {"maelle", 22}, {"isra", 22}},
-      [&] { return std::vector<FighterP>{makeFighter("tisonnel", 19), bossF("ignarok", 23, 4), makeFighter("tisonnel", 19)}; }, true, 40);
+  simSetup("Ronce-Mère (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"kael", 16}}, bossEvent("ronce_mere"), 30);
+  simSetup("Boss Ignarok (équipe N.22)", {{"lior", 22}, {"maelle", 22}, {"isra", 22}}, bossEvent("ignarok"), 40);
   sim("Pics Givrés (N.25 contre N.21-24)", {{"lior", 25}, {"maelle", 25}, {"isra", 25}},
       group({"givrelin", "zephyrin", "ferrolin", "cristallin", "etincelot"}, 21, 24, 3), false, 30);
   simSetup("Chevalier du givre (équipe N.25)", {{"lior", 25}, {"maelle", 25}, {"isra", 25}}, [] {
@@ -1964,35 +1984,18 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     s.canFlee = s.canCapture = false;
     return s;
   }, 30);
-  simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}}, [&] {
-    BattleSetup s;
-    s.foes = {makeFighter("givrelin", 27), bossF("givrecorne", 31, 4), makeFighter("givrelin", 27)};
-    s.reserve = {makeFighter("cristallin", 26)};
-    s.boss = true;
-    s.canFlee = s.canCapture = false;
-    return s;
-  }, 40);
+  simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}}, bossEvent("givrecorne"), 40);
 
   std::printf("\nMêmes combats, alliés guidés par les tactiques de départ :\n");
   sim("Bois (N.8 contre 3 x N.4-7)", {{"lior", 8}, {"maelle", 8}, {"braisenard", 8}},
       group({"champichou", "mulotin", "lucioline", "piafouine"}, 4, 7, 3), false, 30, true);
-  sim("Boss Sylvarque (équipe N.11)", {{"lior", 11}, {"maelle", 11}, {"gouttelin", 11}},
-      [&] { return std::vector<FighterP>{makeFighter("brumelin", 9), bossF("sylvarque", 12, 3.5f), makeFighter("brumelin", 9)}; }, true, 30, true);
-  sim("Boss Ignarok (équipe N.22)", {{"lior", 22}, {"maelle", 22}, {"isra", 22}},
-      [&] { return std::vector<FighterP>{makeFighter("tisonnel", 19), bossF("ignarok", 23, 4), makeFighter("tisonnel", 19)}; }, true, 30, true);
-  simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}}, [&] {
-    BattleSetup s;
-    s.foes = {makeFighter("givrelin", 27), bossF("givrecorne", 31, 4), makeFighter("givrelin", 27)};
-    s.reserve = {makeFighter("cristallin", 26)};
-    s.boss = true;
-    s.canFlee = s.canCapture = false;
-    return s;
-  }, 30, true);
+  simSetup("Boss Sylvarque (équipe N.11)", {{"lior", 11}, {"maelle", 11}, {"gouttelin", 11}}, bossEvent("sylvarque"), 30, true);
+  simSetup("Boss Ignarok (équipe N.22)", {{"lior", 22}, {"maelle", 22}, {"isra", 22}}, bossEvent("ignarok"), 30, true);
+  simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}}, bossEvent("givrecorne"), 30, true);
 
   std::printf("\nMêmes boss, équipe équipée par les boutiques de sa région (meilleur achat possible) :\n");
   simGear = 1;
-  sim("Boss Sylvarque (équipe N.11)", {{"lior", 11}, {"maelle", 11}, {"gouttelin", 11}},
-      [&] { return std::vector<FighterP>{makeFighter("brumelin", 9), bossF("sylvarque", 12, 3.5f), makeFighter("brumelin", 9)}; }, true, 40);
+  simSetup("Boss Sylvarque (équipe N.11)", {{"lior", 11}, {"maelle", 11}, {"gouttelin", 11}}, bossEvent("sylvarque"), 40);
   sim("Duel contre Brann (équipe N.14)", {{"lior", 14}, {"maelle", 14}, {"ronceau", 14}}, [&] {
     auto b = makeFighter("brann", 14);
     b->mhp = b->mhp * 5 / 2;
@@ -2000,19 +2003,10 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     b->boss = true;
     return std::vector<FighterP>{b};
   }, true, 20);
-  simSetup("Ronce-Mère (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"kael", 16}}, [&] {
-    BattleSetup s;
-    s.foes = {makeFighter("serpentin", 14), bossF("ronce_mere", 18, 4), makeFighter("serpentin", 14)};
-    s.reserve = {makeFighter("crapoison", 13)};
-    s.boss = true;
-    s.canFlee = s.canCapture = false;
-    return s;
-  }, 30);
+  simSetup("Ronce-Mère (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"kael", 16}}, bossEvent("ronce_mere"), 30);
   simGear = 2;
-  sim("Golem de suie (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"brann", 16}},
-      [&] { return std::vector<FighterP>{bossF("golem", 16, 3)}; }, true, 20);
-  sim("Boss Ignarok (équipe N.22)", {{"lior", 22}, {"maelle", 22}, {"isra", 22}},
-      [&] { return std::vector<FighterP>{makeFighter("tisonnel", 19), bossF("ignarok", 23, 4), makeFighter("tisonnel", 19)}; }, true, 40);
+  simSetup("Golem de suie (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"brann", 16}}, bossEvent("golem"), 20);
+  simSetup("Boss Ignarok (équipe N.22)", {{"lior", 22}, {"maelle", 22}, {"isra", 22}}, bossEvent("ignarok"), 40);
   simGear = 3;
   simSetup("Duel contre Sélène (équipe N.26)", {{"lior", 26}, {"maelle", 26}, {"isra", 26}}, [&] {
     BattleSetup s;
@@ -2022,14 +2016,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     s.canFlee = s.canCapture = false;
     return s;
   }, 30);
-  simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}}, [&] {
-    BattleSetup s;
-    s.foes = {makeFighter("givrelin", 27), bossF("givrecorne", 31, 4), makeFighter("givrelin", 27)};
-    s.reserve = {makeFighter("cristallin", 26)};
-    s.boss = true;
-    s.canFlee = s.canCapture = false;
-    return s;
-  }, 40);
+  simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}}, bossEvent("givrecorne"), 40);
   simGear = 0;
 
   // Expédition : gardien de chaque région contre une équipe générée (héros, créature de départ,
