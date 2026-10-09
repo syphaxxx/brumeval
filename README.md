@@ -73,6 +73,15 @@ maximum). Une règle grise ne peut pas encore servir (sort pas encore appris),
 une règle orange ne marchera pas (par exemple une attaque avec une condition
 « Allié »).
 
+## Équipement
+
+Échap > **Équipement** : chaque membre porte une **arme**, une **armure** et
+un **accessoire**. Armes et armures sont réservées aux héros ; un accessoire
+va aussi à une créature. Les boutiques de la vallée, de Forgeroc et de
+Givreval en vendent de plus en plus puissants (bonus d'Attaque, de Magie, de
+PV…). La fiche à droite montre les statistiques qui changent en direct.
+L'équipement est gardé par la sauvegarde (pas en duel : à armes égales).
+
 ## Mode Expédition (roguelite)
 
 Depuis l'écran titre, **Expédition** lance une aventure où tout est généré à

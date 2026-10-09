@@ -39,6 +39,9 @@ COMMANDES
   F11                 plein écran ou fenêtre
   La souris marche aussi dans les menus.
 
+  Échap > Équipement : arme, armure et accessoire de chaque membre (en
+  vente dans les boutiques).
+
   Options (écran titre, ou Échap > Options) : volume de la musique et des
   effets, plein écran, touches du clavier.
 

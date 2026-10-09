@@ -17,7 +17,7 @@ toutes les références existent et que chaque lieu des cartes est accessible.
 | `types.json` | Les 13 types (Feu, Eau, Glace, Roche, Vent, Poison, Métal, Esprit…), leur couleur, leurs immunités et la table d'efficacité |
 | `techniques.json` | Techniques, sorts et Limites |
 | `especes.json` | Héros, créatures et boss : statistiques de base, techniques apprises |
-| `objets.json` | Objets : prix, effets (soin, PM, réanimation, capture) |
+| `objets.json` | Objets : prix, effets (soin, PM, réanimation, capture), équipement (`equipement` : `arme`, `armure` ou `accessoire`, et `bonus` : `pv`, `pm`, `attaque`, `defense`, `magie`, `resistance`, `vitesse`, `precision`, `esquive`, `critique`) |
 | `apparences.json` | Couleurs et accessoires des personnages |
 | `regles.json` | Départ de la partie, rencontres, formules de combat, récompenses, tactiques de départ… |
 | `evenements.json` | Dialogues et événements de l'histoire |

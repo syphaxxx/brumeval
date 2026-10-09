@@ -116,6 +116,9 @@ class Game {
   void itemMenu();
   void magicMenu();
   void shopMenu(const std::vector<std::string>& stock);
+  void gearMenu(int sel = 0);
+  void gearSlots(FighterP f, int who, int sel = 0);
+  void gearPick(FighterP f, int who, int slot);
   void optionsMenu(int sel = 0);
   void keysMenu(int sel = 0);
   bool padDir_[4] = {}, stickDir_[4] = {};  // directions tenues à la manette (croix, stick)

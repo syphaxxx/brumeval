@@ -125,6 +125,11 @@ les plus longs : y ajouter tout nouvel écran.
   (Réglages, Arène) se cachent quand `menus.maxRight()` dépasse 158. Une
   fenêtre modale sur fond assombri appelle `g.newLayer()`. Largeur d'un
   caractère : 6 px ; un libellé commence 13 px après le bord du menu.
+- Équipement : `Fighter::gear` (arme, armure, accessoire : identifiants d'objets
+  avec `ItemDef::slot` et `bonus`), ajouté aux statistiques par
+  `Fighter::recalc` ; `canEquip` (armes et armures : humains seulement). Menu
+  `Game::gearMenu` > `gearSlots` > `gearPick` ; ligne `equipement` après
+  `membre` dans la sauvegarde ; un échange emporte l'équipement de la créature.
 - Équipe : `Game::team` (8 membres maximum par capture, les humains s'ajoutent
   toujours). Les 3 premiers membres valides combattent (`Game::front()`).
 - Progression : `Game::flags` (`boss1`, `golem`, `boss2`, `maelle`, `brann`,

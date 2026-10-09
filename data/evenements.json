@@ -350,13 +350,13 @@
     ]
   },
   "boutique1": {
-    "actions": [{"action": "boutique", "objets": ["potion", "ether", "remede", "plume", "lanterne"]}]
+    "actions": [{"action": "boutique", "objets": ["potion", "ether", "remede", "plume", "lanterne", "epee_fer", "baton_chene", "tunique_cuir", "amulette_vie"]}]
   },
   "boutique2": {
     "actions": [
       {
         "action": "boutique",
-        "objets": ["potion", "superpotion", "ether", "remede", "plume", "lanterne", "lanterne_argent"]
+        "objets": ["potion", "superpotion", "ether", "remede", "plume", "lanterne", "lanterne_argent", "hache_braise", "baton_lune", "arc_frene", "cotte_mailles", "robe_mage", "bague_vif", "talisman_esprit"]
       }
     ]
   },
@@ -646,7 +646,12 @@
           "elixir",
           "plume",
           "lanterne_argent",
-          "lanterne_or"
+          "lanterne_or",
+          "lame_givre",
+          "sceptre_aurore",
+          "armure_givre",
+          "plume_ange",
+          "pendentif_brume"
         ]
       }
     ]

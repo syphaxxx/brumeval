@@ -748,6 +748,7 @@ void Game::pauseMenu() {
                        }});
   m.items.push_back({"Équipe", "", "Ordre de combat et fiches.", true, [this] { teamMenu(); }});
   m.items.push_back({"Tactiques", "", "Ce que chaque membre fait tout seul en combat (mode auto : touche Tab).", true, [this] { tacticsMenu(); }});
+  m.items.push_back({"Équipement", "", "Armes, armures et accessoires.", true, [this] { gearMenu(); }});
   m.items.push_back({"Objets", "", "Utiliser un objet.", true, [this] { itemMenu(); }});
   m.items.push_back({"Magie", "", "Lancer un sort de soin.", true, [this] { magicMenu(); }});
   if (inExpedition()) {
@@ -818,6 +819,82 @@ void Game::tacticsMenu(int sel) {
   menus.push(m);
 }
 
+// ---------------------------------------------------------------------------
+// Équipement : qui, puis quel emplacement, puis quel objet du sac
+// ---------------------------------------------------------------------------
+void Game::gearMenu(int sel) {
+  panelMode_ = 2;  // fiche détaillée à droite : les statistiques changent en direct
+  Menu m;
+  m.title = "Équipement";
+  m.x = 8, m.y = 8, m.w = 132, m.rows = 9, m.sel = sel;
+  for (size_t i = 0; i < team.size(); i++) {
+    FighterP f = team[i];
+    int n = 0;
+    for (auto& g : f->gear) n += !g.empty();
+    m.items.push_back({f->name(), n ? std::to_string(n) + "/3" : "", "Entrée : changer son équipement.", true,
+                       [this, f, i] { gearSlots(f, (int)i); }, [this, i] { teamPanelSel_ = (int)i; }});
+  }
+  m.onCancel = [this] {
+    panelMode_ = 1;
+    menus.pop();
+  };
+  if (sel < (int)team.size()) teamPanelSel_ = sel;
+  menus.push(m);
+}
+
+void Game::gearSlots(FighterP f, int who, int sel) {
+  Menu m;
+  m.title = f->name();
+  m.x = 8, m.y = 8, m.w = 132, m.rows = 7;
+  for (int s = 0; s < N_GEAR; s++) {  // chaque emplacement : son titre, puis l'objet porté
+    const std::string& id = f->gear[(size_t)s];
+    bool ok = s == G_ACCESSORY || f->S().human;
+    m.items.push_back(menuHeader(gearSlotName(s)));
+    MenuItem it{ok ? (id.empty() ? "(rien)" : item(id).name) : "(héros seulement)", "",
+                ok ? (id.empty() ? "Entrée : choisir dans le sac." : item(id).bonusText() + ". Entrée : changer ou retirer.")
+                   : "Seuls les héros portent armes et armures.",
+                ok, [this, f, who, s] { gearPick(f, who, s); }};
+    it.shrink = true;
+    m.items.push_back(it);
+  }
+  m.sel = 1 + 2 * std::clamp(sel, 0, N_GEAR - 1);
+  m.items.push_back({"Retour", "", "", true, [this] { menus.pop(); }});
+  teamPanelSel_ = who;
+  menus.push(m);
+}
+
+// Choix d'un objet du sac pour l'emplacement s (ou retirer celui qui est porté)
+void Game::gearPick(FighterP f, int who, int s) {
+  auto equip = [this, f, who, s](const std::string& id) {
+    std::string& cur = f->gear[(size_t)s];
+    if (!cur.empty()) items[cur]++;
+    if (!id.empty()) items[id]--;
+    int lostHp = f->mhp - f->hp, lostMp = f->mmp - f->mp;
+    cur = id;
+    f->recalc();
+    f->hp = std::clamp(f->mhp - lostHp, f->alive() ? 1 : 0, f->mhp);  // les PV perdus restent perdus
+    f->mp = std::clamp(f->mmp - lostMp, 0, f->mmp);
+    audio::play("achat");
+    menus.pop();
+    menus.pop();
+    gearSlots(f, who, s);
+  };
+  Menu m;
+  m.title = gearSlotName(s);
+  m.x = 8, m.y = 8, m.w = 132, m.rows = 8;
+  for (auto& d : allItems()) {
+    int n = items.count(d.id) ? items[d.id] : 0;
+    if (d.slot != s || n <= 0 || !canEquip(*f, d)) continue;
+    std::string id = d.id;
+    MenuItem it{d.name, "×" + std::to_string(n), d.bonusText() + ". " + d.desc, true, [equip, id] { equip(id); }};
+    it.shrink = true;
+    m.items.push_back(it);
+  }
+  if (!f->gear[(size_t)s].empty()) m.items.push_back({"Retirer", "", "Remettre " + item(f->gear[(size_t)s]).name + " dans le sac.", true, [equip] { equip(""); }});
+  if (m.items.empty()) m.items.push_back({"(rien dans le sac)", "", "Les boutiques vendent armes, armures et accessoires.", false, nullptr});
+  menus.push(m);
+}
+
 void Game::teamMenu() { teamMenuAt(0); }
 void Game::teamMenuAt(int sel) {
   panelMode_ = 2;
@@ -882,7 +959,8 @@ void Game::itemMenuAt(int sel) {
     if (n <= 0) continue;
     std::string id = d.id;
     int myIdx = idx++;
-    m.items.push_back({d.name, "×" + std::to_string(n), d.desc + (d.field ? "" : d.key ? " (objet important)" : " (en combat)"), d.field,
+    std::string note = d.field ? "" : d.slot >= 0 ? " (équipement : Échap > Équipement)" : d.key ? " (objet important)" : " (en combat)";
+    m.items.push_back({d.name, "×" + std::to_string(n), d.desc + note, d.field,
                        [this, id, myIdx] {
                          pickMember("Sur qui ?", [id](const Fighter& f) {
                            const ItemDef& d = item(id);
@@ -1019,6 +1097,11 @@ bool Game::saveGame() {
   static const char KIND[] = {'a', 't', 'o'};  // action automatique, technique, objet
   for (auto& m : team) {
     f << "membre " << m->sp << ' ' << m->lvl << ' ' << m->xp << ' ' << m->hp << ' ' << m->mp << ' ' << m->lim << '\n';
+    if (m->gear != decltype(m->gear){}) {
+      f << "equipement";
+      for (auto& g : m->gear) f << ' ' << (g.empty() ? "-" : g);
+      f << '\n';
+    }
     f << "tactiques " << m->tacticsOn << '\n';
     for (auto& t : m->tactics) f << "tactique " << t.on << ' ' << t.cond << ' ' << t.value << ' ' << KIND[(int)t.kind] << ' ' << t.act << '\n';
   }
@@ -1072,8 +1155,16 @@ bool Game::loadGame() {
       float lim;
       s >> sp >> lvl >> xp >> hp >> mp >> lim;
       auto m = makeFighter(sp, lvl);
-      m->xp = xp, m->hp = std::min(hp, m->mhp), m->mp = std::min(mp, m->mmp), m->lim = lim;
+      m->xp = xp, m->hp = hp, m->mp = mp, m->lim = lim;  // bornés à la fin, une fois l'équipement lu
       team.push_back(m);
+    } else if (k == "equipement" && !team.empty()) {  // après sa ligne « membre »
+      Fighter& m = *team.back();
+      for (auto& g : m.gear) {
+        std::string id;
+        s >> id;
+        g = id != "-" && hasItem(id) && canEquip(m, item(id)) ? id : "";
+      }
+      m.recalc();
     } else if (k == "auto") s >> tacticsAuto;
     else if (k == "tactiques" && !team.empty()) {  // les anciennes sauvegardes gardent les tactiques de départ
       s >> team.back()->tacticsOn;
@@ -1097,6 +1188,7 @@ bool Game::loadGame() {
   moving = false;
   steps = 0;
   sc.clear();
+  for (auto& m : team) m->hp = std::min(m->hp, m->mhp), m->mp = std::min(m->mp, m->mmp);
   return !team.empty();
 }
 

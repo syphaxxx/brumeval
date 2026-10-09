@@ -90,5 +90,133 @@
     "description": "Une clé taillée dans une glace qui ne fond jamais.",
     "prix": 0,
     "important": true
+  },
+  {
+    "id": "epee_fer",
+    "nom": "Épée de fer",
+    "description": "Une lame simple et solide.",
+    "prix": 150,
+    "equipement": "arme",
+    "bonus": {"attaque": 3}
+  },
+  {
+    "id": "baton_chene",
+    "nom": "Bâton de chêne",
+    "description": "Un bâton de mage taillé dans le chêne de la vallée.",
+    "prix": 150,
+    "equipement": "arme",
+    "bonus": {"magie": 3, "pm": 4}
+  },
+  {
+    "id": "tunique_cuir",
+    "nom": "Tunique de cuir",
+    "description": "Protège un peu des coups comme des sorts.",
+    "prix": 120,
+    "equipement": "armure",
+    "bonus": {"defense": 2, "resistance": 2}
+  },
+  {
+    "id": "amulette_vie",
+    "nom": "Amulette de vie",
+    "description": "Une pierre rouge qui donne de la vigueur.",
+    "prix": 200,
+    "equipement": "accessoire",
+    "bonus": {"pv": 12}
+  },
+  {
+    "id": "hache_braise",
+    "nom": "Hache de braise",
+    "description": "Forgée à Forgeroc, encore tiède.",
+    "prix": 450,
+    "equipement": "arme",
+    "bonus": {"attaque": 6}
+  },
+  {
+    "id": "baton_lune",
+    "nom": "Bâton de lune",
+    "description": "Sa pierre blanche garde la lumière de la lune.",
+    "prix": 450,
+    "equipement": "arme",
+    "bonus": {"magie": 6, "pm": 8}
+  },
+  {
+    "id": "arc_frene",
+    "nom": "Arc de frêne",
+    "description": "Léger et précis.",
+    "prix": 400,
+    "equipement": "arme",
+    "bonus": {"attaque": 4, "precision": 5}
+  },
+  {
+    "id": "cotte_mailles",
+    "nom": "Cotte de mailles",
+    "description": "Solide, mais un peu lourde.",
+    "prix": 400,
+    "equipement": "armure",
+    "bonus": {"defense": 5, "resistance": 1, "vitesse": -2}
+  },
+  {
+    "id": "robe_mage",
+    "nom": "Robe de mage",
+    "description": "Tissée de fils qui repoussent la magie.",
+    "prix": 400,
+    "equipement": "armure",
+    "bonus": {"defense": 2, "resistance": 5, "pm": 4}
+  },
+  {
+    "id": "bague_vif",
+    "nom": "Bague de vivacité",
+    "description": "Celui qui la porte agit plus vite.",
+    "prix": 500,
+    "equipement": "accessoire",
+    "bonus": {"vitesse": 4}
+  },
+  {
+    "id": "talisman_esprit",
+    "nom": "Talisman d'esprit",
+    "description": "Un petit sceau qui calme l'esprit.",
+    "prix": 350,
+    "equipement": "accessoire",
+    "bonus": {"pm": 12}
+  },
+  {
+    "id": "lame_givre",
+    "nom": "Lame de givre",
+    "description": "Une épée qui ne s'émousse jamais.",
+    "prix": 1100,
+    "equipement": "arme",
+    "bonus": {"attaque": 10, "critique": 5}
+  },
+  {
+    "id": "sceptre_aurore",
+    "nom": "Sceptre d'aurore",
+    "description": "Il brille comme le ciel du matin.",
+    "prix": 1100,
+    "equipement": "arme",
+    "bonus": {"magie": 10, "pm": 10}
+  },
+  {
+    "id": "armure_givre",
+    "nom": "Armure de givre",
+    "description": "L'armure des chevaliers de Givreval.",
+    "prix": 1000,
+    "equipement": "armure",
+    "bonus": {"defense": 9, "resistance": 5}
+  },
+  {
+    "id": "plume_ange",
+    "nom": "Plume d'ange",
+    "description": "Plus légère que l'air.",
+    "prix": 800,
+    "equipement": "accessoire",
+    "bonus": {"esquive": 5, "vitesse": 2}
+  },
+  {
+    "id": "pendentif_brume",
+    "nom": "Pendentif de brume",
+    "description": "La brume de la vallée y dort.",
+    "prix": 900,
+    "equipement": "accessoire",
+    "bonus": {"pv": 25, "resistance": 3}
   }
 ]

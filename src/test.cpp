@@ -177,6 +177,33 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   menus.clear();
   panelMode_ = 0;
 
+  // --- Équipement : une épée pour Lior (par les menus), gardée par la sauvegarde ; pas d'arme pour une créature ---
+  {
+    items["epee_fer"] = 1;
+    int atk0 = team.at(0)->atk;
+    pauseMenu();
+    gearMenu();
+    in.confirm = true;  // Lior
+    frame();
+    in.confirm = true;  // Arme
+    frame();
+    in.confirm = true;  // Épée de fer
+    frame();
+    snap("92_equipement");
+    bool equipped = team[0]->gear[G_WEAPON] == "epee_fer" && team[0]->atk == atk0 + 3 && items["epee_fer"] == 0;
+    bool noWeapon = !canEquip(*team.at(1), item("epee_fer")) && canEquip(*team.at(1), item("amulette_vie"));
+    menus.clear();
+    panelMode_ = 0;
+    saveGame();
+    team.clear();
+    loadGame();
+    bool kept = team.at(0)->gear[G_WEAPON] == "epee_fer" && team[0]->atk == atk0 + 3;
+    check(equipped && noWeapon && kept, "équipement : Échap > Équipement, l'épée donne +3 en Attaque, gardée par la sauvegarde ; pas d'arme pour une créature");
+    team[0]->gear[G_WEAPON].clear();
+    team[0]->recalc();
+    items.erase("epee_fer");
+  }
+
   // --- Dialogue et recrutement de Maëlle ---
   changeMap(mi("vallee"), 7, 16, UP);
   interact();

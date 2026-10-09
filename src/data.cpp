@@ -335,6 +335,21 @@ void rebuildData() {
     d.revive = jget(o, "rappel", 0);
     d.capture = jget(o, "capture", 0.f);
     d.cure = jget(o, "soin_statut", false);
+    if (o.contains("equipement")) {
+      static const char* SLOTS[] = {"arme", "armure", "accessoire"};
+      std::string s = o["equipement"].get<std::string>();
+      for (int i = 0; i < N_GEAR; i++)
+        if (s == SLOTS[i]) d.slot = i;
+      if (d.slot < 0) throw std::runtime_error("Objet « " + d.id + " » : équipement inconnu « " + s + " » (arme, armure, accessoire)");
+      static const char* STATS[] = {"pv", "pm", "attaque", "defense", "magie", "resistance", "vitesse", "precision", "esquive", "critique"};
+      Json bonus = o.value("bonus", Json::object());
+      for (auto& [k, v] : bonus.items()) {
+        int i = 0;
+        while (i < N_GEAR_STATS && k != STATS[i]) i++;
+        if (i == N_GEAR_STATS) throw std::runtime_error("Objet « " + d.id + " » : bonus inconnu « " + k + " »");
+        d.bonus[i] = v.get<int>();
+      }
+    }
     return d;
   });
 
@@ -442,7 +457,26 @@ void Fighter::recalc() {
   acc = S().acc;
   eva = S().eva;
   crit = S().crit;
+  for (auto& id : gear) {  // bonus de l'équipement
+    if (id.empty() || !hasItem(id)) continue;
+    const auto& g = item(id).bonus;
+    mhp += g[GS_HP], mmp += g[GS_MP], atk += g[GS_ATK], def += g[GS_DEF], mag += g[GS_MAG], res += g[GS_RES], spd += g[GS_SPD];
+    acc += g[GS_ACC], eva += g[GS_EVA], crit += g[GS_CRIT];
+  }
+  mhp = std::max(1, mhp), mmp = std::max(0, mmp);
 }
+
+static const char* GEAR_SLOTS[N_GEAR] = {"Arme", "Armure", "Accessoire"};
+static const char* GEAR_STATS[N_GEAR_STATS] = {"PV", "PM", "Attaque", "Défense", "Magie", "Résistance", "Vitesse", "Précision", "Esquive", "Critique"};
+const char* gearSlotName(int s) { return GEAR_SLOTS[std::clamp(s, 0, N_GEAR - 1)]; }
+const char* gearStatName(int s) { return GEAR_STATS[std::clamp(s, 0, N_GEAR_STATS - 1)]; }
+std::string ItemDef::bonusText() const {
+  std::string t;
+  for (int i = 0; i < N_GEAR_STATS; i++)
+    if (bonus[i]) t += (t.empty() ? "" : ", ") + std::string(bonus[i] > 0 ? "+" : "") + std::to_string(bonus[i]) + (i >= GS_ACC ? " % " : " ") + GEAR_STATS[i];
+  return t;
+}
+bool canEquip(const Fighter& f, const ItemDef& d) { return d.slot == G_ACCESSORY || (d.slot >= 0 && f.S().human); }
 void Fighter::clearBattle() {
   status = Status::None;
   statusTurns = 0;
