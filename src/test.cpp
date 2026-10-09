@@ -1322,6 +1322,62 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
           "multijoueur : duel complet (niveaux égaux), l'invité voit les mêmes PV et joue ses tours ; " + std::string(hostWon ? "l'hôte" : "l'invité") +
               " gagne, les deux reviennent au salon");
     snapGuest("74_duel_fin_invite");
+    // --- Échange de créatures dans le salon (parties principales, fichiers à part) ---
+    {
+      std::string hostSave = saveName_;
+      saveName_ = "echange_hote_test.txt", guest.saveName_ = "echange_invite_test.txt";
+      const Rules& r = rules();
+      auto makeSave = [&](Game& p, const std::vector<std::pair<std::string, int>>& members) {
+        p.team.clear();
+        for (auto& [sp, lvl] : members) p.team.push_back(makeFighter(sp, lvl));
+        p.mapId = p.respawnMap = 0;
+        p.saveGame();
+      };
+      auto saved = [&](Game& p) {
+        p.loadGame();
+        std::string s;
+        for (auto& f : p.team) s += f->sp + ":" + std::to_string(f->lvl) + " ";
+        return s;
+      };
+      const std::string hero = r.hero, a = r.starters.at(0), b = r.starters.at(1), c = r.starters.at(2);
+      makeSave(*this, {{hero, 10}, {a, 8}, {b, 9}});
+      makeSave(guest, {{hero, 10}, {c, 7}});
+      // Une contre une : l'hôte propose a, l'invité donne c en retour, l'hôte accepte
+      H.offerTrade(1, 1, false);
+      both(10);
+      bool asked = guest.menus.active() && guest.menus.top().title == "Échange : avec Hôte" && V.trade_.step == Online::Trade::Step::Answering;
+      snapGuest("83_echange_invite");
+      V.answerTrade(1);
+      both(10);
+      bool countered = menus.active() && menus.top().title == "Échange : avec Invité" && H.trade_.step == Online::Trade::Step::Countered;
+      snap("84_echange_hote");
+      in.confirm = true;  // Accepter
+      frame();
+      both(10);
+      std::string h1 = saved(*this), v1 = saved(guest);
+      check(asked && countered && h1 == hero + ":10 " + c + ":7 " + b + ":9 " && v1 == hero + ":10 " + a + ":8 " &&
+                H.status_.rfind("Échange fait", 0) == 0 && V.status_.rfind("Échange fait", 0) == 0,
+            "échange (salon) : une créature contre une, chacun la reçoit dans la sauvegarde de sa partie principale");
+      // Cadeau : l'invité offre sa créature, l'hôte l'accepte ; l'invité n'a plus que son héros
+      V.offerTrade(0, 1, true);
+      both(10);
+      bool giftAsked = menus.active() && menus.top().title == "Échange : cadeau de Invité";
+      in.confirm = true;  // Accepter
+      frame();
+      both(10);
+      std::string h2 = saved(*this), v2 = saved(guest);
+      check(giftAsked && h2 == h1 + a + ":8 " && v2 == hero + ":10 " && H.status_.rfind("Cadeau reçu", 0) == 0 &&
+                V.status_.rfind("Cadeau envoyé", 0) == 0,
+            "échange (salon) : un cadeau, sans rien en retour");
+      // Une contre une avec un joueur qui n'a plus de créature : refusé tout de suite
+      H.offerTrade(1, 1, false);
+      both(10);
+      check(H.trade_.step == Online::Trade::Step::None && H.status_.find("aucune créature") != std::string::npos && saved(*this) == h2,
+            "échange (salon) : refusé si l'autre n'a aucune créature à donner (« " + H.status_ + " »)");
+      for (Game* p : {this, &guest}) std::remove(H.file(p->saveName_).c_str());
+      saveName_ = hostSave, guest.saveName_ = "sans_sauvegarde_test.txt";
+      H.salon(), V.salon();
+    }
     // L'invité s'en va : l'hôte reste dans le salon, prévenu
     V.leave();
     both(30);
@@ -1386,7 +1442,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     H.groupMenu();
     run(.1f);
     snap("78_groupe_pause");
-    check(hasGroup && menus.top().title == "Groupe" && menus.top().items.size() == 3, "expédition à plusieurs : menu de pause > Groupe");
+    check(hasGroup && menus.top().title == "Groupe" && menus.top().items.size() == 4, "expédition à plusieurs : menu de pause > Groupe");
     menus.clear();
     // Gardien : l'hôte attend devant lui, l'invité arrive, le combat commence chez les deux (deux combattants chacun)
     for (Game* p : {this, &guest})
@@ -1477,6 +1533,26 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     check(backToMenu && saved == seed && H.inGroup() && V.inGroup() && XH.region() == 2 && !XH.onScreen() && XV.region() == 1 && !XV.onScreen() &&
               XV.beaten() && guest.team.at(0)->lvl == lvlV && guest.mode == Mode::Map,
           "expédition à plusieurs : l'hôte part (l'invité garde sa sauvegarde), puis chacun reprend la sienne dans le même monde");
+    // Échange pendant l'expédition : l'hôte (région 2) offre sa créature à l'invité (région 1)
+    {
+      int slot = -1;
+      for (size_t i = 0; i < team.size() && slot < 0; i++)
+        if (!team[i]->S().human) slot = (int)i;
+      size_t nH = team.size(), nV = guest.team.size();
+      std::string sp = slot >= 0 ? team[(size_t)slot]->sp : "";
+      int lvl = slot >= 0 ? team[(size_t)slot]->lvl : 0;
+      both(10);
+      H.offerTrade(1, slot, true);
+      both(10);
+      bool asked = guest.menus.active() && guest.menus.top().title == "Échange : cadeau de Hôte";
+      snapGuest("85_groupe_cadeau_invite");
+      guest.in.confirm = true;  // Accepter
+      both(1);
+      both(10);
+      check(slot >= 0 && asked && team.size() == nH - 1 && guest.team.size() == nV + 1 && guest.team.back()->sp == sp &&
+                guest.team.back()->lvl == lvl && guest.notice_.rfind("Cadeau reçu", 0) == 0 && !guest.menus.active() && guest.mode == Mode::Map,
+            "échange (expédition) : l'hôte offre une créature à l'invité, qui la reçoit dans son expédition");
+    }
     for (auto& s : guest.g.layoutIssues) std::printf("         (invité) %s\n", s.c_str());
     check(guest.g.layoutIssues.empty(), "multijoueur : mise en page de l'écran de l'invité");
     V.leave();

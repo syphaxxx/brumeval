@@ -92,7 +92,7 @@ L'expédition se sauvegarde (Échap > Sauvegarder, et à chaque nouvelle région
 dans un fichier à part, `expedition.txt` : la partie principale n'est jamais
 touchée.
 
-## Multijoueur : expédition à plusieurs et duels
+## Multijoueur : expédition à plusieurs, duels et échanges
 
 Écran titre > **Multijoueur**, jusqu'à **4 joueurs**. Tous doivent avoir **la
 même version du jeu** (indiquée en bas à droite de l'écran titre) et les mêmes
@@ -126,6 +126,20 @@ sa partie principale (ou, sans partie, le héros et deux compagnons de départ).
 L'hôte peut mettre tous les combattants au niveau 50 (« Niveaux : égaux »).
 Chacun commande son équipe ; Tab active le mode auto (tactiques). Ni objets ni
 fuite.
+
+**Échanger des créatures.** Dans le salon (**Échanger**), avec les créatures de
+sa partie principale ; pendant une expédition à plusieurs (Échap > Groupe >
+**Échanger une créature**), avec celles de l'expédition. On choisit le joueur et
+sa créature, puis :
+
+- **Échange** : l'autre choisit la créature qu'il donne en retour, puis on
+  accepte ou non ;
+- **Cadeau** : l'autre la reçoit sans rien donner (il lui faut une place dans
+  son équipe, 8 membres au plus).
+
+La créature garde son niveau, son expérience et ses tactiques ; les héros ne
+s'échangent pas. Chaque échange est aussitôt sauvegardé des deux côtés. Pendant
+une expédition, on ne peut recevoir une créature que d'une région déjà atteinte.
 
 **Jouer par Internet, chacun chez soi.** Le plus simple : installer tous une
 appli gratuite de réseau privé, puis utiliser l'adresse qu'elle donne.

@@ -212,7 +212,13 @@ void Online::groupMenu() {
     it.shrink = true;
     m.items.push_back(it);
   }
+  bool any = false;
+  for (auto& p : players_) any = any || partnerOk(p);
+  m.items.push_back({"Échanger une créature", "", any ? "Donner une créature à un autre joueur, en échange d'une des siennes ou en cadeau."
+                                                     : "Personne ne peut échanger pour le moment (en combat, ou pas encore en route).",
+                     any, [this] { tradeMenu(); }});
   m.items.push_back({"Retour", "", "", true, [this] { G.menus.pop(); }});
+  m.rows = (int)m.items.size();
   m.sel = (int)m.items.size() - 1;
   G.menus.push(m);
 }

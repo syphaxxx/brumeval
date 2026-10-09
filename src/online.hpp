@@ -11,6 +11,8 @@
 // - une expédition à plusieurs (coop.cpp) : le monde de la même graine pour tous ;
 //   chacun explore, combat et capture de son côté et voit les autres sur la carte ;
 //   le gardien de chaque région ne se combat qu'ensemble.
+// Chacun peut aussi échanger des créatures avec un autre joueur (trade.cpp), au salon ou
+// pendant l'expédition.
 #pragma once
 #include <cstdint>
 #include <memory>
@@ -49,6 +51,9 @@ class Online {
     bool busy, ready;  // en combat ; prêt devant le gardien
   };
   std::vector<Avatar> avatars() const;  // les autres joueurs dans la même région
+
+  // Échange de créatures (trade.cpp) : dans le salon (partie principale) ou pendant l'expédition
+  void tradeMenu();  // choisir avec qui échanger, puis sa créature
 
   // Réglages gardés dans multijoueur.txt (le mode test utilise un autre fichier)
   std::string pseudo = "Joueur", address;
@@ -154,4 +159,31 @@ class Online {
   void checkGuardians();  // hôte : tout le groupe est prêt devant un gardien ?
   void launchGuardian(int k, const std::vector<int>& group);
   void onGuardian(const Json& m);  // début du combat du gardien, chez chaque joueur du groupe
+
+  // Échange de créatures (trade.cpp). Celui qui propose donne une créature (en échange ou en
+  // cadeau) ; l'autre répond (sa créature, « accepter » le cadeau ou refuser). Celui qui a proposé
+  // fait l'échange chez lui en premier, puis envoie « fait » : l'autre le fait alors chez lui.
+  struct Trade {
+    enum class Step { None, Offered, Answering, Countered, Waiting } step = Step::None, shown = Step::None;  // shown : menu affiché
+    int with = -1;      // l'autre joueur
+    bool run = false;   // pendant l'expédition (sinon : partie principale, depuis le salon)
+    bool gift = false;  // cadeau : rien en retour
+    int slot = -1;      // ma créature (rang dans l'équipe ; -1 : aucune, je reçois un cadeau)
+    std::string sp;     // son espèce (vérifiée juste avant l'échange)
+    Json mine, theirs;  // les deux créatures (theirs : celle que je recevrai)
+  };
+  Trade trade_;
+  bool canTrade(std::string* why = nullptr) const;  // je peux échanger maintenant ?
+  bool partnerOk(const Player& p) const;            // ce joueur peut échanger maintenant ?
+  bool loadMine(std::string& why);  // met mon équipe dans G.team (salon : lue dans la sauvegarde de la partie principale)
+  bool commitTrade();               // fait l'échange chez moi et sauvegarde
+  void pickCreature(int with);
+  void offerTrade(int with, int slot, bool gift);
+  void answerTrade(int slot);  // ma créature en retour (-1 : accepter le cadeau)
+  // Fin sans échange : note pour moi ; tell (non vide) : prévient l'autre joueur
+  void endTrade(const std::string& note, const std::string& tell = "");
+  void onTrade(int from, const Json& m);
+  void showTrade();    // menu de l'échange en cours
+  void updateTrade();  // à chaque image : ouvre (ou rouvre) ce menu, arrête l'échange si l'autre est parti
+  void tradeNote(const std::string& s);
 };

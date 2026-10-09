@@ -82,6 +82,7 @@ les plus longs : y ajouter tout nouvel écran.
 | `net.hpp/.cpp` | Réseau du multijoueur : connexions TCP non bloquantes (Windows, Mac, Linux), messages JSON précédés de leur longueur, adresses de l'ordinateur |
 | `online.hpp/.cpp` | Multijoueur (écran titre) : héberger une partie (jusqu'à 4 joueurs), rejoindre, salon, vérification de la version et des données (`dataHash`), relais des messages par l'hôte, duel en ligne |
 | `coop.cpp` | Expédition à plusieurs (fonctions de `Online`) : lancement d'une graine pour tous, état de chaque joueur (message `ou`), autres joueurs sur la carte (`avatars`), attente et combat du gardien à plusieurs |
+| `trade.cpp` | Échange de créatures (fonctions de `Online`) : dans le salon (partie principale) ou pendant l'expédition à plusieurs, une contre une ou en cadeau |
 | `version.hpp` | Numéro de version (`BRUMEVAL_VERSION`), affiché sur l'écran titre et comparé en multijoueur |
 | `test.cpp` | Mode test automatique |
 
@@ -199,6 +200,17 @@ les plus longs : y ajouter tout nouvel écran.
   les fait de gauche à droite, MSVC et GCC de droite à gauche) ;
   le mode test compare l'empreinte de la graine 2026 à une valeur fixe (à
   mettre à jour si on change le générateur).
+- Échange de créatures (trade.cpp, `Online::trade_`) : message `echange`, champ
+  `e` : `offre` (créature, `cadeau`, `run` : pendant l'expédition), puis
+  `contre` (créature en retour) ou `accepte` (cadeau), `fait`, `refus`
+  (`raison`). Celui qui a proposé fait l'échange chez lui en premier
+  (`commitTrade`), puis envoie `fait` ; l'autre le fait alors. Une créature dans
+  un message : `creatureJson` / `creatureFrom` (vérifiée : espèce connue ici,
+  pas un humain). Au salon, l'équipe est lue et réécrite dans la sauvegarde de
+  la partie principale (`loadMine` = `Game::loadGame`, puis `saveGame`) ;
+  pendant l'expédition, c'est `G.team`, sauvegardée aussitôt. Le menu de
+  l'échange (titre « Échange : … ») s'ouvre dans `updateTrade` dès que le joueur
+  est libre (ni combat, ni dialogue) ; l'échange s'arrête si l'autre part.
 - Tactiques (tactics.hpp) : `Fighter::tactics` (liste de `Tactic` : condition,
   seuil, action automatique / technique / objet), `Fighter::tacticsOn`,
   `Game::tacticsAuto` (touche Tab en combat). Quand la jauge d'un allié est
