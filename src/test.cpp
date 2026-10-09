@@ -1975,6 +1975,30 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         std::vector<std::pair<std::string, int>> party = {{X.content_.heroes[0], lvl}, {X.content_.starters[0], lvl}, {"x1r", lvl}};
         std::string name = "Région " + std::to_string(k) + " (graine " + std::to_string(seed) + ", N." + std::to_string(lvl) + ")";
         simSetup(name.c_str(), party, mk, 15);
+        // Gardien à plusieurs (coop.cpp) : 2 combattants chacun à deux, 1 chacun à trois ou quatre ;
+        // PV des ennemis × alliés / 3 au-delà de trois alliés. Chaque joueur a son héros et sa créature.
+        if (k != 2 && k != 8)
+          for (int players : {2, 3, 4}) {
+            size_t per = players == 2 ? 2 : 1;
+            auto& H = X.content_.heroes;
+            auto& S = X.content_.starters;
+            auto coop = [mk, players, per, H, S, lvl] {
+              BattleSetup s = mk();
+              for (int p = 0; p < players; p++) {
+                s.allies.push_back(makeFighter(H[(size_t)p % H.size()], lvl));
+                if (per > 1) s.allies.push_back(makeFighter(S[(size_t)p % S.size()], lvl));
+              }
+              float scale = std::max(1.f, s.allies.size() / 3.f);
+              for (auto* v : {&s.foes, &s.reserve})
+                for (auto& f : *v) {
+                  f->mhp = std::max(1, int(f->mhp * scale + 1e-4f));
+                  f->hp = f->mhp;
+                }
+              return s;
+            };
+            std::string cn = "  à " + std::to_string(players) + " (" + std::to_string(players * (int)per) + " alliés)";
+            simSetup(cn.c_str(), party, coop, 15);
+          }
         if (seed == 11) {
           // Combats ordinaires de la même région : un dresseur, puis un groupe sauvage de la zone la plus forte
           for (auto& [id, ev] : X.current_.events.items())
