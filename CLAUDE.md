@@ -4,6 +4,9 @@ Petit RPG 2D en C++17 avec SDL2, inspiré de Final Fantasy 7 (combat ATB à troi
 combattants, Limites, magie) et de Pokémon (capture de créatures). Tout le contenu
 est original. Le projet a été démarré dans l'app Claude puis transféré ici.
 
+Voir aussi `docs/GUIDE.md` (vue d'ensemble, recettes pour ajouter du contenu,
+pièges) et `docs/PLANNING.md` (la suite du projet).
+
 ## L'utilisateur
 
 - Il est francophone et débute en programmation : réponds en français, explique
@@ -346,6 +349,16 @@ réécrits par `writeJson` (petites listes sur une ligne) : garder ce format.
 - 13 types (dont Glace, Roche, Vent, Poison, Métal, Esprit). Héros : Lior,
   Maëlle, Brann, Isra, Kael, Sélène. Starters : Braisenard, Gouttelin, Ronceau.
   23 créatures sauvages capturables, 5 boss, 5 sortes d'ennemis humains.
+- **Intérieurs** : 12 pièces dans les trois villages (soins, boutiques,
+  auberges, chapelle, maisons habitées avec un coffre).
+- **Quêtes annexes** : le médaillon de l'ancien (vallée), les Tisonnels enragés
+  (boss de carte au nord-ouest de Forgeroc), une tisane contre le froid
+  (Givreval). Journal : Échap > Journal.
+- **Équipement** : 16 armes, armures et accessoires en vente (vallée,
+  Forgeroc, Givreval).
+- **Son** : 9 musiques (titre, 5 lieux, intérieur, combat, boss) et 25
+  bruitages, fabriqués par le jeu (`data/sons.json`). Options (volumes,
+  plein écran, touches) et manette.
 - Les cartes se modifient avec l'éditeur de cartes (Outils) ou directement
   dans les JSON.
 
@@ -369,8 +382,16 @@ habitants donnent son point faible). Réglages du gardien dans
 Le Vent fait ×4 à Plante/Poison et le Métal ×4 à Glace/Roche : la Ronce-Mère et
 le Givrecorne ont une résistance propre pour ramener cela à ×2. La Lumière fait ×2 à l'Ombre mais l'Ombre est neutre sur la Lumière :
 sinon Maëlle, ciblée en priorité par l'IA, tombe dès le début contre Sylvarque.
+Gardien à plusieurs (mesuré le 2026-10-09, 15 combats par ligne) : jamais plus
+dur qu'en solo, souvent plus facile (région 5, graine 33 : 13 % seul, 100 % à
+2, 3 ou 4 joueurs) ; plusieurs héros différents couvrent plus de types, et
+×4/3 PV à quatre ne compense pas. Pas encore rééquilibré (à décider avec
+l'utilisateur). Les simulations n'utilisent pas l'équipement : il rend le jeu
+un peu plus facile que ces chiffres.
 
 ## À faire / pistes
+
+La suite du projet, étape par étape : `docs/PLANNING.md`.
 
 1. Windows / VS Code (vérifié le 2026-10-09, sans l'interface) : extensions
    C/C++ 1.34 et CMake Tools 1.24 installées, kits Build Tools 2022 détectés,
@@ -378,7 +399,5 @@ sinon Maëlle, ciblée en priorité par l'IA, tombe dès le début contre Sylvar
    (le kit choisi par défaut, Ninja n'étant pas installé), `cmake --build build
    --config Debug --target ALL_BUILD` (ce que fait F7) réussit. Reste à appuyer
    une fois sur F7, Maj+F5 et F5 dans VS Code pour le confirmer de visu.
-2. Ajouter musique et effets sonores (SDL2_mixer via FetchContent, ou l'audio de SDL).
-3. Rendre le sprite d'Ignarok plus lisible (aujourd'hui un bloc rouge).
-4. Idées : intérieurs des maisons, quêtes annexes, équipement, menu d'options,
-   manette (SDL_GameController), animations d'attaque.
+2. Fait le 2026-10-09 : son, options, manette, animations d'attaque, Ignarok
+   (forme `magma`), intérieurs, équipement, quêtes annexes.

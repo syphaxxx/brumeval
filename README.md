@@ -250,6 +250,10 @@ Ouvrez un terminal dans le dossier du projet (dans VS Code : **Terminal >
 Nouveau terminal**) et lancez `claude`. Le fichier `CLAUDE.md` lui donne tout le
 contexte : architecture, commandes, état du projet et idées pour la suite.
 
+Pour reprendre le projet soi-même : **`docs/GUIDE.md`** explique comment le
+programme est construit et comment ajouter une créature, une carte, une quête,
+une musique… ; **`docs/PLANNING.md`** donne la suite prévue.
+
 ## Tester
 
 ```
@@ -267,6 +271,7 @@ l'équilibrage et enregistre des captures d'écran dans `captures/`.
 - `data/` : tout le contenu du jeu (créatures, techniques, objets, cartes,
   dialogues, règles) en fichiers JSON modifiables, lus à chaque démarrage. Voir
   `data/LISEZMOI.md`.
+- `docs/` : guide pour reprendre le projet et planning.
 - La sauvegarde est écrite dans `%APPDATA%\Brumeval\Brumeval\sauvegarde.txt`,
-  le choix plein écran / fenêtre dans `options.txt` à côté
+  les options (volumes, plein écran, touches) dans `options.txt` à côté
   (le mode test utilise `sauvegarde_test.txt` et l'efface à la fin)
