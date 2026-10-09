@@ -23,6 +23,7 @@ toutes les références existent et que chaque lieu des cartes est accessible.
 | `evenements.json` | Dialogues et événements de l'histoire |
 | `cartes/*.json` | Une carte par fichier : tuiles, bâtiments, habitants, coffres… |
 | `sons.json` | Musiques et bruitages (fabriqués par le jeu, sans fichier audio) |
+| `quetes.json` | Quêtes annexes : nom, lieu, étapes affichées dans le journal |
 
 ## Le son (`sons.json`)
 
@@ -216,6 +217,14 @@ page dont la condition `si` est vraie.
 | `evenement` | Lance un autre événement | `id` |
 | `attendre` | Pause | `secondes` |
 | `fin` | Écran de fin | |
+| `quete` | Commence une quête (elle s'inscrit au journal), ou la termine avec `"fin": true` | `id`, `fin` |
+
+**Quêtes annexes** (`quetes.json`) : une liste de quêtes, chacune avec `id`,
+`nom`, `lieu`, `etapes` et `fin_texte`. Une étape a un `texte` et peut avoir
+une condition `si` ; le journal montre la dernière étape dont la condition est
+vraie. Une quête commencée pose le drapeau `quete:<id>`, une quête terminée
+`quete:<id>:fin` : les pages des événements s'en servent (voir
+`quete_medaillon` dans `evenements.json`).
 
 Conditions possibles (toutes doivent être vraies) : `drapeau`, `sans_drapeau`,
 `objet`, `sans_objet`, `or_min`, `membre` (une espèce présente dans l'équipe).

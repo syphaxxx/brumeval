@@ -749,6 +749,7 @@ void Game::pauseMenu() {
   m.items.push_back({"Équipe", "", "Ordre de combat et fiches.", true, [this] { teamMenu(); }});
   m.items.push_back({"Tactiques", "", "Ce que chaque membre fait tout seul en combat (mode auto : touche Tab).", true, [this] { tacticsMenu(); }});
   m.items.push_back({"Équipement", "", "Armes, armures et accessoires.", true, [this] { gearMenu(); }});
+  m.items.push_back({"Journal", "", "Les quêtes en cours et terminées.", true, [this] { journalMenu(); }});
   m.items.push_back({"Objets", "", "Utiliser un objet.", true, [this] { itemMenu(); }});
   m.items.push_back({"Magie", "", "Lancer un sort de soin.", true, [this] { magicMenu(); }});
   if (inExpedition()) {
@@ -892,6 +893,35 @@ void Game::gearPick(FighterP f, int who, int s) {
   }
   if (!f->gear[(size_t)s].empty()) m.items.push_back({"Retirer", "", "Remettre " + item(f->gear[(size_t)s]).name + " dans le sac.", true, [equip] { equip(""); }});
   if (m.items.empty()) m.items.push_back({"(rien dans le sac)", "", "Les boutiques vendent armes, armures et accessoires.", false, nullptr});
+  menus.push(m);
+}
+
+// Journal des quêtes : celles qui ont commencé ; l'aide montre l'étape où l'on en est
+void Game::journalMenu() {
+  panelMode_ = 0;
+  Menu m;
+  m.title = "Journal";
+  m.x = 8, m.y = 8, m.w = 220, m.rows = 9;
+  for (auto& q : quests()) {
+    std::string id = jget<std::string>(q, "id", "");
+    if (!has(questFlag(id))) continue;
+    bool done = has(questFlag(id, true));
+    std::string help = jget<std::string>(q, "fin_texte", "Quête terminée.");
+    if (!done) {
+      Json steps = q.value("etapes", Json::array());
+      for (auto& s : steps)  // la dernière étape dont la condition est vraie
+        if (!s.contains("si") || checkCond(s["si"])) help = jget<std::string>(s, "texte", "");
+    }
+    MenuItem it{jget<std::string>(q, "nom", id), done ? "terminée" : "en cours", jget<std::string>(q, "lieu", "") + " — " + help, true, nullptr};
+    it.color = done ? 0xaab3d8 : 0;
+    it.shrink = true;
+    m.items.push_back(it);
+  }
+  if (m.items.empty()) m.items.push_back({"(aucune quête)", "", "Parlez aux habitants : certains ont besoin d'aide.", false, nullptr});
+  m.onCancel = [this] {
+    panelMode_ = 1;
+    menus.pop();
+  };
   menus.push(m);
 }
 

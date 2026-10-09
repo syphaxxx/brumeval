@@ -15,7 +15,7 @@
   ],
   "batiments": [],
   "habitants": [
-    {"x": 7, "y": 4, "apparence": "enfant", "dialogue": ["Grand-père est sorti se promener au village.", "Il raconte que la brume de la vallée cache de très vieilles légendes…"], "direction": "bas"}
+    {"x": 7, "y": 4, "apparence": "enfant", "evenement": "quete_medaillon", "direction": "bas"}
   ],
   "coffres": [{"x": 1, "y": 7, "objet": "potion", "quantite": 2}],
   "panneaux": [],

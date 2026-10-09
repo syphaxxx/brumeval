@@ -841,5 +841,319 @@
         ]
       }
     ]
+  },
+  "quete_medaillon": {
+    "pages": [
+      {
+        "si": {
+          "drapeau": "quete:medaillon:fin"
+        },
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Enfant : Grand-père porte son médaillon tous les jours, maintenant. Merci !"
+          }
+        ]
+      },
+      {
+        "si": {
+          "drapeau": "quete:medaillon",
+          "objet": "medaillon"
+        },
+        "actions": [
+          {
+            "action": "retirer",
+            "objet": "medaillon"
+          },
+          {
+            "action": "dire",
+            "texte": "Enfant : Le médaillon de Grand-père ! Il va être tellement content !"
+          },
+          {
+            "action": "or",
+            "quantite": 200
+          },
+          {
+            "action": "donner",
+            "objet": "amulette_vie",
+            "quantite": 1
+          },
+          {
+            "action": "quete",
+            "id": "medaillon",
+            "fin": true
+          }
+        ]
+      },
+      {
+        "si": {
+          "drapeau": "quete:medaillon"
+        },
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Enfant : Grand-père l'a perdu dans le Bois Murmurant, au sud-ouest du village, en cueillant des champignons."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Enfant : Grand-père a perdu son médaillon dans le Bois Murmurant…"
+          },
+          {
+            "action": "dire",
+            "texte": "Enfant : Il ne veut pas le dire, mais il est tout triste."
+          },
+          {
+            "action": "question",
+            "texte": "L'aider à retrouver le médaillon ?",
+            "oui": [
+              {
+                "action": "quete",
+                "id": "medaillon"
+              },
+              {
+                "action": "dire",
+                "texte": "Enfant : Merci ! Il est en argent, avec une pierre bleue."
+              }
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "Enfant : Oh… d'accord."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "quete_braises": {
+    "pages": [
+      {
+        "si": {
+          "drapeau": "quete:braises:fin"
+        },
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Habitant : Mes chèvres broutent de nouveau tranquilles. Merci !"
+          }
+        ]
+      },
+      {
+        "si": {
+          "drapeau": "tisonnels_chasses"
+        },
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Habitant : Vous les avez chassés ? Merveilleux ! Prenez ceci, pour votre peine."
+          },
+          {
+            "action": "donner",
+            "objet": "talisman_esprit",
+            "quantite": 1
+          },
+          {
+            "action": "or",
+            "quantite": 300
+          },
+          {
+            "action": "quete",
+            "id": "braises",
+            "fin": true
+          }
+        ]
+      },
+      {
+        "si": {
+          "drapeau": "quete:braises"
+        },
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Habitant : Les Tisonnels rôdent dans les herbes sèches, au nord-ouest de la ville."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Habitant : Ici, à Forgeroc, on vit au rythme du volcan."
+          },
+          {
+            "action": "dire",
+            "texte": "Habitant : Mais des Tisonnels enragés ont envahi les herbes sèches, au nord-ouest. Mes chèvres n'osent plus sortir !"
+          },
+          {
+            "action": "question",
+            "texte": "Chasser les Tisonnels ?",
+            "oui": [
+              {
+                "action": "quete",
+                "id": "braises"
+              },
+              {
+                "action": "dire",
+                "texte": "Habitant : Merci ! Méfiez-vous, ils sont trois et ils mordent fort."
+              }
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "Habitant : Je comprends… Ils font peur."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "quete_tisane": {
+    "pages": [
+      {
+        "si": {
+          "drapeau": "quete:tisane:fin"
+        },
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Villageoise : Cette tisane de fleur de givre me réchauffe jusqu'aux os. Merci !"
+          }
+        ]
+      },
+      {
+        "si": {
+          "drapeau": "quete:tisane",
+          "objet": "fleur_givre"
+        },
+        "actions": [
+          {
+            "action": "retirer",
+            "objet": "fleur_givre"
+          },
+          {
+            "action": "dire",
+            "texte": "Villageoise : Une fleur de givre ! Je vais en faire une tisane pour tout le village."
+          },
+          {
+            "action": "donner",
+            "objet": "plume_ange",
+            "quantite": 1
+          },
+          {
+            "action": "donner",
+            "objet": "elixir",
+            "quantite": 1
+          },
+          {
+            "action": "quete",
+            "id": "tisane",
+            "fin": true
+          }
+        ]
+      },
+      {
+        "si": {
+          "drapeau": "quete:tisane"
+        },
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Villageoise : La fleur de givre pousse au bord du lac gelé, à l'est du village."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Villageoise : Le froid s'est installé depuis la chute d'Ignarok."
+          },
+          {
+            "action": "dire",
+            "texte": "Villageoise : Avec une fleur de givre, je ferais une tisane qui réchaufferait tout Givreval."
+          },
+          {
+            "action": "question",
+            "texte": "Chercher une fleur de givre ?",
+            "oui": [
+              {
+                "action": "quete",
+                "id": "tisane"
+              },
+              {
+                "action": "dire",
+                "texte": "Villageoise : Elle pousse au bord du lac gelé, à l'est."
+              }
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "Villageoise : Tant pis… brr."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "tisonnels": {
+    "pages": [
+      {
+        "si": {
+          "sans_drapeau": "quete:braises"
+        },
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Trois Tisonnels enragés grognent dans les herbes sèches. Mieux vaut ne pas les déranger sans raison."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Les Tisonnels enragés se jettent sur vous !"
+          },
+          {
+            "action": "combat",
+            "ennemis": [
+              {
+                "espece": "tisonnel",
+                "niveau": 16
+              },
+              {
+                "espece": "tisonnel",
+                "niveau": 18,
+                "pv": 2,
+                "boss": true
+              },
+              {
+                "espece": "tisonnel",
+                "niveau": 16
+              }
+            ],
+            "fuite": true,
+            "capture": false,
+            "victoire": [
+              {
+                "action": "drapeau",
+                "nom": "tisonnels_chasses"
+              },
+              {
+                "action": "dire",
+                "texte": "Les Tisonnels s'enfuient vers le volcan !"
+              }
+            ]
+          }
+        ]
+      }
+    ]
   }
 }

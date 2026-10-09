@@ -82,6 +82,13 @@ Givreval en vendent de plus en plus puissants (bonus d'Attaque, de Magie, de
 PV…). La fiche à droite montre les statistiques qui changent en direct.
 L'équipement est gardé par la sauvegarde (pas en duel : à armes égales).
 
+## Quêtes annexes
+
+Certains habitants ont besoin d'aide : un médaillon perdu dans la vallée, des
+Tisonnels enragés près de Forgeroc, une fleur de givre pour Givreval. Les
+quêtes acceptées s'inscrivent dans le **Journal** (Échap > Journal), avec
+l'étape où vous en êtes. Elles rapportent or et équipement.
+
 ## Mode Expédition (roguelite)
 
 Depuis l'écran titre, **Expédition** lance une aventure où tout est généré à

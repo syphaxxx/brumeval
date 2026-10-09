@@ -85,6 +85,7 @@ les plus longs : y ajouter tout nouvel écran.
 | `coop.cpp` | Expédition à plusieurs (fonctions de `Online`) : lancement d'une graine pour tous, état de chaque joueur (message `ou`), autres joueurs sur la carte (`avatars`), attente et combat du gardien à plusieurs |
 | `trade.cpp` | Échange de créatures (fonctions de `Online`) : dans le salon (partie principale) ou pendant l'expédition à plusieurs, une contre une ou en cadeau |
 | `options.hpp/.cpp` | Options du joueur (`options()`, fichier `options.txt`) : volumes, plein écran, touches choisies (`K_UP`…) |
+| `events.hpp/.cpp` (quêtes) | Quêtes annexes : `quests()`, `findQuest`, `questFlag` ; action `quete` |
 | `version.hpp` | Numéro de version (`BRUMEVAL_VERSION`), affiché sur l'écran titre et comparé en multijoueur |
 | `test.cpp` | Mode test automatique |
 
@@ -257,6 +258,11 @@ les plus longs : y ajouter tout nouvel écran.
   du passage de sortie) ; `checkMaps` vérifie la sortie et part de cette case
   pour l'accessibilité. Une carte moins haute que l'écran est centrée
   (`drawMap`). Les 12 intérieurs des villages sont `data/cartes/<village>_<lieu>.json`.
+- Quêtes annexes : `data/quetes.json` (lu par `loadEvents`, vérifié par
+  `checkEvents`), action `quete` (drapeaux `quete:<id>` et `quete:<id>:fin`,
+  `questFlag`), journal `Game::journalMenu`. Trois quêtes : `medaillon`
+  (vallée), `braises` (Forgeroc, boss de carte `tisonnels`), `tisane` (Givreval) ;
+  leurs habitants sont dans les intérieurs.
 - Événements : habitants (`evenement`), portes des bâtiments (genre ou
   `evenement`) et boss lancent un événement de `data/evenements.json`. Les
   actions sont exécutées par `Game::execAction` (events.cpp) via le `Script` ;

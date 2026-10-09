@@ -218,5 +218,19 @@
     "prix": 900,
     "equipement": "accessoire",
     "bonus": {"pv": 25, "resistance": 3}
+  },
+  {
+    "id": "medaillon",
+    "nom": "Médaillon d'argent",
+    "description": "Orné d'une pierre bleue. Il appartient à l'ancien.",
+    "prix": 0,
+    "important": true
+  },
+  {
+    "id": "fleur_givre",
+    "nom": "Fleur de givre",
+    "description": "Une fleur blanche qui ne fane jamais dans le froid.",
+    "prix": 0,
+    "important": true
   }
 ]

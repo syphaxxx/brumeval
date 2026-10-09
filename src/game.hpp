@@ -116,6 +116,7 @@ class Game {
   void itemMenu();
   void magicMenu();
   void shopMenu(const std::vector<std::string>& stock);
+  void journalMenu();
   void gearMenu(int sel = 0);
   void gearSlots(FighterP f, int who, int sel = 0);
   void gearPick(FighterP f, int who, int slot);

@@ -121,6 +121,7 @@
     }
   ],
   "coffres": [
+    {"x": 12, "y": 24, "objet": "medaillon", "quantite": 1},
     {"x": 7, "y": 39, "objet": "herbe", "quantite": 1},
     {"x": 17, "y": 24, "objet": "potion", "quantite": 2},
     {"x": 61, "y": 2, "objet": "ether", "quantite": 1},

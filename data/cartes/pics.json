@@ -131,6 +131,7 @@
     }
   ],
   "coffres": [
+    {"x": 57, "y": 23, "objet": "fleur_givre", "quantite": 1},
     {"x": 9, "y": 12, "objet": "lanterne_or", "quantite": 1},
     {"x": 52, "y": 26, "objet": "elixir", "quantite": 1},
     {"x": 8, "y": 30, "or": 900},

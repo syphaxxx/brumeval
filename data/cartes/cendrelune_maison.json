@@ -15,7 +15,7 @@
   ],
   "batiments": [],
   "habitants": [
-    {"x": 7, "y": 4, "apparence": "montagnard", "dialogue": ["Ici, à Forgeroc, on vit au rythme du volcan.", "Brann ? Le meilleur forgeron de la ville… et le plus têtu !"], "direction": "bas"}
+    {"x": 7, "y": 4, "apparence": "montagnard", "evenement": "quete_braises", "direction": "bas"}
   ],
   "coffres": [{"x": 1, "y": 7, "objet": "ether", "quantite": 1}],
   "panneaux": [],

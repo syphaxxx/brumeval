@@ -245,6 +245,40 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
           "intérieurs : la porte fait entrer dans la maison de soin (musique de l'intérieur), la guérisseuse soigne, le tapis fait ressortir");
   }
 
+  // --- Quête annexe : le médaillon (accepter, journal, coffre du Bois Murmurant, récompense) ---
+  {
+    auto answer = [&] {  // Entrée sur chaque message ; « Oui » (premier choix) aux questions
+      for (int i = 0; i < 3000 && (sc.busy() || menus.active()); i++) {
+        in.confirm = true;
+        frame();
+      }
+    };
+    int gold0 = gold;
+    runEvent("quete_medaillon");
+    answer();
+    bool started = has(questFlag("medaillon")) && !has(questFlag("medaillon", true));
+    pauseMenu();
+    journalMenu();
+    run(.1f);
+    snap("93_journal");
+    bool listed = menus.top().title == "Journal" && menus.top().items.at(0).right == "en cours" &&
+                  menus.top().items.at(0).help.find("Bois Murmurant") != std::string::npos;
+    menus.clear();
+    panelMode_ = 0;
+    int village = mi("vallee"), chest = -1;
+    changeMap(village, 12, 25, UP);
+    for (size_t i = 0; i < M().chests.size(); i++)
+      if (M().chests[i].item == "medaillon") chest = (int)i;
+    if (chest >= 0) openChest(chest);
+    answer();
+    runEvent("quete_medaillon");
+    answer();
+    bool done = has(questFlag("medaillon", true)) && items["medaillon"] == 0 && items["amulette_vie"] == 1 && gold == gold0 + 200;
+    check(started && listed && chest >= 0 && done,
+          "quête annexe : le médaillon (acceptée, inscrite au journal, trouvée dans un coffre, rendue contre une récompense)");
+    items.erase("amulette_vie");
+  }
+
   // --- Combat piloté par les menus ---
   startBattle({makeFighter("mulotin", 4), makeFighter("champichou", 5), makeFighter("piafouine", 4)}, false, nullptr);
   for (int i = 0; i < 1500 && !menus.active(); i++) frame();

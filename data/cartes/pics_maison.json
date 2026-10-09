@@ -15,7 +15,7 @@
   ],
   "batiments": [],
   "habitants": [
-    {"x": 7, "y": 4, "apparence": "villageoise", "dialogue": ["Le froid s'est installé depuis la chute d'Ignarok.", "Une tisane bien chaude ? … Non ? Tant pis, j'en boirai deux."], "direction": "bas"}
+    {"x": 7, "y": 4, "apparence": "villageoise", "evenement": "quete_tisane", "direction": "bas"}
   ],
   "coffres": [{"x": 1, "y": 7, "objet": "superpotion", "quantite": 1}],
   "panneaux": [],
