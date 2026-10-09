@@ -194,7 +194,9 @@ les plus longs : y ajouter tout nouvel écran.
   les deux `Game` partagent les données en mémoire : l'invité met de côté les
   vraies données (celles de l'hôte), voir `shareBackup`.
   Le monde généré doit être identique partout : `-ffp-contract=off` (GCC,
-  Clang), aucun `sin`/`pow`/`std::shuffle`/`unordered_map` dans procgen.cpp ;
+  Clang), aucun `sin`/`pow`/`std::shuffle`/`unordered_map` dans procgen.cpp,
+  et jamais deux tirages au hasard dans les arguments d'un même appel (Clang
+  les fait de gauche à droite, MSVC et GCC de droite à gauche) ;
   le mode test compare l'empreinte de la graine 2026 à une valeur fixe (à
   mettre à jour si on change le générateur).
 - Tactiques (tactics.hpp) : `Fighter::tactics` (liste de `Tactic` : condition,

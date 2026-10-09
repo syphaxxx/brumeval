@@ -244,7 +244,11 @@ static std::string personName(Content& c, Rng& r) {
   }, 8);
 }
 static std::string placeName(Content* c, Rng& r) {
-  auto make = [&] { return cap(glue(r.pick(P_START), r.pick(P_END))); };
+  // Un tirage après l'autre (voir genCreature)
+  auto make = [&] {
+    std::string end = r.pick(P_END);
+    return cap(glue(r.pick(P_START), end));
+  };
   if (!c) return make();
   return unique(*c, make, 10);
 }
@@ -488,7 +492,10 @@ static std::string genCreature(Content& c, Rng& r, const std::string& id, const 
   const Profile& pr = r.pick(PROFILES);
   std::string name = unique(c, [&] {
     const Flavor& f = flavor(!t2.empty() && r.chance(.3f) ? t2 : t1);
-    return cap(glue(r.pick(f.roots), r.pick(SUFFIX)));
+    // Jamais deux tirages dans les arguments d'un même appel : leur ordre dépend du compilateur
+    // (Clang, sur Mac, commence par la gauche). Le suffixe d'abord, comme MSVC et GCC.
+    std::string end = r.pick(SUFFIX);
+    return cap(glue(r.pick(f.roots), end));
   }, 10);
   Json o = creatureJson(id, name, t1, t2, vary(r, pr.s, 5));
   if (std::strcmp(pr.name, "rapide") == 0) o["esquive"] = r.range(6, 10);
@@ -521,7 +528,10 @@ static std::string genCreature(Content& c, Rng& r, const std::string& id, const 
 // Gardien d'une région
 static std::string genBoss(Content& c, Rng& r, const std::string& id, const std::string& t1, std::string t2, std::string& name) {
   if (t2 == t1) t2.clear();
-  name = unique(c, [&] { return cap(glue(r.pick(flavor(t1).roots), r.pick(BOSS_SUFFIX))); }, 10);
+  name = unique(c, [&] {
+    std::string end = r.pick(BOSS_SUFFIX);  // un tirage après l'autre (voir genCreature)
+    return cap(glue(r.pick(flavor(t1).roots), end));
+  }, 10);
   Stats st = vary(r, {82, 30, 54, 50, 52, 50, 44}, 3);
   bool mg = st[4] > st[2];
   Json o = creatureJson(id, name, t1, t2, st);
