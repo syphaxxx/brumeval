@@ -2,8 +2,8 @@ BRUMEVAL — Les gardiens de la vallée
 ====================================
 
 Un petit RPG : combats au tour par tour actif (jauges ATB, Limites, magie),
-créatures à capturer, une aventure, un mode Expédition sans fin (roguelite)
-et des duels en ligne entre amis.
+créatures à capturer, une aventure, un mode Expédition sans fin (roguelite),
+à jouer seul ou jusqu'à quatre en ligne, et des duels entre amis.
 
 
 LANCER LE JEU
@@ -43,11 +43,19 @@ COMMANDES
 JOUER À PLUSIEURS (écran titre > Multijoueur)
 ---------------------------------------------
 
-Il faut la même version du jeu des deux côtés (en bas à droite de l'écran
-titre).
+Jusqu'à quatre joueurs. Il faut la même version du jeu partout (en bas à
+droite de l'écran titre).
 
-  - L'un choisit « Héberger un duel » : le jeu affiche ses adresses.
-  - L'autre choisit « Rejoindre un duel » et tape une de ces adresses.
+  - L'un choisit « Héberger une partie » : le jeu affiche ses adresses.
+  - Les autres choisissent « Rejoindre une partie » et tapent une de ces
+    adresses.
+  - Dans le salon, l'hôte lance une expédition ou un duel (à deux).
+
+Expédition à plusieurs : tout le monde part dans le même monde. Chacun
+explore, combat, capture et fait ses achats de son côté. Le gardien de chaque
+région se combat ensemble : le premier arrivé attend les autres devant lui
+(Échap > Groupe pour voir où ils en sont). Perdre un combat seul ramène au
+village (moitié de l'or) ; perdre contre le gardien arrête l'expédition.
 
 Chacun chez soi, le plus simple est d'installer tous les deux Tailscale
 (https://tailscale.com, gratuit) et d'être dans le même réseau Tailscale :

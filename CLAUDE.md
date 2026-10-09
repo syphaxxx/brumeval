@@ -80,7 +80,8 @@ les plus longs : y ajouter tout nouvel écran.
 | `procgen.hpp/.cpp` | Génération procédurale du mode Expédition : hasard reproductible (`Rng`, graine), techniques par type (`Pool`), soutiens, créatures, gardiens, personnages par classe, apparences, régions (carte, village, chemin, rivière, dresseurs, coffres, gardien, événements), au format de data/ |
 | `expedition.hpp/.cpp` | Mode Expédition (écran titre) : menus, choix du héros et de la créature, contenu généré installé à la place des données du jeu (`install`/`restore`), passage de région, défaite roguelite (éclats, record), Camp (améliorations), sauvegarde à part |
 | `net.hpp/.cpp` | Réseau du multijoueur : connexions TCP non bloquantes (Windows, Mac, Linux), messages JSON précédés de leur longueur, adresses de l'ordinateur |
-| `online.hpp/.cpp` | Multijoueur (écran titre) : héberger, rejoindre, salon, vérification de la version et des données (`dataHash`), duel en ligne |
+| `online.hpp/.cpp` | Multijoueur (écran titre) : héberger une partie (jusqu'à 4 joueurs), rejoindre, salon, vérification de la version et des données (`dataHash`), relais des messages par l'hôte, duel en ligne |
+| `coop.cpp` | Expédition à plusieurs (fonctions de `Online`) : lancement d'une graine pour tous, état de chaque joueur (message `ou`), autres joueurs sur la carte (`avatars`), attente et combat du gardien à plusieurs |
 | `version.hpp` | Numéro de version (`BRUMEVAL_VERSION`), affiché sur l'écran titre et comparé en multijoueur |
 | `test.cpp` | Mode test automatique |
 
@@ -145,11 +146,16 @@ les plus longs : y ajouter tout nouvel écran.
   dans `expedition_progres.txt` ; le mode test utilise des fichiers `_test`.
   Changer le générateur change le monde des graines déjà jouées (et donc les
   sauvegardes d'expédition en cours).
+  À plusieurs, voir « Expédition à plusieurs » plus bas.
   `BRUMEVAL_MONDE=brume brumeval --test captures` affiche le monde de la graine
   « brume » (héros, créatures, gardiens et techniques des trois premières régions).
-- Multijoueur (online.hpp, net.hpp) : TCP sur le port 47474. Les deux joueurs
-  échangent `bonjour` (version, empreinte des données, pseudo) puis leur
-  équipe (3 premiers membres de la partie principale). En duel, l'**hôte**
+- Multijoueur (online.hpp, net.hpp) : TCP sur le port 47474, l'hôte (numéro 0)
+  et jusqu'à trois invités (1 à 3), reliés seulement à l'hôte : `sendTo(à qui,
+  message)` ajoute `de` (expéditeur) et, chez un invité, `a` (destinataire, -1 :
+  tous) ; l'hôte fait suivre. Chacun envoie `bonjour` (version, empreinte des
+  données, pseudo, équipe : 3 premiers membres de la partie principale) ;
+  l'hôte répond `bienvenue` (numéro, liste des joueurs, expédition en cours) et
+  envoie `joueurs` aux autres. Le duel n'est possible qu'à deux. En duel, l'**hôte**
   calcule tout le combat (`Battle::goOnline`, `Net::Host` : les « ennemis » sont
   l'équipe de l'invité ; quand la jauge de l'un d'eux est pleine, il envoie
   `tour` et attend `ordre`, qu'il vérifie) et envoie son état dix fois par
@@ -160,8 +166,39 @@ les plus longs : y ajouter tout nouvel écran.
   Un combattant dans un message : `[0, rang]` pour l'équipe de l'expéditeur,
   `[1, rang]` pour l'autre (`Battle::mine`, `Battle::other`). Pas d'objets, ni
   remplaçants, ni expérience en duel. Le mode test lance deux `Game` reliés
-  par 127.0.0.1 (port 47475) et joue un duel complet. Augmenter
-  `BRUMEVAL_VERSION` à chaque version publiée.
+  par 127.0.0.1 (port 47475), joue un duel complet puis une expédition à deux.
+  Augmenter `BRUMEVAL_VERSION` à chaque version publiée (et si les messages
+  changent).
+- Expédition à plusieurs (coop.cpp) : l'hôte envoie `expedition` (graine,
+  empreinte du monde `Expedition::worldHash`, région du groupe) ; chacun joue sa
+  propre `Expedition` (`group()`, sauvegarde `expedition_groupe_<pseudo>.txt`,
+  `groupTag` : deux fenêtres sur le même ordinateur ne se gênent pas) : il
+  reprend sa sauvegarde de cette graine, sinon part avec un nouveau héros de la
+  région du groupe. Chacun envoie son état quand il change (`ou` : région, case,
+  héros, gardien vaincu, en combat, `p` : prêt devant le gardien avec ses
+  combattants). `Game::bossTouched` : le gardien attend tous ceux qui ne l'ont
+  pas encore battu (`Online::missing`) ; l'hôte vérifie (`checkGuardians`) puis
+  envoie `gardien` (groupe, combattants, chef = plus petit numéro). Chez chacun,
+  le combat a les mêmes alliés dans le même ordre (`BattleSetup::allies` : ses
+  vrais combattants, des copies pour ceux des autres ; 3 seul, 2 chacun à deux,
+  1 chacun à trois ou quatre ; PV des ennemis ×alliés/3 au-delà de trois). Le
+  chef (`Net::Lead`) calcule le combat comme l'hôte d'un duel, envoie `tour`
+  au joueur de l'allié (`Battle::owner`), vérifie son `ordre` (technique, ou
+  objet déjà pris dans son sac), envoie `renfort` et `issue` ; ceux qui suivent
+  (`Net::Follow`) jouent alors la fin chez eux (`victory` : expérience de leurs
+  combattants, or). Joueur parti : l'ordinateur joue ses combattants
+  (`dropPlayer`) ; chef parti : le combat s'arrête sans conséquence. Une
+  défaite en solo ramène au village (`Expedition::knockedOut`, moitié de l'or) ;
+  `groupBattle_` : défaite contre le gardien, l'expédition s'arrête
+  (`onDefeat`, puis `Online::runEnded` : retour au salon). Dans le mode test,
+  les deux `Game` partagent les données en mémoire : l'invité met de côté les
+  vraies données (celles de l'hôte), voir `shareBackup`.
+  Le monde généré doit être identique partout : `-ffp-contract=off` (GCC,
+  Clang), aucun `sin`/`pow`/`std::shuffle`/`unordered_map` dans procgen.cpp,
+  et jamais deux tirages au hasard dans les arguments d'un même appel (Clang
+  les fait de gauche à droite, MSVC et GCC de droite à gauche) ;
+  le mode test compare l'empreinte de la graine 2026 à une valeur fixe (à
+  mettre à jour si on change le générateur).
 - Tactiques (tactics.hpp) : `Fighter::tactics` (liste de `Tactic` : condition,
   seuil, action automatique / technique / objet), `Fighter::tacticsOn`,
   `Game::tacticsAuto` (touche Tab en combat). Quand la jauge d'un allié est

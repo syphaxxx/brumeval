@@ -45,7 +45,7 @@ float captureChance(const Fighter& f, float mult) {
 Battle::Battle(Game& game, BattleSetup s, Theme bg_)
     : G(game), foes(std::move(s.foes)), reserve(std::move(s.reserve)), foeName(std::move(s.foeName)), boss(s.boss), canFlee(s.canFlee),
       canCapture(s.canCapture), bg(bg_) {
-  allies = G.front();
+  allies = s.allies.empty() ? G.front() : std::move(s.allies);
   start = G.time;
   std::map<std::string, int> cnt, seen;
   for (auto* v : {&foes, &reserve})
@@ -53,7 +53,10 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
   for (auto* v : {&foes, &reserve})
     for (auto& e : *v)
       if (cnt[e->sp] > 1) e->tag = std::string(1, char('A' + seen[e->sp]++));
+  roster_ = foes;
+  roster_.insert(roster_.end(), reserve.begin(), reserve.end());
   for (auto& a : G.team) a->clearBattle();
+  for (auto& a : allies) a->clearBattle();
   for (auto* v : {&foes, &reserve})
     for (auto& e : *v) e->clearBattle();
   for (auto& a : allies) a->atb = 20 + frand() * 50;
@@ -82,10 +85,11 @@ std::vector<FighterP> Battle::alive(const std::vector<FighterP>& v) const {
 Pt Battle::pos(const FighterP& f) const {
   static const Pt FOE[3][3] = {{{92, 96}}, {{72, 72}, {112, 122}}, {{58, 58}, {112, 96}, {58, 134}}};
   static const Pt ALLY[3] = {{238, 64}, {264, 100}, {238, 136}};
+  static const Pt ALLY4[4] = {{234, 54}, {268, 80}, {234, 112}, {268, 138}};  // gardien à plusieurs
   for (size_t i = 0; i < foes.size(); i++)
     if (foes[i] == f) return FOE[std::min<size_t>(foes.size(), 3) - 1][std::min<size_t>(i, 2)];
   for (size_t i = 0; i < allies.size(); i++)
-    if (allies[i] == f) return ALLY[std::min<size_t>(i, 2)];
+    if (allies[i] == f) return allies.size() > 3 ? ALLY4[std::min<size_t>(i, 3)] : ALLY[std::min<size_t>(i, 2)];
   return {160, 100};
 }
 // Nombre ou texte flottant au-dessus d'un combattant ; ils s'empilent s'ils apparaissent ensemble
@@ -95,7 +99,7 @@ void Battle::pop(const FighterP& f, const std::string& t, Color c) {
   for (auto& q : pops)
     if (q.x == p.x && G.time - q.t < .3f) stack++;
   pops.push_back({p.x, p.y - 22 - 11.f * stack, t, c, G.time});
-  if (net_ == Net::Host) send_(Json{{"t", "pop"}, {"f", mine(f)}, {"txt", t}, {"c", Json::array({c.r, c.g, c.b})}});
+  if (net_ == Net::Host || net_ == Net::Lead) send_(-1, Json{{"t", "pop"}, {"f", mine(f)}, {"txt", t}, {"c", Json::array({c.r, c.g, c.b})}});
 }
 
 // ---------------------------------------------------------------------------
@@ -118,7 +122,7 @@ void Battle::update(float dt) {
     G.menus.update(G.in);
     return;
   }
-  if (net_ == Net::Guest || remoteTurn_) return;  // invité : l'hôte fait avancer le temps ; hôte : ordre attendu
+  if (follower() || remoteTurn_) return;  // invité : l'hôte fait avancer le temps ; hôte : ordre attendu
   tickATB(dt);
 }
 
@@ -131,14 +135,21 @@ void Battle::tickATB(float dt) {
     if (f->atb >= 100) {
       f->atb = 100;
       if (skipTurn(f)) return;
-      if (isAlly(f)) {
+      if (isAlly(f) && coop() && owner(f) != me_) {  // gardien : allié d'un autre joueur
+        if (owner(f) < 0) autoCommand(f);            // joueur parti : l'ordinateur joue
+        else {
+          remoteTurn_ = f;
+          actor = f;
+          send_(owner(f), Json{{"t", "tour"}, {"i", mine(f)[1]}});
+        }
+      } else if (isAlly(f)) {
         if (tacticsActive() && tacticTurn(f)) return;
         if (autoPlay) autoCommand(f);
         else command(f);
       } else if (net_ == Net::Host) {  // combattant de l'invité : on attend son ordre
         remoteTurn_ = f;
         actor = f;
-        send_(Json{{"t", "tour"}, {"i", mine(f)[1]}});
+        send_(-1, Json{{"t", "tour"}, {"i", mine(f)[1]}});
       } else enemyTurn(f);
       return;
     }
@@ -250,9 +261,13 @@ void Battle::command(FighterP a) {
                        G.menus.push(t);
                      }});
   if (canFlee) m.items.push_back({"Fuir", "", "Tenter de fuir avec toute l'équipe.", true, [this, a] { tryFlee(a); }});
-  if (net_ != Net::None)  // duel : ni objets ni remplaçants, à armes égales
-    m.items.erase(std::remove_if(m.items.begin(), m.items.end(), [](const MenuItem& it) { return it.label == "Objet" || it.label == "Changer"; }),
+  // Duel : ni objets ni remplaçants, à armes égales ; gardien à plusieurs : pas de remplaçants
+  if (net_ != Net::None) {
+    bool d = duel();
+    m.items.erase(std::remove_if(m.items.begin(), m.items.end(),
+                                 [d](const MenuItem& it) { return (d && it.label == "Objet") || it.label == "Changer"; }),
                   m.items.end());
+  }
   G.menus.push(m);
 }
 
@@ -274,7 +289,7 @@ void Battle::pickFoe(const std::string& title, std::function<std::string(const F
 void Battle::pickAlly(const std::string& title, bool ko, std::function<void(FighterP)> done) {
   Menu t;
   t.title = title;
-  t.x = 4, t.y = 94, t.w = 176, t.rows = 3;
+  t.x = 4, t.y = 94, t.w = 176, t.rows = allies.size() > 3 ? 4 : 3;
   t.onCancel = [this] {
     cursor = nullptr;
     G.menus.pop();
@@ -637,7 +652,7 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m) {
   if (crit) pop(d, "Critique !", RED);
   if (eff > 1) pop(d, "Efficace !", GOLD);
   else if (eff < 1) pop(d, "Résiste", GREY);
-  if (isAlly(d) || net_ != Net::None) d->lim = std::min(100.f, d->lim + dmg * float(R.limitGain) / d->mhp);  // en duel, les deux équipes
+  if (isAlly(d) || duel()) d->lim = std::min(100.f, d->lim + dmg * float(R.limitGain) / d->mhp);  // en duel, les deux équipes
   log.push_back(a->name() + " > " + d->name() + " : " + m.name + " " + std::to_string(dmg) + (crit ? " critique" : "") +
                 (eff > 1 ? " efficace" : eff < 1 ? " résiste" : "") + " (reste " + std::to_string(d->hp) + "/" + std::to_string(d->mhp) + ")");
   return dmg;
@@ -677,10 +692,10 @@ void Battle::knockOut(const FighterP& f) {
 }
 
 void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> targets, bool isLimit) {
-  if (net_ == Net::Guest) {  // l'invité envoie son ordre ; l'hôte le joue et renvoie le résultat
+  if (follower()) {  // l'invité envoie son ordre ; l'hôte (ou le chef) le joue et renvoie le résultat
     Json t = Json::array();
     for (auto& f : targets) t.push_back(mine(f));
-    send_(Json{{"t", "ordre"}, {"i", mine(a)[1]}, {"move", id}, {"limite", isLimit}, {"cibles", t}});
+    send_(net_ == Net::Follow ? leader_ : -1, Json{{"t", "ordre"}, {"i", mine(a)[1]}, {"move", id}, {"limite", isLimit}, {"cibles", t}});
     G.menus.clear();
     cursor = nullptr;
     actor = nullptr;
@@ -697,7 +712,7 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
     if (isLimit || m.target == Target::AllEnemies) {
       flashT = G.time;
       flashCol = m.kind == Kind::Heal ? rgb(0xfff4c0) : isLimit ? rgb(0xff8ac8) : rgb(0xffffff);
-      if (net_ == Net::Host) send_(Json{{"t", "eclair"}, {"c", Json::array({flashCol.r, flashCol.g, flashCol.b})}});
+      if (net_ == Net::Host || net_ == Net::Lead) send_(-1, Json{{"t", "eclair"}, {"c", Json::array({flashCol.r, flashCol.g, flashCol.b})}});
     }
     bool landed = false;
     for (auto& t : targets) {
@@ -748,17 +763,23 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
   });
   sc.wait(.75f);
   sc.call([this, ko] {
-    for (auto& f : *ko) sc.say(f->name() + (isAlly(f) || net_ != Net::None ? " est K.O. !" : " est vaincu !"), .75f);
+    for (auto& f : *ko) sc.say(f->name() + (isAlly(f) || duel() ? " est K.O. !" : " est vaincu !"), .75f);
   });
   float gauge = isLimit ? 0.f : paceGauge(m);
   sc.call([this, a, gauge] { afterAction(a, gauge); });
 }
 
 void Battle::useItem(FighterP a, const std::string& id, FighterP t) {
-  if (net_ != Net::None) return;  // pas d'objets en duel
+  if (duel()) return;  // pas d'objets en duel
   G.menus.clear();
   cursor = nullptr;
-  G.items[id]--;
+  if (net_ == Net::Follow) {  // gardien : l'objet est pris dans mon sac, le chef applique son effet
+    G.items[id]--;
+    send_(leader_, Json{{"t", "ordre"}, {"i", mine(a)[1]}, {"objet", id}, {"cibles", Json::array({mine(t)})}});
+    actor = nullptr;
+    return;
+  }
+  if (mineToCommand(a)) G.items[id]--;  // l'objet d'un autre joueur a déjà été pris dans son sac
   const ItemDef& d = item(id);
   sc.say(a->name() + " utilise : " + d.name, .7f);
   sc.call([this, a, id, t] {
@@ -848,14 +869,14 @@ void Battle::afterAction(FighterP a, float gauge) {
     sc.say(a->name() + (poison ? " souffre du poison." : " souffre de sa brûlure."), .6f);
     if (!a->alive()) {
       knockOut(a);
-      sc.say(a->name() + (isAlly(a) || net_ != Net::None ? " est K.O. !" : " est vaincu !"), .75f);
+      sc.say(a->name() + (isAlly(a) || duel() ? " est K.O. !" : " est vaincu !"), .75f);
     }
   }
   sc.call([this] { checkEnd(); });
 }
 
 void Battle::checkEnd() {
-  if (net_ != Net::None) {
+  if (duel()) {
     if (!alive(foes).empty() && !alive(allies).empty()) return;
     bool won = alive(foes).empty();
     ending_ = true;
@@ -864,14 +885,20 @@ void Battle::checkEnd() {
     return;
   }
   // Renforts ennemis : remplacent ceux qui sont tombés
-  for (auto& f : foes)
-    if (!f->alive() && !reserve.empty()) {
+  for (size_t i = 0; i < foes.size(); i++)
+    if (!foes[i]->alive() && !reserve.empty()) {
       FighterP n = reserve.front();
       reserve.erase(reserve.begin());
-      f = n;
+      foes[i] = n;
       n->atb = frand() * 30;
+      if (net_ == Net::Lead) send_(-1, Json{{"t", "renfort"}, {"i", (int)i}});
       sc.say(foeName.empty() ? n->name() + " entre dans le combat !" : foeName + " envoie " + n->name() + " !", 1.1f);
     }
+  // Gardien à plusieurs : chacun termine le combat chez lui (expérience et or de son équipe)
+  if (net_ == Net::Lead && (alive(foes).empty() || alive(allies).empty())) {
+    send_(-1, netState());
+    send_(-1, Json{{"t", "issue"}, {"gagne", alive(foes).empty()}});
+  }
   if (alive(foes).empty()) victory();
   else if (alive(allies).empty()) {
     ending_ = true;
@@ -894,7 +921,8 @@ void Battle::victory() {
     sc.say("Chaque combattant gagne " + std::to_string(share) + " points d'expérience.", 1.4f);
     sc.call([this, share, res] {
       for (auto& a : alive(allies))
-        for (auto& msg : gainXp(*a, share)) sc.say(msg, 1.3f);
+        if (mineToCommand(a))  // gardien à plusieurs : chacun ne fait progresser que ses combattants
+          for (auto& msg : gainXp(*a, share)) sc.say(msg, 1.3f);
       for (auto& m : G.team)
         if (!isAlly(m) && m->alive()) gainXp(*m, res);
     });
@@ -1039,8 +1067,8 @@ void Battle::draw() {
   std::string top;
   if (G.menus.active()) top = G.menus.help();
   else if (sc.showingMessage()) top = utf8Prefix(sc.text(), sc.visibleChars());
-  else if (net_ == Net::Guest && !netMsg_.empty()) top = utf8Prefix(netMsg_, int((t - netMsgT_) * 60));
-  else if ((net_ == Net::Host && remoteTurn_) || (net_ == Net::Guest && netWait_ == "hote")) top = names_[1] + " choisit…";
+  else if (follower() && !netMsg_.empty()) top = utf8Prefix(netMsg_, int((t - netMsgT_) * 60));
+  else if (!choosing().empty()) top = choosing() + " choisit…";
   if (!top.empty()) {
     auto lines = Gfx::wrap(top, 300);
     g.window(4, 2, 312, 7 + 11 * (int)lines.size());
@@ -1069,14 +1097,16 @@ void Battle::draw() {
   // Mode auto : les tactiques jouent (touche Tab pour l'activer ou le couper)
   bool flash = t - toggledT_ < 1.2f && int(t * 8) % 2;
   g.text(108, 171, G.tacticsAuto ? "Auto (Tab)" : "Manuel (Tab)", flash ? WHITE : G.tacticsAuto ? GOLD : lab);
+  bool four = allies.size() > 3;  // gardien à plusieurs : lignes plus serrées
   for (size_t i = 0; i < allies.size(); i++) {
     auto& a = allies[i];
-    float y = 184 + i * 17;
+    float y = four ? 182 + i * 13 : 184 + i * 17;
     if (actor == a) {
-      g.rect(105, y - 2, 208, 15, rgb(0xffffff, 34));
+      g.rect(105, y - 2, 208, four ? 13 : 15, rgb(0xffffff, 34));
       g.cursor(105, y);
     }
-    Color nc = !a->alive() ? rgb(0xff7b6b) : a->status != Status::None ? rgb(statusColor(a->status)) : WHITE;
+    // Gardien à plusieurs : les combattants des autres joueurs en bleu
+    Color nc = !a->alive() ? rgb(0xff7b6b) : a->status != Status::None ? rgb(statusColor(a->status)) : mineToCommand(a) ? WHITE : BLUE;
     g.text(112, y, utf8Prefix(a->name(), 10), nc);
     Color hc = a->hp * 4 < a->mhp ? GOLD : WHITE;
     g.text(223, y, std::to_string(a->hp) + "/" + std::to_string(a->mhp), hc, 2);
@@ -1102,13 +1132,43 @@ void Battle::draw() {
 // ---------------------------------------------------------------------------
 // Duel en ligne (online.hpp) : l'hôte joue tout le combat et envoie son état ;
 // l'invité l'affiche et répond quand un de ses combattants doit agir.
+// Gardien à plusieurs (coop.cpp) : même principe, le chef joue le combat et chacun
+// commande ses combattants ; tous voient les alliés dans le même ordre.
 // ---------------------------------------------------------------------------
 void Battle::goOnline(Net mode, std::function<void(const Json&)> send, const std::string& me, const std::string& other) {
   net_ = mode;
-  send_ = std::move(send);
+  send_ = [send = std::move(send)](int, const Json& m) { send(m); };
   names_[0] = me, names_[1] = other;
   sc.clear();
   if (mode == Net::Host) sc.say("Duel : " + me + " contre " + other + " !", 1.3f);
+}
+
+void Battle::goCoop(bool lead, int me, int leader, std::vector<int> owners, std::map<int, std::string> names,
+                    std::function<void(int, const Json&)> send) {
+  net_ = lead ? Net::Lead : Net::Follow;
+  me_ = me, leader_ = leader;
+  owners_ = std::move(owners);
+  players_ = std::move(names);
+  send_ = std::move(send);
+  if (!lead) sc.clear();  // ceux qui suivent affichent les messages du chef
+}
+
+int Battle::owner(const FighterP& f) const {
+  for (size_t i = 0; i < allies.size() && i < owners_.size(); i++)
+    if (allies[i] == f) return owners_[i];
+  return me_;
+}
+
+std::string Battle::choosing() const {
+  auto name = [this](int id) {
+    auto it = players_.find(id);
+    return it == players_.end() ? std::string() : it->second;
+  };
+  if (net_ == Net::Host && remoteTurn_) return names_[1];
+  if (net_ == Net::Guest && netWait_ == "hote") return names_[1];
+  if (net_ == Net::Lead && remoteTurn_) return name(owner(remoteTurn_));
+  if (net_ == Net::Follow && netWait_ != name(me_)) return netWait_;
+  return "";
 }
 
 Json Battle::mine(const FighterP& f) const {
@@ -1121,13 +1181,14 @@ Json Battle::mine(const FighterP& f) const {
 FighterP Battle::other(const Json& s) const {
   if (!s.is_array() || s.size() != 2) return nullptr;
   int side = s[0].get<int>(), i = s[1].get<int>();
-  const auto& v = side == 0 ? foes : allies;  // l'équipe de l'autre joueur, ce sont mes « ennemis »
+  if (coop() && side >= 0) side = 1 - side;  // gardien : les alliés sont les mêmes pour tous
+  const auto& v = side == 0 ? foes : allies;  // duel : l'équipe de l'autre joueur, ce sont mes « ennemis »
   return side >= 0 && side <= 1 && i >= 0 && i < (int)v.size() ? v[(size_t)i] : nullptr;
 }
 void Battle::setBlink(const FighterP& f) {
   blink = f;
   blinkT = G.time;
-  if (net_ == Net::Host) send_(Json{{"t", "clignote"}, {"f", mine(f)}});
+  if (net_ == Net::Host || net_ == Net::Lead) send_(-1, Json{{"t", "clignote"}, {"f", mine(f)}});
 }
 
 Json Battle::netState() const {
@@ -1140,18 +1201,22 @@ Json Battle::netState() const {
     }
     return a;
   };
-  return Json{{"t", "etat"},
-              {"a", pack(allies)},
-              {"b", pack(foes)},
-              {"msg", sc.showingMessage() ? sc.text() : std::string()},
-              {"attente", remoteTurn_ ? "invite" : G.menus.active() ? "hote" : ""}};
+  // Qui choisit en ce moment : duel « invite » ou « hote » ; gardien, le nom du joueur
+  std::string wait = remoteTurn_ ? "invite" : G.menus.active() ? "hote" : "";
+  if (coop()) {
+    auto it = players_.find(remoteTurn_ ? owner(remoteTurn_) : me_);
+    wait = (remoteTurn_ || G.menus.active()) && it != players_.end() ? it->second : "";
+  }
+  return Json{{"t", "etat"}, {"a", pack(allies)}, {"b", pack(foes)}, {"msg", sc.showingMessage() ? sc.text() : std::string()}, {"attente", wait}};
 }
 
 void Battle::netMessage(const Json& m) {
   std::string k = jget<std::string>(m, "t", "");
-  if (net_ == Net::Guest) {
+  if (follower()) {
+    if (net_ == Net::Follow && jget(m, "de", -1) != leader_) return;  // seul le chef décrit le combat
+    if (ending_) return;                                               // la fin se joue chez chacun
     if (k == "etat") {
-      // « a » : l'équipe de l'hôte (mes ennemis) ; « b » : la mienne
+      // Duel : « a » est l'équipe de l'hôte (mes ennemis), « b » la mienne. Gardien : « a » les alliés, « b » les ennemis
       auto apply = [](std::vector<FighterP>& v, const Json& a) {
         for (size_t i = 0; i < v.size() && i < a.size(); i++) {
           const Json& x = a[i];
@@ -1161,14 +1226,14 @@ void Battle::netMessage(const Json& m) {
           for (int s = 0; s < N_STAGES && s < (int)x[5].size(); s++) f.stage[s] = x[5][(size_t)s].get<int>();
         }
       };
-      apply(foes, m.value("a", Json::array()));
-      apply(allies, m.value("b", Json::array()));
+      apply(duel() ? foes : allies, m.value("a", Json::array()));
+      apply(duel() ? allies : foes, m.value("b", Json::array()));
       std::string msg = jget<std::string>(m, "msg", "");
       if (msg != netMsg_) netMsg_ = msg, netMsgT_ = G.time;
       netWait_ = jget<std::string>(m, "attente", "");
     } else if (k == "tour") {
       int i = jget(m, "i", -1);
-      if (i < 0 || i >= (int)allies.size() || !allies[(size_t)i]->alive()) return;
+      if (i < 0 || i >= (int)allies.size() || !allies[(size_t)i]->alive() || !mineToCommand(allies[(size_t)i])) return;
       FighterP a = allies[(size_t)i];
       actor = a;
       if (G.tacticsAuto && tacticTurn(a)) return;  // mode auto : les tactiques choisissent
@@ -1190,29 +1255,57 @@ void Battle::netMessage(const Json& m) {
       Json c = m.value("c", Json::array({255, 255, 255}));
       flashT = G.time;
       flashCol = rgb(uint32_t(c[0].get<int>()) << 16 | uint32_t(c[1].get<int>()) << 8 | uint32_t(c[2].get<int>()));
+    } else if (k == "renfort") {  // gardien : un renfort prend la place d'un ennemi tombé
+      int i = jget(m, "i", -1);
+      if (i >= 0 && i < (int)foes.size() && !reserve.empty()) {
+        foes[(size_t)i] = reserve.front();
+        reserve.erase(reserve.begin());
+      }
+    } else if (k == "issue") {  // gardien : fin du combat, jouée chez chacun (expérience et or de son équipe)
+      G.menus.clear();
+      cursor = nullptr;
+      actor = nullptr;
+      netMsg_.clear();
+      netWait_.clear();
+      if (jget(m, "gagne", false)) {
+        defeated = roster_;
+        victory();
+      } else {
+        ending_ = true;
+        sc.say("Toute l'équipe est à terre…", 1.6f);
+        sc.call([this] { finish(BattleResult::Lose); });
+      }
     }
     return;
   }
-  // Hôte : l'ordre de l'invité pour son combattant en attente (vérifié : technique connue, PM, cibles)
-  if (net_ == Net::Host && k == "ordre" && remoteTurn_) {
+  // Hôte ou chef : l'ordre pour le combattant en attente (vérifié : technique connue, PM, cibles)
+  if ((net_ == Net::Host || net_ == Net::Lead) && k == "ordre" && remoteTurn_) {
     FighterP f = remoteTurn_;
+    if (net_ == Net::Lead && jget(m, "de", -1) != owner(f)) return;  // seul son joueur le commande
     remoteTurn_ = nullptr;
     int i = jget(m, "i", -1);
-    std::string id = jget<std::string>(m, "move", "");
-    bool lim = jget(m, "limite", false);
+    const auto& side = net_ == Net::Host ? foes : allies;
     std::vector<FighterP> targets;
     Json cs = m.value("cibles", Json::array());
     for (auto& c : cs)
       if (FighterP t = other(c)) targets.push_back(t);
-    bool ok = i >= 0 && i < (int)foes.size() && foes[(size_t)i] == f && hasMove(id) && !targets.empty();
-    if (ok && lim) ok = f->S().limit == id && f->lim >= 100;
+    bool ok = i >= 0 && i < (int)side.size() && side[(size_t)i] == f && !targets.empty();
+    std::string obj = jget<std::string>(m, "objet", ""), id = jget<std::string>(m, "move", "");
+    bool lim = jget(m, "limite", false);
+    if (ok && !obj.empty()) {  // gardien : objet déjà pris dans le sac de ce joueur
+      const FighterP& t = targets[0];
+      ok = net_ == Net::Lead && hasItem(obj) && item(obj).battle && item(obj).capture <= 0 && isAlly(t) && (item(obj).revive > 0) != t->alive();
+      if (ok) return useItem(f, obj, t);
+    } else if (ok && lim)
+      ok = hasMove(id) && f->S().limit == id && f->lim >= 100;
     else if (ok) {
       auto known = f->techs();
       for (auto& s : f->spells()) known.push_back(s);
-      ok = std::find(known.begin(), known.end(), id) != known.end() && f->mp >= moveInfo(id).cost;
+      ok = hasMove(id) && std::find(known.begin(), known.end(), id) != known.end() && f->mp >= moveInfo(id).cost;
     }
     if (ok) useMove(f, id, targets, lim);
-    else enemyTurn(f);  // ordre impossible : l'ordinateur joue à sa place
+    else if (net_ == Net::Lead) autoCommand(f);  // ordre impossible : l'ordinateur joue à sa place
+    else enemyTurn(f);
   }
 }
 
@@ -1220,4 +1313,20 @@ void Battle::netEnd(bool won) {
   if (finished_) return;
   G.menus.clear();
   finish(won ? BattleResult::Win : BattleResult::Lose);
+}
+
+void Battle::dropPlayer(int id) {
+  if (!coop() || finished_) return;
+  if (net_ == Net::Follow && id == leader_) {  // le chef est parti : le combat s'arrête, sans conséquence
+    G.menus.clear();
+    finish(BattleResult::Fled);
+    return;
+  }
+  for (auto& o : owners_)
+    if (o == id) o = -1;
+  if (net_ == Net::Lead && remoteTurn_ && owner(remoteTurn_) < 0) {  // c'était son tour : l'ordinateur le joue
+    FighterP f = remoteTurn_;
+    remoteTurn_ = nullptr;
+    autoCommand(f);
+  }
 }

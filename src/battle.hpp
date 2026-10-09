@@ -1,9 +1,11 @@
-// Combat au tour par tour actif (jauges ATB), jusqu'à 3 alliés contre 1 à 3 ennemis.
+// Combat au tour par tour actif (jauges ATB), jusqu'à 3 alliés (4 contre un gardien à
+// plusieurs) contre 1 à 3 ennemis.
 // Quand la jauge ATB d'un allié est pleine, le temps s'arrête et on choisit son action,
 // sauf si le mode auto est actif (touche Tab) et qu'une de ses tactiques s'applique.
 // Les ennemis peuvent avoir des renforts qui entrent quand l'un d'eux tombe.
 #pragma once
 #include <functional>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -23,6 +25,7 @@ std::string moveDetails(const Move& m);
 struct BattleSetup {
   std::vector<FighterP> foes;     // 1 à 3 ennemis en première ligne
   std::vector<FighterP> reserve;  // renforts : entrent un par un quand un ennemi tombe
+  std::vector<FighterP> allies;   // vide : la première ligne de l'équipe (combat du gardien à plusieurs : tout le groupe)
   std::string foeName;            // nom de l'adversaire (« Garo le braconnier »), vide pour des créatures sauvages
   bool boss = false, canFlee = true, canCapture = true;
   int theme = -1;                 // décor (Theme) ; -1 : celui de la carte actuelle
@@ -41,11 +44,17 @@ class Battle {
 
   // Duel en ligne (online.hpp) : l'hôte calcule tout le combat ; l'invité affiche l'état
   // reçu et envoie ses ordres. Les « ennemis » de l'hôte sont l'équipe de l'invité.
-  enum class Net { None, Host, Guest };
+  // Gardien à plusieurs (coop.cpp) : les alliés sont les combattants de tous les joueurs ;
+  // le chef (Lead) calcule le combat, les autres (Follow) commandent leurs combattants.
+  enum class Net { None, Host, Guest, Lead, Follow };
   void goOnline(Net mode, std::function<void(const Json&)> send, const std::string& me, const std::string& other);
+  // owners : le joueur de chaque allié ; names : nom de chaque joueur ; send(à qui, message), -1 : tous les autres
+  void goCoop(bool lead, int me, int leader, std::vector<int> owners, std::map<int, std::string> names,
+              std::function<void(int, const Json&)> send);
   void netMessage(const Json& m);  // message reçu de l'autre joueur
-  Json netState() const;           // hôte : état du combat, envoyé régulièrement à l'invité
+  Json netState() const;           // hôte ou chef : état du combat, envoyé régulièrement aux autres
   void netEnd(bool won);           // fin décidée par l'hôte, ou départ de l'autre joueur
+  void dropPlayer(int id);         // gardien : un joueur est parti (l'ordinateur joue ses combattants)
   Net online() const { return net_; }
 
  private:
@@ -95,14 +104,25 @@ class Battle {
   bool tacticPlan(FighterP a, Plan& out);
   bool tacticTurn(FighterP a);
   float toggledT_ = -10;  // moment où le mode auto a été changé (touche Tab)
-  // Duel en ligne
+  // Duel en ligne et gardien à plusieurs
   Net net_ = Net::None;
-  std::function<void(const Json&)> send_;
-  std::string names_[2];          // ce joueur, puis son adversaire
-  FighterP remoteTurn_;           // hôte : combattant de l'invité qui attend son ordre
+  std::function<void(int, const Json&)> send_;  // à qui (-1 : tous les autres), message
+  std::string names_[2];          // duel : ce joueur, puis son adversaire
+  FighterP remoteTurn_;           // hôte ou chef : combattant d'un autre joueur qui attend son ordre
   std::string netMsg_, netWait_;  // invité : message reçu de l'hôte, et qui choisit en ce moment
   float netMsgT_ = 0;
+  int me_ = 0, leader_ = 0;                // gardien : ce joueur et le chef
+  std::vector<int> owners_;                // gardien : le joueur de chaque allié (-1 : joué par l'ordinateur)
+  std::map<int, std::string> players_;     // gardien : nom de chaque joueur
+  std::vector<FighterP> roster_;           // tous les ennemis du combat (récompenses de ceux qui suivent le chef)
+  bool duel() const { return net_ == Net::Host || net_ == Net::Guest; }
+  bool coop() const { return net_ == Net::Lead || net_ == Net::Follow; }
+  bool follower() const { return net_ == Net::Guest || net_ == Net::Follow; }  // affiche l'état reçu
+  int owner(const FighterP& f) const;  // gardien : joueur de cet allié (me_ hors du gardien)
+  bool mineToCommand(const FighterP& f) const { return isAlly(f) && (!coop() || owner(f) == me_); }
+  std::string choosing() const;        // nom du joueur qui choisit en ce moment
   // Un combattant dans un message : [0, rang] pour l'équipe de celui qui l'envoie, [1, rang] pour l'autre
+  // (au gardien, tous voient les mêmes alliés : [0, rang] désigne les alliés, [1, rang] les ennemis)
   Json mine(const FighterP& f) const;
   FighterP other(const Json& s) const;  // le même, vu par celui qui le reçoit
   void setBlink(const FighterP& f);

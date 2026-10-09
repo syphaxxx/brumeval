@@ -11,6 +11,7 @@
 #include "arena.hpp"
 #include "events.hpp"
 #include "game.hpp"
+#include "online.hpp"
 
 static const Color WHITE = rgb(0xffffff), GOLD = rgb(0xffd34d), MUTED = rgb(0xaab3d8);
 
@@ -72,18 +73,26 @@ void Expedition::saveProgress() const {
   f << "record " << progress.record << "\nexpeditions " << progress.runs << "\neclats " << progress.shards << "\ntotal " << progress.total << '\n';
   for (int u = 0; u < N_UPGRADES; u++) f << "amelioration " << UPGRADE_IDS[u] << ' ' << progress.up[u] << '\n';
 }
+std::string Expedition::groupFile() const {
+  size_t dot = groupName.rfind('.');
+  if (groupTag.empty() || dot == std::string::npos) return groupName;
+  return groupName.substr(0, dot) + "_" + groupTag + groupName.substr(dot);
+}
 bool Expedition::saveExists() const { return savedRegion() > 0; }
-void Expedition::removeSave() const { std::remove(path(saveName).c_str()); }
-int Expedition::savedRegion() const {
-  std::ifstream f(path(saveName));
+void Expedition::removeSave(bool group) const { std::remove(path(group ? groupFile() : saveName).c_str()); }
+int Expedition::savedRegion(bool group, uint64_t* seed) const {
+  std::ifstream f(path(group ? groupFile() : saveName));
   std::string line;
   while (std::getline(f, line)) {
     std::istringstream s(line);
     std::string k;
-    uint64_t seed;
+    uint64_t sd;
     int k2 = 0;
     s >> k;
-    if (k == "expedition" && (s >> seed >> k2)) return k2;
+    if (k == "expedition" && (s >> sd >> k2)) {
+      if (seed) *seed = sd;
+      return k2;
+    }
   }
   return 0;
 }
@@ -142,6 +151,7 @@ void Expedition::leave() {
   restore();
   active_ = false;
   screen_ = false;
+  group_ = false;
   preview_.clear();
 }
 
@@ -222,6 +232,7 @@ void Expedition::chooseHero(int sel) {
                        [this, id] { preview_ = id; }});
   }
   m.onCancel = [this] { cancelSetup(); };
+  if (group_) m.cancelable = false;  // à plusieurs : le groupe est déjà parti
   preview_ = content_.heroes[std::clamp(sel, 0, n - 1)];
   G.menus.push(m);
 }
@@ -249,20 +260,26 @@ void Expedition::chooseStarter(const std::string& hero, int sel) {
 
 void Expedition::begin(const std::string& hero, const std::string& starter) {
   const Progress& P = progress;
-  int lvl = 5 + P.up[U_LEVEL];
+  // Un joueur qui rejoint un groupe déjà loin part de la région du groupe, au niveau de ses créatures
+  int lvl = procgen::regionLevel(region_) + 1 + P.up[U_LEVEL];
   G.menus.clear();
   G.sc.clear();
   G.team = {makeFighter(hero, lvl), makeFighter(starter, lvl)};
   G.items = {{"potion", 3 + 2 * P.up[U_BAG]}, {"lanterne", 4 + P.up[U_BAG]}, {"ether", 1}, {"plume", 1}};
-  G.gold = 100 + 60 * P.up[U_GOLD];
+  G.gold = 100 + 60 * P.up[U_GOLD] + 60 * (region_ - 1);
   G.flags.clear();
   screen_ = false;
   preview_.clear();
   progress.runs++;
   saveProgress();
   enterRegion();
-  G.sc.say("Expédition — graine " + seedText_ + ". Allez le plus loin possible, de région en région !");
-  G.sc.say("Une défaite y met fin, mais les éclats gagnés restent : dépensez-les au Camp.");
+  if (group_) {
+    G.sc.say("Expédition à plusieurs — graine " + seedText_ + ". Chacun explore, combat et capture de son côté.");
+    G.sc.say("Le gardien de chaque région ne s'affronte qu'ensemble : retrouvez-vous devant lui !");
+  } else {
+    G.sc.say("Expédition — graine " + seedText_ + ". Allez le plus loin possible, de région en région !");
+    G.sc.say("Une défaite y met fin, mais les éclats gagnés restent : dépensez-les au Camp.");
+  }
   G.sc.call([this] { G.saveGame(); });
 }
 
@@ -293,6 +310,67 @@ void Expedition::resume() {
   G.mode = Mode::Map;
   G.bannerText = "Région " + std::to_string(region_) + " : " + current_.name;
   G.banner = 3.f;
+}
+
+// ---------------------------------------------------------------------------
+// Expédition à plusieurs (online.hpp, coop.cpp)
+// ---------------------------------------------------------------------------
+void Expedition::startGroup(uint64_t seed, const std::string& text, int region) {
+  if (active_) leave();
+  group_ = true;
+  loadProgress();
+  uint64_t saved = 0;
+  if (savedRegion(true, &saved) > 0 && saved == seed) {  // ce joueur reprend là où il en était
+    active_ = true;
+    if (G.loadGame()) {
+      screen_ = false;
+      G.menus.clear();
+      G.mode = Mode::Map;
+      G.bannerText = "Région " + std::to_string(region_) + " : " + current_.name;
+      G.banner = 3.f;
+      return;
+    }
+    leave();
+    group_ = true;
+  }
+  screen_ = true;
+  G.mode = Mode::Title;
+  seedText_ = text.empty() ? std::to_string(seed) : text;
+  generate(seed, std::max(1, region));  // le groupe est peut-être déjà plus loin : on part de sa région
+  active_ = true;
+  install();
+  chooseHero();
+}
+
+void Expedition::knockedOut() {
+  int lost = G.gold / 2;
+  G.gold -= lost;
+  G.healAll();
+  G.changeMap(0, current_.startX, current_.startY, RIGHT);
+  G.sc.say("Toute l'équipe est à terre… Vous vous réveillez au village, soignés.");
+  if (lost > 0) G.sc.say("Dans la fuite, vous avez perdu " + std::to_string(lost) + " pièces d'or.");
+  G.sc.say("À plusieurs, seule une défaite contre le gardien met fin à l'expédition.");
+}
+
+bool Expedition::beaten() const { return active_ && G.has(current_.bossFlag); }
+
+std::string Expedition::worldHash(uint64_t seed, int regions) {
+  procgen::Content c = procgen::generateBase(seed);
+  uint64_t h = 1469598103934665603ull;
+  auto mix = [&](const std::string& s) {
+    for (unsigned char ch : s) h = (h ^ ch) * 1099511628211ull;
+  };
+  mix(c.moves.dump());
+  mix(c.species.dump());
+  for (auto& l : c.looks) mix(l.dump());
+  for (int k = 1; k <= regions; k++) {
+    procgen::Region r = procgen::generateRegion(seed, k, c);
+    mix(r.map.dump());
+    mix(r.events.dump());
+  }
+  char buf[20];
+  std::snprintf(buf, sizeof buf, "%016llx", (unsigned long long)h);
+  return buf;
 }
 
 void Expedition::quickStart(uint64_t seed, int hero, int starter) {
@@ -350,12 +428,17 @@ void Expedition::onDefeat(bool gaveUp) {
   removeSave();
   G.menus.clear();
   G.healAll();
-  G.sc.say(gaveUp ? "Vous rebroussez chemin… L'expédition s'arrête en région " + std::to_string(region_) + "."
-                  : "Toute l'équipe est à terre… L'expédition s'achève en région " + std::to_string(region_) + ".");
+  // À plusieurs, seule la défaite contre le gardien (ou l'abandon) arrête l'expédition de ce joueur
+  std::string where = " en région " + std::to_string(region_) + ".";
+  G.sc.say(gaveUp   ? "Vous rebroussez chemin… L'expédition s'arrête" + where
+           : group_ ? current_.bossName + " a vaincu le groupe… L'expédition s'achève" + where
+                    : "Toute l'équipe est à terre… L'expédition s'achève" + where);
   G.sc.say("Région atteinte : " + std::to_string(region_) + (newRecord ? " (record !)" : ". Record : région " + std::to_string(progress.record) + "."));
   G.sc.say("Vous gagnez " + std::to_string(gain) + " éclats de brume (" + std::to_string(progress.shards) + " à dépenser au Camp).");
   G.sc.call([this] {
+    bool group = group_;
     leave();
+    if (group && G.online_) return G.online_->runEnded();  // retour au salon, toujours connecté
     G.titleMenu();
     menu(3);
   });

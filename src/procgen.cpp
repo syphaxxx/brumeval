@@ -244,7 +244,11 @@ static std::string personName(Content& c, Rng& r) {
   }, 8);
 }
 static std::string placeName(Content* c, Rng& r) {
-  auto make = [&] { return cap(glue(r.pick(P_START), r.pick(P_END))); };
+  // Un tirage après l'autre (voir genCreature)
+  auto make = [&] {
+    std::string end = r.pick(P_END);
+    return cap(glue(r.pick(P_START), end));
+  };
   if (!c) return make();
   return unique(*c, make, 10);
 }
@@ -297,66 +301,78 @@ static void genTypeMoves(Content& c, Rng& r, const std::string& t) {
   Pool p;
   auto id = [&](const char* slot) { return "x_" + t + "_" + slot; };
   auto name = [&](const std::vector<Noun>& nouns) { return unique(c, [&] { return phrase(r, nouns, t); }, 18); };
+  // La puissance est tirée avant le nom, sur sa propre ligne : un seul tirage par appel (voir genCreature)
   {  // rapide, souvent avec un effet
-    Json m = moveJson(id("p1"), name(PHYS), t, "physique", "ennemi", r.range(36, 42));
+    int pw = r.range(36, 42);
+    Json m = moveJson(id("p1"), name(PHYS), t, "physique", "ennemi", pw);
     m["rythme"] = "rapide";
     if (r.chance(.5f)) m["effet"] = hitEffect(r, t, 15, 25);
     p.p1 = addMove(c, m);
   }
   {
-    Json m = moveJson(id("p2"), name(PHYS), t, "physique", "ennemi", r.range(50, 56));
+    int pw = r.range(50, 56);
+    Json m = moveJson(id("p2"), name(PHYS), t, "physique", "ennemi", pw);
     float k = r.real();
     if (k < .3f) m["critique"] = r.range(2, 3) * 5;
     else if (k < .65f) m["effet"] = hitEffect(r, t, 15, 25);
     p.p2 = addMove(c, m);
   }
   {
-    Json m = moveJson(id("p3"), name(PHYS), t, "physique", "ennemi", r.range(64, 70));
+    int pw = r.range(64, 70);
+    Json m = moveJson(id("p3"), name(PHYS), t, "physique", "ennemi", pw);
     if (r.chance(.4f)) m["precision"] = 95;
     if (r.chance(.3f)) m["effet"] = hitEffect(r, t, 10, 20);
     p.p3 = addMove(c, m);
   }
   {  // lourde : gros coup, le lanceur rejoue plus tard
-    Json m = moveJson(id("p4"), name(PHYS), t, "physique", "ennemi", r.range(82, 90));
+    int pw = r.range(82, 90);
+    Json m = moveJson(id("p4"), name(PHYS), t, "physique", "ennemi", pw);
     m["precision"] = r.range(17, 19) * 5;
     if (r.chance(.3f)) m["critique"] = 10;
     m["rythme"] = "lourde";
     p.p4 = addMove(c, m);
   }
   {
-    Json m = moveJson(id("zone"), name(AREA), t, "physique", "tous_ennemis", r.range(45, 52));
+    int pw = r.range(45, 52);
+    Json m = moveJson(id("zone"), name(AREA), t, "physique", "tous_ennemis", pw);
     if (r.chance(.5f)) m["precision"] = 95;
     p.area = addMove(c, m);
   }
   {
-    Json m = moveJson(id("m1"), name(MAGIC), t, "magique", "ennemi", r.range(40, 45));
+    int pw = r.range(40, 45);
+    Json m = moveJson(id("m1"), name(MAGIC), t, "magique", "ennemi", pw);
     if (r.chance(.3f)) m["rythme"] = "rapide";
     if (r.chance(.4f)) m["effet"] = hitEffect(r, t, 15, 25);
     p.m1 = addMove(c, m);
   }
   {
-    Json m = moveJson(id("m3"), name(MAGIC), t, "magique", "ennemi", r.range(58, 64));
+    int pw = r.range(58, 64);
+    Json m = moveJson(id("m3"), name(MAGIC), t, "magique", "ennemi", pw);
     if (r.chance(.25f)) m["effet"] = hitEffect(r, t, 10, 20);
     p.m3 = addMove(c, m);
   }
   {
-    Json m = moveJson(id("s1"), name(MAGIC), t, "magique", "ennemi", r.range(44, 48));
+    int pw = r.range(44, 48);
+    Json m = moveJson(id("s1"), name(MAGIC), t, "magique", "ennemi", pw);
     m["cout"] = 4;
     p.s1 = addMove(c, m);
   }
   {
-    Json m = moveJson(id("s2"), name(AREA), t, "magique", "tous_ennemis", r.range(46, 52));
+    int pw = r.range(46, 52);
+    Json m = moveJson(id("s2"), name(AREA), t, "magique", "tous_ennemis", pw);
     m["cout"] = r.range(10, 12);
     if (r.chance(.25f)) m["effet"] = hitEffect(r, t, 15, 25);
     p.s2 = addMove(c, m);
   }
   {
-    Json m = moveJson(id("s3"), name(MAGIC), t, "magique", "ennemi", r.range(66, 72));
+    int pw = r.range(66, 72);
+    Json m = moveJson(id("s3"), name(MAGIC), t, "magique", "ennemi", pw);
     m["cout"] = r.range(8, 10);
     p.s3 = addMove(c, m);
   }
   {
-    Json m = moveJson(id("s4"), name(AREA), t, "magique", "tous_ennemis", r.range(60, 65));
+    int pw = r.range(60, 65);
+    Json m = moveJson(id("s4"), name(AREA), t, "magique", "tous_ennemis", pw);
     m["cout"] = r.range(16, 18);
     if (r.chance(.5f)) m["rythme"] = "lourde";
     p.s4 = addMove(c, m);
@@ -488,7 +504,10 @@ static std::string genCreature(Content& c, Rng& r, const std::string& id, const 
   const Profile& pr = r.pick(PROFILES);
   std::string name = unique(c, [&] {
     const Flavor& f = flavor(!t2.empty() && r.chance(.3f) ? t2 : t1);
-    return cap(glue(r.pick(f.roots), r.pick(SUFFIX)));
+    // Jamais deux tirages dans les arguments d'un même appel : leur ordre dépend du compilateur
+    // (Clang, sur Mac, commence par la gauche). Le suffixe d'abord, comme MSVC et GCC.
+    std::string end = r.pick(SUFFIX);
+    return cap(glue(r.pick(f.roots), end));
   }, 10);
   Json o = creatureJson(id, name, t1, t2, vary(r, pr.s, 5));
   if (std::strcmp(pr.name, "rapide") == 0) o["esquive"] = r.range(6, 10);
@@ -521,7 +540,10 @@ static std::string genCreature(Content& c, Rng& r, const std::string& id, const 
 // Gardien d'une région
 static std::string genBoss(Content& c, Rng& r, const std::string& id, const std::string& t1, std::string t2, std::string& name) {
   if (t2 == t1) t2.clear();
-  name = unique(c, [&] { return cap(glue(r.pick(flavor(t1).roots), r.pick(BOSS_SUFFIX))); }, 10);
+  name = unique(c, [&] {
+    std::string end = r.pick(BOSS_SUFFIX);  // un tirage après l'autre (voir genCreature)
+    return cap(glue(r.pick(flavor(t1).roots), end));
+  }, 10);
   Stats st = vary(r, {82, 30, 54, 50, 52, 50, 44}, 3);
   bool mg = st[4] > st[2];
   Json o = creatureJson(id, name, t1, t2, st);
