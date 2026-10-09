@@ -1416,7 +1416,12 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     bool fought = mode == Mode::Battle && guest.mode == Mode::Battle && battle_ && guest.battle_ && battle_->online() == Battle::Net::Lead &&
                   guest.battle_->online() == Battle::Net::Follow && battle_->allies.size() == 4 && guest.battle_->allies.size() == 4 &&
                   battle_->foes.size() == guest.battle_->foes.size() && battle_->foes.at(1)->mhp == guest.battle_->foes.at(1)->mhp;
-    if (battle_) battle_->autoPlay = true;
+    if (battle_) {
+      battle_->autoPlay = true;
+      // Les combattants de l'invité (les deux derniers alliés) jouent d'abord : sans ça, l'équipe de
+      // l'hôte, au niveau 30, gagne parfois avant que l'invité ait eu un seul tour
+      for (size_t k = 0; k < battle_->allies.size(); k++) battle_->allies[k]->atb = k >= 2 ? 99.f : 0.f;
+    }
     both(150);
     snap("80_groupe_gardien_hote");
     snapGuest("81_groupe_gardien_invite");
