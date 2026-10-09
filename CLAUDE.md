@@ -36,7 +36,7 @@ chaque envoi sur GitHub, lance le mode test sur les trois, et fabrique les
 paquets (exécutable + `data/` + `distribution/LISEZ-MOI.txt`). Pour publier :
 augmenter `BRUMEVAL_VERSION` dans `src/version.hpp`, fusionner dans `main`,
 puis `git tag v1.2` et `git push origin v1.2` : la page Releases est créée avec
-le texte de `distribution/notes.md`. Sous Windows, la bibliothèque C++ est
+le texte de `distribution/notes.md`, puis la version est annoncée sur le canal Discord de l'utilisateur (webhook rangé dans le secret GitHub `DISCORD_WEBHOOK`, jamais dans le code : le dépôt est public ; texte = première ligne du message de l'étiquette, donc écrire `git tag -a v1.6 -m "Version 1.6 : …"`). Sous Windows, la bibliothèque C++ est
 intégrée (`CMAKE_MSVC_RUNTIME_LIBRARY`, `SDL_FORCE_STATIC_VCRT`) ; sous Linux,
 `-static-libstdc++`. Sur Mac, `data/` va dans `Contents/Resources` (trouvé par
 `SDL_GetBasePath`). Pour essayer une version Release ici : `cmake -S . -B
