@@ -27,6 +27,10 @@ class Online;
 enum class Mode { Title, Map, Battle, Ending, Arena, Settings, Editor, Story };
 enum class BattleResult { Win, Lose, Fled };
 
+// Lit une ligne d'un membre de l'équipe dans une sauvegarde (voir game.cpp) ; faux si la ligne
+// est d'un autre genre. Sert à Game::loadGame et au multijoueur (équipe du duel).
+bool readMemberLine(const std::string& key, std::istream& s, std::vector<FighterP>& team);
+
 class Game {
  public:
   explicit Game(SDL_Renderer* r);

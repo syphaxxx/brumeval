@@ -1364,9 +1364,10 @@ void Battle::netMessage(const Json& m) {
         for (size_t i = 0; i < v.size() && i < a.size(); i++) {
           const Json& x = a[i];
           Fighter& f = *v[i];
-          f.hp = x[0].get<int>(), f.mp = x[1].get<int>(), f.atb = x[2].get<float>(), f.lim = x[3].get<float>();
-          f.status = Status(std::clamp(x[4].get<int>(), 0, 4));
-          for (int s = 0; s < N_STAGES && s < (int)x[5].size(); s++) f.stage[s] = x[5][(size_t)s].get<int>();
+          // at() : une liste trop courte lève une erreur (rattrapée par Online::update) au lieu de lire n'importe quoi
+          f.hp = x.at(0).get<int>(), f.mp = x.at(1).get<int>(), f.atb = x.at(2).get<float>(), f.lim = x.at(3).get<float>();
+          f.status = Status(std::clamp(x.at(4).get<int>(), 0, 4));
+          for (int s = 0; s < N_STAGES && s < (int)x.at(5).size(); s++) f.stage[s] = x.at(5).at((size_t)s).get<int>();
         }
       };
       apply(duel() ? foes : allies, m.value("a", Json::array()));
@@ -1385,7 +1386,7 @@ void Battle::netMessage(const Json& m) {
       if (FighterP f = other(m.value("f", Json()))) {
         Json c = m.value("c", Json::array({255, 255, 255}));
         Color col;
-        col.r = c[0].get<uint8_t>(), col.g = c[1].get<uint8_t>(), col.b = c[2].get<uint8_t>();
+        col.r = c.at(0).get<uint8_t>(), col.g = c.at(1).get<uint8_t>(), col.b = c.at(2).get<uint8_t>();
         // même empilement que Battle::pop, sans renvoyer le message
         Net keep = net_;
         net_ = Net::None;
@@ -1397,7 +1398,7 @@ void Battle::netMessage(const Json& m) {
     } else if (k == "eclair") {
       Json c = m.value("c", Json::array({255, 255, 255}));
       flashT = G.time;
-      flashCol = rgb(uint32_t(c[0].get<int>()) << 16 | uint32_t(c[1].get<int>()) << 8 | uint32_t(c[2].get<int>()));
+      flashCol = rgb(uint32_t(c.at(0).get<int>()) << 16 | uint32_t(c.at(1).get<int>()) << 8 | uint32_t(c.at(2).get<int>()));
     } else if (k == "renfort") {  // gardien : un renfort prend la place d'un ennemi tombé
       int i = jget(m, "i", -1);
       if (i >= 0 && i < (int)foes.size() && !reserve.empty()) {

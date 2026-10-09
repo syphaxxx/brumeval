@@ -5,6 +5,7 @@
 #include <sstream>
 
 #include "audio.hpp"
+#include "store.hpp"
 
 std::string optionsFile = "options.txt";
 
@@ -44,12 +45,7 @@ std::string keyName(SDL_Scancode k) {
   return n && *n ? n : "?";
 }
 
-static std::string path() {
-  char* p = SDL_GetPrefPath("Brumeval", "Brumeval");
-  std::string s = p ? p : "";
-  SDL_free(p);
-  return s + optionsFile;
-}
+static std::string path() { return userFile(optionsFile); }
 
 void loadOptions() {
   Options& o = options();
@@ -73,9 +69,10 @@ void loadOptions() {
 
 void saveOptions() {
   const Options& o = options();
-  std::ofstream f(path());
+  std::ostringstream f;
   f << "plein_ecran " << (o.fullscreen ? 1 : 0) << "\nmusique " << o.music << "\neffets " << o.effects << '\n';
   for (int a = 0; a < N_KEYS; a++) f << "touche_" << KEY_IDS[a] << ' ' << (int)o.keys[a] << '\n';
+  writeUserFile(optionsFile, f.str());
 }
 
 void applyVolumes() { audio::setVolumes(options().music, options().effects); }

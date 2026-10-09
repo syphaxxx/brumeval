@@ -116,25 +116,41 @@ std::string prettyJson(const Json& j) {
   return s + "\n";
 }
 
-void writeJson(const std::string& rel, const Json& j) {
-  fs::path p = full(rel);
+std::string Fingerprint::hex() const {
+  char buf[20];
+  std::snprintf(buf, sizeof buf, "%016llx", (unsigned long long)h);
+  return buf;
+}
+
+// Écrit dans un fichier temporaire puis remplace : jamais de fichier à moitié écrit
+static bool replaceFile(const fs::path& p, const std::string& text) {
   std::error_code ec;
   fs::create_directories(p.parent_path(), ec);
-  // Écrit dans un fichier temporaire puis remplace : jamais de fichier à moitié écrit
   fs::path tmp = p;
   tmp += ".tmp";
   {
     std::ofstream f(tmp, std::ios::binary);
-    if (!f) throw std::runtime_error("Impossible d'écrire data/" + rel);
-    f << prettyJson(j);
+    if (!(f << text) || !f.flush()) return false;
   }
   fs::rename(tmp, p, ec);
-  if (ec) {
+  if (ec) {  // (anciens systèmes : on ne peut pas remplacer un fichier qui existe)
     fs::remove(p, ec);
     fs::rename(tmp, p, ec);
-    if (ec) throw std::runtime_error("Impossible de remplacer data/" + rel);
   }
+  return !ec;
 }
+
+void writeJson(const std::string& rel, const Json& j) {
+  if (!replaceFile(full(rel), prettyJson(j))) throw std::runtime_error("Impossible d'écrire data/" + rel);
+}
+
+std::string userFile(const std::string& name) {
+  char* p = SDL_GetPrefPath("Brumeval", "Brumeval");
+  std::string s = p ? p : "";
+  SDL_free(p);
+  return s + name;
+}
+bool writeUserFile(const std::string& name, const std::string& text) { return replaceFile(fs::u8path(userFile(name)), text); }
 
 std::vector<std::string> listJson(const std::string& relDir) {
   std::vector<std::string> v;

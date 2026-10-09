@@ -4,7 +4,6 @@
 
 #include "audio.hpp"
 
-std::string fmtInt(int v) { return std::to_string(v); }
 std::string utf8Prefix(const std::string& s, int n) {
   size_t i = 0;
   int c = 0;

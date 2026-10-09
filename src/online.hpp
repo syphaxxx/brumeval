@@ -161,12 +161,14 @@ class Online {
   void onGuardian(const Json& m);  // début du combat du gardien, chez chaque joueur du groupe
 
   // Échange de créatures (trade.cpp). Celui qui propose donne une créature (en échange ou en
-  // cadeau) ; l'autre répond (sa créature, « accepter » le cadeau ou refuser). Celui qui a proposé
-  // fait l'échange chez lui en premier, puis envoie « fait » : l'autre le fait alors chez lui.
+  // cadeau) ; l'autre répond (sa créature, « accepter » le cadeau ou refuser). Quand tout est
+  // d'accord, celui qui a proposé envoie « go » : l'autre fait l'échange chez lui, puis envoie
+  // « fait », et celui qui a proposé le fait à son tour (au pire un double, jamais une perte).
   struct Trade {
     enum class Step { None, Offered, Answering, Countered, Waiting } step = Step::None, shown = Step::None;  // shown : menu affiché
     int with = -1;      // l'autre joueur
     bool run = false;   // pendant l'expédition (sinon : partie principale, depuis le salon)
+    bool asked = false; // c'est moi qui ai proposé
     bool gift = false;  // cadeau : rien en retour
     int slot = -1;      // ma créature (rang dans l'équipe ; -1 : aucune, je reçois un cadeau)
     std::string sp;     // son espèce (vérifiée juste avant l'échange)

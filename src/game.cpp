@@ -1102,19 +1102,13 @@ void Game::shopMenuAt(const std::vector<std::string>& stock, int sel) {
 // ---------------------------------------------------------------------------
 // Sauvegarde (fichier texte dans le dossier de l'utilisateur)
 // ---------------------------------------------------------------------------
-std::string Game::savePath() const {
-  char* p = SDL_GetPrefPath("Brumeval", "Brumeval");
-  std::string s = p ? p : "";
-  SDL_free(p);
-  return s + (inExpedition() ? expedition_->saveFile() : saveName_);
-}
+std::string Game::savePath() const { return userFile(inExpedition() ? expedition_->saveFile() : saveName_); }
 bool Game::saveExists() const {
   std::ifstream f(savePath());
   return f.good();
 }
 bool Game::saveGame() {
-  std::ofstream f(savePath());
-  if (!f) return false;
+  std::ostringstream f;
   f << "BRUMEVAL 1\n";
   if (inExpedition()) expedition_->writeSave(f);  // en premier : le chargement génère d'abord le monde
   f << "carte " << M().id << ' ' << px << ' ' << py << ' ' << dir << '\n';
@@ -1135,8 +1129,49 @@ bool Game::saveGame() {
     f << "tactiques " << m->tacticsOn << '\n';
     for (auto& t : m->tactics) f << "tactique " << t.on << ' ' << t.cond << ' ' << t.value << ' ' << KIND[(int)t.kind] << ' ' << t.act << '\n';
   }
+  return writeUserFile(inExpedition() ? expedition_->saveFile() : saveName_, f.str());
+}
+// Lignes d'un membre de l'équipe : « membre » (espèce, niveau, expérience, PV, PM, Limite), puis
+// « equipement », « tactiques » et ses lignes « tactique ». Une espèce inconnue ajoute nullptr :
+// les lignes qui la suivent sont ignorées (à retirer ensuite).
+bool readMemberLine(const std::string& k, std::istream& s, std::vector<FighterP>& team) {
+  if (k == "membre") {
+    std::string sp;
+    int lvl = 1, xp = 0, hp = 1, mp = 0;
+    float lim = 0;
+    s >> sp >> lvl >> xp >> hp >> mp >> lim;
+    if (!hasSpecies(sp)) {
+      team.push_back(nullptr);
+      return true;
+    }
+    auto m = makeFighter(sp, lvl);
+    m->xp = xp, m->hp = hp, m->mp = mp, m->lim = lim;  // à borner une fois l'équipement lu
+    team.push_back(m);
+    return true;
+  }
+  if (k != "equipement" && k != "tactiques" && k != "tactique") return false;
+  if (team.empty() || !team.back()) return true;
+  Fighter& m = *team.back();
+  if (k == "equipement") {
+    for (auto& g : m.gear) {
+      std::string id;
+      s >> id;
+      g = id != "-" && hasItem(id) && canEquip(m, item(id)) ? id : "";
+    }
+    m.recalc();
+  } else if (k == "tactiques") {  // les anciennes sauvegardes gardent les tactiques de départ
+    s >> m.tacticsOn;
+    m.tactics.clear();
+  } else {
+    Tactic t;
+    char kind = 'a';
+    s >> t.on >> t.cond >> t.value >> kind >> t.act;
+    t.kind = kind == 't' ? Tactic::Act::Move : kind == 'o' ? Tactic::Act::Item : Tactic::Act::Auto;
+    if (s && findTacticCond(t.cond)) m.tactics.push_back(t);
+  }
   return true;
 }
+
 bool Game::loadGame() {
   std::ifstream f(savePath());
   std::string head;
@@ -1179,34 +1214,10 @@ bool Game::loadGame() {
       int n;
       s >> id >> n;
       items[id] = n;
-    } else if (k == "membre") {
-      std::string sp;
-      int lvl, xp, hp, mp;
-      float lim;
-      s >> sp >> lvl >> xp >> hp >> mp >> lim;
-      auto m = makeFighter(sp, lvl);
-      m->xp = xp, m->hp = hp, m->mp = mp, m->lim = lim;  // bornés à la fin, une fois l'équipement lu
-      team.push_back(m);
-    } else if (k == "equipement" && !team.empty()) {  // après sa ligne « membre »
-      Fighter& m = *team.back();
-      for (auto& g : m.gear) {
-        std::string id;
-        s >> id;
-        g = id != "-" && hasItem(id) && canEquip(m, item(id)) ? id : "";
-      }
-      m.recalc();
     } else if (k == "auto") s >> tacticsAuto;
-    else if (k == "tactiques" && !team.empty()) {  // les anciennes sauvegardes gardent les tactiques de départ
-      s >> team.back()->tacticsOn;
-      team.back()->tactics.clear();
-    } else if (k == "tactique" && !team.empty()) {
-      Tactic t;
-      char kind = 'a';
-      s >> t.on >> t.cond >> t.value >> kind >> t.act;
-      t.kind = kind == 't' ? Tactic::Act::Move : kind == 'o' ? Tactic::Act::Item : Tactic::Act::Auto;
-      if (s && findTacticCond(t.cond)) team.back()->tactics.push_back(t);
-    }
+    else readMemberLine(k, s, team);
   }
+  team.erase(std::remove(team.begin(), team.end(), nullptr), team.end());  // espèces qui n'existent plus
   for (auto& v : oldChests) {
     int m = mapOf(v.substr(7, v.find(':', 7) - 7));
     int i = std::atoi(v.substr(v.rfind(':') + 1).c_str());

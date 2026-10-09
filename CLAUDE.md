@@ -211,8 +211,10 @@ les plus longs : y ajouter tout nouvel écran.
 - Échange de créatures (trade.cpp, `Online::trade_`) : message `echange`, champ
   `e` : `offre` (créature, `cadeau`, `run` : pendant l'expédition), puis
   `contre` (créature en retour) ou `accepte` (cadeau), `fait`, `refus`
-  (`raison`). Celui qui a proposé fait l'échange chez lui en premier
-  (`commitTrade`), puis envoie `fait` ; l'autre le fait alors. Une créature dans
+  (`raison`). Quand tout est d'accord, celui qui a proposé envoie `go` : l'autre
+  fait l'échange chez lui (`commitTrade`) et répond `fait`, puis celui qui a
+  proposé le fait à son tour (une coupure donne au pire un double, jamais une
+  perte). Une créature dans
   un message : `creatureJson` / `creatureFrom` (vérifiée : espèce connue ici,
   pas un humain). Au salon, l'équipe est lue et réécrite dans la sauvegarde de
   la partie principale (`loadMine` = `Game::loadGame`, puis `saveGame`) ;

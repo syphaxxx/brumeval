@@ -124,9 +124,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     bool reread = options().keys[K_UP] == SDL_SCANCODE_I && options().music == std::min(10, vol + 1);
     check(opened && louder && waiting && bound && reread,
           "options : écran titre > Options, volume de la musique, nouvelle touche pour « Haut », relues depuis le fichier");
-    char* pp = SDL_GetPrefPath("Brumeval", "Brumeval");
-    std::remove((std::string(pp ? pp : "") + optionsFile).c_str());
-    SDL_free(pp);
+    std::remove(userFile(optionsFile).c_str());
     optionsFile = realFile;
     options() = Options{};
     titleMenu();
@@ -1580,6 +1578,22 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     // Version différente : refusée
     H.onHello(9, Json{{"t", "bonjour"}, {"version", "0.1"}, {"donnees", H.hash_}, {"pseudo", "Ancien"}});
     check(H.status_.find("Versions différentes") != std::string::npos, "multijoueur : une autre version du jeu est refusée");
+    // Message mal formé (un nombre à la place d'un texte) envoyé par un autre programme : seule cette connexion est coupée
+    {
+      std::string err;
+      auto bad = net::Conn::connect("127.0.0.1", H.port, err);
+      for (int i = 0; bad && i < 60 && bad->connecting(); i++) {
+        bad->poll();
+        both(1);
+      }
+      if (bad) bad->send(Json{{"t", "bonjour"}, {"version", 2}, {"pseudo", 3}});
+      for (int i = 0; bad && i < 60 && !bad->closed(); i++) {
+        bad->poll();
+        both(1);
+      }
+      check(bad && bad->closed() && H.state_ == Online::State::Salon && H.players_.empty() && H.server_.open(),
+            "multijoueur : un message mal formé coupe seulement cette connexion, l'hôte continue");
+    }
 
     // --- Expédition à plusieurs : même monde, chacun de son côté, le gardien ensemble ---
     Expedition& XH = *expedition_;  // fichiers « _test » (tests de l'expédition)

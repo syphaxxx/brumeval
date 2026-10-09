@@ -22,12 +22,7 @@ Online::Online(Game& g) : G(g) { loadSettings(); }
 // ---------------------------------------------------------------------------
 // Réglages et équipe
 // ---------------------------------------------------------------------------
-std::string Online::file(const std::string& name) const {
-  char* p = SDL_GetPrefPath("Brumeval", "Brumeval");
-  std::string s = p ? p : "";
-  SDL_free(p);
-  return s + name;
-}
+std::string Online::file(const std::string& name) const { return userFile(name); }
 void Online::loadSettings() {
   std::ifstream f(file(settingsName));
   std::string line;
@@ -36,21 +31,13 @@ void Online::loadSettings() {
     else if (line.rfind("adresse ", 0) == 0) address = line.substr(8);
   }
 }
-void Online::saveSettings() const {
-  std::ofstream f(file(settingsName));
-  f << "pseudo " << pseudo << "\nadresse " << address << '\n';
-}
+void Online::saveSettings() const { writeUserFile(settingsName, "pseudo " + pseudo + "\nadresse " + address + "\n"); }
 
 std::string Online::dataHash() {
-  uint64_t h = 1469598103934665603ull;
-  auto mix = [&](const std::string& s) {
-    for (unsigned char c : s) h = (h ^ c) * 1099511628211ull;
-  };
-  mix(BRUMEVAL_VERSION);
-  for (int f = 0; f < N_DATAFILES; f++) mix(dataDoc(DataFile(f)).dump());
-  char buf[20];
-  std::snprintf(buf, sizeof buf, "%016llx", (unsigned long long)h);
-  return buf;
+  Fingerprint h;
+  h.add(BRUMEVAL_VERSION);
+  for (int f = 0; f < N_DATAFILES; f++) h.add(dataDoc(DataFile(f)).dump());
+  return h.hex();
 }
 
 // Équipe de la partie principale : les trois premiers membres et leurs tactiques
@@ -63,23 +50,13 @@ std::vector<FighterP> Online::myTeam() const {
     std::istringstream s(line);
     std::string k;
     s >> k;
-    if (k == "membre") {
-      std::string sp;
-      int lvl = 1;
-      s >> sp >> lvl;
-      if ((int)team.size() >= 3) break;
-      if (!hasSpecies(sp)) continue;
-      team.push_back(makeFighter(sp, lvl));
-    } else if (k == "tactiques" && !team.empty()) {
-      s >> team.back()->tacticsOn;
-      team.back()->tactics.clear();
-    } else if (k == "tactique" && !team.empty()) {
-      Tactic t;
-      char kind = 'a';
-      s >> t.on >> t.cond >> t.value >> kind >> t.act;
-      t.kind = kind == 't' ? Tactic::Act::Move : kind == 'o' ? Tactic::Act::Item : Tactic::Act::Auto;
-      if (s && findTacticCond(t.cond)) team.back()->tactics.push_back(t);
-    }
+    if (k == "membre" && std::count_if(team.begin(), team.end(), [](const FighterP& m) { return m != nullptr; }) >= 3) break;
+    readMemberLine(k, s, team);  // même lecture que Game::loadGame
+  }
+  team.erase(std::remove(team.begin(), team.end(), nullptr), team.end());
+  for (auto& m : team) {  // duel à armes égales : sans équipement (l'autre joueur ne connaît que l'espèce et le niveau)
+    m->gear = {};
+    m->recalc();
   }
   if (team.empty()) {
     const Rules& r = rules();
@@ -450,7 +427,11 @@ void Online::update(float dt) {
     auto msgs = p->conn->poll();
     if (wasConnecting && p->conn->connected()) p->conn->send(hello());
     for (auto& m : msgs) {
-      onMessage(id, m);
+      try {
+        onMessage(id, m);
+      } catch (const std::exception&) {  // message mal formé (autre programme, version modifiée) : on coupe cette connexion
+        if ((p = peer(id))) p->conn->error = "Message reçu invalide : connexion coupée.", p->conn->close();
+      }
       if (!(p = peer(id))) break;
     }
     if (p && p->conn->closed()) lost(id, p->conn->error);
