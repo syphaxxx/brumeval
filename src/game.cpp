@@ -387,12 +387,7 @@ void Game::updateMusic() {
 // ---------------------------------------------------------------------------
 // Équipe
 // ---------------------------------------------------------------------------
-std::vector<FighterP> Game::front() const {
-  std::vector<FighterP> v;
-  for (auto& f : team)
-    if (f->alive() && (int)v.size() < rules().frontSize) v.push_back(f);
-  return v;
-}
+std::vector<FighterP> Game::front() const { return frontOf(team, rules().frontSize); }
 int Game::avgLevel() const {
   if (team.empty()) return 1;
   int s = 0, n = 0;
@@ -476,7 +471,7 @@ void Game::tryMove(int d) {
   if (blocked(nx, ny)) {
     if (!fresh) return;
     for (auto& b : M().buildings)
-      if (nx == b.doorX() && ny == b.doorY()) return runEvent(b.event);
+      if (nx == b.doorX() && ny == b.doorY()) return enterDoor(b);
     for (auto& b : M().bosses)
       if (bossAlive(b) && nx >= b.x && nx <= b.x + 1 && ny >= b.y && ny <= b.y + 1) return bossTouched(b);
     for (auto& w : M().warps)
@@ -579,12 +574,15 @@ void Game::interact() {
   for (auto& b : m.bosses)
     if (bossAlive(b) && fx >= b.x && fx <= b.x + 1 && fy >= b.y && fy <= b.y + 1) return bossTouched(b);
   for (auto& b : m.buildings)
-    if (fx == b.doorX() && fy == b.doorY()) {
-      audio::play("porte");
-      int in = mapIndex(b.interior), ex, ey;
-      if (in >= 0 && interiorEntry(maps()[in], M().id, ex, ey)) return changeMap(in, ex, ey, UP);  // on entre
-      return runEvent(b.event);
-    }
+    if (fx == b.doorX() && fy == b.doorY()) return enterDoor(b);
+}
+
+// Porte d'un bâtiment (Entrée devant elle ou marcher dedans) : on entre s'il a un intérieur, sinon son événement
+void Game::enterDoor(const Building& b) {
+  audio::play("porte");
+  int in = mapIndex(b.interior), ex, ey;
+  if (in >= 0 && interiorEntry(maps()[in], M().id, ex, ey)) return changeMap(in, ex, ey, UP);
+  runEvent(b.event);
 }
 
 // Drapeau d'un coffre ouvert : carte et position (reste valable si on ajoute des coffres)
@@ -747,6 +745,7 @@ void Game::pauseMenu() {
                          story_->returnFromTest();
                        }});
   m.items.push_back({"Équipe", "", "Ordre de combat et fiches.", true, [this] { teamMenu(); }});
+  m.items.push_back({"Compagnons", "", "La créature qui combat aux côtés de chaque héros.", true, [this] { companionsMenu(); }});
   m.items.push_back({"Tactiques", "", "Ce que chaque membre fait tout seul en combat (mode auto : touche Tab).", true, [this] { tacticsMenu(); }});
   m.items.push_back({"Équipement", "", "Armes, armures et accessoires.", true, [this] { gearMenu(); }});
   m.items.push_back({"Journal", "", "Les quêtes en cours et terminées.", true, [this] { journalMenu(); }});
@@ -817,6 +816,68 @@ void Game::tacticsMenu(int sel) {
     panelMode_ = 1;
     menus.pop();
   };
+  menus.push(m);
+}
+
+// ---------------------------------------------------------------------------
+// Compagnons : chaque héros choisit la créature qui combat à ses côtés (sinon : la première
+// créature libre de l'équipe). En combat, le compagnon agit seul, avec ses tactiques.
+// ---------------------------------------------------------------------------
+void Game::companionsMenu(int sel) {
+  panelMode_ = 2;  // fiche à droite
+  Menu m;
+  m.title = "Compagnons";
+  m.x = 8, m.y = 8, m.w = 132, m.rows = 8, m.sel = sel;
+  int row = 0;
+  for (size_t i = 0; i < team.size(); i++) {
+    FighterP h = team[i];
+    if (!h->S().human) continue;
+    FighterP c = companionOf(team, h);
+    int at = row++;
+    MenuItem it{h->name(), c ? utf8Prefix(c->name(), 10) : "—",
+                c ? (h->companion.lock() == c ? "Choisi par vous. " : "Choisi tout seul (première créature libre). ") + std::string("Entrée : changer.")
+                  : "Aucune créature libre. Entrée : en choisir une.",
+                true, [this, h, at] {
+                  Menu p;
+                  p.title = "Compagnon de " + utf8Prefix(h->name(), 9);
+                  p.x = 20, p.y = 20, p.w = 132, p.rows = 8;
+                  p.items.push_back({"Automatique", "", "La première créature libre de l'équipe.", true, [this, h, at] {
+                                       h->companion.reset();
+                                       menus.pop();
+                                       menus.pop();
+                                       companionsMenu(at);
+                                     }});
+                  for (size_t k = 0; k < team.size(); k++) {
+                    FighterP c = team[k];
+                    if (c->S().human) continue;
+                    std::string with;  // le héros qui l'a choisie
+                    for (auto& o : team)
+                      if (o != h && o->S().human && o->companion.lock() == c) with = o->name();
+                    MenuItem ci{c->name(), "N." + std::to_string(c->lvl), with.empty() ? typesName(c->S()) : "Choisie par " + with + " : elle changera de héros.",
+                                true, [this, h, c, at] {
+                                  for (auto& o : team)  // une créature n'accompagne qu'un seul héros
+                                    if (o->companion.lock() == c) o->companion.reset();
+                                  h->companion = c;
+                                  menus.pop();
+                                  menus.pop();
+                                  companionsMenu(at);
+                                },
+                                [this, k] { teamPanelSel_ = (int)k; }};
+                    ci.shrink = true;
+                    p.items.push_back(ci);
+                  }
+                  menus.push(p);
+                },
+                [this, i] { teamPanelSel_ = (int)i; }};
+    it.shrink = true;
+    m.items.push_back(it);
+  }
+  m.onCancel = [this] {
+    panelMode_ = 1;
+    menus.pop();
+  };
+  for (size_t i = 0; i < team.size(); i++)
+    if (team[i]->S().human && sel-- == 0) teamPanelSel_ = (int)i;
   menus.push(m);
 }
 
@@ -1126,6 +1187,8 @@ bool Game::saveGame() {
       for (auto& g : m->gear) f << ' ' << (g.empty() ? "-" : g);
       f << '\n';
     }
+    auto c = std::find(team.begin(), team.end(), m->companion.lock());
+    if (c != team.end() && hasSpecies(m->sp) && m->S().human) f << "compagnon " << (c - team.begin()) << '\n';
     f << "tactiques " << m->tacticsOn << '\n';
     for (auto& t : m->tactics) f << "tactique " << t.on << ' ' << t.cond << ' ' << t.value << ' ' << KIND[(int)t.kind] << ' ' << t.act << '\n';
   }
@@ -1134,7 +1197,7 @@ bool Game::saveGame() {
 // Lignes d'un membre de l'équipe : « membre » (espèce, niveau, expérience, PV, PM, Limite), puis
 // « equipement », « tactiques » et ses lignes « tactique ». Une espèce inconnue ajoute nullptr :
 // les lignes qui la suivent sont ignorées (à retirer ensuite).
-bool readMemberLine(const std::string& k, std::istream& s, std::vector<FighterP>& team) {
+bool readMemberLine(const std::string& k, std::istream& s, std::vector<FighterP>& team, std::vector<std::pair<size_t, int>>* links) {
   if (k == "membre") {
     std::string sp;
     int lvl = 1, xp = 0, hp = 1, mp = 0;
@@ -1149,9 +1212,14 @@ bool readMemberLine(const std::string& k, std::istream& s, std::vector<FighterP>
     team.push_back(m);
     return true;
   }
-  if (k != "equipement" && k != "tactiques" && k != "tactique") return false;
+  if (k != "equipement" && k != "tactiques" && k != "tactique" && k != "compagnon") return false;
   if (team.empty() || !team.back()) return true;
   Fighter& m = *team.back();
+  if (k == "compagnon") {  // rang de sa créature compagnon dans l'équipe (relié une fois tout lu)
+    int i = -1;
+    if (s >> i && links) links->push_back({team.size() - 1, i});
+    return true;
+  }
   if (k == "equipement") {
     for (auto& g : m.gear) {
       std::string id;
@@ -1177,6 +1245,7 @@ bool Game::loadGame() {
   std::string head;
   if (!f || !std::getline(f, head) || head.rfind("BRUMEVAL", 0) != 0) return false;
   team.clear();
+  std::vector<std::pair<size_t, int>> links;  // lignes « compagnon » : reliées à la fin
   items.clear();
   flags.clear();
   // Anciennes sauvegardes : cartes désignées par leur numéro
@@ -1215,8 +1284,10 @@ bool Game::loadGame() {
       s >> id >> n;
       items[id] = n;
     } else if (k == "auto") s >> tacticsAuto;
-    else readMemberLine(k, s, team);
+    else readMemberLine(k, s, team, &links);
   }
+  for (auto& [h, c] : links)  // compagnons : avant de retirer les espèces disparues (les rangs changeraient)
+    if (c >= 0 && c < (int)team.size() && team[h] && team[(size_t)c] && !team[(size_t)c]->S().human) team[h]->companion = team[(size_t)c];
   team.erase(std::remove(team.begin(), team.end(), nullptr), team.end());  // espèces qui n'existent plus
   for (auto& v : oldChests) {
     int m = mapOf(v.substr(7, v.find(':', 7) - 7));

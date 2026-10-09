@@ -134,6 +134,18 @@ les plus longs : y ajouter tout nouvel écran.
   `Fighter::recalc` ; `canEquip` (armes et armures : humains seulement). Menu
   `Game::gearMenu` > `gearSlots` > `gearPick` ; ligne `equipement` après
   `membre` dans la sauvegarde ; un échange emporte l'équipement de la créature.
+- Compagnons (décision du 2026-10-09) : chaque héros combat avec une créature
+  (`Fighter::companion`, faible lien vers une créature de l'équipe ; ligne
+  `compagnon <rang>` après le héros dans la sauvegarde). `frontOf` (data.cpp)
+  choisit les combattants : les 3 premiers héros valides, chacun suivi de son
+  compagnon (choisi, sinon la première créature libre) ; une équipe sans héros
+  combat comme avant. En combat (`Battle::companion`, `hasHero_`), le compagnon
+  agit seul (`companionTurn` : tactiques, sinon l'ordinateur), sa jauge ATB va
+  à `compagnon_atb` (0,5) ; jusqu'à 6 alliés (placement `HERO`/`COMP`, fenêtre
+  d'état plus haute) ; « Changer » remplace un héros par un héros. Menu
+  `Game::companionsMenu`. Duel : les combattants gardent l'ordre envoyé
+  (`s.allies = mine`) ; gardien à plusieurs : `myFighters` suit `front()`
+  (un héros et son compagnon à deux joueurs).
 - Équipe : `Game::team` (8 membres maximum par capture, les humains s'ajoutent
   toujours). Les 3 premiers membres valides combattent (`Game::front()`).
 - Progression : `Game::flags` (`boss1`, `golem`, `boss2`, `maelle`, `brann`,
@@ -333,11 +345,11 @@ réécrits par `writeJson` (petites listes sur une ligne) : garder ce format.
 
 - **Vallée de Brumeval** (64x44) : village (soin, boutique, chapelle, ancien),
   Bois Murmurant (herbe lunaire pour recruter Maëlle), lac et pêcheur, prairies,
-  bosquet, col gardé par **Sylvarque** (N.12, Ombre) et deux Brumelins.
+  bosquet, col gardé par **Sylvarque** (N.13, Ombre) et deux Brumelins.
 - **Monts Cendrelune** (64x44) : ville de Forgeroc (soin, boutique, auberge,
   forge), duel contre **Brann** pour le recruter, champs de cendres, rivières de
   lave, cratère d'**Ignarok** (N.23, Feu, boss final).
-- **Grotte des Échos** (32x24) : **Golem de suie** (N.16), puis **Isra** rejoint
+- **Grotte des Échos** (32x24) : **Golem de suie** (N.20), puis **Isra** rejoint
   l'équipe.
 - **Forêt de Sylve-Noire** (56x40, ouverte après Sylvarque, entrée à l'ouest du
   village) : bandits dresseurs, chef des bandits qui retient **Kael** (archer,
@@ -364,7 +376,18 @@ réécrits par `writeJson` (petites listes sur une ligne) : garder ce format.
 - Les cartes se modifient avec l'éditeur de cartes (Outils) ou directement
   dans les JSON.
 
-Équilibrage mesuré par le mode test (IA automatique, sans objets) : combats
+**Boss renforcés le 2026-10-09** (demande de l'utilisateur : « obligé de se
+stuffer avant les boss »), puis réglés pour les compagnons (équipes des
+simulations : héros de ce moment de l'histoire + 2 ou 3 créatures). Réglages
+(`evenements.json`, niveau et `pv`) : Sylvarque N.15 ×6,5, Golem N.24 ×12,
+Ronce-Mère N.21 ×7, Ignarok N.24 ×7, Givrecorne N.36 ×10. Mesuré
+(`BRUMEVAL_SIMULATIONS=2`, sans / avec le meilleur équipement de la boutique de
+la région) : Sylvarque 12 / 42 %, Golem 55 / 70 %, Ronce-Mère 21 / 46 %,
+Ignarok 32 / 56 %, Givrecorne 26-36 / 72 %. Sans les compagnons ralentis
+(`compagnon_atb` 1), tout passait à ~100 %. Le Golem réagit peu à
+l'équipement. Le mode test lit les boss dans les événements (`bossEvent`) :
+ses mesures suivent toujours le jeu.
+Avant ce renfort (IA automatique, sans objets) : combats
 normaux, bandits, chevaliers et duels gagnés à ~95-100 %, Sylvarque ≈ 80 %
 (N.11), Ronce-Mère ≈ 55-70 % (N.16), Ignarok ≈ 30-45 % (N.22), Givrecorne
 ≈ 35 % (N.30, avec Sélène). Un boss trop facile vient souvent de sa lenteur ou
@@ -390,7 +413,13 @@ peu » à la demande de l'utilisateur (2026-10-09) : +15 % de PV par joueur en
 plus. Mesuré ensuite (15 combats par ligne, moyenne des graines 11/22/33) :
 région 3 : 100 % seul, 84-93 % à plusieurs ; région 5 : 42 % seul, 55-64 % à
 plusieurs. +20 % rendait le groupe plus dur que le solo en région 3. Les
-simulations n'utilisent pas l'équipement : il rend le jeu un peu plus facile.
+simulations ordinaires n'utilisent pas l'équipement.
+Avec l'équipement (mesuré le 2026-10-09, `simGear` dans test.cpp : le meilleur
+achat de la boutique de la région pour chaque membre, borne haute) : Sylvarque
+75 → 100 %, Ronce-Mère 73 → 93 %, Ignarok 25 → 90 %, Givrecorne 35 → 92 %
+(sans tactiques) ; gardiens de l'Expédition : région 5 graine 33 6 → 40 %,
+région 8 graine 11 73 → 93 %. Tout acheter rend les boss d'Ignarok et du
+Givrecorne faciles ; pas encore ajusté (à décider avec l'utilisateur).
 Duel avec l'équipement (`Online::Member::gear`, équipe `[espèce, niveau,
 équipement]`), décision du 2026-10-09.
 

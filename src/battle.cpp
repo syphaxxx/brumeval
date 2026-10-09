@@ -47,6 +47,7 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
     : G(game), foes(std::move(s.foes)), reserve(std::move(s.reserve)), foeName(std::move(s.foeName)), boss(s.boss), canFlee(s.canFlee),
       canCapture(s.canCapture), bg(bg_) {
   allies = s.allies.empty() ? G.front() : std::move(s.allies);
+  for (auto& a : allies) hasHero_ = hasHero_ || a->S().human;
   start = G.time;
   std::map<std::string, int> cnt, seen;
   for (auto* v : {&foes, &reserve})
@@ -87,8 +88,18 @@ Pt Battle::pos(const FighterP& f) const {
   static const Pt FOE[3][3] = {{{92, 96}}, {{72, 72}, {112, 122}}, {{58, 58}, {112, 96}, {58, 134}}};
   static const Pt ALLY[3] = {{238, 64}, {264, 100}, {238, 136}};
   static const Pt ALLY4[4] = {{234, 54}, {268, 80}, {234, 112}, {268, 138}};  // gardien à plusieurs
+  // Héros et compagnons : chaque compagnon un peu derrière son héros
+  static const Pt HERO[3] = {{232, 44}, {232, 82}, {232, 120}}, COMP[3] = {{274, 56}, {274, 94}, {274, 132}};
   for (size_t i = 0; i < foes.size(); i++)
     if (foes[i] == f) return FOE[std::min<size_t>(foes.size(), 3) - 1][std::min<size_t>(i, 2)];
+  if (hasHero_ && !coop() && allies.size() > 3) {
+    int h = -1;
+    for (auto& a : allies) {
+      bool hero = a->S().human;
+      if (hero) h++;
+      if (a == f) return hero ? HERO[std::clamp(h, 0, 2)] : COMP[std::clamp(h, 0, 2)];
+    }
+  }
   for (size_t i = 0; i < allies.size(); i++)
     if (allies[i] == f) return allies.size() > 3 ? ALLY4[std::min<size_t>(i, 3)] : ALLY[std::min<size_t>(i, 2)];
   return {160, 100};
@@ -104,6 +115,11 @@ void Battle::pop(const FighterP& f, const std::string& t, Color c) {
 }
 
 bool Battle::shown() const { return G.battle_.get() == this; }
+
+void Battle::companionTurn(FighterP f) {
+  actor = f;
+  if (!tacticTurn(f)) autoCommand(f);
+}
 
 static Battle::Fx fxOf(const Move& m) {
   switch (m.kind) {
@@ -235,7 +251,7 @@ void Battle::tickATB(float dt) {
   std::vector<FighterP> all = alive(allies);
   for (auto& e : alive(foes)) all.push_back(e);
   for (auto& f : all) {
-    f->atb += dt * float((R.atbBase + f->eSpd()) * R.atbSpeed);
+    f->atb += dt * float((R.atbBase + f->eSpd()) * R.atbSpeed * (companion(f) ? R.companionAtb : 1));
     if (f->atb >= 100) {
       f->atb = 100;
       if (skipTurn(f)) return;
@@ -246,6 +262,8 @@ void Battle::tickATB(float dt) {
           actor = f;
           send_(owner(f), Json{{"t", "tour"}, {"i", mine(f)[1]}});
         }
+      } else if (companion(f)) {
+        companionTurn(f);
       } else if (isAlly(f)) {
         if (tacticsActive() && tacticTurn(f)) return;
         if (autoPlay) autoCommand(f);
@@ -351,9 +369,9 @@ void Battle::command(FighterP a) {
                        if (t.items.empty()) t.items.push_back({"(sac vide)", "", "", false, nullptr});
                        G.menus.push(t);
                      }});
-  std::vector<FighterP> bench;
+  std::vector<FighterP> bench;  // avec des héros : un héros n'est remplacé que par un héros
   for (auto& r : G.team)
-    if (r->alive() && !isAlly(r)) bench.push_back(r);
+    if (r->alive() && !isAlly(r) && (!hasHero_ || r->S().human == a->S().human)) bench.push_back(r);
   m.items.push_back({"Changer", "", bench.empty() ? "Personne en réserve." : "Faire entrer un membre de la réserve.", !bench.empty(),
                      [this, a, bench] {
                        Menu t;
@@ -393,7 +411,7 @@ void Battle::pickFoe(const std::string& title, std::function<std::string(const F
 void Battle::pickAlly(const std::string& title, bool ko, std::function<void(FighterP)> done) {
   Menu t;
   t.title = title;
-  t.x = 4, t.y = 94, t.w = 176, t.rows = allies.size() > 3 ? 4 : 3;
+  t.x = 4, t.y = allies.size() > 4 ? 78 : 94, t.w = 176, t.rows = allies.size() > 3 ? 4 : 3;  // au-dessus de la fenêtre d'état, plus haute avec 5-6 alliés
   t.onCancel = [this] {
     cursor = nullptr;
     G.menus.pop();
@@ -1220,31 +1238,34 @@ void Battle::draw() {
     }
     if (!reserve.empty()) g.text(10, 222, "Renforts : " + std::to_string(reserve.size()), GREY);
   }
-  // Fenêtre d'état de l'équipe
-  g.window(102, 168, 214, 70);
+  // Fenêtre d'état de l'équipe (plus de quatre alliés, avec les compagnons : plus haute, lignes serrées)
+  bool tall = allies.size() > 4;
+  float panelY = tall ? 152.f : 168.f;
+  g.window(102, panelY, 214, 238 - panelY);
   Color lab = rgb(0xaab3d8);
-  g.text(201, 171, "PV", lab, 1);
-  g.text(238, 171, "PM", lab, 1);
-  g.text(263, 171, "ATB", lab, 1);
-  g.text(296, 171, "LIMITE", lab, 1);
+  g.text(201, panelY + 3, "PV", lab, 1);
+  g.text(238, panelY + 3, "PM", lab, 1);
+  g.text(263, panelY + 3, "ATB", lab, 1);
+  g.text(296, panelY + 3, "LIMITE", lab, 1);
   // Mode auto : les tactiques jouent (touche Tab pour l'activer ou le couper)
   bool flash = t - toggledT_ < 1.2f && int(t * 8) % 2;
-  g.text(108, 171, G.tacticsAuto ? "Auto (Tab)" : "Manuel (Tab)", flash ? WHITE : G.tacticsAuto ? GOLD : lab);
-  bool four = allies.size() > 3;  // gardien à plusieurs : lignes plus serrées
+  g.text(108, panelY + 3, G.tacticsAuto ? "Auto (Tab)" : "Manuel (Tab)", flash ? WHITE : G.tacticsAuto ? GOLD : lab);
+  float rowH = tall ? 11.f : allies.size() > 3 ? 13.f : 17.f;
   for (size_t i = 0; i < allies.size(); i++) {
     auto& a = allies[i];
-    float y = four ? 182 + i * 13 : 184 + i * 17;
+    float y = (tall ? 166 : allies.size() > 3 ? 182 : 184) + i * rowH;
     if (actor == a) {
-      g.rect(105, y - 2, 208, four ? 13 : 15, rgb(0xffffff, 34));
+      g.rect(105, y - 2, 208, std::min(15.f, rowH), rgb(0xffffff, 34));
       g.cursor(105, y);
     }
     // Gardien à plusieurs : les combattants des autres joueurs en bleu
     Color nc = !a->alive() ? rgb(0xff7b6b) : a->status != Status::None ? rgb(statusColor(a->status)) : mineToCommand(a) ? WHITE : BLUE;
-    g.text(112, y, utf8Prefix(a->name(), 10), nc);
+    g.text(companion(a) ? 118 : 112, y, utf8Prefix(a->name(), companion(a) ? 9 : 10), nc);  // compagnon : en retrait
     Color hc = a->hp * 4 < a->mhp ? GOLD : WHITE;
     g.text(223, y, std::to_string(a->hp) + "/" + std::to_string(a->mhp), hc, 2);
-    g.rect(179, y + 10, 44, 1, rgb(0x2a3270));
-    g.rect(179, y + 10, 44.f * a->hp / a->mhp, 1, GREEN);
+    float by = y + std::min(10.f, rowH - 1);
+    g.rect(179, by, 44, 1, rgb(0x2a3270));
+    g.rect(179, by, 44.f * a->hp / a->mhp, 1, GREEN);
     g.text(245, y, std::to_string(a->mp), WHITE, 2);
     auto bar = [&](float x, float r, Color c) {
       g.rect(x - 1, y + 2, 28, 6, rgb(0x0a0f33));
@@ -1383,6 +1404,7 @@ void Battle::netMessage(const Json& m) {
       if (i < 0 || i >= (int)allies.size() || !allies[(size_t)i]->alive() || !mineToCommand(allies[(size_t)i])) return;
       FighterP a = allies[(size_t)i];
       actor = a;
+      if (companion(a)) return companionTurn(a);   // un compagnon agit seul, chez son joueur aussi
       if (G.tacticsAuto && tacticTurn(a)) return;  // mode auto : les tactiques choisissent
       command(a);
     } else if (k == "pop") {

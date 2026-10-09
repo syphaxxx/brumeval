@@ -132,6 +132,7 @@ std::vector<RuleField> ruleFields(Rules& r) {
       I("combat", "critique_base", "Critique par défaut (%)", r.critBase, 0, 100, 1),
       I("combat", "jauge_rapide", "Technique rapide : jauge de départ (%)", r.quickGauge, 0, 90, 5),
       I("combat", "retard_lourde", "Technique lourde : retard de la jauge (%)", r.heavyDelay, 0, 200, 5),
+      D("combat", "compagnon_atb", "Compagnons : vitesse de la jauge ATB", r.companionAtb, .1, 2, .05),
       D("etats", "poison_degats", "Poison : part des PV perdus par tour", r.poisonDmg, 0, 1, .01),
       D("etats", "brulure_degats", "Brûlure : part des PV perdus par tour", r.burnDmg, 0, 1, .01),
       D("etats", "brulure_attaque", "Brûlure : multiplicateur d'Attaque", r.burnAtk, 0, 1, .05),
@@ -478,6 +479,63 @@ std::string ItemDef::bonusText() const {
   return t;
 }
 bool canEquip(const Fighter& f, const ItemDef& d) { return d.slot == G_ACCESSORY || (d.slot >= 0 && f.S().human); }
+
+// Héros ? (faux pour une espèce disparue : monde d'une expédition déjà remis en place)
+static bool hero(const FighterP& f) { return f && hasSpecies(f->sp) && f->S().human; }
+// Créatures de l'équipe choisies par un héros (elles ne servent pas de compagnon « par défaut » à un autre)
+static bool chosen(const std::vector<FighterP>& team, const FighterP& c) {
+  for (auto& h : team)
+    if (hero(h) && h->companion.lock() == c) return true;
+  return false;
+}
+static bool inTeam(const std::vector<FighterP>& team, const FighterP& f) { return f && std::find(team.begin(), team.end(), f) != team.end(); }
+
+std::vector<FighterP> frontOf(const std::vector<FighterP>& team, int heroes) {
+  std::vector<FighterP> v, all;
+  for (auto& f : team)
+    if (hero(f) && f->alive() && (int)v.size() < heroes) v.push_back(f);
+  if (v.empty()) {  // pas de héros : les premiers membres valides
+    for (auto& f : team)
+      if (f && f->alive() && (int)v.size() < heroes) v.push_back(f);
+    return v;
+  }
+  std::vector<FighterP> used;
+  for (auto& h : v) {
+    all.push_back(h);
+    FighterP c = h->companion.lock();
+    if (!inTeam(team, c) || !c->alive()) {  // compagnon par défaut : la première créature libre
+      c = nullptr;
+      for (auto& f : team)
+        if (f && hasSpecies(f->sp) && !hero(f) && f->alive() && !chosen(team, f) && std::find(used.begin(), used.end(), f) == used.end()) {
+          c = f;
+          break;
+        }
+    }
+    if (c) all.push_back(c), used.push_back(c);
+  }
+  return all;
+}
+
+FighterP companionOf(const std::vector<FighterP>& team, const FighterP& who) {
+  if (!hero(who)) return nullptr;
+  // Celui qu'il aurait en combat si toute l'équipe était valide : on rejoue le choix sans les K.O.
+  std::vector<FighterP> used;
+  for (auto& h : team) {
+    if (!hero(h)) continue;
+    FighterP c = h->companion.lock();
+    if (!inTeam(team, c)) {
+      c = nullptr;
+      for (auto& f : team)
+        if (f && hasSpecies(f->sp) && !hero(f) && !chosen(team, f) && std::find(used.begin(), used.end(), f) == used.end()) {
+          c = f;
+          break;
+        }
+    }
+    if (c) used.push_back(c);
+    if (h == who) return c;
+  }
+  return nullptr;
+}
 
 float guardianScale(int allies, int players) {
   return std::max(1.f, allies / 3.f) * float(1 + RULES.coopGuardian * std::max(0, players - 1));

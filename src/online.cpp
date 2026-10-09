@@ -377,6 +377,7 @@ void Online::startDuel(int theme) {
   G.team = mine;
   G.items.clear();  // pas d'objets en duel (l'équipement, lui, compte)
   BattleSetup s;
+  s.allies = mine;  // dans l'ordre envoyé à l'autre joueur : les combattants se désignent par leur rang
   s.foes = theirs;
   s.foeName = o->name;
   s.canFlee = s.canCapture = false;

@@ -153,6 +153,7 @@ struct Rules {
   double critMult = 1.5, stageStep = .25;
   int accBase = 100, evaBase = 2, critBase = 5;
   int quickGauge = 25, heavyDelay = 25;  // jauge après une technique rapide (%), retard après une lourde (%)
+  double companionAtb = .5;              // compagnons : vitesse de leur jauge ATB (ils agissent moins souvent que les héros)
   // États
   double poisonDmg = .1, burnDmg = .0625, burnAtk = .75, paraSpeed = .5, paraSkip = .25;
   int sleepMin = 1, sleepMax = 3;
@@ -243,6 +244,8 @@ struct Fighter {
   std::vector<Tactic> tactics;
   bool tacticsOn = true;
   std::array<std::string, N_GEAR> gear;  // équipement porté (objets de data/objets.json, vide : rien)
+  // Héros : la créature compagnon choisie par le joueur (vide : la première créature libre de l'équipe)
+  std::weak_ptr<Fighter> companion;
 
   const Species& S() const { return species(sp); }
   std::string name() const;
@@ -265,6 +268,12 @@ float frand();              // nombre entre 0 et 1
 int irand(int lo, int hi);  // entier entre lo et hi inclus
 
 FighterP makeFighter(const std::string& id, int lvl);
+// Qui combat : les « heroes » premiers héros valides de l'équipe, chacun suivi de son compagnon
+// (sa créature choisie, sinon la première créature libre, dans l'ordre de l'équipe). Une équipe
+// sans héros (mode test, Arène) combat comme avant : ses premiers membres valides.
+std::vector<FighterP> frontOf(const std::vector<FighterP>& team, int heroes);
+// Le compagnon d'un héros dans cette équipe (celui qu'il aurait en combat ; nullptr : aucun)
+FighterP companionOf(const std::vector<FighterP>& team, const FighterP& hero);
 // Multiplicateur des PV du gardien et de ses acolytes à plusieurs (coop.cpp) : ×alliés/3 au-delà de
 // trois alliés, puis +coopGuardian par joueur en plus
 float guardianScale(int allies, int players);

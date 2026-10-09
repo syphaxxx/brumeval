@@ -17,7 +17,9 @@ dans l'ordre conseillé ; chacune finit par une version publiée.
 
 **Décisions prises le 9 octobre** (faites en version 1.4) : gardien à plusieurs
 un peu renforcé (+15 % de PV par joueur en plus), équipement dans les
-boutiques de l'Expédition, duels avec l'équipement.
+boutiques de l'Expédition, duels avec l'équipement. Version 1.5 : boss
+renforcés (il faut s'équiper) et **compagnons** (chaque héros combat avec une
+créature, qui agit seule).
 
 ## Étape 1 — Essais et finitions (1 à 2 séances)
 

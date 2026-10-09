@@ -105,12 +105,15 @@ bool Online::anyoneInRun() const {
 // ---------------------------------------------------------------------------
 // Où en est chacun
 // ---------------------------------------------------------------------------
+// Mes combattants pour le gardien, dans l'ordre du combat : héros, son compagnon, héros suivant…
+// (à deux joueurs, chacun en envoie deux : un héros et son compagnon)
 Json Online::myFighters() const {
   Json a = Json::array();
-  for (size_t i = 0; i < G.team.size() && a.size() < 3; i++) {
-    const Fighter& f = *G.team[i];
-    if (!f.alive()) continue;
-    a.push_back(Json{{"rang", (int)i}, {"sp", f.sp}, {"lvl", f.lvl}, {"hp", f.hp}, {"mp", f.mp}, {"lim", (int)f.lim}, {"eq", gearJson(f)}});
+  for (auto& fp : G.front()) {
+    if (a.size() >= 3) break;
+    const Fighter& f = *fp;
+    int rang = int(std::find(G.team.begin(), G.team.end(), fp) - G.team.begin());
+    a.push_back(Json{{"rang", rang}, {"sp", f.sp}, {"lvl", f.lvl}, {"hp", f.hp}, {"mp", f.mp}, {"lim", (int)f.lim}, {"eq", gearJson(f)}});
   }
   return a;
 }
