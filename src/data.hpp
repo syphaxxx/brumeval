@@ -71,7 +71,7 @@ struct Move {
 
 struct Learn { int lvl; std::string move; };
 
-enum class Shape { Fox, Drop, Bud, Bird, Mouse, Bug, Frog, Mush, Rock, Wisp, Boss, Lizard, Golem, Snake, Bat, Wolf, Turtle, Ghost, Crystal, Human };
+enum class Shape { Fox, Drop, Bud, Bird, Mouse, Bug, Frog, Mush, Rock, Wisp, Boss, Lizard, Golem, Snake, Bat, Wolf, Turtle, Ghost, Crystal, Magma, Human };
 
 // Apparence d'un humain (héros ou habitant)
 struct Look {

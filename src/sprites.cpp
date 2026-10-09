@@ -178,6 +178,36 @@ void drawCreature(Gfx& g, const std::string& id, float x, float y, float s, bool
       eyes(X, -4, 3, 1, 1.8f);
       break;
     }
+    case Shape::Magma: {  // titan de lave (Ignarok) : roche sombre, fissures brûlantes, cornes, crête de flammes
+      Color rock = shade(C, .55f), hot = L, core = rgb(0xffe27a);
+      float pulse = .5f + .5f * std::sin(t * 4);
+      Color heat = L;
+      heat.a = uint8_t(40 + 30 * pulse);
+      X.ell(2, 2, 34, 26, heat);
+      for (int i = 0; i < 4; i++) {  // crête de flammes sur le dos
+        float f = std::sin(t * 9 + i * 1.7f) * 3;
+        X.tri(-4 + i * 8.f, -14, 0 + i * 8.f, -30 - f - (i == 1 || i == 2 ? 5 : 0), 4 + i * 8.f, -14, hot);
+        X.tri(-1 + i * 8.f, -14, 0 + i * 8.f, -22 - f, 2 + i * 8.f, -14, core);
+      }
+      X.poly({{-18, 16}, {-22, 0}, {-12, -15}, {6, -19}, {22, -10}, {27, 4}, {24, 16}}, rock);  // corps voûté
+      X.ell(-14, 12, 7, 6, rock); X.ell(14, 13, 7, 5, rock);  // pattes
+      for (int i = 0; i < 3; i++) X.tri(-20 + i * 3.f, 16, -18.5f + i * 3.f, 20, -17 + i * 3.f, 16, rgb(0xf3e3c8));
+      Color crack = hot;
+      crack.a = uint8_t(150 + 105 * pulse);
+      X.line(2, -12, 8, -2, 1.5f, crack); X.line(8, -2, 4, 8, 1.5f, crack); X.line(14, -8, 19, 3, 1.5f, crack);
+      X.line(-6, 2, 0, 10, 1.5f, crack); X.ell(8, 6, 6, 4, crack);  // ventre en fusion
+      Color horn = rgb(0xe8d7b0);
+      X.tri(-14, -13, -1, -28, -8, -10, horn); X.tri(-23, -14, -20, -29, -16, -12, horn);  // cornes
+      X.ell(-21, -6, 13, 10, C);  // tête
+      X.tri(-34, -2, -21, 1, -29, 8, rock);  // mâchoire
+      X.ell(-28, 1, 4.5f, 2.8f, core);       // gueule brûlante
+      X.ell(-26, -9, 3, 1.8f, core); X.ell(-18, -9, 3, 1.8f, core);  // yeux
+      float drip = std::fmod(t * 1.3f, 1.f);  // goutte de lave qui tombe de la gueule
+      Color lava = hot;
+      lava.a = uint8_t(255 * (1 - drip));
+      X.ell(-27, 4 + drip * 12, 1.4f, 2, lava);
+      break;
+    }
     case Shape::Human: break;
   }
 }

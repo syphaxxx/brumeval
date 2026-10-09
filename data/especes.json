@@ -469,7 +469,7 @@
     "type": "feu",
     "base": {"pv": 95, "pm": 40, "attaque": 60, "defense": 56, "magie": 58, "resistance": 57, "vitesse": 50},
     "esquive": 0,
-    "forme": "boss",
+    "forme": "magma",
     "couleurs": ["#a8321e", "#ffb347"],
     "apprend": [[1, "poing"], [1, "magma"], [1, "crocs"]]
   },

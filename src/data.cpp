@@ -21,7 +21,7 @@ static std::unordered_map<std::string, size_t> MOVE_IX, SPECIES_IX, ITEM_IX;
 
 static const char* SHAPES[] = {"renard", "goutte", "bourgeon", "oiseau", "souris", "insecte", "grenouille",
                                "champignon", "rocher", "feu_follet", "boss", "lezard", "golem", "serpent",
-                               "chauve_souris", "loup", "tortue", "fantome", "cristal", "humain"};
+                               "chauve_souris", "loup", "tortue", "fantome", "cristal", "magma", "humain"};
 static const char* TARGETS[] = {"ennemi", "tous_ennemis", "allie", "tous_allies", "allie_ko"};
 static const char* KINDS[] = {"physique", "magique", "soin", "rappel", "statut"};
 static const char* STATUSES[] = {"aucun", "poison", "brulure", "paralysie", "sommeil"};
