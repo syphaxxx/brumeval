@@ -147,7 +147,8 @@ les plus longs : y ajouter tout nouvel écran.
   (`s.allies = mine`) ; gardien à plusieurs : `myFighters` suit `front()`
   (un héros et son compagnon à deux joueurs).
 - Équipe : `Game::team` (8 membres maximum par capture, les humains s'ajoutent
-  toujours). Les 3 premiers membres valides combattent (`Game::front()`).
+  toujours). Les combattants sont choisis par `Game::front()` (`frontOf` : héros
+  et compagnons, voir Compagnons ci-dessus).
 - Progression : `Game::flags` (`boss1`, `golem`, `boss2`, `maelle`, `brann`,
   `isra`, `pecheur`, `coffre:<carte>:<index>`).
 - Sauvegarde : fichier texte `sauvegarde.txt` dans `SDL_GetPrefPath("Brumeval",
@@ -273,8 +274,9 @@ les plus longs : y ajouter tout nouvel écran.
   par leur numéro (ordre alphabétique des fichiers).
 - Intérieurs : thème `Theme::Interieur` (parquet, murs, meubles `p t h e o v`,
   dessinés dans sprites.cpp). Une porte de bâtiment avec `interieur` fait entrer
-  dans cette carte (`Game::interact`, case d'arrivée `interiorEntry` : au-dessus
-  du passage de sortie) ; `checkMaps` vérifie la sortie et part de cette case
+  dans cette carte (`Game::enterDoor`, appelé par `interact` avec Entrée et par
+  `tryMove` quand on marche dans la porte ; case d'arrivée `interiorEntry` :
+  au-dessus du passage de sortie) ; `checkMaps` vérifie la sortie et part de cette case
   pour l'accessibilité. Une carte moins haute que l'écran est centrée
   (`drawMap`). Les 12 intérieurs des villages sont `data/cartes/<village>_<lieu>.json`.
 - Quêtes annexes : `data/quetes.json` (lu par `loadEvents`, vérifié par
@@ -419,7 +421,8 @@ achat de la boutique de la région pour chaque membre, borne haute) : Sylvarque
 75 → 100 %, Ronce-Mère 73 → 93 %, Ignarok 25 → 90 %, Givrecorne 35 → 92 %
 (sans tactiques) ; gardiens de l'Expédition : région 5 graine 33 6 → 40 %,
 région 8 graine 11 73 → 93 %. Tout acheter rend les boss d'Ignarok et du
-Givrecorne faciles ; pas encore ajusté (à décider avec l'utilisateur).
+Givrecorne faciles : réglé en 1.5 (boss renforcés, voir plus haut ; ces
+chiffres-ci sont ceux d'avant le renfort).
 Duel avec l'équipement (`Online::Member::gear`, équipe `[espèce, niveau,
 équipement]`), décision du 2026-10-09.
 
@@ -434,4 +437,4 @@ La suite du projet, étape par étape : `docs/PLANNING.md`.
    --config Debug --target ALL_BUILD` (ce que fait F7) réussit. Reste à appuyer
    une fois sur F7, Maj+F5 et F5 dans VS Code pour le confirmer de visu.
 2. Fait le 2026-10-09 : son, options, manette, animations d'attaque, Ignarok
-   (forme `magma`), intérieurs, équipement, quêtes annexes.
+   (forme `magma`), intérieurs, équipement, quêtes annexes (version 1.3).
