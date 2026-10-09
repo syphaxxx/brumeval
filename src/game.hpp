@@ -145,6 +145,8 @@ class Game {
   std::unique_ptr<Expedition> expedition_;  // mode Expédition (écran titre), voir expedition.hpp
   std::unique_ptr<Online> online_;          // multijoueur (écran titre), voir online.hpp
   bool duelBattle_ = false;                 // le combat en cours est un duel en ligne
+  bool groupBattle_ = false;                // le combat en cours est celui d'un gardien, à plusieurs (coop.cpp)
+  void bossTouched(const BossSpot& b);      // un gardien d'expédition à plusieurs attend tout le groupe
   bool inExpedition() const;
   bool arenaBattle_ = false;      // le combat en cours a été lancé depuis l'Arène
   void toolsMenu();

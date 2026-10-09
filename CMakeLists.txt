@@ -65,7 +65,10 @@ if(MSVC)
   target_compile_options(brumeval PRIVATE /utf-8 /W3 /wd4244)
   set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT brumeval)
 else()
-  target_compile_options(brumeval PRIVATE -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers)
+  # -ffp-contract=off : pas de calculs a*b+c fusionnés (processeurs ARM des Mac), pour
+  # que les nombres à virgule donnent exactement les mêmes résultats sur tous les
+  # ordinateurs : l'expédition à plusieurs génère le même monde chez chaque joueur.
+  target_compile_options(brumeval PRIVATE -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -ffp-contract=off)
 endif()
 
 # Mac : une vraie application (Brumeval.app) ; le dossier data/ va dans

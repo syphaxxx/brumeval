@@ -7,6 +7,11 @@
 // jeu (dataDoc, maps(), events()) ; elles sont remises en place au retour à
 // l'écran titre (leave). La sauvegarde de l'expédition est à part
 // (expedition.txt) : la partie principale n'est jamais touchée.
+//
+// Expédition à plusieurs (online.hpp, coop.cpp) : chaque joueur a ici sa propre
+// expédition dans le monde de la même graine, avec sa sauvegarde
+// (expedition_groupe_<pseudo>.txt). Une défaite en solo le ramène au village (knockedOut) ;
+// seule une défaite contre le gardien, à plusieurs, arrête l'expédition.
 #pragma once
 #include <array>
 #include <cstdint>
@@ -45,22 +50,35 @@ class Expedition {
   // Appelés par le jeu pendant une expédition
   bool atExit(int x, int y) const;  // sortie de la région, derrière le gardien
   void nextRegion();
-  void onDefeat(bool gaveUp = false);  // l'expédition s'arrête : bilan, éclats, retour au titre
+  void onDefeat(bool gaveUp = false);  // l'expédition s'arrête : bilan, éclats, retour au titre (au salon à plusieurs)
   void leave();                        // remet les données du jeu en place
   void writeSave(std::ostream& f) const;
   bool readSave(const std::string& key, const std::string& rest);  // lignes « expedition » et « graine »
   std::string status() const;  // « Région 3 · graine 123456 »
   int region() const { return region_; }
   const procgen::Region& current() const { return current_; }
+  uint64_t seed() const { return seed_; }
+  const std::string& seedText() const { return seedText_; }
+  bool beaten() const;  // le gardien de la région est vaincu
+
+  // Expédition à plusieurs : reprend la sauvegarde de cette graine, sinon nouveau héros dans cette région
+  bool group() const { return group_; }
+  void startGroup(uint64_t seed, const std::string& text, int region);
+  void knockedOut();  // défaite en solo pendant une expédition à plusieurs : réveil au village
+  // Empreinte du monde d'une graine (régions 1 à n) : la même sur tous les ordinateurs
+  static std::string worldHash(uint64_t seed, int regions);
 
   // Fichiers dans le dossier de sauvegarde (le mode test utilise d'autres noms)
-  std::string saveName = "expedition.txt", progressName = "expedition_progres.txt";
+  std::string saveName = "expedition.txt", groupName = "expedition_groupe.txt", progressName = "expedition_progres.txt";
+  std::string groupTag;  // pseudo du joueur : une sauvegarde à plusieurs par pseudo (deux fenêtres sur le même ordinateur)
+  std::string groupFile() const;  // expedition_groupe_<pseudo>.txt
+  std::string saveFile() const { return group_ ? groupFile() : saveName; }
   Progress progress;
   void loadProgress();
   void saveProgress() const;
   bool saveExists() const;
-  void removeSave() const;
-  int savedRegion() const;  // région de l'expédition sauvegardée (0 : aucune)
+  void removeSave(bool group = false) const;
+  int savedRegion(bool group = false, uint64_t* seed = nullptr) const;  // région de l'expédition sauvegardée (0 : aucune)
 
   // Démarre directement une expédition (mode test) : graine, héros et créature par leur rang
   void quickStart(uint64_t seed, int hero, int starter);
@@ -69,7 +87,7 @@ class Expedition {
 
  private:
   Game& G;
-  bool active_ = false, screen_ = false;
+  bool active_ = false, screen_ = false, group_ = false;
   uint64_t seed_ = 0;
   std::string seedText_;
   int region_ = 1;

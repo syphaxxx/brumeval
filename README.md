@@ -92,21 +92,43 @@ L'expédition se sauvegarde (Échap > Sauvegarder, et à chaque nouvelle région
 dans un fichier à part, `expedition.txt` : la partie principale n'est jamais
 touchée.
 
-## Multijoueur : duel en ligne
+## Multijoueur : expédition à plusieurs et duels
 
-Écran titre > **Multijoueur**. Chacun combat avec les trois premiers membres de
-l'équipe de sa partie principale (ou, sans partie, le héros et deux compagnons
-de départ). Les deux joueurs doivent avoir **la même version du jeu** (indiquée
-en bas à droite de l'écran titre) et les mêmes données.
+Écran titre > **Multijoueur**, jusqu'à **4 joueurs**. Tous doivent avoir **la
+même version du jeu** (indiquée en bas à droite de l'écran titre) et les mêmes
+données.
 
-1. L'un choisit **Héberger un duel** : le jeu affiche ses adresses.
-2. L'autre choisit **Rejoindre un duel** et tape une de ces adresses.
-3. Dans le salon, l'hôte peut mettre tous les combattants au niveau 50
-   (« Niveaux : égaux ») puis **Lancer le duel**. Chacun commande son équipe ;
-   Tab active le mode auto (tactiques). Ni objets ni fuite.
+1. L'un choisit **Héberger une partie** : le jeu affiche ses adresses.
+2. Les autres choisissent **Rejoindre une partie** et tapent une de ces adresses.
+3. Dans le salon, l'hôte lance une **expédition** ou un **duel**.
 
-**Jouer par Internet, chacun chez soi.** Le plus simple : installer tous les
-deux une appli gratuite de réseau privé, puis utiliser l'adresse qu'elle donne.
+**Expédition à plusieurs.** L'hôte choisit Nouvelle, Graine… ou Continuer :
+tout le monde part dans le même monde généré.
+
+- Chacun choisit son héros et sa créature, puis joue **de son côté** : combats
+  contre les créatures et les dresseurs, captures, coffres, boutique, son or et
+  ses objets. On voit les autres joueurs sur la carte, avec leur pseudo.
+- Le **gardien** de chaque région se combat **ensemble** : le premier arrivé
+  attend devant lui les joueurs qui ne l'ont pas encore battu (Échap > Groupe
+  pour voir où ils en sont). À deux, chacun envoie deux combattants ; à trois
+  ou quatre, un chacun. Le gardien est plus robuste quand il y a quatre alliés.
+  Chacun commande ses combattants et peut utiliser ses objets.
+- Une défaite en solo ramène au village de la région, en perdant la moitié de
+  son or. Seule une défaite contre le gardien, à plusieurs, arrête l'expédition
+  (avec les éclats de brume gagnés, comme en solo).
+- Chacun garde sa sauvegarde (`expedition_groupe_<pseudo>.txt` : gardez le même
+  pseudo pour la reprendre). Un ami qui arrive en
+  cours de route part avec un nouveau héros dans la région du groupe ; avec
+  Continuer, chacun reprend la sienne.
+
+**Duel** (à deux). Chacun combat avec les trois premiers membres de l'équipe de
+sa partie principale (ou, sans partie, le héros et deux compagnons de départ).
+L'hôte peut mettre tous les combattants au niveau 50 (« Niveaux : égaux »).
+Chacun commande son équipe ; Tab active le mode auto (tactiques). Ni objets ni
+fuite.
+
+**Jouer par Internet, chacun chez soi.** Le plus simple : installer tous une
+appli gratuite de réseau privé, puis utiliser l'adresse qu'elle donne.
 
 - **Tailscale** (https://tailscale.com) : créez un compte, installez-la sur les
   deux ordinateurs, invitez votre ami dans votre réseau ; l'adresse de l'hôte

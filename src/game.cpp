@@ -184,6 +184,7 @@ void Game::update(float dt) {
           sc.clear();  // la défaite interrompt l'événement en cours
           defeat();
         }
+        groupBattle_ = false;
         if (after) sc.runNow([&] { after(r); });
       }
       break;
@@ -273,7 +274,11 @@ void Game::startBattle(std::vector<FighterP> foes, bool boss, std::function<void
 bool Game::inExpedition() const { return expedition_ && expedition_->active(); }
 
 void Game::defeat() {
-  if (inExpedition()) return expedition_->onDefeat();
+  if (inExpedition()) {
+    // À plusieurs, une défaite en solo ramène au village ; seule celle contre le gardien, ensemble, arrête l'expédition
+    if (expedition_->group() && !groupBattle_) return expedition_->knockedOut();
+    return expedition_->onDefeat();
+  }
   healAll();
   changeMap(respawnMap, respawnX, respawnY, DOWN);
   sc.say("Vous reprenez connaissance chez la guérisseuse. Toute l'équipe est soignée.");
@@ -314,7 +319,7 @@ void Game::tryMove(int d) {
     for (auto& b : M().buildings)
       if (nx == b.doorX() && ny == b.doorY()) return runEvent(b.event);
     for (auto& b : M().bosses)
-      if (bossAlive(b) && nx >= b.x && nx <= b.x + 1 && ny >= b.y && ny <= b.y + 1) return runEvent(b.event);
+      if (bossAlive(b) && nx >= b.x && nx <= b.x + 1 && ny >= b.y && ny <= b.y + 1) return bossTouched(b);
     for (auto& w : M().warps)
       if (w.x == nx && w.y == ny && !w.condition.is_null() && !checkCond(w.condition))
         return sc.say(w.message.empty() ? "Le passage est fermé." : fillText(w.message));
@@ -382,6 +387,12 @@ void Game::encounter() {
   }
 }
 
+// Gardien d'une expédition à plusieurs : il ne s'affronte qu'avec tout le groupe (coop.cpp)
+void Game::bossTouched(const BossSpot& b) {
+  if (online_ && online_->inGroup() && inExpedition() && b.flag == expedition_->current().bossFlag) return online_->guardian(b.event);
+  runEvent(b.event);
+}
+
 void Game::changeMap(int m, int x, int y, int d) {
   bool changed = m != mapId;
   mapId = m;
@@ -407,7 +418,7 @@ void Game::interact() {
   for (size_t i = 0; i < m.chests.size(); i++)
     if (m.chests[i].x == fx && m.chests[i].y == fy) return openChest((int)i);
   for (auto& b : m.bosses)
-    if (bossAlive(b) && fx >= b.x && fx <= b.x + 1 && fy >= b.y && fy <= b.y + 1) return runEvent(b.event);
+    if (bossAlive(b) && fx >= b.x && fx <= b.x + 1 && fy >= b.y && fy <= b.y + 1) return bossTouched(b);
   for (auto& b : m.buildings)
     if (fx == b.doorX() && fy == b.doorY()) return runEvent(b.event);
 }
@@ -488,7 +499,7 @@ void Game::titleMenu() {
                        if (!expedition_) expedition_ = std::make_unique<Expedition>(*this);
                        expedition_->menu();
                      }});
-  m.items.push_back({"Multijoueur", "", "Duel en ligne contre un ami.", true, [this] {
+  m.items.push_back({"Multijoueur", "", "Avec des amis, en ligne : duel ou expédition à plusieurs.", true, [this] {
                        if (!online_) online_ = std::make_unique<Online>(*this);
                        online_->menu();
                      }});
@@ -558,7 +569,7 @@ void Game::newGame(const std::string& starter) {
 void Game::pauseMenu() {
   panelMode_ = 1;
   Menu m;
-  m.x = 8, m.y = 8, m.w = 100, m.rows = 8;
+  m.x = 8, m.y = 8, m.w = 100, m.rows = 9;
   if (editorTest_ && editor_)
     m.items.push_back({"Fin du test", "", "Revenir à l'éditeur de cartes, à l'endroit où vous êtes.", true, [this] {
                          panelMode_ = 0;
@@ -574,12 +585,15 @@ void Game::pauseMenu() {
   m.items.push_back({"Objets", "", "Utiliser un objet.", true, [this] { itemMenu(); }});
   m.items.push_back({"Magie", "", "Lancer un sort de soin.", true, [this] { magicMenu(); }});
   if (inExpedition()) {
+    bool group = online_ && online_->inGroup();
     m.items.push_back({"Sauvegarder", "", "Expédition : " + expedition_->status() + ".", true,
                        [this] { notice(saveGame() ? "Expédition sauvegardée." : "Impossible de sauvegarder."); }});
+    if (group) m.items.push_back({"Groupe", "", "Où en sont les autres joueurs.", true, [this] { online_->groupMenu(); }});
     m.items.push_back({"Abandonner", "", "Arrêter l'expédition ici et recevoir les éclats gagnés.", true, [this] {
                          ask("Abandonner l'expédition ?", [this] { expedition_->onDefeat(true); });
                        }});
-    m.items.push_back({"Écran titre", "", "Sauvegarder et revenir à l'écran titre.", true, [this] {
+    m.items.push_back({"Écran titre", "", group ? "Sauvegarder, quitter le groupe et revenir à l'écran titre." : "Sauvegarder et revenir à l'écran titre.",
+                       true, [this] {
                          saveGame();
                          titleMenu();
                        }});
@@ -812,7 +826,7 @@ std::string Game::savePath() const {
   char* p = SDL_GetPrefPath("Brumeval", "Brumeval");
   std::string s = p ? p : "";
   SDL_free(p);
-  return s + (inExpedition() ? expedition_->saveName : saveName_);
+  return s + (inExpedition() ? expedition_->saveFile() : saveName_);
 }
 bool Game::saveExists() const {
   std::ifstream f(savePath());
@@ -996,6 +1010,16 @@ void Game::drawMap() {
   for (auto& b : m.bosses)
     if (bossAlive(b))
       actors.push_back({float(b.y * 16 + 16), [&, b] { drawCreature(g, b.id, (b.x + 1) * 16 - camX, (b.y + 1) * 16 - camY - 2, .6f, false, time); }});
+  // Expédition à plusieurs : les autres joueurs de la région, avec leur pseudo (doré : prêt devant le gardien)
+  if (online_ && online_->inGroup())
+    for (auto& a : online_->avatars())
+      actors.push_back({a.y * 16, [&, a] {
+                          float x = a.x * 16 - camX, y = a.y * 16 - camY;
+                          drawHuman(g, look(a.look), x, y - 2, 1, a.dir, a.step, false);
+                          int w = Gfx::textW(a.name);
+                          g.rect(x + 8 - w / 2 - 2, y - 23, w + 4, 10, rgb(0x0a0f33, 150));
+                          g.text(x + 8, y - 22, a.name, a.ready ? GOLD : a.busy ? rgb(0xff8a7a) : WHITE, 1);
+                        }});
   if (exclaimNpc_ >= 0 && exclaimNpc_ < (int)m.npcs.size() && time - exclaimT_ < 1.2f) {
     const Npc& n = m.npcs[exclaimNpc_];
     float bx = n.x * 16 - camX + 4, by = n.y * 16 - camY - 16;

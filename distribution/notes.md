@@ -13,6 +13,6 @@ Décompressez, puis lancez le jeu : le fichier `LISEZ-MOI.txt` dans le dossier e
 
 ## Jouer à plusieurs
 
-Écran titre > **Multijoueur**. Il faut la même version des deux côtés. Chacun chez soi, le plus simple est d'installer [Tailscale](https://tailscale.com), gratuit : l'hôte donne alors son adresse qui commence par `100.`.
+Écran titre > **Multijoueur**, jusqu'à 4 joueurs : **expédition à plusieurs** (le même monde pour tous, chacun explore de son côté, le gardien de chaque région se combat ensemble) ou **duel** à deux. Il faut la même version partout. Chacun chez soi, le plus simple est d'installer [Tailscale](https://tailscale.com), gratuit : l'hôte donne alors son adresse qui commence par `100.`.
 
 Les sauvegardes sont gardées quand on installe une nouvelle version.

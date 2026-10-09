@@ -1127,6 +1127,9 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       check(a.moves == b.moves && a.species == b.species && a.looks == b.looks && ra.map == rb.map && ra.events == rb.events && ra2.map == rb2.map &&
                 procgen::seedFromText("1234") == 1234 && procgen::seedFromText("brume") == procgen::seedFromText("brume"),
             "expédition : la même graine redonne exactement le même monde");
+      // À plusieurs, chaque joueur génère le monde chez lui : l'empreinte doit être la même sous Windows, Mac et Linux
+      std::string wh = Expedition::worldHash(2026, 3);
+      check(wh == "536d1b3aad5321ce", "expédition : la graine 2026 donne le même monde sur tous les systèmes (empreinte " + wh + ")");
     }
     // Écran titre > Expédition, choix du héros puis de la créature
     titleMenu();
@@ -1228,7 +1231,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     titleMenu();
   }
 
-  // --- Multijoueur : duel en ligne entre deux jeux sur cet ordinateur (vrai réseau, 127.0.0.1) ---
+  // --- Multijoueur : deux jeux sur cet ordinateur (vrai réseau, 127.0.0.1) : duel, puis expédition à plusieurs ---
   {
     Game guest(g.renderer());
     guest.g.checkLayout = true;
@@ -1245,12 +1248,26 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         guest.update(1 / 60.f);
       }
     };
+    // Les deux appuient sur Entrée (messages) jusqu'à ce que leurs scènes soient finies
+    auto bothSkip = [&] {
+      for (int i = 0; i < 3000 && ((sc.busy() && !menus.active()) || (guest.sc.busy() && !guest.menus.active())); i++) {
+        in.confirm = sc.busy() && !menus.active();  // jamais dans un menu ouvert (il choisirait)
+        guest.in.confirm = guest.sc.busy() && !guest.menus.active();
+        both(1);
+      }
+    };
     auto snapGuest = [&](const std::string& name) {
       guest.draw();
       SDL_RenderPresent(g.renderer());
       std::string p = out + "/" + name + ".bmp";
       SDL_SaveBMP(target, p.c_str());
       std::printf("capture  %s\n", p.c_str());
+      guest.g.layoutScene = name;
+    };
+    auto connect = [&] {
+      V.menu();
+      V.join("127.0.0.1");
+      for (int i = 0; i < 600 && !(H.players_.size() == 1 && V.state_ == Online::State::Salon); i++) both(1);
     };
     titleMenu();
     menus.top().sel = 3;  // Multijoueur
@@ -1259,23 +1276,22 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     run(.1f);
     snap("69_multijoueur");
     bool menuOk = H.onScreen() && menus.top().title == "Multijoueur";
-    in.confirm = true;  // Héberger un duel
+    in.confirm = true;  // Héberger une partie
     frame();
     run(.1f);
     snap("70_multijoueur_attente");
-    bool hosting = H.state_ == Online::State::Hosting;
-    V.menu();
-    V.join("127.0.0.1");
-    for (int i = 0; i < 600 && !(H.state_ == Online::State::Salon && V.state_ == Online::State::Salon); i++) both(1);
+    bool hosting = H.state_ == Online::State::Salon && H.host_ && H.players_.empty();
+    connect();
     run(.1f);
     snap("71_multijoueur_salon");
-    check(menuOk && hosting && H.state_ == Online::State::Salon && V.state_ == Online::State::Salon && H.peer_ == "Invité" && V.peer_ == "Hôte",
-          "multijoueur : écran titre > Multijoueur, héberger, rejoindre (127.0.0.1), les deux joueurs dans le salon");
+    check(menuOk && hosting && H.state_ == Online::State::Salon && V.state_ == Online::State::Salon && H.players_.size() == 1 &&
+              H.players_[0].name == "Invité" && V.nameOf(0) == "Hôte" && V.myId_ == 1,
+          "multijoueur : écran titre > Multijoueur, héberger une partie, rejoindre (127.0.0.1), les deux joueurs dans le salon");
     // Duel : niveaux égaux ; l'hôte laisse jouer l'ordinateur, l'invité ses tactiques (mode auto)
-    menus.top().sel = 1;  // Niveaux : égaux
+    menus.top().sel = 2;  // Niveaux : égaux
     in.confirm = true;
     frame();
-    menus.top().sel = 0;  // Lancer le duel
+    menus.top().sel = 1;  // Duel
     in.confirm = true;
     frame();
     both(5);
@@ -1306,17 +1322,167 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
           "multijoueur : duel complet (niveaux égaux), l'invité voit les mêmes PV et joue ses tours ; " + std::string(hostWon ? "l'hôte" : "l'invité") +
               " gagne, les deux reviennent au salon");
     snapGuest("74_duel_fin_invite");
-    // L'invité s'en va : l'hôte revient au menu Multijoueur avec un message
+    // L'invité s'en va : l'hôte reste dans le salon, prévenu
     V.leave();
     both(30);
-    check(H.state_ == Online::State::Menu && !H.conn_ && H.status_.find("parti") != std::string::npos,
-          "multijoueur : l'invité quitte, l'hôte le voit (« " + H.status_ + " »)");
+    check(H.state_ == Online::State::Salon && H.players_.empty() && H.peers_.empty() && H.status_.find("parti") != std::string::npos,
+          "multijoueur : l'invité quitte, l'hôte le voit et attend d'autres joueurs (« " + H.status_ + " »)");
     // Version différente : refusée
-    H.onMessage(Json{{"t", "bonjour"}, {"version", "0.1"}, {"donnees", Online::dataHash()}, {"pseudo", "Ancien"}});
+    H.onHello(9, Json{{"t", "bonjour"}, {"version", "0.1"}, {"donnees", H.hash_}, {"pseudo", "Ancien"}});
     check(H.status_.find("Versions différentes") != std::string::npos, "multijoueur : une autre version du jeu est refusée");
+
+    // --- Expédition à plusieurs : même monde, chacun de son côté, le gardien ensemble ---
+    Expedition& XH = *expedition_;  // fichiers « _test » (tests de l'expédition)
+    guest.expedition_ = std::make_unique<Expedition>(guest);
+    Expedition& XV = *guest.expedition_;
+    XH.groupName = "expedition_groupe_test.txt", XH.groupTag = "hote";
+    XV.saveName = "expedition_invite_test.txt", XV.groupName = "expedition_groupe_test.txt", XV.groupTag = "invite";
+    XV.progressName = "expedition_progres_invite_test.txt";
+    for (Expedition* x : {&XH, &XV}) {
+      x->removeSave(true);
+      std::remove(x->path(x->progressName).c_str());
+    }
+    connect();
+    menus.top().sel = 0;  // Expédition
+    in.confirm = true;
+    frame();
+    run(.1f);
+    snap("75_groupe_menu");
+    bool groupMenuOk = menus.top().title == "Expédition à plusieurs" && menus.top().items.size() == 4;
+    uint64_t seed = procgen::seedFromText("groupe");
+    menus.clear();
+    // Les deux jeux partagent ici les mêmes données en mémoire : l'invité met de côté les vraies données
+    // (celles que l'hôte a mises de côté), pas le monde déjà installé par l'hôte
+    auto shareBackup = [&] {
+      XV.docs_ = XH.docs_, XV.maps_ = XH.maps_, XV.events_ = XH.events_;
+      XV.backedUp_ = true;
+    };
+    H.launch(seed, "groupe", true);
+    shareBackup();
+    both(10);
+    snapGuest("76_groupe_heros_invite");
+    bool choosing = H.inGroup() && V.inGroup() && XH.onScreen() && XV.onScreen() && XH.seed() == seed && XV.seed() == seed &&
+                    XH.content_.heroes == XV.content_.heroes && XV.seedText() == "groupe";
+    XH.begin(XH.content_.heroes.at(0), XH.content_.starters.at(0));
+    XV.begin(XV.content_.heroes.at(1), XV.content_.starters.at(1));
+    bothSkip();
+    // L'invité fait deux pas : l'hôte le voit glisser jusqu'à sa case
+    for (int i = 0; i < 20; i++) {
+      guest.in.hold[RIGHT] = true;
+      both(1);
+    }
+    guest.in.hold[RIGHT] = false;
+    both(30);
+    snap("77_groupe_carte_hote");
+    auto seenH = H.avatars(), seenV = V.avatars();
+    bool seen = seenH.size() == 1 && seenV.size() == 1 && seenH[0].x == (float)guest.px && seenH[0].y == (float)guest.py && guest.px != px &&
+                seenH[0].name == "Invité" && seenV[0].name == "Hôte" && guest.mode == Mode::Map;
+    check(groupMenuOk && choosing && seen,
+          "expédition à plusieurs : lancée depuis le salon, chacun choisit son héros dans le même monde et voit l'autre se déplacer");
+    // Menu de pause > Groupe : où en sont les autres
+    pauseMenu();
+    bool hasGroup = false;
+    for (auto& it : menus.top().items) hasGroup = hasGroup || it.label == "Groupe";
+    H.groupMenu();
+    run(.1f);
+    snap("78_groupe_pause");
+    check(hasGroup && menus.top().title == "Groupe" && menus.top().items.size() == 3, "expédition à plusieurs : menu de pause > Groupe");
+    menus.clear();
+    // Gardien : l'hôte attend devant lui, l'invité arrive, le combat commence chez les deux (deux combattants chacun)
+    for (Game* p : {this, &guest})
+      for (auto& f : p->team) {
+        f->lvl = 30;
+        f->recalc();
+        f->hp = f->mhp, f->mp = f->mmp;
+      }
+    const BossSpot boss = M().bosses.at(0);
+    auto toGuardian = [&](Game& p) {
+      p.px = boss.x - 1, p.py = boss.y, p.dir = RIGHT;
+      p.moving = false;
+    };
+    toGuardian(*this);
+    interact();
+    skipScript();
+    both(10);
+    snap("79_groupe_attente_gardien");
+    bool waiting = H.ready_ == 1 && menus.active() && menus.top().title == "Gardien : le groupe" && mode == Mode::Map && !H.missing(1).empty() &&
+                   V.players_.at(0).ready == 1;
+    toGuardian(guest);
+    guest.interact();
+    for (int i = 0; i < 600 && !(mode == Mode::Battle && guest.mode == Mode::Battle); i++) {
+      guest.in.confirm = guest.sc.busy() && !guest.menus.active();
+      both(1);
+    }
+    bool fought = mode == Mode::Battle && guest.mode == Mode::Battle && battle_ && guest.battle_ && battle_->online() == Battle::Net::Lead &&
+                  guest.battle_->online() == Battle::Net::Follow && battle_->allies.size() == 4 && guest.battle_->allies.size() == 4 &&
+                  battle_->foes.size() == guest.battle_->foes.size() && battle_->foes.at(1)->mhp == guest.battle_->foes.at(1)->mhp;
+    if (battle_) battle_->autoPlay = true;
+    both(150);
+    snap("80_groupe_gardien_hote");
+    snapGuest("81_groupe_gardien_invite");
+    bool same = false;
+    for (int i = 0; i < 120 && !same && battle_ && guest.battle_; i++) {
+      both(1);
+      same = true;
+      for (size_t k = 0; same && k < battle_->allies.size(); k++) same = battle_->allies[k]->hp == guest.battle_->allies[k]->hp;
+      for (size_t k = 0; same && k < battle_->foes.size(); k++) same = battle_->foes[k]->hp == guest.battle_->foes[k]->hp;
+    }
+    int gold0 = guest.gold, xp0 = guest.team.at(0)->xp, lvl0 = guest.team.at(0)->lvl;
+    size_t turns = 0;
+    for (int i = 0; i < 60 * 900 && (mode == Mode::Battle || guest.mode == Mode::Battle); i++) {
+      if (guest.battle_) turns = std::max(turns, guest.battle_->log.size());
+      both(1);
+    }
+    bothSkip();
+    bool won = XH.beaten() && XV.beaten() && guest.gold > gold0 && (guest.team.at(0)->xp != xp0 || guest.team.at(0)->lvl > lvl0);
+    check(waiting && fought && same && turns > 0 && won,
+          "expédition à plusieurs : le gardien attend tout le groupe, puis combat à quatre alliés (tours de l'invité : " + std::to_string(turns) +
+              ", mêmes PV chez les deux) ; gagné, chacun reçoit or et expérience");
+    // Défaite en solo : réveil au village, moitié de l'or ; l'expédition continue
+    guest.gold = 100;
+    guest.defeat();
+    bothSkip();
+    check(XV.active() && V.inGroup() && guest.gold == 50 && guest.px == XV.current().startX && guest.mode == Mode::Map,
+          "expédition à plusieurs : une défaite en solo ramène au village (moitié de l'or), l'expédition continue");
+    // L'hôte passe en région 2 : l'invité ne le voit plus sur sa carte ; le gardien 2 attendra l'invité
+    px = XH.current().exitX - 1, py = XH.current().exitY;
+    moving = false;
+    in.press[RIGHT] = true;
+    tryMove(RIGHT);
+    for (int i = 0; i < 30 && moving; i++) both(1);
+    both(30);
+    check(XH.region() == 2 && V.players_.at(0).region == 2 && V.avatars().empty() && H.session_.region == 2 && !H.missing(2).empty(),
+          "expédition à plusieurs : l'hôte passe en région 2 (sauvegardée), l'invité le sait ; le gardien 2 l'attendra");
+    // L'hôte s'en va : l'invité revient au menu, son expédition sauvegardée ; puis tous deux la reprennent
+    int lvlV = guest.team.at(0)->lvl;
+    titleMenu();  // sauvegarde déjà faite au passage de région ; ferme la partie et les connexions
+    for (int i = 0; i < 120 && V.inGroup(); i++) guest.update(1 / 60.f);
+    snapGuest("82_groupe_hote_parti");
+    bool backToMenu = !V.inGroup() && V.state_ == Online::State::Menu && !XV.active() && XV.savedRegion(true) == 1 &&
+                      V.status_.find("sauvegardée") != std::string::npos && hasSpecies("lior");
+    H.menu();
+    H.host();
+    connect();
+    uint64_t saved = 0;
+    XH.savedRegion(true, &saved);
+    H.launch(saved, "", false);
+    shareBackup();
+    both(10);
+    bothSkip();
+    check(backToMenu && saved == seed && H.inGroup() && V.inGroup() && XH.region() == 2 && !XH.onScreen() && XV.region() == 1 && !XV.onScreen() &&
+              XV.beaten() && guest.team.at(0)->lvl == lvlV && guest.mode == Mode::Map,
+          "expédition à plusieurs : l'hôte part (l'invité garde sa sauvegarde), puis chacun reprend la sienne dans le même monde");
     for (auto& s : guest.g.layoutIssues) std::printf("         (invité) %s\n", s.c_str());
     check(guest.g.layoutIssues.empty(), "multijoueur : mise en page de l'écran de l'invité");
+    V.leave();
     H.leave();
+    guest.expedition_->leave();
+    XH.leave();
+    for (Expedition* x : {&XH, &XV}) {
+      x->removeSave(true);
+      x->removeSave();
+      std::remove(x->path(x->progressName).c_str());
+    }
     std::remove(H.file(H.settingsName).c_str());
     online_.reset();
     titleMenu();
