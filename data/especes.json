@@ -484,5 +484,49 @@
     "forme": "boss",
     "couleurs": ["#7fb4e0", "#ffffff"],
     "apprend": [[1, "corne_givre"], [1, "blizzard_eternel"], [1, "seisme"]]
+  },
+  {
+    "id": "brumeloup",
+    "nom": "Brumeloup",
+    "type": "ombre",
+    "base": {"pv": 66, "pm": 20, "attaque": 74, "defense": 54, "magie": 32, "resistance": 46, "vitesse": 68},
+    "critique": 10,
+    "forme": "loup",
+    "couleurs": ["#6a6f8f", "#d9dcff"],
+    "apprend": [[1, "mordant"], [1, "griffe"], [30, "lame_ombre"]],
+    "limite": "lim_brumeloup"
+  },
+  {
+    "id": "nebulis",
+    "nom": "Nébulis",
+    "type": "esprit",
+    "base": {"pv": 52, "pm": 36, "attaque": 30, "defense": 48, "magie": 74, "resistance": 66, "vitesse": 60},
+    "esquive": 8,
+    "forme": "fantome",
+    "couleurs": ["#9fe0e8", "#ffffff"],
+    "apprend": [[1, "onde"], [1, "regard"], [1, "cauchemar"], [34, "hurlement_spectral"]],
+    "limite": "lim_esprillon"
+  },
+  {
+    "id": "orbrume",
+    "nom": "Orbrume",
+    "types": ["ombre", "roche"],
+    "base": {"pv": 64, "pm": 26, "attaque": 56, "defense": 76, "magie": 52, "resistance": 60, "vitesse": 34},
+    "esquive": 0,
+    "forme": "cristal",
+    "couleurs": ["#5a4f78", "#c8bff0"],
+    "apprend": [[1, "jet_pierres"], [1, "voile"], [1, "brume"], [36, "seisme"]],
+    "limite": "lim_galetor"
+  },
+  {
+    "id": "mere_brumes",
+    "nom": "Mère des Brumes",
+    "types": ["ombre", "esprit"],
+    "base": {"pv": 110, "pm": 60, "attaque": 64, "defense": 62, "magie": 76, "resistance": 68, "vitesse": 56},
+    "esquive": 4,
+    "immunites": ["sommeil"],
+    "forme": "boss",
+    "couleurs": ["#b8b0d8", "#ffffff"],
+    "apprend": [[1, "eclipse"], [1, "cauchemar"], [1, "lame_ombre"], [1, "hurlement_spectral"]]
   }
 ]

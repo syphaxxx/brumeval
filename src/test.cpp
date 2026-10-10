@@ -375,6 +375,69 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
                               (failed.empty() ? std::string() : " — " + failed));
   }
 
+  // --- Réserve : une capture avec l'équipe complète y va ; sauvegarde, échange (le compagnon suit), vente ---
+  {
+    auto keepTeam = team;
+    auto keepItems = items;
+    int keepGold = gold;
+    bool keepAuto = tacticsAuto;
+    team = {makeFighter("lior", 10)};
+    while ((int)team.size() < rules().maxTeam) team.push_back(makeFighter("ronceau", 5));
+    reserve.clear();
+    items["lanterne_or"] = 99;
+    tacticsAuto = false;
+    menus.clear();
+    sc.clear();
+    mode = Mode::Map;
+    auto foe = makeFighter("mulotin", 2);
+    foe->mhp *= 60, foe->hp = foe->mhp;  // assez solide pour ne pas tomber avant d'être capturé
+    startBattle({foe}, false, nullptr);
+    for (int i = 0; i < 60 * 300 && mode == Mode::Battle; i++) {
+      if (battle_ && menus.active() && battle_->actor && battle_->isAlly(battle_->actor) && !battle_->sc.busy()) {
+        menus.clear();
+        battle_->useItem(battle_->actor, "lanterne_or", foe);  // comme Objet > Lanterne d'or > cible
+      }
+      if (battle_ && battle_->sc.busy()) in.confirm = true;
+      frame();
+    }
+    skipScript();
+    bool captured = reserve.size() == 1 && reserve[0] == foe && (int)team.size() == rules().maxTeam;
+    seen.erase("glaconnet");
+    bool beast = seen.count("mulotin") && caught.count("mulotin") && !seen.count("glaconnet");
+    saveGame();
+    loadGame();
+    bool kept = reserve.size() == 1 && reserve[0]->sp == "mulotin" && (int)team.size() == rules().maxTeam;
+    check(beast && caught.count("mulotin") && caught.count("ronceau") && seen.count("mulotin"),
+          "bestiaire : créature vue en combat, obtenue en la capturant (et l'équipe), gardé dans la sauvegarde");
+    team[0]->companion = team[1];
+    FighterP out = team[1], arrive = reserve[0];
+    swapReserve(out, arrive);
+    bool swapped = team[1] == arrive && reserve.size() == 1 && reserve[0] == out && team[0]->companion.lock() == arrive;
+    swapReserve(team[2], nullptr);  // déposer, puis reprendre
+    swapReserve(nullptr, reserve.back());
+    bool back = reserve.size() == 1 && (int)team.size() == rules().maxTeam;
+    check(captured && kept && swapped && back, "réserve : capture avec l'équipe complète, sauvegarde, échange (le compagnon suit), dépôt et retour");
+    items = {{"potion", 2}};
+    gold = 0;
+    shopMenu({"potion"});
+    menus.top().sel = 1;  // Vendre…
+    in.confirm = true;
+    frame();
+    in.confirm = true;  // vendre une potion
+    frame();
+    check(gold == item("potion").price / 2 && items["potion"] == 1 && menus.top().title.rfind("Vendre", 0) == 0,
+          "boutique : vendre un objet rapporte la moitié de son prix");
+    in.cancel = true;  // retour à la boutique
+    frame();
+    check(menus.active() && menus.top().title.rfind("Boutique", 0) == 0, "boutique : Échap dans « Vendre » revient à la boutique");
+    menus.clear();
+    team = keepTeam;
+    reserve.clear();
+    items = keepItems;
+    gold = keepGold;
+    tacticsAuto = keepAuto;
+  }
+
   // --- Quête annexe : le médaillon (accepter, journal, coffre du Bois Murmurant, récompense) ---
   {
     auto answer = [&] {  // Entrée sur chaque message ; « Oui » (premier choix) aux questions
@@ -1283,6 +1346,32 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       if (d.price > 0) stock.push_back(d.id);
     shopMenu(stock);
     show("boutique");
+    menus.top().sel = (int)stock.size();  // Vendre…
+    in.confirm = true;
+    show("boutique : vendre");
+    menus.clear();
+    reserve = {makeFighter("carapierre", 40), makeFighter("cristallin", 40), makeFighter("braisenard", 12)};
+    reserveMenu(1);
+    show("réserve");
+    snap("reserve");
+    in.confirm = true;  // équipe complète : échanger contre…
+    show("réserve : échanger");
+    menus.clear();
+    reserve.clear();
+    seen = {"golem", "givrecorne", "lucioline"};
+    caught = {"golem"};
+    bestiaryMenu(0);
+    show("bestiaire");
+    for (int k = 0; k < 40 && bestiarySel_ != "golem"; k++) {
+      in.press[DOWN] = true;
+      frame();
+    }
+    show("bestiaire : fiche obtenue");
+    snap("bestiaire");
+    in.press[DOWN] = true;
+    show("bestiaire : fiche vue");
+    in.press[DOWN] = true;
+    show("bestiaire : jamais vue");
     menus.clear();
     tacticsMenu();
     show("tactiques");
@@ -2117,6 +2206,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     return s;
   }, 30);
   simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}, {"braisenard", 30}, {"gouttelin", 30}, {"ronceau", 30}}, bossEvent("givrecorne"), 40);
+  simSetup("Gardien de cristal (équipe N.28)", {{"lior", 28}, {"maelle", 28}, {"brann", 28}, {"braisenard", 28}, {"gouttelin", 28}, {"ronceau", 28}}, bossEvent("gardien_cristal"), 30);
+  simSetup("Mère des Brumes (équipe N.38)", {{"lior", 38}, {"maelle", 38}, {"selene", 38}, {"braisenard", 38}, {"gouttelin", 38}, {"ronceau", 38}}, bossEvent("mere_brumes"), 30);
 
   std::printf("\nMêmes combats, alliés guidés par les tactiques de départ :\n");
   sim("Bois (N.8 contre 3 x N.4-7)", {{"lior", 8}, {"maelle", 8}, {"braisenard", 8}},
@@ -2124,6 +2215,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   simSetup("Boss Sylvarque (équipe N.11)", {{"lior", 11}, {"maelle", 11}, {"braisenard", 11}, {"gouttelin", 11}}, bossEvent("sylvarque"), 30, true);
   simSetup("Boss Ignarok (équipe N.22)", {{"lior", 22}, {"maelle", 22}, {"isra", 22}, {"braisenard", 22}, {"gouttelin", 22}, {"ronceau", 22}}, bossEvent("ignarok"), 30, true);
   simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}, {"braisenard", 30}, {"gouttelin", 30}, {"ronceau", 30}}, bossEvent("givrecorne"), 30, true);
+  simSetup("Gardien de cristal (équipe N.28)", {{"lior", 28}, {"maelle", 28}, {"brann", 28}, {"braisenard", 28}, {"gouttelin", 28}, {"ronceau", 28}}, bossEvent("gardien_cristal"), 30, true);
+  simSetup("Mère des Brumes (équipe N.38)", {{"lior", 38}, {"maelle", 38}, {"selene", 38}, {"braisenard", 38}, {"gouttelin", 38}, {"ronceau", 38}}, bossEvent("mere_brumes"), 30, true);
 
   std::printf("\nMêmes boss, équipe équipée par les boutiques de sa région (meilleur achat possible) :\n");
   simGear = 1;
@@ -2149,6 +2242,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     return s;
   }, 30);
   simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}, {"braisenard", 30}, {"gouttelin", 30}, {"ronceau", 30}}, bossEvent("givrecorne"), 40);
+  simSetup("Gardien de cristal (équipe N.28)", {{"lior", 28}, {"maelle", 28}, {"brann", 28}, {"braisenard", 28}, {"gouttelin", 28}, {"ronceau", 28}}, bossEvent("gardien_cristal"), 30);
+  simSetup("Mère des Brumes (équipe N.38)", {{"lior", 38}, {"maelle", 38}, {"selene", 38}, {"braisenard", 38}, {"gouttelin", 38}, {"ronceau", 38}}, bossEvent("mere_brumes"), 30);
   simGear = 0;
 
   // Expédition : gardien de chaque région contre une équipe générée (héros, créature de départ,

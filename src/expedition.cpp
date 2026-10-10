@@ -261,6 +261,8 @@ void Expedition::begin(const std::string& hero, const std::string& starter) {
   G.menus.clear();
   G.sc.clear();
   G.team = {makeFighter(hero, lvl), makeFighter(starter, lvl)};
+  G.reserve.clear();
+  G.seen.clear(), G.caught.clear();
   G.items = {{"potion", 3 + 2 * P.up[U_BAG]}, {"lanterne", 4 + P.up[U_BAG]}, {"ether", 1}, {"plume", 1}};
   G.gold = 100 + 60 * P.up[U_GOLD] + 60 * (region_ - 1);
   G.flags.clear();

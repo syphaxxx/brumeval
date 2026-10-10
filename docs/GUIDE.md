@@ -82,7 +82,8 @@ moitié écrit). Le mode test utilise des noms en `_test`.
 **La sauvegarde** (`sauvegarde.txt`) est un texte, une information par ligne :
 `carte`, `reveil`, `or`, `drapeau`, `objet`, `auto`, puis pour chaque membre
 `membre`, `equipement`, `compagnon` (héros), `tactiques` et ses lignes `tactique` (lues par
-`readMemberLine`, partagé avec le multijoueur). La progression de l'histoire,
+`readMemberLine`, partagé avec le multijoueur), puis `reserve` suivie des
+membres de la réserve ; `vu` et `pris` pour le bestiaire. La progression de l'histoire,
 les coffres ouverts et les quêtes sont des **drapeaux** (`Game::flags`).
 
 **Qui combat** : `frontOf` (data.cpp) — les 3 premiers héros valides, chacun
@@ -104,6 +105,11 @@ valeur à `Shape` (data.hpp) **avant** `Human`, son nom dans `SHAPES`
 équipement, `"equipement": "arme"` (ou `armure`, `accessoire`) et `"bonus"`.
 Le mettre en vente dans l'événement d'une boutique (`evenements.json`,
 action `boutique`).
+
+**Une créature, une technique** : les Réglages (Outils) ou `data/especes.json`
+et `data/techniques.json`. Pour un script Python qui les modifie, passer par
+`build/outils/bjson.py` (il écrit comme le jeu : le mode test vérifie ce
+format). Exemple complet d'une région : `build/outils/source.py`.
 
 **Une carte** : l'éditeur de cartes (écran titre > Outils) fait tout, ou un
 fichier dans `data/cartes/`. Un **intérieur** : une carte au thème

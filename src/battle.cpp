@@ -352,10 +352,10 @@ void Battle::command(FighterP a) {
                          bool lantern = d.capture > 0;
                          std::string help = d.desc;
                          if (lantern) {
-                           ok = canCapture && creature && (int)G.team.size() < rules().maxTeam;
+                           ok = canCapture && creature;
                            if (!canCapture) help = "Impossible de capturer ici.";
                            else if (!creature) help = "On ne capture pas une personne !";
-                           else if (!ok) help = "L'équipe est complète (" + std::to_string(rules().maxTeam) + " membres).";
+                           else if ((int)G.team.size() >= rules().maxTeam) help = d.desc + " Équipe complète : la créature ira dans la réserve.";
                          }
                          if (d.revive) ok = alive(allies).size() < allies.size();
                          t.items.push_back({d.name, "×" + std::to_string(n), help, ok, [this, a, id, lantern] {
@@ -372,10 +372,10 @@ void Battle::command(FighterP a) {
   std::vector<FighterP> bench;  // avec des héros : un héros n'est remplacé que par un héros
   for (auto& r : G.team)
     if (r->alive() && !isAlly(r) && (!hasHero_ || r->S().human == a->S().human)) bench.push_back(r);
-  m.items.push_back({"Changer", "", bench.empty() ? "Personne en réserve." : "Faire entrer un membre de la réserve.", !bench.empty(),
+  m.items.push_back({"Changer", "", bench.empty() ? "Personne pour vous remplacer." : "Faire entrer un remplaçant de l'équipe.", !bench.empty(),
                      [this, a, bench] {
                        Menu t;
-                       t.title = "Réserve";
+                       t.title = "Remplaçants";
                        t.x = 4, t.y = 82, t.w = 176, t.rows = 4;
                        for (auto& r : bench)
                          t.items.push_back({r->name() + " N." + std::to_string(r->lvl), std::to_string(r->hp) + "/" + std::to_string(r->mhp),
@@ -655,7 +655,7 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
       }
     }
     const ItemDef& d = item(x.item);
-    if (d.capture > 0) return canCapture && !t->S().human && (int)G.team.size() < rules().maxTeam;
+    if (d.capture > 0) return canCapture && !t->S().human;
     if (d.revive) return !t->alive();
     return (d.healHp && t->hp < t->mhp) || (d.healMp && t->mp < t->mmp) || (d.cure && t->status != Status::None);
   };
@@ -953,9 +953,11 @@ void Battle::useItem(FighterP a, const std::string& id, FighterP t) {
         t->mp = t->mmp;
         t->lim = 0;
         t->atb = 0;
-        G.team.push_back(t);
+        bool full = (int)G.team.size() >= rules().maxTeam;  // équipe complète : elle part dans la réserve
+        (full ? G.reserve : G.team).push_back(t);
+        G.caught.insert(t->sp);
         sc.call([this] { sound("capture"); });
-        sc.say("Capturé ! " + t->name() + " rejoint l'équipe" + ((int)G.team.size() > rules().frontSize ? " (en réserve)." : "."), 1.5f);
+        sc.say("Capturé ! " + t->name() + (full ? " est envoyé dans la réserve (Échap > Réserve)." : " rejoint l'équipe."), 1.5f);
       } else {
         sc.call([this] { sound("capture_rate"); });
         sc.say(t->name() + " s'échappe de la lumière !", 1.0f);
@@ -1032,6 +1034,7 @@ void Battle::checkEnd() {
     if (!foes[i]->alive() && !reserve.empty()) {
       FighterP n = reserve.front();
       reserve.erase(reserve.begin());
+      G.see(*n);  // bestiaire
       foes[i] = n;
       n->atb = frand() * 30;
       if (net_ == Net::Lead) send_(-1, Json{{"t", "renfort"}, {"i", (int)i}});

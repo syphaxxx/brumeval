@@ -1,0 +1,23 @@
+{
+  "id": "sylvenoire_tente",
+  "nom": "Tente du chef des bandits",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#v.v...ooo#",
+    "#.........#",
+    "#...tt....#",
+    "#...tt....#",
+    "#.........#",
+    "#v.......v#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [],
+  "coffres": [{"x": 8, "y": 3, "objet": "grimoire", "quantite": 1}, {"x": 1, "y": 6, "or": 250}],
+  "panneaux": [{"x": 2, "y": 2, "texte": "Des cages vides et des cordes… C'est ici que les bandits enfermaient les créatures capturées."}],
+  "passages": [{"x": 5, "y": 8, "vers": "sylvenoire", "tx": 7, "ty": 19, "direction": "bas"}],
+  "zones": [],
+  "boss": []
+}

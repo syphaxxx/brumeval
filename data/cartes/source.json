@@ -1,0 +1,92 @@
+{
+  "id": "source",
+  "nom": "Source des Brumes",
+  "theme": "grotte",
+  "ambiance": {"effet": "brume", "jusqua": "boss4"},
+  "taux_rencontre": 0.09,
+  "tuiles": [
+    "########################################",
+    "#############cccc......cccc#############",
+    "#############cxcc......ccxc#############",
+    "#############cccc......cccc#############",
+    "##ccccccc####cccc......cccc####ccccccc##",
+    "##cxccccc####cccc......cccc####cccccxc##",
+    "##ccccccc##########==##########ccccccc##",
+    "##ccccccc##########==##########ccccccc##",
+    "##ccccccc##########==##########ccccccc##",
+    "##ccccccc##########==##########ccccccc##",
+    "#####cc############==############cc#####",
+    "######cxccccccccccc==cccccccccccxc######",
+    "######ccccccccccccc==ccc~~~~~~cccc######",
+    "######ccccccccccccc==ccc~~~~~~cccc######",
+    "######cc========================cc######",
+    "######ccccccccccccc==ccccccccccccc######",
+    "######ccccxcccccccc==cccccccccxccc######",
+    "###################==###################",
+    "###################==###################",
+    "###################==###################",
+    "###################==###################",
+    "###################==###################",
+    "##############ccccc==ccccc##############",
+    "##############cxccc==cccxc##############",
+    "##############ccccc==ccccc##############",
+    "##############ccccc==ccccc##############",
+    "##############ccccc==ccccc##############",
+    "##############ccccc==ccccc##############",
+    "##############ccccc==ccccc##############",
+    "###################==###################"
+  ],
+  "batiments": [],
+  "habitants": [
+    {
+      "x": 14,
+      "y": 12,
+      "apparence": "mage_givre",
+      "direction": "bas",
+      "evenement": "gardien_brume1",
+      "vue": 2,
+      "vue_jusqua": "gardien_brume1"
+    },
+    {
+      "x": 25,
+      "y": 16,
+      "apparence": "chevalier",
+      "direction": "haut",
+      "evenement": "gardien_brume2",
+      "vue": 2,
+      "vue_jusqua": "gardien_brume2"
+    }
+  ],
+  "coffres": [
+    {"x": 2, "y": 4, "objet": "lanterne_or", "quantite": 3},
+    {"x": 8, "y": 9, "objet": "elixir", "quantite": 2},
+    {"x": 37, "y": 4, "or": 3000},
+    {"x": 31, "y": 9, "objet": "plume_ange", "quantite": 1},
+    {"x": 14, "y": 27, "objet": "superpotion", "quantite": 3}
+  ],
+  "panneaux": [
+    {
+      "x": 21,
+      "y": 27,
+      "texte": "Gravé dans la roche : « Ici naît la brume. Que nul ne trouble le sommeil de la Mère. »"
+    }
+  ],
+  "passages": [
+    {"x": 19, "y": 29, "vers": "sanctuaire", "tx": 9, "ty": 2, "direction": "bas"},
+    {"x": 20, "y": 29, "vers": "sanctuaire", "tx": 9, "ty": 2, "direction": "bas"}
+  ],
+  "zones": [
+    {
+      "x": 0,
+      "y": 0,
+      "l": 40,
+      "h": 30,
+      "niveau_min": 33,
+      "niveau_max": 37,
+      "max_ennemis": 3,
+      "creatures": ["brumeloup", "nebulis", "orbrume", "esprillon", "chauvenuit"]
+    }
+  ],
+  "boss": [{"x": 19, "y": 2, "espece": "mere_brumes", "drapeau": "boss4", "evenement": "mere_brumes"}],
+  "declencheurs": [{"x": 19, "y": 27, "l": 2, "h": 1, "evenement": "source_entree", "jusqua": "source_vue"}]
+}

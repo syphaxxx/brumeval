@@ -87,5 +87,5 @@
       "creatures": ["givrelin", "ferrolin", "cristallin", "glaconnet", "esprillon"]
     }
   ],
-  "boss": []
+  "boss": [{"x": 37, "y": 4, "espece": "cristallin", "drapeau": "cristal_apaise", "evenement": "gardien_cristal"}]
 }

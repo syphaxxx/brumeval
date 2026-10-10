@@ -55,7 +55,7 @@
       "genre": "maison",
       "nom": "Cabane de l'ermite",
       "toit": "#6a5a3a",
-      "evenement": "ermite_porte"
+      "interieur": "sylvenoire_cabane"
     },
     {
       "x": 5,
@@ -65,7 +65,7 @@
       "genre": "maison",
       "nom": "Tente des bandits",
       "toit": "#8a3a2a",
-      "evenement": "tente"
+      "interieur": "sylvenoire_tente"
     },
     {
       "x": 11,

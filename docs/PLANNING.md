@@ -39,23 +39,22 @@ créature, qui agit seule).
 
 - Petits plus du retour des joueurs.
 
-## Étape 2 — Plus de contenu (3 à 5 séances)
+## Étape 2 — Plus de contenu (fait en 1.6, le 2026-10-10)
 
-- **Une quête par région** de plus : Sylve-Noire (l'ermite, les bandits) et
-  le Temple gelé, avec les intérieurs de la cabane de l'ermite et des tentes.
-- **Après le Givrecorne** : une région finale facultative (épreuve ou donjon)
-  pour l'équipe au niveau 35-40.
-- **Bestiaire** : la liste des créatures vues et capturées (menu de pause),
-  avec leur fiche. Donne un but à la capture.
+Fait : quêtes de Sylve-Noire (grimoire de l'ermite, cabane et tente en
+intérieurs) et du Temple gelé (gardien de cristal), région facultative
+après le Givrecorne (Source des Brumes, 3 créatures, Mère des Brumes),
+bestiaire. Idées pour la suite :
+
+- Des quêtes dans la vallée et à Forgeroc qui utilisent le bestiaire
+  (« montrez-moi un Nébulis »), ou une récompense quand il est complet.
 - Nouvelles créatures pour les nouvelles zones (formes existantes, nouvelles
   couleurs : rien à dessiner).
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
-- **Réserve de créatures** (comme le « PC » de Pokémon) : au-delà de 8
-  membres, les captures et les cadeaux vont en réserve au lieu d'être
-  refusés. Devenue utile avec les échanges.
-- **Vendre** ses objets en boutique (la moitié du prix).
+- Fait en 1.6 : **réserve de créatures** (au-delà de 8 membres) et
+  **vente** en boutique (moitié du prix).
 - **Forge de Forgeroc** : améliorer une arme avec des objets trouvés.
 - **Évolution** des créatures à un niveau donné (nouvelle espèce plus forte) :
   à décider, car cela change l'équilibrage de toute l'histoire.

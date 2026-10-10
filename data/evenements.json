@@ -465,7 +465,77 @@
   "ermite_porte": {
     "actions": [
       {"action": "soigner"},
-      {"action": "dire", "texte": "L'ermite vous sert une tisane d'herbes. Toute l'équipe est soignée."}
+      {"action": "dire", "texte": "Herboriste : Une tasse de ma tisane d'herbes ? Toute l'équipe est soignée."}
+    ]
+  },
+  "quete_grimoire": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:grimoire:fin"},
+        "actions": [
+          {"action": "dire", "texte": "Apprentie : Le grimoire est de nouveau à sa place. J'apprends une recette par jour !"}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:grimoire", "objet": "grimoire"},
+        "actions": [
+          {"action": "retirer", "objet": "grimoire"},
+          {"action": "dire", "texte": "Apprentie : Le grimoire ! Et aucune page ne manque. Merci, merci !"},
+          {"action": "dire", "texte": "Apprentie : Prenez ceci : des élixirs de ma propre recette."},
+          {"action": "donner", "objet": "elixir", "quantite": 2},
+          {"action": "or", "quantite": 400},
+          {"action": "quete", "id": "grimoire", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:grimoire"},
+        "actions": [
+          {"action": "dire", "texte": "Apprentie : Les bandits l'ont emporté dans la tente de leur chef, à l'ouest de la forêt."}
+        ]
+      },
+      {
+        "actions": [
+          {"action": "dire", "texte": "Apprentie : Les bandits ont volé le grimoire de l'ermite, avec toutes ses recettes de plantes…"},
+          {"action": "dire", "texte": "Apprentie : Sans lui, je ne peux plus apprendre."},
+          {
+            "action": "question",
+            "texte": "Retrouver le grimoire de l'ermite ?",
+            "oui": [
+              {"action": "quete", "id": "grimoire"},
+              {"action": "dire", "texte": "Apprentie : Merci ! Leur chef dort dans la grande tente, à l'ouest."}
+            ],
+            "non": [{"action": "dire", "texte": "Apprentie : Je comprends… ils sont dangereux."}]
+          }
+        ]
+      }
+    ]
+  },
+  "gardien_cristal": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "quete:cristal"},
+        "actions": [
+          {"action": "dire", "texte": "Un énorme Cristallin dort au fond de la salle. Sa glace vibre d'une note triste."}
+        ]
+      },
+      {
+        "actions": [
+          {"action": "dire", "texte": "Le gardien de cristal s'éveille et pousse un cri suraigu !"},
+          {
+            "action": "combat",
+            "nom": "Le gardien de cristal",
+            "ennemis": [{"espece": "galetor", "niveau": 34}, {"espece": "cristallin", "niveau": 37, "pv": 10, "boss": true}, {"espece": "galetor", "niveau": 34}],
+            "renforts": [{"espece": "givrelin", "niveau": 33}],
+            "boss": true,
+            "fuite": true,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "cristal_apaise"},
+              {"action": "dire", "texte": "Le gardien se calme. Sa glace chante de nouveau, claire et douce."}
+            ]
+          }
+        ]
+      }
     ]
   },
   "tente": {
@@ -801,8 +871,128 @@
         ]
       },
       {
+        "si": {"drapeau": "quete:cristal:fin"},
         "actions": [
-          {"action": "dire", "texte": "Mage du givre : Que la clé de givre vous guide jusqu'au sanctuaire."}
+          {"action": "dire", "texte": "Mage du givre : Écoutez… le temple chante de nouveau. Merci."}
+        ]
+      },
+      {
+        "si": {"drapeau": ["quete:cristal", "cristal_apaise"]},
+        "actions": [
+          {"action": "dire", "texte": "Mage du givre : Le gardien est apaisé ? Je l'entends d'ici. Gardez ce pendentif, il vous protégera."},
+          {"action": "donner", "objet": "pendentif_brume", "quantite": 1},
+          {"action": "or", "quantite": 600},
+          {"action": "quete", "id": "cristal", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:cristal"},
+        "actions": [
+          {"action": "dire", "texte": "Mage du givre : Le gardien de cristal dort dans la salle du nord-est. Soyez prêts, il frappe fort."}
+        ]
+      },
+      {
+        "actions": [
+          {"action": "dire", "texte": "Mage du givre : Que la clé de givre vous guide jusqu'au sanctuaire."},
+          {"action": "dire", "texte": "Mage du givre : Autre chose : le gardien de cristal du temple souffre. Le Givrecorne l'a rendu fou."},
+          {
+            "action": "question",
+            "texte": "Apaiser le gardien de cristal ?",
+            "oui": [
+              {"action": "quete", "id": "cristal"},
+              {"action": "dire", "texte": "Mage du givre : Il dort dans la salle du nord-est. Revenez me voir ensuite."}
+            ],
+            "non": [{"action": "dire", "texte": "Mage du givre : Le temple attendra."}]
+          }
+        ]
+      }
+    ]
+  },
+  "source_entree": {
+    "actions": [
+      {"action": "dire", "texte": "Une brume épaisse et tiède monte du fond de la caverne. Elle a l'odeur de la vallée, au matin."},
+      {"action": "dire", "texte": "C'est d'ici que naît la brume qui rend les créatures sauvages. Lior serre le poing."},
+      {"action": "drapeau", "nom": "source_vue"}
+    ]
+  },
+  "gardien_brume1": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "gardien_brume1"},
+        "actions": [
+          {"action": "dire", "texte": "Gardienne des brumes : La Mère dort. Je ne vous laisserai pas la réveiller !"},
+          {
+            "action": "combat",
+            "nom": "La gardienne des brumes",
+            "ennemis": [{"espece": "mage_givre", "niveau": 36}, {"espece": "nebulis", "niveau": 35}],
+            "renforts": [{"espece": "orbrume", "niveau": 35}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "gardien_brume1"},
+              {"action": "dire", "texte": "Gardienne : Vous êtes forts… Peut-être assez pour l'apaiser, et non la détruire."}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {"action": "dire", "texte": "Gardienne : La Mère des Brumes n'est pas méchante. Elle a peur, depuis que le feu et la glace se battaient."}
+        ]
+      }
+    ]
+  },
+  "gardien_brume2": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "gardien_brume2"},
+        "actions": [
+          {"action": "dire", "texte": "Gardien des brumes : Encore des intrus ? Mes loups ont faim !"},
+          {
+            "action": "combat",
+            "nom": "Le gardien des brumes",
+            "ennemis": [{"espece": "chevalier", "niveau": 36}, {"espece": "brumeloup", "niveau": 35}],
+            "renforts": [{"espece": "brumeloup", "niveau": 35}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "gardien_brume2"},
+              {"action": "dire", "texte": "Gardien : Bien… Allez-y. Mais approchez-la doucement."}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {"action": "dire", "texte": "Gardien : La Mère des Brumes dort au nord. Sa brume s'apaise quand le monde est en paix."}
+        ]
+      }
+    ]
+  },
+  "mere_brumes": {
+    "actions": [
+      {"action": "dire", "texte": "Une immense silhouette pâle flotte au-dessus d'une source. Ses yeux s'ouvrent, inquiets."},
+      {
+        "action": "question",
+        "texte": "Affronter la Mère des Brumes ?",
+        "oui": [
+          {
+            "action": "combat",
+            "ennemis": [{"espece": "nebulis", "niveau": 36}, {"espece": "mere_brumes", "niveau": 40, "pv": 9, "boss": true}, {"espece": "brumeloup", "niveau": 36}],
+            "renforts": [{"espece": "orbrume", "niveau": 36}],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "boss4"},
+              {"action": "dire", "texte": "La Mère des Brumes se pose doucement sur la source. Sa brume devient légère, presque claire."},
+              {"action": "dire", "texte": "Elle ne rendra plus les créatures sauvages : la vallée peut enfin respirer."},
+              {
+                "action": "fin",
+                "texte": "La source des brumes est apaisée. Plus jamais la brume ne rendra les créatures sauvages. Vous avez tout vu de Brumeval !"
+              }
+            ]
+          }
         ]
       }
     ]
