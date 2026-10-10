@@ -369,8 +369,18 @@ compétence `joueur-automatique` de Claude Code.
   `zoneTargets` étend la cible à sa zone dans `useMove`, voisins × `zoneSide`.
   « Se déplacer » (`moveTo`, jauge rapide), menu `Game::formationMenu` (dessin
   `drawFormationPanel`, `panelMode_` 4). Réseau : la case est le 7e nombre de
-  chaque combattant dans `etat` ; ordre `deplacer`. 1.8 prévue : IA (placement,
-  déplacements), attaques annoncées des boss, tactiques liées au damier.
+  chaque combattant dans `etat` ; ordre `deplacer`.
+- Attaques annoncées (1.8) : `Battle::bossPlan` ; un boss (pas en duel) annonce
+  parfois (`boss_annonce`, 0,35) sa plus forte attaque sur la colonne, croix ou
+  ligne qui couvre le plus d'alliés (`warnings_`, zone rouge, 8e champ `w` de
+  `etat` pour l'invité) ; l'annonce ne lui coûte pas son tour. À son tour
+  suivant, elle frappe ceux restés dans la zone × `boss_annonce_puissance`
+  (1,6) ; si tous se sont écartés, il attaque normalement. Les alliés joués par
+  l'ordinateur (`autoCommand`) se mettent à l'abri (`threatened`, `safeCell`).
+  `enemyMove` : un lanceur de sorts ennemi à l'avant recule, un combattant à
+  l'arrière avance. Tactiques : conditions `soi_menace`, `ennemis_groupes`
+  (taille de la zone), `allie_avant_pv_moins` ; action `esquiver`
+  (`Plan::cell`).
 - Rythme (`Move::pace`, champ `rythme`) : après une technique rapide, la jauge ATB
   du lanceur repart à `jauge_rapide` % ; après une lourde, à -`retard_lourde` %
   (`paceGauge`, passé à `Battle::afterAction`). `Battle::attackScore` note une

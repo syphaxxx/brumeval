@@ -175,6 +175,8 @@ struct Rules {
   int quickGauge = 25, heavyDelay = 25;  // jauge après une technique rapide (%), retard après une lourde (%)
   double backRow = .75;                  // damier : dégâts au corps à corps donnés et reçus depuis l'arrière
   double zoneSide = .75;                 // zone d'effet : dégâts sur les cases autour de la cible
+  double bossWarn = .35;                 // chance qu'un boss annonce sa plus grosse attaque (un tour à l'avance)
+  double bossBurst = 1.6;                // puissance de l'attaque annoncée (sur ceux restés dans la zone)
   double companionAtb = .5;              // compagnons : vitesse de leur jauge ATB (ils agissent moins souvent que les héros)
   // États
   double poisonDmg = .1, burnDmg = .0625, burnAtk = .75, paraSpeed = .5, paraSkip = .25;

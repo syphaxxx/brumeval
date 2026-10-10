@@ -656,12 +656,17 @@ float Battle::attackScore(const FighterP& a, const Move& m, const FighterP& t) c
 
 void Battle::autoCommand(FighterP a) {
   actor = a;
+  if (isAlly(a) && threatened(a)) {  // une attaque annoncée vise sa case : se mettre à l'abri
+    int c = safeCell(a);
+    if (c >= 0) return moveTo(a, c);
+  }
   Plan p = think(a);
   useMove(a, p.move, p.targets, p.limit);
 }
 
 void Battle::enemyTurn(FighterP e) {
   actor = e;
+  if (bossPlan(e) || enemyMove(e)) return;
   Plan p = think(e);
   useMove(e, p.move, p.targets);
 }
@@ -672,12 +677,100 @@ void Battle::enemyTurn(FighterP e) {
 // ---------------------------------------------------------------------------
 bool Battle::tacticsActive() const { return autoPlay ? simTactics : G.tacticsAuto; }
 
+// ---------------------------------------------------------------------------
+// Damier : attaques annoncées des boss, déplacements de l'ordinateur
+// ---------------------------------------------------------------------------
+bool Battle::threatened(const FighterP& f) const {
+  int c = cellOf(f);
+  for (auto& w : warnings_)
+    if (inZone(w.zone, w.center, c)) return true;
+  return false;
+}
+int Battle::safeCell(const FighterP& f) const {
+  int from = cellOf(f), best = -1, bestD = 99;
+  for (int c = 0; c < N_CELLS; c++) {
+    bool taken = false, danger = false;
+    for (auto& o : sideOf(f)) taken = taken || (o != f && cellOf(o) == c);
+    for (auto& w : warnings_) danger = danger || inZone(w.zone, w.center, c);
+    int d = std::abs(cellCol(c) - cellCol(from)) * 2 + std::abs(cellRow(c) - cellRow(from));  // garder sa colonne si possible
+    if (!taken && !danger && c != from && d < bestD) best = c, bestD = d;
+  }
+  return best;
+}
+bool Battle::bossPlan(FighterP e) {
+  if (!e->boss || isAlly(e) || duel()) return false;
+  for (auto it = warnings_.begin(); it != warnings_.end(); ++it)
+    if (it->who == e) {  // l'attaque annoncée part : seulement sur ceux restés dans la zone
+      Warning w = *it;
+      warnings_.erase(it);
+      std::vector<FighterP> hit;
+      for (auto& a : alive(allies))
+        if (inZone(w.zone, w.center, cellOf(a))) hit.push_back(a);
+      if (hit.empty()) {
+        log.push_back(e->name() + " : " + moveInfo(w.move).name + " (annoncée), personne dans la zone");
+        sc.say(e->name() + " déchaîne " + moveInfo(w.move).name + "… mais tout le monde s'est écarté !", 1.2f);
+        return false;  // il joue tout de même une attaque normale
+      }
+      log.push_back(e->name() + " : " + moveInfo(w.move).name + " (annoncée) sur " + std::to_string(hit.size()));
+      useMove(e, w.move, hit, false, float(rules().bossBurst));
+      return true;
+    }
+  if (alive(allies).empty() || frand() >= rules().bossWarn) return false;
+  // Sa plus forte attaque, concentrée sur la zone où se trouvent le plus d'alliés
+  std::string best;
+  int power = 0;
+  std::vector<std::string> moves = e->techs();
+  for (auto& id : e->spells())
+    if (e->mp >= moveInfo(id).cost) moves.push_back(id);
+  for (auto& id : moves)
+    if (moveInfo(id).damaging() && moveInfo(id).power > power) power = moveInfo(id).power, best = id;
+  if (best.empty()) return false;
+  int center = -1, most = 0;
+  Area zone = Area::Cross;
+  for (Area z : {Area::Column, Area::Cross, Area::Line})
+    for (auto& a : alive(allies)) {
+      int n = 0;
+      for (auto& b : alive(allies)) n += inZone(z, cellOf(a), cellOf(b));
+      if (n > most || (n == most && frand() < .3f)) most = n, zone = z, center = cellOf(a);
+    }
+  warnings_.push_back({e, best, zone, center});
+  log.push_back(e->name() + " annonce " + moveInfo(best).name + " (" + zoneName(zone) + ", " + cellName(center) + ")");
+  sound("statut");
+  sc.say(e->name() + " prépare " + moveInfo(best).name + " ! Écartez-vous de la zone rouge.", 1.4f);
+  return false;  // l'annonce ne lui coûte pas son tour : il attaque aussitôt
+}
+bool Battle::enemyMove(FighterP e) {
+  if (isAlly(e) || e->boss || duel()) return false;
+  int c = cellOf(e), col = cellCol(c), row = cellRow(c);
+  const Species& s = e->S();
+  bool caster = s.base[B_MAG] > s.base[B_ATK];
+  auto freeCell = [&](int cc) {
+    for (auto& o : foes)
+      if (cellOf(o) == cc && o->alive()) return false;
+    return true;
+  };
+  int to = -1;
+  if (caster && col == 0 && frand() < .5f)  // un lanceur de sorts à l'avant se met à l'abri
+    for (int k : {2, 1})
+      if (to < 0 && freeCell(row * 3 + k)) to = row * 3 + k;
+  if (!caster && col == 2 && frand() < .4f)  // un combattant trop loin avance
+    for (int k : {0, 1})
+      if (to < 0 && freeCell(row * 3 + k)) to = row * 3 + k;
+  if (to < 0) return false;
+  moveTo(e, to);
+  return true;
+}
+
 bool Battle::tacticTurn(FighterP a) {
   if (!a->tacticsOn) return false;
   Plan p;
   if (!tacticPlan(a, p)) return false;
   actor = a;
   log.push_back(a->name() + " : tactique " + std::to_string(p.tactic + 1));
+  if (p.cell >= 0) {  // se mettre à l'abri
+    moveTo(a, p.cell);
+    return true;
+  }
   if (!p.item.empty()) useItem(a, p.item, p.targets.at(0));
   else useMove(a, p.move, p.targets, p.limit);
   return true;
@@ -728,6 +821,13 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
     if (c == "allie_etat") return t->status != Status::None;
     if (c == "allie_chef") return !allies.empty() && t == allies[0];
     if (c == "soi_limite") return a->lim >= 100;
+    if (c == "soi_menace") return threatened(a);
+    if (c == "allie_avant_pv_moins") return cellCol(std::max(0, cellOf(t))) == 0 && t->hp * 100 < tc.value * t->mhp;
+    if (c == "ennemis_groupes") {
+      if (!x.m) return false;
+      if (x.m->zone == Area::All) return (int)liveFoes.size() >= tc.value;
+      return (int)zoneTargets(*x.m, t).size() >= tc.value;
+    }
     return true;  // ennemi, ennemi_pv_bas, ennemi_pv_haut, soi
   };
   // L'action sert à quelque chose sur cette cible (pas de soin sur un allié en pleine forme…)
@@ -772,6 +872,14 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
       if (canCast(tc.act)) acts.push_back({&moveInfo(tc.act)});
     } else if (tc.kind == Tactic::Act::Item) {
       if (item(tc.act).battle && G.items.count(tc.act) && G.items[tc.act] > 0) acts.push_back({nullptr, tc.act});
+    } else if (tc.act == "esquiver") {  // se mettre à l'abri : seulement si une attaque annoncée vise sa case
+      if (!threatened(a)) continue;
+      bool cond = c->side == TSide::Self ? holds(tc, Act{}, a) : true;
+      int cell = safeCell(a);
+      if (!cond || cell < 0) continue;
+      out = Plan{};
+      out.tactic = i, out.cell = cell;
+      return true;
     } else if (tc.act == "limite") {
       if (a->lim >= 100 && !a->S().limit.empty()) acts.push_back({&moveInfo(a->S().limit), "", true});
     } else
@@ -916,7 +1024,7 @@ void Battle::knockOut(const FighterP& f) {
   if (!isAlly(f) && std::find(defeated.begin(), defeated.end(), f) == defeated.end()) defeated.push_back(f);
 }
 
-void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> targets, bool isLimit) {
+void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> targets, bool isLimit, float boost) {
   if (follower()) {  // l'invité envoie son ordre ; l'hôte (ou le chef) le joue et renvoie le résultat
     Json t = Json::array();
     for (auto& f : targets) t.push_back(mine(f));
@@ -931,14 +1039,14 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
   aiming_ = nullptr;
   const Move& m = moveInfo(id);
   // Zone autour d'une cible : les combattants voisins sont touchés aussi, un peu moins fort
-  FighterP center = m.zone != Area::Single && m.zone != Area::All && targets.size() == 1 ? targets[0] : nullptr;
+  FighterP center = boost == 1 && m.zone != Area::Single && m.zone != Area::All && targets.size() == 1 ? targets[0] : nullptr;
   if (center) targets = zoneTargets(m, center);
   if (m.cost > 0) a->mp = std::max(0, a->mp - m.cost);
   if (isLimit) a->lim = 0;
   startAnim(a, targets, fxOf(m), rgb(types()[m.type].color), isLimit);
   sc.say(isLimit ? "LIMITE — " + a->name() + " : " + m.name + " !" : a->name() + " : " + m.name, isLimit ? .9f : .55f);
   auto ko = std::make_shared<std::vector<FighterP>>();
-  sc.call([this, a, targets, center, &m, isLimit, ko] {
+  sc.call([this, a, targets, center, &m, isLimit, ko, boost] {
     if (isLimit) sound("limite");
     if (m.kind == Kind::Heal || m.kind == Kind::Revive) sound("soin");
     if (isLimit || m.target == Target::AllEnemies) {
@@ -979,7 +1087,7 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
           if (!e.self) applyEffect(t, e);
         landed = true;
       } else {
-        int dmg = applyHit(a, t, m, center && t != center ? float(rules().zoneSide) : 1.f);
+        int dmg = applyHit(a, t, m, (center && t != center ? float(rules().zoneSide) : 1.f) * boost);
         if (dmg < 0) continue;
         landed = true;
         if (!t->alive()) ko->push_back(t);
@@ -1325,6 +1433,15 @@ void Battle::draw() {
     Pt p = cellPos(true, moveCell_);
     g.ellipse(p.x, p.y + 13, 16, 6, rgb(0xffd34d, uint8_t(150 + 60 * std::sin(t * 8))));
   }
+  // Zones des attaques annoncées par les boss, en rouge sur le damier allié
+  std::vector<std::pair<int, int>> warn = netWarn_;
+  for (auto& w : warnings_) warn.push_back({w.center, (int)w.zone});
+  for (auto& [center, zone] : warn)
+    for (int c = 0; c < N_CELLS; c++)
+      if (inZone(Area(zone), center, c)) {
+        Pt p = cellPos(true, c);
+        g.ellipse(p.x, p.y + 13, 17, 6, rgb(0xff3b30, uint8_t(120 + 90 * std::sin(t * 7))));
+      }
   // Combattants, du haut du damier vers le bas : ceux de devant passent par-dessus
   std::vector<FighterP> shown;
   for (auto& f : foes)
@@ -1491,7 +1608,10 @@ Json Battle::netState() const {
     auto it = players_.find(remoteTurn_ ? owner(remoteTurn_) : me_);
     wait = (remoteTurn_ || G.menus.active()) && it != players_.end() ? it->second : "";
   }
-  return Json{{"t", "etat"}, {"a", pack(allies)}, {"b", pack(foes)}, {"msg", sc.showingMessage() ? sc.text() : std::string()}, {"attente", wait}};
+  Json warn = Json::array();
+  for (auto& w : warnings_) warn.push_back(Json::array({w.center, (int)w.zone}));
+  return Json{{"t", "etat"}, {"a", pack(allies)}, {"b", pack(foes)}, {"msg", sc.showingMessage() ? sc.text() : std::string()}, {"attente", wait},
+              {"w", warn}};
 }
 
 void Battle::netMessage(const Json& m) {
@@ -1529,6 +1649,9 @@ void Battle::netMessage(const Json& m) {
       apply(duel() ? allies : foes, m.value("b", Json::array()));
       std::string msg = jget<std::string>(m, "msg", "");
       if (msg != netMsg_) netMsg_ = msg, netMsgT_ = G.time;
+      netWarn_.clear();
+      for (auto& w : m.value("w", Json::array()))
+        if (w.is_array() && w.size() == 2) netWarn_.push_back({std::clamp(w[0].get<int>(), 0, N_CELLS - 1), std::clamp(w[1].get<int>(), 0, 4)});
       netWait_ = jget<std::string>(m, "attente", "");
     } else if (k == "tour") {
       int i = jget(m, "i", -1);

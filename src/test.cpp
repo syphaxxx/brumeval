@@ -451,6 +451,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     team = {makeFighter("lior", 20), makeFighter("maelle", 20)};
     startBattle({brute, mage, extra}, false, nullptr);
     Battle& B = *battle_;
+    B.cells_[brute.get()] = 3, B.cells_[extra.get()] = 6, B.cells_[mage.get()] = 5;  // deux à l'avant, le mage à l'arrière (sans le hasard)
     const Move& bite = moveInfo("mordant");  // corps à corps
     const Move& wave = moveInfo("onde");     // à distance
     bool reach = B.reachable(team[0], bite, brute) && !B.reachable(team[0], bite, mage) && B.reachable(team[0], wave, mage);
@@ -491,6 +492,48 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     }
     check(B.cellOf(lior) == to && lior->atb == float(rules().quickGauge), "damier : « Se déplacer » change de case et la jauge repart à " +
                                                                              std::to_string(rules().quickGauge) + " %");
+    // Attaque annoncée (1.8) : elle frappe ceux restés dans la zone, pas ceux qui se sont écartés
+    {
+      FighterP boss = brute, maelle = team[1];
+      boss->boss = true;
+      B.sc.clear();
+      int liorCell = B.cellOf(lior);
+      B.warnings_.push_back({boss, "mordant", Area::Single, liorCell});
+      bool warned = B.threatened(lior) && !B.threatened(maelle);
+      int hp0 = lior->hp = lior->mhp;
+      B.bossPlan(boss);
+      for (int i = 0; i < 300 && B.sc.busy(); i++) {
+        in.confirm = true;
+        frame();
+      }
+      bool hit = lior->hp < hp0 && B.warnings_.empty();
+      // Cette fois, Lior se met à l'abri (comme l'ordinateur ou la tactique « Se mettre à l'abri »)
+      B.warnings_.push_back({boss, "mordant", Area::Single, B.cellOf(lior)});
+      lior->hp = lior->mhp;
+      B.autoCommand(lior);
+      for (int i = 0; i < 300 && B.sc.busy(); i++) {
+        in.confirm = true;
+        frame();
+      }
+      bool moved = B.cellOf(lior) != liorCell && !B.threatened(lior);
+      B.bossPlan(boss);
+      for (int i = 0; i < 300 && B.sc.busy(); i++) {
+        in.confirm = true;
+        frame();
+      }
+      bool dodged = lior->hp == lior->mhp;
+      // Tactique : « Soi : zone annoncée » > « Se mettre à l'abri »
+      B.warnings_.push_back({boss, "mordant", Area::Single, B.cellOf(lior)});
+      lior->tactics = {Tactic{true, "soi_menace", 0, Tactic::Act::Auto, "esquiver"}};
+      lior->tacticsOn = true;
+      Battle::Plan p;
+      bool tactic = B.tacticPlan(lior, p) && p.cell >= 0 && !inZone(Area::Single, B.cellOf(lior), p.cell);
+      B.warnings_.clear();
+      lior->tactics = defaultTactics(lior->S());
+      boss->boss = false;
+      check(warned && hit && moved && dodged && tactic,
+            "attaque annoncée : elle frappe la zone rouge ; se mettre à l'abri (ordinateur ou tactique) l'évite");
+    }
     // Victoire : tous les gains dans une seule fenêtre
     for (auto& f : B.foes) f->hp = 0, B.knockOut(f);
     B.sc.clear();

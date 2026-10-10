@@ -157,6 +157,8 @@ std::vector<RuleField> ruleFields(Rules& r) {
       I("combat", "jauge_rapide", "Technique rapide : jauge de départ (%)", r.quickGauge, 0, 90, 5),
       D("combat", "arriere", "Arrière : dégâts au corps à corps donnés et reçus", r.backRow, .1, 1, .05),
       D("combat", "zone_voisins", "Zone d'effet : dégâts autour de la cible", r.zoneSide, 0, 1, .05),
+      D("combat", "boss_annonce", "Boss : chance d'annoncer une attaque", r.bossWarn, 0, 1, .05),
+      D("combat", "boss_annonce_puissance", "Boss : puissance de l'attaque annoncée", r.bossBurst, 1, 5, .1),
       I("combat", "retard_lourde", "Technique lourde : retard de la jauge (%)", r.heavyDelay, 0, 200, 5),
       D("combat", "compagnon_atb", "Compagnons : vitesse de la jauge ATB", r.companionAtb, .1, 2, .05),
       D("etats", "poison_degats", "Poison : part des PV perdus par tour", r.poisonDmg, 0, 1, .01),

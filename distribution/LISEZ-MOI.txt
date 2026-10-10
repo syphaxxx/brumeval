@@ -49,6 +49,7 @@ COMMANDES
   Échap > Formation : la place de chacun sur le damier de combat (avant,
   milieu, arrière). Au corps à corps, on ne touche que l'avant ennemi ;
   l'arrière est protégé. En combat, « Se déplacer » change de case.
+  Zone rouge : un boss prépare une grosse attaque, écartez-vous !
 
   Échap > Réserve : les créatures capturées quand l'équipe (8 membres)
   est complète. Échap > Bestiaire : toutes les créatures rencontrées.

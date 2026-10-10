@@ -56,7 +56,12 @@ bestiaire. Idées pour la suite :
 « Les combats ne sont pas vraiment stratégiques » : plan validé avec
 l'utilisateur, en deux versions.
 
-- **1.7** (en cours) : damier de 9 cases par camp, corps à corps limité à
+- Fait (2026-10-10) : **1.7** et **1.8** ci-dessous, plus les retours du
+  premier essai (compagnons commandés, menus en bas, ATH discret, fenêtre des
+  gains, recrue à la suite, moins d'expérience, boss +10 % de PV) et les
+  **cartes agrandies** (vallée, Cendrelune, Sylve-Noire, Pics) avec des meutes
+  selon la profondeur.
+- **1.7** : damier de 9 cases par camp, corps à corps limité à
   l'avant, arrière protégé, zones d'effet des techniques (ligne, colonne,
   croix, tout), « Se déplacer » (action rapide), menu Formation, jusqu'à 6
   ennemis, boss remesurés.

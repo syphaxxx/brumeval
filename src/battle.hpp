@@ -72,7 +72,22 @@ class Battle {
     bool limit = false;
     std::string item;  // objet du sac à utiliser à la place d'une technique
     int tactic = -1;   // numéro de la tactique qui a choisi cette action
+    int cell = -1;     // se déplacer vers cette case (tactique « Se mettre à l'abri »)
   };
+  // Attaques annoncées (1.8) : un boss prépare sa plus grosse attaque, concentrée sur une zone du
+  // damier allié ; elle part à son tour suivant sur ceux qui y sont restés (plus forte)
+  struct Warning {
+    FighterP who;
+    std::string move;
+    Area zone;
+    int center;
+  };
+  std::vector<Warning> warnings_;
+  std::vector<std::pair<int, int>> netWarn_;  // chez l'invité : zones annoncées reçues (case, zone)
+  bool threatened(const FighterP& f) const;   // sa case est dans une zone annoncée
+  int safeCell(const FighterP& f) const;      // case libre de son camp, hors des zones annoncées (-1 : aucune)
+  bool bossPlan(FighterP e);                  // boss : annonce ou déclenche son attaque ; vrai si le tour est joué
+  bool enemyMove(FighterP e);                 // ennemi : reculer (lanceur à l'avant) ou avancer ; vrai si joué
   Game& G;
   Script sc;
   std::vector<FighterP> allies, foes, reserve;
@@ -168,7 +183,8 @@ class Battle {
   Json mine(const FighterP& f) const;
   FighterP other(const Json& s) const;  // le même, vu par celui qui le reçoit
   void setBlink(const FighterP& f);
-  void useMove(FighterP a, const std::string& mv, std::vector<FighterP> targets, bool isLimit = false);
+  // boost > 1 : attaque annoncée (cibles déjà choisies, pas de zone autour, dégâts multipliés)
+  void useMove(FighterP a, const std::string& mv, std::vector<FighterP> targets, bool isLimit = false, float boost = 1);
   void useItem(FighterP a, const std::string& it, FighterP target);
   void swapIn(FighterP a, FighterP r);
   void tryFlee(FighterP a);

@@ -47,6 +47,10 @@ Chaque camp se place sur un **damier de 9 cases** : trois colonnes (**avant**,
   cible, les cases touchées s'allument en or.
 - Échap > **Formation** : placer chacun sur le damier avant les combats. En
   combat, **Se déplacer** change de case (action rapide).
+- Les **boss annoncent** parfois leur plus grosse attaque : une zone de votre
+  damier s'allume en **rouge**. Au tour suivant, elle frappe très fort ceux qui
+  y sont restés : écartez-vous ! En mode auto, la tactique « Soi : zone
+  annoncée → Se mettre à l'abri » le fait pour vous.
 
 ## Techniques rapides et lourdes
 
