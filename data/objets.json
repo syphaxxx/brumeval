@@ -232,5 +232,12 @@
     "description": "Une fleur blanche qui ne fane jamais dans le froid.",
     "prix": 0,
     "important": true
+  },
+  {
+    "id": "grimoire",
+    "nom": "Grimoire de l'ermite",
+    "description": "Un vieux livre de recettes de plantes, couvert de notes.",
+    "prix": 0,
+    "important": true
   }
 ]
