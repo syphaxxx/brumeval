@@ -399,6 +399,7 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
     }
     case 'T':
       ground(g, th, sx, sy, h);
+      g.ellipse(sx + 9, sy + 14, 7, 2.5f, rgb(0x000000, 40));  // ombre douce au pied
       g.rect(sx + 6, sy + 10, 4, 5, rgb(0x6b4a2f));
       if (th == Theme::Neige) {  // sapin enneigé
         g.tri(sx + 1, sy + 12, sx + 8, sy - 1, sx + 15, sy + 12, rgb(0x2e5a46));
@@ -425,6 +426,14 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
       int o = int(t * 4 + x + y) % 10;
       g.rect(sx + o, sy + 4, 4, 1, rgb(0x6aa8e0));
       g.rect(sx + (o + 5) % 12, sy + 11, 4, 1, rgb(0x6aa8e0));
+      if (c == '~') {  // écume le long des berges, qui ondule doucement
+        auto water = [&](char n) { return n == '~' || n == 'B' || n == ' '; };
+        uint8_t a = uint8_t(150 + 60 * std::sin(t * 2 + x * .8f + y * .6f));
+        if (!water(at(x, y - 1))) g.rect(sx, sy, 16, 2, rgb(0xd8efff, a));
+        if (!water(at(x, y + 1))) g.rect(sx, sy + 14, 16, 2, rgb(0xd8efff, a));
+        if (!water(at(x - 1, y))) g.rect(sx, sy, 2, 16, rgb(0xd8efff, a));
+        if (!water(at(x + 1, y))) g.rect(sx + 14, sy, 2, 16, rgb(0xd8efff, a));
+      }
       if (c == 'B') {
         bool horiz = at(x - 1, y) == '=' || at(x + 1, y) == '=' || at(x - 1, y) == 'B' || at(x + 1, y) == 'B';
         g.rect(sx, sy, 16, 16, rgb(0xa0703f));

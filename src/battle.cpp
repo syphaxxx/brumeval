@@ -1361,59 +1361,64 @@ void Battle::draw() {
   // Décor, sur toute la largeur de l'écran (de L à R ; la scène des combattants va de 0 à 320)
   float L = g.left(), R = g.right(), W = (float)g.fullW;
   int more = (int)(W / SCREEN_W * 100);  // nombre de particules : proportionnel à la largeur (en %)
-  // Relief : prolongé par un sommet de chaque côté quand l'écran est plus large que la scène
-  auto ridge = [&](std::vector<Pt> p, float yl, float yr) {
+  // Horizon haut (y = HZ) : les trois rangées du damier sont posées sur le sol, qui s'éclaircit vers
+  // l'avant (profondeur). Les reliefs du fond sont dessinés à moitié de leur hauteur (Y).
+  const float HZ = 56;
+  auto Y = [](float y) { return y * .5f; };
+  auto ridge = [&](std::vector<Pt> p, float yl, float yr) {  // prolongé de chaque côté sur un écran large
+    for (auto& q : p) q.y = Y(q.y);
     if (L < 0) {
-      p.insert(p.begin(), {{L, 112}, {L, yl}});
-      p.push_back({R, yr});
-      p.push_back({R, 112});
+      p.insert(p.begin(), {{L, HZ}, {L, Y(yl)}});
+      p.push_back({R, Y(yr)});
+      p.push_back({R, HZ});
     }
     return p;
   };
+  auto ground = [&](uint32_t far, uint32_t nearC) { g.gradV(L, HZ - 2, W, SCREEN_H - HZ + 2, rgb(far), rgb(nearC)); };
   if (bg == Theme::Vallee && !boss) {
-    g.gradV(L, 0, W, 112, rgb(0x8fc0db), rgb(0xdfeac0));
-    if (L < 0) g.ellipse(L + 10, 113, 70, 18, rgb(0xaed08c)), g.ellipse(R - 10, 112, 70, 20, rgb(0xbcd89a));
-    g.ellipse(70, 112, 120, 22, rgb(0xbcd89a));
-    g.ellipse(260, 114, 110, 18, rgb(0xaed08c));
-    g.rect(L, 108, W, SCREEN_H - 108, rgb(0x9cc77a));  // le sol descend jusqu'en bas, derrière les fenêtres
-    for (int i = 0; i < 14 * more / 100; i++) g.rect(L + std::fmod(i * 53 + 11.f, W), 114 + (i * 13) % 50, 10, 2, rgb(0xa9d186));
+    g.gradV(L, 0, W, HZ, rgb(0x8fc0db), rgb(0xdfeac0));
+    if (L < 0) g.ellipse(L + 10, HZ, 70, 9, rgb(0xaed08c)), g.ellipse(R - 10, HZ, 70, 10, rgb(0xbcd89a));
+    g.ellipse(70, HZ, 120, 11, rgb(0xbcd89a));
+    g.ellipse(260, HZ + 1, 110, 9, rgb(0xaed08c));
+    ground(0x8cba6c, 0xa8d488);
+    for (int i = 0; i < 22 * more / 100; i++) g.rect(L + std::fmod(i * 53 + 11.f, W), HZ + 6 + (i * 13) % 120, 8, 2, rgb(0xb6dc94));
   } else if (bg == Theme::Vallee) {
-    g.gradV(L, 0, W, 112, rgb(0x1d1838), rgb(0x5a4d80));
-    g.rect(L, 108, W, SCREEN_H - 108, rgb(0x3c3360));
-    for (int i = 0; i < 6 * more / 100; i++) g.ellipse(L + std::fmod(i * 70 + t * 12, W + 100) - 50, 90 + (i % 6) * 9, 60, 6, rgb(0xd8d0ff, 26));
+    g.gradV(L, 0, W, HZ, rgb(0x1d1838), rgb(0x5a4d80));
+    ground(0x2e2650, 0x463c72);
+    for (int i = 0; i < 8 * more / 100; i++) g.ellipse(L + std::fmod(i * 70 + t * 12, W + 100) - 50, HZ + 4 + (i % 8) * 14, 60, 6, rgb(0xd8d0ff, 26));
   } else if (bg == Theme::Foret) {
-    g.gradV(L, 0, W, 112, rgb(0x1e3a2a), rgb(0x4a7a4a));
+    g.gradV(L, 0, W, HZ, rgb(0x1e3a2a), rgb(0x4a7a4a));
     for (int i = L < 0 ? (int)std::floor(L / 40) - 1 : 0; i * 40.f - 10 < R + 30; i++) {
       int odd = i & 1, row = ((i % 3) + 3) % 3;
-      float x = i * 40.f - 10 + odd * 12;
-      g.rect(x + 8, 30 + row * 8, 6, 80, rgb(0x2a1e16));
-      g.ellipse(x + 11, 34 + row * 8, 22, 26, rgb(odd ? 0x173a22 : 0x1f4a2a));
+      float x = i * 40.f - 10 + odd * 12, top = Y(30 + row * 8.f);
+      g.rect(x + 9, top, 5, HZ - top, rgb(0x2a1e16));
+      g.ellipse(x + 11, top + 3, 17, 15, rgb(odd ? 0x173a22 : 0x1f4a2a));
     }
-    g.rect(L, 108, W, SCREEN_H - 108, rgb(0x3f6a3a));
-    for (int i = 0; i < 12 * more / 100; i++)
-      g.ellipse(L + std::fmod(i * 53.f + std::sin(t + i) * 8 + 10, W), 40 + std::fmod(i * 23.f, 70.f), 1.5f, 1.5f,
+    ground(0x33582f, 0x4c7c45);
+    for (int i = 0; i < 14 * more / 100; i++)
+      g.ellipse(L + std::fmod(i * 53.f + std::sin(t + i) * 8 + 10, W), 12 + std::fmod(i * 23.f, 150.f), 1.5f, 1.5f,
                 rgb(0xe8ff9a, uint8_t(100 + 80 * std::sin(t * 3 + i))));
   } else if (bg == Theme::Neige) {
-    g.gradV(L, 0, W, 112, boss ? rgb(0x2a3a5a) : rgb(0x9ab8d8), boss ? rgb(0x7a9ac8) : rgb(0xe6eef8));
+    g.gradV(L, 0, W, HZ, boss ? rgb(0x2a3a5a) : rgb(0x9ab8d8), boss ? rgb(0x7a9ac8) : rgb(0xe6eef8));
     g.poly(ridge({{0, 112}, {50, 50}, {100, 90}, {160, 30}, {220, 86}, {270, 56}, {320, 80}, {320, 112}}, 66, 58), rgb(0xc8d6e8));
-    g.poly({{150, 42}, {160, 30}, {171, 42}}, rgb(0xffffff));
-    g.rect(L, 108, W, SCREEN_H - 108, rgb(0xe8eef6));
+    g.poly({{150, Y(42)}, {160, Y(30)}, {171, Y(42)}}, rgb(0xffffff));
+    ground(0xd6e0ec, 0xf2f6fb);
     for (int i = 0; i < 30 * more / 100; i++)
-      g.rect(L + std::fmod(i * 41 + t * 8 + std::sin(t + i) * 4 + 10, W), std::fmod(i * 23 + t * 20, 168.f), 1, 1, rgb(0xffffff, 220));
+      g.rect(L + std::fmod(i * 41 + t * 8 + std::sin(t + i) * 4 + 10, W), std::fmod(i * 23 + t * 20, 180.f), 1, 1, rgb(0xffffff, 220));
   } else if (bg == Theme::Cendres) {
-    g.gradV(L, 0, W, 112, boss ? rgb(0x2a0e08) : rgb(0x3a2420), boss ? rgb(0xa8321e) : rgb(0x8a4a2a));
+    g.gradV(L, 0, W, HZ, boss ? rgb(0x2a0e08) : rgb(0x3a2420), boss ? rgb(0xa8321e) : rgb(0x8a4a2a));
     g.poly(ridge({{0, 112}, {60, 60}, {110, 100}, {170, 40}, {240, 96}, {290, 70}, {320, 90}, {320, 112}}, 70, 64), rgb(0x4a3a36));
-    g.rect(L, 108, W, SCREEN_H - 108, rgb(0x6e625c));
-    g.rect(L, 108, W, 2, rgb(0xd9541e));
+    ground(0x5c524c, 0x7c7068);
+    g.rect(L, HZ - 2, W, 2, rgb(0xd9541e));
     for (int i = 0; i < 18 * more / 100; i++)
-      g.rect(L + std::fmod(i * 41 + t * 6, W), std::fmod(i * 23 + t * 14, 108.f), 1, 1, rgb(0xffb347, 160));
+      g.rect(L + std::fmod(i * 41 + t * 6, W), std::fmod(i * 23 + t * 14, 180.f), 1, 1, rgb(0xffb347, 160));
   } else {
-    g.gradV(L, 0, W, 112, rgb(0x120e18), rgb(0x2e2838));
-    g.rect(L, 108, W, SCREEN_H - 108, rgb(0x4a4252));
+    g.gradV(L, 0, W, HZ, rgb(0x120e18), rgb(0x2e2838));
+    ground(0x3a3444, 0x585060);
     for (int i = L < 0 ? (int)std::floor((L - 20) / 70) : 0; 20 + i * 70.f < R; i++) {
       float x = 20 + i * 70.f;
-      g.ellipse(x, 104, 10, 8, rgb(0x7fd6ff, uint8_t(40 + 30 * std::sin(t * 2 + i))));
-      g.tri(x - 4, 108, x, 90, x + 4, 108, rgb(0x7fd6ff));
+      g.ellipse(x, HZ - 4, 9, 6, rgb(0x7fd6ff, uint8_t(40 + 30 * std::sin(t * 2 + i))));
+      g.tri(x - 4, HZ - 1, x, HZ - 16, x + 4, HZ - 1, rgb(0x7fd6ff));
     }
   }
   bool blinking = blink && t - blinkT < .42f && int((t - blinkT) / .07f) % 2 == 0;
@@ -1421,7 +1426,9 @@ void Battle::draw() {
   for (int side = 0; side < 2; side++)
     for (int c = 0; c < N_CELLS; c++) {
       Pt p = cellPos(side == 1, c);
-      g.ellipse(p.x, p.y + 13, 15, 5, rgb(0x000000, 44));
+      // une dalle claire en losange, vue en perspective
+      g.poly({{p.x - 17, p.y + 13}, {p.x, p.y + 7}, {p.x + 17, p.y + 13}, {p.x, p.y + 19}}, rgb(0xffffff, 34));
+      g.poly({{p.x - 13, p.y + 13}, {p.x, p.y + 8.5f}, {p.x + 13, p.y + 13}, {p.x, p.y + 17.5f}}, rgb(0x000000, 18));
     }
   if (aiming_ && cursor && cursor->alive())
     for (int c = 0; c < N_CELLS; c++)

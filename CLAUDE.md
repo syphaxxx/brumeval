@@ -354,6 +354,7 @@ compétence `joueur-automatique` de Claude Code.
   combat s'ouvrent en bas (`dock` dans battle.cpp : commande à gauche,
   sous-menus et choix de la cible à droite) pour laisser voir les deux damiers.
   Pas de fenêtre des noms d'ennemis : leur nom est dans le menu de la cible.
+- Graphismes (1.8) : décor des combats avec l'horizon à y 56 (`HZ` dans `Battle::draw`, reliefs à moitié de hauteur) pour que les trois rangées du damier soient sur le sol ; dalles en losange ; sur les cartes, écume le long des berges et ombre au pied des arbres (sprites.cpp).
 - Meutes (1.7) : `Game::wildDepth`, distance à pied du plus proche bâtiment ou
   passage ; plus on s'enfonce (jusqu'à `meute_distance` cases), plus les
   rencontres sont fréquentes (+`nature_dense`) et les groupes grands (jusqu'à
