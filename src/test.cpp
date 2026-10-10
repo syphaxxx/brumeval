@@ -491,6 +491,20 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     }
     check(B.cellOf(lior) == to && lior->atb == float(rules().quickGauge), "damier : « Se déplacer » change de case et la jauge repart à " +
                                                                              std::to_string(rules().quickGauge) + " %");
+    // Victoire : tous les gains dans une seule fenêtre
+    for (auto& f : B.foes) f->hp = 0, B.knockOut(f);
+    B.sc.clear();
+    B.checkEnd();
+    for (int i = 0; i < 300 && !B.summaryOn_; i++) {
+      if (B.sc.busy()) in.confirm = true;
+      frame();
+    }
+    bool summary = B.summaryOn_ && !B.summary_.empty();
+    snap("97_victoire");
+    in.confirm = true;
+    frame();
+    for (int i = 0; i < 300 && mode == Mode::Battle; i++) frame();
+    check(summary && mode == Mode::Map, "victoire : les gains (expérience, niveaux, or) dans une seule fenêtre, fermée par Entrée");
     battle_.reset();
     mode = Mode::Map;
     menus.clear();

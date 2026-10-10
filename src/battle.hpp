@@ -86,6 +86,10 @@ class Battle {
   std::vector<Pop> pops;
   std::vector<FighterP> defeated;
   bool finished_ = false, ending_ = false;
+  // Fin d'un combat gagné : tous les gains dans une fenêtre, fermée par Entrée
+  std::vector<std::string> summary_;
+  bool summaryOn_ = false;
+  float summaryT_ = 0;  // moment où elle s'est ouverte (elle se ferme seule après 8 s)
   BattleResult result_;
 
   bool isAlly(const FighterP& f) const;

@@ -328,10 +328,11 @@ void Game::healAll(bool mpToo) {
 void Game::recruit(const std::string& id, int minLvl) {
   auto f = makeFighter(id, std::max(minLvl, avgLevel()));
   flags.insert(id);
-  size_t at = std::min<size_t>(2, team.size());
-  team.insert(team.begin() + at, f);
-  sc.say(f->name() + " rejoint l'équipe et prend place en première ligne !");
-  sc.say("(Échap > Équipe pour choisir qui combat. " + f->S().role + ".)");
+  team.push_back(f);  // à la suite : il ne prend la place de personne
+  auto fr = front();
+  bool fights = std::find(fr.begin(), fr.end(), f) != fr.end();
+  sc.say(f->name() + (fights ? " rejoint l'équipe et combat à vos côtés !" : " rejoint l'équipe !"));
+  sc.say(std::string(fights ? "(" : "(Il attend son tour : ") + "Échap > Équipe pour choisir qui combat. " + f->S().role + ".)");
 }
 
 void Game::startBattle(BattleSetup setup, std::function<void(BattleResult)> after) {
@@ -493,7 +494,7 @@ void Game::encounter() {
     // Meute : au plus profond de la nature, des créatures en plus
     float deep = std::min(1.f, wildDepth(px, py) / float(std::max(1.0, rules().packDistance)));
     for (int k = n; k < rules().packMax; k++)
-      if (frand() < .35f * deep) n++;
+      if (frand() < .5f * deep) n++;
     std::vector<FighterP> foes;
     for (int i = 0; i < n; i++) foes.push_back(makeFighter(z.pool[irand(0, (int)z.pool.size() - 1)], irand(z.lo, z.hi)));
     startBattle(foes, false, nullptr);

@@ -269,7 +269,7 @@
             "action": "combat",
             "ennemis": [
               {"espece": "brumelin", "niveau": 9},
-              {"espece": "sylvarque", "niveau": 15, "pv": 6.5, "boss": true},
+              {"espece": "sylvarque", "niveau": 15, "pv": 7.2, "boss": true},
               {"espece": "brumelin", "niveau": 9}
             ],
             "boss": true,
@@ -303,7 +303,7 @@
         "oui": [
           {
             "action": "combat",
-            "ennemis": [{"espece": "golem", "niveau": 24, "pv": 12, "boss": true}],
+            "ennemis": [{"espece": "golem", "niveau": 24, "pv": 13.2, "boss": true}],
             "boss": true,
             "fuite": false,
             "capture": false,
@@ -330,7 +330,7 @@
             "action": "combat",
             "ennemis": [
               {"espece": "tisonnel", "niveau": 19},
-              {"espece": "ignarok", "niveau": 24, "pv": 7, "boss": true},
+              {"espece": "ignarok", "niveau": 24, "pv": 7.7, "boss": true},
               {"espece": "tisonnel", "niveau": 19}
             ],
             "boss": true,
@@ -524,7 +524,7 @@
           {
             "action": "combat",
             "nom": "Le gardien de cristal",
-            "ennemis": [{"espece": "galetor", "niveau": 34}, {"espece": "cristallin", "niveau": 37, "pv": 10, "boss": true}, {"espece": "galetor", "niveau": 34}],
+            "ennemis": [{"espece": "galetor", "niveau": 34}, {"espece": "cristallin", "niveau": 37, "pv": 11, "boss": true}, {"espece": "galetor", "niveau": 34}],
             "renforts": [{"espece": "givrelin", "niveau": 33}],
             "boss": true,
             "fuite": true,
@@ -674,7 +674,7 @@
             "action": "combat",
             "ennemis": [
               {"espece": "serpentin", "niveau": 14},
-              {"espece": "ronce_mere", "niveau": 21, "pv": 7, "boss": true},
+              {"espece": "ronce_mere", "niveau": 21, "pv": 7.7, "boss": true},
               {"espece": "serpentin", "niveau": 14}
             ],
             "renforts": [{"espece": "crapoison", "niveau": 13}],
@@ -978,7 +978,7 @@
         "oui": [
           {
             "action": "combat",
-            "ennemis": [{"espece": "nebulis", "niveau": 36}, {"espece": "mere_brumes", "niveau": 40, "pv": 9, "boss": true}, {"espece": "brumeloup", "niveau": 36}],
+            "ennemis": [{"espece": "nebulis", "niveau": 36}, {"espece": "mere_brumes", "niveau": 40, "pv": 9.9, "boss": true}, {"espece": "brumeloup", "niveau": 36}],
             "renforts": [{"espece": "orbrume", "niveau": 36}],
             "boss": true,
             "fuite": false,
@@ -1011,7 +1011,7 @@
             "action": "combat",
             "ennemis": [
               {"espece": "givrelin", "niveau": 27},
-              {"espece": "givrecorne", "niveau": 36, "pv": 10, "boss": true},
+              {"espece": "givrecorne", "niveau": 36, "pv": 11, "boss": true},
               {"espece": "givrelin", "niveau": 27}
             ],
             "renforts": [{"espece": "cristallin", "niveau": 26}],

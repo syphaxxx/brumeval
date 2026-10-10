@@ -148,9 +148,14 @@ bool Battle::shown() const { return G.battle_.get() == this; }
 
 // Menus du combat : en bas de l'écran, pour laisser les deux damiers visibles (zones en or).
 // Le menu de commande à gauche, ses sous-menus et le choix de la cible à droite.
-static void dock(Menu& t, bool left = false) {
+// Le bas de l'écran est partagé : le menu de commande à gauche, l'ATH (les alliés) à droite.
+// Les autres menus s'ouvrent juste au-dessus : à droite (techniques, cible ennemie : le damier
+// ennemi reste visible) ou à gauche (cible alliée, se déplacer : le damier allié reste visible).
+enum class Dock { Command, Above, AboveLeft };
+static void dock(Menu& t, Dock d = Dock::Above) {
   int th = t.title.empty() ? 0 : 13, h = std::min(t.rows, (int)t.items.size()) * 12 + 8 + th;
-  t.x = left ? 4 : 102, t.w = left ? 96 : 214, t.y = 238 - h;
+  if (d == Dock::Command) t.x = 4, t.w = 96, t.y = 238 - h;
+  else t.x = d == Dock::Above ? 102 : 4, t.w = 214, t.y = 184 - h;
 }
 
 static Battle::Fx fxOf(const Move& m) {
@@ -257,6 +262,14 @@ void Battle::sound(const std::string& id, bool share) {
 // ---------------------------------------------------------------------------
 void Battle::update(float dt) {
   if (finished_) return;
+  if (summaryOn_) {  // fenêtre des gains : Entrée (ou un clic) la ferme
+    if (G.in.confirm || G.in.cancel || G.in.mclick[0] || autoPlay || G.time - summaryT_ > 8) {  // ou toute seule après 8 s
+      summaryOn_ = false;
+      G.in.confirm = false;
+      sc.resume();
+    }
+    return;
+  }
   // Tab : mode auto (tactiques) activé ou coupé
   if (G.in.tab && !autoPlay && !ending_) {
     G.in.tab = false;
@@ -421,7 +434,7 @@ void Battle::command(FighterP a) {
                        for (int c : freeCells)
                          t.items.push_back({cellName(c), "", "Avant : frappe et reçoit plus fort au corps à corps. Arrière : protégé.", true,
                                             [this, a, c] { moveTo(a, c); }, [this, c] { moveCell_ = c; }});
-                       dock(t);
+                       dock(t, Dock::AboveLeft);
                        G.menus.push(t);
                      }});
   std::vector<FighterP> bench;  // avec des héros : un héros n'est remplacé que par un héros
@@ -446,7 +459,7 @@ void Battle::command(FighterP a) {
                                  [d](const MenuItem& it) { return (d && it.label == "Objet") || it.label == "Changer"; }),
                   m.items.end());
   }
-  dock(m, true);
+  dock(m, Dock::Command);
   G.menus.push(m);
 }
 
@@ -483,7 +496,7 @@ void Battle::pickAlly(const std::string& title, bool ko, std::function<void(Figh
                        std::to_string(f->mp) + "/" + std::to_string(f->mmp) + " PM" + (f->alive() ? st : " · K.O."), ok, [done, f] { done(f); },
                        [this, f] { cursor = f; }});
   }
-  dock(t);
+  dock(t, Dock::AboveLeft);
   G.menus.push(t);
 }
 
@@ -1165,37 +1178,50 @@ void Battle::victory() {
     goldGain += d->lvl * R.goldPerLevel * (d->boss ? R.goldBoss : 1);
   }
   sound("victoire", false);  // chacun joue la fin chez lui
-  sc.say("Victoire !", .9f);
-  if (total > 0) {
-    int share = int(total * R.xpFront + 1e-6), res = int(total * R.xpReserve + 1e-6);
-    sc.say("Chaque combattant gagne " + std::to_string(share) + " points d'expérience.", 1.4f);
-    sc.call([this, share, res] {
-      for (auto& a : alive(allies))
-        if (mineToCommand(a))  // gardien à plusieurs : chacun ne fait progresser que ses combattants
-          for (auto& msg : gainXp(*a, share)) {
-            sc.call([this] { sound("niveau", false); });
-            sc.say(msg, 1.3f);
-          }
+  sc.wait(.6f);
+  int share = int(total * R.xpFront + 1e-6), res = int(total * R.xpReserve + 1e-6);
+  // Tous les gains d'un coup, dans une fenêtre (Battle::update la ferme sur Entrée)
+  sc.call([this, share, res, goldGain] {
+    const Rules& R = rules();
+    summary_.clear();
+    bool up = false;
+    if (share > 0) {
+      for (auto& a : alive(allies)) {
+        if (!mineToCommand(a)) continue;  // gardien à plusieurs : chacun ne fait progresser que ses combattants
+        int before = a->lvl;
+        auto msgs = gainXp(*a, share);
+        summary_.push_back(a->name() + " : +" + std::to_string(share) + " exp" + (a->lvl > before ? " · niveau " + std::to_string(a->lvl) + " !" : ""));
+        for (auto& m : msgs)
+          if (m.find(" apprend ") != std::string::npos) summary_.push_back("   " + m);
+        up = up || a->lvl > before;
+      }
+      bool others = false;
       for (auto& m : G.team)
-        if (!isAlly(m) && m->alive()) gainXp(*m, res);
-    });
-  }
-  if (goldGain > 0) {
-    G.gold += goldGain;
-    sc.say("Vous trouvez " + std::to_string(goldGain) + " pièces d'or.", 1.1f);
-  }
-  if (!boss) {
-    // Un seul objet au plus : les chances s'additionnent dans l'ordre de la liste
-    float r = frand(), acc = 0;
-    for (auto& [id, chance] : R.drops) {
-      acc += float(chance);
-      if (r < acc) {
-        G.items[id]++;
-        sc.say("Vous ramassez : " + item(id).name + ".", 1.0f);
-        break;
+        if (!isAlly(m) && m->alive()) gainXp(*m, res), others = true;
+      if (others && res > 0) summary_.push_back("Le reste de l'équipe : +" + std::to_string(res) + " exp");
+    }
+    if (goldGain > 0) {
+      G.gold += goldGain;
+      summary_.push_back("Or : +" + std::to_string(goldGain));
+    }
+    if (!boss) {
+      // Un seul objet au plus : les chances s'additionnent dans l'ordre de la liste
+      float r = frand(), acc = 0;
+      for (auto& [id, chance] : R.drops) {
+        acc += float(chance);
+        if (r < acc) {
+          G.items[id]++;
+          summary_.push_back("Objet trouvé : " + item(id).name);
+          break;
+        }
       }
     }
-  }
+    if (up) sound("niveau", false);
+    for (auto& l : summary_) log.push_back("  " + l);
+    summaryOn_ = true;
+    summaryT_ = G.time;
+    sc.halt();
+  });
   sc.call([this] { finish(BattleResult::Win); });
 }
 
@@ -1345,35 +1371,42 @@ void Battle::draw() {
     g.window(4, 2, 312, 7 + 11 * (int)lines.size());
     for (size_t i = 0; i < lines.size(); i++) g.text(160, 5 + i * 11, lines[i], WHITE, 1);
   }
-  // ATH discret : un bandeau semi-transparent en bas, deux colonnes de trois alliés (nom, PV, PM,
-  // puis trois traits : PV en vert, jauge ATB en bleu, Limite en rose). Au-dessus : les renforts
-  // et le mode auto. Les noms des ennemis s'affichent au survol (barre de PV au-dessus d'eux).
+  // ATH discret, à droite du bas de l'écran (à gauche : le menu de commande) : deux colonnes de
+  // trois alliés ; pour chacun, nom et PV, puis quatre traits : PV (vert), PM (bleu), jauge ATB
+  // (blanche, or quand elle est pleine) et Limite (rose). Au-dessus : renforts et mode auto.
   Color lab = rgb(0xaab3d8);
   if (!reserve.empty()) g.text(6, 176, "Renforts : " + std::to_string(reserve.size()), GREY);
   bool flash = t - toggledT_ < 1.2f && int(t * 8) % 2;  // Tab : mode auto activé ou coupé
-  if (G.menus.depth() <= 1)  // caché par un sous-menu (à droite)
+  if (G.menus.depth() <= 1)  // caché par un sous-menu (au-dessus de l'ATH)
     g.text(314, 176, G.tacticsAuto ? "Auto (Tab)" : "Manuel (Tab)", flash ? WHITE : G.tacticsAuto ? GOLD : lab, 2);
-  const float hy = 189;
-  g.rect(g.left(), hy - 3, g.fullW, SCREEN_H - hy + 3, rgb(0x060a24, 165));
+  const float hx = 104, hy = 189;
+  g.rect(hx - 4, hy - 3, g.right() - hx + 4, SCREEN_H - hy + 3, rgb(0x060a24, 165));
   for (size_t i = 0; i < allies.size() && i < 6; i++) {
     auto& a = allies[i];
-    float x = 4 + (i / 3) * 160.f, y = hy + (i % 3) * 16.f;
-    if (actor == a) g.rect(x - 2, y - 2, 156, 16, rgb(0xffffff, 30));
+    float x = hx + (i / 3) * 108.f, y = hy + (i % 3) * 16.f;
+    if (actor == a) g.rect(x - 2, y - 2, 106, 16, rgb(0xffffff, 30));
     // Gardien à plusieurs : les combattants des autres joueurs en bleu ; compagnon : en retrait
     Color nc = !a->alive() ? rgb(0xff7b6b) : a->status != Status::None ? rgb(statusColor(a->status)) : !mineToCommand(a) ? BLUE : actor == a ? GOLD : WHITE;
-    g.text(x + (companion(a) ? 5 : 0), y, utf8Prefix(a->name(), companion(a) ? 8 : 9), nc);
-    g.text(x + 112, y, std::to_string(a->hp) + "/" + std::to_string(a->mhp), a->hp * 4 < a->mhp ? GOLD : WHITE, 2);
-    g.text(x + 150, y, std::to_string(a->mp), BLUE, 2);
+    g.text(x + (companion(a) ? 4 : 0), y, utf8Prefix(a->name(), companion(a) ? 6 : 7), nc);
+    g.text(x + 102, y, std::to_string(a->hp) + "/" + std::to_string(a->mhp), a->hp * 4 < a->mhp ? GOLD : WHITE, 2);
     float by = y + 11;
     auto line = [&](float bx, float w, float r, Color c) {
       g.rect(bx, by, w, 2, rgb(0x2a3270));
       g.rect(bx, by, w * std::clamp(r, 0.f, 1.f), 2, c);
     };
-    line(x, 62, float(a->hp) / a->mhp, GREEN);
+    line(x, 28, float(a->hp) / a->mhp, GREEN);
+    line(x + 32, 18, a->mmp ? float(a->mp) / a->mmp : 0, BLUE);
     // Après une technique lourde, la jauge part en dessous de zéro : trait rouge qui se vide
-    if (a->alive() && a->atb < 0) line(x + 66, 50, -a->atb / 100, RED);
-    else line(x + 66, 50, a->alive() ? a->atb / 100 : 0, a->atb >= 100 ? GOLD : rgb(0x7fd6ff));
-    line(x + 120, 30, a->lim / 100, a->lim >= 100 && int(t * 5) % 2 ? WHITE : rgb(0xff6fb0));
+    if (a->alive() && a->atb < 0) line(x + 54, 24, -a->atb / 100, RED);
+    else line(x + 54, 24, a->alive() ? a->atb / 100 : 0, a->atb >= 100 ? GOLD : rgb(0xe8ecff));
+    line(x + 82, 18, a->lim / 100, a->lim >= 100 && int(t * 5) % 2 ? WHITE : rgb(0xff6fb0));
+  }
+  if (summaryOn_) {  // fenêtre des gains de la victoire
+    int h = 36 + 11 * (int)summary_.size(), y = std::max(26, 92 - h / 2);
+    g.window(30, y, 260, h);
+    g.text(160, y + 5, "Victoire !", GOLD, 1);
+    for (size_t i = 0; i < summary_.size(); i++) g.text(38, y + 19 + i * 11, summary_[i], WHITE);
+    g.text(160, y + h - 12, "Entrée : continuer", lab, 1);
   }
   G.menus.draw(g, t);
   float k = (t - start) / .35f;
