@@ -20,6 +20,7 @@ class Game;
 class Pilot {
  public:
   Pilot(Game& g, bool demo);
+  ~Pilot();  // relâche les directions tenues (sinon le joueur continuerait de marcher)
   // Au début de Game::update : choisit les touches de cette image
   void update(float dt);
   bool demo() const { return demo_; }
@@ -61,6 +62,7 @@ class Pilot {
   Game& G;
   bool demo_;
   float wait_ = 0;  // démo : pause avant la prochaine touche (laisser lire)
+  bool paused_ = false;  // démo : la pause avant d'interagir est faite
 
   // Graphe de toutes les cartes : une case = un numéro (début de chaque carte dans offset_)
   std::vector<int> offset_;
