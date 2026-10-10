@@ -77,6 +77,19 @@ class Pilot {
   // Objectifs
   std::map<std::string, std::string> doneSig_;  // dernière réponse vue de chaque habitant, porte, boss
   std::map<std::string, int> tries_, fails_;    // nombre de visites ; défaites contre ce combat
+  // Mémoire des parties précédentes (pilote_memoire.txt, dossier de l'utilisateur) : pour chaque
+  // combat difficile, les niveaux de marge en plus qu'il lui a fallu. Il s'en sert dès le début
+  // de la partie suivante : il s'améliore au fil des parties.
+  std::map<std::string, int> learned_;
+  void loadMemory();
+  void saveMemory() const;
+  int margin(const std::string& key) const;  // niveaux en plus à avoir avant ce combat
+  // Profondeur de chaque case (comme Game::wildDepth : distance aux bâtiments et passages) et
+  // crainte de la nature profonde de chaque carte (« nature:<carte> » : meutes qui l'ont battu)
+  std::vector<int> depth_;
+  int fear(int m) const;
+  int battleMap_ = -1;
+  bool battleWild_ = false;
   std::set<int> visited_;                       // cartes déjà vues
   std::vector<Goal> goals();
   Info inspect(const std::string& event) const;

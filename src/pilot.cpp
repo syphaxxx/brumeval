@@ -19,6 +19,57 @@ Pilot::Pilot(Game& g, bool demo) : G(g), demo_(demo) {
   offset_.push_back(0);
   for (auto& m : maps()) offset_.push_back(offset_.back() + m.w() * m.h());
   G.tacticsAuto = true;  // les héros suivent leurs tactiques ; le pilote ne choisit que quand le menu s'ouvre
+  loadMemory();
+  // Profondeur de chaque case de chaque carte : distance à pied du plus proche bâtiment ou passage
+  depth_.assign(offset_.back(), 0);
+  for (int m = 0; m < (int)maps().size(); m++) {
+    const MapDef& M = maps()[m];
+    int W = M.w(), H = M.h();
+    std::vector<int> d((size_t)W * H, -1), q;
+    auto seed = [&](int x, int y) {
+      if (x >= 0 && y >= 0 && x < W && y < H && d[(size_t)y * W + x] < 0) d[(size_t)y * W + x] = 0, q.push_back(y * W + x);
+    };
+    for (auto& b : M.buildings) seed(b.doorX(), b.doorY() + 1);
+    for (auto& w : M.warps) seed(w.x, w.y);
+    for (size_t k = 0; k < q.size(); k++) {
+      int i = q[k], x = i % W, y = i / W;
+      for (int s = 0; s < 4; s++) {
+        int nx = x + DX[s], ny = y + DY[s];
+        if (nx < 0 || ny < 0 || nx >= W || ny >= H || d[(size_t)ny * W + nx] >= 0 || !tileWalkable(M.rows[ny][nx])) continue;
+        d[(size_t)ny * W + nx] = d[(size_t)i] + 1;
+        q.push_back(ny * W + nx);
+      }
+    }
+    for (int i = 0; i < W * H; i++) depth_[offset_[m] + i] = std::max(0, d[(size_t)i]);
+  }
+}
+
+int Pilot::fear(int m) const {
+  auto it = learned_.find("nature:" + maps()[m].id);
+  return it == learned_.end() ? 0 : it->second;
+}
+
+void Pilot::loadMemory() {
+  std::ifstream f(userFile("pilote_memoire.txt"));
+  std::string key;
+  int n;
+  while (f >> key >> n) learned_[key] = std::clamp(n, 0, 20);
+  if (!learned_.empty()) {
+    int sum = 0;
+    for (auto& [k, v] : learned_) sum += v;
+    note("Mémoire des parties précédentes : " + std::to_string(learned_.size()) + " combats difficiles (marge totale " + std::to_string(sum) +
+         " niveaux)");
+  }
+}
+void Pilot::saveMemory() const {
+  std::string s;
+  for (auto& [k, v] : learned_) s += k + " " + std::to_string(v) + "\n";
+  writeUserFile("pilote_memoire.txt", s);
+}
+int Pilot::margin(const std::string& key) const {
+  auto f = fails_.find(key);
+  auto l = learned_.find(key);
+  return 2 * (f == fails_.end() ? 0 : f->second) + (l == learned_.end() ? 0 : l->second);
 }
 
 Pilot::~Pilot() {
@@ -48,8 +99,9 @@ int Pilot::moveTo(int m, int x, int y, int d, int& cost) const {
         return node(in, ex, ey);
       }
   if (blockedAt(m, nx, ny)) return -1;
-  // Les hautes herbes coûtent plus cher : on les évite, sauf pour s'entraîner
-  cost = 1 + (tileEncounter(M.rows[ny][nx]) ? 3 : 0);
+  // Les hautes herbes coûtent plus cher : on les évite, sauf pour s'entraîner ; d'autant plus loin
+  // dans la nature d'une carte où des meutes l'ont déjà battu (mémoire)
+  cost = 1 + (tileEncounter(M.rows[ny][nx]) ? 3 + fear(m) * depth_[(size_t)node(m, nx, ny)] / 8 : 0);
   for (auto& w : M.warps)
     if (w.x == nx && w.y == ny) {
       int t = mapIndex(w.map);
@@ -138,9 +190,7 @@ Pilot::Info Pilot::inspect(const std::string& id) const {
 
 // Prêt pour ce combat ? Niveau moyen assez proche du sien ; deux niveaux de plus à chaque défaite
 bool Pilot::ready(const Info& in, const std::string& key) const {
-  auto f = fails_.find(key);
-  int need = in.lvl - (in.boss ? 2 : 3) + 2 * (f == fails_.end() ? 0 : f->second);
-  return G.avgLevel() >= need;
+  return G.avgLevel() >= in.lvl - (in.boss ? 2 : 3) + margin(key);
 }
 
 // ---------------------------------------------------------------------------
@@ -167,8 +217,7 @@ std::vector<Pilot::Goal> Pilot::goals() {
       g.sig = in.sig;
       bool seen = doneSig_.count(g.key) > 0;
       if (in.combat) {  // pas encore prêt : objectif d'entraînement (seulement s'il est accessible, voir plan)
-        auto f = fails_.find(g.key);
-        g.need = in.lvl - (in.boss ? 2 : 3) + 2 * (f == fails_.end() ? 0 : f->second);
+        g.need = in.lvl - (in.boss ? 2 : 3) + margin(g.key);
         g.kind = ready(in, g.key) ? Danger : Grind;
         out.push_back(g);
         return;
@@ -302,7 +351,10 @@ void Pilot::plan() {
         grind_.clear();
         for (int y = z.y; y < z.y + z.h && y < maps()[m].h(); y++)
           for (int x = z.x; x < z.x + z.w && x < maps()[m].w(); x++)
-            if (tileEncounter(maps()[m].rows[y][x]) && !blockedAt(m, x, y)) grind_.insert(node(m, x, y));
+            // pas trop loin dans une nature qui l'a déjà battu (mémoire) : là où les meutes sont petites
+            if (tileEncounter(maps()[m].rows[y][x]) && !blockedAt(m, x, y) &&
+                (fear(m) == 0 || depth_[(size_t)node(m, x, y)] <= std::max(6, 40 - 8 * fear(m))))
+              grind_.insert(node(m, x, y));
       }
     if (at >= 0) {
       g = Goal{"entrainement", "s'entraîner jusqu'au niveau " + std::to_string(need_), Grind, {}, ""};
@@ -312,6 +364,11 @@ void Pilot::plan() {
   if (!found) {  // plus rien à faire : la partie est finie si l'écran de fin a été vu
     if (endings_ > 0) {
       finished = true;
+      // Partie finie : la crainte de la nature s'estompe un peu (il est devenu plus fort)
+      for (auto it = learned_.begin(); it != learned_.end();)
+        if (it->first.rfind("nature:", 0) == 0 && (it->second = it->second * 3 / 4) == 0) it = learned_.erase(it);
+        else ++it;
+      saveMemory();
       note("FIN : plus rien à faire, l'histoire est terminée", "termine");
     } else {
       stuck = true;
@@ -634,6 +691,11 @@ void Pilot::watch() {
     defeats += G.defeats_ - knownDefeats_;
     knownDefeats_ = G.defeats_;
     note("Défaite : retour chez la guérisseuse (équipe N." + std::to_string(G.avgLevel()) + ")", "defaite");
+    if (battleWild_ && battleMap_ >= 0 && battleMap_ < (int)maps().size()) {  // une meute : s'en souvenir
+      int& f = learned_["nature:" + maps()[battleMap_].id];
+      f = std::min(10, f + 1);
+      saveMemory();
+    }
   }
   long p = (long)G.flags.size() * 100 + (long)visited_.size() * 100 + (long)G.team.size() * 100;
   for (auto& f : G.team) p += f->lvl;
@@ -670,6 +732,8 @@ void Pilot::update(float dt) {
   if (battle && !inBattle_) {  // début d'un combat
     inBattle_ = true;
     battles++;
+    battleMap_ = G.mapId;
+    battleWild_ = engaged_.empty() && G.battle_->foeName.empty() && !G.battle_->boss;
     // Créatures sauvages et compagnons qui manquent : le mode auto est coupé pour ce combat, afin que
     // le menu de commande s'ouvre et que le pilote puisse lancer une lanterne (battleStep)
     const Battle& B = *G.battle_;
@@ -687,7 +751,15 @@ void Pilot::update(float dt) {
         stuck = true;
         note("BLOQUÉ : " + std::to_string(n) + " défaites contre « " + engagedWhat_ + " », même en s'entraînant", "bloque");
       }
-    } else note("Gagné : " + engagedWhat_, "victoire");
+    } else {
+      // Mémoire : la marge qu'il a fallu (défaites de cette partie), mêlée à celle des précédentes ;
+      // une victoire du premier coup la fait baisser (il s'entraînera moins la prochaine fois)
+      int need = 2 * fails_[engaged_], old = learned_.count(engaged_) ? learned_[engaged_] : 0;
+      learned_[engaged_] = (need + old + 1) / 2;
+      if (learned_[engaged_] == 0) learned_.erase(engaged_);
+      saveMemory();
+      note("Gagné : " + engagedWhat_, "victoire");
+    }
     engaged_.clear();
     engagedFought_ = false;
   }

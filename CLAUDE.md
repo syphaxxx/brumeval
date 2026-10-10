@@ -91,7 +91,7 @@ compagnon. Fichiers : `sauvegarde_partie_auto.txt`, `sauvegarde_demo.txt`
 (jamais la vraie partie). En démo, une touche rend la main au joueur. La
 vérification GitHub lance aussi `--partie`. Mesuré le 2026-10-09 (12 parties,
 3 premiers compagnons) : toujours finie, 45 à 60 minutes de jeu, niveau ~48.
-Un nouveau genre d'interaction (objet à utiliser, énigme…) demande d'ajouter
+Il s'améliore d'une partie à l'autre (demandé le 2026-10-10) : `pilote_memoire.txt` (dossier de l'utilisateur) garde pour chaque combat difficile la marge de niveaux qu'il lui a fallu (mêlée à la précédente, baisse après une victoire du premier coup) et, pour chaque carte, `nature:<carte>` = les meutes qui l'ont battu : les herbes profondes de cette carte lui coûtent plus cher à traverser et il s'y entraîne moins loin (la crainte baisse d'un quart à chaque partie finie). Mesuré : 6, 6, 4, 4 puis 2 défaites sur cinq parties de suite. Il place son équipe avec la formation automatique, vise les zones les plus rentables (IA) et se met à l'abri des attaques annoncées. Un nouveau genre d'interaction (objet à utiliser, énigme…) demande d'ajouter
 un objectif dans `Pilot::goals`. Méthode réutilisable pour d'autres jeux :
 compétence `joueur-automatique` de Claude Code.
 
