@@ -111,11 +111,10 @@ class Battle {
   // share : l'hôte ou le chef le fait aussi entendre aux autres joueurs
   void sound(const std::string& id, bool share = true);
   bool shown() const;  // c'est le combat affiché à l'écran
-  // Compagnons : quand des héros combattent, les créatures alliées sont leurs compagnons et
-  // agissent seules (tactiques, sinon l'ordinateur) ; le joueur ne commande que les héros
+  // Compagnons : quand des héros combattent, les créatures alliées sont leurs compagnons ; le
+  // joueur les commande comme les héros (leur jauge avance moins vite : règle compagnon_atb)
   bool hasHero_ = false;
   bool companion(const FighterP& f) const { return hasHero_ && isAlly(f) && !f->S().human; }
-  void companionTurn(FighterP f);
   // Animation d'une action : élan du lanceur vers ses cibles, puis effet sur elles selon le
   // genre de l'action (Fx, plus haut) et la couleur de son type
   struct Anim {

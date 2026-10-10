@@ -163,6 +163,11 @@ struct Rules {
   // Rencontres
   double encounterRate = .11, second = .55, third = .35;
   int minSteps = 3;
+  // Meutes : loin des villes et des entrées (profondeur, Game::wildDepth), rencontres plus
+  // fréquentes (jusqu'à +packDense) et créatures en plus, jusqu'à packMax ; pleine profondeur
+  // à packDistance cases
+  int packMax = 6;
+  double packDistance = 30, packDense = .5;
   // Combat
   double atbBase = 20, atbSpeed = 1.1, flee = .7, limitGain = 110, stab = 1.25, spreadMin = .85, dmgDivisor = 40;
   double critMult = 1.5, stageStep = .25;

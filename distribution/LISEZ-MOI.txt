@@ -43,7 +43,8 @@ COMMANDES
   vente dans les boutiques). Équipez-vous avant chaque boss !
 
   Échap > Compagnons : la créature qui combat aux côtés de chaque héros.
-  Elle agit toute seule en combat ; vous commandez les héros.
+  Vous la commandez en combat, comme les héros (Tab : leurs tactiques).
+  Loin des villes, les créatures arrivent en meutes (jusqu'à six).
 
   Échap > Formation : la place de chacun sur le damier de combat (avant,
   milieu, arrière). Au corps à corps, on ne touche que l'avant ennemi ;

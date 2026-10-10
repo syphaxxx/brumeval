@@ -224,26 +224,22 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     loadGame();
     bool kept = team.size() == 6 && team[1]->companion.lock() == team[5];
     startBattle({makeFighter("tisonnel", 18), makeFighter("tisonnel", 18)}, false, nullptr);
-    bool onlyHeroes = true;
+    bool heroMenu = false, companionMenu = false;
     int turns = 0;
-    for (int i = 0; i < 60 * 20 && mode == Mode::Battle && turns < 4; i++) {
+    for (int i = 0; i < 60 * 30 && mode == Mode::Battle && !(heroMenu && companionMenu); i++) {
       if (menus.active() && battle_ && battle_->actor) {
-        onlyHeroes = onlyHeroes && battle_->actor->S().human;
+        (battle_->actor->S().human ? heroMenu : companionMenu) = true;
         if (turns++ == 0) snap("94_compagnons_combat");
-        menus.clear();  // on laisse passer le tour du héros
+        menus.clear();  // on laisse passer son tour
         battle_->actor->atb = 0;
         battle_->actor = nullptr;
       }
       frame();
     }
     bool six = battle_ && battle_->allies.size() == 6;
-    int companionActs = 0;
-    if (battle_)
-      for (auto& l : battle_->log)
-        for (int k = 3; k < 6; k++) companionActs += l.rfind(team[k]->name() + " > ", 0) == 0;
-    check(pairs && kept && six && onlyHeroes && turns > 0 && companionActs > 0,
-          "compagnons : chaque héros avec sa créature (choisie ou la première libre), 6 alliés en combat, les compagnons agissent seuls (" +
-              std::to_string(companionActs) + " actions), choix gardé par la sauvegarde");
+    check(pairs && kept && six && heroMenu && companionMenu,
+          "compagnons : chaque héros avec sa créature (choisie ou la première libre), 6 alliés en combat, le joueur commande héros et "
+          "compagnons, choix gardé par la sauvegarde");
     battle_.reset();
     mode = Mode::Map;
     menus.clear();
@@ -515,6 +511,49 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     menus.clear();
     team = keepTeam;
     tacticsAuto = keepAuto;
+  }
+
+  // --- Meutes : loin des villes, des groupes plus grands (jusqu'à 6 créatures) ---
+  {
+    auto keepTeam = team;
+    team = {makeFighter("lior", 30), makeFighter("maelle", 30)};
+    menus.clear();
+    sc.clear();
+    mode = Mode::Map;
+    int vm = mi("vallee");
+    changeMap(vm, 30, 12, DOWN);
+    // La case de hautes herbes la plus profonde d'une zone de la vallée, et la plus proche du village
+    int deepX = -1, deepY = -1, deepD = -1, nearD = 1 << 30;
+    for (auto& z : M().zones)
+      for (int y = z.y; y < z.y + z.h; y++)
+        for (int x = z.x; x < z.x + z.w; x++) {
+          if (!tileEncounter(M().rows[y][x])) continue;
+          int d = wildDepth(x, y);
+          if (d > deepD) deepD = d, deepX = x, deepY = y;
+          nearD = std::min(nearD, d);
+        }
+    int packs = 0, most = 0;
+    bool shot = false;
+    px = deepX, py = deepY;
+    for (int k = 0; k < 60; k++) {
+      encounter();
+      if (battle_) {
+        most = std::max(most, (int)battle_->foes.size());
+        if (battle_->foes.size() >= 5 && !shot) {
+          shot = true;
+          run(1.5f);
+          snap("96_meute");
+        }
+        packs += battle_->foes.size() >= 4;
+        battle_.reset();
+      }
+      mode = Mode::Map;
+      menus.clear();
+    }
+    check(deepD > nearD && deepD >= 10 && packs > 0 && most <= rules().packMax,
+          "meutes : au plus profond de la vallée (" + std::to_string(deepD) + " cases du village), " + std::to_string(packs) +
+              " meutes de 4 créatures ou plus sur 60 rencontres (au plus " + std::to_string(most) + ")");
+    team = keepTeam;
   }
 
   // --- Quête annexe : le médaillon (accepter, journal, coffre du Bois Murmurant, récompense) ---

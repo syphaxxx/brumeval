@@ -195,7 +195,7 @@ void Game::tacticsMenu(int sel) {
 
 // ---------------------------------------------------------------------------
 // Compagnons : chaque héros choisit la créature qui combat à ses côtés (sinon : la première
-// créature libre de l'équipe). En combat, le compagnon agit seul, avec ses tactiques.
+// créature libre de l'équipe). En combat, le joueur le commande comme un héros.
 // ---------------------------------------------------------------------------
 // Réserve : les créatures en plus de l'équipe. On y dépose une créature de l'équipe, on en reprend
 // une (s'il reste de la place), ou on en échange une contre un membre de l'équipe.

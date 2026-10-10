@@ -428,6 +428,7 @@ void Game::arrive() {
   if (checkSight()) return;
   char c = M().rows[py][px];
   double rate = M().encounterRate > 0 ? M().encounterRate : rules().encounterRate;
+  if (tileEncounter(c)) rate *= 1 + rules().packDense * std::min(1.0, wildDepth(px, py) / std::max(1.0, rules().packDistance));
   if (tileEncounter(c) && steps > rules().minSteps && frand() < rate) encounter();
 }
 
@@ -456,11 +457,43 @@ bool Game::checkSight() {
   return false;
 }
 
+// Profondeur d'une case : distance à pied jusqu'au plus proche bâtiment ou passage de la carte
+// (villes, entrées). Plus on s'enfonce, plus la nature est dense : rencontres plus fréquentes
+// et meutes plus grandes (règles, rencontres).
+int Game::wildDepth(int x, int y) const {
+  const MapDef& m = M();
+  int W = m.w(), H = m.h();
+  if (x < 0 || y < 0 || x >= W || y >= H) return 0;
+  std::vector<int> d((size_t)W * H, -1);
+  std::vector<int> q;
+  auto seed = [&](int sx, int sy) {
+    if (sx >= 0 && sy >= 0 && sx < W && sy < H && d[(size_t)sy * W + sx] < 0) d[(size_t)sy * W + sx] = 0, q.push_back(sy * W + sx);
+  };
+  for (auto& b : m.buildings) seed(b.doorX(), b.doorY() + 1);
+  for (auto& w : m.warps) seed(w.x, w.y);
+  for (size_t k = 0; k < q.size(); k++) {
+    int i = q[k], cx = i % W, cy = i / W;
+    if (cx == x && cy == y) return d[(size_t)i];
+    const int DX[4] = {1, -1, 0, 0}, DY[4] = {0, 0, 1, -1};
+    for (int s = 0; s < 4; s++) {
+      int nx = cx + DX[s], ny = cy + DY[s];
+      if (nx < 0 || ny < 0 || nx >= W || ny >= H || d[(size_t)ny * W + nx] >= 0 || !tileWalkable(m.rows[ny][nx])) continue;
+      d[(size_t)ny * W + nx] = d[(size_t)i] + 1;
+      q.push_back(ny * W + nx);
+    }
+  }
+  return 0;
+}
+
 void Game::encounter() {
   for (auto& z : M().zones) {
     if (px < z.x || py < z.y || px >= z.x + z.w || py >= z.y + z.h) continue;
     int n = 1 + (frand() < rules().second) + (frand() < rules().third);
     n = std::min(n, z.maxN);
+    // Meute : au plus profond de la nature, des créatures en plus
+    float deep = std::min(1.f, wildDepth(px, py) / float(std::max(1.0, rules().packDistance)));
+    for (int k = n; k < rules().packMax; k++)
+      if (frand() < .35f * deep) n++;
     std::vector<FighterP> foes;
     for (int i = 0; i < n; i++) foes.push_back(makeFighter(z.pool[irand(0, (int)z.pool.size() - 1)], irand(z.lo, z.hi)));
     startBattle(foes, false, nullptr);

@@ -122,6 +122,7 @@ class Game {
   float exclaimT_ = 0;
   void changeMap(int m, int x, int y, int d);
   void encounter();
+  int wildDepth(int x, int y) const;  // distance à pied du plus proche bâtiment ou passage (meutes)
   void defeat();
   int defeats_ = 0;  // défaites dans la partie principale (joueur automatique)
   void showRegionBanner();

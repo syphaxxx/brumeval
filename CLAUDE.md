@@ -176,10 +176,11 @@ compétence `joueur-automatique` de Claude Code.
   `compagnon <rang>` après le héros dans la sauvegarde). `frontOf` (data.cpp)
   choisit les combattants : les 3 premiers héros valides, chacun suivi de son
   compagnon (choisi, sinon la première créature libre) ; une équipe sans héros
-  combat comme avant. En combat (`Battle::companion`, `hasHero_`), le compagnon
-  agit seul (`companionTurn` : tactiques, sinon l'ordinateur), sa jauge ATB va
-  à `compagnon_atb` (0,5) ; jusqu'à 6 alliés (placement `HERO`/`COMP`, fenêtre
-  d'état plus haute) ; « Changer » remplace un héros par un héros. Menu
+  combat comme avant. En combat (`Battle::companion`, `hasHero_`), le joueur
+  commande le compagnon comme un héros (demandé le 2026-10-10 ; avant, il
+  agissait seul) : ses tactiques en mode auto, sinon son menu ; sa jauge ATB
+  va à `compagnon_atb` (0,5) ; jusqu'à 6 alliés sur le damier ; « Changer »
+  remplace un héros par un héros. Menu
   `Game::companionsMenu`. Duel : les combattants gardent l'ordre envoyé
   (`s.allies = mine`) ; gardien à plusieurs : `myFighters` suit `front()`
   (un héros et son compagnon à deux joueurs).
@@ -348,6 +349,15 @@ compétence `joueur-automatique` de Claude Code.
   l'ordinateur (ennemis, et alliés en mode test) ; `Battle::log` garde un journal
   lisible (`BRUMEVAL_JOURNAL=Sylvarque brumeval --test captures` l'affiche pour
   la simulation qui contient ce mot).
+- Écran de combat (1.7) : ATH discret, un bandeau semi-transparent en bas (deux
+  colonnes de trois alliés : nom, PV, PM, traits PV/ATB/Limite) ; les menus du
+  combat s'ouvrent en bas (`dock` dans battle.cpp : commande à gauche,
+  sous-menus et choix de la cible à droite) pour laisser voir les deux damiers.
+  Pas de fenêtre des noms d'ennemis : leur nom est dans le menu de la cible.
+- Meutes (1.7) : `Game::wildDepth`, distance à pied du plus proche bâtiment ou
+  passage ; plus on s'enfonce (jusqu'à `meute_distance` cases), plus les
+  rencontres sont fréquentes (+`nature_dense`) et les groupes grands (jusqu'à
+  `meute_max`, 6). Règles, rencontres.
 - Damier (1.7, plan validé le 2026-10-10) : 9 cases par camp (data.hpp :
   `cellCol` 0 avant / 1 milieu / 2 arrière, `cellRow`). `Battle::cells_` garde la
   case de chacun pendant le combat (alliés : `Fighter::cell`, la formation, ligne

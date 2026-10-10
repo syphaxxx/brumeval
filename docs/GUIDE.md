@@ -89,7 +89,9 @@ membres de la réserve ; `vu` et `pris` pour le bestiaire. La progression de l'h
 les coffres ouverts et les quêtes sont des **drapeaux** (`Game::flags`).
 
 **Qui combat** : `frontOf` (data.cpp) — les 3 premiers héros valides, chacun
-suivi de sa créature compagnon. Les compagnons agissent seuls en combat.
+suivi de sa créature compagnon. Le joueur commande héros et compagnons ; la
+jauge des compagnons avance moins vite. Chacun a sa case sur le damier
+(`formation`, `Battle::cells_`).
 
 ## 4. Recettes
 

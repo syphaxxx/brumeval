@@ -94,8 +94,9 @@ une règle orange ne marchera pas (par exemple une attaque avec une condition
 ## Compagnons
 
 Chaque héros combat avec une **créature compagnon** à ses côtés : jusqu'à
-3 héros et leurs 3 compagnons sur le terrain. Vous commandez les héros ; chaque
-compagnon agit tout seul, avec ses tactiques, un peu moins souvent qu'un héros.
+3 héros et leurs 3 compagnons sur le terrain. Vous les commandez tous ; un
+compagnon joue un peu moins souvent qu'un héros. En mode auto (Tab), héros et
+compagnons suivent leurs tactiques.
 Échap > **Compagnons** : choisir la créature de chaque héros (sinon, la
 première créature libre de l'équipe). Les boss sont réglés pour une équipe
 complète et **équipée**.
@@ -132,6 +133,10 @@ le Temple gelé. Les quêtes acceptées s'inscrivent dans le **Journal** (Échap
 Journal), avec l'étape où vous en êtes. Elles rapportent or et équipement.
 
 ## Après la fin
+
+Loin des villes et des entrées des cartes, la nature est plus dense : les
+rencontres sont plus fréquentes et les créatures viennent en **meutes** (jusqu'à
+six). Les attaques de zone y font merveille.
 
 Le Givrecorne vaincu, une faille s'ouvre au fond de son sanctuaire : la
 **Source des Brumes**, d'où vient la brume qui rend les créatures sauvages.
