@@ -41,9 +41,25 @@
     "TT.......==B=BBBBBBBBBBBBzzz....TT....T.,,,,,,,,,....TTT",
     "TTT.......z~~~~~~~zzzzzzzzz...TT.TT....T..,,,,,..T..T.TT",
     "TTT.....T..z~~~~~zzzzzzzzz....TT.......T.T.....T...TT.TT",
-    "TTT.....TTT...zzzzzzzzz...T.T.TT.T..T.T.TT..TT..TT..TTTT",
-    "TT......T..T.T.........T...TT.TT....TTT..T.T...T..TT..TT",
-    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+    "TTT.....TTT...zzzzzzzzz.......TT.T..T.T.TT..TT..TT..TTTT",
+    "TT......T..............T......TT....TTT........T..TT..TT",
+    "TTTTTTTTTTT...TTTTTTTTTTTT...TTTTTTTTTTTT...TTTTTTTTTTTT",
+    "TTTTTTTTTTT...TTTTTTTTTTTT...TTTTTTTTTTTT...TTTTTTTTTTTT",
+    "TTTTTTTT....=......,,,,,TTT=T,,,,,,,......=,,,,,,,,,,..T",
+    "TTTTTTTT.T..=.....,,,,,,,TT=,TTTT,,,,..,.,=,,,,,,,,,,,.T",
+    "TTTTTTTTTTTT=......,,,,,,,T=,,T,,,,,,,,,,,=,,,,,,,,,,..T",
+    "TTTTTTTT,T..=......,,,,,,,,=TTTTT.,,,,,,,,=,,,,,,,,,,,.T",
+    "TTTTTTTT,,..=...T..,,,,,,,,=,,T...,,,,,,,,=,,,,,,,,,,,TT",
+    "TTTTTTT,,z,.=.TTTTT.,,,,,,,=,,,,T,,,,,,,,,=,,,,,,,,,TTTT",
+    "TTTTTTTzzzz....TTTT....,,,,,,,,,T,,,,,,,,,,,,,,,,..,..TT",
+    "TT,,TTT,TzTTT.TTTTTTT..,,,,,,,,,T,,,,,T,,,,,,,,,T..z...T",
+    "T,,,zT.........T..T....,,,,,,,,,T,,,,,T,,,,,,,,,,zzzzz.T",
+    "T,zzzzz..............,,,,,,,,,,,T,,,,,TTz,T,z,,,zzzzzzzT",
+    "Tzzzzzzz....T....,,,,,,,,T,,,,,,,,,,..zzzzzzzzzz,zzzzz,T",
+    "Tzzzzzzzz..TTT..,,,,,,,,,TT,,,,,,,,,..zzzzz,z,,,,,,z,,,T",
+    "Tzzzzzzz..TTTTT..,,,,,,,TTT,,,,,,.,..zzzzzzz,,,,,,,,,,,T",
+    "T.zzzzz....TTT....T..,...TT,,,,,,,,...zzzzz,,,,,,,T,,,,T",
+    "T...z.......T.....T......TT..,,,,,,TTTzzzzz,,,,,TTTTT,,T",
     "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
   ],
   "batiments": [
@@ -125,7 +141,10 @@
     {"x": 5, "y": 24, "or": 400},
     {"x": 21, "y": 9, "objet": "lanterne_argent", "quantite": 2},
     {"x": 48, "y": 33, "objet": "superpotion", "quantite": 2},
-    {"x": 26, "y": 34, "objet": "remede", "quantite": 2}
+    {"x": 26, "y": 34, "objet": "remede", "quantite": 2},
+    {"x": 49, "y": 47, "objet": "lanterne_or", "quantite": 1},
+    {"x": 11, "y": 46, "objet": "remede", "quantite": 3},
+    {"x": 33, "y": 52, "or": 900}
   ],
   "panneaux": [
     {"x": 52, "y": 19, "texte": "Forêt de Sylve-Noire. Des bandits y rôdent : restez sur les chemins."},
@@ -157,6 +176,25 @@
       "niveau_max": 13,
       "max_ennemis": 3,
       "creatures": ["louvet", "serpentin", "chauvenuit", "esprillon", "champichou"]
+    },
+    {
+      "x": 0,
+      "y": 40,
+      "l": 56,
+      "h": 16,
+      "niveau_min": 13,
+      "niveau_max": 17,
+      "max_ennemis": 3,
+      "creatures": [
+        "crapoison",
+        "serpentin",
+        "carapierre",
+        "grenouillon",
+        "louvet",
+        "chauvenuit",
+        "esprillon",
+        "champichou"
+      ]
     }
   ],
   "boss": [{"x": 7, "y": 33, "espece": "ronce_mere", "drapeau": "ronce", "evenement": "ronce_mere"}],

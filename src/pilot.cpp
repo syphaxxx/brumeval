@@ -390,14 +390,22 @@ void Pilot::interactNow() {
 // Entraînement : un pas vers une autre case de hautes herbes de la zone
 void Pilot::pace() {
   int m = G.mapId;
-  for (int k = 0; k < 4; k++) {
-    int d = (paceDir_ + k) % 4, nx = G.px + DX[d], ny = G.py + DY[d];
-    if (!grind_.count(node(m, std::clamp(nx, 0, mapW(m) - 1), std::clamp(ny, 0, maps()[m].h() - 1)))) continue;
-    if (nx < 0 || ny < 0 || nx >= mapW(m) || ny >= maps()[m].h() || blockedAt(m, nx, ny)) continue;
-    G.in.hold[d] = true;
-    paceDir_ = BACK[d];  // la prochaine fois, revenir
-    return;
-  }
+  auto ok = [&](int nx, int ny) {  // case voisine où marcher (pas un passage : il changerait de carte)
+    if (nx < 0 || ny < 0 || nx >= mapW(m) || ny >= maps()[m].h() || blockedAt(m, nx, ny)) return false;
+    for (auto& w : maps()[m].warps)
+      if (w.x == nx && w.y == ny) return false;
+    return true;
+  };
+  // D'abord une autre case de hautes herbes ; sinon (case isolée) n'importe quelle voisine : on
+  // reviendra sur l'herbe au pas suivant, et c'est en y arrivant que les rencontres ont lieu
+  for (int pass = 0; pass < 2; pass++)
+    for (int k = 0; k < 4; k++) {
+      int d = (paceDir_ + k) % 4, nx = G.px + DX[d], ny = G.py + DY[d];
+      if (!ok(nx, ny) || (pass == 0 && !grind_.count(node(m, nx, ny)))) continue;
+      G.in.hold[d] = true;
+      paceDir_ = BACK[d];  // la prochaine fois, revenir
+      return;
+    }
   needPlan_ = true;
 }
 
