@@ -1026,5 +1026,40 @@
     "genre": "magique",
     "cible": "tous_ennemis",
     "puissance": 62
+  },
+  {
+    "id": "lame_ombre",
+    "nom": "Lame d'ombre",
+    "type": "ombre",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 75,
+    "rythme": "lourde"
+  },
+  {
+    "id": "hurlement_spectral",
+    "nom": "Hurlement spectral",
+    "type": "esprit",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 55
+  },
+  {
+    "id": "eclipse",
+    "nom": "Éclipse",
+    "type": "ombre",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 68,
+    "rythme": "lourde",
+    "effet": {"stat": "resistance", "niveaux": -1, "chance": 30}
+  },
+  {
+    "id": "lim_brumeloup",
+    "nom": "Croc de brume",
+    "type": "ombre",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 62
   }
 ]

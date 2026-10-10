@@ -5,7 +5,7 @@
   "ambiance": {"effet": "neige", "jusqua": "boss3"},
   "tuiles": [
     "####################",
-    "####################",
+    "#########k##########",
     "##iiiiiiiiiiiiiiii##",
     "##iiiii.......iiii##",
     "##ixi...........xi##",
@@ -25,7 +25,19 @@
   "habitants": [],
   "coffres": [{"x": 10, "y": 2, "objet": "elixir", "quantite": 2}, {"x": 5, "y": 2, "or": 2000}],
   "panneaux": [],
-  "passages": [{"x": 10, "y": 15, "vers": "temple", "tx": 19, "ty": 1, "direction": "bas"}],
+  "passages": [
+    {"x": 10, "y": 15, "vers": "temple", "tx": 19, "ty": 1, "direction": "bas"},
+    {
+      "x": 9,
+      "y": 1,
+      "vers": "source",
+      "tx": 19,
+      "ty": 28,
+      "direction": "haut",
+      "condition": {"drapeau": "boss3"},
+      "message": "Une faille glacée laisse filer une brume étrange. Le Givrecorne en garde l'accès."
+    }
+  ],
   "zones": [],
   "boss": [{"x": 9, "y": 4, "espece": "givrecorne", "drapeau": "boss3", "evenement": "givrecorne"}]
 }

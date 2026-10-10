@@ -2207,6 +2207,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   }, 30);
   simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}, {"braisenard", 30}, {"gouttelin", 30}, {"ronceau", 30}}, bossEvent("givrecorne"), 40);
   simSetup("Gardien de cristal (équipe N.28)", {{"lior", 28}, {"maelle", 28}, {"brann", 28}, {"braisenard", 28}, {"gouttelin", 28}, {"ronceau", 28}}, bossEvent("gardien_cristal"), 30);
+  simSetup("Mère des Brumes (équipe N.38)", {{"lior", 38}, {"maelle", 38}, {"selene", 38}, {"braisenard", 38}, {"gouttelin", 38}, {"ronceau", 38}}, bossEvent("mere_brumes"), 30);
 
   std::printf("\nMêmes combats, alliés guidés par les tactiques de départ :\n");
   sim("Bois (N.8 contre 3 x N.4-7)", {{"lior", 8}, {"maelle", 8}, {"braisenard", 8}},
@@ -2215,6 +2216,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   simSetup("Boss Ignarok (équipe N.22)", {{"lior", 22}, {"maelle", 22}, {"isra", 22}, {"braisenard", 22}, {"gouttelin", 22}, {"ronceau", 22}}, bossEvent("ignarok"), 30, true);
   simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}, {"braisenard", 30}, {"gouttelin", 30}, {"ronceau", 30}}, bossEvent("givrecorne"), 30, true);
   simSetup("Gardien de cristal (équipe N.28)", {{"lior", 28}, {"maelle", 28}, {"brann", 28}, {"braisenard", 28}, {"gouttelin", 28}, {"ronceau", 28}}, bossEvent("gardien_cristal"), 30, true);
+  simSetup("Mère des Brumes (équipe N.38)", {{"lior", 38}, {"maelle", 38}, {"selene", 38}, {"braisenard", 38}, {"gouttelin", 38}, {"ronceau", 38}}, bossEvent("mere_brumes"), 30, true);
 
   std::printf("\nMêmes boss, équipe équipée par les boutiques de sa région (meilleur achat possible) :\n");
   simGear = 1;
@@ -2241,6 +2243,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   }, 30);
   simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}, {"braisenard", 30}, {"gouttelin", 30}, {"ronceau", 30}}, bossEvent("givrecorne"), 40);
   simSetup("Gardien de cristal (équipe N.28)", {{"lior", 28}, {"maelle", 28}, {"brann", 28}, {"braisenard", 28}, {"gouttelin", 28}, {"ronceau", 28}}, bossEvent("gardien_cristal"), 30);
+  simSetup("Mère des Brumes (équipe N.38)", {{"lior", 38}, {"maelle", 38}, {"selene", 38}, {"braisenard", 38}, {"gouttelin", 38}, {"ronceau", 38}}, bossEvent("mere_brumes"), 30);
   simGear = 0;
 
   // Expédition : gardien de chaque région contre une équipe générée (héros, créature de départ,
