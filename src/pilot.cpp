@@ -23,6 +23,7 @@ Pilot::Pilot(Game& g, bool demo) : G(g), demo_(demo) {
 
 Pilot::~Pilot() {
   for (bool& h : G.in.hold) h = false;
+  G.tacticsAuto = true;  // il le coupe pour capturer : ne pas le laisser coupé après une reprise en main
 }
 int Pilot::mapW(int m) const { return maps()[m].w(); }
 void Pilot::unpack(int n, int& m, int& x, int& y) const {
@@ -459,7 +460,6 @@ void Pilot::battleStep() {
     }
     if (!capture_.empty()) {
       lantern_ = lantern->name;
-      captureTeam_ = G.team.size();
       pickItem("Objet");
       return;
     }
@@ -705,6 +705,7 @@ void Pilot::update(float dt) {
 // Game : lancer le joueur automatique, et la partie rapide (brumeval --partie DOSSIER)
 // ---------------------------------------------------------------------------
 void Game::startPilot(bool demo) {
+  if (saveBeforePilot_.empty()) saveBeforePilot_ = saveName_;
   saveName_ = demo ? "sauvegarde_demo.txt" : "sauvegarde_partie_auto.txt";  // jamais la vraie sauvegarde
   menus.clear();
   const char* st = SDL_getenv("BRUMEVAL_COMPAGNON");  // premier compagnon (sinon le premier de la liste)

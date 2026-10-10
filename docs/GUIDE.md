@@ -47,7 +47,9 @@ importantes ont un commentaire d'une ligne au-dessus.
 | Domaine | Fichiers | Ce qu'on y trouve |
 |---|---|---|
 | Démarrage, fenêtre | `main.cpp` | Taille de l'image, plein écran, manettes, boucle |
-| Jeu | `game.hpp/.cpp` | Écran titre, carte, menus (équipe, équipement, journal, objets, options…), sauvegarde |
+| Jeu | `game.hpp/.cpp` | Écran titre, carte, boucle du jeu, dessin |
+| Menus | `menus.cpp` | Menu de pause (équipe, compagnons, réserve, bestiaire, équipement, journal, objets, magie), boutique, options |
+| Sauvegarde | `save.cpp` | `saveGame`, `loadGame`, `readMemberLine` |
 | Événements, quêtes | `events.hpp/.cpp` | Actions des événements (`Game::execAction`), conditions, quêtes |
 | Combat | `battle.hpp/.cpp`, `tactics.hpp/.cpp` | Jauges ATB, dégâts, IA, tactiques, animations, combat en ligne |
 | Données | `data.hpp/.cpp`, `world.hpp/.cpp`, `store.hpp/.cpp` | Lecture et vérification de `data/`, cartes, fichiers du joueur |

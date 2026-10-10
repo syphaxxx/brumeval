@@ -100,7 +100,9 @@ compétence `joueur-automatique` de Claude Code.
 | Fichier | Rôle |
 |---|---|
 | `main.cpp` | Fenêtre SDL (taille adaptée à l'écran), affichage agrandi (`Screen`), boucle principale, plein écran (F11, gardé dans `options.txt`), option `--test`, chargement de data/ |
-| `game.hpp/.cpp` | Écran titre, exploration, menus (pause, équipe, objets, magie, boutique), sauvegarde, dessin de la carte |
+| `game.hpp/.cpp` | Écran titre, exploration (marche, portes, habitants, coffres), boucle `update`, dessin de la carte, écran de fin |
+| `menus.cpp` | Méthodes de `Game` : options et touches, menu de pause (équipe, compagnons, réserve, bestiaire, tactiques, équipement, journal, objets, magie), boutique (achat, vente), fiche de l'équipe |
+| `save.cpp` | Méthodes de `Game` : sauvegarde et chargement (`saveGame`, `loadGame`), `readMemberLine` (partagé avec le multijoueur) |
 | `battle.hpp/.cpp` | Combat ATB : jauges, menus, dégâts physiques/magiques, précision, critiques, états, bonus/malus, renforts ennemis, IA (`think`), tactiques des alliés (`tacticPlan`, touche Tab), journal (`log`), capture, Limites, victoire |
 | `tactics.hpp/.cpp` | Tactiques (gambits) : catalogue des conditions et actions automatiques, lecture/écriture JSON, vérifications (`tacticProblem`), lignes selon le niveau (`tacticSlots`), éditeur réutilisable (`openTacticsEditor`) |
 | `store.hpp/.cpp` | Dossier data/ : recherche, lecture et écriture JSON (nlohmann/json, `Json` = `ordered_json`) |

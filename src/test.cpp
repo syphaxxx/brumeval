@@ -1754,6 +1754,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       const Rules& r = rules();
       auto makeSave = [&](Game& p, const std::vector<std::pair<std::string, int>>& members) {
         p.team.clear();
+        p.reserve.clear();
         for (auto& [sp, lvl] : members) p.team.push_back(makeFighter(sp, lvl));
         p.mapId = p.respawnMap = 0;
         p.saveGame();
@@ -1799,6 +1800,22 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       both(10);
       check(H.trade_.step == Online::Trade::Step::None && H.status_.find("aucune créature") != std::string::npos && saved(*this) == h2,
             "échange (salon) : refusé si l'autre n'a aucune créature à donner (« " + H.status_ + " »)");
+      // Cadeau reçu avec l'équipe complète : il va dans la réserve, et y reste dans la sauvegarde
+      {
+        std::vector<std::pair<std::string, int>> full = {{hero, 10}};
+        while ((int)full.size() < r.maxTeam) full.push_back({b, 5});
+        makeSave(*this, full);
+        makeSave(guest, {{hero, 10}, {c, 7}});
+        V.offerTrade(0, 1, true);
+        both(10);
+        in.confirm = true;  // Accepter
+        frame();
+        both(10);
+        std::string team8 = saved(*this);
+        bool inReserve = reserve.size() == 1 && reserve[0]->sp == c && reserve[0]->lvl == 7;
+        check(inReserve && (int)team.size() == r.maxTeam && H.status_.rfind("Cadeau reçu", 0) == 0,
+              "échange (salon) : un cadeau reçu avec l'équipe complète va dans la réserve (" + team8 + ")");
+      }
       for (Game* p : {this, &guest}) std::remove(H.file(p->saveName_).c_str());
       saveName_ = hostSave, guest.saveName_ = "sans_sauvegarde_test.txt";
       H.salon(), V.salon();
@@ -2035,7 +2052,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     auto keepFlags = flags;
     auto keepItems = items;
     int keepGold = gold, keepMap = mapId, keepX = px, keepY = py;
-    std::string keepSave = saveName_;
+    std::string keepSave = saveName_;  // la démo joue sur son propre fichier ; l'écran titre remet celui-ci
     bool keepAuto = tacticsAuto;                            // le joueur automatique active le mode auto
     int keepRespawn[3] = {respawnMap, respawnX, respawnY};  // une nouvelle partie change le point de réveil
     startPilot(true);
@@ -2043,8 +2060,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     bool talked = pilot_ && flags.count("quete:medaillon") > 0;
     size_t steps = pilot_ ? pilot_->journal.size() : 0;
     check(talked && steps >= 4, "démo : le joueur automatique avance (quête du médaillon acceptée, " + std::to_string(steps) + " étapes au journal)");
-    pilot_.reset();
-    saveName_ = keepSave;
+    titleMenu();  // comme un joueur qui reprend la main puis revient à l'écran titre
+    check(!pilot_ && saveName_ == keepSave, "démo : revenir à l'écran titre arrête la démo et rend le fichier de sauvegarde habituel (" + saveName_ + ")");
     menus.clear();
     sc.clear();
     team = keepTeam, flags = keepFlags, items = keepItems, gold = keepGold;

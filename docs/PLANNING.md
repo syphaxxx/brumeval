@@ -80,8 +80,8 @@ bestiaire. Idées pour la suite :
 
 ## Étape 6 — Technique (au fil de l'eau)
 
-- Découper `game.cpp` (1 500 lignes) : les menus (équipe, équipement,
-  journal, options) dans un fichier `menus.cpp`.
+- Fait le 2026-10-10 : `game.cpp` découpé (900 lignes) en `menus.cpp` et
+  `save.cpp`.
 - Le mode test prend 43 s : c'est correct ; le garder sous la minute.
 - Relancer `/graphify . --update` et l'audit (`/ponytail-audit`) après chaque
   grosse étape.

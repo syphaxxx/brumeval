@@ -105,7 +105,7 @@ class Pilot {
   bool engagedFought_ = false;  // son combat a commencé
   bool inBattle_ = false;
   std::string capture_, lantern_;  // capture en cours : créature visée, lanterne
-  size_t captureTeam_ = 0;
+
   int menuMoves_ = 0;
   void battleStep();
   void menuStep();
