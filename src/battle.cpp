@@ -372,10 +372,10 @@ void Battle::command(FighterP a) {
   std::vector<FighterP> bench;  // avec des héros : un héros n'est remplacé que par un héros
   for (auto& r : G.team)
     if (r->alive() && !isAlly(r) && (!hasHero_ || r->S().human == a->S().human)) bench.push_back(r);
-  m.items.push_back({"Changer", "", bench.empty() ? "Personne en réserve." : "Faire entrer un membre de la réserve.", !bench.empty(),
+  m.items.push_back({"Changer", "", bench.empty() ? "Personne pour vous remplacer." : "Faire entrer un remplaçant de l'équipe.", !bench.empty(),
                      [this, a, bench] {
                        Menu t;
-                       t.title = "Réserve";
+                       t.title = "Remplaçants";
                        t.x = 4, t.y = 82, t.w = 176, t.rows = 4;
                        for (auto& r : bench)
                          t.items.push_back({r->name() + " N." + std::to_string(r->lvl), std::to_string(r->hp) + "/" + std::to_string(r->mhp),
@@ -955,6 +955,7 @@ void Battle::useItem(FighterP a, const std::string& id, FighterP t) {
         t->atb = 0;
         bool full = (int)G.team.size() >= rules().maxTeam;  // équipe complète : elle part dans la réserve
         (full ? G.reserve : G.team).push_back(t);
+        G.caught.insert(t->sp);
         sc.call([this] { sound("capture"); });
         sc.say("Capturé ! " + t->name() + (full ? " est envoyé dans la réserve (Échap > Réserve)." : " rejoint l'équipe."), 1.5f);
       } else {
@@ -1033,6 +1034,7 @@ void Battle::checkEnd() {
     if (!foes[i]->alive() && !reserve.empty()) {
       FighterP n = reserve.front();
       reserve.erase(reserve.begin());
+      G.see(*n);  // bestiaire
       foes[i] = n;
       n->atb = frand() * 30;
       if (net_ == Net::Lead) send_(-1, Json{{"t", "renfort"}, {"i", (int)i}});

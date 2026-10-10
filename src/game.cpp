@@ -418,6 +418,7 @@ void Game::recruit(const std::string& id, int minLvl) {
 }
 
 void Game::startBattle(BattleSetup setup, std::function<void(BattleResult)> after) {
+  for (auto& f : setup.foes) see(*f);  // bestiaire (les renforts : quand ils entrent, battle.cpp)
   afterBattle_ = std::move(after);
   arenaBattle_ = mode == Mode::Arena;
   Theme th = setup.theme >= 0 ? Theme(setup.theme) : M().theme;
@@ -731,6 +732,7 @@ void Game::newGame(const std::string& starter) {
   sc.clear();
   team = {makeFighter(r.hero, r.startLevel), makeFighter(starter, r.startLevel)};
   reserve.clear();
+  seen.clear(), caught.clear();
   items.clear();
   for (auto& [id, n] : r.startItems) items[id] = n;
   gold = r.startGold;
@@ -760,6 +762,7 @@ void Game::pauseMenu() {
   m.items.push_back({"Compagnons", "", "La créature qui combat aux côtés de chaque héros.", true, [this] { companionsMenu(); }});
   m.items.push_back({"Réserve", reserve.empty() ? "" : std::to_string(reserve.size()), "Les créatures en plus de l'équipe (" +
                      std::to_string(rules().maxTeam) + " membres au plus).", true, [this] { reserveMenu(); }});
+  m.items.push_back({"Bestiaire", "", "Les créatures rencontrées et obtenues, et leur fiche.", true, [this] { bestiaryMenu(); }});
   m.items.push_back({"Tactiques", "", "Ce que chaque membre fait tout seul en combat (mode auto : touche Tab).", true, [this] { tacticsMenu(); }});
   m.items.push_back({"Équipement", "", "Armes, armures et accessoires.", true, [this] { gearMenu(); }});
   m.items.push_back({"Journal", "", "Les quêtes en cours et terminées.", true, [this] { journalMenu(); }});
@@ -896,6 +899,80 @@ void Game::reserveMenu(int sel) {
   if (reserve.empty()) m.items.push_back({"(réserve vide)", "", "Les créatures capturées quand l'équipe est complète arrivent ici.", false, nullptr});
   m.sel = std::clamp(sel, 0, (int)m.items.size() - 1);
   menus.push(m);
+}
+
+void Game::noteBestiary() {
+  for (auto* v : {&team, &reserve})
+    for (auto& f : *v)
+      if (f && hasSpecies(f->sp) && !f->S().human) seen.insert(f->sp), caught.insert(f->sp);
+}
+
+// Bestiaire : toutes les créatures des données, dans leur ordre ; une créature jamais vue reste « ??? »
+void Game::bestiaryMenu(int sel) {
+  noteBestiary();
+  panelMode_ = 3;
+  std::vector<const Species*> all;
+  for (auto& s : allSpecies())
+    if (!s.human) all.push_back(&s);
+  int nSeen = 0, nCaught = 0;
+  for (auto* s : all) nSeen += seen.count(s->id) > 0, nCaught += caught.count(s->id) > 0;
+  Menu m;
+  m.title = "Bestiaire  " + std::to_string(nSeen) + "/" + std::to_string(all.size());
+  m.x = 8, m.y = 8, m.w = 132, m.rows = 12;
+  for (size_t i = 0; i < all.size(); i++) {
+    const Species& s = *all[i];
+    bool v = seen.count(s.id), c = caught.count(s.id);
+    char num[8];
+    std::snprintf(num, sizeof num, "%02d ", int(i + 1));
+    std::string id = s.id;
+    MenuItem it{num + (v ? s.name : std::string("???")), c ? "★" : v ? "vu" : "",
+                c ? "Obtenue." : v ? "Rencontrée, pas encore obtenue." : "Pas encore rencontrée.", true, nullptr, [this, id] { bestiarySel_ = id; }};
+    it.shrink = true;
+    m.items.push_back(it);
+  }
+  if (!all.empty()) bestiarySel_ = all[(size_t)std::clamp(sel, 0, (int)all.size() - 1)]->id;
+  m.sel = std::clamp(sel, 0, (int)m.items.size() - 1);
+  m.items.insert(m.items.begin(), menuHeader("Obtenues : " + std::to_string(nCaught)));
+  m.sel++;
+  menus.push(m);
+}
+
+// Fiche du bestiaire : dessin, types, statistiques de base et lieux où vivre la rencontre
+void Game::drawBestiaryPanel(int x, int y) {
+  if (!hasSpecies(bestiarySel_)) return;
+  const Species& s = species(bestiarySel_);
+  int w = 320 - x - 8;
+  bool v = seen.count(s.id) > 0, c = caught.count(s.id) > 0;
+  std::vector<std::string> places;
+  for (auto& mp : maps()) {
+    bool here = false;
+    for (auto& z : mp.zones) here = here || std::find(z.pool.begin(), z.pool.end(), s.id) != z.pool.end();
+    for (auto& b : mp.bosses) here = here || b.id == s.id;
+    if (here && mp.theme != Theme::Interieur) places.push_back(mp.name);
+  }
+  std::string where;
+  for (auto& p : places) where += (where.empty() ? "" : ", ") + p;
+  auto lines = Gfx::wrap("Lieux : " + (where.empty() ? std::string("inconnus") : where), w - 16);
+  int h = 104 + (c ? 42 : 0) + (v ? 11 * (int)lines.size() : 0);
+  g.window(x, y, w, h);
+  if (!v) {
+    g.text(x + w / 2, y + 40, "???", MUTED, 1);
+    g.text(x + w / 2, y + 56, "Pas encore rencontrée", MUTED, 1);
+    return;
+  }
+  g.text(x + 8, y + 6, s.name, GOLD);
+  g.text(x + 8, y + 18, typesName(s), MUTED);
+  drawCreature(g, s.id, x + w / 2, y + 74, 1.2f, false, time);
+  int ly = y + 96;
+  if (c) {  // statistiques de base, seulement pour une créature obtenue
+    const char* names[] = {"PV", "PM", "Att", "Déf", "Mag", "Rés", "Vit"};
+    for (int i = 0; i < N_BASE; i++) g.text(x + 8 + (i % 3) * 50, ly + (i / 3) * 11, std::string(names[i]) + " " + std::to_string(s.base[i]), WHITE);
+    ly += 36;
+  } else {
+    g.text(x + 8, ly, "Pas encore obtenue.", MUTED);
+    ly += 12;
+  }
+  for (size_t i = 0; i < lines.size(); i++) g.text(x + 8, ly + 6 + i * 11, lines[i], MUTED);
 }
 
 void Game::swapReserve(FighterP out, FighterP in) {
@@ -1303,6 +1380,11 @@ bool Game::saveGame() {
   for (auto& [id, n] : items)
     if (n > 0) f << "objet " << id << ' ' << n << '\n';
   f << "auto " << tacticsAuto << '\n';
+  noteBestiary();
+  for (auto& sp : seen)
+    if (hasSpecies(sp)) f << "vu " << sp << '\n';
+  for (auto& sp : caught)
+    if (hasSpecies(sp)) f << "pris " << sp << '\n';
   static const char KIND[] = {'a', 't', 'o'};  // action automatique, technique, objet
   auto member = [&](const FighterP& m) {
     f << "membre " << m->sp << ' ' << m->lvl << ' ' << m->xp << ' ' << m->hp << ' ' << m->mp << ' ' << m->lim << '\n';
@@ -1375,6 +1457,7 @@ bool Game::loadGame() {
   if (!f || !std::getline(f, head) || head.rfind("BRUMEVAL", 0) != 0) return false;
   team.clear();
   reserve.clear();
+  seen.clear(), caught.clear();
   bool inReserve = false;                      // après la ligne « reserve »
   std::vector<std::pair<size_t, int>> links;  // lignes « compagnon » : reliées à la fin
   items.clear();
@@ -1415,12 +1498,16 @@ bool Game::loadGame() {
       s >> id >> n;
       items[id] = n;
     } else if (k == "auto") s >> tacticsAuto;
-    else if (k == "reserve") inReserve = true;
+    else if (k == "vu" || k == "pris") {
+      s >> v;
+      if (hasSpecies(v)) (k == "vu" ? seen : caught).insert(v);
+    } else if (k == "reserve") inReserve = true;
     else if (inReserve) readMemberLine(k, s, reserve, nullptr);
     else readMemberLine(k, s, team, &links);
   }
   reserve.erase(std::remove(reserve.begin(), reserve.end(), nullptr), reserve.end());
   for (auto& m : reserve) m->hp = std::min(m->hp, m->mhp), m->mp = std::min(m->mp, m->mmp);
+  noteBestiary();  // anciennes sauvegardes : l'équipe compte déjà
   for (auto& [h, c] : links)  // compagnons : avant de retirer les espèces disparues (les rangs changeraient)
     if (c >= 0 && c < (int)team.size() && team[h] && team[(size_t)c] && !team[(size_t)c]->S().human) team[h]->companion = team[(size_t)c];
   team.erase(std::remove(team.begin(), team.end(), nullptr), team.end());  // espèces qui n'existent plus
@@ -1617,7 +1704,8 @@ void Game::drawMap() {
     g.alpha = 1;
   }
   // Fenêtres
-  if (panelMode_ && menus.active()) drawTeamPanel(panelMode_ == 1 ? 114 : 146, 8, panelMode_ == 2 ? teamPanelSel_ : -1);
+  if (panelMode_ == 3 && menus.active()) drawBestiaryPanel(146, 8);
+  else if (panelMode_ && menus.active()) drawTeamPanel(panelMode_ == 1 ? 114 : 146, 8, panelMode_ == 2 ? teamPanelSel_ : -1);
   if (menus.active()) menus.draw(g, time);
   drawDialogue();
   int noticeY = 190;
@@ -1677,7 +1765,7 @@ void Game::drawTeamPanel(int x, int y, int sel) {
       bool isFront = std::find(fr.begin(), fr.end(), f) != fr.end();
       g.text(x + 8, ry, f->name(), f->alive() ? WHITE : rgb(0xff7b6b));
       g.text(x + 86, ry, "N." + std::to_string(f->lvl), MUTED);
-      g.text(320 - 16, ry, isFront ? "front" : "réserve", isFront ? GOLD : MUTED, 2);
+      g.text(320 - 16, ry, isFront ? "front" : "repos", isFront ? GOLD : MUTED, 2);
       g.text(x + 8, ry + 10, "PV " + std::to_string(f->hp) + "/" + std::to_string(f->mhp), WHITE);
       g.text(x + 86, ry + 10, "PM " + std::to_string(f->mp) + "/" + std::to_string(f->mmp), WHITE);
     }

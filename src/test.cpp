@@ -402,9 +402,13 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     }
     skipScript();
     bool captured = reserve.size() == 1 && reserve[0] == foe && (int)team.size() == rules().maxTeam;
+    seen.erase("glaconnet");
+    bool beast = seen.count("mulotin") && caught.count("mulotin") && !seen.count("glaconnet");
     saveGame();
     loadGame();
     bool kept = reserve.size() == 1 && reserve[0]->sp == "mulotin" && (int)team.size() == rules().maxTeam;
+    check(beast && caught.count("mulotin") && caught.count("ronceau") && seen.count("mulotin"),
+          "bestiaire : créature vue en combat, obtenue en la capturant (et l'équipe), gardé dans la sauvegarde");
     team[0]->companion = team[1];
     FighterP out = team[1], arrive = reserve[0];
     swapReserve(out, arrive);
@@ -1349,10 +1353,26 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     reserve = {makeFighter("carapierre", 40), makeFighter("cristallin", 40), makeFighter("braisenard", 12)};
     reserveMenu(1);
     show("réserve");
+    snap("reserve");
     in.confirm = true;  // équipe complète : échanger contre…
     show("réserve : échanger");
     menus.clear();
     reserve.clear();
+    seen = {"golem", "givrecorne", "lucioline"};
+    caught = {"golem"};
+    bestiaryMenu(0);
+    show("bestiaire");
+    for (int k = 0; k < 40 && bestiarySel_ != "golem"; k++) {
+      in.press[DOWN] = true;
+      frame();
+    }
+    show("bestiaire : fiche obtenue");
+    snap("bestiaire");
+    in.press[DOWN] = true;
+    show("bestiaire : fiche vue");
+    in.press[DOWN] = true;
+    show("bestiaire : jamais vue");
+    menus.clear();
     tacticsMenu();
     show("tactiques");
     for (int k = 0; k < 3; k++) {  // éditeur de Lior, Ronceau et Isra : liste, condition, action

@@ -69,6 +69,12 @@ class Game {
 
   std::vector<FighterP> team;          // 8 membres au plus (rules().maxTeam) ; voir front() pour qui combat
   std::vector<FighterP> reserve;       // créatures en plus de l'équipe (captures et cadeaux quand elle est complète)
+  // Bestiaire : espèces de créatures rencontrées et obtenues (lignes « vu » et « pris » de la sauvegarde)
+  std::set<std::string> seen, caught;
+  void see(const Fighter& f) {
+    if (!f.S().human) seen.insert(f.sp);
+  }
+  void noteBestiary();  // les créatures de l'équipe et de la réserve comptent comme vues et obtenues
   std::map<std::string, int> items;    // inventaire
   int gold = 0;
   std::set<std::string> flags;         // progression (boss vaincus, recrues, coffres…)
@@ -134,6 +140,9 @@ class Game {
   void journalMenu();
   void companionsMenu(int sel = 0);  // la créature compagnon de chaque héros
   void reserveMenu(int sel = 0);     // déposer, reprendre ou échanger des créatures avec la réserve
+  void bestiaryMenu(int sel = 0);    // toutes les créatures : vues, obtenues, fiche
+  std::string bestiarySel_;          // espèce dont la fiche est affichée (panelMode_ 3)
+  void drawBestiaryPanel(int x, int y);
   void swapReserve(FighterP out, FighterP in);  // out : de l'équipe à la réserve ; in : de la réserve à l'équipe
   void sellMenu(const std::vector<std::string>& stock, int sel);  // boutique : vendre à moitié prix
   void gearMenu(int sel = 0);
