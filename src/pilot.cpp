@@ -21,6 +21,9 @@ Pilot::Pilot(Game& g, bool demo) : G(g), demo_(demo) {
   G.tacticsAuto = true;  // les héros suivent leurs tactiques ; le pilote ne choisit que quand le menu s'ouvre
 }
 
+Pilot::~Pilot() {
+  for (bool& h : G.in.hold) h = false;
+}
 int Pilot::mapW(int m) const { return maps()[m].w(); }
 void Pilot::unpack(int n, int& m, int& x, int& y) const {
   m = int(std::upper_bound(offset_.begin(), offset_.end(), n) - offset_.begin()) - 1;
@@ -317,6 +320,7 @@ void Pilot::plan() {
   }
   goal_ = g;
   hasGoal_ = true;
+  paused_ = false;
   target_ = at, targetFace_ = face;
   status = g.what;
   if (SDL_getenv("BRUMEVAL_TRACE")) {  // chaque décision, pour comprendre un blocage
@@ -344,8 +348,9 @@ void Pilot::walk(float dt) {
       G.in.hold[targetFace_] = true;
       return;
     }
-    if (demo_ && wait_ <= 0) {
-      wait_ = .35f;  // un temps pour voir à qui l'on parle
+    if (demo_ && !paused_) {  // une seule pause, pour voir à qui l'on parle (update remet wait_ à 0 ensuite)
+      paused_ = true;
+      wait_ = .35f;
       return;
     }
     return interactNow();
@@ -367,6 +372,7 @@ void Pilot::walk(float dt) {
 
 void Pilot::interactNow() {
   G.in.confirm = true;
+  paused_ = false;
   doneSig_[goal_.key] = goal_.sig;
   tries_[goal_.key]++;
   if (goal_.kind == Danger) {

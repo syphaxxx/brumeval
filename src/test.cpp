@@ -17,6 +17,7 @@
 #include "mapedit.hpp"
 #include "online.hpp"
 #include "options.hpp"
+#include "pilot.hpp"
 #include "settings.hpp"
 #include "sprites.hpp"
 #include "storyedit.hpp"
@@ -2027,6 +2028,32 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   check(g.layoutIssues.empty(), "mise en page : aucun texte ne dépasse ni ne se chevauche, aucune fenêtre de travers (" +
                                     std::to_string(g.layoutIssues.size()) + " problème(s))");
   g.checkLayout = false;
+
+  // --- Démo (joueur automatique à vitesse normale) : elle doit avancer dans l'histoire, pas rester devant un panneau ---
+  {
+    auto keepTeam = team;
+    auto keepFlags = flags;
+    auto keepItems = items;
+    int keepGold = gold, keepMap = mapId, keepX = px, keepY = py;
+    std::string keepSave = saveName_;
+    bool keepAuto = tacticsAuto;                            // le joueur automatique active le mode auto
+    int keepRespawn[3] = {respawnMap, respawnX, respawnY};  // une nouvelle partie change le point de réveil
+    startPilot(true);
+    for (int i = 0; i < 30 * 240 && pilot_ && !pilot_->over(); i++) update(1 / 30.f);  // quatre minutes de démo
+    bool talked = pilot_ && flags.count("quete:medaillon") > 0;
+    size_t steps = pilot_ ? pilot_->journal.size() : 0;
+    check(talked && steps >= 4, "démo : le joueur automatique avance (quête du médaillon acceptée, " + std::to_string(steps) + " étapes au journal)");
+    pilot_.reset();
+    saveName_ = keepSave;
+    menus.clear();
+    sc.clear();
+    team = keepTeam, flags = keepFlags, items = keepItems, gold = keepGold;
+    tacticsAuto = keepAuto;
+    respawnMap = keepRespawn[0], respawnX = keepRespawn[1], respawnY = keepRespawn[2];
+    reserve.clear();
+    changeMap(keepMap, keepX, keepY, DOWN);
+    mode = Mode::Map;
+  }
 
   // --- Simulation d'équilibrage (IA simple, sans objets) ---
   std::printf("\nÉquilibrage (combats simulés, IA automatique) :\n");
