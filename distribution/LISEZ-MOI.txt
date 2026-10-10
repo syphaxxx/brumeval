@@ -45,6 +45,10 @@ COMMANDES
   Échap > Compagnons : la créature qui combat aux côtés de chaque héros.
   Elle agit toute seule en combat ; vous commandez les héros.
 
+  Échap > Réserve : les créatures capturées quand l'équipe (8 membres)
+  est complète. Échap > Bestiaire : toutes les créatures rencontrées.
+  En boutique, « Vendre… » rachète vos objets à moitié prix.
+
   Options (écran titre, ou Échap > Options) : volume de la musique et des
   effets, plein écran, touches du clavier.
 

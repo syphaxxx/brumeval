@@ -184,6 +184,20 @@ compétence `joueur-automatique` de Claude Code.
 - Équipe : `Game::team` (8 membres maximum par capture, les humains s'ajoutent
   toujours). Les combattants sont choisis par `Game::front()` (`frontOf` : héros
   et compagnons, voir Compagnons ci-dessus).
+- Réserve (2026-10-10) : `Game::reserve`, les créatures en plus de l'équipe. Une
+  capture (battle.cpp) ou un cadeau (`commitTrade`) avec l'équipe complète y va.
+  Menu `Game::reserveMenu` (déposer, reprendre, échanger) ; `swapReserve(out,
+  in)` : le héros dont le compagnon part prend celui qui arrive. Sauvegarde :
+  ligne `reserve`, puis les lignes `membre` de la réserve (`Online::myTeam`
+  s'arrête à `reserve`). En combat, « Changer » parle de **remplaçants**
+  (membres de l'équipe hors combat) : ne pas confondre avec la réserve.
+- Bestiaire : `Game::seen` / `caught` (espèces de créatures), lignes `vu` et
+  `pris` de la sauvegarde ; `see()` dans `startBattle` et à l'entrée d'un
+  renfort, `caught` à la capture, `noteBestiary()` compte l'équipe et la
+  réserve. Menu `bestiaryMenu`, fiche `drawBestiaryPanel` (`panelMode_` 3).
+  L'Expédition repart d'un bestiaire vide.
+- Vente : boutique > « Vendre… » (`Game::sellMenu`), moitié du prix, sauf les
+  objets importants.
 - Progression : `Game::flags` (`boss1`, `golem`, `boss2`, `maelle`, `brann`,
   `isra`, `pecheur`, `coffre:<carte>:<index>`).
 - Sauvegarde : fichier texte `sauvegarde.txt` dans `SDL_GetPrefPath("Brumeval",
@@ -396,15 +410,23 @@ réécrits par `writeJson` (petites listes sur une ligne) : garder ce format.
   village de Givreval (soin, boutique, auberge), duel contre **Sélène**
   (chevalière, Métal), chevaliers du givre, lac gelé.
 - **Temple gelé** (labyrinthe, clé de givre au fond) et **Sanctuaire** : boss
-  final **Givrecorne** (N.31, Glace/Roche).
+  final **Givrecorne** (N.36, Glace/Roche), écran de fin. Boss de carte
+  facultatif du temple : le **gardien de cristal** (quête `cristal`).
+- **Source des Brumes** (40x30, facultative, faille au nord du Sanctuaire
+  ouverte après le Givrecorne, `data/cartes/source.json`) : Brumeloup, Nébulis,
+  Orbrume (N.33-37), deux gardiens dresseurs, la **Mère des Brumes** (N.40,
+  Ombre/Esprit, drapeau `boss4`) et un troisième écran de fin. Créée par
+  `build/outils/source.py` (outil de travail).
 - 13 types (dont Glace, Roche, Vent, Poison, Métal, Esprit). Héros : Lior,
   Maëlle, Brann, Isra, Kael, Sélène. Starters : Braisenard, Gouttelin, Ronceau.
-  23 créatures sauvages capturables, 5 boss, 5 sortes d'ennemis humains.
+  26 créatures sauvages capturables, 6 boss, 5 sortes d'ennemis humains.
 - **Intérieurs** : 12 pièces dans les trois villages (soins, boutiques,
-  auberges, chapelle, maisons habitées avec un coffre).
+  auberges, chapelle, maisons habitées avec un coffre), plus la cabane de
+  l'ermite (l'herboriste y soigne) et la tente du chef des bandits.
 - **Quêtes annexes** : le médaillon de l'ancien (vallée), les Tisonnels enragés
   (boss de carte au nord-ouest de Forgeroc), une tisane contre le froid
-  (Givreval). Journal : Échap > Journal.
+  (Givreval), le grimoire de l'ermite (Sylve-Noire, dans la tente du chef), le
+  gardien de cristal (Temple gelé, donnée par la mage). Journal : Échap > Journal.
 - **Équipement** : 16 armes, armures et accessoires en vente (vallée,
   Forgeroc, Givreval).
 - **Son** : 9 musiques (titre, 5 lieux, intérieur, combat, boss) et 25
@@ -421,7 +443,9 @@ Ronce-Mère N.21 ×7, Ignarok N.24 ×7, Givrecorne N.36 ×10. Mesuré
 (`BRUMEVAL_SIMULATIONS=2`, sans / avec le meilleur équipement de la boutique de
 la région) : Sylvarque 12 / 42 %, Golem 55 / 70 %, Ronce-Mère 21 / 46 %,
 Ignarok 32 / 56 %, Givrecorne 26-36 / 72 %. Sans les compagnons ralentis
-(`compagnon_atb` 1), tout passait à ~100 %. Le Golem réagit peu à
+(`compagnon_atb` 1), tout passait à ~100 %. Ajoutés le 2026-10-10 (même
+mesure) : gardien de cristal (équipe N.28) 48 % / 100 %, Mère des Brumes
+(équipe N.38) 36 % / 75 %. Le Golem réagit peu à
 l'équipement. Le mode test lit les boss dans les événements (`bossEvent`) :
 ses mesures suivent toujours le jeu.
 Avant ce renfort (IA automatique, sans objets) : combats

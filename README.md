@@ -79,8 +79,21 @@ Chaque héros combat avec une **créature compagnon** à ses côtés : jusqu'à
 3 héros et leurs 3 compagnons sur le terrain. Vous commandez les héros ; chaque
 compagnon agit tout seul, avec ses tactiques, un peu moins souvent qu'un héros.
 Échap > **Compagnons** : choisir la créature de chaque héros (sinon, la
-première créature libre de l'équipe). Les créatures capturées en plus restent
-en réserve. Les boss sont réglés pour une équipe complète et **équipée**.
+première créature libre de l'équipe). Les boss sont réglés pour une équipe
+complète et **équipée**.
+
+## Réserve et bestiaire
+
+L'équipe compte 8 membres au plus. Une créature capturée (ou reçue en cadeau)
+quand l'équipe est complète part dans la **Réserve** (Échap > Réserve) : on y
+dépose une créature, on la reprend, ou on l'échange contre un membre de
+l'équipe.
+
+Échap > **Bestiaire** : toutes les créatures du jeu. Celles que vous n'avez
+jamais rencontrées restent « ??? » ; une étoile marque celles que vous avez
+obtenues, avec leur fiche (dessin, types, statistiques, lieux).
+
+Dans les boutiques, **Vendre…** rachète vos objets à la moitié de leur prix.
 
 ## Équipement
 
@@ -95,9 +108,17 @@ l'Expédition, dont les boutiques en vendent.
 ## Quêtes annexes
 
 Certains habitants ont besoin d'aide : un médaillon perdu dans la vallée, des
-Tisonnels enragés près de Forgeroc, une fleur de givre pour Givreval. Les
-quêtes acceptées s'inscrivent dans le **Journal** (Échap > Journal), avec
-l'étape où vous en êtes. Elles rapportent or et équipement.
+Tisonnels enragés près de Forgeroc, une fleur de givre pour Givreval, le
+grimoire volé de l'ermite de Sylve-Noire, un gardien de cristal à apaiser dans
+le Temple gelé. Les quêtes acceptées s'inscrivent dans le **Journal** (Échap >
+Journal), avec l'étape où vous en êtes. Elles rapportent or et équipement.
+
+## Après la fin
+
+Le Givrecorne vaincu, une faille s'ouvre au fond de son sanctuaire : la
+**Source des Brumes**, d'où vient la brume qui rend les créatures sauvages.
+Nouvelles créatures, gardiens et un dernier boss facultatif, pour une équipe
+de niveau 35-40 bien équipée.
 
 ## Mode Expédition (roguelite)
 
