@@ -116,6 +116,7 @@ void Game::pauseMenu() {
                        }});
   m.items.push_back({"Équipe", "", "Ordre de combat et fiches.", true, [this] { teamMenu(); }});
   m.items.push_back({"Compagnons", "", "La créature qui combat aux côtés de chaque héros.", true, [this] { companionsMenu(); }});
+  m.items.push_back({"Formation", "", "La place de chacun sur le damier de combat (avant, milieu, arrière).", true, [this] { formationMenu(); }});
   m.items.push_back({"Réserve", reserve.empty() ? "" : std::to_string(reserve.size()), "Les créatures en plus de l'équipe (" +
                      std::to_string(rules().maxTeam) + " membres au plus).", true, [this] { reserveMenu(); }});
   m.items.push_back({"Bestiaire", "", "Les créatures rencontrées et obtenues, et leur fiche.", true, [this] { bestiaryMenu(); }});
@@ -345,6 +346,74 @@ void Game::swapReserve(FighterP out, FighterP in) {
   } else if (in)
     team.push_back(in);
   if (in) reserve.erase(std::remove(reserve.begin(), reserve.end(), in), reserve.end());
+}
+
+// Formation : la case de chaque combattant sur le damier (data.hpp), gardée dans la sauvegarde.
+// L'avant frappe et reçoit plus fort au corps à corps ; l'arrière est protégé (et seules les
+// attaques à distance l'atteignent tant que l'avant tient).
+void Game::formationMenu(int sel) {
+  panelMode_ = 4;
+  auto fr = front();
+  auto cells = formation(fr, true);
+  for (size_t i = 0; i < fr.size(); i++) fr[i]->cell = cells[i];  // le placement automatique devient visible et modifiable
+  Menu m;
+  m.title = "Formation";
+  m.x = 8, m.y = 8, m.w = 132, m.rows = 7;
+  for (size_t i = 0; i < fr.size(); i++) {
+    FighterP f = fr[i];
+    int at = (int)i;
+    MenuItem it{f->name(), "", cellName(f->cell) + ". Entrée : changer de case.", true, [this, f, at] {
+                  Menu p;
+                  p.title = "Case de " + utf8Prefix(f->name(), 10);
+                  p.x = 8, p.y = 24, p.w = 132, p.rows = 9;  // à gauche du dessin du damier
+                  for (int c = 0; c < N_CELLS; c++) {
+                    std::string who;
+                    for (auto& o : front())
+                      if (o != f && o->cell == c) who = o->name();
+                    MenuItem ci{cellName(c), who.empty() ? "" : "·", who.empty() ? "Case libre." : "Occupée par " + who + " : échanger.", true,
+                                [this, f, c, at] {
+                                  for (auto& o : front())
+                                    if (o != f && o->cell == c) o->cell = f->cell;  // échange de cases
+                                  f->cell = c;
+                                  menus.pop();
+                                  menus.pop();
+                                  formationMenu(at);
+                                },
+                                [this, c] { formationCell_ = c; }};
+                    ci.shrink = true;
+                    p.items.push_back(ci);
+                  }
+                  p.sel = std::clamp(f->cell, 0, N_CELLS - 1);
+                  menus.push(p);
+                },
+                [this, f] { formationCell_ = f->cell; }};
+    it.shrink = true;
+    m.items.push_back(it);
+  }
+  if (m.items.empty()) m.items.push_back({"(personne)", "", "", false, nullptr});
+  m.sel = std::clamp(sel, 0, (int)m.items.size() - 1);
+  menus.push(m);
+}
+
+// Dessin du damier de la formation : l'avant à gauche, face aux ennemis (comme en combat)
+void Game::drawFormationPanel(int x, int y) {
+  int w = 320 - x - 8, cw = (w - 16) / 3, ch = 32, h = 34 + 3 * ch + 16;
+  g.window(x, y, w, h);
+  g.text(x + 8, y + 5, "Damier", GOLD);
+  g.text(x + w - 8, y + 5, "ennemis à gauche", MUTED, 2);
+  auto fr = front();
+  for (int c = 0; c < N_CELLS; c++) {
+    int rx = x + 8 + cellCol(c) * cw, ry = y + 20 + cellRow(c) * ch;
+    bool lit = c == formationCell_;
+    g.rect(rx + 1, ry + 1, cw - 2, ch - 2, lit ? rgb(0xffd34d, 70) : rgb(0x000010, 60));
+    for (auto& f : fr)
+      if (f->cell == c) {
+        g.text(rx + cw / 2, ry + 6, utf8Prefix(f->name(), cw / 6 - 1), f->S().human ? WHITE : rgb(0xb8f0c8), 1);
+        g.text(rx + cw / 2, ry + 17, "N." + std::to_string(f->lvl), MUTED, 1);
+      }
+  }
+  const char* COLS[] = {"Avant", "Milieu", "Arrière"};
+  for (int k = 0; k < 3; k++) g.text(x + 8 + k * cw + cw / 2, y + 22 + 3 * ch, COLS[k], MUTED, 1);
 }
 
 void Game::companionsMenu(int sel) {

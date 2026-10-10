@@ -81,7 +81,7 @@ static void checkAction(const Json& a, const std::string& where, std::vector<std
     if (need("espece") && !hasSpecies(a["espece"].get<std::string>())) err.push_back(w + " : espèce inconnue « " + a["espece"].get<std::string>() + " »");
   } else if (k == "combat") {
     if (need("ennemis")) {
-      if (a["ennemis"].empty() || a["ennemis"].size() > 3) err.push_back(w + " : il faut entre 1 et 3 ennemis");
+      if (a["ennemis"].empty() || a["ennemis"].size() > 6) err.push_back(w + " : il faut entre 1 et 6 ennemis");
       for (auto& e : a["ennemis"])
         if (!hasSpecies(jget<std::string>(e, "espece", ""))) err.push_back(w + " : espèce inconnue « " + jget<std::string>(e, "espece", "") + " »");
     }

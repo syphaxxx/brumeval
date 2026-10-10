@@ -33,6 +33,8 @@ std::string moveDetails(const Move& m) {
   for (auto& e : m.effects) s += " · " + effectText(e);
   if (m.pace == Pace::Quick) s += " · Rapide : rejoue plus tôt";
   if (m.pace == Pace::Heavy) s += " · Lourde : rejoue plus tard";
+  if (m.damaging() && m.target == Target::Enemy) s += m.melee ? " · Corps à corps" : " · À distance";
+  if (m.zone != Area::Single && m.zone != Area::All) s += std::string(" · Zone : ") + zoneName(m.zone);
   return s;
 }
 
@@ -48,6 +50,8 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
       canCapture(s.canCapture), bg(bg_) {
   allies = s.allies.empty() ? G.front() : std::move(s.allies);
   for (auto& a : allies) hasHero_ = hasHero_ || a->S().human;
+  place(allies, !coop());  // la formation de l'équipe (au gardien à plusieurs : placement automatique)
+  place(foes, false);
   start = G.time;
   std::map<std::string, int> cnt, seen;
   for (auto* v : {&foes, &reserve})
@@ -84,25 +88,44 @@ std::vector<FighterP> Battle::alive(const std::vector<FighterP>& v) const {
   return o;
 }
 
-Pt Battle::pos(const FighterP& f) const {
-  static const Pt FOE[3][3] = {{{92, 96}}, {{72, 72}, {112, 122}}, {{58, 58}, {112, 96}, {58, 134}}};
-  static const Pt ALLY[3] = {{238, 64}, {264, 100}, {238, 136}};
-  static const Pt ALLY4[4] = {{234, 54}, {268, 80}, {234, 112}, {268, 138}};  // gardien à plusieurs
-  // Héros et compagnons : chaque compagnon un peu derrière son héros
-  static const Pt HERO[3] = {{232, 44}, {232, 82}, {232, 120}}, COMP[3] = {{274, 56}, {274, 94}, {274, 132}};
-  for (size_t i = 0; i < foes.size(); i++)
-    if (foes[i] == f) return FOE[std::min<size_t>(foes.size(), 3) - 1][std::min<size_t>(i, 2)];
-  if (hasHero_ && !coop() && allies.size() > 3) {
-    int h = -1;
-    for (auto& a : allies) {
-      bool hero = a->S().human;
-      if (hero) h++;
-      if (a == f) return hero ? HERO[std::clamp(h, 0, 2)] : COMP[std::clamp(h, 0, 2)];
-    }
-  }
-  for (size_t i = 0; i < allies.size(); i++)
-    if (allies[i] == f) return allies.size() > 3 ? ALLY4[std::min<size_t>(i, 3)] : ALLY[std::min<size_t>(i, 2)];
-  return {160, 100};
+// Damier à l'écran : les alliés à droite, les ennemis à gauche ; l'avant de chaque camp est du
+// côté du milieu de l'écran. Les lignes du bas sont un peu plus près (léger effet de profondeur).
+Pt Battle::cellPos(bool allySide, int c) const {
+  if (c < 0 || c >= N_CELLS) c = 4;
+  float col = (float)cellCol(c), row = (float)cellRow(c);
+  float x = allySide ? 204 + col * 38 + row * 5 : 116 - col * 38 - row * 5;
+  return {x, 60 + row * 38};
+}
+Pt Battle::pos(const FighterP& f) const { return cellPos(isAlly(f), cellOf(f)); }
+
+int Battle::cellOf(const FighterP& f) const {
+  auto it = f ? cells_.find(f.get()) : cells_.end();
+  return it == cells_.end() ? -1 : it->second;
+}
+void Battle::place(const std::vector<FighterP>& v, bool keep) {
+  auto cells = formation(v, keep);
+  for (size_t i = 0; i < v.size(); i++) cells_[v[i].get()] = cells[i];
+}
+bool Battle::reachable(const FighterP& a, const Move& m, const FighterP& t) const {
+  (void)a;
+  if (!m.melee || m.zone == Area::All || !t) return true;
+  int front = 3;
+  for (auto& f : sideOf(t))
+    if (f->alive()) front = std::min(front, std::max(0, cellCol(std::max(0, cellOf(f)))));
+  return std::max(0, cellCol(std::max(0, cellOf(t)))) <= front;
+}
+std::vector<FighterP> Battle::zoneTargets(const Move& m, const FighterP& center) const {
+  std::vector<FighterP> v{center};
+  if (!center || m.zone == Area::Single || m.zone == Area::All) return v;
+  int c = cellOf(center);
+  for (auto& f : sideOf(center))
+    if (f != center && f->alive() && inZone(m.zone, c, cellOf(f))) v.push_back(f);
+  return v;
+}
+float Battle::zoneScore(const FighterP& a, const Move& m, const FighterP& center) const {
+  float s = 0;
+  for (auto& t : zoneTargets(m, center)) s += attackScore(a, m, t) * (t == center ? 1.f : float(rules().zoneSide));
+  return s;
 }
 // Nombre ou texte flottant au-dessus d'un combattant ; ils s'empilent s'ils apparaissent ensemble
 void Battle::pop(const FighterP& f, const std::string& t, Color c) {
@@ -369,6 +392,27 @@ void Battle::command(FighterP a) {
                        if (t.items.empty()) t.items.push_back({"(sac vide)", "", "", false, nullptr});
                        G.menus.push(t);
                      }});
+  // Se déplacer : vers une case libre de son damier (action rapide)
+  std::vector<int> freeCells;
+  for (int c = 0; c < N_CELLS; c++) {
+    bool taken = false;
+    for (auto& f : allies) taken = taken || cellOf(f) == c;
+    if (!taken) freeCells.push_back(c);
+  }
+  m.items.push_back({"Se déplacer", "", freeCells.empty() ? "Aucune case libre." : "Changer de case sur le damier (action rapide).", !freeCells.empty(),
+                     [this, a, freeCells] {
+                       Menu t;
+                       t.title = "Se déplacer";
+                       t.x = 4, t.y = 70, t.w = 150, t.rows = 5;
+                       t.onCancel = [this] {
+                         moveCell_ = -1;
+                         G.menus.pop();
+                       };
+                       for (int c : freeCells)
+                         t.items.push_back({cellName(c), "", "Avant : frappe et reçoit plus fort au corps à corps. Arrière : protégé.", true,
+                                            [this, a, c] { moveTo(a, c); }, [this, c] { moveCell_ = c; }});
+                       G.menus.push(t);
+                     }});
   std::vector<FighterP> bench;  // avec des héros : un héros n'est remplacé que par un héros
   for (auto& r : G.team)
     if (r->alive() && !isAlly(r) && (!hasHero_ || r->S().human == a->S().human)) bench.push_back(r);
@@ -400,10 +444,12 @@ void Battle::pickFoe(const std::string& title, std::function<std::string(const F
   t.x = 4, t.y = 94, t.w = 166, t.rows = 3;  // assez large pour « Chevalier du givre »
   t.onCancel = [this] {
     cursor = nullptr;
+    aiming_ = nullptr;
     G.menus.pop();
   };
   for (auto& f : alive(foes)) {
     if (creaturesOnly && f->S().human) continue;
+    if (aiming_ && !reachable(actor, *aiming_, f)) continue;  // corps à corps : seulement l'avant
     t.items.push_back({f->name(), "N." + std::to_string(f->lvl), info(*f), true, [done, f] { done(f); }, [this, f] { cursor = f; }});
   }
   G.menus.push(t);
@@ -445,6 +491,7 @@ void Battle::moveTarget(FighterP a, const std::string& id) {
   const Move& m = moveInfo(id);
   switch (m.target) {
     case Target::Enemy:
+      aiming_ = &m;
       pickFoe("Cible", [&m](const Fighter& f) { return foeInfo(f, &m); }, [this, a, id](FighterP t) { useMove(a, id, {t}); });
       break;
     case Target::AllEnemies: useMove(a, id, alive(foes)); break;
@@ -531,11 +578,19 @@ Battle::Plan Battle::think(FighterP a) {
           consider(id, theirs, sum * (ally ? .8f : .6f));  // les ennemis abusent moins des attaques de zone
         } else
           for (auto& t : theirs)
-            if (!focus || t == focus) consider(id, {t}, attackScore(a, m, t));
+            // cible préférée hors de portée (corps à corps, elle est à l'arrière) : le meilleur adversaire à portée
+            if ((!focus || t == focus || !reachable(a, m, focus)) && reachable(a, m, t)) consider(id, {t}, zoneScore(a, m, t));
         break;
     }
   }
-  if (best.move.empty()) best = {a->techs()[0], {theirs[irand(0, (int)theirs.size() - 1)]}, false};
+  if (best.move.empty()) {  // rien d'intéressant : la première technique, sur une cible à portée
+    const Move& m0 = moveInfo(a->techs()[0]);
+    std::vector<FighterP> ok;
+    for (auto& t : theirs)
+      if (reachable(a, m0, t)) ok.push_back(t);
+    if (ok.empty()) ok = theirs;
+    best = {m0.id, {ok[irand(0, (int)ok.size() - 1)]}, false};
+  }
   return best;
 }
 
@@ -547,9 +602,14 @@ Battle::Plan Battle::think(FighterP a) {
 float Battle::attackScore(const FighterP& a, const Move& m, const FighterP& t) const {
   const Rules& R = rules();
   bool magic = m.kind == Kind::Magic, ally = isAlly(a);
+  if (!reachable(a, m, t)) return 0;
   float A = magic ? a->eMag() : a->eAtk(), D = std::max(1.f, magic ? t->eRes() : t->eDef());
   float hit = std::clamp(m.acc / 100.f * a->acc / 100.f - (magic ? 0 : t->eva / 100.f), 0.f, 1.f);
   float score = m.power * moveEff(m, t->S()) * (hasType(a->S(), m.type) ? float(R.stab) : 1.f) * A / D * hit;
+  if (m.melee) {  // depuis l'arrière, ou sur une cible à l'arrière : moins fort
+    if (cellCol(std::max(0, cellOf(a))) == 2) score *= float(R.backRow);
+    if (cellCol(std::max(0, cellOf(t))) == 2) score *= float(R.backRow);
+  }
   if (!ally) return score / paceTime(m);
   score *= 1 + std::min(1.f, (a->crit + m.critBonus) / 100.f) * float(R.critMult - 1);
   if (score >= t->hp * 1.2f) score += 15;  // achever un adversaire affaibli
@@ -720,7 +780,9 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
           score = 0;
           if (multi)
             for (auto& f : side) score += attackScore(a, *x.m, f) * .8f;
-          else score = attackScore(a, *x.m, t);
+          else if (!reachable(a, *x.m, t))
+            continue;  // corps à corps : hors de portée
+          else score = zoneScore(a, *x.m, t);
         } else if (x.m && x.m->kind == Kind::Heal && x.m->power > 0) {
           score = 0;
           if (multi)
@@ -746,7 +808,7 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
 // ---------------------------------------------------------------------------
 // Résolution des actions
 // ---------------------------------------------------------------------------
-int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m) {
+int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float mult) {
   const Rules& R = rules();
   bool magic = m.kind == Kind::Magic;
   // Précision : l'esquive ne joue que contre les attaques physiques
@@ -769,6 +831,11 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m) {
   float spread = float(R.spreadMin) + frand() * float(1 - R.spreadMin);
   bool crit = frand() * 100 < a->crit + m.critBonus;
   float k = crit ? float(R.critMult) : 1.f;
+  if (m.melee) {  // damier : l'arrière frappe et reçoit moins fort au corps à corps
+    if (cellCol(std::max(0, cellOf(a))) == 2) k *= float(R.backRow);
+    if (cellCol(std::max(0, cellOf(d))) == 2) k *= float(R.backRow);
+  }
+  k *= mult;
   int dmg = std::max(1, int(((2 * a->lvl / 5.f + 2) * m.power * A / std::max(1.f, D) / float(R.dmgDivisor) + 2) * stab * eff * spread * k));
   d->hp = std::max(0, d->hp - dmg);
   setBlink(d);
@@ -833,13 +900,17 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
   }
   G.menus.clear();
   cursor = nullptr;
+  aiming_ = nullptr;
   const Move& m = moveInfo(id);
+  // Zone autour d'une cible : les combattants voisins sont touchés aussi, un peu moins fort
+  FighterP center = m.zone != Area::Single && m.zone != Area::All && targets.size() == 1 ? targets[0] : nullptr;
+  if (center) targets = zoneTargets(m, center);
   if (m.cost > 0) a->mp = std::max(0, a->mp - m.cost);
   if (isLimit) a->lim = 0;
   startAnim(a, targets, fxOf(m), rgb(types()[m.type].color), isLimit);
   sc.say(isLimit ? "LIMITE — " + a->name() + " : " + m.name + " !" : a->name() + " : " + m.name, isLimit ? .9f : .55f);
   auto ko = std::make_shared<std::vector<FighterP>>();
-  sc.call([this, a, targets, &m, isLimit, ko] {
+  sc.call([this, a, targets, center, &m, isLimit, ko] {
     if (isLimit) sound("limite");
     if (m.kind == Kind::Heal || m.kind == Kind::Revive) sound("soin");
     if (isLimit || m.target == Target::AllEnemies) {
@@ -880,7 +951,7 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
           if (!e.self) applyEffect(t, e);
         landed = true;
       } else {
-        int dmg = applyHit(a, t, m);
+        int dmg = applyHit(a, t, m, center && t != center ? float(rules().zoneSide) : 1.f);
         if (dmg < 0) continue;
         landed = true;
         if (!t->alive()) ko->push_back(t);
@@ -968,8 +1039,23 @@ void Battle::useItem(FighterP a, const std::string& id, FighterP t) {
   sc.call([this, a] { afterAction(a); });
 }
 
+void Battle::moveTo(FighterP a, int cell) {
+  G.menus.clear();
+  moveCell_ = -1;
+  if (follower()) {  // l'invité envoie son ordre ; l'hôte (ou le chef) vérifie et déplace
+    send_(net_ == Net::Follow ? leader_ : -1, Json{{"t", "ordre"}, {"i", mine(a)[1]}, {"deplacer", cell}});
+    actor = nullptr;
+    return;
+  }
+  cells_[a.get()] = cell;
+  log.push_back(a->name() + " se déplace : " + cellName(cell));
+  sc.say(a->name() + " se déplace.", .45f);
+  sc.call([this, a] { afterAction(a, float(rules().quickGauge)); });
+}
+
 void Battle::swapIn(FighterP a, FighterP r) {
   G.menus.clear();
+  cells_[r.get()] = cellOf(a);  // le remplaçant prend sa case
   for (auto& x : allies)
     if (x == a) x = r;
   auto ia = std::find(G.team.begin(), G.team.end(), a), ib = std::find(G.team.begin(), G.team.end(), r);
@@ -1034,6 +1120,7 @@ void Battle::checkEnd() {
     if (!foes[i]->alive() && !reserve.empty()) {
       FighterP n = reserve.front();
       reserve.erase(reserve.begin());
+      cells_[n.get()] = cellOf(foes[i]);  // le renfort prend la case de l'ennemi tombé
       G.see(*n);  // bestiaire
       foes[i] = n;
       n->atb = frand() * 30;
@@ -1181,32 +1268,50 @@ void Battle::draw() {
     }
   }
   bool blinking = blink && t - blinkT < .42f && int((t - blinkT) / .07f) % 2 == 0;
-  // Ennemis
-  for (auto& f : foes) {
-    if (!f->alive()) continue;
-    Pt p = pos(f);
-    float s = f->boss ? 1.45f : f->sp == "brumelin" ? .85f : 1.f;
-    Pt o = offset(f);
-    if (!(blinking && blink == f)) drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, s, true, t + p.x * .01f);
-    float bw = f->boss ? 24 : 15, by = p.y - (f->boss ? 42 : 26);
-    g.rect(p.x - bw - 1, by - 1, bw * 2 + 2, 4, rgb(0x0a0f33));
-    g.rect(p.x - bw, by, bw * 2 * f->hp / f->mhp, 2, rgb(0xff8a7a));
-    drawStatusTag(*f, p.x, by - 10);
-    if (cursor == f) {
-      g.cursor(p.x - 3, by - 12 + std::sin(t * 8));
-      g.text(p.x, p.y + (f->boss ? 30 : 20), f->name(), WHITE, 1);
+  // Damier : une marque au sol par case ; la zone de la technique visée et la case choisie pour se déplacer en or
+  for (int side = 0; side < 2; side++)
+    for (int c = 0; c < N_CELLS; c++) {
+      Pt p = cellPos(side == 1, c);
+      g.ellipse(p.x, p.y + 13, 15, 5, rgb(0x000000, 44));
     }
+  if (aiming_ && cursor && cursor->alive())
+    for (int c = 0; c < N_CELLS; c++)
+      if (inZone(aiming_->zone, cellOf(cursor), c)) {
+        Pt p = cellPos(isAlly(cursor), c);
+        g.ellipse(p.x, p.y + 13, 16, 6, rgb(0xffd34d, uint8_t(c == cellOf(cursor) ? 190 : 110)));
+      }
+  if (moveCell_ >= 0) {
+    Pt p = cellPos(true, moveCell_);
+    g.ellipse(p.x, p.y + 13, 16, 6, rgb(0xffd34d, uint8_t(150 + 60 * std::sin(t * 8))));
   }
-  // Alliés
-  for (auto& a : allies) {
-    Pt p = pos(a);
-    if (!a->alive()) g.alpha = .35f;
-    Pt o = offset(a);
-    if (!(blinking && blink == a)) drawFighterSprite(g, *a, p.x + o.x, p.y + o.y, 1, false, t + p.x * .01f);
+  // Combattants, du haut du damier vers le bas : ceux de devant passent par-dessus
+  std::vector<FighterP> shown;
+  for (auto& f : foes)
+    if (f->alive()) shown.push_back(f);
+  for (auto& a : allies) shown.push_back(a);
+  std::stable_sort(shown.begin(), shown.end(), [&](const FighterP& a, const FighterP& b) { return pos(a).y < pos(b).y; });
+  for (auto& f : shown) {
+    Pt p = pos(f);
+    Pt o = offset(f);
+    if (!isAlly(f)) {  // ennemi : barre de PV au-dessus, nom sous le curseur
+      float s = f->boss ? 1.45f : f->sp == "brumelin" ? .85f : 1.f;
+      if (!(blinking && blink == f)) drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, s, true, t + p.x * .01f);
+      float bw = f->boss ? 24 : 15, by = p.y - (f->boss ? 42 : 26);
+      g.rect(p.x - bw - 1, by - 1, bw * 2 + 2, 4, rgb(0x0a0f33));
+      g.rect(p.x - bw, by, bw * 2 * f->hp / f->mhp, 2, rgb(0xff8a7a));
+      drawStatusTag(*f, p.x, by - 10);
+      if (cursor == f) {
+        g.cursor(p.x - 3, by - 12 + std::sin(t * 8));
+        g.text(p.x, p.y + (f->boss ? 30 : 20), f->name(), WHITE, 1);
+      }
+      continue;
+    }
+    if (!f->alive()) g.alpha = .35f;
+    if (!(blinking && blink == f)) drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, 1, false, t + p.x * .01f);
     g.alpha = 1;
-    drawStatusTag(*a, p.x - 26, p.y - 18);
-    if (actor == a) g.tri(p.x - 4, p.y - 34, p.x + 4, p.y - 34, p.x, p.y - 28, rgb(0xffd34d));
-    if (cursor == a) g.cursor(p.x - 24, p.y - 4);
+    drawStatusTag(*f, p.x - 26, p.y - 18);
+    if (actor == f) g.tri(p.x - 4, p.y - 34, p.x + 4, p.y - 34, p.x, p.y - 28, rgb(0xffd34d));
+    if (cursor == f) g.cursor(p.x - 24, p.y - 4);
   }
   drawAnim();
   // Nombres flottants
@@ -1349,12 +1454,12 @@ void Battle::setBlink(const FighterP& f) {
 }
 
 Json Battle::netState() const {
-  auto pack = [](const std::vector<FighterP>& v) {
+  auto pack = [this](const std::vector<FighterP>& v) {
     Json a = Json::array();
     for (auto& f : v) {
       Json st = Json::array();
       for (int k = 0; k < N_STAGES; k++) st.push_back(f->stage[k]);
-      a.push_back(Json::array({f->hp, f->mp, (int)std::lround(f->atb), (int)std::lround(f->lim), (int)f->status, st}));
+      a.push_back(Json::array({f->hp, f->mp, (int)std::lround(f->atb), (int)std::lround(f->lim), (int)f->status, st, cellOf(f)}));
     }
     return a;
   };
@@ -1387,10 +1492,11 @@ void Battle::netMessage(const Json& m) {
     if (ending_) return;                                               // la fin se joue chez chacun
     if (k == "etat") {
       // Duel : « a » est l'équipe de l'hôte (mes ennemis), « b » la mienne. Gardien : « a » les alliés, « b » les ennemis
-      auto apply = [](std::vector<FighterP>& v, const Json& a) {
+      auto apply = [this](std::vector<FighterP>& v, const Json& a) {
         for (size_t i = 0; i < v.size() && i < a.size(); i++) {
           const Json& x = a[i];
           Fighter& f = *v[i];
+          if (x.size() > 6) cells_[&f] = std::clamp(x.at(6).get<int>(), -1, N_CELLS - 1);  // la case, décidée chez l'hôte
           // at() : une liste trop courte lève une erreur (rattrapée par Online::update) au lieu de lire n'importe quoi
           f.hp = x.at(0).get<int>(), f.mp = x.at(1).get<int>(), f.atb = x.at(2).get<float>(), f.lim = x.at(3).get<float>();
           f.status = Status(std::clamp(x.at(4).get<int>(), 0, 4));
@@ -1430,6 +1536,7 @@ void Battle::netMessage(const Json& m) {
     } else if (k == "renfort") {  // gardien : un renfort prend la place d'un ennemi tombé
       int i = jget(m, "i", -1);
       if (i >= 0 && i < (int)foes.size() && !reserve.empty()) {
+        cells_[reserve.front().get()] = cellOf(foes[(size_t)i]);
         foes[(size_t)i] = reserve.front();
         reserve.erase(reserve.begin());
       }
@@ -1462,6 +1569,14 @@ void Battle::netMessage(const Json& m) {
     for (auto& c : cs)
       if (FighterP t = other(c)) targets.push_back(t);
     bool ok = i >= 0 && i < (int)side.size() && side[(size_t)i] == f && !targets.empty();
+    if (m.contains("deplacer")) {  // se déplacer : vers une case libre de son camp
+      int c = jget(m, "deplacer", -1);
+      bool free = i >= 0 && i < (int)side.size() && side[(size_t)i] == f && c >= 0 && c < N_CELLS;
+      for (auto& x : side) free = free && cellOf(x) != c;
+      if (free) return moveTo(f, c);
+      if (net_ == Net::Lead) return autoCommand(f);
+      return enemyTurn(f);
+    }
     std::string obj = jget<std::string>(m, "objet", ""), id = jget<std::string>(m, "move", "");
     bool lim = jget(m, "limite", false);
     if (ok && !obj.empty()) {  // gardien : objet déjà pris dans le sac de ce joueur

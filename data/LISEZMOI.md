@@ -91,6 +91,15 @@ de dégâts, seulement l'effet). Champs facultatifs : `precision` (%), `critique
 | Sur le lanceur | ajouter `"sur": "lanceur"` |
 | Guérir les états | `{"guerison": true}` |
 
+`portee` (facultatif) : `corps` (corps à corps : ne vise que la colonne ennemie
+la plus avancée encore debout) ou `distance` (n'importe quelle case). Par défaut,
+une technique physique est au corps à corps, les autres à distance. `zone`
+(facultatif) : `case`, `ligne` (la ligne de la cible, en profondeur), `colonne`
+(sa colonne), `croix` (elle et ses voisines) ou `tout` ; par défaut `tout` pour
+une cible `tous_ennemis`/`tous_allies`, sinon `case`. Les cases voisines de la
+cible prennent `zone_voisins` (règles, combat : 0,75) des dégâts ; au corps à
+corps, l'arrière donne et reçoit `arriere` (0,75).
+
 `rythme` (facultatif) règle le moment où le lanceur rejoue : `rapide` (sa jauge
 ATB repart à `jauge_rapide` %, 25 par défaut) ou `lourde` (elle repart à
 -`retard_lourde` %, -25 par défaut) ; sans ce champ, la jauge repart de zéro.
@@ -213,7 +222,7 @@ page dont la condition `si` est vraie.
 | `or` | Ajoute ou retire de l'or | `quantite` (négative pour payer) |
 | `drapeau` | Retient qu'un événement a eu lieu | `nom`, `valeur` (false pour l'effacer) |
 | `recruter` | Un personnage rejoint l'équipe | `espece`, `niveau` |
-| `combat` | Lance un combat | `ennemis` (1 à 3 : `espece`, `niveau`, `pv` multiplicateur, `boss`), `renforts`, `nom`, `boss`, `fuite`, `capture`, `victoire`, `defaite` |
+| `combat` | Lance un combat | `ennemis` (1 à 6 : `espece`, `niveau`, `pv` multiplicateur, `boss`), `renforts`, `nom`, `boss`, `fuite`, `capture`, `victoire`, `defaite` |
 | `question` | Question Oui / Non | `texte`, `oui`, `non` |
 | `si` | Condition | `condition`, `alors`, `sinon` |
 | `soigner` | Soigne l'équipe | `pv`, `pm` (true par défaut) |

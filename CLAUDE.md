@@ -348,6 +348,19 @@ compétence `joueur-automatique` de Claude Code.
   l'ordinateur (ennemis, et alliés en mode test) ; `Battle::log` garde un journal
   lisible (`BRUMEVAL_JOURNAL=Sylvarque brumeval --test captures` l'affiche pour
   la simulation qui contient ce mot).
+- Damier (1.7, plan validé le 2026-10-10) : 9 cases par camp (data.hpp :
+  `cellCol` 0 avant / 1 milieu / 2 arrière, `cellRow`). `Battle::cells_` garde la
+  case de chacun pendant le combat (alliés : `Fighter::cell`, la formation, ligne
+  `case` de la sauvegarde ; ennemis et gardien à plusieurs : `formation()`
+  automatique, physiques devant). `Move::melee` (champ `portee`) : le corps à
+  corps ne vise que la colonne la plus avancée encore debout (`reachable`, aussi
+  dans `attackScore` : l'IA et les tactiques en tiennent compte) ; l'arrière donne
+  et reçoit `backRow` au corps à corps. `Move::zone` (`Area`, champ `zone`) :
+  `zoneTargets` étend la cible à sa zone dans `useMove`, voisins × `zoneSide`.
+  « Se déplacer » (`moveTo`, jauge rapide), menu `Game::formationMenu` (dessin
+  `drawFormationPanel`, `panelMode_` 4). Réseau : la case est le 7e nombre de
+  chaque combattant dans `etat` ; ordre `deplacer`. 1.8 prévue : IA (placement,
+  déplacements), attaques annoncées des boss, tactiques liées au damier.
 - Rythme (`Move::pace`, champ `rythme`) : après une technique rapide, la jauge ATB
   du lanceur repart à `jauge_rapide` % ; après une lourde, à -`retard_lourde` %
   (`paceGauge`, passé à `Battle::afterAction`). `Battle::attackScore` note une
@@ -447,7 +460,7 @@ la région) : Sylvarque 12 / 42 %, Golem 55 / 70 %, Ronce-Mère 21 / 46 %,
 Ignarok 32 / 56 %, Givrecorne 26-36 / 72 %. Sans les compagnons ralentis
 (`compagnon_atb` 1), tout passait à ~100 %. Ajoutés le 2026-10-10 (même
 mesure) : gardien de cristal (équipe N.28) 48 % / 100 %, Mère des Brumes
-(équipe N.38) 36 % / 75 %. Le Golem réagit peu à
+(équipe N.38) 36 % / 75 %. Remesuré avec le damier (1.7, 2026-10-10, BRUMEVAL_SIMULATIONS=3 pour les trois premiers) : Sylvarque 12 / 50 %, Ronce-Mère 27 / 56 %, Ignarok 17 / 48 %, Golem 70 / 85 %, Givrecorne 35 / 75 %, gardien de cristal 33 / 100 %, Mère des Brumes 46 / 86 % ; l'IA ennemie frappe au corps à corps le meilleur adversaire à portée quand sa cible préférée est à l'arrière (sinon elle abusait des attaques de zone). Le Golem réagit peu à
 l'équipement. Le mode test lit les boss dans les événements (`bossEvent`) :
 ses mesures suivent toujours le jeu.
 Avant ce renfort (IA automatique, sans objets) : combats

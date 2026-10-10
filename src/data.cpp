@@ -33,6 +33,8 @@ static const char* STAGE_NAMES[] = {"Attaque", "Défense", "Magie", "Résistance
 static const char* HATS[] = {"aucune", "capuche", "chapeau", "bandeau", "casque", "foulard"};
 static const char* WEAPONS[] = {"aucune", "epee", "baton", "hache", "dague", "arc", "lance"};
 static const char* DIRS[] = {"haut", "bas", "gauche", "droite"};
+static const char* ZONES[] = {"case", "ligne", "colonne", "croix", "tout"};
+static const char* ZONE_NAMES[] = {"Une cible", "Une ligne", "Une colonne", "En croix", "Tout le camp"};
 static const char* PACES[] = {"normale", "rapide", "lourde"};
 static const char* PACE_NAMES[] = {"Normale", "Rapide", "Lourde"};
 
@@ -56,6 +58,25 @@ const char* statusTag(Status s) { return STATUS_TAGS[(int)s]; }
 uint32_t statusColor(Status s) { return STATUS_COLORS[(int)s]; }
 int stageOf(const std::string& s) { return nameIndex(STAGES, s, "Statistique"); }
 const char* stageName(int st) { return STAGE_NAMES[st]; }
+const char* zoneId(Area z) { return ZONES[(int)z]; }
+const char* zoneName(Area z) { return ZONE_NAMES[(int)z]; }
+std::string cellName(int c) {
+  static const char* COLS[] = {"Avant", "Milieu", "Arrière"};
+  static const char* ROWS[] = {"haut", "centre", "bas"};
+  if (c < 0 || c >= N_CELLS) return "?";
+  return std::string(COLS[cellCol(c)]) + " · " + ROWS[cellRow(c)];
+}
+bool inZone(Area z, int center, int cell) {
+  int dc = std::abs(cellCol(center) - cellCol(cell)), dr = std::abs(cellRow(center) - cellRow(cell));
+  switch (z) {
+    case Area::Single: return dc == 0 && dr == 0;
+    case Area::Line: return dr == 0;    // même ligne : de l'avant jusqu'à l'arrière
+    case Area::Column: return dc == 0;  // même colonne : tout un rang
+    case Area::Cross: return dc + dr <= 1;
+    case Area::All: return true;
+  }
+  return false;
+}
 const char* paceId(Pace p) { return PACES[(int)p]; }
 const char* paceName(Pace p) { return PACE_NAMES[(int)p]; }
 
@@ -131,6 +152,8 @@ std::vector<RuleField> ruleFields(Rules& r) {
       I("combat", "esquive_base", "Esquive par défaut (%)", r.evaBase, 0, 100, 1),
       I("combat", "critique_base", "Critique par défaut (%)", r.critBase, 0, 100, 1),
       I("combat", "jauge_rapide", "Technique rapide : jauge de départ (%)", r.quickGauge, 0, 90, 5),
+      D("combat", "arriere", "Arrière : dégâts au corps à corps donnés et reçus", r.backRow, .1, 1, .05),
+      D("combat", "zone_voisins", "Zone d'effet : dégâts autour de la cible", r.zoneSide, 0, 1, .05),
       I("combat", "retard_lourde", "Technique lourde : retard de la jauge (%)", r.heavyDelay, 0, 200, 5),
       D("combat", "compagnon_atb", "Compagnons : vitesse de la jauge ATB", r.companionAtb, .1, 2, .05),
       D("etats", "poison_degats", "Poison : part des PV perdus par tour", r.poisonDmg, 0, 1, .01),
@@ -266,6 +289,9 @@ void rebuildData() {
     m.acc = jget(o, "precision", 100);
     m.critBonus = jget(o, "critique", 0);
     m.pace = Pace(nameIndex(PACES, jget<std::string>(o, "rythme", "normale"), "Rythme"));
+    bool all = m.target == Target::AllEnemies || m.target == Target::AllAllies;
+    m.zone = Area(nameIndex(ZONES, jget<std::string>(o, "zone", all ? "tout" : "case"), "Zone"));
+    m.melee = jget<std::string>(o, "portee", m.kind == Kind::Physical ? "corps" : "distance") == "corps";
     if (o.contains("effet")) m.effects.push_back(parseEffect(o["effet"]));
     for (auto& e : o.value("effets", Json::array())) m.effects.push_back(parseEffect(e));
     return m;
@@ -514,6 +540,32 @@ std::vector<FighterP> frontOf(const std::vector<FighterP>& team, int heroes) {
     if (c) all.push_back(c), used.push_back(c);
   }
   return all;
+}
+
+std::vector<int> formation(const std::vector<FighterP>& v, bool keep) {
+  std::vector<int> cells(v.size(), -1);
+  bool used[N_CELLS] = {};
+  if (keep)
+    for (size_t i = 0; i < v.size(); i++) {
+      int c = v[i] ? v[i]->cell : -1;
+      if (c >= 0 && c < N_CELLS && !used[c]) cells[i] = c, used[c] = true;
+    }
+  static const int ROWS[3] = {1, 0, 2};  // le centre d'abord
+  for (size_t i = 0; i < v.size(); i++) {
+    if (cells[i] >= 0 || !v[i]) continue;
+    const Species& s = v[i]->S();
+    bool caster = s.base[B_MAG] > s.base[B_ATK];
+    const int front[3] = {0, 1, 2}, back[3] = {2, 1, 0};
+    for (int col : caster ? back : front) {
+      for (int r : ROWS)
+        if (!used[r * 3 + col]) {
+          cells[i] = r * 3 + col, used[r * 3 + col] = true;
+          break;
+        }
+      if (cells[i] >= 0) break;
+    }
+  }
+  return cells;
 }
 
 FighterP companionOf(const std::vector<FighterP>& team, const FighterP& who) {

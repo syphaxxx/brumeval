@@ -91,6 +91,21 @@ class Battle {
   bool isAlly(const FighterP& f) const;
   std::vector<FighterP> alive(const std::vector<FighterP>& v) const;
   Pt pos(const FighterP& f) const;
+  Pt cellPos(bool allySide, int cell) const;  // centre d'une case du damier à l'écran
+  // Damier (data.hpp) : la case de chaque combattant pendant ce combat ; au départ, la formation
+  // de l'équipe (Fighter::cell) pour les alliés, un placement automatique pour les ennemis
+  std::map<const Fighter*, int> cells_;
+  int cellOf(const FighterP& f) const;  // -1 : pas sur le damier
+  void place(const std::vector<FighterP>& v, bool keep);
+  const std::vector<FighterP>& sideOf(const FighterP& f) const { return isAlly(f) ? allies : foes; }
+  // Corps à corps : seulement la colonne la plus avancée encore debout du camp visé (sauf zone « tout »)
+  bool reachable(const FighterP& a, const Move& m, const FighterP& t) const;
+  // Victimes d'une technique visant center : center d'abord, puis les autres combattants de sa zone
+  std::vector<FighterP> zoneTargets(const Move& m, const FighterP& center) const;
+  float zoneScore(const FighterP& a, const Move& m, const FighterP& center) const;  // attackScore sur toute la zone
+  const Move* aiming_ = nullptr;  // technique dont on choisit la cible : sa zone est surlignée
+  int moveCell_ = -1;             // « Se déplacer » : case survolée
+  void moveTo(FighterP a, int cell);  // change de case (action rapide)
   void pop(const FighterP& f, const std::string& t, Color c);
   // Bruitage (audio.hpp), seulement pour le combat affiché (pas les simulations) ;
   // share : l'hôte ou le chef le fait aussi entendre aux autres joueurs
@@ -158,7 +173,7 @@ class Battle {
   void checkEnd();
   void victory();
   void finish(BattleResult r);
-  int applyHit(const FighterP& a, const FighterP& d, const Move& m);  // -1 si raté
+  int applyHit(const FighterP& a, const FighterP& d, const Move& m, float mult = 1);  // -1 si raté ; mult : autour de la cible d'une zone
   void applyEffect(const FighterP& t, const Effect& e);
   void knockOut(const FighterP& f);
 

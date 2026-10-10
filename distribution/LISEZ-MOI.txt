@@ -45,6 +45,10 @@ COMMANDES
   Échap > Compagnons : la créature qui combat aux côtés de chaque héros.
   Elle agit toute seule en combat ; vous commandez les héros.
 
+  Échap > Formation : la place de chacun sur le damier de combat (avant,
+  milieu, arrière). Au corps à corps, on ne touche que l'avant ennemi ;
+  l'arrière est protégé. En combat, « Se déplacer » change de case.
+
   Échap > Réserve : les créatures capturées quand l'équipe (8 membres)
   est complète. Échap > Bestiaire : toutes les créatures rencontrées.
   En boutique, « Vendre… » rachète vos objets à moitié prix.

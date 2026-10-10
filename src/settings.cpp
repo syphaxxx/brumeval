@@ -49,7 +49,7 @@ static void reorderKeys(Json& o, const std::vector<std::string>& order) {
 static const std::vector<std::string> SPECIES_KEYS = {"id", "nom", "type", "types", "base", "precision", "esquive", "critique", "resistances",
                                                       "immunites", "humain", "apparence", "role", "forme", "couleurs", "apprend", "limite",
                                                       "tactiques"};
-static const std::vector<std::string> MOVE_KEYS = {"id", "nom", "type", "genre", "cible", "puissance", "cout", "precision", "critique", "rythme",
+static const std::vector<std::string> MOVE_KEYS = {"id", "nom", "type", "genre", "cible", "puissance", "portee", "zone", "cout", "precision", "critique", "rythme",
                                                    "effet", "effets", "description"};
 static const std::vector<std::string> ITEM_KEYS = {"id", "nom", "description", "prix", "combat", "menu", "important", "soin_pv", "soin_pm",
                                                    "rappel", "capture", "soin_statut"};
@@ -751,6 +751,27 @@ void Settings::editMove(const std::string& id, int sel) {
                                 });
                               },
                               3, [](int k) { return std::string(paceName(Pace(k))); }));
+  m.items.push_back(cycleItem("Portée", "Corps à corps : seulement la colonne ennemie la plus avancée encore debout. À distance : n'importe quelle case.",
+                              [id] { return moveInfo(id).melee ? 0 : 1; },
+                              [this, id](int k) {
+                                bool def = moveInfo(id).kind == Kind::Physical;  // par défaut : physique = corps à corps
+                                EDIT_MOVE(id, {
+                                  if ((k == 0) == def) o.erase("portee");
+                                  else o["portee"] = k == 0 ? "corps" : "distance";
+                                });
+                              },
+                              2, [](int k) { return std::string(k == 0 ? "Corps à corps" : "À distance"); }));
+  m.items.push_back(cycleItem("Zone", "Cases touchées autour de la cible ; les voisines prennent un peu moins (règles, combat).",
+                              [id] { return (int)moveInfo(id).zone; },
+                              [this, id](int k) {
+                                Target tg = moveInfo(id).target;
+                                Area def = tg == Target::AllEnemies || tg == Target::AllAllies ? Area::All : Area::Single;
+                                EDIT_MOVE(id, {
+                                  if (Area(k) == def) o.erase("zone");
+                                  else o["zone"] = zoneId(Area(k));
+                                });
+                              },
+                              5, [](int k) { return std::string(zoneName(Area(k))); }));
   {
     MenuItem e{"Effet", "", "État, bonus/malus ou guérison.", true, [this, id] { menuEffect(id); }};
     e.rightFn = [id] {

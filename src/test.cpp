@@ -439,6 +439,84 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     tacticsAuto = keepAuto;
   }
 
+  // --- Damier (1.7) : portée du corps à corps, arrière protégé, zones d'effet, se déplacer, formation ---
+  {
+    auto keepTeam = team;
+    bool keepAuto = tacticsAuto;
+    tacticsAuto = false;
+    menus.clear();
+    sc.clear();
+    mode = Mode::Map;
+    // Placement automatique : physiques devant, lanceurs de sorts derrière
+    auto brute = makeFighter("louvet", 20), mage = makeFighter("esprillon", 20), extra = makeFighter("galetor", 20);
+    auto cells = formation({brute, mage, extra}, false);
+    check(cellCol(cells[0]) == 0 && cellCol(cells[1]) == 2 && cellCol(cells[2]) == 0 && cells[0] != cells[2],
+          "damier : placement automatique (Louvet et Galetor devant, Esprillon derrière)");
+    team = {makeFighter("lior", 20), makeFighter("maelle", 20)};
+    startBattle({brute, mage, extra}, false, nullptr);
+    Battle& B = *battle_;
+    const Move& bite = moveInfo("mordant");  // corps à corps
+    const Move& wave = moveInfo("onde");     // à distance
+    bool reach = B.reachable(team[0], bite, brute) && !B.reachable(team[0], bite, mage) && B.reachable(team[0], wave, mage);
+    brute->hp = extra->hp = 0;  // l'avant tombe : le corps à corps atteint l'arrière
+    bool opened = B.reachable(team[0], bite, mage);
+    brute->hp = brute->mhp, extra->hp = extra->mhp;
+    check(reach && opened, "damier : le corps à corps ne vise que l'avant ennemi tant qu'il tient ; la distance vise partout");
+    // L'arrière reçoit moins de dégâts au corps à corps (même coup, même hasard)
+    auto hitOn = [&](const FighterP& d, int cell) {
+      B.cells_[d.get()] = cell;
+      d->hp = d->mhp;
+      long long total = 0;
+      for (int k = 0; k < 200; k++) {
+        int before = d->hp = d->mhp;
+        if (B.applyHit(team[0], d, bite) > 0) total += before - d->hp;
+      }
+      return total;
+    };
+    long long front = hitOn(extra, 1), back = hitOn(extra, 2);
+    check(back > 0 && back < front * 0.85, "damier : à l'arrière, les coups au corps à corps font moins mal (" + std::to_string(front) + " contre " +
+                                               std::to_string(back) + " sur 200 coups)");
+    // Zone en croix : la cible et ses voisines
+    Move cross = wave;
+    cross.zone = Area::Cross;
+    B.cells_[brute.get()] = 4, B.cells_[mage.get()] = 5, B.cells_[extra.get()] = 0;  // centre, son voisin, un coin
+    auto hit = B.zoneTargets(cross, brute);
+    check(hit.size() == 2 && hit[0] == brute && hit[1] == mage, "damier : une zone en croix touche la cible et ses voisines, pas le coin");
+    // Se déplacer : la case change, la jauge repart (action rapide)
+    B.sc.clear();
+    FighterP lior = team[0];
+    int to = -1;
+    for (int c = N_CELLS - 1; c >= 0 && to < 0; c--)
+      if (B.cellOf(team[0]) != c && B.cellOf(team[1]) != c) to = c;
+    B.moveTo(lior, to);
+    for (int i = 0; i < 200 && B.sc.busy(); i++) {
+      in.confirm = true;
+      frame();
+    }
+    check(B.cellOf(lior) == to && lior->atb == float(rules().quickGauge), "damier : « Se déplacer » change de case et la jauge repart à " +
+                                                                             std::to_string(rules().quickGauge) + " %");
+    battle_.reset();
+    mode = Mode::Map;
+    menus.clear();
+    sc.clear();
+    // Formation : choisie dans le menu, gardée par la sauvegarde
+    team = {makeFighter("lior", 20), makeFighter("maelle", 20), makeFighter("braisenard", 20)};
+    formationMenu(0);
+    in.confirm = true;  // Lior : changer de case
+    frame();
+    menus.top().sel = 8;  // Arrière · bas
+    in.confirm = true;
+    frame();
+    bool chosen = team[0]->cell == 8;
+    saveGame();
+    loadGame();
+    check(chosen && team[0]->cell == 8, "formation : Lior placé à l'arrière en bas depuis le menu, gardé par la sauvegarde");
+    panelMode_ = 0;
+    menus.clear();
+    team = keepTeam;
+    tacticsAuto = keepAuto;
+  }
+
   // --- Quête annexe : le médaillon (accepter, journal, coffre du Bois Murmurant, récompense) ---
   {
     auto answer = [&] {  // Entrée sur chaque message ; « Oui » (premier choix) aux questions

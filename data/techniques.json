@@ -90,6 +90,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 40,
+    "portee": "distance",
     "rythme": "rapide",
     "effet": {"statut": "brulure", "chance": 15}
   },
@@ -100,6 +101,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 65,
+    "portee": "distance",
     "effet": {"statut": "brulure", "chance": 20}
   },
   {
@@ -109,10 +111,20 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 40,
+    "portee": "distance",
     "rythme": "rapide",
     "effet": {"stat": "attaque", "niveaux": -1, "chance": 20}
   },
-  {"id": "vague", "nom": "Vague", "type": "eau", "genre": "physique", "cible": "ennemi", "puissance": 65},
+  {
+    "id": "vague",
+    "nom": "Vague",
+    "type": "eau",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 65,
+    "portee": "distance",
+    "zone": "ligne"
+  },
   {
     "id": "ronce",
     "nom": "Fouet-ronce",
@@ -129,7 +141,9 @@
     "type": "plante",
     "genre": "physique",
     "cible": "ennemi",
-    "puissance": 65
+    "puissance": 55,
+    "portee": "distance",
+    "zone": "croix"
   },
   {
     "id": "bec",
@@ -154,9 +168,18 @@
     "type": "feu",
     "genre": "physique",
     "cible": "ennemi",
-    "puissance": 40
+    "puissance": 40,
+    "portee": "distance"
   },
-  {"id": "bulle", "nom": "Bulle", "type": "eau", "genre": "physique", "cible": "ennemi", "puissance": 40},
+  {
+    "id": "bulle",
+    "nom": "Bulle",
+    "type": "eau",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 40,
+    "portee": "distance"
+  },
   {
     "id": "spore",
     "nom": "Spore",
@@ -164,6 +187,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 40,
+    "portee": "distance",
     "effet": {"statut": "poison", "chance": 40}
   },
   {
@@ -173,6 +197,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 55,
+    "portee": "distance",
     "precision": 90
   },
   {
@@ -200,6 +225,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 50,
+    "portee": "distance",
     "effet": {"statut": "paralysie", "chance": 20}
   },
   {
@@ -226,8 +252,9 @@
     "nom": "Nuage de suie",
     "type": "ombre",
     "genre": "magique",
-    "cible": "tous_ennemis",
-    "puissance": 40,
+    "cible": "ennemi",
+    "puissance": 46,
+    "zone": "croix",
     "effet": {"stat": "defense", "niveaux": -1, "chance": 20}
   },
   {
@@ -350,8 +377,9 @@
     "nom": "Pyrosphère",
     "type": "feu",
     "genre": "magique",
-    "cible": "tous_ennemis",
-    "puissance": 50,
+    "cible": "ennemi",
+    "puissance": 60,
+    "zone": "croix",
     "cout": 12,
     "description": "Feu sur tous les ennemis."
   },
@@ -360,8 +388,9 @@
     "nom": "Blizzard",
     "type": "eau",
     "genre": "magique",
-    "cible": "tous_ennemis",
-    "puissance": 50,
+    "cible": "ennemi",
+    "puissance": 55,
+    "zone": "colonne",
     "cout": 12,
     "description": "Glace sur tous les ennemis."
   },
@@ -412,6 +441,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 30,
+    "portee": "distance",
     "effet": {"stat": "vitesse", "niveaux": -1, "chance": 70}
   },
   {
@@ -421,6 +451,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 25,
+    "portee": "distance",
     "precision": 95,
     "effet": {"statut": "poison", "chance": 60}
   },
@@ -469,7 +500,15 @@
     "effet": {"stat": "vitesse", "niveaux": 2},
     "description": "Accélère beaucoup un allié."
   },
-  {"id": "rafale", "nom": "Rafale", "type": "vent", "genre": "physique", "cible": "ennemi", "puissance": 45},
+  {
+    "id": "rafale",
+    "nom": "Rafale",
+    "type": "vent",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 45,
+    "portee": "distance"
+  },
   {
     "id": "lame_air",
     "nom": "Lame d'air",
@@ -484,8 +523,9 @@
     "nom": "Tornade",
     "type": "vent",
     "genre": "magique",
-    "cible": "tous_ennemis",
-    "puissance": 45
+    "cible": "ennemi",
+    "puissance": 45,
+    "zone": "ligne"
   },
   {
     "id": "venin",
@@ -510,8 +550,9 @@
     "nom": "Nuage toxique",
     "type": "poison",
     "genre": "magique",
-    "cible": "tous_ennemis",
-    "puissance": 40,
+    "cible": "ennemi",
+    "puissance": 46,
+    "zone": "croix",
     "effet": {"statut": "poison", "chance": 20}
   },
   {
@@ -532,7 +573,8 @@
     "type": "roche",
     "genre": "physique",
     "cible": "ennemi",
-    "puissance": 40
+    "puissance": 40,
+    "portee": "distance"
   },
   {
     "id": "seisme",
@@ -567,8 +609,9 @@
     "nom": "Poudreuse",
     "type": "glace",
     "genre": "magique",
-    "cible": "tous_ennemis",
-    "puissance": 45
+    "cible": "ennemi",
+    "puissance": 50,
+    "zone": "colonne"
   },
   {
     "id": "glaciation",
@@ -605,6 +648,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 50,
+    "zone": "ligne",
     "critique": 10,
     "description": "Un coup de lance précis."
   },
@@ -702,6 +746,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 40,
+    "portee": "distance",
     "critique": 15,
     "rythme": "rapide",
     "description": "Une flèche qui vise les points faibles."
@@ -713,6 +758,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 60,
+    "portee": "distance",
     "precision": 95,
     "description": "Une flèche portée par le vent."
   },

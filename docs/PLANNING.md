@@ -51,6 +51,22 @@ bestiaire. Idées pour la suite :
 - Nouvelles créatures pour les nouvelles zones (formes existantes, nouvelles
   couleurs : rien à dessiner).
 
+## Étape 2 bis — Refonte des combats (demandée le 2026-10-10)
+
+« Les combats ne sont pas vraiment stratégiques » : plan validé avec
+l'utilisateur, en deux versions.
+
+- **1.7** (en cours) : damier de 9 cases par camp, corps à corps limité à
+  l'avant, arrière protégé, zones d'effet des techniques (ligne, colonne,
+  croix, tout), « Se déplacer » (action rapide), menu Formation, jusqu'à 6
+  ennemis, boss remesurés.
+- **1.8** : IA qui place et déplace ses combattants, vise les zones les plus
+  rentables, protège ses lanceurs ; attaques des boss annoncées un tour à
+  l'avance (on peut s'écarter de la zone) ; tactiques liées au damier
+  (« ennemis groupés », « allié à l'avant blessé »…).
+- Ensuite : meutes plus grandes loin des villes (cartes), graphismes, et le
+  joueur automatique mis à jour à chaque étape.
+
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
 - Fait en 1.6 : **réserve de créatures** (au-delà de 8 membres) et

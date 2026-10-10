@@ -141,6 +141,9 @@ class Game {
   void companionsMenu(int sel = 0);  // la créature compagnon de chaque héros
   void reserveMenu(int sel = 0);     // déposer, reprendre ou échanger des créatures avec la réserve
   void bestiaryMenu(int sel = 0);    // toutes les créatures : vues, obtenues, fiche
+  void formationMenu(int sel = 0);   // la case de chaque combattant sur le damier
+  int formationCell_ = -1;           // case surlignée sur le dessin du damier (panelMode_ 4)
+  void drawFormationPanel(int x, int y);
   std::string bestiarySel_;          // espèce dont la fiche est affichée (panelMode_ 3)
   void drawBestiaryPanel(int x, int y);
   void swapReserve(FighterP out, FighterP in);  // out : de l'équipe à la réserve ; in : de la réserve à l'équipe

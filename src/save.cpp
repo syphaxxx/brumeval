@@ -40,6 +40,7 @@ bool Game::saveGame() {
       for (auto& g : m->gear) f << ' ' << (g.empty() ? "-" : g);
       f << '\n';
     }
+    if (m->cell >= 0) f << "case " << m->cell << '\n';  // formation sur le damier
     auto c = std::find(team.begin(), team.end(), m->companion.lock());
     if (c != team.end() && hasSpecies(m->sp) && m->S().human) f << "compagnon " << (c - team.begin()) << '\n';
     f << "tactiques " << m->tacticsOn << '\n';
@@ -70,9 +71,14 @@ bool readMemberLine(const std::string& k, std::istream& s, std::vector<FighterP>
     team.push_back(m);
     return true;
   }
-  if (k != "equipement" && k != "tactiques" && k != "tactique" && k != "compagnon") return false;
+  if (k != "equipement" && k != "tactiques" && k != "tactique" && k != "compagnon" && k != "case") return false;
   if (team.empty() || !team.back()) return true;
   Fighter& m = *team.back();
+  if (k == "case") {  // formation : sa case sur le damier
+    int c = -1;
+    if (s >> c && c >= 0 && c < N_CELLS) m.cell = c;
+    return true;
+  }
   if (k == "compagnon") {  // rang de sa créature compagnon dans l'équipe (relié une fois tout lu)
     int i = -1;
     if (s >> i && links) links->push_back({team.size() - 1, i});

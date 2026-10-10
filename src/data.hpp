@@ -54,6 +54,19 @@ struct Effect {
 // Rythme d'une technique : où repart la jauge ATB du lanceur après l'avoir utilisée
 enum class Pace { Normal, Quick, Heavy };
 
+// Damier de combat : 9 cases par camp, numérotées 0 à 8. Colonne = case % 3 (0 avant, 1 milieu,
+// 2 arrière : l'avant est du côté de l'adversaire) ; ligne = case / 3 (0 haut, 1 centre, 2 bas).
+constexpr int N_CELLS = 9;
+inline int cellCol(int c) { return c % 3; }
+inline int cellRow(int c) { return c / 3; }
+std::string cellName(int c);  // « Avant · haut »
+// Zone d'effet d'une technique autour de sa cible : la cible seule, sa ligne (en profondeur),
+// sa colonne (tout un rang), elle et ses voisines (croix), ou tout le camp
+enum class Area { Single, Line, Column, Cross, All };
+const char* zoneId(Area z);    // "case", "ligne", "colonne", "croix", "tout"
+const char* zoneName(Area z);  // « Une cible »…
+bool inZone(Area z, int center, int cell);  // la case est-elle touchée quand la zone vise center ?
+
 struct Move {
   std::string id, name;
   Type type;
@@ -65,6 +78,8 @@ struct Move {
   int acc = 100;       // précision en %
   int critBonus = 0;   // chance de critique en plus (%)
   Pace pace = Pace::Normal;  // rapide : la jauge repart plus haut ; lourde : plus bas que zéro
+  Area zone = Area::Single;  // zone d'effet (par défaut : selon la cible, « tous » = tout le camp)
+  bool melee = false;        // corps à corps : ne vise que la colonne ennemie la plus avancée (défaut : physique)
   std::vector<Effect> effects;
   bool damaging() const { return kind == Kind::Physical || kind == Kind::Magic; }
 };
@@ -153,6 +168,8 @@ struct Rules {
   double critMult = 1.5, stageStep = .25;
   int accBase = 100, evaBase = 2, critBase = 5;
   int quickGauge = 25, heavyDelay = 25;  // jauge après une technique rapide (%), retard après une lourde (%)
+  double backRow = .75;                  // damier : dégâts au corps à corps donnés et reçus depuis l'arrière
+  double zoneSide = .75;                 // zone d'effet : dégâts sur les cases autour de la cible
   double companionAtb = .5;              // compagnons : vitesse de leur jauge ATB (ils agissent moins souvent que les héros)
   // États
   double poisonDmg = .1, burnDmg = .0625, burnAtk = .75, paraSpeed = .5, paraSkip = .25;
@@ -244,6 +261,7 @@ struct Fighter {
   std::vector<Tactic> tactics;
   bool tacticsOn = true;
   std::array<std::string, N_GEAR> gear;  // équipement porté (objets de data/objets.json, vide : rien)
+  int cell = -1;                         // formation : case choisie sur le damier (-1 : automatique)
   // Héros : la créature compagnon choisie par le joueur (vide : la première créature libre de l'équipe)
   std::weak_ptr<Fighter> companion;
 
@@ -272,6 +290,10 @@ FighterP makeFighter(const std::string& id, int lvl);
 // (sa créature choisie, sinon la première créature libre, dans l'ordre de l'équipe). Une équipe
 // sans héros (mode test, Arène) combat comme avant : ses premiers membres valides.
 std::vector<FighterP> frontOf(const std::vector<FighterP>& team, int heroes);
+// Cases du damier pour ces combattants, dans le même ordre. keep : garde les cases choisies
+// (Fighter::cell) quand elles sont libres ; les autres sont placés automatiquement (les
+// combattants physiques devant, les lanceurs de sorts derrière, en commençant par le centre).
+std::vector<int> formation(const std::vector<FighterP>& v, bool keep);
 // Le compagnon d'un héros dans cette équipe (celui qu'il aurait en combat ; nullptr : aucun)
 FighterP companionOf(const std::vector<FighterP>& team, const FighterP& hero);
 // Multiplicateur des PV du gardien et de ses acolytes à plusieurs (coop.cpp) : ×alliés/3 au-delà de

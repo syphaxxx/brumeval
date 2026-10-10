@@ -30,6 +30,24 @@ avec le volume de la musique et des effets sonores ; les flèches, Entrée et
 Croix ou stick gauche pour se déplacer, **A** valider, **B** annuler,
 **Start** menu, **Select** (ou **Y**) mode auto en combat.
 
+## Le damier de combat
+
+Chaque camp se place sur un **damier de 9 cases** : trois colonnes (**avant**,
+**milieu**, **arrière**) sur trois lignes.
+
+- Les coups **au corps à corps** (épées, crocs, griffes…) ne peuvent toucher que
+  la colonne ennemie la plus avancée encore debout : il faut percer la ligne de
+  front pour atteindre les mages. Les attaques **à distance** (sorts, flèches,
+  projectiles) visent n'importe quelle case.
+- À **l'arrière**, on reçoit et on donne moins de dégâts au corps à corps : la
+  bonne place pour les soigneurs et les mages.
+- Chaque technique a une **zone** : une cible, une **ligne** (elle perce en
+  profondeur), une **colonne**, une **croix** (la cible et ses voisines) ou tout le
+  camp. Les cases autour de la cible prennent un peu moins. En choisissant la
+  cible, les cases touchées s'allument en or.
+- Échap > **Formation** : placer chacun sur le damier avant les combats. En
+  combat, **Se déplacer** change de case (action rapide).
+
 ## Techniques rapides et lourdes
 
 Chaque technique a un rythme, indiqué dans l'aide en bas de l'écran :
