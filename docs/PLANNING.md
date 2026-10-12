@@ -1,6 +1,7 @@
 # Planning de la suite de Brumeval
 
-État au 9 octobre 2026 : version **1.5** publiée (boss renforcés, compagnons).
+État au 12 octobre 2026 : version **2.2** publiée (les 1.7 à 2.2 en une fois : damier 4x4, zones, vitesse, Aide,
+forge, évolution, graphismes). Avant elle : 1.6 (réserve, bestiaire, Source des Brumes), 1.5 (boss renforcés, compagnons).
 Avant elle : 1.3 (son, options, manette, animations d'attaque, Ignarok
 redessiné, intérieurs, équipement, quêtes annexes), 1.3.1 (musique) et 1.4
 (gardien à plusieurs, équipement en expédition et en duel).
