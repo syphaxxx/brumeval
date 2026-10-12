@@ -51,6 +51,10 @@ class Game {
   void update(float dt);
   void draw();
   bool quit = false;
+  // Vitesse du jeu (Options, touche F2) : main.cpp appelle update ce nombre de fois par image.
+  // Toujours ×1 en multijoueur (duel, expédition à plusieurs : tout le monde au même rythme).
+  int speed() const;
+  void cycleSpeed();  // F2 : ×1 → ×2 → ×3 → ×1
 
   // Mode test automatique (voir main.cpp) : rejoue des situations et enregistre des captures
   int selfTest(SDL_Surface* target, const std::string& outDir);
@@ -153,6 +157,12 @@ class Game {
   void gearSlots(FighterP f, int who, int sel = 0);
   void gearPick(FighterP f, int who, int slot);
   void optionsMenu(int sel = 0);
+  // Aide (help.cpp) : liste des pages, puis une page en plein écran (F1 partout)
+  void helpMenu(int sel = 0);
+  void openHelp(int page);
+  void updateHelp();
+  void drawHelp();
+  int helpPage_ = -1, helpScroll_ = 0, lastHelp_ = 0;  // page affichée (-1 : aucune), défilement, dernière vue (F1)
   void keysMenu(int sel = 0);
   bool padDir_[4] = {}, stickDir_[4] = {};  // directions tenues à la manette (croix, stick)
   float padRepeat_[4] = {};                  // répétition d'une direction tenue (menus)
@@ -207,6 +217,7 @@ class Game {
   int swapFrom_ = -1;
   std::string notice_;       // petit message en bas de l'écran
   float noticeT_ = 0;
+  float speedT_ = 0;  // affiche la vitesse en grand quelques instants après un changement
   std::string askText_;      // question affichée pendant un choix Oui/Non
   void notice(const std::string& s) { notice_ = s, noticeT_ = 2.2f; }
   void teamMenuAt(int sel);

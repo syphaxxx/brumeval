@@ -125,6 +125,17 @@ void Game::onKey(SDL_Scancode k, bool down, bool repeat) {
     if (down && !repeat) bindKey(k);
     return;
   }
+  if (k == SDL_SCANCODE_F2) {
+    if (down && !repeat) cycleSpeed();
+    return;
+  }
+  if (k == SDL_SCANCODE_F1) {  // aide : ouvre la dernière page vue (ou la première), ou la ferme
+    if (down && !repeat) {
+      if (helpPage_ >= 0) helpPage_ = -1;
+      else openHelp(std::max(0, lastHelp_));
+    }
+    return;
+  }
   // Touches choisies dans les options ; les flèches, Entrée et Échap marchent toujours
   const auto& K = options().keys;
   int d = -1;
@@ -192,6 +203,18 @@ void Game::drawTextEdit() {
 // ---------------------------------------------------------------------------
 // Boucle principale
 // ---------------------------------------------------------------------------
+int Game::speed() const {
+  if (online_ && online_->connected()) return 1;
+  return std::clamp(options().speed, 1, 3);
+}
+
+void Game::cycleSpeed() {
+  if (online_ && online_->connected()) return notice("Vitesse normale en multijoueur.");
+  options().speed = options().speed % 3 + 1;
+  saveOptions();
+  speedT_ = 1.2f;
+}
+
 void Game::update(float dt) {
   time += dt;
   // Manette : une direction tenue se répète (comme une touche du clavier), pour parcourir les menus
@@ -207,6 +230,14 @@ void Game::update(float dt) {
   if (pilot_) pilot_->update(dt);    // joueur automatique : il choisit les touches de cette image
   banner -= dt;
   noticeT_ -= dt;
+  speedT_ -= dt / speed();  // même durée à l'écran quelle que soit la vitesse
+  if (helpPage_ >= 0) {  // aide ouverte : le reste du jeu attend
+    lastHelp_ = helpPage_;
+    updateHelp();
+    updateMusic();
+    in.endFrame();
+    return;
+  }
   switch (mode) {
     case Mode::Title: menus.update(in); break;
     case Mode::Ending:
@@ -611,7 +642,7 @@ void Game::titleMenu() {
   editorTest_ = storyTest_ = false;
   menus.clear();
   Menu m;
-  m.x = 102, m.y = 122, m.w = 116, m.rows = 7, m.cancelable = false;
+  m.x = 102, m.y = 110, m.w = 116, m.rows = 8, m.cancelable = false;
   m.items.push_back({"Nouvelle partie", "", "", true, [this] { starterMenu(); }});
   bool can = saveExists();
   m.items.push_back({"Continuer", "", "", can, [this] {
@@ -630,7 +661,8 @@ void Game::titleMenu() {
                        online_->menu();
                      }});
   m.items.push_back({"Outils", "", "Arène, réglages et éditeurs.", true, [this] { toolsMenu(); }});
-  m.items.push_back({"Options", "", "Volumes, plein écran et touches.", true, [this] { optionsMenu(); }});
+  m.items.push_back({"Options", "", "Volumes, plein écran, vitesse du jeu et touches.", true, [this] { optionsMenu(); }});
+  m.items.push_back({"Aide", "", "Statistiques, dégâts, damier, zones, états, tableau des types, touches (F1).", true, [this] { helpMenu(); }});
   m.items.push_back({"Quitter", "", "", true, [this] { quit = true; }});
   if (can) m.sel = 1;
   menus.push(m);
@@ -720,8 +752,21 @@ void Game::draw() {
       if (story_) story_->draw();
       break;
   }
+  if (helpPage_ >= 0) drawHelp();
   if (textOn_) drawTextEdit();
   if (bindKey_ >= 0) drawKeyPrompt();
+  if (int v = speed(); v > 1 || speedT_ > 0) {  // vitesse : en grand juste après F2, puis discrète dans le coin
+    std::string s = "×" + std::to_string(v);
+    if (speedT_ > 0) {
+      g.newLayer();  // par-dessus les menus éventuels
+      g.window(160 - 46, 30, 92, 26);
+      g.text(160, 36, "Vitesse " + s, GOLD, 1);
+    } else {
+      int y = pilot_ && pilot_->demo() ? 12 : 1;  // sous le bandeau de la démo
+      g.rect(g.right() - 20, y, 18, 10, rgb(0x000010, 140));
+      g.text(g.right() - 11, y + 1, s, GOLD, 1, false);
+    }
+  }
   if (pilot_ && pilot_->demo()) {  // bandeau de la démo, en haut de l'écran
     std::string s = "DÉMO · " + pilot_->status;
     if (s.size() > 60) s = utf8Prefix(s, 44) + "…";
@@ -754,7 +799,7 @@ void Game::drawTitle() {
     }
   }
   if (!menus.active() || menus.help().empty()) {
-    g.text(g.left() + 4, 227, "F11 : plein écran", rgb(0x8a92b8), 0, false);
+    g.text(g.left() + 4, 227, "F1 : aide · F2 : vitesse · F11 : plein écran", rgb(0x8a92b8), 0, false);
     g.text(g.right() - 4, 227, "v" BRUMEVAL_VERSION, rgb(0x8a92b8), 2, false);
   }
 }

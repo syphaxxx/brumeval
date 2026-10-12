@@ -322,7 +322,7 @@ int main(int argc, char* argv[]) {
       Uint64 now = SDL_GetPerformanceCounter();
       float dt = std::min(.05f, float(now - last) / float(SDL_GetPerformanceFrequency()));
       last = now;
-      game.update(dt);
+      for (int i = 0, n = game.speed(); i < n; i++) game.update(dt);  // vitesse ×2, ×3 : plusieurs pas par image
       screen.begin(game.g);
       game.draw();
       screen.present();

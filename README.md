@@ -22,10 +22,12 @@ Windows et de macOS, normaux pour un jeu non signé).
 | Entrée ou Espace | Parler, valider, faire défiler les dialogues |
 | Échap | Annuler, ouvrir le menu (équipe, tactiques, objets, magie, sauvegarde) |
 | Tab (en combat) | Mode auto : les tactiques jouent à votre place, ou vous reprenez la main |
+| F1 | Aide : statistiques, dégâts, damier et zones, états, tableau des types, touches |
+| F2 | Vitesse du jeu ×1, ×2 ou ×3 (marche, combats, textes ; gardée pour la prochaine fois) |
 | F11 ou Alt+Entrée | Plein écran ou fenêtre (le choix est gardé pour la prochaine fois). L'image s'adapte à la forme de l'écran ou de la fenêtre, sans bandes noires |
 
 Les touches se changent dans **Options** (écran titre, ou Échap > Options),
-avec le volume de la musique et des effets sonores ; les flèches, Entrée et
+avec le volume de la musique et des effets sonores et la vitesse du jeu ; les flèches, Entrée et
 Échap marchent toujours. **Manette** : branchez-la, même en cours de partie.
 Croix ou stick gauche pour se déplacer, **A** valider, **B** annuler,
 **Start** menu, **Select** (ou **Y**) mode auto en combat.
@@ -345,5 +347,5 @@ moments marquants. `brumeval --demo` le montre jouer dans la fenêtre.
   `data/LISEZMOI.md`.
 - `docs/` : guide pour reprendre le projet et planning.
 - La sauvegarde est écrite dans `%APPDATA%\Brumeval\Brumeval\sauvegarde.txt`,
-  les options (volumes, plein écran, touches) dans `options.txt` à côté
+  les options (volumes, plein écran, vitesse, touches) dans `options.txt` à côté
   (le mode test utilise `sauvegarde_test.txt` et l'efface à la fin)

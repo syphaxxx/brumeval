@@ -654,7 +654,7 @@ void Settings::pickMove(const std::string& title, const std::string& current, st
       any = true;
       std::string id = mv.id;
       if (id == current) m.sel = (int)m.items.size();
-      m.items.push_back({utf8Prefix(mv.name, 18), "", moveDetails(mv), true, [done, id] { done(id); }, [this, id] {
+      m.items.push_back({utf8Prefix(mv.name, 18), "", "Entrée : choisir cette technique (détails à droite).", true, [done, id] { done(id); }, [this, id] {
                            panel_ = Panel::Move;
                            panelId_ = id;
                          }});

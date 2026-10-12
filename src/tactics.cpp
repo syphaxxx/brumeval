@@ -435,18 +435,18 @@ void TacticsEditor::pickAction(int i, bool isNew, const Tactic& draft) {
   if (T.fighter) {
     auto techs = T.fighter->techs(), spells = T.fighter->spells();
     if (!techs.empty()) m.items.push_back(menuHeader("Techniques"));
-    for (auto& id : techs) add(Tactic::Act::Move, id, typeName(moveInfo(id).type), moveDetails(moveInfo(id)));
+    for (auto& id : techs) add(Tactic::Act::Move, id, typeName(moveInfo(id).type), moveHelp(moveInfo(id), T.fighter.get()));
     if (!spells.empty()) m.items.push_back(menuHeader("Sorts"));
     for (auto& id : spells) {
       const Move& mv = moveInfo(id);
-      add(Tactic::Act::Move, id, std::to_string(mv.cost) + " PM", mv.desc.empty() ? moveDetails(mv) : mv.desc + " (" + moveDetails(mv) + ")");
+      add(Tactic::Act::Move, id, std::to_string(mv.cost) + " PM", moveHelp(mv, T.fighter.get()));
     }
   }
   m.items.push_back(menuHeader("Objets (pris dans le sac)"));
   for (auto& d : allItems()) {
     if (!d.battle) continue;
     int n = G.items.count(d.id) ? G.items.at(d.id) : 0;
-    add(Tactic::Act::Item, d.id, "×" + std::to_string(n), d.desc);
+    add(Tactic::Act::Item, d.id, "×" + std::to_string(n), itemHelp(d));
   }
   m.onCancel = [self, i, isNew] {
     if (isNew) self->menuList(self->first() + i);

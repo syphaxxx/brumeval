@@ -102,6 +102,7 @@
     "cible": "ennemi",
     "puissance": 65,
     "portee": "distance",
+    "zone": "ligne",
     "effet": {"statut": "brulure", "chance": 20}
   },
   {
@@ -226,6 +227,7 @@
     "cible": "ennemi",
     "puissance": 50,
     "portee": "distance",
+    "zone": "croix",
     "effet": {"statut": "paralysie", "chance": 20}
   },
   {
@@ -245,6 +247,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 55,
+    "zone": "colonne",
     "effet": {"stat": "vitesse", "niveaux": -1, "chance": 30}
   },
   {
@@ -381,7 +384,7 @@
     "puissance": 60,
     "zone": "croix",
     "cout": 12,
-    "description": "Feu sur tous les ennemis."
+    "description": "Une sphère de feu qui explose en croix."
   },
   {
     "id": "blizzard",
@@ -392,7 +395,7 @@
     "puissance": 55,
     "zone": "colonne",
     "cout": 12,
-    "description": "Glace sur tous les ennemis."
+    "description": "Une rafale de glace sur toute une colonne."
   },
   {
     "id": "orage",
@@ -507,7 +510,8 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 45,
-    "portee": "distance"
+    "portee": "distance",
+    "zone": "ligne"
   },
   {
     "id": "lame_air",
@@ -650,7 +654,7 @@
     "puissance": 50,
     "zone": "ligne",
     "critique": 10,
-    "description": "Un coup de lance précis."
+    "description": "Un coup de lance qui transperce toute une ligne."
   },
   {
     "id": "charge_heroique",
@@ -816,6 +820,109 @@
     "cible": "tous_ennemis",
     "puissance": 58,
     "effet": {"stat": "vitesse", "niveaux": -1, "chance": 30}
+  },
+  {
+    "id": "tourbillon",
+    "nom": "Tourbillon",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 42,
+    "zone": "ligne",
+    "description": "Lior tournoie et frappe toute une ligne d'ennemis."
+  },
+  {
+    "id": "onde_choc",
+    "nom": "Onde de choc",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 50,
+    "zone": "colonne",
+    "description": "Un coup de hache dans le sol qui ébranle tout un rang."
+  },
+  {
+    "id": "nova",
+    "nom": "Nova",
+    "type": "lumiere",
+    "genre": "magique",
+    "cible": "ennemi",
+    "puissance": 48,
+    "zone": "croix",
+    "cout": 9,
+    "description": "Une étoile éclate au milieu des ennemis."
+  },
+  {
+    "id": "salve",
+    "nom": "Salve",
+    "type": "vent",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 36,
+    "portee": "distance",
+    "zone": "colonne",
+    "rythme": "rapide",
+    "description": "Trois flèches tirées d'un coup sur tout un rang."
+  },
+  {
+    "id": "eclats_acier",
+    "nom": "Éclats d'acier",
+    "type": "metal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 48,
+    "zone": "croix",
+    "description": "La lance frappe et fait voler des éclats tout autour."
+  },
+  {
+    "id": "ruee",
+    "nom": "Ruée",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 38,
+    "zone": "ligne"
+  },
+  {
+    "id": "nuee_braises",
+    "nom": "Nuée de braises",
+    "type": "feu",
+    "genre": "magique",
+    "cible": "ennemi",
+    "puissance": 40,
+    "zone": "croix",
+    "effet": {"statut": "brulure", "chance": 10}
+  },
+  {
+    "id": "torrent",
+    "nom": "Torrent",
+    "type": "eau",
+    "genre": "magique",
+    "cible": "ennemi",
+    "puissance": 44,
+    "zone": "ligne"
+  },
+  {
+    "id": "pluie_spores",
+    "nom": "Pluie de spores",
+    "type": "plante",
+    "genre": "magique",
+    "cible": "ennemi",
+    "puissance": 38,
+    "zone": "croix",
+    "effet": {"statut": "poison", "chance": 15}
+  },
+  {
+    "id": "avalanche",
+    "nom": "Avalanche",
+    "type": "roche",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 58,
+    "portee": "distance",
+    "zone": "colonne",
+    "precision": 90,
+    "rythme": "lourde"
   },
   {
     "id": "lim_lior",

@@ -69,8 +69,15 @@ l'utilisateur, en deux versions.
   rentables, protège ses lanceurs ; attaques des boss annoncées un tour à
   l'avance (on peut s'écarter de la zone) ; tactiques liées au damier
   (« ennemis groupés », « allié à l'avant blessé »…).
-- Ensuite : meutes plus grandes loin des villes (cartes), graphismes, et le
-  joueur automatique mis à jour à chaque étape.
+- **1.9** (demandée le 2026-10-12 après l'essai de la 1.8) : vitesse du jeu
+  ×1/×2/×3 (Options, F2), écran **Aide** (F1 : statistiques, dégâts, damier,
+  zones, rythme, états, tableau des types, touches), descriptions complètes
+  des techniques (cible, zone, portée, coût, puissance, effets, rythme) et
+  des objets (effets chiffrés), faiblesses dans le Bestiaire, et **plus
+  d'attaques de zone** (10 nouvelles techniques pour les héros et les
+  créatures, 4 techniques de créatures qui gagnent une zone). Boss et meutes
+  inchangés (« ça va pour le moment »).
+- Ensuite : graphismes, et le joueur automatique mis à jour à chaque étape.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 

@@ -18,8 +18,15 @@ enum class BattleResult;
 
 // Chance de capturer f avec une lanterne de multiplicateur mult (règles : capture)
 float captureChance(const Fighter& f, float mult);
-// Description courte d'une technique : genre, type, puissance, précision, effets
-std::string moveDetails(const Move& m);
+// Tout ce que fait une technique : genre, type, puissance, coût, cible et zone, portée, effets,
+// rythme (user : le lanceur, pour chiffrer un soin). moveHelp : sa description, puis tout cela.
+std::string moveDetails(const Move& m, const Fighter* user = nullptr);
+std::string moveHelp(const Move& m, const Fighter* user = nullptr);
+// Ce que fait un objet, chiffré (soins, capture, bonus, où l'utiliser) ; itemHelp : puis sa description
+std::string itemDetails(const ItemDef& d);
+std::string itemHelp(const ItemDef& d);
+// Forces et faiblesses d'une espèce (types, résistances propres, états impossibles), pour sa fiche
+std::string matchupText(const Species& s);
 
 // Préparation d'un combat
 struct BattleSetup {

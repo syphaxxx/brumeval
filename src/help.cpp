@@ -1,0 +1,198 @@
+// Aide (Échap > Aide, écran titre > Aide, ou F1 partout) : des pages qui expliquent les
+// statistiques, les dégâts, le combat, le damier et les zones, le rythme, les états, le tableau
+// des types et les touches. Les nombres viennent des règles (data/regles.json) : l'aide reste
+// juste quand on règle le jeu. Méthodes de Game (game.hpp).
+#include <algorithm>
+#include <cmath>
+#include <cstdio>
+
+#include "game.hpp"
+#include "options.hpp"
+
+static const Color WHITE = rgb(0xffffff), GOLD = rgb(0xffd34d), MUTED = rgb(0xaab3d8), GREEN = rgb(0x7dffa8), RED = rgb(0xff8a7a),
+                   DIM = rgb(0x5a6290);
+
+// 0.75 → « 0,75 » ; 0.25 → « 25 % »
+static std::string num(double x) {
+  char b[32];
+  std::snprintf(b, sizeof b, "%.2f", x);
+  std::string s = b;
+  while (s.back() == '0') s.pop_back();
+  if (s.back() == '.') s.pop_back();
+  std::replace(s.begin(), s.end(), '.', ',');
+  return s;
+}
+static std::string pct(double x) { return std::to_string(int(std::lround(x * 100))) + " %"; }
+
+namespace {
+struct HelpPage {
+  std::string title, summary;
+  std::vector<std::string> lines;  // vide : page spéciale (tableau des types)
+};
+}  // namespace
+
+static std::vector<HelpPage> helpPages() {
+  const Rules& R = rules();
+  std::vector<HelpPage> p;
+  p.push_back({"Statistiques", "PV, PM, Attaque, Défense, Magie, Résistance, Vitesse…",
+               {"PV (points de vie) : à 0, le combattant est K.O. Un soigneur ou une auberge rend tout.",
+                "PM (points de magie) : les sorts en coûtent. Les techniques sont gratuites.",
+                "Attaque : force des coups physiques. Défense : protège des coups physiques.",
+                "Magie : force des sorts et des soins. Résistance : protège des sorts.",
+                "Vitesse : remplit plus vite la jauge ATB, donc on agit plus souvent.",
+                "Précision : chance de toucher. Esquive : chance d'éviter un coup physique (jamais un sort).",
+                "Critique : chance d'un coup critique (dégâts ×" + num(R.critMult) + ").",
+                "Niveau : toutes les statistiques montent avec lui. L'expérience va surtout aux combattants ; les autres membres de l'équipe en reçoivent une part.",
+                "Équipement (Échap > Équipement) : l'arme et l'armure (héros seulement) et l'accessoire ajoutent leurs bonus."}});
+  p.push_back({"Dégâts", "Comment se calculent les dégâts.",
+               {"Coup physique : Attaque du lanceur contre Défense de la cible. Sort : Magie contre Résistance. La puissance de la technique et le niveau du lanceur comptent aussi.",
+                "Technique du même type que le lanceur : ×" + num(R.stab) + ".",
+                "Type efficace : ×2 (×4 si les deux types de la cible sont faibles). Peu efficace : ×0,5. Sans effet : 0. Voir la page Types.",
+                "Critique : ×" + num(R.critMult) + ". Un peu de hasard : de " + pct(R.spreadMin) + " à 100 % des dégâts.",
+                "Bonus et malus : de −3 à +3 par statistique, " + pct(R.stageStep) + " de plus par niveau (un malus divise d'autant). Tout s'efface à la fin du combat.",
+                "Certaines créatures résistent en plus aux coups physiques, à la magie ou à un type : leur fiche du Bestiaire donne leurs faiblesses."}});
+  p.push_back({"Combat", "Jauge ATB, Limite, mode auto, objets, fuite.",
+               {"Jauge ATB (trait blanc) : pleine, le combattant agit. Le temps s'arrête pendant que vous choisissez.",
+                "Compagnons : chaque héros combat avec sa créature. Leur jauge avance à " + pct(R.companionAtb) + " de la vitesse normale.",
+                "Limite (trait rose) : se remplit quand on reçoit des coups. Pleine, la technique ultime du combattant est prête.",
+                "Mode auto (Tab) : chacun joue sa première tactique possible (Échap > Tactiques).",
+                "Objets : soins, remèdes. Une lanterne capture une créature sauvage : plus elle est affaiblie, mieux c'est.",
+                "Fuir : " + pct(R.flee) + " de chance de réussir, pas contre tous les adversaires.",
+                "Changer : un autre membre de l'équipe prend la place d'un combattant."}});
+  p.push_back({"Damier", "Les 9 cases de chaque camp, corps à corps et distance.",
+               {"Chaque camp a 9 cases : 3 colonnes (avant, milieu, arrière) et 3 lignes (haut, centre, bas). L'avant est du côté de l'adversaire.",
+                "Corps à corps : ne vise que la colonne ennemie la plus avancée encore debout. Tant que l'avant tient, l'arrière est à l'abri.",
+                "À distance (sorts, flèches, jets…) : n'importe quelle case.",
+                "Au corps à corps, frapper depuis l'arrière ou viser l'arrière ne fait que " + pct(R.backRow) + " des dégâts.",
+                "Se déplacer : une action rapide (la jauge repart à " + std::to_string(R.quickGauge) + " %), pour s'abriter ou s'approcher.",
+                "Formation (Échap > Formation) : la case de chacun au début du combat. Les costauds devant, les lanceurs de sorts derrière."}});
+  p.push_back({"Zones", "Ligne, colonne, croix, tout le camp ; attaques annoncées.",
+               {"Une cible : seulement la case visée.",
+                "Ligne : la case visée et toute sa ligne, de l'avant à l'arrière.",
+                "Colonne : la case visée et toute sa colonne (haut, centre, bas).",
+                "Croix : la case visée et ses voisines (dessus, dessous, devant, derrière).",
+                "Tout le camp : tous les ennemis (ou tous les alliés), sans viser.",
+                "Autour de la case visée, une zone fait " + pct(R.zoneSide) + " des dégâts. En visant, les cases touchées s'allument en or : des ennemis serrés sont une belle cible, vos combattants aussi !",
+                "Attaques annoncées : un boss marque parfois une zone en rouge. À son tour suivant, il frappe ×" + num(R.bossBurst) + " ceux qui y sont encore : écartez-vous."}});
+  p.push_back({"Rythme", "Techniques rapides, normales et lourdes.",
+               {"Normale : après l'action, la jauge ATB repart de zéro.",
+                "Rapide : la jauge repart à " + std::to_string(R.quickGauge) + " % : on rejoue plus tôt. Souvent plus faible, parfois avec un effet en plus.",
+                "Lourde : la jauge repart à −" + std::to_string(R.heavyDelay) + " % : on rejoue plus tard. Ce sont les plus fortes.",
+                "Se déplacer est toujours rapide.",
+                "Chaque technique dit son rythme dans sa description (en bas de l'écran quand on la choisit)."}});
+  // États : effets chiffrés, puis les types insensibles
+  std::vector<std::string> st = {
+      "Poison : perd " + pct(R.poisonDmg) + " de ses PV max à la fin de chacun de ses tours.",
+      "Brûlure : perd " + pct(R.burnDmg) + " de ses PV max par tour, et son Attaque ×" + num(R.burnAtk) + ".",
+      "Paralysie : Vitesse ×" + num(R.paraSpeed) + " et " + pct(R.paraSkip) + " de chance de perdre son tour.",
+      "Sommeil : ne fait rien pendant " + std::to_string(R.sleepMin) + " à " + std::to_string(R.sleepMax) + " tours.",
+      "Un seul état à la fois. Un Remède ou un sort de guérison l'enlève, et tout s'efface à la fin du combat."};
+  std::string imm;
+  for (auto& t : types())
+    if (!t.immune.empty()) {
+      std::string list;
+      for (auto& s : t.immune) list += (list.empty() ? "" : ", ") + std::string(statusName(statusOf(s)));
+      imm += (imm.empty() ? "" : " ; ") + t.name + " : " + list;
+    }
+  if (!imm.empty()) st.push_back("Insensibles : " + imm + ".");
+  p.push_back({"États", "Poison, brûlure, paralysie, sommeil.", st});
+  p.push_back({"Types", "Le tableau des forces et faiblesses entre les types.", {}});
+  const auto& K = options().keys;
+  p.push_back({"Touches", "Clavier, raccourcis F1, F2, F11.",
+               {"Se déplacer, choisir : flèches ou " + keyName(K[K_UP]) + keyName(K[K_LEFT]) + keyName(K[K_DOWN]) + keyName(K[K_RIGHT]) + ".",
+                "Valider, parler : Entrée ou " + keyName(K[K_OK]) + ". Retour, menu : Échap ou " + keyName(K[K_BACK]) + ".",
+                "Mode auto en combat : " + keyName(K[K_AUTO]) + ".",
+                "F1 : cette aide. F2 : vitesse du jeu ×1, ×2 ou ×3. F11 : plein écran.",
+                "Les touches se changent dans Options > Touches. Une manette branchée marche toute seule."}});
+  return p;
+}
+
+void Game::helpMenu(int sel) {
+  auto pages = helpPages();
+  int panel = panelMode_;
+  panelMode_ = 0;  // le menu prend la place du résumé de l'équipe
+  Menu m;
+  m.title = "Aide";
+  m.x = 96, m.y = 30, m.w = 128, m.rows = (int)pages.size() + 1, m.sel = sel;
+  for (size_t i = 0; i < pages.size(); i++)
+    m.items.push_back({pages[i].title, "", pages[i].summary + " (aussi avec F1)", true, [this, i] { openHelp((int)i); }});
+  m.items.push_back({"Retour", "", "", true, [this, panel] {
+                       panelMode_ = panel;
+                       menus.pop();
+                     }});
+  m.onCancel = m.items.back().act;
+  menus.push(m);
+}
+
+void Game::openHelp(int page) {
+  helpPage_ = std::clamp(page, 0, (int)helpPages().size() - 1);
+  helpScroll_ = 0;
+  in.endFrame();
+}
+
+// Pendant l'aide, le reste du jeu attend. Gauche / droite : page précédente / suivante ;
+// haut / bas : faire défiler une page longue ; Entrée, Échap ou un clic : fermer.
+void Game::updateHelp() {
+  int n = (int)helpPages().size();
+  if (in.press[LEFT]) helpPage_ = (helpPage_ + n - 1) % n, helpScroll_ = 0;
+  if (in.press[RIGHT]) helpPage_ = (helpPage_ + 1) % n, helpScroll_ = 0;
+  if (in.press[UP] || in.wheel > 0) helpScroll_ = std::max(0, helpScroll_ - 1);
+  if (in.press[DOWN] || in.wheel < 0) helpScroll_++;  // borné au dessin
+  if (in.confirm || in.cancel || in.mclick[0]) {
+    if (menus.active() && menus.top().title == "Aide") menus.top().sel = helpPage_;
+    helpPage_ = -1;
+  }
+}
+
+void Game::drawHelp() {
+  auto pages = helpPages();
+  if (helpPage_ < 0 || helpPage_ >= (int)pages.size()) return;
+  const HelpPage& p = pages[(size_t)helpPage_];
+  g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0x000010, 150));
+  g.newLayer();
+  g.window(4, 4, 312, 232);
+  g.text(160, 9, "Aide · " + p.title + "  (" + std::to_string(helpPage_ + 1) + "/" + std::to_string(pages.size()) + ")", GOLD, 1);
+  g.text(160, 222, "Gauche / droite : page · Échap : fermer", MUTED, 1);
+  if (!p.lines.empty()) {
+    std::vector<std::pair<std::string, bool>> rows;  // ligne, début de paragraphe
+    for (auto& l : p.lines) {
+      auto w = Gfx::wrap(l, 288);
+      for (size_t i = 0; i < w.size(); i++) rows.push_back({w[i], i == 0});
+    }
+    const int visible = 17;
+    helpScroll_ = std::clamp(helpScroll_, 0, std::max(0, (int)rows.size() - visible));
+    for (int i = 0; i < visible && helpScroll_ + i < (int)rows.size(); i++) {
+      auto& [s, first] = rows[(size_t)(helpScroll_ + i)];
+      float y = 24 + i * 11;
+      if (first) g.text(12, y, "·", GOLD);
+      g.text(20, y, s, WHITE);
+    }
+    if ((int)rows.size() > visible) g.text(306, 210, helpScroll_ + visible < (int)rows.size() ? "▼" : " ", GOLD, 2);
+    return;
+  }
+  // Tableau des types : ligne = type de l'attaque, colonne = type de la cible
+  const auto& T = types();
+  int n = (int)T.size();
+  const float cw = std::min(21.f, 272.f / std::max(1, n)), x0 = 38, y0 = 24;
+  for (int d = 0; d < n; d++) g.text(x0 + d * cw + cw / 2, y0, utf8Prefix(T[d].name, 3), rgb(T[d].color), 1);
+  for (int a = 0; a < n; a++) {
+    float y = y0 + 12 + a * 12;
+    if (a % 2 == 0) g.rect(10, y - 2, 300, 12, rgb(0xffffff, 14));
+    g.text(12, y, utf8Prefix(T[a].name, 3), rgb(T[a].color));
+    for (int d = 0; d < n; d++) {
+      float e = typeEff(a, d), x = x0 + d * cw + cw / 2;
+      if (e > 1) g.text(x, y, "2", GREEN, 1);
+      else if (e == 0) g.text(x, y, "0", MUTED, 1);
+      else if (e < 1) g.text(x, y, "-", RED, 1);
+      else g.text(x, y, "·", DIM, 1);
+    }
+  }
+  float ly = y0 + 16 + n * 12;
+  g.text(160, ly, "Ligne : l'attaque · colonne : la cible", MUTED, 1);
+  g.text(20, ly + 12, "2", GREEN);
+  g.text(30, ly + 12, "efficace ×2", WHITE);
+  g.text(112, ly + 12, "-", RED);
+  g.text(122, ly + 12, "peu efficace ×0,5", WHITE);
+  g.text(232, ly + 12, "0", MUTED);
+  g.text(242, ly + 12, "sans effet", WHITE);
+}

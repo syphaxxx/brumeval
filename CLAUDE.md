@@ -123,7 +123,8 @@ compétence `joueur-automatique` de Claude Code.
 | `online.hpp/.cpp` | Multijoueur (écran titre) : héberger une partie (jusqu'à 4 joueurs), rejoindre, salon, vérification de la version et des données (`dataHash`), relais des messages par l'hôte, duel en ligne |
 | `coop.cpp` | Expédition à plusieurs (fonctions de `Online`) : lancement d'une graine pour tous, état de chaque joueur (message `ou`), autres joueurs sur la carte (`avatars`), attente et combat du gardien à plusieurs |
 | `trade.cpp` | Échange de créatures (fonctions de `Online`) : dans le salon (partie principale) ou pendant l'expédition à plusieurs, une contre une ou en cadeau |
-| `options.hpp/.cpp` | Options du joueur (`options()`, fichier `options.txt`) : volumes, plein écran, touches choisies (`K_UP`…) |
+| `options.hpp/.cpp` | Options du joueur (`options()`, fichier `options.txt`) : volumes, plein écran, vitesse du jeu, touches choisies (`K_UP`…) |
+| `help.cpp` | Méthodes de `Game` : Aide (Échap > Aide, écran titre > Aide, F1 partout) : pages `helpPages()` (statistiques, dégâts, combat, damier, zones, rythme, états, tableau des types, touches), chiffres tirés de `rules()` |
 | `events.hpp/.cpp` (quêtes) | Quêtes annexes : `quests()`, `findQuest`, `questFlag` ; action `quete` |
 | `version.hpp` | Numéro de version (`BRUMEVAL_VERSION`), affiché sur l'écran titre et comparé en multijoueur |
 | `test.cpp` | Mode test automatique |
@@ -307,6 +308,15 @@ compétence `joueur-automatique` de Claude Code.
   `son` aux autres). Les menus font leurs bruits eux-mêmes (`MenuStack::update`).
   Le mode test n'ouvre pas de sortie son mais fabrique chaque morceau et chaque
   effet (`audio::render`) pour vérifier qu'ils s'entendent.
+- Vitesse du jeu (1.9) : `options().speed` (1 à 3, ligne `vitesse` d'`options.txt`), Options > Vitesse du jeu ou F2 (`Game::cycleSpeed`, grand
+  « Vitesse ×2 » un instant, puis « ×2 » discret en haut à droite). main.cpp appelle `game.update(dt)` `Game::speed()` fois par
+  image : tout va plus vite (marche, combats, textes) sans changer la logique ; la musique reste normale. Toujours ×1 en
+  multijoueur (`Online::connected`).
+- Aide et descriptions (1.9) : `Game::helpPage_` ≥ 0 = une page d'aide en plein écran ; le reste du jeu attend (`update`
+  s'arrête après le réseau). `moveDetails(m, lanceur)` / `moveHelp` (battle.cpp) décrivent toute technique (genre, type,
+  puissance, coût, cible et zone, portée, soin chiffré, effets, rythme), `itemDetails` / `itemHelp` tout objet (soins,
+  capture de x % à y %, bonus, où l'utiliser) : le champ `description` des données n'est qu'une phrase d'ambiance placée
+  avant. `matchupText` donne les faiblesses d'une espèce (aide du Bestiaire).
 - Commandes : `Game::onKey` lit les touches choisies (`options().keys`) en plus
   des flèches, d'Entrée et d'Échap (toujours actives). Manette :
   `Game::onPad` / `onStick` (appelés par main.cpp, qui ouvre les manettes
@@ -456,6 +466,12 @@ réécrits par `writeJson` (petites listes sur une ligne) : garder ce format.
 - 13 types (dont Glace, Roche, Vent, Poison, Métal, Esprit). Héros : Lior,
   Maëlle, Brann, Isra, Kael, Sélène. Starters : Braisenard, Gouttelin, Ronceau.
   26 créatures sauvages capturables, 6 boss, 5 sortes d'ennemis humains.
+- **Attaques de zone** (1.9, demandées le 2026-10-12) : Tourbillon (Lior, ligne), Onde de choc (Brann, colonne), Nova
+  (Maëlle, croix), Salve (Kael, colonne, rapide), Éclats d'acier (Sélène, croix) ; pour les créatures Ruée, Nuée de braises,
+  Torrent, Pluie de spores, Avalanche, et Brasier, Rafale, Décharge, Morsure de gel qui gagnent une zone (aucune technique
+  de boss changée). Mesuré (BRUMEVAL_SIMULATIONS=4, avant → après ; IA / tactiques / équipement des boutiques) :
+  Givrecorne 27 → 46 / 36 → 53 / 68 → 74 %, Golem 63 → 51 / – / 71 → 55 %, les autres dans le bruit (±8) ;
+  joueur automatique : histoire finie, 1 défaite.
 - **Intérieurs** : 12 pièces dans les trois villages (soins, boutiques,
   auberges, chapelle, maisons habitées avec un coffre), plus la cabane de
   l'ermite (l'herboriste y soigne) et la tente du chef des bandits.

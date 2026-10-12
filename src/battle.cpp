@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <map>
 
 #include "audio.hpp"
@@ -15,27 +16,132 @@ static const Color WHITE = rgb(0xffffff), GOLD = rgb(0xffe066), GREY = rgb(0xb9c
 // ---------------------------------------------------------------------------
 // Textes d'aide
 // ---------------------------------------------------------------------------
-static std::string effectText(const Effect& e) {
-  std::string s;
-  if (e.cure) s = "guérit les états";
-  if (e.status != Status::None) s = statusName(e.status);
-  if (e.stat >= 0) s = std::string(stageName(e.stat)) + (e.stages > 0 ? " +" : " ") + std::to_string(e.stages) + (e.self ? " (lanceur)" : "");
-  if (e.chance < 100) s += " " + std::to_string(e.chance) + " %";
+static std::string pct(double x) { return std::to_string(int(std::lround(x * 100))) + " %"; }
+// 0.75 → « 0,75 », 2 → « 2 »
+static std::string numFr(double x) {
+  char b[32];
+  std::snprintf(b, sizeof b, "%.2f", x);
+  std::string s = b;
+  while (s.back() == '0') s.pop_back();
+  if (s.back() == '.') s.pop_back();
+  std::replace(s.begin(), s.end(), '.', ',');
   return s;
 }
 
-std::string moveDetails(const Move& m) {
+// Effet secondaire, avec qui il touche : « Brûlure (20 %) », « Défense −1 de la cible »
+static std::string effectText(const Effect& e, const Move& m) {
+  bool onAllies = m.target == Target::Ally || m.target == Target::AllAllies || m.target == Target::AllyKO;
+  std::string who = e.self ? "du lanceur" : m.target == Target::AllAllies ? "de l'équipe" : onAllies ? "de l'allié"
+                    : m.target == Target::AllEnemies || m.zone != Area::Single ? "des ennemis touchés" : "de la cible";
+  std::string s;
+  if (e.cure) s = "guérit les états";
+  if (e.status != Status::None) s = statusName(e.status);
+  if (e.stat >= 0) s = std::string(stageName(e.stat)) + (e.stages > 0 ? " +" : " −") + std::to_string(std::abs(e.stages)) + " " + who;
+  if (e.chance < 100) s += " (" + std::to_string(e.chance) + " % de chance)";
+  return s;
+}
+
+// Tout ce que fait une technique, en clair : genre, type, puissance, coût, cible et zone, portée,
+// effets, rythme. user : le lanceur, pour chiffrer un soin.
+std::string moveDetails(const Move& m, const Fighter* user) {
+  const Rules& R = rules();
   static const char* KIND[] = {"Physique", "Magique", "Soin", "Réanimation", "Statut"};
   std::string s = std::string(KIND[(int)m.kind]) + " · " + typeName(m.type);
   if (m.damaging()) s += " · Puissance " + std::to_string(m.power);
+  s += m.cost > 0 ? " · " + std::to_string(m.cost) + " PM" : std::string(" · Gratuite");
   if (m.acc < 100) s += " · Précision " + std::to_string(m.acc) + " %";
   if (m.critBonus > 0) s += " · Critique +" + std::to_string(m.critBonus) + " %";
-  for (auto& e : m.effects) s += " · " + effectText(e);
-  if (m.pace == Pace::Quick) s += " · Rapide : rejoue plus tôt";
-  if (m.pace == Pace::Heavy) s += " · Lourde : rejoue plus tard";
-  if (m.damaging() && m.target == Target::Enemy) s += m.melee ? " · Corps à corps" : " · À distance";
-  if (m.zone != Area::Single && m.zone != Area::All) s += std::string(" · Zone : ") + zoneName(m.zone);
+  // Cible et zone, portée
+  std::string side = m.damaging() ? ", " + pct(R.zoneSide) + " autour" : "";
+  switch (m.target) {
+    case Target::Enemy:
+      switch (m.zone) {
+        case Area::Line: s += ". Un ennemi et toute sa ligne (de l'avant à l'arrière" + side + ")"; break;
+        case Area::Column: s += ". Un ennemi et toute sa colonne (haut, centre, bas" + side + ")"; break;
+        case Area::Cross: s += ". Un ennemi et ses voisins en croix" + (side.empty() ? "" : " (" + side.substr(2) + ")"); break;
+        case Area::All: s += ". Tous les ennemis"; break;
+        case Area::Single: s += ". Un ennemi"; break;
+      }
+      break;
+    case Target::AllEnemies: s += ". Tous les ennemis, sans viser"; break;
+    case Target::Ally: s += ". Un allié"; break;
+    case Target::AllAllies: s += ". Toute l'équipe"; break;
+    case Target::AllyKO: s += ". Un allié K.O."; break;
+  }
+  if (m.damaging() && m.target == Target::Enemy) s += m.melee ? ", corps à corps (colonne ennemie la plus avancée)" : ", à distance (toute case)";
+  // Soins
+  if (m.kind == Kind::Heal && m.power > 0)
+    s += user ? ". Rend environ " + std::to_string(int(m.power * user->eMag() / 20) + 2) + " PV (Magie " + std::to_string(int(user->eMag())) + ")"
+              : ". Rend Puissance " + std::to_string(m.power) + " × Magie ÷ 20 PV";
+  if (m.kind == Kind::Revive) s += ". Relève avec " + std::to_string(m.power) + " % des PV";
+  if (!m.effects.empty()) {
+    s += ". Effet : ";
+    for (size_t i = 0; i < m.effects.size(); i++) s += (i ? ", " : "") + effectText(m.effects[i], m);
+  }
+  if (m.pace == Pace::Quick) s += ". Rapide : rejoue plus tôt (jauge à " + std::to_string(R.quickGauge) + " %)";
+  if (m.pace == Pace::Heavy) s += ". Lourde : rejoue plus tard (jauge à −" + std::to_string(R.heavyDelay) + " %)";
+  return s + ".";
+}
+
+std::string moveHelp(const Move& m, const Fighter* user) { return (m.desc.empty() ? "" : m.desc + " ") + moveDetails(m, user); }
+
+// Ce que fait un objet, chiffré : soins, réanimation, capture, bonus d'équipement, où l'utiliser
+std::string itemDetails(const ItemDef& d) {
+  const Rules& R = rules();
+  std::vector<std::string> v;
+  if (d.slot >= 0) {
+    std::string b = d.bonusText();
+    v.push_back(std::string(gearSlotName(d.slot)) + (b.empty() ? "" : " : " + b) + (d.slot != G_ACCESSORY ? " (héros seulement)" : ""));
+  }
+  if (d.healHp) v.push_back(d.healHp >= 999 ? "Rend tous les PV" : "Rend " + std::to_string(d.healHp) + " PV");
+  if (d.healMp) v.push_back(d.healMp >= 999 ? "Rend tous les PM" : "Rend " + std::to_string(d.healMp) + " PM");
+  if (d.revive) v.push_back("Relève un allié K.O. avec " + std::to_string(d.revive) + " % de ses PV");
+  if (d.cure) v.push_back("Guérit poison, brûlure, paralysie et sommeil");
+  if (d.capture > 0) {
+    double lo = std::min(R.capMax, R.capBase * d.capture), hi = std::min(R.capMax, (R.capBase + R.capHp) * d.capture);
+    v.push_back("Capture : " + pct(lo) + " de chance sur une créature en pleine forme, jusqu'à " + pct(hi) + " presque K.O.");
+  }
+  if (d.key) v.push_back("Objet important");
+  else if (d.slot < 0) v.push_back(d.battle && d.field ? "En combat et dans le menu" : d.battle ? "En combat seulement" : "Dans le menu seulement");
+  std::string s;
+  for (auto& x : v) s += (s.empty() ? "" : ". ") + x;
+  return s.empty() ? s : s + ".";
+}
+
+// Forces et faiblesses d'une espèce : efficacité de chaque type d'attaque (ses deux types et ses
+// résistances propres), résistances aux coups physiques ou à la magie, états impossibles
+std::string matchupText(const Species& sp) {
+  std::map<float, std::string, std::greater<float>> by;
+  auto r = [&](const std::string& k) {
+    auto it = sp.resist.find(k);
+    return it == sp.resist.end() ? 1.f : it->second;
+  };
+  for (Type t = 0; t < (Type)types().size(); t++) {
+    float e = typeEff(t, sp.type) * (sp.type2 >= 0 ? typeEff(t, sp.type2) : 1.f) * r(types()[t].id);
+    if (e != 1) by[e] += (by[e].empty() ? "" : ", ") + types()[t].name;
+  }
+  std::string weak, strong, none;
+  for (auto& [e, names] : by) {
+    std::string mult = " (×" + numFr(e) + ")";
+    if (e == 0) none = names;
+    else if (e > 1) weak += (weak.empty() ? "" : ", ") + names + mult;
+    else strong += (strong.empty() ? "" : ", ") + names + mult;
+  }
+  std::string s = "Faible contre : " + (weak.empty() ? std::string("rien") : weak) + ".";
+  if (!strong.empty()) s += " Résiste : " + strong + ".";
+  if (!none.empty()) s += " Sans effet : " + none + ".";
+  if (r("physique") != 1) s += std::string(r("physique") < 1 ? " Encaisse" : " Craint") + " les coups physiques (×" + numFr(r("physique")) + ").";
+  if (r("magique") != 1) s += std::string(r("magique") < 1 ? " Encaisse" : " Craint") + " la magie (×" + numFr(r("magique")) + ").";
+  std::string imm;
+  for (Status st : {Status::Poison, Status::Burn, Status::Paralysis, Status::Sleep})
+    if (immuneTo(sp, st)) imm += (imm.empty() ? "" : ", ") + std::string(statusName(st));
+  if (!imm.empty()) s += " Insensible : " + imm + ".";
   return s;
+}
+
+std::string itemHelp(const ItemDef& d) {
+  std::string s = itemDetails(d);
+  return d.desc.empty() ? s : s.empty() ? d.desc : s + " " + d.desc;
 }
 
 float captureChance(const Fighter& f, float mult) {
@@ -355,7 +461,7 @@ void Battle::command(FighterP a) {
                        t.rows = 5;
                        for (auto& id : a->techs()) {
                          const Move& mv = moveInfo(id);
-                         t.items.push_back({mv.name, typeName(mv.type), moveDetails(mv), true, [this, a, id] { moveTarget(a, id); }});
+                         t.items.push_back({mv.name, typeName(mv.type), moveHelp(mv, a.get()), true, [this, a, id] { moveTarget(a, id); }});
                        }
                        dock(t);
                        G.menus.push(t);
@@ -368,8 +474,7 @@ void Battle::command(FighterP a) {
                          t.rows = 5;
                          for (auto& id : sp) {
                            const Move& mv = moveInfo(id);
-                           std::string help = mv.desc.empty() ? moveDetails(mv) : mv.desc + " (" + moveDetails(mv) + ")";
-                           t.items.push_back({mv.name, std::to_string(mv.cost) + " PM", help, a->mp >= mv.cost,
+                           t.items.push_back({mv.name, std::to_string(mv.cost) + " PM", moveHelp(mv, a.get()), a->mp >= mv.cost,
                                               [this, a, id] { moveTarget(a, id); }});
                          }
                          dock(t);
@@ -377,7 +482,8 @@ void Battle::command(FighterP a) {
                        }});
   if (!a->S().limit.empty()) {
     const Move& lim = moveInfo(a->S().limit);
-    m.items.push_back({"Limite", "", a->lim >= 100 ? lim.name + " : technique ultime !" : "La jauge Limite se remplit quand on reçoit des coups.",
+    m.items.push_back({"Limite", "", (a->lim >= 100 ? lim.name + " : technique ultime ! " : "La jauge Limite (rose) se remplit quand on reçoit des coups. " + lim.name + " : ") +
+                           moveDetails(lim, a.get()),
                        a->lim >= 100, [this, a, lim] {
                          G.menus.clear();
                          useMove(a, lim.id, lim.target == Target::AllAllies ? alive(allies) : alive(foes), true);
@@ -395,12 +501,12 @@ void Battle::command(FighterP a) {
                          std::string id = d.id;
                          bool ok = true;
                          bool lantern = d.capture > 0;
-                         std::string help = d.desc;
+                         std::string help = itemHelp(d);
                          if (lantern) {
                            ok = canCapture && creature;
                            if (!canCapture) help = "Impossible de capturer ici.";
                            else if (!creature) help = "On ne capture pas une personne !";
-                           else if ((int)G.team.size() >= rules().maxTeam) help = d.desc + " Équipe complète : la créature ira dans la réserve.";
+                           else if ((int)G.team.size() >= rules().maxTeam) help += " Équipe complète : la créature ira dans la réserve.";
                          }
                          if (d.revive) ok = alive(allies).size() < allies.size();
                          t.items.push_back({d.name, "×" + std::to_string(n), help, ok, [this, a, id, lantern] {

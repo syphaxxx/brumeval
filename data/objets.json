@@ -2,7 +2,7 @@
   {
     "id": "potion",
     "nom": "Potion",
-    "description": "Rend 40 PV à un allié.",
+    "description": "Un flacon d'eau de source aux herbes.",
     "prix": 30,
     "combat": true,
     "menu": true,
@@ -11,7 +11,7 @@
   {
     "id": "superpotion",
     "nom": "Super-potion",
-    "description": "Rend 120 PV à un allié.",
+    "description": "Une potion concentrée, au goût amer.",
     "prix": 90,
     "combat": true,
     "menu": true,
@@ -20,7 +20,7 @@
   {
     "id": "ether",
     "nom": "Éther",
-    "description": "Rend 25 PM à un allié.",
+    "description": "Une eau bleutée qui éclaircit l'esprit.",
     "prix": 70,
     "combat": true,
     "menu": true,
@@ -29,7 +29,7 @@
   {
     "id": "elixir",
     "nom": "Élixir",
-    "description": "Rend tous les PV et PM à un allié.",
+    "description": "Un remède rare, précieux entre tous.",
     "prix": 400,
     "combat": true,
     "menu": true,
@@ -39,7 +39,7 @@
   {
     "id": "plume",
     "nom": "Plume ravivante",
-    "description": "Relève un allié K.O. avec la moitié de ses PV.",
+    "description": "Une plume tiède qui chasse l'évanouissement.",
     "prix": 120,
     "combat": true,
     "menu": true,
@@ -48,7 +48,7 @@
   {
     "id": "remede",
     "nom": "Remède",
-    "description": "Guérit les états : poison, brûlure, paralysie, sommeil.",
+    "description": "Un sachet d'herbes contre tous les maux.",
     "prix": 25,
     "combat": true,
     "soin_statut": true
@@ -56,7 +56,7 @@
   {
     "id": "lanterne",
     "nom": "Lanterne",
-    "description": "Capture une créature. Plus elle est affaiblie, mieux c'est.",
+    "description": "Sa lueur attire une créature et la retient.",
     "prix": 40,
     "combat": true,
     "capture": 1.0
@@ -64,7 +64,7 @@
   {
     "id": "lanterne_argent",
     "nom": "Lanterne d'argent",
-    "description": "Capture beaucoup plus facile.",
+    "description": "Une lueur plus vive, qui retient mieux.",
     "prix": 110,
     "combat": true,
     "capture": 1.6
@@ -72,7 +72,7 @@
   {
     "id": "lanterne_or",
     "nom": "Lanterne d'or",
-    "description": "Capture presque à coup sûr.",
+    "description": "Une lueur dorée à laquelle presque rien ne résiste.",
     "prix": 300,
     "combat": true,
     "capture": 2.5

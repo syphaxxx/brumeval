@@ -36,6 +36,8 @@ COMMANDES
   Entrée ou Espace    parler, valider
   Échap               annuler, menu (équipe, tactiques, objets, sauvegarde)
   Tab (en combat)     mode auto : les tactiques jouent à votre place
+  F1                  aide (statistiques, damier, zones, états, types)
+  F2                  vitesse du jeu ×1, ×2 ou ×3
   F11                 plein écran ou fenêtre
   La souris marche aussi dans les menus.
 
@@ -56,7 +58,13 @@ COMMANDES
   En boutique, « Vendre… » rachète vos objets à moitié prix.
 
   Options (écran titre, ou Échap > Options) : volume de la musique et des
-  effets, plein écran, touches du clavier.
+  effets, plein écran, vitesse du jeu, touches du clavier.
+
+  Échap > Aide (ou F1) : ce que font les statistiques, le calcul des
+  dégâts, le damier et les zones, les états, et le tableau des types (qui
+  est efficace contre qui). Chaque technique et chaque objet détaille son
+  effet en bas de l'écran quand on le choisit ; le Bestiaire donne les
+  faiblesses de chaque créature.
 
   Manette : croix ou stick pour se déplacer, A valider, B annuler, Start
   menu, Select mode auto. Elle se branche à tout moment.

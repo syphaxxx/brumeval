@@ -106,7 +106,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     frame();
     snap("86_options");
     bool louder = options().music == std::min(10, vol + 1);
-    menus.top().sel = 3;  // Touches
+    menus.top().sel = 4;  // Touches
     in.confirm = true;
     frame();
     snap("87_touches");
@@ -120,11 +120,17 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     bool bound = bindKey_ < 0 && options().keys[K_UP] == SDL_SCANCODE_I && in.press[UP];
     onKey(SDL_SCANCODE_I, false, false);
     in.endFrame();
+    for (int i = 0; i < 2; i++) {  // F2 deux fois : vitesse ×3
+      onKey(SDL_SCANCODE_F2, true, false);
+      onKey(SDL_SCANCODE_F2, false, false);
+    }
+    bool fast = speed() == 3 && speedT_ > 0;
+    speedT_ = 0;
     options() = Options{};
     loadOptions();
-    bool reread = options().keys[K_UP] == SDL_SCANCODE_I && options().music == std::min(10, vol + 1);
-    check(opened && louder && waiting && bound && reread,
-          "options : écran titre > Options, volume de la musique, nouvelle touche pour « Haut », relues depuis le fichier");
+    bool reread = options().keys[K_UP] == SDL_SCANCODE_I && options().music == std::min(10, vol + 1) && options().speed == 3;
+    check(opened && louder && waiting && bound && fast && reread,
+          "options : écran titre > Options, volume de la musique, nouvelle touche pour « Haut », vitesse ×3 (F2), relues depuis le fichier");
     std::remove(userFile(optionsFile).c_str());
     optionsFile = realFile;
     options() = Options{};
@@ -1547,6 +1553,29 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     show("bestiaire : fiche vue");
     in.press[DOWN] = true;
     show("bestiaire : jamais vue");
+    menus.clear();
+    helpMenu();  // Aide : la liste, puis chaque page (F1 l'ouvre aussi)
+    show("aide");
+    int helpN = (int)menus.top().items.size() - 1;
+    in.confirm = true;
+    frame();
+    bool helpOk = helpPage_ == 0;
+    for (int k = 0; k < helpN; k++) {
+      show("aide : page " + std::to_string(k + 1));
+      snap(k == 7 ? "aide_types" : "aide_" + std::to_string(k + 1));
+      in.press[RIGHT] = true;
+      frame();
+    }
+    helpOk = helpOk && helpPage_ == 0;  // la dernière page revient à la première
+    in.cancel = true;
+    frame();
+    helpOk = helpOk && helpPage_ < 0 && menus.active();
+    onKey(SDL_SCANCODE_F1, true, false);
+    onKey(SDL_SCANCODE_F1, false, false);
+    helpOk = helpOk && helpPage_ == 0;
+    onKey(SDL_SCANCODE_F1, true, false);
+    onKey(SDL_SCANCODE_F1, false, false);
+    check(helpOk && helpPage_ < 0, "aide : " + std::to_string(helpN) + " pages, gauche/droite pour tourner, Échap et F1 pour fermer");
     menus.clear();
     tacticsMenu();
     show("tactiques");

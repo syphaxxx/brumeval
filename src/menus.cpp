@@ -25,7 +25,7 @@ void Game::optionsMenu(int sel) {
   panelMode_ = 0;  // le menu prend la place du résumé de l'équipe
   Menu m;
   m.title = "Options";
-  m.x = 60, m.y = 40, m.w = 200, m.rows = 5, m.sel = sel;
+  m.x = 60, m.y = 40, m.w = 200, m.rows = 6, m.sel = sel;
   auto volume = [this](const std::string& label, int* v, const std::string& help) {
     MenuItem it{label, "", help, true, nullptr};
     it.adjust = [v](int d) {
@@ -46,6 +46,19 @@ void Game::optionsMenu(int sel) {
   fs.adjust = [full](int) { full(); };
   fs.rightFn = [] { return std::string(options().fullscreen ? "Oui" : "Non"); };
   m.items.push_back(fs);
+  {
+    MenuItem sp{"Vitesse du jeu", "", "Gauche / droite : ×1, ×2 ou ×3 (marche, combats, textes). Aussi avec F2. Toujours ×1 en multijoueur.", true,
+                [] {
+                  options().speed = options().speed % 3 + 1;
+                  saveOptions();
+                }};
+    sp.adjust = [](int d) {
+      options().speed = std::clamp(options().speed + d, 1, 3);
+      saveOptions();
+    };
+    sp.rightFn = [] { return "×" + std::to_string(options().speed); };
+    m.items.push_back(sp);
+  }
   m.items.push_back({"Touches", "", "Changer les touches du clavier. La manette se branche toute seule.", true, [this] { keysMenu(); }});
   m.items.push_back({"Retour", "", "", true, [this, panel] {
                        panelMode_ = panel;
@@ -80,7 +93,7 @@ void Game::bindKey(SDL_Scancode k) {
   bindKey_ = -1;
   in.endFrame();
   if (k == SDL_SCANCODE_ESCAPE) return;
-  if (k == SDL_SCANCODE_RETURN || k == SDL_SCANCODE_KP_ENTER || k == SDL_SCANCODE_F11 || k == SDL_SCANCODE_UP || k == SDL_SCANCODE_DOWN ||
+  if (k == SDL_SCANCODE_RETURN || k == SDL_SCANCODE_KP_ENTER || k == SDL_SCANCODE_F11 || k == SDL_SCANCODE_F2 || k == SDL_SCANCODE_UP || k == SDL_SCANCODE_DOWN ||
       k == SDL_SCANCODE_LEFT || k == SDL_SCANCODE_RIGHT)
     return notice("Cette touche marche déjà toute seule.");
   auto& K = options().keys;
@@ -144,9 +157,10 @@ void Game::pauseMenu() {
                          ask("Revenir à l'écran titre ? (pensez à sauvegarder)", [this] { titleMenu(); });
                        }});
   }
-  m.items.push_back({"Options", "", "Volumes, plein écran et touches.", true, [this] { optionsMenu(); }});
+  m.items.push_back({"Options", "", "Volumes, plein écran, vitesse du jeu et touches.", true, [this] { optionsMenu(); }});
+  m.items.push_back({"Aide", "", "Statistiques, dégâts, damier, zones, états, tableau des types, touches (F1).", true, [this] { helpMenu(); }});
   m.items.push_back({"Reprendre", "", "", true, [this] { menus.clear(); }});
-  m.rows = (int)m.items.size();
+  m.rows = std::min(13, (int)m.items.size());  // au-delà, la liste défile (la bande d'aide reste visible)
   menus.push(m);
 }
 
@@ -283,7 +297,7 @@ void Game::bestiaryMenu(int sel) {
     std::snprintf(num, sizeof num, "%02d ", int(i + 1));
     std::string id = s.id;
     MenuItem it{num + (v ? s.name : std::string("???")), c ? "★" : v ? "vu" : "",
-                c ? "Obtenue." : v ? "Rencontrée, pas encore obtenue." : "Pas encore rencontrée.", true, nullptr, [this, id] { bestiarySel_ = id; }};
+                c ? "Obtenue. " + matchupText(s) : v ? "Rencontrée, pas encore obtenue. " + matchupText(s) : "Pas encore rencontrée.", true, nullptr, [this, id] { bestiarySel_ = id; }};
     it.shrink = true;
     m.items.push_back(it);
   }
@@ -541,7 +555,7 @@ void Game::gearPick(FighterP f, int who, int s) {
     int n = items.count(d.id) ? items[d.id] : 0;
     if (d.slot != s || n <= 0 || !canEquip(*f, d)) continue;
     std::string id = d.id;
-    MenuItem it{d.name, "×" + std::to_string(n), d.bonusText() + ". " + d.desc, true, [equip, id] { equip(id); }};
+    MenuItem it{d.name, "×" + std::to_string(n), itemHelp(d), true, [equip, id] { equip(id); }};
     it.shrink = true;
     m.items.push_back(it);
   }
@@ -643,8 +657,8 @@ void Game::itemMenuAt(int sel) {
     if (n <= 0) continue;
     std::string id = d.id;
     int myIdx = idx++;
-    std::string note = d.field ? "" : d.slot >= 0 ? " (équipement : Échap > Équipement)" : d.key ? " (objet important)" : " (en combat)";
-    m.items.push_back({d.name, "×" + std::to_string(n), d.desc + note, d.field,
+    std::string note = d.slot >= 0 ? " (à porter : Échap > Équipement)" : "";
+    m.items.push_back({d.name, "×" + std::to_string(n), itemHelp(d) + note, d.field,
                        [this, id, myIdx] {
                          pickMember("Sur qui ?", [id](const Fighter& f) {
                            const ItemDef& d = item(id);
@@ -690,7 +704,7 @@ void Game::magicMenu() {
                          s.x = 24, s.y = 40, s.w = 170, s.rows = 5;
                          for (auto& id : heal) {
                            const Move& mv = moveInfo(id);
-                           s.items.push_back({mv.name, std::to_string(mv.cost) + " PM", mv.desc, caster->mp >= mv.cost, [this, caster, id] {
+                           s.items.push_back({mv.name, std::to_string(mv.cost) + " PM", moveHelp(mv, caster.get()), caster->mp >= mv.cost, [this, caster, id] {
                                                 const Move& mv = moveInfo(id);
                                                 auto cast = [this, caster, id](Fighter* target) {
                                                   const Move& mv = moveInfo(id);
@@ -733,7 +747,7 @@ void Game::shopMenuAt(const std::vector<std::string>& stock, int sel) {
     const ItemDef& d = item(stock[i]);
     std::string id = d.id;
     int have = items.count(id) ? items[id] : 0;
-    m.items.push_back({d.name, std::to_string(d.price) + " or", d.desc + " (vous en avez " + std::to_string(have) + ")", true,
+    m.items.push_back({d.name, std::to_string(d.price) + " or", itemHelp(d) + " (vous en avez " + std::to_string(have) + ")", true,
                        [this, stock, id, i] {
                          const ItemDef& d = item(id);
                          if (gold < d.price) {
@@ -765,7 +779,7 @@ void Game::sellMenu(const std::vector<std::string>& stock, int sel) {
     if (have == items.end() || have->second <= 0 || d.key || d.price / 2 <= 0) continue;
     std::string id = d.id;
     int at = (int)m.items.size();
-    MenuItem it{d.name, "+" + std::to_string(d.price / 2) + " or", "Vous en avez " + std::to_string(have->second) + ".", true, [this, stock, id, at] {
+    MenuItem it{d.name, "+" + std::to_string(d.price / 2) + " or", "Vous en avez " + std::to_string(have->second) + ". " + itemHelp(d), true, [this, stock, id, at] {
                   items[id]--;
                   gold += item(id).price / 2;
                   audio::play("achat");
