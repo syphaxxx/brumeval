@@ -54,6 +54,9 @@ class Server {
   std::uintptr_t sock_ = ~std::uintptr_t(0);
 };
 
+// Prépare le réseau (Windows : WSAStartup, une seule fois) ; aussi pour la box (upnp.cpp)
+void startup();
+
 // Adresses IPv4 de cet ordinateur (à donner aux amis), sans 127.0.0.1
 std::vector<std::string> localAddresses();
 

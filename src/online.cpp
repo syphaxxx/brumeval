@@ -1,5 +1,7 @@
 #include "online.hpp"
 
+#include "upnp.hpp"
+
 #include <SDL.h>
 
 #include <algorithm>
@@ -31,6 +33,12 @@ void Online::loadSettings() {
     else if (line.rfind("adresse ", 0) == 0) address = line.substr(8);
   }
 }
+// Code de partie de l'hôte (vide tant que la box n'a pas répondu, ou si elle a refusé)
+std::string Online::gameCode() const {
+  upnp::Result u = upnp::state();
+  return u.ok ? net::gameCode(u.external) : std::string();
+}
+
 void Online::saveSettings() const { writeUserFile(settingsName, "pseudo " + pseudo + "\nadresse " + address + "\n"); }
 
 std::string Online::dataHash() {
@@ -181,14 +189,15 @@ void Online::menu(int sel) {
   m.title = "Multijoueur";
   m.x = 8, m.y = 40, m.w = 150, m.rows = 5, m.sel = sel;
   m.items.push_back({"Héberger une partie", "",
-                     "Attendre ses amis (trois au plus) : donnez-leur votre adresse. Puis duel ou expédition à plusieurs.", true,
-                     [this] { host(); }});
-  m.items.push_back({"Rejoindre une partie", "", "Se connecter à l'ordinateur d'un ami avec son adresse.", true, [this] {
-                       G.editText("Adresse de l'hôte (ex. 100.101.102.103)", address, 60, [this](const std::string& a) {
+                     "Ouvrir une partie et donner son code à ses amis (trois au plus).",
+                     true, [this] { host(); }});
+  m.items.push_back({"Rejoindre une partie", "", "Taper le code de partie de l'hôte, ou son adresse.", true, [this] {
+                       G.editText("Code de partie ou adresse de l'hôte", address, 60, [this](const std::string& a) {
                          if (a.empty()) return;
                          address = a;
                          saveSettings();
-                         join(a);
+                         std::string ip;
+                         join(net::decodeGameCode(a, ip) ? ip : a);
                        });
                      }});
   {
@@ -237,6 +246,7 @@ void Online::host() {
   me_ = pseudo;
   ended_.clear();
   addresses_ = net::localAddresses();
+  if (!loopback) upnp::open(port);  // ouvre la box et donne le code de partie (en arrière-plan)
   status_.clear();
   salon();
 }
@@ -269,6 +279,7 @@ void Online::disconnect(const std::string& why) {
     p.conn->close();
   }
   peers_.clear();
+  if (server_.open()) upnp::close();  // l'hôte referme le port sur la box
   server_.close();
   players_.clear();
   host_ = false;
@@ -340,6 +351,13 @@ void Online::salon(int sel) {
     m.items.push_back({"Prêt !", "", nameOf(0) + " choisit : duel ou expédition.", false, nullptr});
   m.items.push_back({"Échanger", "", "Échanger une créature de votre partie principale avec un autre joueur, ou lui en offrir une.",
                      !players_.empty(), [this] { tradeMenu(); }});
+  if (host_)
+    m.items.push_back({"Copier le code", "", "Met le code de partie dans le presse-papiers (à coller sur Discord, par exemple).", true, [this] {
+                         std::string c = gameCode();
+                         if (c.empty()) return G.notice("Pas encore de code : voir à droite.");
+                         SDL_SetClipboardText(c.c_str());
+                         G.notice("Code " + c + " copié.");
+                       }});
   m.rows = (int)m.items.size() + 1;
   m.items.push_back({"Quitter", "", "Se déconnecter.", true, [this] {
                        disconnect("");
@@ -626,11 +644,19 @@ void Online::draw(Gfx& g) {
       for (auto& [name, lvl] : t) lines.push_back({"  " + utf8Prefix(name, 12) + " N." + std::to_string(sameLevel_ ? 50 : lvl), WHITE});
     };
     if (state_ == State::Salon && host_ && players_.empty()) {
-      lines.push_back({"Vos adresses :", GOLD});
+      upnp::Result u = upnp::state();
+      lines.push_back({"Code de partie :", GOLD});
+      if (loopback) lines.push_back({"  (mode test)", MUTED});
+      else if (!u.done) lines.push_back({"  ouverture de la box…", MUTED});
+      else if (u.ok) lines.push_back({"  " + gameCode(), GREEN});
+      else lines.push_back({"  aucun (voir en bas)", RED});
+      lines.push_back({"Même réseau ou VPN :", GOLD});
       if (addresses_.empty()) lines.push_back({"  (aucune trouvée)", MUTED});
-      for (size_t i = 0; i < addresses_.size() && i < 4; i++) lines.push_back({"  " + addresses_[i], WHITE});
+      for (size_t i = 0; i < addresses_.size() && i < 3; i++) lines.push_back({"  " + addresses_[i], WHITE});
       lines.push_back({"Port : " + std::to_string(port), MUTED});
       lines.push_back({"En attente d'amis…", MUTED});
+      if (u.done && !u.ok && status_.empty())  // une seule fois : le joueur peut ensuite fermer le message
+        status_ = u.error + " Solutions : activer l'UPnP dans la box, ou Tailscale (adresse en 100.).";
     } else if (state_ == State::Joining) {
       lines.push_back({"Connexion à :", GOLD});
       lines.push_back({"  " + utf8Prefix(address, 20), WHITE});

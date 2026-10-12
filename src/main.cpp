@@ -25,7 +25,9 @@
 #include "audio.hpp"
 #include "events.hpp"
 #include "game.hpp"
+#include "net.hpp"
 #include "options.hpp"
+#include "upnp.hpp"
 #include "world.hpp"
 
 // Charge tout le dossier data/. Renvoie le message d'erreur (vide si tout va bien).
@@ -200,7 +202,24 @@ static int runTests(const char* outDir, bool partie = false) {
   return code;
 }
 
+// brumeval --upnp : vérifie que la box accepte d'ouvrir le port du multijoueur, affiche le code de
+// partie, puis referme le port (diagnostic pour l'hôte)
+static int checkUpnp() {
+  std::printf("Recherche de la box (UPnP)...\n");
+  upnp::open(net::PORT);
+  upnp::Result r;
+  for (int i = 0; i < 100 && !(r = upnp::state()).done; i++) SDL_Delay(100);
+  std::printf("Adresse de cet ordinateur : %s\nAdresse Internet de la box : %s\n", r.local.empty() ? "?" : r.local.c_str(),
+              r.external.empty() ? "?" : r.external.c_str());
+  if (r.ok) std::printf("Port %d ouvert. Code de partie : %s\n", net::PORT, net::gameCode(r.external).c_str());
+  else std::printf("Échec : %s\n", r.error.empty() ? "pas de réponse de la box" : r.error.c_str());
+  upnp::close();
+  std::printf("Port refermé.\n");
+  return r.ok ? 0 : 1;
+}
+
 int main(int argc, char* argv[]) {
+  if (argc > 1 && std::string(argv[1]) == "--upnp") return checkUpnp();
   if (argc > 1 && std::string(argv[1]) == "--test") return runTests(argc > 2 ? argv[2] : "captures");
   if (argc > 1 && std::string(argv[1]) == "--partie") return runTests(argc > 2 ? argv[2] : "partie", true);
   bool demo = argc > 1 && std::string(argv[1]) == "--demo";

@@ -48,7 +48,7 @@ namespace net {
 static const std::uintptr_t NONE = ~std::uintptr_t(0);
 static socket_t S(std::uintptr_t s) { return (socket_t)s; }
 
-static void startup() {
+void startup() {
 #ifdef _WIN32
   static bool done = [] {
     WSADATA d;

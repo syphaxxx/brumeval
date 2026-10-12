@@ -60,7 +60,7 @@ importantes ont un commentaire d'une ligne au-dessus.
 | Forge | `forge.cpp` | Forge de Forgeroc : menu, coûts, forger (objets forgés générés dans `data.cpp`) |
 | Aide | `help.cpp` | Pages d'aide (Échap > Aide, F1) : statistiques, dégâts, damier, zones, rythme, états, tableau des types, touches |
 | Expédition | `expedition.hpp/.cpp`, `procgen.hpp/.cpp` | Monde généré à partir d'une graine, Camp, sauvegarde à part |
-| Multijoueur | `net.hpp/.cpp`, `online.hpp/.cpp`, `coop.cpp`, `trade.cpp` | Connexions, salon, duel, expédition à plusieurs, échanges |
+| Multijoueur | `net.hpp/.cpp`, `upnp.hpp/.cpp` (box, code de partie), `online.hpp/.cpp`, `coop.cpp`, `trade.cpp` | Connexions, salon, duel, expédition à plusieurs, échanges |
 | Outils | `arena`, `settings`, `mapedit`, `storyedit` | Arène, réglages, éditeur de cartes, éditeur d'histoire |
 | Tests | `test.cpp` | Mode test automatique (`--test`) |
 

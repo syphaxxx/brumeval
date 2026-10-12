@@ -240,8 +240,17 @@ La créature garde son niveau, son expérience et ses tactiques ; les héros ne
 s'échangent pas. Chaque échange est aussitôt sauvegardé des deux côtés. Pendant
 une expédition, on ne peut recevoir une créature que d'une région déjà atteinte.
 
-**Jouer par Internet, chacun chez soi.** Le plus simple : installer tous une
-appli gratuite de réseau privé, puis utiliser l'adresse qu'elle donne.
+**Jouer par Internet, chacun chez soi : le code de partie.** Quand vous
+hébergez, le jeu demande à votre box d'ouvrir son port (UPnP) et affiche un
+**code de partie** (par exemple `BJMV-Z6FX`) ; « Copier le code » le met dans le
+presse-papiers. Vos amis choisissent « Rejoindre une partie » et le tapent. Le
+port est refermé quand vous quittez. Pour vérifier votre box sans lancer le
+jeu : `brumeval --upnp` (dans un terminal, à côté du jeu).
+
+Si la box refuse (UPnP désactivé : il s'active dans son interface) ou n'a pas
+d'adresse Internet à elle (certaines offres fibre la partagent entre abonnés),
+le jeu l'écrit en bas de l'écran. Il reste alors une appli gratuite de réseau
+privé, avec l'adresse qu'elle donne :
 
 - **Tailscale** (https://tailscale.com) : créez un compte, installez-la sur les
   deux ordinateurs, invitez votre ami dans votre réseau ; l'adresse de l'hôte
@@ -249,8 +258,8 @@ appli gratuite de réseau privé, puis utiliser l'adresse qu'elle donne.
 - ou **Radmin VPN** (Windows) : l'un crée un réseau, l'autre le rejoint ;
   l'adresse commence par `26.`.
 
-Sans VPN, l'hôte doit ouvrir le port **47474** (TCP) sur sa box et donner son
-adresse publique. La première fois qu'on héberge, Windows demande s'il faut
+Sans code ni VPN, l'hôte peut aussi ouvrir le port **47474** (TCP) à la main
+sur sa box et donner son adresse publique. La première fois qu'on héberge, Windows demande s'il faut
 autoriser Brumeval sur le réseau : cochez **privé et public** puis
 **Autoriser**. Sur le même Wi-Fi, l'adresse locale (`192.168.…`) suffit.
 

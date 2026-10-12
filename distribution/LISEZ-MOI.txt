@@ -99,10 +99,14 @@ partie principale) ou pendant l'expédition (Échap > Groupe > « Échanger une
 créature »). Une créature contre une, ou en cadeau. Les héros ne s'échangent
 pas.
 
-Chacun chez soi, le plus simple est d'installer tous les deux Tailscale
-(https://tailscale.com, gratuit) et d'être dans le même réseau Tailscale :
-l'adresse de l'hôte commence alors par 100. Sinon, l'hôte ouvre le port
-47474 (TCP) sur sa box. Sur le même Wi-Fi, l'adresse 192.168.… suffit.
+Chacun chez soi : l'hôte choisit « Héberger une partie », le jeu ouvre sa
+box tout seul et affiche un CODE DE PARTIE (par exemple BJMV-Z6FX).
+« Copier le code » le met dans le presse-papiers ; les amis choisissent
+« Rejoindre une partie » et tapent ce code.
+Si la box refuse (le message en bas de l'écran explique pourquoi) :
+activer l'UPnP dans l'interface de la box, ou installer tous Tailscale
+(https://tailscale.com, gratuit) et taper l'adresse de l'hôte qui commence
+par 100. Sur le même Wi-Fi, l'adresse 192.168.… suffit.
 La première fois qu'on héberge, Windows demande l'autorisation : cochez
 réseaux privés ET publics, puis « Autoriser ».
 

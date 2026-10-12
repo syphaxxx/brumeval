@@ -41,6 +41,19 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(json)
 
+# --- miniupnpc : ouverture automatique du port du multijoueur sur la box (UPnP) ---
+set(UPNPC_BUILD_STATIC ON CACHE BOOL "" FORCE)
+set(UPNPC_BUILD_SHARED OFF CACHE BOOL "" FORCE)
+set(UPNPC_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(UPNPC_BUILD_SAMPLE OFF CACHE BOOL "" FORCE)
+set(UPNPC_NO_INSTALL ON CACHE BOOL "" FORCE)
+FetchContent_Declare(
+  miniupnpc
+  URL https://github.com/miniupnp/miniupnp/releases/download/miniupnpc_2_3_3/miniupnpc-2.3.3.tar.gz
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+FetchContent_MakeAvailable(miniupnpc)
+
 # --- Le jeu ---
 file(GLOB BRUMEVAL_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/*.cpp)
 # Console visible : utile pour lire les messages du mode test (--test)
@@ -50,7 +63,7 @@ target_include_directories(brumeval PRIVATE src)
 if(TARGET SDL2::SDL2main)
   target_link_libraries(brumeval PRIVATE SDL2::SDL2main)
 endif()
-target_link_libraries(brumeval PRIVATE SDL2::SDL2-static nlohmann_json::nlohmann_json)
+target_link_libraries(brumeval PRIVATE SDL2::SDL2-static nlohmann_json::nlohmann_json libminiupnpc-static)
 if(WIN32)
   target_link_libraries(brumeval PRIVATE ws2_32)  # réseau (multijoueur)
 endif()

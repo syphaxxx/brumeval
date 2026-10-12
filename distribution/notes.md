@@ -1,4 +1,8 @@
-## Nouveautés (depuis la 1.6)
+## Nouveautés
+
+- **Multijoueur plus simple** : l'hôte reçoit un **code de partie** (par exemple `BJMV-Z6FX`) à donner à ses amis ; le jeu ouvre lui-même le port de la box (UPnP). Tailscale n'est plus nécessaire quand la box l'accepte.
+
+Depuis la 1.6 :
 
 - **Combats stratégiques** : chaque camp se place sur un **damier de 16 cases** ; le corps à corps ne touche que l'avant ennemi, les techniques ont des **zones** (ligne, colonne, croix), « Se déplacer » et la **Formation** (Échap). Les boss **annoncent** leurs grosses attaques : écartez-vous de la zone rouge !
 - **Compagnons** commandés comme les héros, bas d'écran plus discret, **meutes** plus nombreuses loin des villes, cartes agrandies.
@@ -25,6 +29,6 @@ Décompressez, puis lancez le jeu : le fichier `LISEZ-MOI.txt` dans le dossier e
 
 ## Jouer à plusieurs
 
-Écran titre > **Multijoueur**, jusqu'à 4 joueurs : **expédition à plusieurs** (le même monde pour tous, chacun explore de son côté, le gardien de chaque région se combat ensemble) ou **duel** à deux. On peut aussi **échanger des créatures** (une contre une, ou en cadeau), dans le salon ou pendant l'expédition. Il faut la même version partout. Chacun chez soi, le plus simple est d'installer [Tailscale](https://tailscale.com), gratuit : l'hôte donne alors son adresse qui commence par `100.`.
+Écran titre > **Multijoueur**, jusqu'à 4 joueurs : **expédition à plusieurs** (le même monde pour tous, chacun explore de son côté, le gardien de chaque région se combat ensemble) ou **duel** à deux. On peut aussi **échanger des créatures** (une contre une, ou en cadeau), dans le salon ou pendant l'expédition. Il faut la même version partout. Chacun chez soi : l'hôte reçoit un **code de partie** (sa box est ouverte automatiquement) et ses amis le tapent dans « Rejoindre une partie ». Si sa box refuse, [Tailscale](https://tailscale.com) (gratuit) reste la solution : l'hôte donne alors son adresse qui commence par `100.`.
 
 Les sauvegardes sont gardées quand on installe une nouvelle version.

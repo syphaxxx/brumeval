@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <fstream>
 #include <sstream>
+#include <cctype>
 
 #include "arena.hpp"
 #include "audio.hpp"
@@ -22,6 +23,7 @@
 #include "sprites.hpp"
 #include "storyedit.hpp"
 #include "tactics.hpp"
+#include "upnp.hpp"
 
 int Game::selfTest(SDL_Surface* target, const std::string& out) {
   std::filesystem::create_directories(out);
@@ -90,6 +92,24 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     for (int t = 0; t < N_THEMES; t++) places = places && !audio::musicForPlace(themeName(Theme(t))).empty();
     check(bad.empty() && places, "son : chaque morceau et chaque effet s'entend sans saturer, chaque thème de carte a sa musique" +
                                      (bad.empty() ? std::string() : " (problème :" + bad + ")"));
+  }
+
+  // --- Code de partie du multijoueur (upnp.hpp) : aller-retour, fautes de frappe, adresses publiques ---
+  {
+    bool ok = true;
+    for (const char* ip : {"82.64.12.200", "1.2.3.4", "255.255.255.255", "90.0.0.1"}) {
+      std::string back, c = net::gameCode(ip);
+      ok = ok && c.size() == 9 && c[4] == '-' && net::decodeGameCode(c, back) && back == ip;
+    }
+    std::string c = net::gameCode("82.64.12.200"), back, lower;
+    for (char ch : c) lower += (char)std::tolower((unsigned char)ch);
+    bool loose = net::decodeGameCode(" " + lower + " ", back) && back == "82.64.12.200";  // minuscules, espaces
+    std::string typo = c;
+    typo[1] = typo[1] == 'A' ? 'B' : 'A';
+    bool caught = !net::decodeGameCode(typo, back) && !net::decodeGameCode("ABC", back) && !net::decodeGameCode("192.168.1.2", back);
+    bool pub = net::isPublicIPv4("82.64.12.200") && !net::isPublicIPv4("192.168.1.10") && !net::isPublicIPv4("100.101.102.103") &&
+               !net::isPublicIPv4("10.0.0.1") && !net::isPublicIPv4("172.20.1.1") && !net::isPublicIPv4("pas une adresse");
+    check(ok && loose && caught && pub, "multijoueur : code de partie (" + c + " = 82.64.12.200), fautes de frappe repérées, adresses publiques");
   }
 
   // --- Options (fichier à part) : volume, nouvelle touche, relecture ---

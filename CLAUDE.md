@@ -119,6 +119,7 @@ compétence `joueur-automatique` de Claude Code.
 | `arena.hpp/.cpp` | Arène de combat (écran titre > Outils) : composition, combat à la main, simulation progressive (`stepSim`), modèles tirés des événements et des zones, journal |
 | `procgen.hpp/.cpp` | Génération procédurale du mode Expédition : hasard reproductible (`Rng`, graine), techniques par type (`Pool`), soutiens, créatures, gardiens, personnages par classe, apparences, régions (carte, village, chemin, rivière, dresseurs, coffres, gardien, événements), au format de data/ |
 | `expedition.hpp/.cpp` | Mode Expédition (écran titre) : menus, choix du héros et de la créature, contenu généré installé à la place des données du jeu (`install`/`restore`), passage de région, défaite roguelite (éclats, record), Camp (améliorations), sauvegarde à part |
+| `upnp.hpp/.cpp` | Multijoueur (2.3) : ouverture du port sur la box par UPnP (miniupnpc, dans un fil à part : `upnp::open`, `state`, `close`), code de partie (`net::gameCode`, `decodeGameCode`, `isPublicIPv4`) ; `brumeval --upnp` vérifie la box |
 | `net.hpp/.cpp` | Réseau du multijoueur : connexions TCP non bloquantes (Windows, Mac, Linux), messages JSON précédés de leur longueur, adresses de l'ordinateur |
 | `online.hpp/.cpp` | Multijoueur (écran titre) : héberger une partie (jusqu'à 4 joueurs), rejoindre, salon, vérification de la version et des données (`dataHash`), relais des messages par l'hôte, duel en ligne |
 | `coop.cpp` | Expédition à plusieurs (fonctions de `Online`) : lancement d'une graine pour tous, état de chaque joueur (message `ou`), autres joueurs sur la carte (`avatars`), attente et combat du gardien à plusieurs |
@@ -229,6 +230,14 @@ compétence `joueur-automatique` de Claude Code.
   À plusieurs, voir « Expédition à plusieurs » plus bas.
   `BRUMEVAL_MONDE=brume brumeval --test captures` affiche le monde de la graine
   « brume » (héros, créatures, gardiens et techniques des trois premières régions).
+- Code de partie (2.3, plan validé le 2026-10-12, sans serveur) : `Online::host` lance `upnp::open(port)` (sauf en
+  boucle locale du mode test) : la box fait suivre le port et donne son adresse Internet ; le panneau de droite affiche
+  le code (adresse IPv4 + octet de contrôle, 8 caractères Crockford « XXXX-XXXX »), « Copier le code » (salon) le met
+  dans le presse-papiers. Échec (pas d'UPnP, refus, adresse privée ou partagée 100.64/10) : message en bas avec les
+  solutions (UPnP dans la box, Tailscale). « Rejoindre » accepte un code ou une adresse. `disconnect` referme le port.
+  Bibliothèque miniupnpc 2.3.3 (FetchContent, `libminiupnpc-static`) ; `net::startup` (WSAStartup) avant la recherche.
+  Vérifié le 2026-10-12 sur la box de l'utilisateur (`--upnp` : port ouvert puis refermé). Piste suivante si des amis
+  ont une box sans adresse à elle : un serveur relais (payant, à décider).
 - Multijoueur (online.hpp, net.hpp) : TCP sur le port 47474, l'hôte (numéro 0)
   et jusqu'à trois invités (1 à 3), reliés seulement à l'hôte : `sendTo(à qui,
   message)` ajoute `de` (expéditeur) et, chez un invité, `a` (destinataire, -1 :
