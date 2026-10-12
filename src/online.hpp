@@ -110,6 +110,7 @@ class Online {
   std::string me_;               // mon nom, tel que les autres le voient
   std::string status_, hash_;
   std::vector<std::string> addresses_;
+  std::string gameCode() const;  // code de partie (upnp.hpp), vide si la box n'a pas été ouverte
   float stateT_ = 0;
   std::vector<std::pair<std::string, int>> myView_;  // mon équipe, pour l'affichage (nom, niveau)
 

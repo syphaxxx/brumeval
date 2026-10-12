@@ -99,9 +99,10 @@ l'utilisateur, en deux versions.
 
 ## Étape 4 — Multijoueur plus simple (2 à 3 séances)
 
-- Aujourd'hui il faut Tailscale (ou ouvrir un port). Piste : un petit
-  **serveur relais** avec un code de partie à 6 lettres. Demande un serveur en
-  ligne (coût, entretien) : à discuter avant.
+- Fait en **2.3** (2026-10-12) : **code de partie** sans serveur, la box est
+  ouverte automatiquement (UPnP). Reste, si des amis ont une box sans UPnP ou
+  sans adresse à elle : un **serveur relais** (environ 4 € par mois, compte à
+  créer par l'utilisateur), à décider.
 - Échange : voir les fiches détaillées des deux créatures côte à côte.
 - Duel : plusieurs manches, tableau des victoires dans le salon.
 
