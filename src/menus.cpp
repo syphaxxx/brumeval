@@ -411,7 +411,7 @@ void Game::formationMenu(int sel) {
 
 // Dessin du damier de la formation : l'avant à gauche, face aux ennemis (comme en combat)
 void Game::drawFormationPanel(int x, int y) {
-  int w = 320 - x - 8, cw = (w - 16) / 3, ch = 32, h = 34 + 3 * ch + 16;
+  int w = 320 - x - 8, cw = (w - 16) / GRID, ch = 26, h = 34 + GRID * ch + 16;
   g.window(x, y, w, h);
   g.text(x + 8, y + 5, "Damier", GOLD);
   g.text(x + w - 8, y + 5, "ennemis à gauche", MUTED, 2);
@@ -426,8 +426,8 @@ void Game::drawFormationPanel(int x, int y) {
         g.text(rx + cw / 2, ry + 17, "N." + std::to_string(f->lvl), MUTED, 1);
       }
   }
-  const char* COLS[] = {"Avant", "Milieu", "Arrière"};
-  for (int k = 0; k < 3; k++) g.text(x + 8 + k * cw + cw / 2, y + 22 + 3 * ch, COLS[k], MUTED, 1);
+  const char* COLS[GRID] = {"Avant", "", "", "Arrière"};
+  for (int k = 0; k < GRID; k++) g.text(x + 8 + k * cw + cw / 2, y + 22 + GRID * ch, COLS[k], MUTED, 1);
 }
 
 void Game::companionsMenu(int sel) {

@@ -48,8 +48,8 @@ COMMANDES
   Vous la commandez en combat, comme les héros (Tab : leurs tactiques).
   Loin des villes, les créatures arrivent en meutes (jusqu'à six).
 
-  Échap > Formation : la place de chacun sur le damier de combat (avant,
-  milieu, arrière). Au corps à corps, on ne touche que l'avant ennemi ;
+  Échap > Formation : la place de chacun sur le damier de combat (16 cases,
+  de l'avant à l'arrière). Au corps à corps, on ne touche que l'avant ennemi ;
   l'arrière est protégé. En combat, « Se déplacer » change de case.
   Zone rouge : un boss prépare une grosse attaque, écartez-vous !
 

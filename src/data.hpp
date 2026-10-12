@@ -54,11 +54,15 @@ struct Effect {
 // Rythme d'une technique : où repart la jauge ATB du lanceur après l'avoir utilisée
 enum class Pace { Normal, Quick, Heavy };
 
-// Damier de combat : 9 cases par camp, numérotées 0 à 8. Colonne = case % 3 (0 avant, 1 milieu,
-// 2 arrière : l'avant est du côté de l'adversaire) ; ligne = case / 3 (0 haut, 1 centre, 2 bas).
-constexpr int N_CELLS = 9;
-inline int cellCol(int c) { return c % 3; }
-inline int cellRow(int c) { return c / 3; }
+// Damier de combat (2.0 : 4x4, demandé le 2026-10-12) : 16 cases par camp, numérotées 0 à 15.
+// Colonne = case % GRID (0 avant … BACK_COL arrière : l'avant est du côté de l'adversaire) ;
+// ligne = case / GRID (0 haut … GRID - 1 bas).
+constexpr int GRID = 4;
+constexpr int N_CELLS = GRID * GRID;
+constexpr int BACK_COL = GRID - 1;
+inline int cellCol(int c) { return c % GRID; }
+inline int cellRow(int c) { return c / GRID; }
+inline int cellAt(int row, int col) { return row * GRID + col; }
 std::string cellName(int c);  // « Avant · haut »
 // Zone d'effet d'une technique autour de sa cible : la cible seule, sa ligne (en profondeur),
 // sa colonne (tout un rang), elle et ses voisines (croix), ou tout le camp

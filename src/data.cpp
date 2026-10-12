@@ -61,8 +61,8 @@ const char* stageName(int st) { return STAGE_NAMES[st]; }
 const char* zoneId(Area z) { return ZONES[(int)z]; }
 const char* zoneName(Area z) { return ZONE_NAMES[(int)z]; }
 std::string cellName(int c) {
-  static const char* COLS[] = {"Avant", "Milieu", "Arrière"};
-  static const char* ROWS[] = {"haut", "centre", "bas"};
+  static const char* COLS[GRID] = {"Avant", "Milieu avant", "Milieu arrière", "Arrière"};
+  static const char* ROWS[GRID] = {"haut", "centre haut", "centre bas", "bas"};
   if (c < 0 || c >= N_CELLS) return "?";
   return std::string(COLS[cellCol(c)]) + " · " + ROWS[cellRow(c)];
 }
@@ -555,16 +555,16 @@ std::vector<int> formation(const std::vector<FighterP>& v, bool keep) {
       int c = v[i] ? v[i]->cell : -1;
       if (c >= 0 && c < N_CELLS && !used[c]) cells[i] = c, used[c] = true;
     }
-  static const int ROWS[3] = {1, 0, 2};  // le centre d'abord
+  static const int ROWS[GRID] = {1, 2, 0, 3};  // le centre d'abord
   for (size_t i = 0; i < v.size(); i++) {
     if (cells[i] >= 0 || !v[i]) continue;
     const Species& s = v[i]->S();
     bool caster = s.base[B_MAG] > s.base[B_ATK];
-    const int front[3] = {0, 1, 2}, back[3] = {2, 1, 0};
+    const int front[GRID] = {0, 1, 2, 3}, back[GRID] = {3, 2, 1, 0};
     for (int col : caster ? back : front) {
       for (int r : ROWS)
-        if (!used[r * 3 + col]) {
-          cells[i] = r * 3 + col, used[r * 3 + col] = true;
+        if (!used[cellAt(r, col)]) {
+          cells[i] = cellAt(r, col), used[cellAt(r, col)] = true;
           break;
         }
       if (cells[i] >= 0) break;

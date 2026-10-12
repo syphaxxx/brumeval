@@ -364,15 +364,21 @@ compétence `joueur-automatique` de Claude Code.
   combat s'ouvrent en bas (`dock` dans battle.cpp : commande à gauche,
   sous-menus et choix de la cible à droite) pour laisser voir les deux damiers.
   Pas de fenêtre des noms d'ennemis : leur nom est dans le menu de la cible.
+- Graphismes des cartes (2.0, sprites.cpp) : maisons (`drawBuilding` : ombre, soubassement, pierres, tuiles en rangées,
+  faîtage, cheminée, fenêtres à volets et jardinières), arbres `T` en trois variantes selon `hsh` (rond, petit, fruitier
+  ou large en forêt), chemins `=` aux bords adoucis contre la nature (liseré, touffes, coins), herbe de la vallée variée.
 - Graphismes (1.8) : décor des combats avec l'horizon à y 56 (`HZ` dans `Battle::draw`, reliefs à moitié de hauteur) pour que les trois rangées du damier soient sur le sol ; dalles en losange ; sur les cartes, écume le long des berges et ombre au pied des arbres (sprites.cpp).
 - Meutes (1.7) : `Game::wildDepth`, distance à pied du plus proche bâtiment ou
   passage ; plus on s'enfonce (jusqu'à `meute_distance` cases), plus les
   rencontres sont fréquentes (+`nature_dense`) et les groupes grands (jusqu'à
   `meute_max`, 6). Règles, rencontres.
-- Damier (1.7, plan validé le 2026-10-10) : 9 cases par camp (data.hpp :
-  `cellCol` 0 avant / 1 milieu / 2 arrière, `cellRow`). `Battle::cells_` garde la
+- Damier (1.7, plan validé le 2026-10-10 ; **4x4 depuis la 2.0**, demandé le 2026-10-12) : `N_CELLS` = 16 cases par camp
+  (data.hpp : `GRID` 4, `cellCol` 0 avant … `BACK_COL` 3 arrière, `cellRow`, `cellAt(ligne, colonne)` ; ne jamais écrire
+  3 ou 9 en dur). Sauvegarde : ligne `case4` ; une ancienne ligne `case` (3x3) est convertie (l'arrière reste l'arrière).
+  À l'écran (`Battle::cellPos`) : colonnes de 30 px, lignes de 26 px à partir de y 58. Mesuré : difficulté inchangée
+  par rapport au 3x3 (écarts dans le bruit). `Battle::cells_` garde la
   case de chacun pendant le combat (alliés : `Fighter::cell`, la formation, ligne
-  `case` de la sauvegarde ; ennemis et gardien à plusieurs : `formation()`
+  `case4` de la sauvegarde ; ennemis et gardien à plusieurs : `formation()`
   automatique, physiques devant). `Move::melee` (champ `portee`) : le corps à
   corps ne vise que la colonne la plus avancée encore debout (`reachable`, aussi
   dans `attackScore` : l'IA et les tactiques en tiennent compte) ; l'arrière donne

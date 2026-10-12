@@ -57,7 +57,7 @@ std::string moveDetails(const Move& m, const Fighter* user) {
     case Target::Enemy:
       switch (m.zone) {
         case Area::Line: s += ". Un ennemi et toute sa ligne (de l'avant à l'arrière" + side + ")"; break;
-        case Area::Column: s += ". Un ennemi et toute sa colonne (haut, centre, bas" + side + ")"; break;
+        case Area::Column: s += ". Un ennemi et toute sa colonne (de haut en bas" + side + ")"; break;
         case Area::Cross: s += ". Un ennemi et ses voisins en croix" + (side.empty() ? "" : " (" + side.substr(2) + ")"); break;
         case Area::All: s += ". Tous les ennemis"; break;
         case Area::Single: s += ". Un ennemi"; break;
@@ -160,7 +160,7 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
   place(foes, false);
   // Ennemis : quelques combattants au milieu plutôt qu'à l'avant, pour varier les formations
   for (auto& f : foes) {
-    int c = cells_[f.get()], mid = cellRow(c) * 3 + 1;
+    int c = cells_[f.get()], mid = cellAt(cellRow(c), 1);
     bool taken = false;
     for (auto& o : foes) taken = taken || cells_[o.get()] == mid;
     if (cellCol(c) == 0 && !f->boss && !taken && frand() < .35f) cells_[f.get()] = mid;
@@ -204,10 +204,10 @@ std::vector<FighterP> Battle::alive(const std::vector<FighterP>& v) const {
 // Damier à l'écran : les alliés à droite, les ennemis à gauche ; l'avant de chaque camp est du
 // côté du milieu de l'écran. Les lignes du bas sont un peu plus près (léger effet de profondeur).
 Pt Battle::cellPos(bool allySide, int c) const {
-  if (c < 0 || c >= N_CELLS) c = 4;
+  if (c < 0 || c >= N_CELLS) c = cellAt(1, 1);
   float col = (float)cellCol(c), row = (float)cellRow(c);
-  float x = allySide ? 204 + col * 38 + row * 5 : 116 - col * 38 - row * 5;
-  return {x, 60 + row * 38};
+  float x = 196 + col * 30 + row * 4;  // 4 colonnes de 30 px, chaque ligne un peu décalée (perspective)
+  return {allySide ? x : 320 - x, 58 + row * 26};
 }
 Pt Battle::pos(const FighterP& f) const { return cellPos(isAlly(f), cellOf(f)); }
 
@@ -222,7 +222,7 @@ void Battle::place(const std::vector<FighterP>& v, bool keep) {
 bool Battle::reachable(const FighterP& a, const Move& m, const FighterP& t) const {
   (void)a;
   if (!m.melee || m.zone == Area::All || !t) return true;
-  int front = 3;
+  int front = BACK_COL;
   for (auto& f : sideOf(t))
     if (f->alive()) front = std::min(front, std::max(0, cellCol(std::max(0, cellOf(f)))));
   return std::max(0, cellCol(std::max(0, cellOf(t)))) <= front;
@@ -741,8 +741,8 @@ float Battle::attackScore(const FighterP& a, const Move& m, const FighterP& t) c
   float hit = std::clamp(m.acc / 100.f * a->acc / 100.f - (magic ? 0 : t->eva / 100.f), 0.f, 1.f);
   float score = m.power * moveEff(m, t->S()) * (hasType(a->S(), m.type) ? float(R.stab) : 1.f) * A / D * hit;
   if (m.melee) {  // depuis l'arrière, ou sur une cible à l'arrière : moins fort
-    if (cellCol(std::max(0, cellOf(a))) == 2) score *= float(R.backRow);
-    if (cellCol(std::max(0, cellOf(t))) == 2) score *= float(R.backRow);
+    if (cellCol(std::max(0, cellOf(a))) == BACK_COL) score *= float(R.backRow);
+    if (cellCol(std::max(0, cellOf(t))) == BACK_COL) score *= float(R.backRow);
   }
   if (!ally) return score / paceTime(m);
   score *= 1 + std::min(1.f, (a->crit + m.critBonus) / 100.f) * float(R.critMult - 1);
@@ -856,12 +856,12 @@ bool Battle::enemyMove(FighterP e) {
     return true;
   };
   int to = -1;
-  if (caster && col == 0 && frand() < .5f)  // un lanceur de sorts à l'avant se met à l'abri
-    for (int k : {2, 1})
-      if (to < 0 && freeCell(row * 3 + k)) to = row * 3 + k;
-  if (!caster && col == 2 && frand() < .4f)  // un combattant trop loin avance
+  if (caster && col <= 1 && frand() < .5f)  // un lanceur de sorts trop en avant se met à l'abri
+    for (int k : {BACK_COL, BACK_COL - 1})
+      if (to < 0 && freeCell(cellAt(row, k))) to = cellAt(row, k);
+  if (!caster && col >= 2 && frand() < .4f)  // un combattant trop loin avance
     for (int k : {0, 1})
-      if (to < 0 && freeCell(row * 3 + k)) to = row * 3 + k;
+      if (to < 0 && freeCell(cellAt(row, k))) to = cellAt(row, k);
   if (to < 0) return false;
   moveTo(e, to);
   return true;
@@ -1074,8 +1074,8 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
   bool crit = frand() * 100 < a->crit + m.critBonus;
   float k = crit ? float(R.critMult) : 1.f;
   if (m.melee) {  // damier : l'arrière frappe et reçoit moins fort au corps à corps
-    if (cellCol(std::max(0, cellOf(a))) == 2) k *= float(R.backRow);
-    if (cellCol(std::max(0, cellOf(d))) == 2) k *= float(R.backRow);
+    if (cellCol(std::max(0, cellOf(a))) == BACK_COL) k *= float(R.backRow);
+    if (cellCol(std::max(0, cellOf(d))) == BACK_COL) k *= float(R.backRow);
   }
   k *= mult;
   int dmg = std::max(1, int(((2 * a->lvl / 5.f + 2) * m.power * A / std::max(1.f, D) / float(R.dmgDivisor) + 2) * stab * eff * spread * k));
@@ -1533,18 +1533,18 @@ void Battle::draw() {
     for (int c = 0; c < N_CELLS; c++) {
       Pt p = cellPos(side == 1, c);
       // une dalle claire en losange, vue en perspective
-      g.poly({{p.x - 17, p.y + 13}, {p.x, p.y + 7}, {p.x + 17, p.y + 13}, {p.x, p.y + 19}}, rgb(0xffffff, 34));
-      g.poly({{p.x - 13, p.y + 13}, {p.x, p.y + 8.5f}, {p.x + 13, p.y + 13}, {p.x, p.y + 17.5f}}, rgb(0x000000, 18));
+      g.poly({{p.x - 14, p.y + 13}, {p.x, p.y + 8}, {p.x + 14, p.y + 13}, {p.x, p.y + 18}}, rgb(0xffffff, 34));
+      g.poly({{p.x - 10, p.y + 13}, {p.x, p.y + 9.5f}, {p.x + 10, p.y + 13}, {p.x, p.y + 16.5f}}, rgb(0x000000, 18));
     }
   if (aiming_ && cursor && cursor->alive())
     for (int c = 0; c < N_CELLS; c++)
       if (inZone(aiming_->zone, cellOf(cursor), c)) {
         Pt p = cellPos(isAlly(cursor), c);
-        g.ellipse(p.x, p.y + 13, 16, 6, rgb(0xffd34d, uint8_t(c == cellOf(cursor) ? 190 : 110)));
+        g.ellipse(p.x, p.y + 13, 13, 5, rgb(0xffd34d, uint8_t(c == cellOf(cursor) ? 190 : 110)));
       }
   if (moveCell_ >= 0) {
     Pt p = cellPos(true, moveCell_);
-    g.ellipse(p.x, p.y + 13, 16, 6, rgb(0xffd34d, uint8_t(150 + 60 * std::sin(t * 8))));
+    g.ellipse(p.x, p.y + 13, 13, 5, rgb(0xffd34d, uint8_t(150 + 60 * std::sin(t * 8))));
   }
   // Zones des attaques annoncées par les boss, en rouge sur le damier allié
   std::vector<std::pair<int, int>> warn = netWarn_;
@@ -1553,7 +1553,7 @@ void Battle::draw() {
     for (int c = 0; c < N_CELLS; c++)
       if (inZone(Area(zone), center, c)) {
         Pt p = cellPos(true, c);
-        g.ellipse(p.x, p.y + 13, 17, 6, rgb(0xff3b30, uint8_t(120 + 90 * std::sin(t * 7))));
+        g.ellipse(p.x, p.y + 13, 14, 5, rgb(0xff3b30, uint8_t(120 + 90 * std::sin(t * 7))));
       }
   // Combattants, du haut du damier vers le bas : ceux de devant passent par-dessus
   std::vector<FighterP> shown;

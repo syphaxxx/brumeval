@@ -34,8 +34,8 @@ Croix ou stick gauche pour se déplacer, **A** valider, **B** annuler,
 
 ## Le damier de combat
 
-Chaque camp se place sur un **damier de 9 cases** : trois colonnes (**avant**,
-**milieu**, **arrière**) sur trois lignes.
+Chaque camp se place sur un **damier de 16 cases** (4 × 4) : quatre colonnes, de
+l'**avant** à l'**arrière**, sur quatre lignes.
 
 - Les coups **au corps à corps** (épées, crocs, griffes…) ne peuvent toucher que
   la colonne ennemie la plus avancée encore debout : il faut percer la ligne de

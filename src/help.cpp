@@ -59,8 +59,9 @@ static std::vector<HelpPage> helpPages() {
                 "Objets : soins, remèdes. Une lanterne capture une créature sauvage : plus elle est affaiblie, mieux c'est.",
                 "Fuir : " + pct(R.flee) + " de chance de réussir, pas contre tous les adversaires.",
                 "Changer : un autre membre de l'équipe prend la place d'un combattant."}});
-  p.push_back({"Damier", "Les 9 cases de chaque camp, corps à corps et distance.",
-               {"Chaque camp a 9 cases : 3 colonnes (avant, milieu, arrière) et 3 lignes (haut, centre, bas). L'avant est du côté de l'adversaire.",
+  p.push_back({"Damier", "Les " + std::to_string(N_CELLS) + " cases de chaque camp, corps à corps et distance.",
+               {"Chaque camp a " + std::to_string(N_CELLS) + " cases : " + std::to_string(GRID) + " colonnes (de l'avant à l'arrière) et " +
+                    std::to_string(GRID) + " lignes. L'avant est du côté de l'adversaire.",
                 "Corps à corps : ne vise que la colonne ennemie la plus avancée encore debout. Tant que l'avant tient, l'arrière est à l'abri.",
                 "À distance (sorts, flèches, jets…) : n'importe quelle case.",
                 "Au corps à corps, frapper depuis l'arrière ou viser l'arrière ne fait que " + pct(R.backRow) + " des dégâts.",
@@ -69,7 +70,7 @@ static std::vector<HelpPage> helpPages() {
   p.push_back({"Zones", "Ligne, colonne, croix, tout le camp ; attaques annoncées.",
                {"Une cible : seulement la case visée.",
                 "Ligne : la case visée et toute sa ligne, de l'avant à l'arrière.",
-                "Colonne : la case visée et toute sa colonne (haut, centre, bas).",
+                "Colonne : la case visée et toute sa colonne, de haut en bas.",
                 "Croix : la case visée et ses voisines (dessus, dessous, devant, derrière).",
                 "Tout le camp : tous les ennemis (ou tous les alliés), sans viser.",
                 "Autour de la case visée, une zone fait " + pct(R.zoneSide) + " des dégâts. En visant, les cases touchées s'allument en or : des ennemis serrés sont une belle cible, vos combattants aussi !",

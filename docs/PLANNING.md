@@ -77,7 +77,12 @@ l'utilisateur, en deux versions.
   d'attaques de zone** (10 nouvelles techniques pour les héros et les
   créatures, 4 techniques de créatures qui gagnent une zone). Boss et meutes
   inchangés (« ça va pour le moment »).
-- Ensuite : graphismes, et le joueur automatique mis à jour à chaque étape.
+- **2.0** (demandée le 2026-10-12) : damier **4 × 4** (16 cases par camp ; les
+  anciennes formations sont converties) et graphismes des cartes : maisons
+  (tuiles, cheminée, volets, jardinières, soubassement, ombre), arbres en trois
+  variantes avec du volume (fruitiers dans la vallée), chemins aux bords
+  adoucis, herbe plus variée.
+- Ensuite : le joueur automatique mis à jour à chaque étape ; étape 3.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 

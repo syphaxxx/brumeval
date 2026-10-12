@@ -452,12 +452,12 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     // Placement automatique : physiques devant, lanceurs de sorts derrière
     auto brute = makeFighter("louvet", 20), mage = makeFighter("esprillon", 20), extra = makeFighter("galetor", 20);
     auto cells = formation({brute, mage, extra}, false);
-    check(cellCol(cells[0]) == 0 && cellCol(cells[1]) == 2 && cellCol(cells[2]) == 0 && cells[0] != cells[2],
+    check(cellCol(cells[0]) == 0 && cellCol(cells[1]) == BACK_COL && cellCol(cells[2]) == 0 && cells[0] != cells[2],
           "damier : placement automatique (Louvet et Galetor devant, Esprillon derrière)");
     team = {makeFighter("lior", 20), makeFighter("maelle", 20)};
     startBattle({brute, mage, extra}, false, nullptr);
     Battle& B = *battle_;
-    B.cells_[brute.get()] = 3, B.cells_[extra.get()] = 6, B.cells_[mage.get()] = 5;  // deux à l'avant, le mage à l'arrière (sans le hasard)
+    B.cells_[brute.get()] = cellAt(1, 0), B.cells_[extra.get()] = cellAt(2, 0), B.cells_[mage.get()] = cellAt(1, BACK_COL);  // deux à l'avant, le mage à l'arrière (sans le hasard)
     const Move& bite = moveInfo("mordant");  // corps à corps
     const Move& wave = moveInfo("onde");     // à distance
     bool reach = B.reachable(team[0], bite, brute) && !B.reachable(team[0], bite, mage) && B.reachable(team[0], wave, mage);
@@ -476,13 +476,13 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       }
       return total;
     };
-    long long front = hitOn(extra, 1), back = hitOn(extra, 2);
+    long long front = hitOn(extra, cellAt(0, 1)), back = hitOn(extra, cellAt(0, BACK_COL));
     check(back > 0 && back < front * 0.85, "damier : à l'arrière, les coups au corps à corps font moins mal (" + std::to_string(front) + " contre " +
                                                std::to_string(back) + " sur 200 coups)");
     // Zone en croix : la cible et ses voisines
     Move cross = wave;
     cross.zone = Area::Cross;
-    B.cells_[brute.get()] = 4, B.cells_[mage.get()] = 5, B.cells_[extra.get()] = 0;  // centre, son voisin, un coin
+    B.cells_[brute.get()] = cellAt(1, 1), B.cells_[mage.get()] = cellAt(1, 2), B.cells_[extra.get()] = 0;  // centre, son voisin, un coin
     auto hit = B.zoneTargets(cross, brute);
     check(hit.size() == 2 && hit[0] == brute && hit[1] == mage, "damier : une zone en croix touche la cible et ses voisines, pas le coin");
     // Se déplacer : la case change, la jauge repart (action rapide)
@@ -498,6 +498,14 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     }
     check(B.cellOf(lior) == to && lior->atb == float(rules().quickGauge), "damier : « Se déplacer » change de case et la jauge repart à " +
                                                                              std::to_string(rules().quickGauge) + " %");
+    {  // Sauvegarde d'avant la 2.0 : « case 8 » (3x3, arrière en bas) devient l'arrière en bas du 4x4 ; « case4 » est lu tel quel
+      std::vector<FighterP> t = {makeFighter("lior", 5)};
+      std::istringstream a("8"), b("13");
+      readMemberLine("case", a, t, nullptr);
+      bool old = t[0]->cell == cellAt(2, BACK_COL);
+      readMemberLine("case4", b, t, nullptr);
+      check(old && t[0]->cell == 13, "damier 4x4 : la formation 3x3 d'une ancienne sauvegarde est convertie (l'arrière reste l'arrière)");
+    }
     // Attaque annoncée (1.8) : elle frappe ceux restés dans la zone, pas ceux qui se sont écartés
     {
       FighterP boss = brute, maelle = team[1];
