@@ -100,6 +100,19 @@ static std::vector<HelpPage> helpPages() {
   p.push_back({"États", "Poison, brûlure, paralysie, sommeil.", st});
   p.push_back({"Types", "Le tableau des forces et faiblesses entre les types.", {}});
   {
+    int n = 0, lo = 99, hi = 0;
+    for (auto& s : allSpecies())
+      if (!s.evolveTo.empty()) n++, lo = std::min(lo, s.evolveLvl), hi = std::max(hi, s.evolveLvl);
+    if (n)
+      p.push_back({"Évolution", "Les créatures qui deviennent plus fortes.",
+                   {std::to_string(n) + " créatures peuvent évoluer, du niveau " + std::to_string(lo) + " au niveau " + std::to_string(hi) +
+                        " selon l'espèce (fiche du Bestiaire : « Évolue en … »).",
+                    "Après le combat où elle atteint ce niveau, le jeu demande « Évoluer ? ». Elle devient une espèce plus forte, un peu plus grande, et apprend de nouvelles techniques.",
+                    "Elle garde son niveau, son expérience, son équipement, ses tactiques, sa place sur le damier et le héros qu'elle accompagne.",
+                    "Vous pouvez répondre Non (une petite créature est plus rapide à faire progresser) : Échap > Évolution la fait évoluer plus tard.",
+                    "Les formes évoluées vivent aussi à l'état sauvage dans les régions les plus lointaines."}});
+  }
+  {
     std::vector<std::string> fl = {"À Forgeroc, une fois Brann dans l'équipe, la forge renforce une arme ou une armure (portée ou dans le sac)."};
     for (size_t L = 0; L < R.forge.size(); L++) {
       std::string need;

@@ -28,6 +28,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   saveName_ = "sauvegarde_test.txt";  // ne jamais toucher à la vraie sauvegarde du joueur
   tacticsAuto = false;                 // les combats des tests passent par les menus (les tactiques ont leurs tests)
   g.checkLayout = true;                // chaque image dessinée vérifie la mise en page (gfx.cpp)
+  offerEvolve_ = false;                // les évolutions ne sont proposées que dans leur propre test
   int fails = 0;
   auto check = [&](bool ok, const std::string& what) {
     std::printf("%s %s\n", ok ? "[ok]    " : "[ÉCHEC] ", what.c_str());
@@ -802,6 +803,59 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     skipScript();
     check(menus.active() && menus.top().title.rfind("Forge", 0) == 0, "forge : l'enclume de Forgeroc ouvre la forge une fois Brann dans l'équipe");
     snap("forge");
+    menus.clear();
+    sc.clear();
+  }
+
+  // --- Évolution (2.2) : Oui après un combat, Non puis Échap > Évolution, sauvegarde ---
+  {
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+    changeMap(mi("vallee"), 30, 12, DOWN);
+    auto lior = makeFighter("lior", 20), ronceau = makeFighter("ronceau", 16), rocaillou = makeFighter("rocaillou", 17);
+    ronceau->gear[G_ACCESSORY] = "amulette_vie";
+    ronceau->cell = 5;
+    ronceau->recalc();
+    ronceau->hp = ronceau->mhp / 2;
+    team = {lior, ronceau, rocaillou};
+    lior->companion = ronceau;
+    int lvl = ronceau->lvl;
+    size_t nTactics = ronceau->tactics.size();
+    offerEvolve_ = true;
+    offerEvolutions();  // comme après un combat gagné
+    bool asked = !askText_.empty() && askText_.find("Ronceflore") != std::string::npos;
+    in.confirm = true;  // Oui
+    frame();
+    run(1.f);
+    snap("evolution");
+    skipScript();
+    bool evolved = ronceau->sp == "ronceflore" && ronceau->lvl == lvl && ronceau->gear[G_ACCESSORY] == "amulette_vie" && ronceau->cell == 5 &&
+                   ronceau->tactics.size() == nTactics && lior->companion.lock() == ronceau && ronceau->hp * 2 <= ronceau->mhp + 1 &&
+                   caught.count("ronceflore") && evoTo_.empty();
+    // La suivante (Rocaillou) : Non
+    bool next = !askText_.empty() && askText_.find("Galetor") != std::string::npos;
+    menus.top().sel = 1;
+    in.confirm = true;
+    frame();
+    skipScript();
+    bool later = rocaillou->sp == "rocaillou" && rocaillou->evolveLater && askText_.empty();
+    check(asked && evolved && next && later, "évolution : Ronceau devient Ronceflore (niveau, équipement, case, compagnon gardés), Rocaillou refuse");
+    bool saved = saveGame();
+    team.clear();
+    bool kept = saved && loadGame() && team.size() == 3 && team[1]->sp == "ronceflore" && team[2]->evolveLater;
+    mode = Mode::Map;
+    // Échap > Évolution : la créature qui avait refusé
+    pauseMenu();
+    bool listed = false;
+    for (auto& it : menus.top().items) listed = listed || it.label == "Évolution";
+    menus.clear();
+    evolutionMenu();
+    in.confirm = true;
+    frame();
+    skipScript();
+    check(kept && listed && team[2]->sp == "galetor" && !team[2]->evolveLater,
+          "évolution : refus gardé dans la sauvegarde, puis Échap > Évolution la fait évoluer");
+    offerEvolve_ = false;
     menus.clear();
     sc.clear();
   }
@@ -2326,7 +2380,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   int simFactor = simEnv ? std::max(1, std::atoi(simEnv)) : 1;
   // Équipement des boutiques (1 : vallée, 2 : Forgeroc, 3 : Givreval) : le meilleur de chaque
   // emplacement ; arme de magie pour les mages (plus de Magie que d'Attaque), accessoire seul pour une créature
-  int simGear = 0, simForge = 0;  // simForge : armes et armures forgées à ce niveau (forge de Forgeroc)
+  int simGear = 0, simForge = 0;
+  bool simEvolve = !SDL_getenv("BRUMEVAL_SANS_EVOLUTION");  // pour comparer : équipes sans évolution  // simForge : armes et armures forgées à ce niveau (forge de Forgeroc)
   auto equipParty = [&](std::vector<FighterP>& t, int tier) {
     static const char* GEAR[3][5] = {{"epee_fer", "baton_chene", "tunique_cuir", "tunique_cuir", "amulette_vie"},
                                      {"hache_braise", "baton_lune", "cotte_mailles", "robe_mage", "bague_vif"},
@@ -2351,7 +2406,10 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     float total = 0;
     for (int k = 0; k < n; k++) {
       team.clear();
-      for (auto& [id, l] : party) team.push_back(makeFighter(id, l));
+      for (auto& [id, l] : party) {
+        team.push_back(makeFighter(id, l));
+        while (simEvolve && canEvolve(*team.back())) evolve(*team.back());  // l'équipe a accepté ses évolutions
+      }
       if (simGear) equipParty(team, simGear);
       menus.clear();
       sc.clear();

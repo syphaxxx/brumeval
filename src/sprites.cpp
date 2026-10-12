@@ -15,6 +15,7 @@ static void eyes(const Xf& x, float x1, float x2, float y, float r = 2) {
 // ---------------------------------------------------------------------------
 void drawCreature(Gfx& g, const std::string& id, float x, float y, float s, bool flip, float t) {
   const Species& sp = species(id);
+  s *= sp.size;
   Color C = rgb(sp.c1), L = rgb(sp.c2), D = shade(C, .3f);
   Xf X{g, x, y + std::round(std::sin(t * 3.1f)), s, flip};
   X.ell(0, 15, 15, 3.5f, rgb(0, 46));

@@ -303,7 +303,7 @@
         "oui": [
           {
             "action": "combat",
-            "ennemis": [{"espece": "golem", "niveau": 24, "pv": 13.2, "boss": true}],
+            "ennemis": [{"espece": "golem", "niveau": 25, "pv": 13.2, "boss": true}],
             "boss": true,
             "fuite": false,
             "capture": false,
@@ -527,7 +527,7 @@
           {
             "action": "combat",
             "nom": "Le gardien de cristal",
-            "ennemis": [{"espece": "galetor", "niveau": 34}, {"espece": "cristallin", "niveau": 37, "pv": 11, "boss": true}, {"espece": "galetor", "niveau": 34}],
+            "ennemis": [{"espece": "galetor", "niveau": 34}, {"espece": "cristallin", "niveau": 39, "pv": 11, "boss": true}, {"espece": "galetor", "niveau": 34}],
             "renforts": [{"espece": "givrelin", "niveau": 33}],
             "boss": true,
             "fuite": true,
@@ -981,7 +981,7 @@
         "oui": [
           {
             "action": "combat",
-            "ennemis": [{"espece": "nebulis", "niveau": 36}, {"espece": "mere_brumes", "niveau": 40, "pv": 9.9, "boss": true}, {"espece": "brumeloup", "niveau": 36}],
+            "ennemis": [{"espece": "nebulis", "niveau": 36}, {"espece": "mere_brumes", "niveau": 44, "pv": 9.9, "boss": true}, {"espece": "brumeloup", "niveau": 36}],
             "renforts": [{"espece": "orbrume", "niveau": 36}],
             "boss": true,
             "fuite": false,
@@ -1014,7 +1014,7 @@
             "action": "combat",
             "ennemis": [
               {"espece": "givrelin", "niveau": 27},
-              {"espece": "givrecorne", "niveau": 36, "pv": 11, "boss": true},
+              {"espece": "givrecorne", "niveau": 39, "pv": 11, "boss": true},
               {"espece": "givrelin", "niveau": 27}
             ],
             "renforts": [{"espece": "cristallin", "niveau": 26}],

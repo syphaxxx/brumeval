@@ -32,6 +32,13 @@ avec le volume de la musique et des effets sonores et la vitesse du jeu ; les fl
 Croix ou stick gauche pour se déplacer, **A** valider, **B** annuler,
 **Start** menu, **Select** (ou **Y**) mode auto en combat.
 
+## L'évolution
+
+Vingt-deux créatures peuvent **évoluer** quand elles atteignent un niveau
+(Ronceau en Ronceflore au niveau 16, Rocaillou en Galetor…) : plus fortes, un
+peu plus grandes, avec de nouvelles techniques. Le jeu demande « Évoluer ? »
+après le combat ; si vous répondez Non, Échap > Évolution le fera plus tard.
+
 ## La forge
 
 Une fois Brann dans l'équipe, l'enclume de **Forgeroc** renforce une arme ou une

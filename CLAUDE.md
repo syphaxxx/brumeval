@@ -124,6 +124,7 @@ compétence `joueur-automatique` de Claude Code.
 | `coop.cpp` | Expédition à plusieurs (fonctions de `Online`) : lancement d'une graine pour tous, état de chaque joueur (message `ou`), autres joueurs sur la carte (`avatars`), attente et combat du gardien à plusieurs |
 | `trade.cpp` | Échange de créatures (fonctions de `Online`) : dans le salon (partie principale) ou pendant l'expédition à plusieurs, une contre une ou en cadeau |
 | `options.hpp/.cpp` | Options du joueur (`options()`, fichier `options.txt`) : volumes, plein écran, vitesse du jeu, touches choisies (`K_UP`…) |
+| `evolution.cpp` | Méthodes de `Game` : évolution des créatures (`offerEvolutions` après un combat gagné, `evolveMember` avec l'effet de lumière `drawEvolution`, menu Échap > Évolution `evolutionMenu`) |
 | `forge.cpp` | Méthodes de `Game` : forge de Forgeroc (`forgeMenu`, `forge`, `forgeStock`, `forgeCost`), ouverte par l'action d'événement `forge` |
 | `help.cpp` | Méthodes de `Game` : Aide (Échap > Aide, écran titre > Aide, F1 partout) : pages `helpPages()` (statistiques, dégâts, combat, damier, zones, rythme, états, tableau des types, touches), chiffres tirés de `rules()` |
 | `events.hpp/.cpp` (quêtes) | Quêtes annexes : `quests()`, `findQuest`, `questFlag` ; action `quete` |
@@ -309,6 +310,21 @@ compétence `joueur-automatique` de Claude Code.
   `son` aux autres). Les menus font leurs bruits eux-mêmes (`MenuStack::update`).
   Le mode test n'ouvre pas de sortie son mais fabrique chaque morceau et chaque
   effet (`audio::render`) pour vérifier qu'ils s'entendent.
+- Évolution (2.2, plan validé le 2026-10-12) : `Species::evolveTo` / `evolveLvl` (champ `evolution` : `espece`, `niveau`) et
+  `size` (`taille`, dessin agrandi dans `drawCreature`) ; `canEvolve` / `evolve` (data.cpp : même niveau, équipement,
+  tactiques, case, compagnon ; PV et PM en proportion). Après un combat gagné (hors Expédition, Arène, duel),
+  `Game::update` file `offerEvolutions` après la suite de l'histoire : « Évoluer ? » Oui/Non pour chaque créature prête ;
+  Non pose `Fighter::evolveLater` (ligne `evolution_plus_tard` de la sauvegarde) et l'entrée Échap > Évolution apparaît.
+  22 lignées : 16 nouvelles espèces (statistiques ×1,18, couleurs décalées, `taille` 1,15, techniques de la base + 2,
+  Limite `lim_<id>` +10 de puissance) et 6 créatures existantes devenues des évolutions (Rocaillou → Galetor…). Formes
+  évoluées sauvages : Pics, Temple, Source. Le mode test coupe les propositions (`offerEvolve_`) sauf dans leur test ;
+  ses simulations font évoluer les équipes (`BRUMEVAL_SANS_EVOLUTION=1` pour comparer). Le joueur automatique répond Oui
+  (journal : « Évolution : … »). Réglage : statistiques ×1,18 rendaient les boss bien plus faciles (Ignarok 6 → 37 %,
+  Givrecorne 33 → 78 %) ; ramenées à ×1,10 (Limite +5), puis boss relevés de niveau (plus de PV ne changeait presque
+  rien) : Golem 24 → 25, gardien de cristal 37 → 39, Givrecorne 36 → 39, Mère des Brumes 40 → 44. Mesuré
+  (BRUMEVAL_SIMULATIONS=4, sans évolution → avec, IA seule) : Sylvarque 7 → 6 %, Golem 57 → 67 %, Ronce-Mère 5 → 19 %,
+  Ignarok 6 → 11 %, Givrecorne 33 → 31 %, gardien 22 → 37 %, Mère des Brumes 47 → 54 % ; avec l'équipement, Ignarok
+  monte plus (17-43 → 52-74 %).
 - Forge (2.1, plan validé le 2026-10-12) : armes et armures en +1/+2/+3. `rebuildData` (data.cpp) génère pour chaque arme et
   armure les objets `<id>+1`… (`ItemDef::forged`, `base` ; `forgedId`, `forgeable`), bonus + part arrondie au-dessus
   (`Rules::forge` : `bonus`, `or`, matériaux ; « trophee » = tout objet `trophy`), prix + or de la forge. Ils ne sont pas
@@ -464,7 +480,7 @@ réécrits par `writeJson` (petites listes sur une ligne) : garder ce format.
 - **Monts Cendrelune** (64x44) : ville de Forgeroc (soin, boutique, auberge,
   forge), duel contre **Brann** pour le recruter, champs de cendres, rivières de
   lave, cratère d'**Ignarok** (N.23, Feu, boss final).
-- **Grotte des Échos** (32x24) : **Golem de suie** (N.20), puis **Isra** rejoint
+- **Grotte des Échos** (32x24) : **Golem de suie** (N.25), puis **Isra** rejoint
   l'équipe.
 - **Forêt de Sylve-Noire** (56x40, ouverte après Sylvarque, entrée à l'ouest du
   village) : bandits dresseurs, chef des bandits qui retient **Kael** (archer,
@@ -474,16 +490,16 @@ réécrits par `writeJson` (petites listes sur une ligne) : garder ce format.
   village de Givreval (soin, boutique, auberge), duel contre **Sélène**
   (chevalière, Métal), chevaliers du givre, lac gelé.
 - **Temple gelé** (labyrinthe, clé de givre au fond) et **Sanctuaire** : boss
-  final **Givrecorne** (N.36, Glace/Roche), écran de fin. Boss de carte
+  final **Givrecorne** (N.39, Glace/Roche), écran de fin. Boss de carte
   facultatif du temple : le **gardien de cristal** (quête `cristal`).
 - **Source des Brumes** (40x30, facultative, faille au nord du Sanctuaire
   ouverte après le Givrecorne, `data/cartes/source.json`) : Brumeloup, Nébulis,
-  Orbrume (N.33-37), deux gardiens dresseurs, la **Mère des Brumes** (N.40,
+  Orbrume (N.33-37), deux gardiens dresseurs, la **Mère des Brumes** (N.44,
   Ombre/Esprit, drapeau `boss4`) et un troisième écran de fin. Créée par
   `build/outils/source.py` (outil de travail).
 - 13 types (dont Glace, Roche, Vent, Poison, Métal, Esprit). Héros : Lior,
   Maëlle, Brann, Isra, Kael, Sélène. Starters : Braisenard, Gouttelin, Ronceau.
-  26 créatures sauvages capturables, 6 boss, 5 sortes d'ennemis humains.
+  26 créatures sauvages capturables (et 16 formes évoluées, 2.2), 6 boss, 5 sortes d'ennemis humains.
 - **Attaques de zone** (1.9, demandées le 2026-10-12) : Tourbillon (Lior, ligne), Onde de choc (Brann, colonne), Nova
   (Maëlle, croix), Salve (Kael, colonne, rapide), Éclats d'acier (Sélène, croix) ; pour les créatures Ruée, Nuée de braises,
   Torrent, Pluie de spores, Avalanche, et Brasier, Rafale, Décharge, Morsure de gel qui gagnent une zone (aucune technique

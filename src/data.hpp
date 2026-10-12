@@ -129,6 +129,10 @@ struct Species {
   int look = 0;       // index dans allLooks() pour les humains
   std::string role;   // courte description
   std::vector<Tactic> tactics;  // tactiques de départ propres (vide : celles des règles)
+  // Évolution (2.2) : au niveau evolveLvl, la créature peut devenir l'espèce evolveTo (vide : aucune)
+  std::string evolveTo;
+  int evolveLvl = 0;
+  float size = 1;  // taille du dessin (formes évoluées : un peu plus grandes)
 };
 
 // Équipement : une arme, une armure et un accessoire par combattant. Armes et armures sont
@@ -294,6 +298,7 @@ struct Fighter {
   bool tacticsOn = true;
   std::array<std::string, N_GEAR> gear;  // équipement porté (objets de data/objets.json, vide : rien)
   int cell = -1;                         // formation : case choisie sur le damier (-1 : automatique)
+  bool evolveLater = false;              // évolution refusée : proposée de nouveau seulement par Échap > Évolution
   // Héros : la créature compagnon choisie par le joueur (vide : la première créature libre de l'équipe)
   std::weak_ptr<Fighter> companion;
 
@@ -335,5 +340,9 @@ float guardianScale(int allies, int players);
 Json gearJson(const Fighter& f);
 void applyGear(Fighter& f, const Json& gear);
 bool canEquip(const Fighter& f, const ItemDef& d);  // emplacement permis pour ce combattant
+// Évolution : la créature a atteint le niveau de son évolution ; evolve la fait évoluer (même niveau,
+// équipement, tactiques et case ; PV et PM gardent la même proportion)
+bool canEvolve(const Fighter& f);
+void evolve(Fighter& f);
 // Gagne de l'expérience ; renvoie les messages de montée de niveau.
 std::vector<std::string> gainXp(Fighter& f, int xp);

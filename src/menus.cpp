@@ -129,6 +129,13 @@ void Game::pauseMenu() {
                        }});
   m.items.push_back({"Équipe", "", "Ordre de combat et fiches.", true, [this] { teamMenu(); }});
   m.items.push_back({"Compagnons", "", "La créature qui combat aux côtés de chaque héros.", true, [this] { companionsMenu(); }});
+  {
+    int waiting = 0;
+    for (auto& f : team) waiting += canEvolve(*f) && f->evolveLater;
+    if (waiting)
+      m.items.push_back({"Évolution", std::to_string(waiting), "Des créatures peuvent évoluer (vous aviez répondu Non).", true,
+                         [this] { evolutionMenu(); }});
+  }
   m.items.push_back({"Formation", "", "La place de chacun sur le damier de combat (avant, milieu, arrière).", true, [this] { formationMenu(); }});
   m.items.push_back({"Réserve", reserve.empty() ? "" : std::to_string(reserve.size()), "Les créatures en plus de l'équipe (" +
                      std::to_string(rules().maxTeam) + " membres au plus).", true, [this] { reserveMenu(); }});
@@ -279,6 +286,16 @@ void Game::noteBestiary() {
 }
 
 // Bestiaire : toutes les créatures des données, dans leur ordre ; une créature jamais vue reste « ??? »
+// « Évolue en Ronceflore au niveau 16. » / « Évolution de Ronceau (niveau 16). »
+static std::string evolutionText(const Species& s) {
+  std::string t;
+  if (!s.evolveTo.empty() && hasSpecies(s.evolveTo))
+    t += "Évolue en " + species(s.evolveTo).name + " au niveau " + std::to_string(s.evolveLvl) + ". ";
+  for (auto& o : allSpecies())
+    if (o.evolveTo == s.id) t += "Évolution de " + o.name + " (niveau " + std::to_string(o.evolveLvl) + "). ";
+  return t;
+}
+
 void Game::bestiaryMenu(int sel) {
   noteBestiary();
   panelMode_ = 3;
@@ -297,7 +314,7 @@ void Game::bestiaryMenu(int sel) {
     std::snprintf(num, sizeof num, "%02d ", int(i + 1));
     std::string id = s.id;
     MenuItem it{num + (v ? s.name : std::string("???")), c ? "★" : v ? "vu" : "",
-                c ? "Obtenue. " + matchupText(s) : v ? "Rencontrée, pas encore obtenue. " + matchupText(s) : "Pas encore rencontrée.", true, nullptr, [this, id] { bestiarySel_ = id; }};
+                c ? "Obtenue. " + evolutionText(s) + matchupText(s) : v ? "Rencontrée, pas encore obtenue. " + evolutionText(s) + matchupText(s) : "Pas encore rencontrée.", true, nullptr, [this, id] { bestiarySel_ = id; }};
     it.shrink = true;
     m.items.push_back(it);
   }

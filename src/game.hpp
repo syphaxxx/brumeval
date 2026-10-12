@@ -142,6 +142,14 @@ class Game {
   void itemMenu();
   void magicMenu();
   void shopMenu(const std::vector<std::string>& stock);
+  // Évolution (evolution.cpp) : proposée après chaque combat gagné, ou par Échap > Évolution
+  void offerEvolutions();                    // la première créature prête : « Évoluer ? » Oui/Non (puis la suivante)
+  void evolveMember(const FighterP& f);      // l'effet de lumière, puis l'évolution
+  void evolutionMenu();                      // les évolutions refusées, à faire maintenant
+  void drawEvolution();
+  std::string evoFrom_, evoTo_;              // effet en cours (espèces avant et après), vide : aucun
+  float evoT_ = 0;                           // début de l'effet (Game::time)
+  bool offerEvolve_ = true;                  // le mode test les coupe (personne ne répondrait), sauf pour les tester
   // Forge de Forgeroc (forge.cpp) : renforcer une arme ou une armure contre de l'or et des matériaux
   void forgeMenu(int sel = 0);
   bool forge(const FighterP& owner, const std::string& id);  // owner nul : l'objet est dans le sac

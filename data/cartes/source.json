@@ -84,7 +84,16 @@
       "niveau_min": 33,
       "niveau_max": 37,
       "max_ennemis": 3,
-      "creatures": ["brumeloup", "nebulis", "orbrume", "esprillon", "chauvenuit"]
+      "creatures": [
+        "brumeloup",
+        "nebulis",
+        "orbrume",
+        "esprillon",
+        "chauvenuit",
+        "noctaile",
+        "serpentox",
+        "carapic"
+      ]
     }
   ],
   "boss": [{"x": 19, "y": 2, "espece": "mere_brumes", "drapeau": "boss4", "evenement": "mere_brumes"}],

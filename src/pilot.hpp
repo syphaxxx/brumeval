@@ -141,6 +141,7 @@ class Pilot {
   std::set<std::string> knownFlags_;
   size_t knownTeam_ = 0;
   std::vector<const Fighter*> knownMembers_;
+  std::map<const Fighter*, std::string> knownSpecies_;  // pour noter les évolutions
   int knownDefeats_ = 0, shots_ = 0;
   int endings_ = 0;  // écrans de fin vus
   bool endingNow_ = false;

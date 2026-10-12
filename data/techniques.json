@@ -1214,5 +1214,133 @@
     "genre": "physique",
     "cible": "tous_ennemis",
     "puissance": 62
+  },
+  {
+    "id": "lim_flammenard",
+    "nom": "Ouragan de braises suprême",
+    "type": "feu",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 63
+  },
+  {
+    "id": "lim_torrentin",
+    "nom": "Déluge suprême",
+    "type": "eau",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 63
+  },
+  {
+    "id": "lim_ronceflore",
+    "nom": "Ronces infinies suprême",
+    "type": "plante",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 63
+  },
+  {
+    "id": "lim_rongecrin",
+    "nom": "Frénésie suprême",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 60
+  },
+  {
+    "id": "lim_champignard",
+    "nom": "Nuage de spores suprême",
+    "type": "plante",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 60
+  },
+  {
+    "id": "lim_lucifee",
+    "nom": "Nuée ardente suprême",
+    "type": "feu",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 60
+  },
+  {
+    "id": "lim_fournezard",
+    "nom": "Éruption suprême",
+    "type": "feu",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 65
+  },
+  {
+    "id": "lim_banquisot",
+    "nom": "Ère glaciaire suprême",
+    "type": "eau",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 65
+  },
+  {
+    "id": "lim_serpentox",
+    "nom": "Constriction suprême",
+    "type": "poison",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 63
+  },
+  {
+    "id": "lim_noctaile",
+    "nom": "Nuée nocturne suprême",
+    "type": "ombre",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 63
+  },
+  {
+    "id": "lim_orageon",
+    "nom": "Tempête d'éclairs suprême",
+    "type": "foudre",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 65
+  },
+  {
+    "id": "lim_carapic",
+    "nom": "Éboulement suprême",
+    "type": "roche",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 65
+  },
+  {
+    "id": "lim_fulgurin",
+    "nom": "Surtension suprême",
+    "type": "foudre",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 67
+  },
+  {
+    "id": "lim_givrenard",
+    "nom": "Tempête de neige suprême",
+    "type": "glace",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 67
+  },
+  {
+    "id": "lim_ferrogeant",
+    "nom": "Marteau-pilon suprême",
+    "type": "metal",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 67
+  },
+  {
+    "id": "lim_prismalin",
+    "nom": "Réfraction suprême",
+    "type": "lumiere",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 67
   }
 ]

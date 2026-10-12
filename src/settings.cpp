@@ -48,7 +48,7 @@ static void reorderKeys(Json& o, const std::vector<std::string>& order) {
 }
 static const std::vector<std::string> SPECIES_KEYS = {"id", "nom", "type", "types", "base", "precision", "esquive", "critique", "resistances",
                                                       "immunites", "humain", "apparence", "role", "forme", "couleurs", "apprend", "limite",
-                                                      "tactiques"};
+                                                      "evolution", "taille", "tactiques"};
 static const std::vector<std::string> MOVE_KEYS = {"id", "nom", "type", "genre", "cible", "puissance", "portee", "zone", "cout", "precision", "critique", "rythme",
                                                    "effet", "effets", "description"};
 static const std::vector<std::string> ITEM_KEYS = {"id", "nom", "description", "prix", "combat", "menu", "important", "soin_pv", "soin_pm",
@@ -491,6 +491,31 @@ void Settings::editSpecies(const std::string& id, int sel) {
                [this, id] { editSpecies(id, 20); });
     };
     m.items.push_back(lim);
+  }
+  if (!species(id).human) {  // évolution : l'espèce suivante (ou aucune) et son niveau
+    std::vector<std::string> ids = {""};
+    for (auto& s : allSpecies())
+      if (!s.human && s.id != id) ids.push_back(s.id);
+    int n = (int)ids.size();
+    auto index = [ids, id] {
+      auto it = std::find(ids.begin(), ids.end(), species(id).evolveTo);
+      return it == ids.end() ? 0 : int(it - ids.begin());
+    };
+    m.items.push_back(cycleItem("Évolution", "L'espèce qu'elle devient au niveau choisi (Oui/Non proposé au joueur après le combat).", index,
+                                [this, id, ids](int k) {
+                                  EDIT_SPECIES(id, {
+                                    if (k == 0) o.erase("evolution");
+                                    else o["evolution"] = Json{{"espece", ids[(size_t)k]}, {"niveau", std::max(2, species(id).evolveLvl ? species(id).evolveLvl : 20)}};
+                                  });
+                                },
+                                n, [ids](int k) { return k == 0 ? std::string("aucune") : utf8Prefix(species(ids[(size_t)k]).name, 10); }));
+    m.items.push_back(numItem("Niveau d'évolution", "Niveau à partir duquel l'évolution est proposée.",
+                              [id] { return (double)species(id).evolveLvl; },
+                              [this, id](double v) {
+                                if (species(id).evolveTo.empty()) return;
+                                EDIT_SPECIES(id, { o["evolution"]["niveau"] = (int)v; });
+                              },
+                              1, 2, 100));
   }
   m.items.push_back(menuHeader("Fiche"));
   m.items.push_back(numItem("Niveau de la fiche", "Niveau utilisé pour la fiche de droite (seulement l'aperçu).",

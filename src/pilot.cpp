@@ -715,6 +715,14 @@ void Pilot::watch() {
       if (!human) captures++;
       note((human ? "Rejoint l'équipe : " : "Capture : ") + G.team[i]->name() + " N." + std::to_string(G.team[i]->lvl), human ? "recrue" : "");
     }
+  std::map<const Fighter*, std::string> now;  // évolution : même combattant, autre espèce
+  for (auto& f : G.team) {
+    auto it = knownSpecies_.find(f.get());
+    if (it != knownSpecies_.end() && it->second != f->sp && hasSpecies(it->second))
+      note("Évolution : " + species(it->second).name + " devient " + f->name() + " (N." + std::to_string(f->lvl) + ")", "evolution");
+    now[f.get()] = f->sp;
+  }
+  knownSpecies_ = std::move(now);
   if (G.team.size() != knownTeam_) {
     knownTeam_ = G.team.size();
     knownMembers_.clear();

@@ -84,7 +84,7 @@
       "niveau_min": 25,
       "niveau_max": 28,
       "max_ennemis": 3,
-      "creatures": ["givrelin", "ferrolin", "cristallin", "glaconnet", "esprillon"]
+      "creatures": ["givrelin", "ferrolin", "cristallin", "glaconnet", "esprillon", "banquisot"]
     }
   ],
   "boss": [

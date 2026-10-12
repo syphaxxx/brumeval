@@ -362,6 +362,11 @@ void rebuildData() {
     s.role = jget<std::string>(o, "role", "");
     for (auto& l : o.at("apprend")) s.learn.push_back({l.at(0).get<int>(), l.at(1).get<std::string>()});
     s.limit = jget<std::string>(o, "limite", "");  // vide : pas de Limite
+    if (o.contains("evolution")) {
+      s.evolveTo = o["evolution"].at("espece").get<std::string>();
+      s.evolveLvl = o["evolution"].at("niveau").get<int>();
+    }
+    s.size = jget(o, "taille", 1.f);
     for (auto& t : o.value("tactiques", Json::array())) s.tactics.push_back(tacticFromJson(t));
     return s;
   });
@@ -468,6 +473,12 @@ std::vector<std::string> checkData() {
     if (!hasItem(id)) err.push_back("Objet de départ inconnu : " + id);
   for (auto& [id, c] : r.drops)
     if (!hasItem(id)) err.push_back("Butin inconnu : " + id);
+  for (auto& s : SPECIES)
+    if (!s.evolveTo.empty()) {
+      if (!hasSpecies(s.evolveTo)) err.push_back("Espèce " + s.name + " : évolution inconnue « " + s.evolveTo + " »");
+      else if (species(s.evolveTo).human || s.human) err.push_back("Espèce " + s.name + " : un humain n'évolue pas");
+      if (s.evolveLvl < 2) err.push_back("Espèce " + s.name + " : niveau d'évolution trop bas");
+    }
   for (auto& td : r.typeDrops) {
     if (!hasItem(td.item)) err.push_back("Butin par type : objet inconnu « " + td.item + " »");
     bool known = false;
@@ -552,6 +563,20 @@ std::string ItemDef::bonusText() const {
 }
 std::string forgedId(const std::string& base, int level) { return level > 0 ? base + "+" + std::to_string(level) : base; }
 bool forgeable(const ItemDef& d) { return (d.slot == G_WEAPON || d.slot == G_ARMOR) && d.forged < (int)RULES.forge.size(); }
+bool canEvolve(const Fighter& f) {
+  const Species& s = f.S();
+  return !s.evolveTo.empty() && hasSpecies(s.evolveTo) && f.lvl >= s.evolveLvl;
+}
+void evolve(Fighter& f) {
+  if (!canEvolve(f)) return;
+  float hp = f.mhp ? float(f.hp) / f.mhp : 1, mp = f.mmp ? float(f.mp) / f.mmp : 1;
+  bool alive = f.hp > 0;
+  f.sp = f.S().evolveTo;
+  f.evolveLater = false;
+  f.recalc();
+  f.hp = alive ? std::clamp(int(std::lround(f.mhp * hp)), 1, f.mhp) : 0;
+  f.mp = std::clamp(int(std::lround(f.mmp * mp)), 0, f.mmp);
+}
 bool canEquip(const Fighter& f, const ItemDef& d) { return d.slot == G_ACCESSORY || (d.slot >= 0 && f.S().human); }
 
 // Héros ? (faux pour une espèce disparue : monde d'une expédition déjà remis en place)

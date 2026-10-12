@@ -290,6 +290,7 @@ void Game::update(float dt) {
         }
         groupBattle_ = false;
         if (after) sc.runNow([&] { after(r); });
+        if (r == BattleResult::Win && !inExpedition()) sc.call([this] { offerEvolutions(); });
       }
       break;
     }
@@ -752,6 +753,7 @@ void Game::draw() {
       if (story_) story_->draw();
       break;
   }
+  if (!evoTo_.empty()) drawEvolution();
   if (helpPage_ >= 0) drawHelp();
   if (textOn_) drawTextEdit();
   if (bindKey_ >= 0) drawKeyPrompt();
