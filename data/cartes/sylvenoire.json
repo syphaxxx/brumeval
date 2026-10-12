@@ -137,7 +137,7 @@
   "coffres": [
     {"x": 3, "y": 32, "objet": "elixir", "quantite": 1},
     {"x": 4, "y": 36, "objet": "lanterne_or", "quantite": 1},
-    {"x": 35, "y": 6, "objet": "remede", "quantite": 3},
+    {"x": 35, "y": 6, "objet": "minerai", "quantite": 2},
     {"x": 5, "y": 24, "or": 400},
     {"x": 21, "y": 9, "objet": "lanterne_argent", "quantite": 2},
     {"x": 48, "y": 33, "objet": "superpotion", "quantite": 2},

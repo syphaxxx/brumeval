@@ -163,7 +163,7 @@
     {"x": 52, "y": 26, "objet": "elixir", "quantite": 1},
     {"x": 8, "y": 30, "or": 900},
     {"x": 50, "y": 10, "objet": "superpotion", "quantite": 3},
-    {"x": 12, "y": 19, "objet": "remede", "quantite": 3},
+    {"x": 12, "y": 19, "objet": "cristal_givre", "quantite": 2},
     {"x": 72, "y": 30, "objet": "lanterne_or", "quantite": 2},
     {"x": 81, "y": 16, "objet": "elixir", "quantite": 2},
     {"x": 78, "y": 39, "or": 2500}

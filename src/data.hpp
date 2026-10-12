@@ -151,8 +151,15 @@ struct ItemDef {
   bool cure = false;           // guérit les états
   int slot = -1;               // équipement : emplacement (GearSlot) ; -1 : pas un équipement
   std::array<int, N_GEAR_STATS> bonus{};
+  bool trophy = false;         // trophée d'un boss (champ "trophee") : sert à la forge
+  // Forge (2.1) : chaque arme et armure existe aussi forgée, « epee_fer+2 », objet généré au
+  // chargement (pas dans objets.json) : forged = son niveau, base = l'objet d'origine
+  int forged = 0;
+  std::string base;
   std::string bonusText() const;  // « +4 Attaque, +10 PV »
 };
+std::string forgedId(const std::string& base, int level);  // "epee_fer" et 2 : "epee_fer+2"
+bool forgeable(const ItemDef& d);                           // arme ou armure qu'on peut encore forger
 
 // Règles du jeu (data/regles.json). Les valeurs numériques sont décrites dans
 // ruleFields() pour pouvoir être lues, écrites et réglées au même endroit.
@@ -199,6 +206,20 @@ struct Rules {
   // Tactiques : lignes disponibles (départ, une de plus tous les n niveaux, maximum) et règles de départ
   int tacticStart = 4, tacticPerLvl = 6, tacticMax = 10;
   std::vector<Tactic> tactics;
+  // Butin selon le type d'une créature sauvage vaincue (« butin_type ») : matériaux de la forge
+  struct TypeDrop {
+    std::string type, item;
+    double chance;
+  };
+  std::vector<TypeDrop> typeDrops;
+  // Forge de Forgeroc (« forge ») : un niveau par entrée (+1, +2, +3). bonus : part du bonus de
+  // l'objet ajoutée (0.3 : +30 %), or et matériaux (« trophee » : n'importe quel trophée de boss)
+  struct ForgeLevel {
+    double bonus = 0;
+    int gold = 0;
+    std::vector<std::pair<std::string, int>> items;
+  };
+  std::vector<ForgeLevel> forge;
 };
 struct RuleField {
   const char* group;  // section de regles.json

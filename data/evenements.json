@@ -276,7 +276,7 @@
             "fuite": false,
             "capture": false,
             "victoire": [
-              {"action": "drapeau", "nom": "boss1"},
+              {"action": "drapeau", "nom": "boss1"}, {"action": "donner", "objet": "ecaille_sylvarque"},
               {
                 "action": "dire",
                 "texte": "Sylvarque se dissout dans un souffle de vent. La brume se lève sur toute la vallée !"
@@ -308,7 +308,7 @@
             "fuite": false,
             "capture": false,
             "victoire": [
-              {"action": "drapeau", "nom": "golem"},
+              {"action": "drapeau", "nom": "golem"}, {"action": "donner", "objet": "coeur_suie"},
               {
                 "action": "dire",
                 "texte": "Le Golem s'effondre en un tas de cailloux. Une voix vous appelle au fond de la grotte…"
@@ -336,7 +336,7 @@
             "boss": true,
             "fuite": false,
             "capture": false,
-            "victoire": [{"action": "drapeau", "nom": "boss2"}, {"action": "evenement", "id": "fin"}]
+            "victoire": [{"action": "drapeau", "nom": "boss2"}, {"action": "donner", "objet": "braise_ignarok"}, {"action": "evenement", "id": "fin"}]
           }
         ]
       }
@@ -404,7 +404,10 @@
     "pages": [
       {
         "si": {"drapeau": "brann"},
-        "actions": [{"action": "dire", "texte": "L'enclume est encore chaude. Brann y forgeait sa hache."}]
+        "actions": [
+          {"action": "dire", "texte": "Brann : « Montre-moi ce que tu veux renforcer. Il me faut des matériaux, et un peu d'or pour le charbon. »"},
+          {"action": "forge"}
+        ]
       },
       {"actions": [{"action": "dire", "texte": "La forge est fermée. Brann se tient juste à côté."}]}
     ]
@@ -530,7 +533,7 @@
             "fuite": true,
             "capture": false,
             "victoire": [
-              {"action": "drapeau", "nom": "cristal_apaise"},
+              {"action": "drapeau", "nom": "cristal_apaise"}, {"action": "donner", "objet": "eclat_gardien"},
               {"action": "dire", "texte": "Le gardien se calme. Sa glace chante de nouveau, claire et douce."}
             ]
           }
@@ -682,7 +685,7 @@
             "fuite": false,
             "capture": false,
             "victoire": [
-              {"action": "drapeau", "nom": "ronce"},
+              {"action": "drapeau", "nom": "ronce"}, {"action": "donner", "objet": "epine_ronce"},
               {"action": "dire", "texte": "La Ronce-Mère se fane dans un dernier soupir de pollen."},
               {
                 "action": "dire",
@@ -984,7 +987,7 @@
             "fuite": false,
             "capture": false,
             "victoire": [
-              {"action": "drapeau", "nom": "boss4"},
+              {"action": "drapeau", "nom": "boss4"}, {"action": "donner", "objet": "voile_brumes"},
               {"action": "dire", "texte": "La Mère des Brumes se pose doucement sur la source. Sa brume devient légère, presque claire."},
               {"action": "dire", "texte": "Elle ne rendra plus les créatures sauvages : la vallée peut enfin respirer."},
               {
@@ -1019,7 +1022,7 @@
             "fuite": false,
             "capture": false,
             "victoire": [
-              {"action": "drapeau", "nom": "boss3"},
+              {"action": "drapeau", "nom": "boss3"}, {"action": "donner", "objet": "corne_givrecorne"},
               {
                 "action": "dire",
                 "texte": "Le Givrecorne s'apaise et se couche sur l'autel. La neige cesse de tomber."
@@ -1342,7 +1345,7 @@
               {
                 "action": "drapeau",
                 "nom": "tisonnels_chasses"
-              },
+              }, {"action": "donner", "objet": "croc_tisonnel"},
               {
                 "action": "dire",
                 "texte": "Les Tisonnels s'enfuient vers le volcan !"

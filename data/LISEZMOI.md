@@ -17,9 +17,9 @@ toutes les références existent et que chaque lieu des cartes est accessible.
 | `types.json` | Les 13 types (Feu, Eau, Glace, Roche, Vent, Poison, Métal, Esprit…), leur couleur, leurs immunités et la table d'efficacité |
 | `techniques.json` | Techniques, sorts et Limites |
 | `especes.json` | Héros, créatures et boss : statistiques de base, techniques apprises |
-| `objets.json` | Objets : prix, effets (soin, PM, réanimation, capture), équipement (`equipement` : `arme`, `armure` ou `accessoire`, et `bonus` : `pv`, `pm`, `attaque`, `defense`, `magie`, `resistance`, `vitesse`, `precision`, `esquive`, `critique`) |
+| `objets.json` | Objets : prix, effets (soin, PM, réanimation, capture), équipement (`equipement` : `arme`, `armure` ou `accessoire`, et `bonus` : `pv`, `pm`, `attaque`, `defense`, `magie`, `resistance`, `vitesse`, `precision`, `esquive`, `critique`) ; `"trophee": true` pour un trophée de boss (forge). Les armes et armures forgées (`epee_fer+1`…) sont créées par le jeu, pas écrites ici |
 | `apparences.json` | Couleurs et accessoires des personnages |
-| `regles.json` | Départ de la partie, rencontres, formules de combat, récompenses, tactiques de départ… |
+| `regles.json` | Départ de la partie, rencontres, formules de combat, récompenses (dont `butin_type` : matériaux selon le type de la créature vaincue), forge, tactiques de départ… |
 | `evenements.json` | Dialogues et événements de l'histoire |
 | `cartes/*.json` | Une carte par fichier : tuiles, bâtiments, habitants, coffres… |
 | `sons.json` | Musiques et bruitages (fabriqués par le jeu, sans fichier audio) |
@@ -110,6 +110,14 @@ tiennent compte (dégâts divisés par le temps que prend la technique).
 Un type peut rendre insensible à un état (`types.json`, `"immunites"`). Les
 valeurs générales (critiques, effet d'un bonus, dégâts du poison, rythme…) sont
 dans `regles.json`, sections `combat` et `etats`.
+
+**Forge** (`regles.json`, `forge`) : une entrée par niveau (+1, +2, +3) avec
+`bonus` (part du bonus de l'objet ajoutée, arrondie au-dessus : 0.3 = +30 %),
+`or` et `objets` (matériaux à donner ; `"trophee"` = n'importe quel objet avec
+`"trophee": true`). Chaque arme et armure de `objets.json` existe aussitôt en
++1, +2… ; son prix de vente monte de l'or de la forge. Les matériaux tombent
+des créatures selon `recompenses.butin_type` (`type`, `objet`, `chance`) et se
+trouvent dans des coffres ; chaque boss donne son trophée (action `donner`).
 
 **Adversaires** : l'action `combat` accepte `nom` (« Le braconnier vous défie ! »)
 et `renforts`, une liste d'ennemis qui entrent un par un quand un adversaire
@@ -227,6 +235,7 @@ page dont la condition `si` est vraie.
 | `si` | Condition | `condition`, `alors`, `sinon` |
 | `soigner` | Soigne l'équipe | `pv`, `pm` (true par défaut) |
 | `boutique` | Ouvre une boutique | `objets` |
+| `forge` | Ouvre la forge (renforcer armes et armures : coûts dans `regles.json`, section `forge`) | |
 | `reveil` | Point de réveil après une défaite | |
 | `teleporter` | Change de carte | `carte`, `x`, `y`, `direction` |
 | `evenement` | Lance un autre événement | `id` |

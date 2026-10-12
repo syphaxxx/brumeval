@@ -54,6 +54,7 @@ class Pilot {
     bool combat = false, boss = false, heal = false;
     int lvl = 0;
     std::vector<std::string> shop;
+    bool forge = false;  // ouvre la forge (Forgeroc)
   };
   struct Step {
     int from, to, dir;
@@ -128,6 +129,8 @@ class Pilot {
   bool shopPlanned_ = false;
   void shopping();
   void equipBest();
+  void forging();            // forge : renforce l'équipement porté tant que l'or et les matériaux le permettent
+  bool forgeWanted() const;  // une arme ou armure portée peut être forgée maintenant
   float gearScore(const Fighter& f, const ItemDef& d) const;
   std::vector<std::string> wishes(const std::vector<std::string>& stock) const;  // achats utiles dans ce stock
   int creaturesWanted() const;  // créatures qui manquent pour accompagner les héros

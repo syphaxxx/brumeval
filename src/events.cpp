@@ -109,7 +109,7 @@ static void checkAction(const Json& a, const std::string& where, std::vector<std
   } else if (k == "attendre") need("secondes");
   else if (k == "quete") {
     if (need("id") && !findQuest(a["id"].get<std::string>())) err.push_back(w + " : quête inconnue « " + a["id"].get<std::string>() + " »");
-  } else if (k != "soigner" && k != "reveil" && k != "fin") err.push_back(where + " : action inconnue « " + k + " »");
+  } else if (k != "soigner" && k != "reveil" && k != "fin" && k != "forge") err.push_back(where + " : action inconnue « " + k + " »");
 }
 
 static void checkList(const Json& list, const std::string& where, std::vector<std::string>& err) {
@@ -276,6 +276,8 @@ void Game::execAction(const Json& a) {
     }
   } else if (k == "boutique") {
     shopMenu(names(a["objets"]));
+  } else if (k == "forge") {
+    forgeMenu();
   } else if (k == "reveil") {
     respawnMap = mapId, respawnX = px, respawnY = py;
   } else if (k == "teleporter") {

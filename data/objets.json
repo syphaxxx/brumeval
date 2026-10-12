@@ -77,6 +77,83 @@
     "combat": true,
     "capture": 2.5
   },
+  {"id": "minerai", "nom": "Minerai de fer", "description": "Un morceau de roche veiné de fer.", "prix": 40},
+  {
+    "id": "coeur_braise",
+    "nom": "Cœur de braise",
+    "description": "Une pierre qui garde la chaleur d'un volcan.",
+    "prix": 80
+  },
+  {
+    "id": "cristal_givre",
+    "nom": "Cristal de givre",
+    "description": "Un éclat de glace qui ne fond jamais.",
+    "prix": 120
+  },
+  {
+    "id": "ecaille_sylvarque",
+    "nom": "Écaille de Sylvarque",
+    "description": "Une écaille sombre, encore tiède.",
+    "prix": 0,
+    "important": true,
+    "trophee": true
+  },
+  {
+    "id": "coeur_suie",
+    "nom": "Cœur de suie",
+    "description": "Le noyau noir du Golem, lourd comme une enclume.",
+    "prix": 0,
+    "important": true,
+    "trophee": true
+  },
+  {
+    "id": "epine_ronce",
+    "nom": "Épine de la Ronce-Mère",
+    "description": "Une épine longue comme une dague.",
+    "prix": 0,
+    "important": true,
+    "trophee": true
+  },
+  {
+    "id": "croc_tisonnel",
+    "nom": "Croc de Tisonnel",
+    "description": "Un croc qui fume encore.",
+    "prix": 0,
+    "important": true,
+    "trophee": true
+  },
+  {
+    "id": "braise_ignarok",
+    "nom": "Braise d'Ignarok",
+    "description": "Elle brûle sans jamais s'éteindre.",
+    "prix": 0,
+    "important": true,
+    "trophee": true
+  },
+  {
+    "id": "eclat_gardien",
+    "nom": "Éclat du gardien",
+    "description": "Un prisme qui chante quand on le tourne.",
+    "prix": 0,
+    "important": true,
+    "trophee": true
+  },
+  {
+    "id": "corne_givrecorne",
+    "nom": "Corne du Givrecorne",
+    "description": "Plus dure que l'acier, et glacée.",
+    "prix": 0,
+    "important": true,
+    "trophee": true
+  },
+  {
+    "id": "voile_brumes",
+    "nom": "Voile des Brumes",
+    "description": "Un morceau de brume que l'on peut tenir.",
+    "prix": 0,
+    "important": true,
+    "trophee": true
+  },
   {
     "id": "herbe",
     "nom": "Herbe lunaire",

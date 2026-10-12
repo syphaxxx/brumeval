@@ -313,6 +313,7 @@ void Settings::menuStartItems(int sel) {
   m.x = 24, m.y = 30, m.w = 200, m.rows = 12;
   m.sel = sel;
   for (auto& d : allItems()) {
+    if (d.forged) continue;  // objets forgés : générés à partir de leur objet d'origine
     std::string id = d.id;
     m.items.push_back(numItem(d.name, d.desc,
                               [id] {
@@ -338,6 +339,7 @@ void Settings::menuDrops(int sel) {
   m.x = 24, m.y = 30, m.w = 200, m.rows = 12;
   m.sel = sel;
   for (auto& d : allItems()) {
+    if (d.forged) continue;
     std::string id = d.id;
     m.items.push_back(numItem(d.name, "Chance de trouver cet objet après un combat contre des créatures sauvages.",
                               [id] {
@@ -956,6 +958,7 @@ void Settings::menuItemsList(const std::string& sel) {
   m.title = "Objets";
   m.x = 4, m.y = 18, m.w = 152, m.rows = 14;
   for (auto& d : allItems()) {
+    if (d.forged) continue;
     std::string id = d.id;
     if (id == sel) m.sel = (int)m.items.size();
     m.items.push_back({d.name, "", d.desc, true, [this, id] { editItem(id); }, [this, id] {

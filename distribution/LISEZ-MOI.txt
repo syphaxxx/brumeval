@@ -44,6 +44,10 @@ COMMANDES
   Échap > Équipement : arme, armure et accessoire de chaque membre (en
   vente dans les boutiques). Équipez-vous avant chaque boss !
 
+  Forge de Forgeroc (après l'arrivée de Brann) : armes et armures +1 à
+  +3, avec de l'or, du minerai, des cœurs de braise, des cristaux de givre
+  et les trophées des boss.
+
   Échap > Compagnons : la créature qui combat aux côtés de chaque héros.
   Vous la commandez en combat, comme les héros (Tab : leurs tactiques).
   Loin des villes, les créatures arrivent en meutes (jusqu'à six).

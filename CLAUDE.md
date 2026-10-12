@@ -124,6 +124,7 @@ compétence `joueur-automatique` de Claude Code.
 | `coop.cpp` | Expédition à plusieurs (fonctions de `Online`) : lancement d'une graine pour tous, état de chaque joueur (message `ou`), autres joueurs sur la carte (`avatars`), attente et combat du gardien à plusieurs |
 | `trade.cpp` | Échange de créatures (fonctions de `Online`) : dans le salon (partie principale) ou pendant l'expédition à plusieurs, une contre une ou en cadeau |
 | `options.hpp/.cpp` | Options du joueur (`options()`, fichier `options.txt`) : volumes, plein écran, vitesse du jeu, touches choisies (`K_UP`…) |
+| `forge.cpp` | Méthodes de `Game` : forge de Forgeroc (`forgeMenu`, `forge`, `forgeStock`, `forgeCost`), ouverte par l'action d'événement `forge` |
 | `help.cpp` | Méthodes de `Game` : Aide (Échap > Aide, écran titre > Aide, F1 partout) : pages `helpPages()` (statistiques, dégâts, combat, damier, zones, rythme, états, tableau des types, touches), chiffres tirés de `rules()` |
 | `events.hpp/.cpp` (quêtes) | Quêtes annexes : `quests()`, `findQuest`, `questFlag` ; action `quete` |
 | `version.hpp` | Numéro de version (`BRUMEVAL_VERSION`), affiché sur l'écran titre et comparé en multijoueur |
@@ -308,6 +309,17 @@ compétence `joueur-automatique` de Claude Code.
   `son` aux autres). Les menus font leurs bruits eux-mêmes (`MenuStack::update`).
   Le mode test n'ouvre pas de sortie son mais fabrique chaque morceau et chaque
   effet (`audio::render`) pour vérifier qu'ils s'entendent.
+- Forge (2.1, plan validé le 2026-10-12) : armes et armures en +1/+2/+3. `rebuildData` (data.cpp) génère pour chaque arme et
+  armure les objets `<id>+1`… (`ItemDef::forged`, `base` ; `forgedId`, `forgeable`), bonus + part arrondie au-dessus
+  (`Rules::forge` : `bonus`, `or`, matériaux ; « trophee » = tout objet `trophy`), prix + or de la forge. Ils ne sont pas
+  dans objets.json ni dans les Réglages. Matériaux : `minerai` (+1), `coeur_braise` (+2), `cristal_givre` et un trophée
+  (+3) ; butin selon le type (`Rules::typeDrops`, `butin_type`, battle.cpp `victory`), coffres, et chaque boss donne son
+  trophée (action `donner` après son drapeau). L'enclume de Forgeroc (événement `forge`, une fois `brann`) ouvre
+  `Game::forgeMenu` : équipement porté puis sac ; Entrée forge aussitôt (comme un achat). Joueur automatique :
+  `Pilot::forgeWanted` / `forging` (l'équipement porté, en gardant 150 or). Mode test : bloc « forgé au maximum
+  possible » (`simForge`). Réglage : +1 = +30 %, +2 = +40 % (60 % rendait Ignarok trop facile : 17 → 64 %), +3 = +100 %.
+  Mesuré (BRUMEVAL_SIMULATIONS=4, boutique → boutique et forge) : Sylvarque 33 → 37 %, Ronce-Mère 29 → 30 %, Golem 55 → 52 %,
+  Ignarok 14 → 36 %, Givrecorne 75 → 68 %, gardien de cristal 70 → 85 %, Mère des Brumes 70 → 86 %.
 - Vitesse du jeu (1.9) : `options().speed` (1 à 3, ligne `vitesse` d'`options.txt`), Options > Vitesse du jeu ou F2 (`Game::cycleSpeed`, grand
   « Vitesse ×2 » un instant, puis « ×2 » discret en haut à droite). main.cpp appelle `game.update(dt)` `Game::speed()` fois par
   image : tout va plus vite (marche, combats, textes) sans changer la logique ; la musique reste normale. Toujours ×1 en
@@ -486,7 +498,8 @@ réécrits par `writeJson` (petites listes sur une ligne) : garder ce format.
   (Givreval), le grimoire de l'ermite (Sylve-Noire, dans la tente du chef), le
   gardien de cristal (Temple gelé, donnée par la mage). Journal : Échap > Journal.
 - **Équipement** : 16 armes, armures et accessoires en vente (vallée,
-  Forgeroc, Givreval).
+  Forgeroc, Givreval), armes et armures renforcées à la forge de Forgeroc
+  (+1 à +3 ; minerai, cœurs de braise, cristaux de givre, 8 trophées de boss).
 - **Son** : 9 musiques (titre, 5 lieux, intérieur, combat, boss) et 25
   bruitages, fabriqués par le jeu (`data/sons.json`). Options (volumes,
   plein écran, touches) et manette.

@@ -101,8 +101,22 @@ std::string itemDetails(const ItemDef& d) {
     double lo = std::min(R.capMax, R.capBase * d.capture), hi = std::min(R.capMax, (R.capBase + R.capHp) * d.capture);
     v.push_back("Capture : " + pct(lo) + " de chance sur une créature en pleine forme, jusqu'à " + pct(hi) + " presque K.O.");
   }
-  if (d.key) v.push_back("Objet important");
-  else if (d.slot < 0) v.push_back(d.battle && d.field ? "En combat et dans le menu" : d.battle ? "En combat seulement" : "Dans le menu seulement");
+  for (size_t L = 0; L < R.forge.size(); L++)  // matériau de la forge
+    for (auto& [id, n] : R.forge[L].items)
+      if (id == d.id || (id == "trophee" && d.trophy))
+        v.push_back("Forge de Forgeroc : " + std::to_string(n) + " pour un objet +" + std::to_string(L + 1));
+  for (auto& td : R.typeDrops)
+    if (td.item == d.id) {
+      std::string tn = td.type;
+      for (auto& t : types())
+        if (t.id == td.type) tn = t.name;
+      v.push_back("Butin des créatures " + tn + " (" + pct(td.chance) + ")");
+    }
+  if (d.slot >= 0 && forgeable(d)) v.push_back("Peut être renforcé à la forge de Forgeroc (+" + std::to_string(d.forged + 1) + ")");
+  if (d.key && d.trophy) v.push_back("Trophée");
+  else if (d.key) v.push_back("Objet important");
+  else if (d.slot < 0 && (d.battle || d.field))
+    v.push_back(d.battle && d.field ? "En combat et dans le menu" : d.battle ? "En combat seulement" : "Dans le menu seulement");
   std::string s;
   for (auto& x : v) s += (s.empty() ? "" : ". ") + x;
   return s.empty() ? s : s + ".";
@@ -1429,6 +1443,14 @@ void Battle::victory() {
           break;
         }
       }
+      // Matériaux de la forge : selon le type de chaque créature vaincue
+      for (auto& f : roster_)
+        if (!f->S().human)
+          for (auto& td : R.typeDrops)
+            if (hasType(f->S(), typeOf(td.type)) && frand() < float(td.chance)) {
+              G.items[td.item]++;
+              summary_.push_back("Objet trouvé : " + item(td.item).name);
+            }
     }
     if (up) sound("niveau", false);
     for (auto& l : summary_) log.push_back("  " + l);

@@ -1,6 +1,7 @@
 #include "data.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <random>
 #include <stdexcept>
 #include <unordered_map>
@@ -227,6 +228,17 @@ static void loadRules(const Json& j) {
   r.startEvent = jget<std::string>(d, "evenement", "");
   if (j.contains("recompenses"))
     for (auto& b : j["recompenses"].value("butin", Json::array())) r.drops.push_back({b.at("objet").get<std::string>(), b.at("chance").get<double>()});
+  if (j.contains("recompenses"))
+    for (auto& b : j["recompenses"].value("butin_type", Json::array()))
+      r.typeDrops.push_back({b.at("type").get<std::string>(), b.at("objet").get<std::string>(), b.at("chance").get<double>()});
+  for (auto& l : j.value("forge", Json::array())) {
+    Rules::ForgeLevel f;
+    f.bonus = jget(l, "bonus", 0.0);
+    f.gold = jget(l, "or", 0);
+    Json need = l.value("objets", Json::object());  // variable : la boucle doit la garder en vie
+    for (auto& [k, v] : need.items()) f.items.push_back({k, v.get<int>()});
+    r.forge.push_back(f);
+  }
   if (j.contains("tactiques"))
     for (auto& t : j["tactiques"].value("defaut", Json::array())) r.tactics.push_back(tacticFromJson(t));
   RULES = r;
@@ -368,6 +380,7 @@ void rebuildData() {
     d.revive = jget(o, "rappel", 0);
     d.capture = jget(o, "capture", 0.f);
     d.cure = jget(o, "soin_statut", false);
+    d.trophy = jget(o, "trophee", false);
     if (o.contains("equipement")) {
       static const char* SLOTS[] = {"arme", "armure", "accessoire"};
       std::string s = o["equipement"].get<std::string>();
@@ -385,6 +398,25 @@ void rebuildData() {
     }
     return d;
   });
+
+  // Forge : chaque arme et armure existe aussi en +1, +2… (règles « forge ») ; chaque niveau
+  // ajoute une part du bonus d'origine (arrondie au-dessus) et coûte l'or de la forge en plus
+  for (size_t i = 0, n = ITEMS.size(); i < n; i++) {
+    if (ITEMS[i].slot != G_WEAPON && ITEMS[i].slot != G_ARMOR) continue;
+    const ItemDef base = ITEMS[i];  // copie : la liste grandit
+    int gold = 0;
+    for (size_t L = 1; L <= RULES.forge.size(); L++) {
+      ItemDef d = base;
+      gold += RULES.forge[L - 1].gold;
+      d.id = forgedId(base.id, (int)L);
+      d.name = base.name + " +" + std::to_string(L);
+      d.forged = (int)L, d.base = base.id;
+      d.price = base.price + gold;
+      for (int k = 0; k < N_GEAR_STATS; k++)
+        if (base.bonus[k] > 0) d.bonus[k] = base.bonus[k] + (int)std::ceil(base.bonus[k] * RULES.forge[L - 1].bonus - 1e-6);
+      ITEMS.push_back(d);
+    }
+  }
 
   MOVE_IX.clear(), SPECIES_IX.clear(), ITEM_IX.clear();
   for (size_t i = 0; i < MOVES.size(); i++) MOVE_IX[MOVES[i].id] = i;
@@ -436,6 +468,15 @@ std::vector<std::string> checkData() {
     if (!hasItem(id)) err.push_back("Objet de départ inconnu : " + id);
   for (auto& [id, c] : r.drops)
     if (!hasItem(id)) err.push_back("Butin inconnu : " + id);
+  for (auto& td : r.typeDrops) {
+    if (!hasItem(td.item)) err.push_back("Butin par type : objet inconnu « " + td.item + " »");
+    bool known = false;
+    for (auto& t : TYPES) known = known || t.id == td.type;
+    if (!known) err.push_back("Butin par type : type inconnu « " + td.type + " »");
+  }
+  for (size_t L = 0; L < r.forge.size(); L++)
+    for (auto& [id, n] : r.forge[L].items)
+      if (id != "trophee" && !hasItem(id)) err.push_back("Forge +" + std::to_string(L + 1) + " : matériau inconnu « " + id + " »");
   for (auto& e : checkTactics(r.tactics, "Tactiques de départ")) err.push_back(e);
   if (r.tacticMax < r.tacticStart) err.push_back("Tactiques : le maximum de lignes est plus petit que le départ");
   return err;
@@ -509,6 +550,8 @@ std::string ItemDef::bonusText() const {
     if (bonus[i]) t += (t.empty() ? "" : ", ") + std::string(bonus[i] > 0 ? "+" : "") + std::to_string(bonus[i]) + (i >= GS_ACC ? " % " : " ") + GEAR_STATS[i];
   return t;
 }
+std::string forgedId(const std::string& base, int level) { return level > 0 ? base + "+" + std::to_string(level) : base; }
+bool forgeable(const ItemDef& d) { return (d.slot == G_WEAPON || d.slot == G_ARMOR) && d.forged < (int)RULES.forge.size(); }
 bool canEquip(const Fighter& f, const ItemDef& d) { return d.slot == G_ACCESSORY || (d.slot >= 0 && f.S().human); }
 
 // Héros ? (faux pour une espèce disparue : monde d'une expédition déjà remis en place)

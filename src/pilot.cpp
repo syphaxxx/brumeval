@@ -160,7 +160,8 @@ void Pilot::inspectList(const Json& list, Info& in, int depth) const {
       for (auto& e : a["ennemis"]) in.lvl = std::max(in.lvl, jget(e, "niveau", G.avgLevel()));
     } else if (k == "boutique") {
       for (auto& id : nameList(a["objets"])) in.shop.push_back(id);
-    } else if (k == "soigner" && jget(a, "pv", true)) in.heal = true;  // la chapelle ne rend que les PM : pas un soin
+    } else if (k == "forge") in.forge = true;
+    else if (k == "soigner" && jget(a, "pv", true)) in.heal = true;  // la chapelle ne rend que les PM : pas un soin
     else if (k == "evenement" && depth < 4) {
       const Json* ev = findEvent(jget<std::string>(a, "id", ""));
       if (ev) {
@@ -169,6 +170,7 @@ void Pilot::inspectList(const Json& list, Info& in, int depth) const {
         in.combat = in.combat || sub.combat, in.boss = in.boss || sub.boss, in.heal = in.heal || sub.heal;
         in.lvl = std::max(in.lvl, sub.lvl);
         in.shop.insert(in.shop.end(), sub.shop.begin(), sub.shop.end());
+        in.forge = in.forge || sub.forge;
       }
     }
   }
@@ -227,12 +229,13 @@ std::vector<Pilot::Goal> Pilot::goals() {
         h.kind = Heal;
         out.push_back(h);
       }
-      if (!in.shop.empty() && !wishes(in.shop).empty()) {
+      if ((!in.shop.empty() && !wishes(in.shop).empty()) || (in.forge && forgeWanted() && tries_[g.key + ":forge"] < 20)) {
         Goal s = g;
         s.kind = Shop;
+        if (in.forge) tries_[g.key + ":forge"]++;
         out.push_back(s);
       }
-      if ((in.heal || !in.shop.empty()) ? !seen : (!seen || doneSig_[g.key] != in.sig) && tries_[g.key] < 6) {
+      if ((in.heal || !in.shop.empty() || in.forge) ? !seen : (!seen || doneSig_[g.key] != in.sig) && tries_[g.key] < 6) {
         g.kind = Normal;
         out.push_back(g);
       }
@@ -496,6 +499,7 @@ void Pilot::menuStep() {
     return;
   }
   if (t.title.rfind("Boutique", 0) == 0) return shopping();
+  if (t.title.rfind("Forge", 0) == 0) return forging();
   status = "menu : " + t.title;
   if (t.cancelable) G.in.cancel = true;
   else G.in.confirm = true;
@@ -615,6 +619,40 @@ void Pilot::shopping() {
     shopPlanned_ = false;
     equipBest();
   }
+}
+
+bool Pilot::forgeWanted() const {
+  for (auto& f : G.team)
+    for (int s : {G_WEAPON, G_ARMOR}) {
+      const std::string& id = f->gear[s];
+      std::string missing;
+      if (id.empty() || !hasItem(id) || !forgeable(item(id))) continue;
+      G.forgeCost(item(id), &missing);
+      if (missing.empty() && G.gold >= rules().forge[(size_t)item(id).forged].gold + 150) return true;  // garder de quoi acheter des potions
+    }
+  return false;
+}
+
+void Pilot::forging() {
+  status = "forge";
+  Menu& t = G.menus.top();
+  int idx = -1;
+  if (forgeWanted())
+    for (int i = 0; i < (int)t.items.size() && idx < 0; i++)
+      if (t.items[i].enabled && !t.items[i].header && t.items[i].right != "sac") idx = i;  // l'équipement porté
+  if (idx < 0) {
+    G.in.cancel = true;
+    wait_ = .3f;
+    return;
+  }
+  if (t.sel != idx) {
+    t.sel = idx;
+    wait_ = .12f;
+    return;
+  }
+  note("Forge : " + t.items[idx].label + " (" + t.items[idx].right + ")");
+  G.in.confirm = true;
+  wait_ = .45f;
 }
 
 // Met à chacun le meilleur équipement du sac (comme Game::gearPick)

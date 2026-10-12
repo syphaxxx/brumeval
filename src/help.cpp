@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstdio>
 
+#include "data.hpp"
 #include "game.hpp"
 #include "options.hpp"
 
@@ -98,6 +99,25 @@ static std::vector<HelpPage> helpPages() {
   if (!imm.empty()) st.push_back("Insensibles : " + imm + ".");
   p.push_back({"États", "Poison, brûlure, paralysie, sommeil.", st});
   p.push_back({"Types", "Le tableau des forces et faiblesses entre les types.", {}});
+  {
+    std::vector<std::string> fl = {"À Forgeroc, une fois Brann dans l'équipe, la forge renforce une arme ou une armure (portée ou dans le sac)."};
+    for (size_t L = 0; L < R.forge.size(); L++) {
+      std::string need;
+      for (auto& [id, n] : R.forge[L].items) need += ", " + std::to_string(n) + " " + (id == "trophee" ? std::string("trophée de boss") : item(id).name);
+      fl.push_back("+" + std::to_string(L + 1) + " : bonus de l'objet +" + pct(R.forge[L].bonus) + " (arrondi au-dessus). Coût : " +
+                   std::to_string(R.forge[L].gold) + " or" + need + ".");
+    }
+    std::string drops;
+    for (auto& td : R.typeDrops) {
+      std::string tn = td.type;
+      for (auto& t : types())
+        if (t.id == td.type) tn = t.name;
+      drops += (drops.empty() ? "" : ", ") + item(td.item).name + " (créatures " + tn + ")";
+    }
+    if (!drops.empty()) fl.push_back("Matériaux : butin des combats, " + drops + ", et quelques coffres.");
+    fl.push_back("Chaque boss vaincu laisse un trophée. Un objet forgé se revend plus cher.");
+    p.push_back({"Forge", "Renforcer armes et armures à Forgeroc.", fl});
+  }
   const auto& K = options().keys;
   p.push_back({"Touches", "Clavier, raccourcis F1, F2, F11.",
                {"Se déplacer, choisir : flèches ou " + keyName(K[K_UP]) + keyName(K[K_LEFT]) + keyName(K[K_DOWN]) + keyName(K[K_RIGHT]) + ".",

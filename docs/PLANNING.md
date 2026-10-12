@@ -88,7 +88,9 @@ l'utilisateur, en deux versions.
 
 - Fait en 1.6 : **réserve de créatures** (au-delà de 8 membres) et
   **vente** en boutique (moitié du prix).
-- **Forge de Forgeroc** : améliorer une arme avec des objets trouvés.
+- Fait en **2.1** (plan validé le 2026-10-12) : **forge de Forgeroc**, armes
+  et armures +1 à +3 avec minerai, cœurs de braise, cristaux de givre et un
+  trophée par boss. Idée : un forgeron à Givreval.
 - **Évolution** des créatures à un niveau donné (nouvelle espèce plus forte) :
   à décider, car cela change l'équilibrage de toute l'histoire.
 

@@ -774,6 +774,38 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
             M().id == "cendrelune" && px == 12 && has(chestFlag(0)),
         "sauvegarde puis chargement");
 
+  // --- Forge de Forgeroc (2.1) : or et matériaux, objet porté ou dans le sac, +3 avec un trophée, sauvegarde ---
+  {
+    auto lior = makeFighter("lior", 20);
+    team = {lior, makeFighter("ronceau", 20)};
+    lior->gear[G_WEAPON] = "epee_fer";
+    lior->recalc();
+    int atk0 = lior->atk, base = item("epee_fer").bonus[GS_ATK];
+    items = {{"tunique_cuir", 1}, {"minerai", 4}};
+    gold = 1000;
+    bool one = forge(lior, "epee_fer") && lior->gear[G_WEAPON] == "epee_fer+1" && lior->atk > atk0 && items["minerai"] == 2 &&
+               gold == 1000 - rules().forge[0].gold;
+    bool bag = forge(nullptr, "tunique_cuir") && items["tunique_cuir"] == 0 && items["tunique_cuir+1"] == 1 && items["minerai"] == 0;
+    bool refused = !forge(lior, "epee_fer+1") && lior->gear[G_WEAPON] == "epee_fer+1";  // plus de minerai
+    items["minerai"] = 2, items["coeur_braise"] = 1, items["cristal_givre"] = 2, items["ecaille_sylvarque"] = 1;
+    bool three = forge(lior, "epee_fer+1") && forge(lior, "epee_fer+2") && lior->gear[G_WEAPON] == "epee_fer+3" &&
+                 item("epee_fer+3").bonus[GS_ATK] == 2 * base && items["ecaille_sylvarque"] == 0 && !forgeable(item("epee_fer+3"));
+    int sell = item("epee_fer+3").price;
+    bool saved = saveGame();
+    team.clear(), items.clear();
+    bool loaded = loadGame() && !team.empty() && team[0]->gear[G_WEAPON] == "epee_fer+3" && items["tunique_cuir+1"] == 1;
+    check(one && bag && refused && three && saved && loaded && sell > item("epee_fer").price,
+          "forge : +1 sur l'arme portée et sur une armure du sac, refus sans matériaux, +3 avec un trophée (bonus doublé), gardé dans la sauvegarde");
+    // Brann ouvre la forge à Forgeroc
+    flags.insert("brann");
+    runEvent("forge");
+    skipScript();
+    check(menus.active() && menus.top().title.rfind("Forge", 0) == 0, "forge : l'enclume de Forgeroc ouvre la forge une fois Brann dans l'équipe");
+    snap("forge");
+    menus.clear();
+    sc.clear();
+  }
+
   // --- Événements : le pêcheur donne deux plumes une seule fois ---
   {
     items.clear();
@@ -1539,6 +1571,10 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     in.confirm = true;
     show("boutique : vendre");
     menus.clear();
+    forgeMenu();  // tout le sac : armes et armures de chaque niveau
+    show("forge");
+    snap("forge_sac");
+    menus.clear();
     reserve = {makeFighter("carapierre", 40), makeFighter("cristallin", 40), makeFighter("braisenard", 12)};
     reserveMenu(1);
     show("réserve");
@@ -2290,8 +2326,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   int simFactor = simEnv ? std::max(1, std::atoi(simEnv)) : 1;
   // Équipement des boutiques (1 : vallée, 2 : Forgeroc, 3 : Givreval) : le meilleur de chaque
   // emplacement ; arme de magie pour les mages (plus de Magie que d'Attaque), accessoire seul pour une créature
-  int simGear = 0;
-  auto equipParty = [](std::vector<FighterP>& t, int tier) {
+  int simGear = 0, simForge = 0;  // simForge : armes et armures forgées à ce niveau (forge de Forgeroc)
+  auto equipParty = [&](std::vector<FighterP>& t, int tier) {
     static const char* GEAR[3][5] = {{"epee_fer", "baton_chene", "tunique_cuir", "tunique_cuir", "amulette_vie"},
                                      {"hache_braise", "baton_lune", "cotte_mailles", "robe_mage", "bague_vif"},
                                      {"lame_givre", "sceptre_aurore", "armure_givre", "robe_mage", "pendentif_brume"}};
@@ -2302,6 +2338,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       else f->gear = {"", "", g[4]};
       for (auto& id : f->gear)
         if (!id.empty() && !hasItem(id)) id.clear();
+      for (int s : {G_WEAPON, G_ARMOR})
+        if (simForge && !f->gear[s].empty()) f->gear[s] = forgedId(f->gear[s], std::min(simForge, (int)rules().forge.size()));
       f->recalc();
       f->hp = f->mhp, f->mp = f->mmp;
     }
@@ -2499,7 +2537,21 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}, {"braisenard", 30}, {"gouttelin", 30}, {"ronceau", 30}}, bossEvent("givrecorne"), 40);
   simSetup("Gardien de cristal (équipe N.28)", {{"lior", 28}, {"maelle", 28}, {"brann", 28}, {"braisenard", 28}, {"gouttelin", 28}, {"ronceau", 28}}, bossEvent("gardien_cristal"), 30);
   simSetup("Mère des Brumes (équipe N.38)", {{"lior", 38}, {"maelle", 38}, {"selene", 38}, {"braisenard", 38}, {"gouttelin", 38}, {"ronceau", 38}}, bossEvent("mere_brumes"), 30);
-  simGear = 0;
+
+  // Forge (2.1) : le même équipement, forgé au plus haut niveau possible à ce moment de l'histoire
+  // (+1 avec le minerai de la vallée, +2 avec les cœurs de braise de Cendrelune, +3 après les Pics)
+  std::printf("\nMêmes boss, équipement des boutiques forgé au maximum possible (+1, +2, +3) :\n");
+  simGear = 1, simForge = 1;
+  simSetup("Boss Sylvarque (équipe N.11)", {{"lior", 11}, {"maelle", 11}, {"braisenard", 11}, {"gouttelin", 11}}, bossEvent("sylvarque"), 40);
+  simSetup("Ronce-Mère (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"kael", 16}, {"braisenard", 16}, {"gouttelin", 16}}, bossEvent("ronce_mere"), 30);
+  simGear = 2, simForge = 2;
+  simSetup("Golem de suie (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"brann", 16}, {"braisenard", 16}, {"gouttelin", 16}}, bossEvent("golem"), 20);
+  simSetup("Boss Ignarok (équipe N.22)", {{"lior", 22}, {"maelle", 22}, {"isra", 22}, {"braisenard", 22}, {"gouttelin", 22}, {"ronceau", 22}}, bossEvent("ignarok"), 40);
+  simGear = 3, simForge = 3;
+  simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}, {"braisenard", 30}, {"gouttelin", 30}, {"ronceau", 30}}, bossEvent("givrecorne"), 40);
+  simSetup("Gardien de cristal (équipe N.28)", {{"lior", 28}, {"maelle", 28}, {"brann", 28}, {"braisenard", 28}, {"gouttelin", 28}, {"ronceau", 28}}, bossEvent("gardien_cristal"), 30);
+  simSetup("Mère des Brumes (équipe N.38)", {{"lior", 38}, {"maelle", 38}, {"selene", 38}, {"braisenard", 38}, {"gouttelin", 38}, {"ronceau", 38}}, bossEvent("mere_brumes"), 30);
+  simGear = 0, simForge = 0;
 
   // Expédition : gardien de chaque région contre une équipe générée (héros, créature de départ,
   // recrue de la région 1) arrivée deux niveaux au-dessus des créatures sauvages

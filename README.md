@@ -32,6 +32,14 @@ avec le volume de la musique et des effets sonores et la vitesse du jeu ; les fl
 Croix ou stick gauche pour se déplacer, **A** valider, **B** annuler,
 **Start** menu, **Select** (ou **Y**) mode auto en combat.
 
+## La forge
+
+Une fois Brann dans l'équipe, l'enclume de **Forgeroc** renforce une arme ou une
+armure (+1, +2, +3) contre de l'or et des matériaux : **minerai de fer** (créatures
+Roche et Métal), **cœur de braise** (créatures Feu), **cristal de givre**
+(créatures Glace), quelques coffres, et un **trophée** laissé par chaque boss
+pour le +3. Coûts et effets : Échap > Aide > Forge.
+
 ## Le damier de combat
 
 Chaque camp se place sur un **damier de 16 cases** (4 × 4) : quatre colonnes, de

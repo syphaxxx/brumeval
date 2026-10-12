@@ -47,7 +47,13 @@
     "or_boss": 8,
     "part_combattants": 0.7,
     "part_reserve": 0.3,
-    "butin": [{"objet": "potion", "chance": 0.25}, {"objet": "ether", "chance": 0.08}]
+    "butin": [{"objet": "potion", "chance": 0.25}, {"objet": "ether", "chance": 0.08}],
+    "butin_type": [
+      {"type": "roche", "objet": "minerai", "chance": 0.2},
+      {"type": "metal", "objet": "minerai", "chance": 0.2},
+      {"type": "feu", "objet": "coeur_braise", "chance": 0.12},
+      {"type": "glace", "objet": "cristal_givre", "chance": 0.12}
+    ]
   },
   "capture": {"base": 0.15, "bonus_pv": 0.75, "max": 0.95},
   "multijoueur": {"gardien_par_joueur": 0.15},
@@ -62,6 +68,11 @@
     "xp_base": 10,
     "xp_carre": 1.2
   },
+  "forge": [
+    {"bonus": 0.3, "or": 80, "objets": {"minerai": 2}},
+    {"bonus": 0.4, "or": 200, "objets": {"minerai": 2, "coeur_braise": 1}},
+    {"bonus": 1.0, "or": 400, "objets": {"cristal_givre": 2, "trophee": 1}}
+  ],
   "tactiques": {
     "lignes_depart": 4,
     "niveaux_par_ligne": 6,

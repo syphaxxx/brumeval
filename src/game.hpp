@@ -142,6 +142,11 @@ class Game {
   void itemMenu();
   void magicMenu();
   void shopMenu(const std::vector<std::string>& stock);
+  // Forge de Forgeroc (forge.cpp) : renforcer une arme ou une armure contre de l'or et des matériaux
+  void forgeMenu(int sel = 0);
+  bool forge(const FighterP& owner, const std::string& id);  // owner nul : l'objet est dans le sac
+  int forgeStock(const std::string& id) const;               // « trophee » : tous les trophées
+  std::string forgeCost(const ItemDef& d, std::string* missing) const;
   void journalMenu();
   void companionsMenu(int sel = 0);  // la créature compagnon de chaque héros
   void reserveMenu(int sel = 0);     // déposer, reprendre ou échanger des créatures avec la réserve
