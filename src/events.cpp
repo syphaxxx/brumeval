@@ -81,7 +81,7 @@ static void checkAction(const Json& a, const std::string& where, std::vector<std
     if (need("espece") && !hasSpecies(a["espece"].get<std::string>())) err.push_back(w + " : espèce inconnue « " + a["espece"].get<std::string>() + " »");
   } else if (k == "combat") {
     if (need("ennemis")) {
-      if (a["ennemis"].empty() || a["ennemis"].size() > 3) err.push_back(w + " : il faut entre 1 et 3 ennemis");
+      if (a["ennemis"].empty() || a["ennemis"].size() > 6) err.push_back(w + " : il faut entre 1 et 6 ennemis");
       for (auto& e : a["ennemis"])
         if (!hasSpecies(jget<std::string>(e, "espece", ""))) err.push_back(w + " : espèce inconnue « " + jget<std::string>(e, "espece", "") + " »");
     }
@@ -109,7 +109,7 @@ static void checkAction(const Json& a, const std::string& where, std::vector<std
   } else if (k == "attendre") need("secondes");
   else if (k == "quete") {
     if (need("id") && !findQuest(a["id"].get<std::string>())) err.push_back(w + " : quête inconnue « " + a["id"].get<std::string>() + " »");
-  } else if (k != "soigner" && k != "reveil" && k != "fin") err.push_back(where + " : action inconnue « " + k + " »");
+  } else if (k != "soigner" && k != "reveil" && k != "fin" && k != "forge") err.push_back(where + " : action inconnue « " + k + " »");
 }
 
 static void checkList(const Json& list, const std::string& where, std::vector<std::string>& err) {
@@ -276,6 +276,8 @@ void Game::execAction(const Json& a) {
     }
   } else if (k == "boutique") {
     shopMenu(names(a["objets"]));
+  } else if (k == "forge") {
+    forgeMenu();
   } else if (k == "reveil") {
     respawnMap = mapId, respawnX = px, respawnY = py;
   } else if (k == "teleporter") {

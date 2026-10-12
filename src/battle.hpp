@@ -18,8 +18,15 @@ enum class BattleResult;
 
 // Chance de capturer f avec une lanterne de multiplicateur mult (règles : capture)
 float captureChance(const Fighter& f, float mult);
-// Description courte d'une technique : genre, type, puissance, précision, effets
-std::string moveDetails(const Move& m);
+// Tout ce que fait une technique : genre, type, puissance, coût, cible et zone, portée, effets,
+// rythme (user : le lanceur, pour chiffrer un soin). moveHelp : sa description, puis tout cela.
+std::string moveDetails(const Move& m, const Fighter* user = nullptr);
+std::string moveHelp(const Move& m, const Fighter* user = nullptr);
+// Ce que fait un objet, chiffré (soins, capture, bonus, où l'utiliser) ; itemHelp : puis sa description
+std::string itemDetails(const ItemDef& d);
+std::string itemHelp(const ItemDef& d);
+// Forces et faiblesses d'une espèce (types, résistances propres, états impossibles), pour sa fiche
+std::string matchupText(const Species& s);
 
 // Préparation d'un combat
 struct BattleSetup {
@@ -72,7 +79,22 @@ class Battle {
     bool limit = false;
     std::string item;  // objet du sac à utiliser à la place d'une technique
     int tactic = -1;   // numéro de la tactique qui a choisi cette action
+    int cell = -1;     // se déplacer vers cette case (tactique « Se mettre à l'abri »)
   };
+  // Attaques annoncées (1.8) : un boss prépare sa plus grosse attaque, concentrée sur une zone du
+  // damier allié ; elle part à son tour suivant sur ceux qui y sont restés (plus forte)
+  struct Warning {
+    FighterP who;
+    std::string move;
+    Area zone;
+    int center;
+  };
+  std::vector<Warning> warnings_;
+  std::vector<std::pair<int, int>> netWarn_;  // chez l'invité : zones annoncées reçues (case, zone)
+  bool threatened(const FighterP& f) const;   // sa case est dans une zone annoncée
+  int safeCell(const FighterP& f) const;      // case libre de son camp, hors des zones annoncées (-1 : aucune)
+  bool bossPlan(FighterP e);                  // boss : annonce ou déclenche son attaque ; vrai si le tour est joué
+  bool enemyMove(FighterP e);                 // ennemi : reculer (lanceur à l'avant) ou avancer ; vrai si joué
   Game& G;
   Script sc;
   std::vector<FighterP> allies, foes, reserve;
@@ -86,21 +108,39 @@ class Battle {
   std::vector<Pop> pops;
   std::vector<FighterP> defeated;
   bool finished_ = false, ending_ = false;
+  // Fin d'un combat gagné : tous les gains dans une fenêtre, fermée par Entrée
+  std::vector<std::string> summary_;
+  bool summaryOn_ = false;
+  float summaryT_ = 0;  // moment où elle s'est ouverte (elle se ferme seule après 8 s)
   BattleResult result_;
 
   bool isAlly(const FighterP& f) const;
   std::vector<FighterP> alive(const std::vector<FighterP>& v) const;
   Pt pos(const FighterP& f) const;
+  Pt cellPos(bool allySide, int cell) const;  // centre d'une case du damier à l'écran
+  // Damier (data.hpp) : la case de chaque combattant pendant ce combat ; au départ, la formation
+  // de l'équipe (Fighter::cell) pour les alliés, un placement automatique pour les ennemis
+  std::map<const Fighter*, int> cells_;
+  int cellOf(const FighterP& f) const;  // -1 : pas sur le damier
+  void place(const std::vector<FighterP>& v, bool keep);
+  const std::vector<FighterP>& sideOf(const FighterP& f) const { return isAlly(f) ? allies : foes; }
+  // Corps à corps : seulement la colonne la plus avancée encore debout du camp visé (sauf zone « tout »)
+  bool reachable(const FighterP& a, const Move& m, const FighterP& t) const;
+  // Victimes d'une technique visant center : center d'abord, puis les autres combattants de sa zone
+  std::vector<FighterP> zoneTargets(const Move& m, const FighterP& center) const;
+  float zoneScore(const FighterP& a, const Move& m, const FighterP& center) const;  // attackScore sur toute la zone
+  const Move* aiming_ = nullptr;  // technique dont on choisit la cible : sa zone est surlignée
+  int moveCell_ = -1;             // « Se déplacer » : case survolée
+  void moveTo(FighterP a, int cell);  // change de case (action rapide)
   void pop(const FighterP& f, const std::string& t, Color c);
   // Bruitage (audio.hpp), seulement pour le combat affiché (pas les simulations) ;
   // share : l'hôte ou le chef le fait aussi entendre aux autres joueurs
   void sound(const std::string& id, bool share = true);
   bool shown() const;  // c'est le combat affiché à l'écran
-  // Compagnons : quand des héros combattent, les créatures alliées sont leurs compagnons et
-  // agissent seules (tactiques, sinon l'ordinateur) ; le joueur ne commande que les héros
+  // Compagnons : quand des héros combattent, les créatures alliées sont leurs compagnons ; le
+  // joueur les commande comme les héros (leur jauge avance moins vite : règle compagnon_atb)
   bool hasHero_ = false;
   bool companion(const FighterP& f) const { return hasHero_ && isAlly(f) && !f->S().human; }
-  void companionTurn(FighterP f);
   // Animation d'une action : élan du lanceur vers ses cibles, puis effet sur elles selon le
   // genre de l'action (Fx, plus haut) et la couleur de son type
   struct Anim {
@@ -150,7 +190,8 @@ class Battle {
   Json mine(const FighterP& f) const;
   FighterP other(const Json& s) const;  // le même, vu par celui qui le reçoit
   void setBlink(const FighterP& f);
-  void useMove(FighterP a, const std::string& mv, std::vector<FighterP> targets, bool isLimit = false);
+  // boost > 1 : attaque annoncée (cibles déjà choisies, pas de zone autour, dégâts multipliés)
+  void useMove(FighterP a, const std::string& mv, std::vector<FighterP> targets, bool isLimit = false, float boost = 1);
   void useItem(FighterP a, const std::string& it, FighterP target);
   void swapIn(FighterP a, FighterP r);
   void tryFlee(FighterP a);
@@ -158,7 +199,7 @@ class Battle {
   void checkEnd();
   void victory();
   void finish(BattleResult r);
-  int applyHit(const FighterP& a, const FighterP& d, const Move& m);  // -1 si raté
+  int applyHit(const FighterP& a, const FighterP& d, const Move& m, float mult = 1);  // -1 si raté ; mult : autour de la cible d'une zone
   void applyEffect(const FighterP& t, const Effect& e);
   void knockOut(const FighterP& f);
 

@@ -2,7 +2,7 @@
   {
     "id": "potion",
     "nom": "Potion",
-    "description": "Rend 40 PV à un allié.",
+    "description": "Un flacon d'eau de source aux herbes.",
     "prix": 30,
     "combat": true,
     "menu": true,
@@ -11,7 +11,7 @@
   {
     "id": "superpotion",
     "nom": "Super-potion",
-    "description": "Rend 120 PV à un allié.",
+    "description": "Une potion concentrée, au goût amer.",
     "prix": 90,
     "combat": true,
     "menu": true,
@@ -20,7 +20,7 @@
   {
     "id": "ether",
     "nom": "Éther",
-    "description": "Rend 25 PM à un allié.",
+    "description": "Une eau bleutée qui éclaircit l'esprit.",
     "prix": 70,
     "combat": true,
     "menu": true,
@@ -29,7 +29,7 @@
   {
     "id": "elixir",
     "nom": "Élixir",
-    "description": "Rend tous les PV et PM à un allié.",
+    "description": "Un remède rare, précieux entre tous.",
     "prix": 400,
     "combat": true,
     "menu": true,
@@ -39,7 +39,7 @@
   {
     "id": "plume",
     "nom": "Plume ravivante",
-    "description": "Relève un allié K.O. avec la moitié de ses PV.",
+    "description": "Une plume tiède qui chasse l'évanouissement.",
     "prix": 120,
     "combat": true,
     "menu": true,
@@ -48,7 +48,7 @@
   {
     "id": "remede",
     "nom": "Remède",
-    "description": "Guérit les états : poison, brûlure, paralysie, sommeil.",
+    "description": "Un sachet d'herbes contre tous les maux.",
     "prix": 25,
     "combat": true,
     "soin_statut": true
@@ -56,7 +56,7 @@
   {
     "id": "lanterne",
     "nom": "Lanterne",
-    "description": "Capture une créature. Plus elle est affaiblie, mieux c'est.",
+    "description": "Sa lueur attire une créature et la retient.",
     "prix": 40,
     "combat": true,
     "capture": 1.0
@@ -64,7 +64,7 @@
   {
     "id": "lanterne_argent",
     "nom": "Lanterne d'argent",
-    "description": "Capture beaucoup plus facile.",
+    "description": "Une lueur plus vive, qui retient mieux.",
     "prix": 110,
     "combat": true,
     "capture": 1.6
@@ -72,10 +72,87 @@
   {
     "id": "lanterne_or",
     "nom": "Lanterne d'or",
-    "description": "Capture presque à coup sûr.",
+    "description": "Une lueur dorée à laquelle presque rien ne résiste.",
     "prix": 300,
     "combat": true,
     "capture": 2.5
+  },
+  {"id": "minerai", "nom": "Minerai de fer", "description": "Un morceau de roche veiné de fer.", "prix": 40},
+  {
+    "id": "coeur_braise",
+    "nom": "Cœur de braise",
+    "description": "Une pierre qui garde la chaleur d'un volcan.",
+    "prix": 80
+  },
+  {
+    "id": "cristal_givre",
+    "nom": "Cristal de givre",
+    "description": "Un éclat de glace qui ne fond jamais.",
+    "prix": 120
+  },
+  {
+    "id": "ecaille_sylvarque",
+    "nom": "Écaille de Sylvarque",
+    "description": "Une écaille sombre, encore tiède.",
+    "prix": 0,
+    "important": true,
+    "trophee": true
+  },
+  {
+    "id": "coeur_suie",
+    "nom": "Cœur de suie",
+    "description": "Le noyau noir du Golem, lourd comme une enclume.",
+    "prix": 0,
+    "important": true,
+    "trophee": true
+  },
+  {
+    "id": "epine_ronce",
+    "nom": "Épine de la Ronce-Mère",
+    "description": "Une épine longue comme une dague.",
+    "prix": 0,
+    "important": true,
+    "trophee": true
+  },
+  {
+    "id": "croc_tisonnel",
+    "nom": "Croc de Tisonnel",
+    "description": "Un croc qui fume encore.",
+    "prix": 0,
+    "important": true,
+    "trophee": true
+  },
+  {
+    "id": "braise_ignarok",
+    "nom": "Braise d'Ignarok",
+    "description": "Elle brûle sans jamais s'éteindre.",
+    "prix": 0,
+    "important": true,
+    "trophee": true
+  },
+  {
+    "id": "eclat_gardien",
+    "nom": "Éclat du gardien",
+    "description": "Un prisme qui chante quand on le tourne.",
+    "prix": 0,
+    "important": true,
+    "trophee": true
+  },
+  {
+    "id": "corne_givrecorne",
+    "nom": "Corne du Givrecorne",
+    "description": "Plus dure que l'acier, et glacée.",
+    "prix": 0,
+    "important": true,
+    "trophee": true
+  },
+  {
+    "id": "voile_brumes",
+    "nom": "Voile des Brumes",
+    "description": "Un morceau de brume que l'on peut tenir.",
+    "prix": 0,
+    "important": true,
+    "trophee": true
   },
   {
     "id": "herbe",

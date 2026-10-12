@@ -1,5 +1,5 @@
 // Options du joueur (écran titre > Options, ou menu de pause > Options) : volumes,
-// plein écran et touches du clavier. Gardées dans options.txt, à côté de la
+// plein écran, vitesse du jeu et touches du clavier. Gardées dans options.txt, à côté de la
 // sauvegarde, d'une partie à l'autre.
 //
 // Les flèches, Entrée et Échap marchent toujours, en plus des touches choisies :
@@ -16,6 +16,7 @@ enum KeyAction { K_UP, K_DOWN, K_LEFT, K_RIGHT, K_OK, K_BACK, K_AUTO, N_KEYS };
 struct Options {
   bool fullscreen = false;
   int music = 6, effects = 7;  // volumes, 0 à 10
+  int speed = 1;               // vitesse du jeu : ×1, ×2 ou ×3 (F2), voir Game::speed
   std::array<SDL_Scancode, N_KEYS> keys = defaultKeys();
   static std::array<SDL_Scancode, N_KEYS> defaultKeys();
 };

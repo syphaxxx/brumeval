@@ -36,7 +36,7 @@
   ],
   "coffres": [
     {"x": 3, "y": 20, "objet": "superpotion", "quantite": 1},
-    {"x": 25, "y": 20, "objet": "ether", "quantite": 2},
+    {"x": 25, "y": 20, "objet": "minerai", "quantite": 3},
     {"x": 28, "y": 6, "objet": "plume", "quantite": 1},
     {"x": 8, "y": 2, "or": 150}
   ],

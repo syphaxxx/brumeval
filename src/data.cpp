@@ -1,6 +1,7 @@
 #include "data.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <random>
 #include <stdexcept>
 #include <unordered_map>
@@ -33,6 +34,8 @@ static const char* STAGE_NAMES[] = {"Attaque", "Défense", "Magie", "Résistance
 static const char* HATS[] = {"aucune", "capuche", "chapeau", "bandeau", "casque", "foulard"};
 static const char* WEAPONS[] = {"aucune", "epee", "baton", "hache", "dague", "arc", "lance"};
 static const char* DIRS[] = {"haut", "bas", "gauche", "droite"};
+static const char* ZONES[] = {"case", "ligne", "colonne", "croix", "tout"};
+static const char* ZONE_NAMES[] = {"Une cible", "Une ligne", "Une colonne", "En croix", "Tout le camp"};
 static const char* PACES[] = {"normale", "rapide", "lourde"};
 static const char* PACE_NAMES[] = {"Normale", "Rapide", "Lourde"};
 
@@ -56,6 +59,25 @@ const char* statusTag(Status s) { return STATUS_TAGS[(int)s]; }
 uint32_t statusColor(Status s) { return STATUS_COLORS[(int)s]; }
 int stageOf(const std::string& s) { return nameIndex(STAGES, s, "Statistique"); }
 const char* stageName(int st) { return STAGE_NAMES[st]; }
+const char* zoneId(Area z) { return ZONES[(int)z]; }
+const char* zoneName(Area z) { return ZONE_NAMES[(int)z]; }
+std::string cellName(int c) {
+  static const char* COLS[GRID] = {"Avant", "Milieu avant", "Milieu arrière", "Arrière"};
+  static const char* ROWS[GRID] = {"haut", "centre haut", "centre bas", "bas"};
+  if (c < 0 || c >= N_CELLS) return "?";
+  return std::string(COLS[cellCol(c)]) + " · " + ROWS[cellRow(c)];
+}
+bool inZone(Area z, int center, int cell) {
+  int dc = std::abs(cellCol(center) - cellCol(cell)), dr = std::abs(cellRow(center) - cellRow(cell));
+  switch (z) {
+    case Area::Single: return dc == 0 && dr == 0;
+    case Area::Line: return dr == 0;    // même ligne : de l'avant jusqu'à l'arrière
+    case Area::Column: return dc == 0;  // même colonne : tout un rang
+    case Area::Cross: return dc + dr <= 1;
+    case Area::All: return true;
+  }
+  return false;
+}
 const char* paceId(Pace p) { return PACES[(int)p]; }
 const char* paceName(Pace p) { return PACE_NAMES[(int)p]; }
 
@@ -118,6 +140,9 @@ std::vector<RuleField> ruleFields(Rules& r) {
       I("rencontres", "pas_minimum", "Pas sans rencontre après un combat", r.minSteps, 0, 50, 1),
       D("rencontres", "chance_2e", "Chance d'un 2e ennemi", r.second, 0, 1, .05),
       D("rencontres", "chance_3e", "Chance d'un 3e ennemi", r.third, 0, 1, .05),
+      I("rencontres", "meute_max", "Meutes : ennemis au plus", r.packMax, 1, 6, 1),
+      D("rencontres", "meute_distance", "Meutes : profondeur maximale (cases)", r.packDistance, 5, 200, 1),
+      D("rencontres", "nature_dense", "Rencontres en plus au plus profond", r.packDense, 0, 3, .05),
       D("combat", "atb_base", "Vitesse ATB de base", r.atbBase, 0, 100, 1),
       D("combat", "atb_vitesse", "Multiplicateur de vitesse ATB", r.atbSpeed, .1, 5, .1),
       D("combat", "fuite", "Chance de fuite", r.flee, 0, 1, .05),
@@ -131,6 +156,10 @@ std::vector<RuleField> ruleFields(Rules& r) {
       I("combat", "esquive_base", "Esquive par défaut (%)", r.evaBase, 0, 100, 1),
       I("combat", "critique_base", "Critique par défaut (%)", r.critBase, 0, 100, 1),
       I("combat", "jauge_rapide", "Technique rapide : jauge de départ (%)", r.quickGauge, 0, 90, 5),
+      D("combat", "arriere", "Arrière : dégâts au corps à corps donnés et reçus", r.backRow, .1, 1, .05),
+      D("combat", "zone_voisins", "Zone d'effet : dégâts autour de la cible", r.zoneSide, 0, 1, .05),
+      D("combat", "boss_annonce", "Boss : chance d'annoncer une attaque", r.bossWarn, 0, 1, .05),
+      D("combat", "boss_annonce_puissance", "Boss : puissance de l'attaque annoncée", r.bossBurst, 1, 5, .1),
       I("combat", "retard_lourde", "Technique lourde : retard de la jauge (%)", r.heavyDelay, 0, 200, 5),
       D("combat", "compagnon_atb", "Compagnons : vitesse de la jauge ATB", r.companionAtb, .1, 2, .05),
       D("etats", "poison_degats", "Poison : part des PV perdus par tour", r.poisonDmg, 0, 1, .01),
@@ -199,6 +228,17 @@ static void loadRules(const Json& j) {
   r.startEvent = jget<std::string>(d, "evenement", "");
   if (j.contains("recompenses"))
     for (auto& b : j["recompenses"].value("butin", Json::array())) r.drops.push_back({b.at("objet").get<std::string>(), b.at("chance").get<double>()});
+  if (j.contains("recompenses"))
+    for (auto& b : j["recompenses"].value("butin_type", Json::array()))
+      r.typeDrops.push_back({b.at("type").get<std::string>(), b.at("objet").get<std::string>(), b.at("chance").get<double>()});
+  for (auto& l : j.value("forge", Json::array())) {
+    Rules::ForgeLevel f;
+    f.bonus = jget(l, "bonus", 0.0);
+    f.gold = jget(l, "or", 0);
+    Json need = l.value("objets", Json::object());  // variable : la boucle doit la garder en vie
+    for (auto& [k, v] : need.items()) f.items.push_back({k, v.get<int>()});
+    r.forge.push_back(f);
+  }
   if (j.contains("tactiques"))
     for (auto& t : j["tactiques"].value("defaut", Json::array())) r.tactics.push_back(tacticFromJson(t));
   RULES = r;
@@ -266,6 +306,9 @@ void rebuildData() {
     m.acc = jget(o, "precision", 100);
     m.critBonus = jget(o, "critique", 0);
     m.pace = Pace(nameIndex(PACES, jget<std::string>(o, "rythme", "normale"), "Rythme"));
+    bool all = m.target == Target::AllEnemies || m.target == Target::AllAllies;
+    m.zone = Area(nameIndex(ZONES, jget<std::string>(o, "zone", all ? "tout" : "case"), "Zone"));
+    m.melee = jget<std::string>(o, "portee", m.kind == Kind::Physical ? "corps" : "distance") == "corps";
     if (o.contains("effet")) m.effects.push_back(parseEffect(o["effet"]));
     for (auto& e : o.value("effets", Json::array())) m.effects.push_back(parseEffect(e));
     return m;
@@ -319,6 +362,11 @@ void rebuildData() {
     s.role = jget<std::string>(o, "role", "");
     for (auto& l : o.at("apprend")) s.learn.push_back({l.at(0).get<int>(), l.at(1).get<std::string>()});
     s.limit = jget<std::string>(o, "limite", "");  // vide : pas de Limite
+    if (o.contains("evolution")) {
+      s.evolveTo = o["evolution"].at("espece").get<std::string>();
+      s.evolveLvl = o["evolution"].at("niveau").get<int>();
+    }
+    s.size = jget(o, "taille", 1.f);
     for (auto& t : o.value("tactiques", Json::array())) s.tactics.push_back(tacticFromJson(t));
     return s;
   });
@@ -337,6 +385,7 @@ void rebuildData() {
     d.revive = jget(o, "rappel", 0);
     d.capture = jget(o, "capture", 0.f);
     d.cure = jget(o, "soin_statut", false);
+    d.trophy = jget(o, "trophee", false);
     if (o.contains("equipement")) {
       static const char* SLOTS[] = {"arme", "armure", "accessoire"};
       std::string s = o["equipement"].get<std::string>();
@@ -354,6 +403,25 @@ void rebuildData() {
     }
     return d;
   });
+
+  // Forge : chaque arme et armure existe aussi en +1, +2… (règles « forge ») ; chaque niveau
+  // ajoute une part du bonus d'origine (arrondie au-dessus) et coûte l'or de la forge en plus
+  for (size_t i = 0, n = ITEMS.size(); i < n; i++) {
+    if (ITEMS[i].slot != G_WEAPON && ITEMS[i].slot != G_ARMOR) continue;
+    const ItemDef base = ITEMS[i];  // copie : la liste grandit
+    int gold = 0;
+    for (size_t L = 1; L <= RULES.forge.size(); L++) {
+      ItemDef d = base;
+      gold += RULES.forge[L - 1].gold;
+      d.id = forgedId(base.id, (int)L);
+      d.name = base.name + " +" + std::to_string(L);
+      d.forged = (int)L, d.base = base.id;
+      d.price = base.price + gold;
+      for (int k = 0; k < N_GEAR_STATS; k++)
+        if (base.bonus[k] > 0) d.bonus[k] = base.bonus[k] + (int)std::ceil(base.bonus[k] * RULES.forge[L - 1].bonus - 1e-6);
+      ITEMS.push_back(d);
+    }
+  }
 
   MOVE_IX.clear(), SPECIES_IX.clear(), ITEM_IX.clear();
   for (size_t i = 0; i < MOVES.size(); i++) MOVE_IX[MOVES[i].id] = i;
@@ -405,6 +473,21 @@ std::vector<std::string> checkData() {
     if (!hasItem(id)) err.push_back("Objet de départ inconnu : " + id);
   for (auto& [id, c] : r.drops)
     if (!hasItem(id)) err.push_back("Butin inconnu : " + id);
+  for (auto& s : SPECIES)
+    if (!s.evolveTo.empty()) {
+      if (!hasSpecies(s.evolveTo)) err.push_back("Espèce " + s.name + " : évolution inconnue « " + s.evolveTo + " »");
+      else if (species(s.evolveTo).human || s.human) err.push_back("Espèce " + s.name + " : un humain n'évolue pas");
+      if (s.evolveLvl < 2) err.push_back("Espèce " + s.name + " : niveau d'évolution trop bas");
+    }
+  for (auto& td : r.typeDrops) {
+    if (!hasItem(td.item)) err.push_back("Butin par type : objet inconnu « " + td.item + " »");
+    bool known = false;
+    for (auto& t : TYPES) known = known || t.id == td.type;
+    if (!known) err.push_back("Butin par type : type inconnu « " + td.type + " »");
+  }
+  for (size_t L = 0; L < r.forge.size(); L++)
+    for (auto& [id, n] : r.forge[L].items)
+      if (id != "trophee" && !hasItem(id)) err.push_back("Forge +" + std::to_string(L + 1) + " : matériau inconnu « " + id + " »");
   for (auto& e : checkTactics(r.tactics, "Tactiques de départ")) err.push_back(e);
   if (r.tacticMax < r.tacticStart) err.push_back("Tactiques : le maximum de lignes est plus petit que le départ");
   return err;
@@ -478,6 +561,22 @@ std::string ItemDef::bonusText() const {
     if (bonus[i]) t += (t.empty() ? "" : ", ") + std::string(bonus[i] > 0 ? "+" : "") + std::to_string(bonus[i]) + (i >= GS_ACC ? " % " : " ") + GEAR_STATS[i];
   return t;
 }
+std::string forgedId(const std::string& base, int level) { return level > 0 ? base + "+" + std::to_string(level) : base; }
+bool forgeable(const ItemDef& d) { return (d.slot == G_WEAPON || d.slot == G_ARMOR) && d.forged < (int)RULES.forge.size(); }
+bool canEvolve(const Fighter& f) {
+  const Species& s = f.S();
+  return !s.evolveTo.empty() && hasSpecies(s.evolveTo) && f.lvl >= s.evolveLvl;
+}
+void evolve(Fighter& f) {
+  if (!canEvolve(f)) return;
+  float hp = f.mhp ? float(f.hp) / f.mhp : 1, mp = f.mmp ? float(f.mp) / f.mmp : 1;
+  bool alive = f.hp > 0;
+  f.sp = f.S().evolveTo;
+  f.evolveLater = false;
+  f.recalc();
+  f.hp = alive ? std::clamp(int(std::lround(f.mhp * hp)), 1, f.mhp) : 0;
+  f.mp = std::clamp(int(std::lround(f.mmp * mp)), 0, f.mmp);
+}
 bool canEquip(const Fighter& f, const ItemDef& d) { return d.slot == G_ACCESSORY || (d.slot >= 0 && f.S().human); }
 
 // Héros ? (faux pour une espèce disparue : monde d'une expédition déjà remis en place)
@@ -514,6 +613,32 @@ std::vector<FighterP> frontOf(const std::vector<FighterP>& team, int heroes) {
     if (c) all.push_back(c), used.push_back(c);
   }
   return all;
+}
+
+std::vector<int> formation(const std::vector<FighterP>& v, bool keep) {
+  std::vector<int> cells(v.size(), -1);
+  bool used[N_CELLS] = {};
+  if (keep)
+    for (size_t i = 0; i < v.size(); i++) {
+      int c = v[i] ? v[i]->cell : -1;
+      if (c >= 0 && c < N_CELLS && !used[c]) cells[i] = c, used[c] = true;
+    }
+  static const int ROWS[GRID] = {1, 2, 0, 3};  // le centre d'abord
+  for (size_t i = 0; i < v.size(); i++) {
+    if (cells[i] >= 0 || !v[i]) continue;
+    const Species& s = v[i]->S();
+    bool caster = s.base[B_MAG] > s.base[B_ATK];
+    const int front[GRID] = {0, 1, 2, 3}, back[GRID] = {3, 2, 1, 0};
+    for (int col : caster ? back : front) {
+      for (int r : ROWS)
+        if (!used[cellAt(r, col)]) {
+          cells[i] = cellAt(r, col), used[cellAt(r, col)] = true;
+          break;
+        }
+      if (cells[i] >= 0) break;
+    }
+  }
+  return cells;
 }
 
 FighterP companionOf(const std::vector<FighterP>& team, const FighterP& who) {

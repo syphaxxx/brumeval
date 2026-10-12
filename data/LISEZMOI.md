@@ -16,10 +16,10 @@ toutes les références existent et que chaque lieu des cartes est accessible.
 |---|---|
 | `types.json` | Les 13 types (Feu, Eau, Glace, Roche, Vent, Poison, Métal, Esprit…), leur couleur, leurs immunités et la table d'efficacité |
 | `techniques.json` | Techniques, sorts et Limites |
-| `especes.json` | Héros, créatures et boss : statistiques de base, techniques apprises |
-| `objets.json` | Objets : prix, effets (soin, PM, réanimation, capture), équipement (`equipement` : `arme`, `armure` ou `accessoire`, et `bonus` : `pv`, `pm`, `attaque`, `defense`, `magie`, `resistance`, `vitesse`, `precision`, `esquive`, `critique`) |
+| `especes.json` | Héros, créatures et boss : statistiques de base, techniques apprises, `evolution` (`espece` et `niveau` : la forme qu'elle peut prendre), `taille` (dessin agrandi, 1.15 pour les formes évoluées) |
+| `objets.json` | Objets : prix, effets (soin, PM, réanimation, capture), équipement (`equipement` : `arme`, `armure` ou `accessoire`, et `bonus` : `pv`, `pm`, `attaque`, `defense`, `magie`, `resistance`, `vitesse`, `precision`, `esquive`, `critique`) ; `"trophee": true` pour un trophée de boss (forge). Les armes et armures forgées (`epee_fer+1`…) sont créées par le jeu, pas écrites ici |
 | `apparences.json` | Couleurs et accessoires des personnages |
-| `regles.json` | Départ de la partie, rencontres, formules de combat, récompenses, tactiques de départ… |
+| `regles.json` | Départ de la partie, rencontres, formules de combat, récompenses (dont `butin_type` : matériaux selon le type de la créature vaincue), forge, tactiques de départ… |
 | `evenements.json` | Dialogues et événements de l'histoire |
 | `cartes/*.json` | Une carte par fichier : tuiles, bâtiments, habitants, coffres… |
 | `sons.json` | Musiques et bruitages (fabriqués par le jeu, sans fichier audio) |
@@ -91,6 +91,15 @@ de dégâts, seulement l'effet). Champs facultatifs : `precision` (%), `critique
 | Sur le lanceur | ajouter `"sur": "lanceur"` |
 | Guérir les états | `{"guerison": true}` |
 
+`portee` (facultatif) : `corps` (corps à corps : ne vise que la colonne ennemie
+la plus avancée encore debout) ou `distance` (n'importe quelle case). Par défaut,
+une technique physique est au corps à corps, les autres à distance. `zone`
+(facultatif) : `case`, `ligne` (la ligne de la cible, en profondeur), `colonne`
+(sa colonne), `croix` (elle et ses voisines) ou `tout` ; par défaut `tout` pour
+une cible `tous_ennemis`/`tous_allies`, sinon `case`. Les cases voisines de la
+cible prennent `zone_voisins` (règles, combat : 0,75) des dégâts ; au corps à
+corps, l'arrière donne et reçoit `arriere` (0,75).
+
 `rythme` (facultatif) règle le moment où le lanceur rejoue : `rapide` (sa jauge
 ATB repart à `jauge_rapide` %, 25 par défaut) ou `lourde` (elle repart à
 -`retard_lourde` %, -25 par défaut) ; sans ce champ, la jauge repart de zéro.
@@ -101,6 +110,14 @@ tiennent compte (dégâts divisés par le temps que prend la technique).
 Un type peut rendre insensible à un état (`types.json`, `"immunites"`). Les
 valeurs générales (critiques, effet d'un bonus, dégâts du poison, rythme…) sont
 dans `regles.json`, sections `combat` et `etats`.
+
+**Forge** (`regles.json`, `forge`) : une entrée par niveau (+1, +2, +3) avec
+`bonus` (part du bonus de l'objet ajoutée, arrondie au-dessus : 0.3 = +30 %),
+`or` et `objets` (matériaux à donner ; `"trophee"` = n'importe quel objet avec
+`"trophee": true`). Chaque arme et armure de `objets.json` existe aussitôt en
++1, +2… ; son prix de vente monte de l'or de la forge. Les matériaux tombent
+des créatures selon `recompenses.butin_type` (`type`, `objet`, `chance`) et se
+trouvent dans des coffres ; chaque boss donne son trophée (action `donner`).
 
 **Adversaires** : l'action `combat` accepte `nom` (« Le braconnier vous défie ! »)
 et `renforts`, une liste d'ennemis qui entrent un par un quand un adversaire
@@ -213,11 +230,12 @@ page dont la condition `si` est vraie.
 | `or` | Ajoute ou retire de l'or | `quantite` (négative pour payer) |
 | `drapeau` | Retient qu'un événement a eu lieu | `nom`, `valeur` (false pour l'effacer) |
 | `recruter` | Un personnage rejoint l'équipe | `espece`, `niveau` |
-| `combat` | Lance un combat | `ennemis` (1 à 3 : `espece`, `niveau`, `pv` multiplicateur, `boss`), `renforts`, `nom`, `boss`, `fuite`, `capture`, `victoire`, `defaite` |
+| `combat` | Lance un combat | `ennemis` (1 à 6 : `espece`, `niveau`, `pv` multiplicateur, `boss`), `renforts`, `nom`, `boss`, `fuite`, `capture`, `victoire`, `defaite` |
 | `question` | Question Oui / Non | `texte`, `oui`, `non` |
 | `si` | Condition | `condition`, `alors`, `sinon` |
 | `soigner` | Soigne l'équipe | `pv`, `pm` (true par défaut) |
 | `boutique` | Ouvre une boutique | `objets` |
+| `forge` | Ouvre la forge (renforcer armes et armures : coûts dans `regles.json`, section `forge`) | |
 | `reveil` | Point de réveil après une défaite | |
 | `teleporter` | Change de carte | `carte`, `x`, `y`, `direction` |
 | `evenement` | Lance un autre événement | `id` |

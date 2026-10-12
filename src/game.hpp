@@ -51,6 +51,10 @@ class Game {
   void update(float dt);
   void draw();
   bool quit = false;
+  // Vitesse du jeu (Options, touche F2) : main.cpp appelle update ce nombre de fois par image.
+  // Toujours ×1 en multijoueur (duel, expédition à plusieurs : tout le monde au même rythme).
+  int speed() const;
+  void cycleSpeed();  // F2 : ×1 → ×2 → ×3 → ×1
 
   // Mode test automatique (voir main.cpp) : rejoue des situations et enregistre des captures
   int selfTest(SDL_Surface* target, const std::string& outDir);
@@ -122,6 +126,7 @@ class Game {
   float exclaimT_ = 0;
   void changeMap(int m, int x, int y, int d);
   void encounter();
+  int wildDepth(int x, int y) const;  // distance à pied du plus proche bâtiment ou passage (meutes)
   void defeat();
   int defeats_ = 0;  // défaites dans la partie principale (joueur automatique)
   void showRegionBanner();
@@ -137,10 +142,26 @@ class Game {
   void itemMenu();
   void magicMenu();
   void shopMenu(const std::vector<std::string>& stock);
+  // Évolution (evolution.cpp) : proposée après chaque combat gagné, ou par Échap > Évolution
+  void offerEvolutions();                    // la première créature prête : « Évoluer ? » Oui/Non (puis la suivante)
+  void evolveMember(const FighterP& f);      // l'effet de lumière, puis l'évolution
+  void evolutionMenu();                      // les évolutions refusées, à faire maintenant
+  void drawEvolution();
+  std::string evoFrom_, evoTo_;              // effet en cours (espèces avant et après), vide : aucun
+  float evoT_ = 0;                           // début de l'effet (Game::time)
+  bool offerEvolve_ = true;                  // le mode test les coupe (personne ne répondrait), sauf pour les tester
+  // Forge de Forgeroc (forge.cpp) : renforcer une arme ou une armure contre de l'or et des matériaux
+  void forgeMenu(int sel = 0);
+  bool forge(const FighterP& owner, const std::string& id);  // owner nul : l'objet est dans le sac
+  int forgeStock(const std::string& id) const;               // « trophee » : tous les trophées
+  std::string forgeCost(const ItemDef& d, std::string* missing) const;
   void journalMenu();
   void companionsMenu(int sel = 0);  // la créature compagnon de chaque héros
   void reserveMenu(int sel = 0);     // déposer, reprendre ou échanger des créatures avec la réserve
   void bestiaryMenu(int sel = 0);    // toutes les créatures : vues, obtenues, fiche
+  void formationMenu(int sel = 0);   // la case de chaque combattant sur le damier
+  int formationCell_ = -1;           // case surlignée sur le dessin du damier (panelMode_ 4)
+  void drawFormationPanel(int x, int y);
   std::string bestiarySel_;          // espèce dont la fiche est affichée (panelMode_ 3)
   void drawBestiaryPanel(int x, int y);
   void swapReserve(FighterP out, FighterP in);  // out : de l'équipe à la réserve ; in : de la réserve à l'équipe
@@ -149,6 +170,12 @@ class Game {
   void gearSlots(FighterP f, int who, int sel = 0);
   void gearPick(FighterP f, int who, int slot);
   void optionsMenu(int sel = 0);
+  // Aide (help.cpp) : liste des pages, puis une page en plein écran (F1 partout)
+  void helpMenu(int sel = 0);
+  void openHelp(int page);
+  void updateHelp();
+  void drawHelp();
+  int helpPage_ = -1, helpScroll_ = 0, lastHelp_ = 0;  // page affichée (-1 : aucune), défilement, dernière vue (F1)
   void keysMenu(int sel = 0);
   bool padDir_[4] = {}, stickDir_[4] = {};  // directions tenues à la manette (croix, stick)
   float padRepeat_[4] = {};                  // répétition d'une direction tenue (menus)
@@ -190,6 +217,7 @@ class Game {
   std::unique_ptr<Expedition> expedition_;  // mode Expédition (écran titre), voir expedition.hpp
   std::unique_ptr<Online> online_;          // multijoueur (écran titre), voir online.hpp
   std::unique_ptr<Pilot> pilot_;            // joueur automatique (démo, partie rapide), voir pilot.hpp
+  std::string saveBeforePilot_;             // fichier de sauvegarde d'avant la démo (rendu par l'écran titre)
   bool duelBattle_ = false;                 // le combat en cours est un duel en ligne
   bool groupBattle_ = false;                // le combat en cours est celui d'un gardien, à plusieurs (coop.cpp)
   void bossTouched(const BossSpot& b);      // un gardien d'expédition à plusieurs attend tout le groupe
@@ -202,6 +230,7 @@ class Game {
   int swapFrom_ = -1;
   std::string notice_;       // petit message en bas de l'écran
   float noticeT_ = 0;
+  float speedT_ = 0;  // affiche la vitesse en grand quelques instants après un changement
   std::string askText_;      // question affichée pendant un choix Oui/Non
   void notice(const std::string& s) { notice_ = s, noticeT_ = 2.2f; }
   void teamMenuAt(int sel);

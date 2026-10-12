@@ -54,6 +54,23 @@ struct Effect {
 // Rythme d'une technique : où repart la jauge ATB du lanceur après l'avoir utilisée
 enum class Pace { Normal, Quick, Heavy };
 
+// Damier de combat (2.0 : 4x4, demandé le 2026-10-12) : 16 cases par camp, numérotées 0 à 15.
+// Colonne = case % GRID (0 avant … BACK_COL arrière : l'avant est du côté de l'adversaire) ;
+// ligne = case / GRID (0 haut … GRID - 1 bas).
+constexpr int GRID = 4;
+constexpr int N_CELLS = GRID * GRID;
+constexpr int BACK_COL = GRID - 1;
+inline int cellCol(int c) { return c % GRID; }
+inline int cellRow(int c) { return c / GRID; }
+inline int cellAt(int row, int col) { return row * GRID + col; }
+std::string cellName(int c);  // « Avant · haut »
+// Zone d'effet d'une technique autour de sa cible : la cible seule, sa ligne (en profondeur),
+// sa colonne (tout un rang), elle et ses voisines (croix), ou tout le camp
+enum class Area { Single, Line, Column, Cross, All };
+const char* zoneId(Area z);    // "case", "ligne", "colonne", "croix", "tout"
+const char* zoneName(Area z);  // « Une cible »…
+bool inZone(Area z, int center, int cell);  // la case est-elle touchée quand la zone vise center ?
+
 struct Move {
   std::string id, name;
   Type type;
@@ -65,6 +82,8 @@ struct Move {
   int acc = 100;       // précision en %
   int critBonus = 0;   // chance de critique en plus (%)
   Pace pace = Pace::Normal;  // rapide : la jauge repart plus haut ; lourde : plus bas que zéro
+  Area zone = Area::Single;  // zone d'effet (par défaut : selon la cible, « tous » = tout le camp)
+  bool melee = false;        // corps à corps : ne vise que la colonne ennemie la plus avancée (défaut : physique)
   std::vector<Effect> effects;
   bool damaging() const { return kind == Kind::Physical || kind == Kind::Magic; }
 };
@@ -110,6 +129,10 @@ struct Species {
   int look = 0;       // index dans allLooks() pour les humains
   std::string role;   // courte description
   std::vector<Tactic> tactics;  // tactiques de départ propres (vide : celles des règles)
+  // Évolution (2.2) : au niveau evolveLvl, la créature peut devenir l'espèce evolveTo (vide : aucune)
+  std::string evolveTo;
+  int evolveLvl = 0;
+  float size = 1;  // taille du dessin (formes évoluées : un peu plus grandes)
 };
 
 // Équipement : une arme, une armure et un accessoire par combattant. Armes et armures sont
@@ -132,8 +155,15 @@ struct ItemDef {
   bool cure = false;           // guérit les états
   int slot = -1;               // équipement : emplacement (GearSlot) ; -1 : pas un équipement
   std::array<int, N_GEAR_STATS> bonus{};
+  bool trophy = false;         // trophée d'un boss (champ "trophee") : sert à la forge
+  // Forge (2.1) : chaque arme et armure existe aussi forgée, « epee_fer+2 », objet généré au
+  // chargement (pas dans objets.json) : forged = son niveau, base = l'objet d'origine
+  int forged = 0;
+  std::string base;
   std::string bonusText() const;  // « +4 Attaque, +10 PV »
 };
+std::string forgedId(const std::string& base, int level);  // "epee_fer" et 2 : "epee_fer+2"
+bool forgeable(const ItemDef& d);                           // arme ou armure qu'on peut encore forger
 
 // Règles du jeu (data/regles.json). Les valeurs numériques sont décrites dans
 // ruleFields() pour pouvoir être lues, écrites et réglées au même endroit.
@@ -148,11 +178,20 @@ struct Rules {
   // Rencontres
   double encounterRate = .11, second = .55, third = .35;
   int minSteps = 3;
+  // Meutes : loin des villes et des entrées (profondeur, Game::wildDepth), rencontres plus
+  // fréquentes (jusqu'à +packDense) et créatures en plus, jusqu'à packMax ; pleine profondeur
+  // à packDistance cases
+  int packMax = 6;
+  double packDistance = 30, packDense = .5;
   // Combat
   double atbBase = 20, atbSpeed = 1.1, flee = .7, limitGain = 110, stab = 1.25, spreadMin = .85, dmgDivisor = 40;
   double critMult = 1.5, stageStep = .25;
   int accBase = 100, evaBase = 2, critBase = 5;
   int quickGauge = 25, heavyDelay = 25;  // jauge après une technique rapide (%), retard après une lourde (%)
+  double backRow = .75;                  // damier : dégâts au corps à corps donnés et reçus depuis l'arrière
+  double zoneSide = .75;                 // zone d'effet : dégâts sur les cases autour de la cible
+  double bossWarn = .35;                 // chance qu'un boss annonce sa plus grosse attaque (un tour à l'avance)
+  double bossBurst = 1.6;                // puissance de l'attaque annoncée (sur ceux restés dans la zone)
   double companionAtb = .5;              // compagnons : vitesse de leur jauge ATB (ils agissent moins souvent que les héros)
   // États
   double poisonDmg = .1, burnDmg = .0625, burnAtk = .75, paraSpeed = .5, paraSkip = .25;
@@ -171,6 +210,20 @@ struct Rules {
   // Tactiques : lignes disponibles (départ, une de plus tous les n niveaux, maximum) et règles de départ
   int tacticStart = 4, tacticPerLvl = 6, tacticMax = 10;
   std::vector<Tactic> tactics;
+  // Butin selon le type d'une créature sauvage vaincue (« butin_type ») : matériaux de la forge
+  struct TypeDrop {
+    std::string type, item;
+    double chance;
+  };
+  std::vector<TypeDrop> typeDrops;
+  // Forge de Forgeroc (« forge ») : un niveau par entrée (+1, +2, +3). bonus : part du bonus de
+  // l'objet ajoutée (0.3 : +30 %), or et matériaux (« trophee » : n'importe quel trophée de boss)
+  struct ForgeLevel {
+    double bonus = 0;
+    int gold = 0;
+    std::vector<std::pair<std::string, int>> items;
+  };
+  std::vector<ForgeLevel> forge;
 };
 struct RuleField {
   const char* group;  // section de regles.json
@@ -244,6 +297,8 @@ struct Fighter {
   std::vector<Tactic> tactics;
   bool tacticsOn = true;
   std::array<std::string, N_GEAR> gear;  // équipement porté (objets de data/objets.json, vide : rien)
+  int cell = -1;                         // formation : case choisie sur le damier (-1 : automatique)
+  bool evolveLater = false;              // évolution refusée : proposée de nouveau seulement par Échap > Évolution
   // Héros : la créature compagnon choisie par le joueur (vide : la première créature libre de l'équipe)
   std::weak_ptr<Fighter> companion;
 
@@ -272,6 +327,10 @@ FighterP makeFighter(const std::string& id, int lvl);
 // (sa créature choisie, sinon la première créature libre, dans l'ordre de l'équipe). Une équipe
 // sans héros (mode test, Arène) combat comme avant : ses premiers membres valides.
 std::vector<FighterP> frontOf(const std::vector<FighterP>& team, int heroes);
+// Cases du damier pour ces combattants, dans le même ordre. keep : garde les cases choisies
+// (Fighter::cell) quand elles sont libres ; les autres sont placés automatiquement (les
+// combattants physiques devant, les lanceurs de sorts derrière, en commençant par le centre).
+std::vector<int> formation(const std::vector<FighterP>& v, bool keep);
 // Le compagnon d'un héros dans cette équipe (celui qu'il aurait en combat ; nullptr : aucun)
 FighterP companionOf(const std::vector<FighterP>& team, const FighterP& hero);
 // Multiplicateur des PV du gardien et de ses acolytes à plusieurs (coop.cpp) : ×alliés/3 au-delà de
@@ -281,5 +340,9 @@ float guardianScale(int allies, int players);
 Json gearJson(const Fighter& f);
 void applyGear(Fighter& f, const Json& gear);
 bool canEquip(const Fighter& f, const ItemDef& d);  // emplacement permis pour ce combattant
+// Évolution : la créature a atteint le niveau de son évolution ; evolve la fait évoluer (même niveau,
+// équipement, tactiques et case ; PV et PM gardent la même proportion)
+bool canEvolve(const Fighter& f);
+void evolve(Fighter& f);
 // Gagne de l'expérience ; renvoie les messages de montée de niveau.
 std::vector<std::string> gainXp(Fighter& f, int xp);

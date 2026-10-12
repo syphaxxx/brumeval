@@ -36,7 +36,7 @@ chaque envoi sur GitHub, lance le mode test sur les trois, et fabrique les
 paquets (exécutable + `data/` + `distribution/LISEZ-MOI.txt`). Pour publier :
 augmenter `BRUMEVAL_VERSION` dans `src/version.hpp`, fusionner dans `main`,
 puis `git tag v1.2` et `git push origin v1.2` : la page Releases est créée avec
-le texte de `distribution/notes.md`, puis la version est annoncée sur le canal Discord de l'utilisateur (webhook rangé dans le secret GitHub `DISCORD_WEBHOOK`, jamais dans le code : le dépôt est public ; texte = première ligne du message de l'étiquette, donc écrire `git tag -a v1.6 -m "Version 1.6 : …"`). Sous Windows, la bibliothèque C++ est
+le texte de `distribution/notes.md`, puis la version est annoncée sur le canal Discord de l'utilisateur (webhook rangé dans le secret GitHub `DISCORD_WEBHOOK`, jamais dans le code : le dépôt est public ; texte = première ligne du message de l'étiquette, donc écrire `git tag -a v1.6 -m "Version 1.6 : …"` ; la section « Nouveautés » de `notes.md` est à réécrire à chaque version). Sous Windows, la bibliothèque C++ est
 intégrée (`CMAKE_MSVC_RUNTIME_LIBRARY`, `SDL_FORCE_STATIC_VCRT`) ; sous Linux,
 `-static-libstdc++`. Sur Mac, `data/` va dans `Contents/Resources` (trouvé par
 `SDL_GetBasePath`). Pour essayer une version Release ici : `cmake -S . -B
@@ -91,7 +91,7 @@ compagnon. Fichiers : `sauvegarde_partie_auto.txt`, `sauvegarde_demo.txt`
 (jamais la vraie partie). En démo, une touche rend la main au joueur. La
 vérification GitHub lance aussi `--partie`. Mesuré le 2026-10-09 (12 parties,
 3 premiers compagnons) : toujours finie, 45 à 60 minutes de jeu, niveau ~48.
-Un nouveau genre d'interaction (objet à utiliser, énigme…) demande d'ajouter
+Il s'améliore d'une partie à l'autre (demandé le 2026-10-10) : `pilote_memoire.txt` (dossier de l'utilisateur) garde pour chaque combat difficile la marge de niveaux qu'il lui a fallu (mêlée à la précédente, baisse après une victoire du premier coup) et, pour chaque carte, `nature:<carte>` = les meutes qui l'ont battu : les herbes profondes de cette carte lui coûtent plus cher à traverser et il s'y entraîne moins loin (la crainte baisse d'un quart à chaque partie finie). Mesuré : 6, 6, 4, 4 puis 2 défaites sur cinq parties de suite. Il place son équipe avec la formation automatique, vise les zones les plus rentables (IA) et se met à l'abri des attaques annoncées. Un nouveau genre d'interaction (objet à utiliser, énigme…) demande d'ajouter
 un objectif dans `Pilot::goals`. Méthode réutilisable pour d'autres jeux :
 compétence `joueur-automatique` de Claude Code.
 
@@ -100,7 +100,9 @@ compétence `joueur-automatique` de Claude Code.
 | Fichier | Rôle |
 |---|---|
 | `main.cpp` | Fenêtre SDL (taille adaptée à l'écran), affichage agrandi (`Screen`), boucle principale, plein écran (F11, gardé dans `options.txt`), option `--test`, chargement de data/ |
-| `game.hpp/.cpp` | Écran titre, exploration, menus (pause, équipe, objets, magie, boutique), sauvegarde, dessin de la carte |
+| `game.hpp/.cpp` | Écran titre, exploration (marche, portes, habitants, coffres), boucle `update`, dessin de la carte, écran de fin |
+| `menus.cpp` | Méthodes de `Game` : options et touches, menu de pause (équipe, compagnons, réserve, bestiaire, tactiques, équipement, journal, objets, magie), boutique (achat, vente), fiche de l'équipe |
+| `save.cpp` | Méthodes de `Game` : sauvegarde et chargement (`saveGame`, `loadGame`), `readMemberLine` (partagé avec le multijoueur) |
 | `battle.hpp/.cpp` | Combat ATB : jauges, menus, dégâts physiques/magiques, précision, critiques, états, bonus/malus, renforts ennemis, IA (`think`), tactiques des alliés (`tacticPlan`, touche Tab), journal (`log`), capture, Limites, victoire |
 | `tactics.hpp/.cpp` | Tactiques (gambits) : catalogue des conditions et actions automatiques, lecture/écriture JSON, vérifications (`tacticProblem`), lignes selon le niveau (`tacticSlots`), éditeur réutilisable (`openTacticsEditor`) |
 | `store.hpp/.cpp` | Dossier data/ : recherche, lecture et écriture JSON (nlohmann/json, `Json` = `ordered_json`) |
@@ -121,7 +123,10 @@ compétence `joueur-automatique` de Claude Code.
 | `online.hpp/.cpp` | Multijoueur (écran titre) : héberger une partie (jusqu'à 4 joueurs), rejoindre, salon, vérification de la version et des données (`dataHash`), relais des messages par l'hôte, duel en ligne |
 | `coop.cpp` | Expédition à plusieurs (fonctions de `Online`) : lancement d'une graine pour tous, état de chaque joueur (message `ou`), autres joueurs sur la carte (`avatars`), attente et combat du gardien à plusieurs |
 | `trade.cpp` | Échange de créatures (fonctions de `Online`) : dans le salon (partie principale) ou pendant l'expédition à plusieurs, une contre une ou en cadeau |
-| `options.hpp/.cpp` | Options du joueur (`options()`, fichier `options.txt`) : volumes, plein écran, touches choisies (`K_UP`…) |
+| `options.hpp/.cpp` | Options du joueur (`options()`, fichier `options.txt`) : volumes, plein écran, vitesse du jeu, touches choisies (`K_UP`…) |
+| `evolution.cpp` | Méthodes de `Game` : évolution des créatures (`offerEvolutions` après un combat gagné, `evolveMember` avec l'effet de lumière `drawEvolution`, menu Échap > Évolution `evolutionMenu`) |
+| `forge.cpp` | Méthodes de `Game` : forge de Forgeroc (`forgeMenu`, `forge`, `forgeStock`, `forgeCost`), ouverte par l'action d'événement `forge` |
+| `help.cpp` | Méthodes de `Game` : Aide (Échap > Aide, écran titre > Aide, F1 partout) : pages `helpPages()` (statistiques, dégâts, combat, damier, zones, rythme, états, tableau des types, touches), chiffres tirés de `rules()` |
 | `events.hpp/.cpp` (quêtes) | Quêtes annexes : `quests()`, `findQuest`, `questFlag` ; action `quete` |
 | `version.hpp` | Numéro de version (`BRUMEVAL_VERSION`), affiché sur l'écran titre et comparé en multijoueur |
 | `test.cpp` | Mode test automatique |
@@ -174,10 +179,11 @@ compétence `joueur-automatique` de Claude Code.
   `compagnon <rang>` après le héros dans la sauvegarde). `frontOf` (data.cpp)
   choisit les combattants : les 3 premiers héros valides, chacun suivi de son
   compagnon (choisi, sinon la première créature libre) ; une équipe sans héros
-  combat comme avant. En combat (`Battle::companion`, `hasHero_`), le compagnon
-  agit seul (`companionTurn` : tactiques, sinon l'ordinateur), sa jauge ATB va
-  à `compagnon_atb` (0,5) ; jusqu'à 6 alliés (placement `HERO`/`COMP`, fenêtre
-  d'état plus haute) ; « Changer » remplace un héros par un héros. Menu
+  combat comme avant. En combat (`Battle::companion`, `hasHero_`), le joueur
+  commande le compagnon comme un héros (demandé le 2026-10-10 ; avant, il
+  agissait seul) : ses tactiques en mode auto, sinon son menu ; sa jauge ATB
+  va à `compagnon_atb` (0,5) ; jusqu'à 6 alliés sur le damier ; « Changer »
+  remplace un héros par un héros. Menu
   `Game::companionsMenu`. Duel : les combattants gardent l'ordre envoyé
   (`s.allies = mine`) ; gardien à plusieurs : `myFighters` suit `front()`
   (un héros et son compagnon à deux joueurs).
@@ -304,6 +310,41 @@ compétence `joueur-automatique` de Claude Code.
   `son` aux autres). Les menus font leurs bruits eux-mêmes (`MenuStack::update`).
   Le mode test n'ouvre pas de sortie son mais fabrique chaque morceau et chaque
   effet (`audio::render`) pour vérifier qu'ils s'entendent.
+- Évolution (2.2, plan validé le 2026-10-12) : `Species::evolveTo` / `evolveLvl` (champ `evolution` : `espece`, `niveau`) et
+  `size` (`taille`, dessin agrandi dans `drawCreature`) ; `canEvolve` / `evolve` (data.cpp : même niveau, équipement,
+  tactiques, case, compagnon ; PV et PM en proportion). Après un combat gagné (hors Expédition, Arène, duel),
+  `Game::update` file `offerEvolutions` après la suite de l'histoire : « Évoluer ? » Oui/Non pour chaque créature prête ;
+  Non pose `Fighter::evolveLater` (ligne `evolution_plus_tard` de la sauvegarde) et l'entrée Échap > Évolution apparaît.
+  22 lignées : 16 nouvelles espèces (statistiques ×1,18, couleurs décalées, `taille` 1,15, techniques de la base + 2,
+  Limite `lim_<id>` +10 de puissance) et 6 créatures existantes devenues des évolutions (Rocaillou → Galetor…). Formes
+  évoluées sauvages : Pics, Temple, Source. Le mode test coupe les propositions (`offerEvolve_`) sauf dans leur test ;
+  ses simulations font évoluer les équipes (`BRUMEVAL_SANS_EVOLUTION=1` pour comparer). Le joueur automatique répond Oui
+  (journal : « Évolution : … »). Réglage : statistiques ×1,18 rendaient les boss bien plus faciles (Ignarok 6 → 37 %,
+  Givrecorne 33 → 78 %) ; ramenées à ×1,10 (Limite +5), puis boss relevés de niveau (plus de PV ne changeait presque
+  rien) : Golem 24 → 25, gardien de cristal 37 → 39, Givrecorne 36 → 39, Mère des Brumes 40 → 44. Mesuré
+  (BRUMEVAL_SIMULATIONS=4, sans évolution → avec, IA seule) : Sylvarque 7 → 6 %, Golem 57 → 67 %, Ronce-Mère 5 → 19 %,
+  Ignarok 6 → 11 %, Givrecorne 33 → 31 %, gardien 22 → 37 %, Mère des Brumes 47 → 54 % ; avec l'équipement, Ignarok
+  monte plus (17-43 → 52-74 %).
+- Forge (2.1, plan validé le 2026-10-12) : armes et armures en +1/+2/+3. `rebuildData` (data.cpp) génère pour chaque arme et
+  armure les objets `<id>+1`… (`ItemDef::forged`, `base` ; `forgedId`, `forgeable`), bonus + part arrondie au-dessus
+  (`Rules::forge` : `bonus`, `or`, matériaux ; « trophee » = tout objet `trophy`), prix + or de la forge. Ils ne sont pas
+  dans objets.json ni dans les Réglages. Matériaux : `minerai` (+1), `coeur_braise` (+2), `cristal_givre` et un trophée
+  (+3) ; butin selon le type (`Rules::typeDrops`, `butin_type`, battle.cpp `victory`), coffres, et chaque boss donne son
+  trophée (action `donner` après son drapeau). L'enclume de Forgeroc (événement `forge`, une fois `brann`) ouvre
+  `Game::forgeMenu` : équipement porté puis sac ; Entrée forge aussitôt (comme un achat). Joueur automatique :
+  `Pilot::forgeWanted` / `forging` (l'équipement porté, en gardant 150 or). Mode test : bloc « forgé au maximum
+  possible » (`simForge`). Réglage : +1 = +30 %, +2 = +40 % (60 % rendait Ignarok trop facile : 17 → 64 %), +3 = +100 %.
+  Mesuré (BRUMEVAL_SIMULATIONS=4, boutique → boutique et forge) : Sylvarque 33 → 37 %, Ronce-Mère 29 → 30 %, Golem 55 → 52 %,
+  Ignarok 14 → 36 %, Givrecorne 75 → 68 %, gardien de cristal 70 → 85 %, Mère des Brumes 70 → 86 %.
+- Vitesse du jeu (1.9) : `options().speed` (1 à 3, ligne `vitesse` d'`options.txt`), Options > Vitesse du jeu ou F2 (`Game::cycleSpeed`, grand
+  « Vitesse ×2 » un instant, puis « ×2 » discret en haut à droite). main.cpp appelle `game.update(dt)` `Game::speed()` fois par
+  image : tout va plus vite (marche, combats, textes) sans changer la logique ; la musique reste normale. Toujours ×1 en
+  multijoueur (`Online::connected`).
+- Aide et descriptions (1.9) : `Game::helpPage_` ≥ 0 = une page d'aide en plein écran ; le reste du jeu attend (`update`
+  s'arrête après le réseau). `moveDetails(m, lanceur)` / `moveHelp` (battle.cpp) décrivent toute technique (genre, type,
+  puissance, coût, cible et zone, portée, soin chiffré, effets, rythme), `itemDetails` / `itemHelp` tout objet (soins,
+  capture de x % à y %, bonus, où l'utiliser) : le champ `description` des données n'est qu'une phrase d'ambiance placée
+  avant. `matchupText` donne les faiblesses d'une espèce (aide du Bestiaire).
 - Commandes : `Game::onKey` lit les touches choisies (`options().keys`) en plus
   des flèches, d'Entrée et d'Échap (toujours actives). Manette :
   `Game::onPad` / `onStick` (appelés par main.cpp, qui ouvre les manettes
@@ -346,6 +387,45 @@ compétence `joueur-automatique` de Claude Code.
   l'ordinateur (ennemis, et alliés en mode test) ; `Battle::log` garde un journal
   lisible (`BRUMEVAL_JOURNAL=Sylvarque brumeval --test captures` l'affiche pour
   la simulation qui contient ce mot).
+- Écran de combat (1.7) : ATH discret, un bandeau semi-transparent en bas (deux
+  colonnes de trois alliés : nom, PV, PM, traits PV/ATB/Limite) ; les menus du
+  combat s'ouvrent en bas (`dock` dans battle.cpp : commande à gauche,
+  sous-menus et choix de la cible à droite) pour laisser voir les deux damiers.
+  Pas de fenêtre des noms d'ennemis : leur nom est dans le menu de la cible.
+- Graphismes des cartes (2.0, sprites.cpp) : maisons (`drawBuilding` : ombre, soubassement, pierres, tuiles en rangées,
+  faîtage, cheminée, fenêtres à volets et jardinières), arbres `T` en trois variantes selon `hsh` (rond, petit, fruitier
+  ou large en forêt), chemins `=` aux bords adoucis contre la nature (liseré, touffes, coins), herbe de la vallée variée.
+- Graphismes (1.8) : décor des combats avec l'horizon à y 56 (`HZ` dans `Battle::draw`, reliefs à moitié de hauteur) pour que les trois rangées du damier soient sur le sol ; dalles en losange ; sur les cartes, écume le long des berges et ombre au pied des arbres (sprites.cpp).
+- Meutes (1.7) : `Game::wildDepth`, distance à pied du plus proche bâtiment ou
+  passage ; plus on s'enfonce (jusqu'à `meute_distance` cases), plus les
+  rencontres sont fréquentes (+`nature_dense`) et les groupes grands (jusqu'à
+  `meute_max`, 6). Règles, rencontres.
+- Damier (1.7, plan validé le 2026-10-10 ; **4x4 depuis la 2.0**, demandé le 2026-10-12) : `N_CELLS` = 16 cases par camp
+  (data.hpp : `GRID` 4, `cellCol` 0 avant … `BACK_COL` 3 arrière, `cellRow`, `cellAt(ligne, colonne)` ; ne jamais écrire
+  3 ou 9 en dur). Sauvegarde : ligne `case4` ; une ancienne ligne `case` (3x3) est convertie (l'arrière reste l'arrière).
+  À l'écran (`Battle::cellPos`) : colonnes de 30 px, lignes de 26 px à partir de y 58. Mesuré : difficulté inchangée
+  par rapport au 3x3 (écarts dans le bruit). `Battle::cells_` garde la
+  case de chacun pendant le combat (alliés : `Fighter::cell`, la formation, ligne
+  `case4` de la sauvegarde ; ennemis et gardien à plusieurs : `formation()`
+  automatique, physiques devant). `Move::melee` (champ `portee`) : le corps à
+  corps ne vise que la colonne la plus avancée encore debout (`reachable`, aussi
+  dans `attackScore` : l'IA et les tactiques en tiennent compte) ; l'arrière donne
+  et reçoit `backRow` au corps à corps. `Move::zone` (`Area`, champ `zone`) :
+  `zoneTargets` étend la cible à sa zone dans `useMove`, voisins × `zoneSide`.
+  « Se déplacer » (`moveTo`, jauge rapide), menu `Game::formationMenu` (dessin
+  `drawFormationPanel`, `panelMode_` 4). Réseau : la case est le 7e nombre de
+  chaque combattant dans `etat` ; ordre `deplacer`.
+- Attaques annoncées (1.8) : `Battle::bossPlan` ; un boss (pas en duel) annonce
+  parfois (`boss_annonce`, 0,35) sa plus forte attaque sur la colonne, croix ou
+  ligne qui couvre le plus d'alliés (`warnings_`, zone rouge, 8e champ `w` de
+  `etat` pour l'invité) ; l'annonce ne lui coûte pas son tour. À son tour
+  suivant, elle frappe ceux restés dans la zone × `boss_annonce_puissance`
+  (1,6) ; si tous se sont écartés, il attaque normalement. Les alliés joués par
+  l'ordinateur (`autoCommand`) se mettent à l'abri (`threatened`, `safeCell`).
+  `enemyMove` : un lanceur de sorts ennemi à l'avant recule, un combattant à
+  l'arrière avance. Tactiques : conditions `soi_menace`, `ennemis_groupes`
+  (taille de la zone), `allie_avant_pv_moins` ; action `esquiver`
+  (`Plan::cell`).
 - Rythme (`Move::pace`, champ `rythme`) : après une technique rapide, la jauge ATB
   du lanceur repart à `jauge_rapide` % ; après une lourde, à -`retard_lourde` %
   (`paceGauge`, passé à `Battle::afterAction`). `Battle::attackScore` note une
@@ -400,7 +480,7 @@ réécrits par `writeJson` (petites listes sur une ligne) : garder ce format.
 - **Monts Cendrelune** (64x44) : ville de Forgeroc (soin, boutique, auberge,
   forge), duel contre **Brann** pour le recruter, champs de cendres, rivières de
   lave, cratère d'**Ignarok** (N.23, Feu, boss final).
-- **Grotte des Échos** (32x24) : **Golem de suie** (N.20), puis **Isra** rejoint
+- **Grotte des Échos** (32x24) : **Golem de suie** (N.25), puis **Isra** rejoint
   l'équipe.
 - **Forêt de Sylve-Noire** (56x40, ouverte après Sylvarque, entrée à l'ouest du
   village) : bandits dresseurs, chef des bandits qui retient **Kael** (archer,
@@ -410,16 +490,22 @@ réécrits par `writeJson` (petites listes sur une ligne) : garder ce format.
   village de Givreval (soin, boutique, auberge), duel contre **Sélène**
   (chevalière, Métal), chevaliers du givre, lac gelé.
 - **Temple gelé** (labyrinthe, clé de givre au fond) et **Sanctuaire** : boss
-  final **Givrecorne** (N.36, Glace/Roche), écran de fin. Boss de carte
+  final **Givrecorne** (N.39, Glace/Roche), écran de fin. Boss de carte
   facultatif du temple : le **gardien de cristal** (quête `cristal`).
 - **Source des Brumes** (40x30, facultative, faille au nord du Sanctuaire
   ouverte après le Givrecorne, `data/cartes/source.json`) : Brumeloup, Nébulis,
-  Orbrume (N.33-37), deux gardiens dresseurs, la **Mère des Brumes** (N.40,
+  Orbrume (N.33-37), deux gardiens dresseurs, la **Mère des Brumes** (N.44,
   Ombre/Esprit, drapeau `boss4`) et un troisième écran de fin. Créée par
   `build/outils/source.py` (outil de travail).
 - 13 types (dont Glace, Roche, Vent, Poison, Métal, Esprit). Héros : Lior,
   Maëlle, Brann, Isra, Kael, Sélène. Starters : Braisenard, Gouttelin, Ronceau.
-  26 créatures sauvages capturables, 6 boss, 5 sortes d'ennemis humains.
+  26 créatures sauvages capturables (et 16 formes évoluées, 2.2), 6 boss, 5 sortes d'ennemis humains.
+- **Attaques de zone** (1.9, demandées le 2026-10-12) : Tourbillon (Lior, ligne), Onde de choc (Brann, colonne), Nova
+  (Maëlle, croix), Salve (Kael, colonne, rapide), Éclats d'acier (Sélène, croix) ; pour les créatures Ruée, Nuée de braises,
+  Torrent, Pluie de spores, Avalanche, et Brasier, Rafale, Décharge, Morsure de gel qui gagnent une zone (aucune technique
+  de boss changée). Mesuré (BRUMEVAL_SIMULATIONS=4, avant → après ; IA / tactiques / équipement des boutiques) :
+  Givrecorne 27 → 46 / 36 → 53 / 68 → 74 %, Golem 63 → 51 / – / 71 → 55 %, les autres dans le bruit (±8) ;
+  joueur automatique : histoire finie, 1 défaite.
 - **Intérieurs** : 12 pièces dans les trois villages (soins, boutiques,
   auberges, chapelle, maisons habitées avec un coffre), plus la cabane de
   l'ermite (l'herboriste y soigne) et la tente du chef des bandits.
@@ -428,7 +514,8 @@ réécrits par `writeJson` (petites listes sur une ligne) : garder ce format.
   (Givreval), le grimoire de l'ermite (Sylve-Noire, dans la tente du chef), le
   gardien de cristal (Temple gelé, donnée par la mage). Journal : Échap > Journal.
 - **Équipement** : 16 armes, armures et accessoires en vente (vallée,
-  Forgeroc, Givreval).
+  Forgeroc, Givreval), armes et armures renforcées à la forge de Forgeroc
+  (+1 à +3 ; minerai, cœurs de braise, cristaux de givre, 8 trophées de boss).
 - **Son** : 9 musiques (titre, 5 lieux, intérieur, combat, boss) et 25
   bruitages, fabriqués par le jeu (`data/sons.json`). Options (volumes,
   plein écran, touches) et manette.
@@ -445,7 +532,7 @@ la région) : Sylvarque 12 / 42 %, Golem 55 / 70 %, Ronce-Mère 21 / 46 %,
 Ignarok 32 / 56 %, Givrecorne 26-36 / 72 %. Sans les compagnons ralentis
 (`compagnon_atb` 1), tout passait à ~100 %. Ajoutés le 2026-10-10 (même
 mesure) : gardien de cristal (équipe N.28) 48 % / 100 %, Mère des Brumes
-(équipe N.38) 36 % / 75 %. Le Golem réagit peu à
+(équipe N.38) 36 % / 75 %. Remesuré avec le damier (1.7, 2026-10-10, BRUMEVAL_SIMULATIONS=3 pour les trois premiers) : Sylvarque 12 / 50 %, Ronce-Mère 27 / 56 %, Ignarok 17 / 48 %, Golem 70 / 85 %, Givrecorne 35 / 75 %, gardien de cristal 33 / 100 %, Mère des Brumes 46 / 86 % ; l'IA ennemie frappe au corps à corps le meilleur adversaire à portée quand sa cible préférée est à l'arrière (sinon elle abusait des attaques de zone). Le Golem réagit peu à
 l'équipement. Le mode test lit les boss dans les événements (`bossEvent`) :
 ses mesures suivent toujours le jeu.
 Avant ce renfort (IA automatique, sans objets) : combats

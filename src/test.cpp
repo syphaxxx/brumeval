@@ -28,6 +28,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   saveName_ = "sauvegarde_test.txt";  // ne jamais toucher à la vraie sauvegarde du joueur
   tacticsAuto = false;                 // les combats des tests passent par les menus (les tactiques ont leurs tests)
   g.checkLayout = true;                // chaque image dessinée vérifie la mise en page (gfx.cpp)
+  offerEvolve_ = false;                // les évolutions ne sont proposées que dans leur propre test
   int fails = 0;
   auto check = [&](bool ok, const std::string& what) {
     std::printf("%s %s\n", ok ? "[ok]    " : "[ÉCHEC] ", what.c_str());
@@ -106,7 +107,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     frame();
     snap("86_options");
     bool louder = options().music == std::min(10, vol + 1);
-    menus.top().sel = 3;  // Touches
+    menus.top().sel = 4;  // Touches
     in.confirm = true;
     frame();
     snap("87_touches");
@@ -120,11 +121,17 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     bool bound = bindKey_ < 0 && options().keys[K_UP] == SDL_SCANCODE_I && in.press[UP];
     onKey(SDL_SCANCODE_I, false, false);
     in.endFrame();
+    for (int i = 0; i < 2; i++) {  // F2 deux fois : vitesse ×3
+      onKey(SDL_SCANCODE_F2, true, false);
+      onKey(SDL_SCANCODE_F2, false, false);
+    }
+    bool fast = speed() == 3 && speedT_ > 0;
+    speedT_ = 0;
     options() = Options{};
     loadOptions();
-    bool reread = options().keys[K_UP] == SDL_SCANCODE_I && options().music == std::min(10, vol + 1);
-    check(opened && louder && waiting && bound && reread,
-          "options : écran titre > Options, volume de la musique, nouvelle touche pour « Haut », relues depuis le fichier");
+    bool reread = options().keys[K_UP] == SDL_SCANCODE_I && options().music == std::min(10, vol + 1) && options().speed == 3;
+    check(opened && louder && waiting && bound && fast && reread,
+          "options : écran titre > Options, volume de la musique, nouvelle touche pour « Haut », vitesse ×3 (F2), relues depuis le fichier");
     std::remove(userFile(optionsFile).c_str());
     optionsFile = realFile;
     options() = Options{};
@@ -224,26 +231,22 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     loadGame();
     bool kept = team.size() == 6 && team[1]->companion.lock() == team[5];
     startBattle({makeFighter("tisonnel", 18), makeFighter("tisonnel", 18)}, false, nullptr);
-    bool onlyHeroes = true;
+    bool heroMenu = false, companionMenu = false;
     int turns = 0;
-    for (int i = 0; i < 60 * 20 && mode == Mode::Battle && turns < 4; i++) {
+    for (int i = 0; i < 60 * 30 && mode == Mode::Battle && !(heroMenu && companionMenu); i++) {
       if (menus.active() && battle_ && battle_->actor) {
-        onlyHeroes = onlyHeroes && battle_->actor->S().human;
+        (battle_->actor->S().human ? heroMenu : companionMenu) = true;
         if (turns++ == 0) snap("94_compagnons_combat");
-        menus.clear();  // on laisse passer le tour du héros
+        menus.clear();  // on laisse passer son tour
         battle_->actor->atb = 0;
         battle_->actor = nullptr;
       }
       frame();
     }
     bool six = battle_ && battle_->allies.size() == 6;
-    int companionActs = 0;
-    if (battle_)
-      for (auto& l : battle_->log)
-        for (int k = 3; k < 6; k++) companionActs += l.rfind(team[k]->name() + " > ", 0) == 0;
-    check(pairs && kept && six && onlyHeroes && turns > 0 && companionActs > 0,
-          "compagnons : chaque héros avec sa créature (choisie ou la première libre), 6 alliés en combat, les compagnons agissent seuls (" +
-              std::to_string(companionActs) + " actions), choix gardé par la sauvegarde");
+    check(pairs && kept && six && heroMenu && companionMenu,
+          "compagnons : chaque héros avec sa créature (choisie ou la première libre), 6 alliés en combat, le joueur commande héros et "
+          "compagnons, choix gardé par la sauvegarde");
     battle_.reset();
     mode = Mode::Map;
     menus.clear();
@@ -439,6 +442,192 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     tacticsAuto = keepAuto;
   }
 
+  // --- Damier (1.7) : portée du corps à corps, arrière protégé, zones d'effet, se déplacer, formation ---
+  {
+    auto keepTeam = team;
+    bool keepAuto = tacticsAuto;
+    tacticsAuto = false;
+    menus.clear();
+    sc.clear();
+    mode = Mode::Map;
+    // Placement automatique : physiques devant, lanceurs de sorts derrière
+    auto brute = makeFighter("louvet", 20), mage = makeFighter("esprillon", 20), extra = makeFighter("galetor", 20);
+    auto cells = formation({brute, mage, extra}, false);
+    check(cellCol(cells[0]) == 0 && cellCol(cells[1]) == BACK_COL && cellCol(cells[2]) == 0 && cells[0] != cells[2],
+          "damier : placement automatique (Louvet et Galetor devant, Esprillon derrière)");
+    team = {makeFighter("lior", 20), makeFighter("maelle", 20)};
+    startBattle({brute, mage, extra}, false, nullptr);
+    Battle& B = *battle_;
+    B.cells_[brute.get()] = cellAt(1, 0), B.cells_[extra.get()] = cellAt(2, 0), B.cells_[mage.get()] = cellAt(1, BACK_COL);  // deux à l'avant, le mage à l'arrière (sans le hasard)
+    const Move& bite = moveInfo("mordant");  // corps à corps
+    const Move& wave = moveInfo("onde");     // à distance
+    bool reach = B.reachable(team[0], bite, brute) && !B.reachable(team[0], bite, mage) && B.reachable(team[0], wave, mage);
+    brute->hp = extra->hp = 0;  // l'avant tombe : le corps à corps atteint l'arrière
+    bool opened = B.reachable(team[0], bite, mage);
+    brute->hp = brute->mhp, extra->hp = extra->mhp;
+    check(reach && opened, "damier : le corps à corps ne vise que l'avant ennemi tant qu'il tient ; la distance vise partout");
+    // L'arrière reçoit moins de dégâts au corps à corps (même coup, même hasard)
+    auto hitOn = [&](const FighterP& d, int cell) {
+      B.cells_[d.get()] = cell;
+      d->hp = d->mhp;
+      long long total = 0;
+      for (int k = 0; k < 200; k++) {
+        int before = d->hp = d->mhp;
+        if (B.applyHit(team[0], d, bite) > 0) total += before - d->hp;
+      }
+      return total;
+    };
+    long long front = hitOn(extra, cellAt(0, 1)), back = hitOn(extra, cellAt(0, BACK_COL));
+    check(back > 0 && back < front * 0.85, "damier : à l'arrière, les coups au corps à corps font moins mal (" + std::to_string(front) + " contre " +
+                                               std::to_string(back) + " sur 200 coups)");
+    // Zone en croix : la cible et ses voisines
+    Move cross = wave;
+    cross.zone = Area::Cross;
+    B.cells_[brute.get()] = cellAt(1, 1), B.cells_[mage.get()] = cellAt(1, 2), B.cells_[extra.get()] = 0;  // centre, son voisin, un coin
+    auto hit = B.zoneTargets(cross, brute);
+    check(hit.size() == 2 && hit[0] == brute && hit[1] == mage, "damier : une zone en croix touche la cible et ses voisines, pas le coin");
+    // Se déplacer : la case change, la jauge repart (action rapide)
+    B.sc.clear();
+    FighterP lior = team[0];
+    int to = -1;
+    for (int c = N_CELLS - 1; c >= 0 && to < 0; c--)
+      if (B.cellOf(team[0]) != c && B.cellOf(team[1]) != c) to = c;
+    B.moveTo(lior, to);
+    for (int i = 0; i < 200 && B.sc.busy(); i++) {
+      in.confirm = true;
+      frame();
+    }
+    check(B.cellOf(lior) == to && lior->atb == float(rules().quickGauge), "damier : « Se déplacer » change de case et la jauge repart à " +
+                                                                             std::to_string(rules().quickGauge) + " %");
+    {  // Sauvegarde d'avant la 2.0 : « case 8 » (3x3, arrière en bas) devient l'arrière en bas du 4x4 ; « case4 » est lu tel quel
+      std::vector<FighterP> t = {makeFighter("lior", 5)};
+      std::istringstream a("8"), b("13");
+      readMemberLine("case", a, t, nullptr);
+      bool old = t[0]->cell == cellAt(2, BACK_COL);
+      readMemberLine("case4", b, t, nullptr);
+      check(old && t[0]->cell == 13, "damier 4x4 : la formation 3x3 d'une ancienne sauvegarde est convertie (l'arrière reste l'arrière)");
+    }
+    // Attaque annoncée (1.8) : elle frappe ceux restés dans la zone, pas ceux qui se sont écartés
+    {
+      FighterP boss = brute, maelle = team[1];
+      boss->boss = true;
+      B.sc.clear();
+      int liorCell = B.cellOf(lior);
+      B.warnings_.push_back({boss, "mordant", Area::Single, liorCell});
+      bool warned = B.threatened(lior) && !B.threatened(maelle);
+      int hp0 = lior->hp = lior->mhp;
+      B.bossPlan(boss);
+      for (int i = 0; i < 300 && B.sc.busy(); i++) {
+        in.confirm = true;
+        frame();
+      }
+      bool hit = lior->hp < hp0 && B.warnings_.empty();
+      // Cette fois, Lior se met à l'abri (comme l'ordinateur ou la tactique « Se mettre à l'abri »)
+      B.warnings_.push_back({boss, "mordant", Area::Single, B.cellOf(lior)});
+      lior->hp = lior->mhp;
+      B.autoCommand(lior);
+      for (int i = 0; i < 300 && B.sc.busy(); i++) {
+        in.confirm = true;
+        frame();
+      }
+      bool moved = B.cellOf(lior) != liorCell && !B.threatened(lior);
+      B.bossPlan(boss);
+      for (int i = 0; i < 300 && B.sc.busy(); i++) {
+        in.confirm = true;
+        frame();
+      }
+      bool dodged = lior->hp == lior->mhp;
+      // Tactique : « Soi : zone annoncée » > « Se mettre à l'abri »
+      B.warnings_.push_back({boss, "mordant", Area::Single, B.cellOf(lior)});
+      lior->tactics = {Tactic{true, "soi_menace", 0, Tactic::Act::Auto, "esquiver"}};
+      lior->tacticsOn = true;
+      Battle::Plan p;
+      bool tactic = B.tacticPlan(lior, p) && p.cell >= 0 && !inZone(Area::Single, B.cellOf(lior), p.cell);
+      B.warnings_.clear();
+      lior->tactics = defaultTactics(lior->S());
+      boss->boss = false;
+      check(warned && hit && moved && dodged && tactic,
+            "attaque annoncée : elle frappe la zone rouge ; se mettre à l'abri (ordinateur ou tactique) l'évite");
+    }
+    // Victoire : tous les gains dans une seule fenêtre
+    for (auto& f : B.foes) f->hp = 0, B.knockOut(f);
+    B.sc.clear();
+    B.checkEnd();
+    for (int i = 0; i < 300 && !B.summaryOn_; i++) {
+      if (B.sc.busy()) in.confirm = true;
+      frame();
+    }
+    bool summary = B.summaryOn_ && !B.summary_.empty();
+    snap("97_victoire");
+    in.confirm = true;
+    frame();
+    for (int i = 0; i < 300 && mode == Mode::Battle; i++) frame();
+    check(summary && mode == Mode::Map, "victoire : les gains (expérience, niveaux, or) dans une seule fenêtre, fermée par Entrée");
+    battle_.reset();
+    mode = Mode::Map;
+    menus.clear();
+    sc.clear();
+    // Formation : choisie dans le menu, gardée par la sauvegarde
+    team = {makeFighter("lior", 20), makeFighter("maelle", 20), makeFighter("braisenard", 20)};
+    formationMenu(0);
+    in.confirm = true;  // Lior : changer de case
+    frame();
+    menus.top().sel = 8;  // Arrière · bas
+    in.confirm = true;
+    frame();
+    bool chosen = team[0]->cell == 8;
+    saveGame();
+    loadGame();
+    check(chosen && team[0]->cell == 8, "formation : Lior placé à l'arrière en bas depuis le menu, gardé par la sauvegarde");
+    panelMode_ = 0;
+    menus.clear();
+    team = keepTeam;
+    tacticsAuto = keepAuto;
+  }
+
+  // --- Meutes : loin des villes, des groupes plus grands (jusqu'à 6 créatures) ---
+  {
+    auto keepTeam = team;
+    team = {makeFighter("lior", 30), makeFighter("maelle", 30)};
+    menus.clear();
+    sc.clear();
+    mode = Mode::Map;
+    int vm = mi("vallee");
+    changeMap(vm, 30, 12, DOWN);
+    // La case de hautes herbes la plus profonde d'une zone de la vallée, et la plus proche du village
+    int deepX = -1, deepY = -1, deepD = -1, nearD = 1 << 30;
+    for (auto& z : M().zones)
+      for (int y = z.y; y < z.y + z.h; y++)
+        for (int x = z.x; x < z.x + z.w; x++) {
+          if (!tileEncounter(M().rows[y][x])) continue;
+          int d = wildDepth(x, y);
+          if (d > deepD) deepD = d, deepX = x, deepY = y;
+          nearD = std::min(nearD, d);
+        }
+    int packs = 0, most = 0;
+    bool shot = false;
+    px = deepX, py = deepY;
+    for (int k = 0; k < 60; k++) {
+      encounter();
+      if (battle_) {
+        most = std::max(most, (int)battle_->foes.size());
+        if (battle_->foes.size() >= 5 && !shot) {
+          shot = true;
+          run(1.5f);
+          snap("96_meute");
+        }
+        packs += battle_->foes.size() >= 4;
+        battle_.reset();
+      }
+      mode = Mode::Map;
+      menus.clear();
+    }
+    check(deepD > nearD && deepD >= 10 && packs > 0 && most <= rules().packMax,
+          "meutes : au plus profond de la vallée (" + std::to_string(deepD) + " cases du village), " + std::to_string(packs) +
+              " meutes de 4 créatures ou plus sur 60 rencontres (au plus " + std::to_string(most) + ")");
+    team = keepTeam;
+  }
+
   // --- Quête annexe : le médaillon (accepter, journal, coffre du Bois Murmurant, récompense) ---
   {
     auto answer = [&] {  // Entrée sur chaque message ; « Oui » (premier choix) aux questions
@@ -585,6 +774,91 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   check(saved && loaded && team.size() == 2 && team[0]->lvl == 9 && gold == 321 && has("boss1") && items["potion"] == 7 &&
             M().id == "cendrelune" && px == 12 && has(chestFlag(0)),
         "sauvegarde puis chargement");
+
+  // --- Forge de Forgeroc (2.1) : or et matériaux, objet porté ou dans le sac, +3 avec un trophée, sauvegarde ---
+  {
+    auto lior = makeFighter("lior", 20);
+    team = {lior, makeFighter("ronceau", 20)};
+    lior->gear[G_WEAPON] = "epee_fer";
+    lior->recalc();
+    int atk0 = lior->atk, base = item("epee_fer").bonus[GS_ATK];
+    items = {{"tunique_cuir", 1}, {"minerai", 4}};
+    gold = 1000;
+    bool one = forge(lior, "epee_fer") && lior->gear[G_WEAPON] == "epee_fer+1" && lior->atk > atk0 && items["minerai"] == 2 &&
+               gold == 1000 - rules().forge[0].gold;
+    bool bag = forge(nullptr, "tunique_cuir") && items["tunique_cuir"] == 0 && items["tunique_cuir+1"] == 1 && items["minerai"] == 0;
+    bool refused = !forge(lior, "epee_fer+1") && lior->gear[G_WEAPON] == "epee_fer+1";  // plus de minerai
+    items["minerai"] = 2, items["coeur_braise"] = 1, items["cristal_givre"] = 2, items["ecaille_sylvarque"] = 1;
+    bool three = forge(lior, "epee_fer+1") && forge(lior, "epee_fer+2") && lior->gear[G_WEAPON] == "epee_fer+3" &&
+                 item("epee_fer+3").bonus[GS_ATK] == 2 * base && items["ecaille_sylvarque"] == 0 && !forgeable(item("epee_fer+3"));
+    int sell = item("epee_fer+3").price;
+    bool saved = saveGame();
+    team.clear(), items.clear();
+    bool loaded = loadGame() && !team.empty() && team[0]->gear[G_WEAPON] == "epee_fer+3" && items["tunique_cuir+1"] == 1;
+    check(one && bag && refused && three && saved && loaded && sell > item("epee_fer").price,
+          "forge : +1 sur l'arme portée et sur une armure du sac, refus sans matériaux, +3 avec un trophée (bonus doublé), gardé dans la sauvegarde");
+    // Brann ouvre la forge à Forgeroc
+    flags.insert("brann");
+    runEvent("forge");
+    skipScript();
+    check(menus.active() && menus.top().title.rfind("Forge", 0) == 0, "forge : l'enclume de Forgeroc ouvre la forge une fois Brann dans l'équipe");
+    snap("forge");
+    menus.clear();
+    sc.clear();
+  }
+
+  // --- Évolution (2.2) : Oui après un combat, Non puis Échap > Évolution, sauvegarde ---
+  {
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+    changeMap(mi("vallee"), 30, 12, DOWN);
+    auto lior = makeFighter("lior", 20), ronceau = makeFighter("ronceau", 16), rocaillou = makeFighter("rocaillou", 17);
+    ronceau->gear[G_ACCESSORY] = "amulette_vie";
+    ronceau->cell = 5;
+    ronceau->recalc();
+    ronceau->hp = ronceau->mhp / 2;
+    team = {lior, ronceau, rocaillou};
+    lior->companion = ronceau;
+    int lvl = ronceau->lvl;
+    size_t nTactics = ronceau->tactics.size();
+    offerEvolve_ = true;
+    offerEvolutions();  // comme après un combat gagné
+    bool asked = !askText_.empty() && askText_.find("Ronceflore") != std::string::npos;
+    in.confirm = true;  // Oui
+    frame();
+    run(1.f);
+    snap("evolution");
+    skipScript();
+    bool evolved = ronceau->sp == "ronceflore" && ronceau->lvl == lvl && ronceau->gear[G_ACCESSORY] == "amulette_vie" && ronceau->cell == 5 &&
+                   ronceau->tactics.size() == nTactics && lior->companion.lock() == ronceau && ronceau->hp * 2 <= ronceau->mhp + 1 &&
+                   caught.count("ronceflore") && evoTo_.empty();
+    // La suivante (Rocaillou) : Non
+    bool next = !askText_.empty() && askText_.find("Galetor") != std::string::npos;
+    menus.top().sel = 1;
+    in.confirm = true;
+    frame();
+    skipScript();
+    bool later = rocaillou->sp == "rocaillou" && rocaillou->evolveLater && askText_.empty();
+    check(asked && evolved && next && later, "évolution : Ronceau devient Ronceflore (niveau, équipement, case, compagnon gardés), Rocaillou refuse");
+    bool saved = saveGame();
+    team.clear();
+    bool kept = saved && loadGame() && team.size() == 3 && team[1]->sp == "ronceflore" && team[2]->evolveLater;
+    mode = Mode::Map;
+    // Échap > Évolution : la créature qui avait refusé
+    pauseMenu();
+    bool listed = false;
+    for (auto& it : menus.top().items) listed = listed || it.label == "Évolution";
+    menus.clear();
+    evolutionMenu();
+    in.confirm = true;
+    frame();
+    skipScript();
+    check(kept && listed && team[2]->sp == "galetor" && !team[2]->evolveLater,
+          "évolution : refus gardé dans la sauvegarde, puis Échap > Évolution la fait évoluer");
+    offerEvolve_ = false;
+    menus.clear();
+    sc.clear();
+  }
 
   // --- Événements : le pêcheur donne deux plumes une seule fois ---
   {
@@ -1351,6 +1625,10 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     in.confirm = true;
     show("boutique : vendre");
     menus.clear();
+    forgeMenu();  // tout le sac : armes et armures de chaque niveau
+    show("forge");
+    snap("forge_sac");
+    menus.clear();
     reserve = {makeFighter("carapierre", 40), makeFighter("cristallin", 40), makeFighter("braisenard", 12)};
     reserveMenu(1);
     show("réserve");
@@ -1373,6 +1651,29 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     show("bestiaire : fiche vue");
     in.press[DOWN] = true;
     show("bestiaire : jamais vue");
+    menus.clear();
+    helpMenu();  // Aide : la liste, puis chaque page (F1 l'ouvre aussi)
+    show("aide");
+    int helpN = (int)menus.top().items.size() - 1;
+    in.confirm = true;
+    frame();
+    bool helpOk = helpPage_ == 0;
+    for (int k = 0; k < helpN; k++) {
+      show("aide : page " + std::to_string(k + 1));
+      snap(k == 7 ? "aide_types" : "aide_" + std::to_string(k + 1));
+      in.press[RIGHT] = true;
+      frame();
+    }
+    helpOk = helpOk && helpPage_ == 0;  // la dernière page revient à la première
+    in.cancel = true;
+    frame();
+    helpOk = helpOk && helpPage_ < 0 && menus.active();
+    onKey(SDL_SCANCODE_F1, true, false);
+    onKey(SDL_SCANCODE_F1, false, false);
+    helpOk = helpOk && helpPage_ == 0;
+    onKey(SDL_SCANCODE_F1, true, false);
+    onKey(SDL_SCANCODE_F1, false, false);
+    check(helpOk && helpPage_ < 0, "aide : " + std::to_string(helpN) + " pages, gauche/droite pour tourner, Échap et F1 pour fermer");
     menus.clear();
     tacticsMenu();
     show("tactiques");
@@ -1754,6 +2055,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       const Rules& r = rules();
       auto makeSave = [&](Game& p, const std::vector<std::pair<std::string, int>>& members) {
         p.team.clear();
+        p.reserve.clear();
         for (auto& [sp, lvl] : members) p.team.push_back(makeFighter(sp, lvl));
         p.mapId = p.respawnMap = 0;
         p.saveGame();
@@ -1799,6 +2101,22 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       both(10);
       check(H.trade_.step == Online::Trade::Step::None && H.status_.find("aucune créature") != std::string::npos && saved(*this) == h2,
             "échange (salon) : refusé si l'autre n'a aucune créature à donner (« " + H.status_ + " »)");
+      // Cadeau reçu avec l'équipe complète : il va dans la réserve, et y reste dans la sauvegarde
+      {
+        std::vector<std::pair<std::string, int>> full = {{hero, 10}};
+        while ((int)full.size() < r.maxTeam) full.push_back({b, 5});
+        makeSave(*this, full);
+        makeSave(guest, {{hero, 10}, {c, 7}});
+        V.offerTrade(0, 1, true);
+        both(10);
+        in.confirm = true;  // Accepter
+        frame();
+        both(10);
+        std::string team8 = saved(*this);
+        bool inReserve = reserve.size() == 1 && reserve[0]->sp == c && reserve[0]->lvl == 7;
+        check(inReserve && (int)team.size() == r.maxTeam && H.status_.rfind("Cadeau reçu", 0) == 0,
+              "échange (salon) : un cadeau reçu avec l'équipe complète va dans la réserve (" + team8 + ")");
+      }
       for (Game* p : {this, &guest}) std::remove(H.file(p->saveName_).c_str());
       saveName_ = hostSave, guest.saveName_ = "sans_sauvegarde_test.txt";
       H.salon(), V.salon();
@@ -2035,7 +2353,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     auto keepFlags = flags;
     auto keepItems = items;
     int keepGold = gold, keepMap = mapId, keepX = px, keepY = py;
-    std::string keepSave = saveName_;
+    std::string keepSave = saveName_;  // la démo joue sur son propre fichier ; l'écran titre remet celui-ci
     bool keepAuto = tacticsAuto;                            // le joueur automatique active le mode auto
     int keepRespawn[3] = {respawnMap, respawnX, respawnY};  // une nouvelle partie change le point de réveil
     startPilot(true);
@@ -2043,8 +2361,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     bool talked = pilot_ && flags.count("quete:medaillon") > 0;
     size_t steps = pilot_ ? pilot_->journal.size() : 0;
     check(talked && steps >= 4, "démo : le joueur automatique avance (quête du médaillon acceptée, " + std::to_string(steps) + " étapes au journal)");
-    pilot_.reset();
-    saveName_ = keepSave;
+    titleMenu();  // comme un joueur qui reprend la main puis revient à l'écran titre
+    check(!pilot_ && saveName_ == keepSave, "démo : revenir à l'écran titre arrête la démo et rend le fichier de sauvegarde habituel (" + saveName_ + ")");
     menus.clear();
     sc.clear();
     team = keepTeam, flags = keepFlags, items = keepItems, gold = keepGold;
@@ -2062,8 +2380,9 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   int simFactor = simEnv ? std::max(1, std::atoi(simEnv)) : 1;
   // Équipement des boutiques (1 : vallée, 2 : Forgeroc, 3 : Givreval) : le meilleur de chaque
   // emplacement ; arme de magie pour les mages (plus de Magie que d'Attaque), accessoire seul pour une créature
-  int simGear = 0;
-  auto equipParty = [](std::vector<FighterP>& t, int tier) {
+  int simGear = 0, simForge = 0;
+  bool simEvolve = !SDL_getenv("BRUMEVAL_SANS_EVOLUTION");  // pour comparer : équipes sans évolution  // simForge : armes et armures forgées à ce niveau (forge de Forgeroc)
+  auto equipParty = [&](std::vector<FighterP>& t, int tier) {
     static const char* GEAR[3][5] = {{"epee_fer", "baton_chene", "tunique_cuir", "tunique_cuir", "amulette_vie"},
                                      {"hache_braise", "baton_lune", "cotte_mailles", "robe_mage", "bague_vif"},
                                      {"lame_givre", "sceptre_aurore", "armure_givre", "robe_mage", "pendentif_brume"}};
@@ -2074,6 +2393,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       else f->gear = {"", "", g[4]};
       for (auto& id : f->gear)
         if (!id.empty() && !hasItem(id)) id.clear();
+      for (int s : {G_WEAPON, G_ARMOR})
+        if (simForge && !f->gear[s].empty()) f->gear[s] = forgedId(f->gear[s], std::min(simForge, (int)rules().forge.size()));
       f->recalc();
       f->hp = f->mhp, f->mp = f->mmp;
     }
@@ -2085,7 +2406,10 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     float total = 0;
     for (int k = 0; k < n; k++) {
       team.clear();
-      for (auto& [id, l] : party) team.push_back(makeFighter(id, l));
+      for (auto& [id, l] : party) {
+        team.push_back(makeFighter(id, l));
+        while (simEvolve && canEvolve(*team.back())) evolve(*team.back());  // l'équipe a accepté ses évolutions
+      }
       if (simGear) equipParty(team, simGear);
       menus.clear();
       sc.clear();
@@ -2271,7 +2595,21 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}, {"braisenard", 30}, {"gouttelin", 30}, {"ronceau", 30}}, bossEvent("givrecorne"), 40);
   simSetup("Gardien de cristal (équipe N.28)", {{"lior", 28}, {"maelle", 28}, {"brann", 28}, {"braisenard", 28}, {"gouttelin", 28}, {"ronceau", 28}}, bossEvent("gardien_cristal"), 30);
   simSetup("Mère des Brumes (équipe N.38)", {{"lior", 38}, {"maelle", 38}, {"selene", 38}, {"braisenard", 38}, {"gouttelin", 38}, {"ronceau", 38}}, bossEvent("mere_brumes"), 30);
-  simGear = 0;
+
+  // Forge (2.1) : le même équipement, forgé au plus haut niveau possible à ce moment de l'histoire
+  // (+1 avec le minerai de la vallée, +2 avec les cœurs de braise de Cendrelune, +3 après les Pics)
+  std::printf("\nMêmes boss, équipement des boutiques forgé au maximum possible (+1, +2, +3) :\n");
+  simGear = 1, simForge = 1;
+  simSetup("Boss Sylvarque (équipe N.11)", {{"lior", 11}, {"maelle", 11}, {"braisenard", 11}, {"gouttelin", 11}}, bossEvent("sylvarque"), 40);
+  simSetup("Ronce-Mère (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"kael", 16}, {"braisenard", 16}, {"gouttelin", 16}}, bossEvent("ronce_mere"), 30);
+  simGear = 2, simForge = 2;
+  simSetup("Golem de suie (équipe N.16)", {{"lior", 16}, {"maelle", 16}, {"brann", 16}, {"braisenard", 16}, {"gouttelin", 16}}, bossEvent("golem"), 20);
+  simSetup("Boss Ignarok (équipe N.22)", {{"lior", 22}, {"maelle", 22}, {"isra", 22}, {"braisenard", 22}, {"gouttelin", 22}, {"ronceau", 22}}, bossEvent("ignarok"), 40);
+  simGear = 3, simForge = 3;
+  simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}, {"braisenard", 30}, {"gouttelin", 30}, {"ronceau", 30}}, bossEvent("givrecorne"), 40);
+  simSetup("Gardien de cristal (équipe N.28)", {{"lior", 28}, {"maelle", 28}, {"brann", 28}, {"braisenard", 28}, {"gouttelin", 28}, {"ronceau", 28}}, bossEvent("gardien_cristal"), 30);
+  simSetup("Mère des Brumes (équipe N.38)", {{"lior", 38}, {"maelle", 38}, {"selene", 38}, {"braisenard", 38}, {"gouttelin", 38}, {"ronceau", 38}}, bossEvent("mere_brumes"), 30);
+  simGear = 0, simForge = 0;
 
   // Expédition : gardien de chaque région contre une équipe générée (héros, créature de départ,
   // recrue de la région 1) arrivée deux niveaux au-dessus des créatures sauvages

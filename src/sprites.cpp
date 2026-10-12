@@ -15,6 +15,7 @@ static void eyes(const Xf& x, float x1, float x2, float y, float r = 2) {
 // ---------------------------------------------------------------------------
 void drawCreature(Gfx& g, const std::string& id, float x, float y, float s, bool flip, float t) {
   const Species& sp = species(id);
+  s *= sp.size;
   Color C = rgb(sp.c1), L = rgb(sp.c2), D = shade(C, .3f);
   Xf X{g, x, y + std::round(std::sin(t * 3.1f)), s, flip};
   X.ell(0, 15, 15, 3.5f, rgb(0, 46));
@@ -317,6 +318,11 @@ static void ground(Gfx& g, Theme th, int sx, int sy, int h) {
     g.rect(sx, sy, 16, 16, rgb(0x67b35d));
     g.rect(sx + h % 13, sy + (h >> 4) % 13, 2, 1, rgb(0x57a04f));
     g.rect(sx + (h >> 8) % 12 + 2, sy + (h >> 12) % 12 + 2, 1, 2, rgb(0x57a04f));
+    if (h % 5 == 0) {  // touffe en « v »
+      int tx = sx + 3 + (h >> 3) % 9, ty = sy + 4 + (h >> 6) % 8;
+      g.rect(tx, ty, 1, 2, rgb(0x4e9446)), g.rect(tx + 2, ty, 1, 2, rgb(0x4e9446)), g.rect(tx + 1, ty + 1, 1, 2, rgb(0x4e9446));
+    }
+    if (h % 17 == 0) g.rect(sx + 2 + (h >> 5) % 11, sy + 2 + (h >> 9) % 11, 1, 1, rgb((h >> 2) % 2 ? 0xfff2a0 : 0xffffff));  // fleurette
   } else if (th == Theme::Cendres) {
     g.rect(sx, sy, 16, 16, rgb(0x6e625c));
     g.rect(sx + h % 13, sy + (h >> 4) % 13, 2, 1, rgb(0x5f544f));
@@ -399,18 +405,24 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
     }
     case 'T':
       ground(g, th, sx, sy, h);
+      g.ellipse(sx + 9, sy + 14, 7, 2.5f, rgb(0x000000, 40));  // ombre douce au pied
       g.rect(sx + 6, sy + 10, 4, 5, rgb(0x6b4a2f));
       if (th == Theme::Neige) {  // sapin enneigé
         g.tri(sx + 1, sy + 12, sx + 8, sy - 1, sx + 15, sy + 12, rgb(0x2e5a46));
         g.tri(sx + 3, sy + 6, sx + 8, sy - 1, sx + 13, sy + 6, rgb(0xf2f6fb));
         g.rect(sx + 2, sy + 11, 12, 1, rgb(0xf2f6fb));
-      } else if (th == Theme::Foret) {  // grand arbre sombre
-        g.ellipse(sx + 8, sy + 7, 8, 7, rgb(0x1f4a2a));
-        g.ellipse(sx + 5, sy + 4, 4, 3, rgb(0x2e6b3a));
-        g.ellipse(sx + 11, sy + 6, 3, 2, rgb(0x2a5e34));
       } else {
-        g.ellipse(sx + 8, sy + 7, 7, 6, rgb(0x2e6b3a));
-        g.ellipse(sx + 6, sy + 5, 4, 3, rgb(0x3f8a4a));
+        bool dark = th == Theme::Foret;
+        int v = (h >> 4) % 3;  // 0 : rond, 1 : plus petit et clair, 2 : fruitier (vallée) ou large (forêt)
+        uint32_t base = dark ? (v == 1 ? 0x24563a : 0x1f4a2a) : (v == 1 ? 0x3a7f42 : 0x2e6b3a);
+        float r = v == 1 ? 6.f : dark && v == 2 ? 8.5f : 7.5f, cy = v == 1 ? 8.f : 7.f;
+        g.ellipse(sx + 8, cy + sy + 1.5f, r, r - 1.5f, shade(rgb(base), .25f));       // dessous dans l'ombre
+        g.ellipse(sx + 8, cy + sy, r, r - 1.5f, rgb(base));
+        g.ellipse(sx + 6, cy + sy - 2.5f, r * .55f, r * .4f, rgb(dark ? 0x2f6a3c : 0x45944e));  // reflet en haut à gauche
+        g.rect(sx + 5 + (h % 3), int(cy) + sy - 4, 2, 1, rgb(dark ? 0x4a8a4e : 0x6cba64));
+        if (v == 2 && !dark)
+          for (int i = 0; i < 3; i++) g.rect(sx + 4 + ((h >> (i * 3)) % 8), sy + 5 + ((h >> (i * 2 + 7)) % 5), 2, 2, rgb(0xe0503a));  // fruits
+        if (dark && v == 2) g.ellipse(sx + 12, sy + 9, 3, 2, rgb(0x2a5e36));
       }
       break;
     case 'd':
@@ -425,6 +437,14 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
       int o = int(t * 4 + x + y) % 10;
       g.rect(sx + o, sy + 4, 4, 1, rgb(0x6aa8e0));
       g.rect(sx + (o + 5) % 12, sy + 11, 4, 1, rgb(0x6aa8e0));
+      if (c == '~') {  // écume le long des berges, qui ondule doucement
+        auto water = [&](char n) { return n == '~' || n == 'B' || n == ' '; };
+        uint8_t a = uint8_t(150 + 60 * std::sin(t * 2 + x * .8f + y * .6f));
+        if (!water(at(x, y - 1))) g.rect(sx, sy, 16, 2, rgb(0xd8efff, a));
+        if (!water(at(x, y + 1))) g.rect(sx, sy + 14, 16, 2, rgb(0xd8efff, a));
+        if (!water(at(x - 1, y))) g.rect(sx, sy, 2, 16, rgb(0xd8efff, a));
+        if (!water(at(x + 1, y))) g.rect(sx + 14, sy, 2, 16, rgb(0xd8efff, a));
+      }
       if (c == 'B') {
         bool horiz = at(x - 1, y) == '=' || at(x + 1, y) == '=' || at(x - 1, y) == 'B' || at(x + 1, y) == 'B';
         g.rect(sx, sy, 16, 16, rgb(0xa0703f));
@@ -451,6 +471,30 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
         g.rect(sx, sy, 16, 16, rgb(0xd9c08a));
         g.rect(sx + h % 14, sy + (h >> 5) % 14, 2, 1, rgb(0xc4a873));
         g.rect(sx + (h >> 9) % 14, sy + (h >> 13) % 14, 1, 1, rgb(0xc4a873));
+        if (h % 6 == 0) g.rect(sx + 3 + (h >> 4) % 10, sy + 3 + (h >> 8) % 10, 2, 2, rgb(0xb8a07a));  // caillou
+        // Bords : seulement contre l'herbe et la nature (pas contre un pont, l'eau ou une autre route)
+        auto soft = [&](char n) { return n != '=' && n != 'B' && n != '~' && n != 'W' && n != ' '; };
+        Color grass = rgb(th == Theme::Foret ? 0x3f7d45 : 0x67b35d), edge = rgb(0xc0a470);
+        bool up = soft(at(x, y - 1)), dn = soft(at(x, y + 1)), lf = soft(at(x - 1, y)), rt = soft(at(x + 1, y));
+        if (up) g.rect(sx, sy, 16, 1, edge);
+        if (dn) g.rect(sx, sy + 15, 16, 1, edge);
+        if (lf) g.rect(sx, sy, 1, 16, edge);
+        if (rt) g.rect(sx + 15, sy, 1, 16, edge);
+        for (int i = 0; i < 2; i++) {  // touffes qui mordent sur le chemin
+          int k = 2 + ((h >> (i * 4)) % 11);
+          if (up) g.rect(sx + k, sy, 2, 1 + i, grass);
+          if (dn) g.rect(sx + k, sy + 15 - i, 2, 1 + i, grass);
+          if (lf) g.rect(sx, sy + k, 1 + i, 2, grass);
+          if (rt) g.rect(sx + 15 - i, sy + k, 1 + i, 2, grass);
+        }
+        auto corner = [&](int cx, int cy) {  // coin arrondi
+          g.rect(sx + cx, sy + cy, 2, 1, grass);
+          g.rect(sx + cx + (cx ? 1 : 0), sy + cy + (cy ? -1 : 1), 1, 1, grass);
+        };
+        if (up && lf) corner(0, 0);
+        if (up && rt) corner(14, 0);
+        if (dn && lf) corner(0, 15);
+        if (dn && rt) corner(14, 15);
       } else {
         g.rect(sx, sy, 16, 16, rgb(0x8a7f78));
         g.rect(sx, sy + 7, 16, 1, rgb(0x786d66));
@@ -614,18 +658,53 @@ void drawBuilding(Gfx& g, const Building& b, int sx, int sy) {
   bool stone = b.kind == "forge" || b.kind == "boutique2" || b.kind == "auberge" || b.kind == "soin";
   Color wall = rgb(stone && b.kind != "soin" ? 0xc9b8a6 : 0xefe2c6);
   Color roof = rgb(b.roof);
+  g.rect(sx + 4, sy + H - 1, W - 2, 3, rgb(0x000000, 45));                 // ombre au sol
+  g.rect(sx + W - 2, sy + roofH + 2, 3, H - roofH - 1, rgb(0x000000, 35));  // ombre sur le côté
   g.rect(sx + 2, sy + roofH - 2, W - 4, H - roofH + 1, wall);
-  g.rect(sx + 2, sy + H - 2, W - 4, 1, shade(wall, .2f));
+  g.rect(sx + 2, sy + roofH + 1, W - 4, 2, shade(wall, .12f));  // ombre sous l'avancée du toit
+  if (stone)                                                     // pierres apparentes
+    for (int r = 0; r * 6 + roofH + 6 < H - 6; r++)
+      for (int i = 6 + (r % 2) * 5; i < W - 6; i += 11) g.rect(sx + i, sy + roofH + 6 + r * 6, 4, 1, shade(wall, .1f));
+  g.rect(sx + 2, sy + H - 5, W - 4, 4, rgb(0x9a8f86));  // soubassement
+  g.rect(sx + 2, sy + H - 5, W - 4, 1, rgb(0xb8aea4));
+  g.rect(sx + 2, sy + H - 2, W - 4, 1, shade(wall, .3f));
+  // Cheminée (pas sur la chapelle), derrière le toit
+  if (b.kind != "chapelle") {
+    int cx = sx + W - 18 - (b.x % 2) * 8;
+    g.rect(cx, sy - 5, 6, 10, rgb(0x8a5a4a));
+    g.rect(cx - 1, sy - 6, 8, 2, rgb(0x6a4038));
+  }
   g.poly({{sx - 2.f, sy + roofH + 1.f}, {sx + 4.f, sy + 1.f}, {sx + W - 4.f, sy + 1.f}, {sx + W + 2.f, sy + roofH + 1.f}}, roof);
+  for (int r = 1; r * 4 < roofH - 2; r++) {  // rangées de tuiles, joints décalés
+    float k = float(r * 4) / roofH, lx = sx + 4 - 6 * k, rx = sx + W - 4 + 6 * k;
+    g.rect(lx, sy + 1 + r * 4, rx - lx, 1, shade(roof, .14f));
+    for (float i = lx + 3 + (r % 2) * 4; i < rx - 2; i += 8) g.rect(i, sy + 2 + r * 4, 1, 3, shade(roof, .1f));
+  }
+  g.rect(sx + 4, sy + 1, W - 8, 2, shade(roof, -.2f));  // faîtage éclairé
   g.rect(sx - 2, sy + roofH - 1, W + 4, 3, shade(roof, .3f));
-  for (int i = 8; i < W - 4; i += 8) g.rect(sx + i, sy + 3, 1, roofH - 4, shade(roof, .12f));
   int dx = (b.doorX() - b.x) * 16 + 4;
+  g.rect(sx + dx - 1, sy + H - 13, 10, 12, rgb(0x5a3e28));  // encadrement
   g.rect(sx + dx, sy + H - 12, 8, 11, rgb(0x6b4a2f));
   g.rect(sx + dx + 1, sy + H - 11, 6, 10, rgb(0x8a5f3a));
+  g.rect(sx + dx + 1, sy + H - 7, 6, 1, rgb(0x6b4a2f));
   g.rect(sx + dx + 5, sy + H - 6, 1, 1, rgb(0xffd34d));
-  Color win = rgb(0x7fc1e8);
-  if (dx > 14) g.rect(sx + 6, sy + roofH + 4, 7, 6, win);
-  if (dx + 8 < W - 14) g.rect(sx + W - 13, sy + roofH + 4, 7, 6, win);
+  g.rect(sx + dx - 2, sy + H - 1, 12, 2, rgb(0xa89e94));  // marche
+  auto window = [&](int wx) {
+    int wy = sy + roofH + 5;
+    g.rect(wx - 3, wy, 3, 7, shade(roof, .1f));  // volets de la couleur du toit
+    g.rect(wx + 8, wy, 3, 7, shade(roof, .1f));
+    g.rect(wx - 1, wy - 1, 9, 9, rgb(0xf8f0e0));
+    g.rect(wx, wy, 7, 7, rgb(0x7fc1e8));
+    g.rect(wx, wy, 7, 2, rgb(0xb8e0f8));  // reflet
+    g.rect(wx + 3, wy, 1, 7, rgb(0xf8f0e0));
+    g.rect(wx, wy + 3, 7, 1, rgb(0xf8f0e0));
+    if (!stone) {  // jardinière fleurie
+      g.rect(wx - 1, wy + 8, 9, 2, rgb(0x8a5a32));
+      for (int i = 0; i < 3; i++) g.rect(wx + i * 3, wy + 7, 2, 1, rgb(i == 1 ? 0xf29bb5 : 0xffe066));
+    }
+  };
+  if (dx > 18) window(sx + 9);
+  if (dx + 8 < W - 18) window(sx + W - 16);
   // Enseigne
   int ex = sx + W / 2, ey = sy + roofH / 2 + 1;
   if (b.kind == "soin") {

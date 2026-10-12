@@ -125,6 +125,17 @@ void Game::onKey(SDL_Scancode k, bool down, bool repeat) {
     if (down && !repeat) bindKey(k);
     return;
   }
+  if (k == SDL_SCANCODE_F2) {
+    if (down && !repeat) cycleSpeed();
+    return;
+  }
+  if (k == SDL_SCANCODE_F1) {  // aide : ouvre la dernière page vue (ou la première), ou la ferme
+    if (down && !repeat) {
+      if (helpPage_ >= 0) helpPage_ = -1;
+      else openHelp(std::max(0, lastHelp_));
+    }
+    return;
+  }
   // Touches choisies dans les options ; les flèches, Entrée et Échap marchent toujours
   const auto& K = options().keys;
   int d = -1;
@@ -144,89 +155,6 @@ void Game::onKey(SDL_Scancode k, bool down, bool repeat) {
   if (k == SDL_SCANCODE_RETURN || k == SDL_SCANCODE_KP_ENTER || k == K[K_OK]) in.confirm = true;
   if (k == SDL_SCANCODE_ESCAPE || k == K[K_BACK]) in.cancel = in.menu = true;
   if (k == K[K_AUTO]) in.menu = in.tab = true;
-}
-
-// ---------------------------------------------------------------------------
-// Options : volumes, plein écran, touches (options.hpp)
-// ---------------------------------------------------------------------------
-void Game::optionsMenu(int sel) {
-  int panel = panelMode_;
-  panelMode_ = 0;  // le menu prend la place du résumé de l'équipe
-  Menu m;
-  m.title = "Options";
-  m.x = 60, m.y = 40, m.w = 200, m.rows = 5, m.sel = sel;
-  auto volume = [this](const std::string& label, int* v, const std::string& help) {
-    MenuItem it{label, "", help, true, nullptr};
-    it.adjust = [v](int d) {
-      *v = std::clamp(*v + d, 0, 10);
-      applyVolumes();
-      saveOptions();
-    };
-    it.rightFn = [v] { return *v ? std::to_string(*v) + " / 10" : std::string("coupé"); };
-    return it;
-  };
-  m.items.push_back(volume("Musique", &options().music, "Gauche / droite : volume de la musique."));
-  m.items.push_back(volume("Effets sonores", &options().effects, "Gauche / droite : volume des bruitages."));
-  auto full = [] {
-    options().fullscreen = !options().fullscreen;
-    saveOptions();
-  };
-  MenuItem fs{"Plein écran", "", "Aussi avec F11 ou Alt+Entrée.", true, full};
-  fs.adjust = [full](int) { full(); };
-  fs.rightFn = [] { return std::string(options().fullscreen ? "Oui" : "Non"); };
-  m.items.push_back(fs);
-  m.items.push_back({"Touches", "", "Changer les touches du clavier. La manette se branche toute seule.", true, [this] { keysMenu(); }});
-  m.items.push_back({"Retour", "", "", true, [this, panel] {
-                       panelMode_ = panel;
-                       menus.pop();
-                     }});
-  m.onCancel = m.items.back().act;
-  menus.push(m);
-}
-
-void Game::keysMenu(int sel) {
-  Menu m;
-  m.title = "Touches";
-  m.x = 72, m.y = 52, m.w = 210, m.rows = 9, m.sel = sel;
-  const std::string help = "Entrée : appuyer ensuite sur la nouvelle touche. Les flèches, Entrée et Échap marchent toujours.";
-  for (int a = 0; a < N_KEYS; a++) {
-    MenuItem it{keyActionName(a), "", help, true, [this, a] { bindKey_ = a; }};
-    it.rightFn = [a] { return keyName(options().keys[a]); };
-    m.items.push_back(it);
-  }
-  m.items.push_back({"Touches par défaut", "", "ZQSD (WASD en QWERTY), Espace, Retour arrière et Tab.", true, [this] {
-                       options().keys = Options::defaultKeys();
-                       saveOptions();
-                       notice("Touches par défaut remises.");
-                     }});
-  m.items.push_back({"Retour", "", "", true, [this] { menus.pop(); }});
-  menus.push(m);
-}
-
-// Nouvelle touche pour l'action bindKey_ (Échap : annuler). Si une autre action l'avait, elle prend l'ancienne.
-void Game::bindKey(SDL_Scancode k) {
-  int a = bindKey_;
-  bindKey_ = -1;
-  in.endFrame();
-  if (k == SDL_SCANCODE_ESCAPE) return;
-  if (k == SDL_SCANCODE_RETURN || k == SDL_SCANCODE_KP_ENTER || k == SDL_SCANCODE_F11 || k == SDL_SCANCODE_UP || k == SDL_SCANCODE_DOWN ||
-      k == SDL_SCANCODE_LEFT || k == SDL_SCANCODE_RIGHT)
-    return notice("Cette touche marche déjà toute seule.");
-  auto& K = options().keys;
-  for (auto& other : K)
-    if (other == k) other = K[a];
-  K[a] = k;
-  saveOptions();
-  notice(std::string(keyActionName(a)) + " : " + keyName(k) + ".");
-}
-
-void Game::drawKeyPrompt() {
-  g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0x000010, 120));
-  g.newLayer();  // fenêtre modale : le reste est assombri derrière
-  g.window(40, 96, 240, 46);
-  g.text(160, 102, "Nouvelle touche pour « " + std::string(keyActionName(bindKey_)) + " »", rgb(0xffd34d), 1);
-  g.text(160, 116, "Appuyez sur la touche voulue…", WHITE, 1);
-  g.text(160, 128, "Échap : annuler", MUTED, 1);
 }
 
 // ---------------------------------------------------------------------------
@@ -275,6 +203,18 @@ void Game::drawTextEdit() {
 // ---------------------------------------------------------------------------
 // Boucle principale
 // ---------------------------------------------------------------------------
+int Game::speed() const {
+  if (online_ && online_->connected()) return 1;
+  return std::clamp(options().speed, 1, 3);
+}
+
+void Game::cycleSpeed() {
+  if (online_ && online_->connected()) return notice("Vitesse normale en multijoueur.");
+  options().speed = options().speed % 3 + 1;
+  saveOptions();
+  speedT_ = 1.2f;
+}
+
 void Game::update(float dt) {
   time += dt;
   // Manette : une direction tenue se répète (comme une touche du clavier), pour parcourir les menus
@@ -290,6 +230,14 @@ void Game::update(float dt) {
   if (pilot_) pilot_->update(dt);    // joueur automatique : il choisit les touches de cette image
   banner -= dt;
   noticeT_ -= dt;
+  speedT_ -= dt / speed();  // même durée à l'écran quelle que soit la vitesse
+  if (helpPage_ >= 0) {  // aide ouverte : le reste du jeu attend
+    lastHelp_ = helpPage_;
+    updateHelp();
+    updateMusic();
+    in.endFrame();
+    return;
+  }
   switch (mode) {
     case Mode::Title: menus.update(in); break;
     case Mode::Ending:
@@ -342,6 +290,7 @@ void Game::update(float dt) {
         }
         groupBattle_ = false;
         if (after) sc.runNow([&] { after(r); });
+        if (r == BattleResult::Win && !inExpedition()) sc.call([this] { offerEvolutions(); });
       }
       break;
     }
@@ -411,10 +360,11 @@ void Game::healAll(bool mpToo) {
 void Game::recruit(const std::string& id, int minLvl) {
   auto f = makeFighter(id, std::max(minLvl, avgLevel()));
   flags.insert(id);
-  size_t at = std::min<size_t>(2, team.size());
-  team.insert(team.begin() + at, f);
-  sc.say(f->name() + " rejoint l'équipe et prend place en première ligne !");
-  sc.say("(Échap > Équipe pour choisir qui combat. " + f->S().role + ".)");
+  team.push_back(f);  // à la suite : il ne prend la place de personne
+  auto fr = front();
+  bool fights = std::find(fr.begin(), fr.end(), f) != fr.end();
+  sc.say(f->name() + (fights ? " rejoint l'équipe et combat à vos côtés !" : " rejoint l'équipe !"));
+  sc.say(std::string(fights ? "(" : "(Il attend son tour : ") + "Échap > Équipe pour choisir qui combat. " + f->S().role + ".)");
 }
 
 void Game::startBattle(BattleSetup setup, std::function<void(BattleResult)> after) {
@@ -511,6 +461,7 @@ void Game::arrive() {
   if (checkSight()) return;
   char c = M().rows[py][px];
   double rate = M().encounterRate > 0 ? M().encounterRate : rules().encounterRate;
+  if (tileEncounter(c)) rate *= 1 + rules().packDense * std::min(1.0, wildDepth(px, py) / std::max(1.0, rules().packDistance));
   if (tileEncounter(c) && steps > rules().minSteps && frand() < rate) encounter();
 }
 
@@ -539,11 +490,43 @@ bool Game::checkSight() {
   return false;
 }
 
+// Profondeur d'une case : distance à pied jusqu'au plus proche bâtiment ou passage de la carte
+// (villes, entrées). Plus on s'enfonce, plus la nature est dense : rencontres plus fréquentes
+// et meutes plus grandes (règles, rencontres).
+int Game::wildDepth(int x, int y) const {
+  const MapDef& m = M();
+  int W = m.w(), H = m.h();
+  if (x < 0 || y < 0 || x >= W || y >= H) return 0;
+  std::vector<int> d((size_t)W * H, -1);
+  std::vector<int> q;
+  auto seed = [&](int sx, int sy) {
+    if (sx >= 0 && sy >= 0 && sx < W && sy < H && d[(size_t)sy * W + sx] < 0) d[(size_t)sy * W + sx] = 0, q.push_back(sy * W + sx);
+  };
+  for (auto& b : m.buildings) seed(b.doorX(), b.doorY() + 1);
+  for (auto& w : m.warps) seed(w.x, w.y);
+  for (size_t k = 0; k < q.size(); k++) {
+    int i = q[k], cx = i % W, cy = i / W;
+    if (cx == x && cy == y) return d[(size_t)i];
+    const int DX[4] = {1, -1, 0, 0}, DY[4] = {0, 0, 1, -1};
+    for (int s = 0; s < 4; s++) {
+      int nx = cx + DX[s], ny = cy + DY[s];
+      if (nx < 0 || ny < 0 || nx >= W || ny >= H || d[(size_t)ny * W + nx] >= 0 || !tileWalkable(m.rows[ny][nx])) continue;
+      d[(size_t)ny * W + nx] = d[(size_t)i] + 1;
+      q.push_back(ny * W + nx);
+    }
+  }
+  return 0;
+}
+
 void Game::encounter() {
   for (auto& z : M().zones) {
     if (px < z.x || py < z.y || px >= z.x + z.w || py >= z.y + z.h) continue;
     int n = 1 + (frand() < rules().second) + (frand() < rules().third);
     n = std::min(n, z.maxN);
+    // Meute : au plus profond de la nature, des créatures en plus
+    float deep = std::min(1.f, wildDepth(px, py) / float(std::max(1.0, rules().packDistance)));
+    for (int k = n; k < rules().packMax; k++)
+      if (frand() < .5f * deep) n++;
     std::vector<FighterP> foes;
     for (int i = 0; i < n; i++) foes.push_back(makeFighter(z.pool[irand(0, (int)z.pool.size() - 1)], irand(z.lo, z.hi)));
     startBattle(foes, false, nullptr);
@@ -652,13 +635,15 @@ void Game::ask(const std::string& q, std::function<void()> yes, std::function<vo
 // Menus
 // ---------------------------------------------------------------------------
 void Game::titleMenu() {
+  pilot_.reset();  // fin de la démo : la partie reprend son fichier de sauvegarde habituel
+  if (!saveBeforePilot_.empty()) saveName_ = saveBeforePilot_, saveBeforePilot_.clear();
   if (expedition_) expedition_->leave();  // remet les données du jeu à la place de celles de l'expédition
   if (online_) online_->leave();          // ferme les connexions du multijoueur
   mode = Mode::Title;
   editorTest_ = storyTest_ = false;
   menus.clear();
   Menu m;
-  m.x = 102, m.y = 122, m.w = 116, m.rows = 7, m.cancelable = false;
+  m.x = 102, m.y = 110, m.w = 116, m.rows = 8, m.cancelable = false;
   m.items.push_back({"Nouvelle partie", "", "", true, [this] { starterMenu(); }});
   bool can = saveExists();
   m.items.push_back({"Continuer", "", "", can, [this] {
@@ -677,7 +662,8 @@ void Game::titleMenu() {
                        online_->menu();
                      }});
   m.items.push_back({"Outils", "", "Arène, réglages et éditeurs.", true, [this] { toolsMenu(); }});
-  m.items.push_back({"Options", "", "Volumes, plein écran et touches.", true, [this] { optionsMenu(); }});
+  m.items.push_back({"Options", "", "Volumes, plein écran, vitesse du jeu et touches.", true, [this] { optionsMenu(); }});
+  m.items.push_back({"Aide", "", "Statistiques, dégâts, damier, zones, états, tableau des types, touches (F1).", true, [this] { helpMenu(); }});
   m.items.push_back({"Quitter", "", "", true, [this] { quit = true; }});
   if (can) m.sel = 1;
   menus.push(m);
@@ -744,788 +730,6 @@ void Game::newGame(const std::string& starter) {
   if (!r.startEvent.empty()) runEvent(r.startEvent);
 }
 
-void Game::pauseMenu() {
-  panelMode_ = 1;
-  Menu m;
-  m.x = 8, m.y = 8, m.w = 100, m.rows = 9;
-  if (editorTest_ && editor_)
-    m.items.push_back({"Fin du test", "", "Revenir à l'éditeur de cartes, à l'endroit où vous êtes.", true, [this] {
-                         panelMode_ = 0;
-                         editor_->returnFromTest();
-                       }});
-  if (storyTest_ && story_)
-    m.items.push_back({"Fin du test", "", "Revenir à l'éditeur d'histoire.", true, [this] {
-                         panelMode_ = 0;
-                         story_->returnFromTest();
-                       }});
-  m.items.push_back({"Équipe", "", "Ordre de combat et fiches.", true, [this] { teamMenu(); }});
-  m.items.push_back({"Compagnons", "", "La créature qui combat aux côtés de chaque héros.", true, [this] { companionsMenu(); }});
-  m.items.push_back({"Réserve", reserve.empty() ? "" : std::to_string(reserve.size()), "Les créatures en plus de l'équipe (" +
-                     std::to_string(rules().maxTeam) + " membres au plus).", true, [this] { reserveMenu(); }});
-  m.items.push_back({"Bestiaire", "", "Les créatures rencontrées et obtenues, et leur fiche.", true, [this] { bestiaryMenu(); }});
-  m.items.push_back({"Tactiques", "", "Ce que chaque membre fait tout seul en combat (mode auto : touche Tab).", true, [this] { tacticsMenu(); }});
-  m.items.push_back({"Équipement", "", "Armes, armures et accessoires.", true, [this] { gearMenu(); }});
-  m.items.push_back({"Journal", "", "Les quêtes en cours et terminées.", true, [this] { journalMenu(); }});
-  m.items.push_back({"Objets", "", "Utiliser un objet.", true, [this] { itemMenu(); }});
-  m.items.push_back({"Magie", "", "Lancer un sort de soin.", true, [this] { magicMenu(); }});
-  if (inExpedition()) {
-    bool group = online_ && online_->inGroup();
-    m.items.push_back({"Sauvegarder", "", "Expédition : " + expedition_->status() + ".", true,
-                       [this] { notice(saveGame() ? "Expédition sauvegardée." : "Impossible de sauvegarder."); }});
-    if (group) m.items.push_back({"Groupe", "", "Où en sont les autres joueurs.", true, [this] { online_->groupMenu(); }});
-    m.items.push_back({"Abandonner", "", "Arrêter l'expédition ici et recevoir les éclats gagnés.", true, [this] {
-                         ask("Abandonner l'expédition ?", [this] { expedition_->onDefeat(true); });
-                       }});
-    m.items.push_back({"Écran titre", "", group ? "Sauvegarder, quitter le groupe et revenir à l'écran titre." : "Sauvegarder et revenir à l'écran titre.",
-                       true, [this] {
-                         saveGame();
-                         titleMenu();
-                       }});
-  } else {
-    m.items.push_back({"Sauvegarder", "", "", true, [this] { notice(saveGame() ? "Partie sauvegardée." : "Impossible de sauvegarder."); }});
-    m.items.push_back({"Écran titre", "", "", true, [this] {
-                         ask("Revenir à l'écran titre ? (pensez à sauvegarder)", [this] { titleMenu(); });
-                       }});
-  }
-  m.items.push_back({"Options", "", "Volumes, plein écran et touches.", true, [this] { optionsMenu(); }});
-  m.items.push_back({"Reprendre", "", "", true, [this] { menus.clear(); }});
-  m.rows = (int)m.items.size();
-  menus.push(m);
-}
-
-// Tactiques : mode auto, puis la liste des règles de chaque membre (tactics.hpp)
-void Game::tacticsMenu(int sel) {
-  panelMode_ = 0;
-  Menu m;
-  m.title = "Tactiques";
-  m.x = 112, m.y = 8, m.w = 200, m.rows = 11;
-  m.sel = sel;
-  {
-    MenuItem it{"Mode auto en combat", "", "Oui : quand sa jauge est pleine, chaque membre joue sa première tactique possible. En combat, Tab l'active ou le coupe.",
-                true, [this] { tacticsAuto = !tacticsAuto; }};
-    it.adjust = [this](int) { tacticsAuto = !tacticsAuto; };
-    it.rightFn = [this] { return std::string(tacticsAuto ? "Oui" : "Non"); };
-    m.items.push_back(it);
-  }
-  m.items.push_back(menuHeader("Règles de chaque membre"));
-  for (size_t i = 0; i < team.size(); i++) {
-    FighterP f = team[i];
-    MenuItem it{f->name(), "", "Entrée : modifier ses tactiques (" + std::to_string(tacticSlots(f->lvl)) + " lignes au niveau " +
-                                   std::to_string(f->lvl) + ").",
-                true, [this, f] {
-                  TacticsTarget t;
-                  t.list = &f->tactics;
-                  t.on = &f->tacticsOn;
-                  t.fighter = f;
-                  t.title = "Tactiques de " + f->name();
-                  t.slots = tacticSlots(f->lvl);
-                  openTacticsEditor(*this, t);
-                }};
-    it.rightFn = [f] {
-      if (!f->tacticsOn) return std::string("manuel");
-      int n = 0, slots = tacticSlots(f->lvl);
-      for (int k = 0; k < (int)f->tactics.size() && k < slots; k++) n += f->tactics[k].on;
-      return std::to_string(n) + (n > 1 ? " règles" : " règle");
-    };
-    m.items.push_back(it);
-  }
-  m.onCancel = [this] {
-    panelMode_ = 1;
-    menus.pop();
-  };
-  menus.push(m);
-}
-
-// ---------------------------------------------------------------------------
-// Compagnons : chaque héros choisit la créature qui combat à ses côtés (sinon : la première
-// créature libre de l'équipe). En combat, le compagnon agit seul, avec ses tactiques.
-// ---------------------------------------------------------------------------
-// Réserve : les créatures en plus de l'équipe. On y dépose une créature de l'équipe, on en reprend
-// une (s'il reste de la place), ou on en échange une contre un membre de l'équipe.
-void Game::reserveMenu(int sel) {
-  panelMode_ = 0;
-  Menu m;
-  m.title = "Réserve  ·  " + std::to_string(reserve.size()) + " créature" + (reserve.size() > 1 ? "s" : "");
-  m.x = 8, m.y = 8, m.w = 176, m.rows = 9;
-  bool full = (int)team.size() >= rules().maxTeam;
-  std::vector<FighterP> creatures;
-  for (auto& f : team)
-    if (!f->S().human) creatures.push_back(f);
-  auto pick = [this](const std::string& title, const std::vector<FighterP>& who, std::function<void(FighterP)> done) {
-    Menu p;
-    p.title = title;
-    p.x = 20, p.y = 20, p.w = 176, p.rows = 8;
-    for (auto& c : who) {
-      MenuItem it{c->name(), "N." + std::to_string(c->lvl), typesName(c->S()) + " · " + std::to_string(c->hp) + "/" + std::to_string(c->mhp) + " PV",
-                  true, [done, c] { done(c); }};
-      it.shrink = true;
-      p.items.push_back(it);
-    }
-    menus.push(p);
-  };
-  m.items.push_back({"Déposer une créature…", "", creatures.empty() ? "Aucune créature dans l'équipe." : "Envoyer une créature de l'équipe dans la réserve.",
-                     !creatures.empty(), [this, creatures, pick] {
-                       pick("Déposer", creatures, [this](FighterP c) {
-                         swapReserve(c, nullptr);
-                         notice(c->name() + " va dans la réserve.");
-                         menus.pop();
-                         menus.pop();
-                         reserveMenu(0);
-                       });
-                     }});
-  for (size_t i = 0; i < reserve.size(); i++) {
-    FighterP r = reserve[i];
-    int at = (int)i + 1;
-    std::string help = typesName(r->S()) + " · " + std::to_string(r->hp) + "/" + std::to_string(r->mhp) + " PV. " +
-                       (full ? "Entrée : l'échanger contre une créature de l'équipe." : "Entrée : la prendre dans l'équipe.");
-    MenuItem it{r->name(), "N." + std::to_string(r->lvl), help, !full || !creatures.empty(), [this, r, at, full, creatures, pick] {
-                  if (!full) {
-                    swapReserve(nullptr, r);
-                    notice(r->name() + " rejoint l'équipe.");
-                    menus.pop();
-                    return reserveMenu(at);
-                  }
-                  pick("Échanger contre", creatures, [this, r, at](FighterP c) {
-                    swapReserve(c, r);
-                    notice(r->name() + " prend la place de " + c->name() + ".");
-                    menus.pop();
-                    menus.pop();
-                    reserveMenu(at);
-                  });
-                }};
-    it.shrink = true;
-    m.items.push_back(it);
-  }
-  if (reserve.empty()) m.items.push_back({"(réserve vide)", "", "Les créatures capturées quand l'équipe est complète arrivent ici.", false, nullptr});
-  m.sel = std::clamp(sel, 0, (int)m.items.size() - 1);
-  menus.push(m);
-}
-
-void Game::noteBestiary() {
-  for (auto* v : {&team, &reserve})
-    for (auto& f : *v)
-      if (f && hasSpecies(f->sp) && !f->S().human) seen.insert(f->sp), caught.insert(f->sp);
-}
-
-// Bestiaire : toutes les créatures des données, dans leur ordre ; une créature jamais vue reste « ??? »
-void Game::bestiaryMenu(int sel) {
-  noteBestiary();
-  panelMode_ = 3;
-  std::vector<const Species*> all;
-  for (auto& s : allSpecies())
-    if (!s.human) all.push_back(&s);
-  int nSeen = 0, nCaught = 0;
-  for (auto* s : all) nSeen += seen.count(s->id) > 0, nCaught += caught.count(s->id) > 0;
-  Menu m;
-  m.title = "Bestiaire  " + std::to_string(nSeen) + "/" + std::to_string(all.size());
-  m.x = 8, m.y = 8, m.w = 132, m.rows = 12;
-  for (size_t i = 0; i < all.size(); i++) {
-    const Species& s = *all[i];
-    bool v = seen.count(s.id), c = caught.count(s.id);
-    char num[8];
-    std::snprintf(num, sizeof num, "%02d ", int(i + 1));
-    std::string id = s.id;
-    MenuItem it{num + (v ? s.name : std::string("???")), c ? "★" : v ? "vu" : "",
-                c ? "Obtenue." : v ? "Rencontrée, pas encore obtenue." : "Pas encore rencontrée.", true, nullptr, [this, id] { bestiarySel_ = id; }};
-    it.shrink = true;
-    m.items.push_back(it);
-  }
-  if (!all.empty()) bestiarySel_ = all[(size_t)std::clamp(sel, 0, (int)all.size() - 1)]->id;
-  m.sel = std::clamp(sel, 0, (int)m.items.size() - 1);
-  m.items.insert(m.items.begin(), menuHeader("Obtenues : " + std::to_string(nCaught)));
-  m.sel++;
-  menus.push(m);
-}
-
-// Fiche du bestiaire : dessin, types, statistiques de base et lieux où vivre la rencontre
-void Game::drawBestiaryPanel(int x, int y) {
-  if (!hasSpecies(bestiarySel_)) return;
-  const Species& s = species(bestiarySel_);
-  int w = 320 - x - 8;
-  bool v = seen.count(s.id) > 0, c = caught.count(s.id) > 0;
-  std::vector<std::string> places;
-  for (auto& mp : maps()) {
-    bool here = false;
-    for (auto& z : mp.zones) here = here || std::find(z.pool.begin(), z.pool.end(), s.id) != z.pool.end();
-    for (auto& b : mp.bosses) here = here || b.id == s.id;
-    if (here && mp.theme != Theme::Interieur) places.push_back(mp.name);
-  }
-  std::string where;
-  for (auto& p : places) where += (where.empty() ? "" : ", ") + p;
-  auto lines = Gfx::wrap("Lieux : " + (where.empty() ? std::string("inconnus") : where), w - 16);
-  int h = 104 + (c ? 42 : 0) + (v ? 11 * (int)lines.size() : 0);
-  g.window(x, y, w, h);
-  if (!v) {
-    g.text(x + w / 2, y + 40, "???", MUTED, 1);
-    g.text(x + w / 2, y + 56, "Pas encore rencontrée", MUTED, 1);
-    return;
-  }
-  g.text(x + 8, y + 6, s.name, GOLD);
-  g.text(x + 8, y + 18, typesName(s), MUTED);
-  drawCreature(g, s.id, x + w / 2, y + 74, 1.2f, false, time);
-  int ly = y + 96;
-  if (c) {  // statistiques de base, seulement pour une créature obtenue
-    const char* names[] = {"PV", "PM", "Att", "Déf", "Mag", "Rés", "Vit"};
-    for (int i = 0; i < N_BASE; i++) g.text(x + 8 + (i % 3) * 50, ly + (i / 3) * 11, std::string(names[i]) + " " + std::to_string(s.base[i]), WHITE);
-    ly += 36;
-  } else {
-    g.text(x + 8, ly, "Pas encore obtenue.", MUTED);
-    ly += 12;
-  }
-  for (size_t i = 0; i < lines.size(); i++) g.text(x + 8, ly + 6 + i * 11, lines[i], MUTED);
-}
-
-void Game::swapReserve(FighterP out, FighterP in) {
-  if (out) {
-    auto it = std::find(team.begin(), team.end(), out);
-    if (it == team.end()) return;
-    if (in) {
-      *it = in;  // à sa place dans l'équipe ; le héros qu'elle accompagnait prend la nouvelle venue
-      for (auto& h : team)
-        if (h->companion.lock() == out) h->companion = in;
-    } else
-      team.erase(it);
-    reserve.push_back(out);
-  } else if (in)
-    team.push_back(in);
-  if (in) reserve.erase(std::remove(reserve.begin(), reserve.end(), in), reserve.end());
-}
-
-void Game::companionsMenu(int sel) {
-  panelMode_ = 2;  // fiche à droite
-  Menu m;
-  m.title = "Compagnons";
-  m.x = 8, m.y = 8, m.w = 132, m.rows = 8, m.sel = sel;
-  int row = 0;
-  for (size_t i = 0; i < team.size(); i++) {
-    FighterP h = team[i];
-    if (!h->S().human) continue;
-    FighterP c = companionOf(team, h);
-    int at = row++;
-    MenuItem it{h->name(), c ? utf8Prefix(c->name(), 10) : "—",
-                c ? (h->companion.lock() == c ? "Choisi par vous. " : "Choisi tout seul (première créature libre). ") + std::string("Entrée : changer.")
-                  : "Aucune créature libre. Entrée : en choisir une.",
-                true, [this, h, at] {
-                  Menu p;
-                  p.title = "Compagnon de " + utf8Prefix(h->name(), 9);
-                  p.x = 20, p.y = 20, p.w = 132, p.rows = 8;
-                  p.items.push_back({"Automatique", "", "La première créature libre de l'équipe.", true, [this, h, at] {
-                                       h->companion.reset();
-                                       menus.pop();
-                                       menus.pop();
-                                       companionsMenu(at);
-                                     }});
-                  for (size_t k = 0; k < team.size(); k++) {
-                    FighterP c = team[k];
-                    if (c->S().human) continue;
-                    std::string with;  // le héros qui l'a choisie
-                    for (auto& o : team)
-                      if (o != h && o->S().human && o->companion.lock() == c) with = o->name();
-                    MenuItem ci{c->name(), "N." + std::to_string(c->lvl), with.empty() ? typesName(c->S()) : "Choisie par " + with + " : elle changera de héros.",
-                                true, [this, h, c, at] {
-                                  for (auto& o : team)  // une créature n'accompagne qu'un seul héros
-                                    if (o->companion.lock() == c) o->companion.reset();
-                                  h->companion = c;
-                                  menus.pop();
-                                  menus.pop();
-                                  companionsMenu(at);
-                                },
-                                [this, k] { teamPanelSel_ = (int)k; }};
-                    ci.shrink = true;
-                    p.items.push_back(ci);
-                  }
-                  menus.push(p);
-                },
-                [this, i] { teamPanelSel_ = (int)i; }};
-    it.shrink = true;
-    m.items.push_back(it);
-  }
-  m.onCancel = [this] {
-    panelMode_ = 1;
-    menus.pop();
-  };
-  for (size_t i = 0; i < team.size(); i++)
-    if (team[i]->S().human && sel-- == 0) teamPanelSel_ = (int)i;
-  menus.push(m);
-}
-
-// ---------------------------------------------------------------------------
-// Équipement : qui, puis quel emplacement, puis quel objet du sac
-// ---------------------------------------------------------------------------
-void Game::gearMenu(int sel) {
-  panelMode_ = 2;  // fiche détaillée à droite : les statistiques changent en direct
-  Menu m;
-  m.title = "Équipement";
-  m.x = 8, m.y = 8, m.w = 132, m.rows = 9, m.sel = sel;
-  for (size_t i = 0; i < team.size(); i++) {
-    FighterP f = team[i];
-    int n = 0;
-    for (auto& g : f->gear) n += !g.empty();
-    m.items.push_back({f->name(), n ? std::to_string(n) + "/3" : "", "Entrée : changer son équipement.", true,
-                       [this, f, i] { gearSlots(f, (int)i); }, [this, i] { teamPanelSel_ = (int)i; }});
-  }
-  m.onCancel = [this] {
-    panelMode_ = 1;
-    menus.pop();
-  };
-  if (sel < (int)team.size()) teamPanelSel_ = sel;
-  menus.push(m);
-}
-
-void Game::gearSlots(FighterP f, int who, int sel) {
-  Menu m;
-  m.title = f->name();
-  m.x = 8, m.y = 8, m.w = 132, m.rows = 7;
-  for (int s = 0; s < N_GEAR; s++) {  // chaque emplacement : son titre, puis l'objet porté
-    const std::string& id = f->gear[(size_t)s];
-    bool ok = s == G_ACCESSORY || f->S().human;
-    m.items.push_back(menuHeader(gearSlotName(s)));
-    MenuItem it{ok ? (id.empty() ? "(rien)" : item(id).name) : "(héros seulement)", "",
-                ok ? (id.empty() ? "Entrée : choisir dans le sac." : item(id).bonusText() + ". Entrée : changer ou retirer.")
-                   : "Seuls les héros portent armes et armures.",
-                ok, [this, f, who, s] { gearPick(f, who, s); }};
-    it.shrink = true;
-    m.items.push_back(it);
-  }
-  m.sel = 1 + 2 * std::clamp(sel, 0, N_GEAR - 1);
-  m.items.push_back({"Retour", "", "", true, [this] { menus.pop(); }});
-  teamPanelSel_ = who;
-  menus.push(m);
-}
-
-// Choix d'un objet du sac pour l'emplacement s (ou retirer celui qui est porté)
-void Game::gearPick(FighterP f, int who, int s) {
-  auto equip = [this, f, who, s](const std::string& id) {
-    std::string& cur = f->gear[(size_t)s];
-    if (!cur.empty()) items[cur]++;
-    if (!id.empty()) items[id]--;
-    int lostHp = f->mhp - f->hp, lostMp = f->mmp - f->mp;
-    cur = id;
-    f->recalc();
-    f->hp = std::clamp(f->mhp - lostHp, f->alive() ? 1 : 0, f->mhp);  // les PV perdus restent perdus
-    f->mp = std::clamp(f->mmp - lostMp, 0, f->mmp);
-    audio::play("achat");
-    menus.pop();
-    menus.pop();
-    gearSlots(f, who, s);
-  };
-  Menu m;
-  m.title = gearSlotName(s);
-  m.x = 8, m.y = 8, m.w = 132, m.rows = 8;
-  for (auto& d : allItems()) {
-    int n = items.count(d.id) ? items[d.id] : 0;
-    if (d.slot != s || n <= 0 || !canEquip(*f, d)) continue;
-    std::string id = d.id;
-    MenuItem it{d.name, "×" + std::to_string(n), d.bonusText() + ". " + d.desc, true, [equip, id] { equip(id); }};
-    it.shrink = true;
-    m.items.push_back(it);
-  }
-  if (!f->gear[(size_t)s].empty()) m.items.push_back({"Retirer", "", "Remettre " + item(f->gear[(size_t)s]).name + " dans le sac.", true, [equip] { equip(""); }});
-  if (m.items.empty()) m.items.push_back({"(rien dans le sac)", "", "Les boutiques vendent armes, armures et accessoires.", false, nullptr});
-  menus.push(m);
-}
-
-// Journal des quêtes : celles qui ont commencé ; l'aide montre l'étape où l'on en est
-void Game::journalMenu() {
-  panelMode_ = 0;
-  Menu m;
-  m.title = "Journal";
-  m.x = 8, m.y = 8, m.w = 220, m.rows = 9;
-  for (auto& q : quests()) {
-    std::string id = jget<std::string>(q, "id", "");
-    if (!has(questFlag(id))) continue;
-    bool done = has(questFlag(id, true));
-    std::string help = jget<std::string>(q, "fin_texte", "Quête terminée.");
-    if (!done) {
-      Json steps = q.value("etapes", Json::array());
-      for (auto& s : steps)  // la dernière étape dont la condition est vraie
-        if (!s.contains("si") || checkCond(s["si"])) help = jget<std::string>(s, "texte", "");
-    }
-    MenuItem it{jget<std::string>(q, "nom", id), done ? "terminée" : "en cours", jget<std::string>(q, "lieu", "") + " — " + help, true, nullptr};
-    it.color = done ? 0xaab3d8 : 0;
-    it.shrink = true;
-    m.items.push_back(it);
-  }
-  if (m.items.empty()) m.items.push_back({"(aucune quête)", "", "Parlez aux habitants : certains ont besoin d'aide.", false, nullptr});
-  m.onCancel = [this] {
-    panelMode_ = 1;
-    menus.pop();
-  };
-  menus.push(m);
-}
-
-void Game::teamMenu() { teamMenuAt(0); }
-void Game::teamMenuAt(int sel) {
-  panelMode_ = 2;
-  Menu m;
-  m.title = swapFrom_ >= 0 ? "Échanger avec…" : "Équipe";
-  m.x = 8, m.y = 8, m.w = 132, m.rows = 9;
-  m.sel = sel;
-  auto fv = front();
-  for (size_t i = 0; i < team.size(); i++) {
-    auto& f = team[i];
-    bool fr = std::find(fv.begin(), fv.end(), f) != fv.end();
-    m.items.push_back({(int)i == swapFrom_ ? "» " + f->name() : f->name(), fr ? "Front" : f->alive() ? "Rés." : "K.O.",
-                       "Entrée sur deux membres pour les échanger. Les 3 premiers valides combattent.", true,
-                       [this, i] {
-                         if (swapFrom_ < 0) swapFrom_ = (int)i;
-                         else {
-                           std::swap(team[swapFrom_], team[i]);
-                           swapFrom_ = -1;
-                         }
-                         menus.pop();
-                         teamMenuAt((int)i);
-                       },
-                       [this, i] { teamPanelSel_ = (int)i; }});
-  }
-  m.onCancel = [this] {
-    swapFrom_ = -1;
-    panelMode_ = 1;
-    menus.pop();
-  };
-  menus.push(m);
-}
-
-void Game::pickMember(const std::string& title, std::function<bool(const Fighter&)> ok, std::function<void(Fighter&)> use) {
-  Menu m;
-  m.title = title;
-  m.x = 116, m.y = 8, m.w = 196, m.rows = 8;
-  for (auto& f : team) {
-    FighterP fp = f;
-    m.items.push_back({f->name(), std::to_string(f->hp) + "/" + std::to_string(f->mhp) + "  " + std::to_string(f->mp) + "PM", "",
-                       ok(*f), [this, fp, use] {
-                         menus.pop();
-                         use(*fp);
-                       }});
-  }
-  menus.push(m);
-}
-
-void Game::itemMenu() { itemMenuAt(0); }
-void Game::itemMenuAt(int sel) {
-  panelMode_ = 0;  // la liste prend la place du résumé de l'équipe
-  Menu m;
-  m.title = "Objets  ·  " + std::to_string(gold) + " or";
-  m.x = 8, m.y = 8, m.w = 170, m.rows = 7;
-  m.sel = sel;
-  m.onCancel = [this] {
-    panelMode_ = 1;
-    menus.pop();
-  };
-  int idx = 0;
-  for (auto& d : allItems()) {
-    int n = items.count(d.id) ? items[d.id] : 0;
-    if (n <= 0) continue;
-    std::string id = d.id;
-    int myIdx = idx++;
-    std::string note = d.field ? "" : d.slot >= 0 ? " (équipement : Échap > Équipement)" : d.key ? " (objet important)" : " (en combat)";
-    m.items.push_back({d.name, "×" + std::to_string(n), d.desc + note, d.field,
-                       [this, id, myIdx] {
-                         pickMember("Sur qui ?", [id](const Fighter& f) {
-                           const ItemDef& d = item(id);
-                           if (d.revive) return !f.alive();
-                           return f.alive() && ((d.healHp && f.hp < f.mhp) || (d.healMp && f.mp < f.mmp));
-                         }, [this, id, myIdx](Fighter& f) {
-                           const ItemDef& d = item(id);
-                           audio::play("soin");
-                           items[id]--;
-                           if (d.revive) f.hp = std::max(1, f.mhp * d.revive / 100);
-                           else {
-                             f.hp = std::min(f.mhp, f.hp + d.healHp);
-                             f.mp = std::min(f.mmp, f.mp + d.healMp);
-                           }
-                           notice(item(id).name + " utilisé sur " + f.name() + ".");
-                           menus.pop();
-                           itemMenuAt(myIdx);
-                         });
-                       }});
-  }
-  if (m.items.empty()) m.items.push_back({"(sac vide)", "", "", false, nullptr});
-  menus.push(m);
-}
-
-void Game::magicMenu() {
-  panelMode_ = 0;  // la liste prend la place du résumé de l'équipe
-  Menu m;
-  m.title = "Qui lance le sort ?";
-  m.x = 8, m.y = 8, m.w = 170, m.rows = 8;
-  m.onCancel = [this] {
-    panelMode_ = 1;
-    menus.pop();
-  };
-  for (auto& f : team) {
-    FighterP caster = f;
-    std::vector<std::string> heal;
-    for (auto& id : f->spells())
-      if ((moveInfo(id).kind == Kind::Heal && moveInfo(id).power > 0) || moveInfo(id).kind == Kind::Revive) heal.push_back(id);
-    m.items.push_back({f->name(), std::to_string(f->mp) + " PM", heal.empty() ? "Aucun sort utilisable hors combat." : "", f->alive() && !heal.empty(),
-                       [this, caster, heal] {
-                         Menu s;
-                         s.title = "Sorts de " + caster->name();
-                         s.x = 24, s.y = 40, s.w = 170, s.rows = 5;
-                         for (auto& id : heal) {
-                           const Move& mv = moveInfo(id);
-                           s.items.push_back({mv.name, std::to_string(mv.cost) + " PM", mv.desc, caster->mp >= mv.cost, [this, caster, id] {
-                                                const Move& mv = moveInfo(id);
-                                                auto cast = [this, caster, id](Fighter* target) {
-                                                  const Move& mv = moveInfo(id);
-                                                  caster->mp -= mv.cost;
-                                                  audio::play("soin");
-                                                  auto healOne = [&](Fighter& t) {
-                                                    if (mv.kind == Kind::Revive) {
-                                                      if (!t.alive()) t.hp = std::max(1, t.mhp * mv.power / 100);
-                                                    } else if (t.alive())
-                                                      t.hp = std::min(t.mhp, t.hp + mv.power * caster->mag / 20 + 2);
-                                                  };
-                                                  if (target) healOne(*target);
-                                                  else
-                                                    for (auto& t : team) healOne(*t);
-                                                  notice(caster->name() + " lance " + mv.name + ".");
-                                                  menus.clear();
-                                                  panelMode_ = 0;
-                                                };
-                                                if (mv.target == Target::AllAllies) cast(nullptr);
-                                                else
-                                                  pickMember("Sur qui ?", [&mv](const Fighter& f) {
-                                                    return mv.kind == Kind::Revive ? !f.alive() : f.alive() && f.hp < f.mhp;
-                                                  }, [cast](Fighter& f) { cast(&f); });
-                                              }});
-                         }
-                         menus.push(s);
-                       }});
-  }
-  menus.push(m);
-}
-
-void Game::shopMenu(const std::vector<std::string>& stock) { shopMenuAt(stock, 0); }
-void Game::shopMenuAt(const std::vector<std::string>& stock, int sel) {
-  panelMode_ = 0;
-  Menu m;
-  m.title = "Boutique  ·  " + std::to_string(gold) + " or";
-  m.x = 60, m.y = 20, m.w = 200, m.rows = 7;
-  m.sel = sel;
-  for (size_t i = 0; i < stock.size(); i++) {
-    const ItemDef& d = item(stock[i]);
-    std::string id = d.id;
-    int have = items.count(id) ? items[id] : 0;
-    m.items.push_back({d.name, std::to_string(d.price) + " or", d.desc + " (vous en avez " + std::to_string(have) + ")", true,
-                       [this, stock, id, i] {
-                         const ItemDef& d = item(id);
-                         if (gold < d.price) {
-                           audio::play("refus");
-                           notice("Pas assez d'or.");
-                           return;
-                         }
-                         audio::play("achat");
-                         gold -= d.price;
-                         items[id]++;
-                         notice("Acheté : " + d.name + ".");
-                         menus.pop();
-                         shopMenuAt(stock, (int)i);
-                       }});
-  }
-  m.items.push_back({"Vendre…", "", "Vendre vos objets à la moitié de leur prix.", true, [this, stock] { sellMenu(stock, 0); }});
-  m.items.push_back({"Quitter", "", "", true, [this] { menus.clear(); }});
-  m.sel = std::clamp(sel, 0, (int)m.items.size() - 1);
-  menus.push(m);
-}
-
-// Vendre : chaque objet du sac (sauf les objets de quête) rapporte la moitié de son prix
-void Game::sellMenu(const std::vector<std::string>& stock, int sel) {
-  Menu m;
-  m.title = "Vendre  ·  " + std::to_string(gold) + " or";
-  m.x = 60, m.y = 20, m.w = 200, m.rows = 7;
-  for (auto& d : allItems()) {
-    auto have = items.find(d.id);
-    if (have == items.end() || have->second <= 0 || d.key || d.price / 2 <= 0) continue;
-    std::string id = d.id;
-    int at = (int)m.items.size();
-    MenuItem it{d.name, "+" + std::to_string(d.price / 2) + " or", "Vous en avez " + std::to_string(have->second) + ".", true, [this, stock, id, at] {
-                  items[id]--;
-                  gold += item(id).price / 2;
-                  audio::play("achat");
-                  notice("Vendu : " + item(id).name + ".");
-                  menus.pop();
-                  sellMenu(stock, at);
-                }};
-    it.shrink = true;
-    m.items.push_back(it);
-  }
-  if (m.items.empty()) m.items.push_back({"(rien à vendre)", "", "", false, nullptr});
-  m.sel = std::clamp(sel, 0, (int)m.items.size() - 1);
-  m.onCancel = [this, stock] {  // retour à la boutique (avec l'or à jour)
-    menus.pop();
-    menus.pop();
-    shopMenuAt(stock, (int)stock.size());
-  };
-  menus.push(m);
-}
-
-// ---------------------------------------------------------------------------
-// Sauvegarde (fichier texte dans le dossier de l'utilisateur)
-// ---------------------------------------------------------------------------
-std::string Game::savePath() const { return userFile(inExpedition() ? expedition_->saveFile() : saveName_); }
-bool Game::saveExists() const {
-  std::ifstream f(savePath());
-  return f.good();
-}
-bool Game::saveGame() {
-  std::ostringstream f;
-  f << "BRUMEVAL 1\n";
-  if (inExpedition()) expedition_->writeSave(f);  // en premier : le chargement génère d'abord le monde
-  f << "carte " << M().id << ' ' << px << ' ' << py << ' ' << dir << '\n';
-  f << "reveil " << maps()[respawnMap].id << ' ' << respawnX << ' ' << respawnY << '\n';
-  f << "or " << gold << '\n';
-  for (auto& fl : flags) f << "drapeau " << fl << '\n';
-  for (auto& [id, n] : items)
-    if (n > 0) f << "objet " << id << ' ' << n << '\n';
-  f << "auto " << tacticsAuto << '\n';
-  noteBestiary();
-  for (auto& sp : seen)
-    if (hasSpecies(sp)) f << "vu " << sp << '\n';
-  for (auto& sp : caught)
-    if (hasSpecies(sp)) f << "pris " << sp << '\n';
-  static const char KIND[] = {'a', 't', 'o'};  // action automatique, technique, objet
-  auto member = [&](const FighterP& m) {
-    f << "membre " << m->sp << ' ' << m->lvl << ' ' << m->xp << ' ' << m->hp << ' ' << m->mp << ' ' << m->lim << '\n';
-    if (m->gear != decltype(m->gear){}) {
-      f << "equipement";
-      for (auto& g : m->gear) f << ' ' << (g.empty() ? "-" : g);
-      f << '\n';
-    }
-    auto c = std::find(team.begin(), team.end(), m->companion.lock());
-    if (c != team.end() && hasSpecies(m->sp) && m->S().human) f << "compagnon " << (c - team.begin()) << '\n';
-    f << "tactiques " << m->tacticsOn << '\n';
-    for (auto& t : m->tactics) f << "tactique " << t.on << ' ' << t.cond << ' ' << t.value << ' ' << KIND[(int)t.kind] << ' ' << t.act << '\n';
-  };
-  for (auto& m : team) member(m);
-  if (!reserve.empty()) {  // la réserve après l'équipe : ses lignes « membre » suivent la ligne « reserve »
-    f << "reserve\n";
-    for (auto& m : reserve) member(m);
-  }
-  return writeUserFile(inExpedition() ? expedition_->saveFile() : saveName_, f.str());
-}
-// Lignes d'un membre de l'équipe : « membre » (espèce, niveau, expérience, PV, PM, Limite), puis
-// « equipement », « tactiques » et ses lignes « tactique ». Une espèce inconnue ajoute nullptr :
-// les lignes qui la suivent sont ignorées (à retirer ensuite).
-bool readMemberLine(const std::string& k, std::istream& s, std::vector<FighterP>& team, std::vector<std::pair<size_t, int>>* links) {
-  if (k == "membre") {
-    std::string sp;
-    int lvl = 1, xp = 0, hp = 1, mp = 0;
-    float lim = 0;
-    s >> sp >> lvl >> xp >> hp >> mp >> lim;
-    if (!hasSpecies(sp)) {
-      team.push_back(nullptr);
-      return true;
-    }
-    auto m = makeFighter(sp, lvl);
-    m->xp = xp, m->hp = hp, m->mp = mp, m->lim = lim;  // à borner une fois l'équipement lu
-    team.push_back(m);
-    return true;
-  }
-  if (k != "equipement" && k != "tactiques" && k != "tactique" && k != "compagnon") return false;
-  if (team.empty() || !team.back()) return true;
-  Fighter& m = *team.back();
-  if (k == "compagnon") {  // rang de sa créature compagnon dans l'équipe (relié une fois tout lu)
-    int i = -1;
-    if (s >> i && links) links->push_back({team.size() - 1, i});
-    return true;
-  }
-  if (k == "equipement") {
-    for (auto& g : m.gear) {
-      std::string id;
-      s >> id;
-      g = id != "-" && hasItem(id) && canEquip(m, item(id)) ? id : "";
-    }
-    m.recalc();
-  } else if (k == "tactiques") {  // les anciennes sauvegardes gardent les tactiques de départ
-    s >> m.tacticsOn;
-    m.tactics.clear();
-  } else {
-    Tactic t;
-    char kind = 'a';
-    s >> t.on >> t.cond >> t.value >> kind >> t.act;
-    t.kind = kind == 't' ? Tactic::Act::Move : kind == 'o' ? Tactic::Act::Item : Tactic::Act::Auto;
-    if (s && findTacticCond(t.cond)) m.tactics.push_back(t);
-  }
-  return true;
-}
-
-bool Game::loadGame() {
-  std::ifstream f(savePath());
-  std::string head;
-  if (!f || !std::getline(f, head) || head.rfind("BRUMEVAL", 0) != 0) return false;
-  team.clear();
-  reserve.clear();
-  seen.clear(), caught.clear();
-  bool inReserve = false;                      // après la ligne « reserve »
-  std::vector<std::pair<size_t, int>> links;  // lignes « compagnon » : reliées à la fin
-  items.clear();
-  flags.clear();
-  // Anciennes sauvegardes : cartes désignées par leur numéro
-  static const char* OLD_MAPS[] = {"vallee", "cendrelune", "grotte"};
-  auto mapOf = [&](const std::string& v) {
-    int m = mapIndex(v);
-    if (m < 0 && v.size() == 1 && v[0] >= '0' && v[0] <= '2') m = mapIndex(OLD_MAPS[v[0] - '0']);
-    return std::max(0, m);
-  };
-  std::vector<std::string> oldChests;
-  std::string line;
-  mapId = 0;
-  while (std::getline(f, line)) {
-    std::istringstream s(line);
-    std::string k, v;
-    s >> k;
-    if (k == "expedition" || k == "graine") {
-      std::string rest;
-      std::getline(s, rest);
-      if (!expedition_ || !expedition_->readSave(k, rest)) return false;
-    } else if (k == "carte") {
-      s >> v >> px >> py >> dir;
-      mapId = mapOf(v);
-    } else if (k == "reveil") {
-      s >> v >> respawnX >> respawnY;
-      respawnMap = mapOf(v);
-    } else if (k == "or") s >> gold;
-    else if (k == "drapeau") {
-      s >> v;
-      // Ancien format des coffres : coffre:<numéro de carte>:<numéro du coffre>
-      if (v.rfind("coffre:", 0) == 0 && std::count(v.begin(), v.end(), ':') == 2) oldChests.push_back(v);
-      else flags.insert(v);
-    } else if (k == "objet") {
-      std::string id;
-      int n;
-      s >> id >> n;
-      items[id] = n;
-    } else if (k == "auto") s >> tacticsAuto;
-    else if (k == "vu" || k == "pris") {
-      s >> v;
-      if (hasSpecies(v)) (k == "vu" ? seen : caught).insert(v);
-    } else if (k == "reserve") inReserve = true;
-    else if (inReserve) readMemberLine(k, s, reserve, nullptr);
-    else readMemberLine(k, s, team, &links);
-  }
-  reserve.erase(std::remove(reserve.begin(), reserve.end(), nullptr), reserve.end());
-  for (auto& m : reserve) m->hp = std::min(m->hp, m->mhp), m->mp = std::min(m->mp, m->mmp);
-  noteBestiary();  // anciennes sauvegardes : l'équipe compte déjà
-  for (auto& [h, c] : links)  // compagnons : avant de retirer les espèces disparues (les rangs changeraient)
-    if (c >= 0 && c < (int)team.size() && team[h] && team[(size_t)c] && !team[(size_t)c]->S().human) team[h]->companion = team[(size_t)c];
-  team.erase(std::remove(team.begin(), team.end(), nullptr), team.end());  // espèces qui n'existent plus
-  for (auto& v : oldChests) {
-    int m = mapOf(v.substr(7, v.find(':', 7) - 7));
-    int i = std::atoi(v.substr(v.rfind(':') + 1).c_str());
-    if (i >= 0 && i < (int)maps()[m].chests.size()) {
-      auto& c = maps()[m].chests[i];
-      flags.insert("coffre:" + maps()[m].id + ":" + std::to_string(c.x) + ":" + std::to_string(c.y));
-    }
-  }
-  moving = false;
-  steps = 0;
-  sc.clear();
-  for (auto& m : team) m->hp = std::min(m->hp, m->mhp), m->mp = std::min(m->mp, m->mmp);
-  return !team.empty();
-}
-
 // ---------------------------------------------------------------------------
 // Dessin
 // ---------------------------------------------------------------------------
@@ -1549,8 +753,22 @@ void Game::draw() {
       if (story_) story_->draw();
       break;
   }
+  if (!evoTo_.empty()) drawEvolution();
+  if (helpPage_ >= 0) drawHelp();
   if (textOn_) drawTextEdit();
   if (bindKey_ >= 0) drawKeyPrompt();
+  if (int v = speed(); v > 1 || speedT_ > 0) {  // vitesse : en grand juste après F2, puis discrète dans le coin
+    std::string s = "×" + std::to_string(v);
+    if (speedT_ > 0) {
+      g.newLayer();  // par-dessus les menus éventuels
+      g.window(160 - 46, 30, 92, 26);
+      g.text(160, 36, "Vitesse " + s, GOLD, 1);
+    } else {
+      int y = pilot_ && pilot_->demo() ? 12 : 1;  // sous le bandeau de la démo
+      g.rect(g.right() - 20, y, 18, 10, rgb(0x000010, 140));
+      g.text(g.right() - 11, y + 1, s, GOLD, 1, false);
+    }
+  }
   if (pilot_ && pilot_->demo()) {  // bandeau de la démo, en haut de l'écran
     std::string s = "DÉMO · " + pilot_->status;
     if (s.size() > 60) s = utf8Prefix(s, 44) + "…";
@@ -1583,7 +801,7 @@ void Game::drawTitle() {
     }
   }
   if (!menus.active() || menus.help().empty()) {
-    g.text(g.left() + 4, 227, "F11 : plein écran", rgb(0x8a92b8), 0, false);
+    g.text(g.left() + 4, 227, "F1 : aide · F2 : vitesse · F11 : plein écran", rgb(0x8a92b8), 0, false);
     g.text(g.right() - 4, 227, "v" BRUMEVAL_VERSION, rgb(0x8a92b8), 2, false);
   }
 }
@@ -1705,6 +923,7 @@ void Game::drawMap() {
   }
   // Fenêtres
   if (panelMode_ == 3 && menus.active()) drawBestiaryPanel(146, 8);
+  else if (panelMode_ == 4 && menus.active()) drawFormationPanel(146, 8);
   else if (panelMode_ && menus.active()) drawTeamPanel(panelMode_ == 1 ? 114 : 146, 8, panelMode_ == 2 ? teamPanelSel_ : -1);
   if (menus.active()) menus.draw(g, time);
   drawDialogue();
@@ -1749,70 +968,6 @@ void Game::drawDialogue() {
     if (remaining <= 0) break;
   }
   if (done && askText_.empty() && int(time * 3) % 2 == 0) g.text(302, y + 52, "▼", GOLD);
-}
-
-void Game::drawTeamPanel(int x, int y, int sel) {
-  if (sel < 0) {
-    int rowH = team.size() > 6 ? 20 : 22;  // plus serré avec une grande équipe, pour laisser la place à l'aide
-    int h = 22 + (int)team.size() * rowH + 6;
-    g.window(x, y, 320 - x - 8, h);
-    g.text(x + 8, y + 5, "Équipe", GOLD);
-    g.text(320 - 16, y + 5, std::to_string(gold) + " or", WHITE, 2);
-    auto fr = front();
-    for (size_t i = 0; i < team.size(); i++) {
-      auto& f = team[i];
-      float ry = y + 20 + i * rowH;
-      bool isFront = std::find(fr.begin(), fr.end(), f) != fr.end();
-      g.text(x + 8, ry, f->name(), f->alive() ? WHITE : rgb(0xff7b6b));
-      g.text(x + 86, ry, "N." + std::to_string(f->lvl), MUTED);
-      g.text(320 - 16, ry, isFront ? "front" : "repos", isFront ? GOLD : MUTED, 2);
-      g.text(x + 8, ry + 10, "PV " + std::to_string(f->hp) + "/" + std::to_string(f->mhp), WHITE);
-      g.text(x + 86, ry + 10, "PM " + std::to_string(f->mp) + "/" + std::to_string(f->mmp), WHITE);
-    }
-    return;
-  }
-  if (sel >= (int)team.size()) return;
-  const Fighter& f = *team[sel];
-  int w = 320 - x - 8;
-  std::string t, s;
-  for (auto& id : f.techs()) t += (t.empty() ? "" : ", ") + moveInfo(id).name;
-  for (auto& id : f.spells()) s += (s.empty() ? "" : ", ") + moveInfo(id).name;
-  auto techLines = Gfx::wrap("Techniques : " + t, w - 16), magicLines = s.empty() ? std::vector<std::string>{} : Gfx::wrap("Magie : " + s, w - 16);
-  int lines = (int)techLines.size() + (int)magicLines.size() + (f.S().limit.empty() ? 0 : 1);
-  g.window(x, y, w, std::min(SCREEN_H - y - 2, 34 + 4 * 11 + 3 + 4 * 11 + 3 + lines * 11 + 6));
-  g.text(x + 8, y + 6, f.name(), GOLD);
-  g.text(x + w - 8, y + 6, "Niveau " + std::to_string(f.lvl), WHITE, 2);
-  std::string role = f.S().human ? f.S().role : std::string("Créature de type ") + typeName(f.S().type);
-  g.text(x + 8, y + 19, role.size() > 40 ? typeName(f.S().type) : role, MUTED);
-  if (f.S().human) drawHuman(g, look(f.S().look), x + w - 40, y + 32, 2, DOWN, 0, false);  // sous la ligne du rôle
-  else drawCreature(g, f.sp, x + w - 26, y + 48, .9f, false, time);
-  int ly = y + 34;
-  auto row = [&](const std::string& a, const std::string& b) {
-    g.text(x + 8, ly, a, MUTED);
-    g.text(x + 54, ly, b, WHITE);
-    ly += 11;
-  };
-  row("Type", typesName(f.S()));
-  row("PV", std::to_string(f.hp) + "/" + std::to_string(f.mhp));
-  row("PM", std::to_string(f.mp) + "/" + std::to_string(f.mmp));
-  row("Exp.", std::to_string(f.xp) + "/" + std::to_string(f.need()));
-  ly += 3;
-  // Statistiques sur deux colonnes
-  auto pair = [&](const char* a, int va, const char* b, const std::string& vb) {
-    g.text(x + 8, ly, a, MUTED);
-    g.text(x + 76, ly, std::to_string(va), WHITE, 2);
-    g.text(x + 84, ly, b, MUTED);
-    g.text(x + w - 8, ly, vb, WHITE, 2);
-    ly += 11;
-  };
-  pair("Attaque", f.atk, "Défense", std::to_string(f.def));
-  pair("Magie", f.mag, "Résist.", std::to_string(f.res));
-  pair("Vitesse", f.spd, "Précis.", std::to_string(f.acc) + "%");
-  pair("Esquive", f.eva, "Critique", std::to_string(f.crit) + "%");
-  ly += 3;
-  for (auto& l : techLines) g.text(x + 8, ly, l, WHITE), ly += 11;
-  for (auto& l : magicLines) g.text(x + 8, ly, l, rgb(0x9fd8ff)), ly += 11;
-  if (!f.S().limit.empty()) g.text(x + 8, ly, "Limite : " + moveInfo(f.S().limit).name, rgb(0xff9ad0));
 }
 
 void Game::drawEnding() {

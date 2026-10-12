@@ -90,6 +90,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 40,
+    "portee": "distance",
     "rythme": "rapide",
     "effet": {"statut": "brulure", "chance": 15}
   },
@@ -100,6 +101,8 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 65,
+    "portee": "distance",
+    "zone": "ligne",
     "effet": {"statut": "brulure", "chance": 20}
   },
   {
@@ -109,10 +112,20 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 40,
+    "portee": "distance",
     "rythme": "rapide",
     "effet": {"stat": "attaque", "niveaux": -1, "chance": 20}
   },
-  {"id": "vague", "nom": "Vague", "type": "eau", "genre": "physique", "cible": "ennemi", "puissance": 65},
+  {
+    "id": "vague",
+    "nom": "Vague",
+    "type": "eau",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 65,
+    "portee": "distance",
+    "zone": "ligne"
+  },
   {
     "id": "ronce",
     "nom": "Fouet-ronce",
@@ -129,7 +142,9 @@
     "type": "plante",
     "genre": "physique",
     "cible": "ennemi",
-    "puissance": 65
+    "puissance": 55,
+    "portee": "distance",
+    "zone": "croix"
   },
   {
     "id": "bec",
@@ -154,9 +169,18 @@
     "type": "feu",
     "genre": "physique",
     "cible": "ennemi",
-    "puissance": 40
+    "puissance": 40,
+    "portee": "distance"
   },
-  {"id": "bulle", "nom": "Bulle", "type": "eau", "genre": "physique", "cible": "ennemi", "puissance": 40},
+  {
+    "id": "bulle",
+    "nom": "Bulle",
+    "type": "eau",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 40,
+    "portee": "distance"
+  },
   {
     "id": "spore",
     "nom": "Spore",
@@ -164,6 +188,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 40,
+    "portee": "distance",
     "effet": {"statut": "poison", "chance": 40}
   },
   {
@@ -173,6 +198,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 55,
+    "portee": "distance",
     "precision": 90
   },
   {
@@ -200,6 +226,8 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 50,
+    "portee": "distance",
+    "zone": "croix",
     "effet": {"statut": "paralysie", "chance": 20}
   },
   {
@@ -219,6 +247,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 55,
+    "zone": "colonne",
     "effet": {"stat": "vitesse", "niveaux": -1, "chance": 30}
   },
   {
@@ -226,8 +255,9 @@
     "nom": "Nuage de suie",
     "type": "ombre",
     "genre": "magique",
-    "cible": "tous_ennemis",
-    "puissance": 40,
+    "cible": "ennemi",
+    "puissance": 46,
+    "zone": "croix",
     "effet": {"stat": "defense", "niveaux": -1, "chance": 20}
   },
   {
@@ -350,20 +380,22 @@
     "nom": "Pyrosphère",
     "type": "feu",
     "genre": "magique",
-    "cible": "tous_ennemis",
-    "puissance": 50,
+    "cible": "ennemi",
+    "puissance": 60,
+    "zone": "croix",
     "cout": 12,
-    "description": "Feu sur tous les ennemis."
+    "description": "Une sphère de feu qui explose en croix."
   },
   {
     "id": "blizzard",
     "nom": "Blizzard",
     "type": "eau",
     "genre": "magique",
-    "cible": "tous_ennemis",
-    "puissance": 50,
+    "cible": "ennemi",
+    "puissance": 55,
+    "zone": "colonne",
     "cout": 12,
-    "description": "Glace sur tous les ennemis."
+    "description": "Une rafale de glace sur toute une colonne."
   },
   {
     "id": "orage",
@@ -412,6 +444,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 30,
+    "portee": "distance",
     "effet": {"stat": "vitesse", "niveaux": -1, "chance": 70}
   },
   {
@@ -421,6 +454,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 25,
+    "portee": "distance",
     "precision": 95,
     "effet": {"statut": "poison", "chance": 60}
   },
@@ -469,7 +503,16 @@
     "effet": {"stat": "vitesse", "niveaux": 2},
     "description": "Accélère beaucoup un allié."
   },
-  {"id": "rafale", "nom": "Rafale", "type": "vent", "genre": "physique", "cible": "ennemi", "puissance": 45},
+  {
+    "id": "rafale",
+    "nom": "Rafale",
+    "type": "vent",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 45,
+    "portee": "distance",
+    "zone": "ligne"
+  },
   {
     "id": "lame_air",
     "nom": "Lame d'air",
@@ -484,8 +527,9 @@
     "nom": "Tornade",
     "type": "vent",
     "genre": "magique",
-    "cible": "tous_ennemis",
-    "puissance": 45
+    "cible": "ennemi",
+    "puissance": 45,
+    "zone": "ligne"
   },
   {
     "id": "venin",
@@ -510,8 +554,9 @@
     "nom": "Nuage toxique",
     "type": "poison",
     "genre": "magique",
-    "cible": "tous_ennemis",
-    "puissance": 40,
+    "cible": "ennemi",
+    "puissance": 46,
+    "zone": "croix",
     "effet": {"statut": "poison", "chance": 20}
   },
   {
@@ -532,7 +577,8 @@
     "type": "roche",
     "genre": "physique",
     "cible": "ennemi",
-    "puissance": 40
+    "puissance": 40,
+    "portee": "distance"
   },
   {
     "id": "seisme",
@@ -567,8 +613,9 @@
     "nom": "Poudreuse",
     "type": "glace",
     "genre": "magique",
-    "cible": "tous_ennemis",
-    "puissance": 45
+    "cible": "ennemi",
+    "puissance": 50,
+    "zone": "colonne"
   },
   {
     "id": "glaciation",
@@ -605,8 +652,9 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 50,
+    "zone": "ligne",
     "critique": 10,
-    "description": "Un coup de lance précis."
+    "description": "Un coup de lance qui transperce toute une ligne."
   },
   {
     "id": "charge_heroique",
@@ -702,6 +750,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 40,
+    "portee": "distance",
     "critique": 15,
     "rythme": "rapide",
     "description": "Une flèche qui vise les points faibles."
@@ -713,6 +762,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 60,
+    "portee": "distance",
     "precision": 95,
     "description": "Une flèche portée par le vent."
   },
@@ -770,6 +820,109 @@
     "cible": "tous_ennemis",
     "puissance": 58,
     "effet": {"stat": "vitesse", "niveaux": -1, "chance": 30}
+  },
+  {
+    "id": "tourbillon",
+    "nom": "Tourbillon",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 42,
+    "zone": "ligne",
+    "description": "Lior tournoie et frappe toute une ligne d'ennemis."
+  },
+  {
+    "id": "onde_choc",
+    "nom": "Onde de choc",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 50,
+    "zone": "colonne",
+    "description": "Un coup de hache dans le sol qui ébranle tout un rang."
+  },
+  {
+    "id": "nova",
+    "nom": "Nova",
+    "type": "lumiere",
+    "genre": "magique",
+    "cible": "ennemi",
+    "puissance": 48,
+    "zone": "croix",
+    "cout": 9,
+    "description": "Une étoile éclate au milieu des ennemis."
+  },
+  {
+    "id": "salve",
+    "nom": "Salve",
+    "type": "vent",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 36,
+    "portee": "distance",
+    "zone": "colonne",
+    "rythme": "rapide",
+    "description": "Trois flèches tirées d'un coup sur tout un rang."
+  },
+  {
+    "id": "eclats_acier",
+    "nom": "Éclats d'acier",
+    "type": "metal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 48,
+    "zone": "croix",
+    "description": "La lance frappe et fait voler des éclats tout autour."
+  },
+  {
+    "id": "ruee",
+    "nom": "Ruée",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 38,
+    "zone": "ligne"
+  },
+  {
+    "id": "nuee_braises",
+    "nom": "Nuée de braises",
+    "type": "feu",
+    "genre": "magique",
+    "cible": "ennemi",
+    "puissance": 40,
+    "zone": "croix",
+    "effet": {"statut": "brulure", "chance": 10}
+  },
+  {
+    "id": "torrent",
+    "nom": "Torrent",
+    "type": "eau",
+    "genre": "magique",
+    "cible": "ennemi",
+    "puissance": 44,
+    "zone": "ligne"
+  },
+  {
+    "id": "pluie_spores",
+    "nom": "Pluie de spores",
+    "type": "plante",
+    "genre": "magique",
+    "cible": "ennemi",
+    "puissance": 38,
+    "zone": "croix",
+    "effet": {"statut": "poison", "chance": 15}
+  },
+  {
+    "id": "avalanche",
+    "nom": "Avalanche",
+    "type": "roche",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 58,
+    "portee": "distance",
+    "zone": "colonne",
+    "precision": 90,
+    "rythme": "lourde"
   },
   {
     "id": "lim_lior",
@@ -1061,5 +1214,133 @@
     "genre": "physique",
     "cible": "tous_ennemis",
     "puissance": 62
+  },
+  {
+    "id": "lim_flammenard",
+    "nom": "Ouragan de braises suprême",
+    "type": "feu",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 63
+  },
+  {
+    "id": "lim_torrentin",
+    "nom": "Déluge suprême",
+    "type": "eau",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 63
+  },
+  {
+    "id": "lim_ronceflore",
+    "nom": "Ronces infinies suprême",
+    "type": "plante",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 63
+  },
+  {
+    "id": "lim_rongecrin",
+    "nom": "Frénésie suprême",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 60
+  },
+  {
+    "id": "lim_champignard",
+    "nom": "Nuage de spores suprême",
+    "type": "plante",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 60
+  },
+  {
+    "id": "lim_lucifee",
+    "nom": "Nuée ardente suprême",
+    "type": "feu",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 60
+  },
+  {
+    "id": "lim_fournezard",
+    "nom": "Éruption suprême",
+    "type": "feu",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 65
+  },
+  {
+    "id": "lim_banquisot",
+    "nom": "Ère glaciaire suprême",
+    "type": "eau",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 65
+  },
+  {
+    "id": "lim_serpentox",
+    "nom": "Constriction suprême",
+    "type": "poison",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 63
+  },
+  {
+    "id": "lim_noctaile",
+    "nom": "Nuée nocturne suprême",
+    "type": "ombre",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 63
+  },
+  {
+    "id": "lim_orageon",
+    "nom": "Tempête d'éclairs suprême",
+    "type": "foudre",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 65
+  },
+  {
+    "id": "lim_carapic",
+    "nom": "Éboulement suprême",
+    "type": "roche",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 65
+  },
+  {
+    "id": "lim_fulgurin",
+    "nom": "Surtension suprême",
+    "type": "foudre",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 67
+  },
+  {
+    "id": "lim_givrenard",
+    "nom": "Tempête de neige suprême",
+    "type": "glace",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 67
+  },
+  {
+    "id": "lim_ferrogeant",
+    "nom": "Marteau-pilon suprême",
+    "type": "metal",
+    "genre": "physique",
+    "cible": "tous_ennemis",
+    "puissance": 67
+  },
+  {
+    "id": "lim_prismalin",
+    "nom": "Réfraction suprême",
+    "type": "lumiere",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 67
   }
 ]

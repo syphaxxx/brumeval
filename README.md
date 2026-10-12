@@ -22,13 +22,52 @@ Windows et de macOS, normaux pour un jeu non signé).
 | Entrée ou Espace | Parler, valider, faire défiler les dialogues |
 | Échap | Annuler, ouvrir le menu (équipe, tactiques, objets, magie, sauvegarde) |
 | Tab (en combat) | Mode auto : les tactiques jouent à votre place, ou vous reprenez la main |
+| F1 | Aide : statistiques, dégâts, damier et zones, états, tableau des types, touches |
+| F2 | Vitesse du jeu ×1, ×2 ou ×3 (marche, combats, textes ; gardée pour la prochaine fois) |
 | F11 ou Alt+Entrée | Plein écran ou fenêtre (le choix est gardé pour la prochaine fois). L'image s'adapte à la forme de l'écran ou de la fenêtre, sans bandes noires |
 
 Les touches se changent dans **Options** (écran titre, ou Échap > Options),
-avec le volume de la musique et des effets sonores ; les flèches, Entrée et
+avec le volume de la musique et des effets sonores et la vitesse du jeu ; les flèches, Entrée et
 Échap marchent toujours. **Manette** : branchez-la, même en cours de partie.
 Croix ou stick gauche pour se déplacer, **A** valider, **B** annuler,
 **Start** menu, **Select** (ou **Y**) mode auto en combat.
+
+## L'évolution
+
+Vingt-deux créatures peuvent **évoluer** quand elles atteignent un niveau
+(Ronceau en Ronceflore au niveau 16, Rocaillou en Galetor…) : plus fortes, un
+peu plus grandes, avec de nouvelles techniques. Le jeu demande « Évoluer ? »
+après le combat ; si vous répondez Non, Échap > Évolution le fera plus tard.
+
+## La forge
+
+Une fois Brann dans l'équipe, l'enclume de **Forgeroc** renforce une arme ou une
+armure (+1, +2, +3) contre de l'or et des matériaux : **minerai de fer** (créatures
+Roche et Métal), **cœur de braise** (créatures Feu), **cristal de givre**
+(créatures Glace), quelques coffres, et un **trophée** laissé par chaque boss
+pour le +3. Coûts et effets : Échap > Aide > Forge.
+
+## Le damier de combat
+
+Chaque camp se place sur un **damier de 16 cases** (4 × 4) : quatre colonnes, de
+l'**avant** à l'**arrière**, sur quatre lignes.
+
+- Les coups **au corps à corps** (épées, crocs, griffes…) ne peuvent toucher que
+  la colonne ennemie la plus avancée encore debout : il faut percer la ligne de
+  front pour atteindre les mages. Les attaques **à distance** (sorts, flèches,
+  projectiles) visent n'importe quelle case.
+- À **l'arrière**, on reçoit et on donne moins de dégâts au corps à corps : la
+  bonne place pour les soigneurs et les mages.
+- Chaque technique a une **zone** : une cible, une **ligne** (elle perce en
+  profondeur), une **colonne**, une **croix** (la cible et ses voisines) ou tout le
+  camp. Les cases autour de la cible prennent un peu moins. En choisissant la
+  cible, les cases touchées s'allument en or.
+- Échap > **Formation** : placer chacun sur le damier avant les combats. En
+  combat, **Se déplacer** change de case (action rapide).
+- Les **boss annoncent** parfois leur plus grosse attaque : une zone de votre
+  damier s'allume en **rouge**. Au tour suivant, elle frappe très fort ceux qui
+  y sont restés : écartez-vous ! En mode auto, la tactique « Soi : zone
+  annoncée → Se mettre à l'abri » le fait pour vous.
 
 ## Techniques rapides et lourdes
 
@@ -76,8 +115,9 @@ une règle orange ne marchera pas (par exemple une attaque avec une condition
 ## Compagnons
 
 Chaque héros combat avec une **créature compagnon** à ses côtés : jusqu'à
-3 héros et leurs 3 compagnons sur le terrain. Vous commandez les héros ; chaque
-compagnon agit tout seul, avec ses tactiques, un peu moins souvent qu'un héros.
+3 héros et leurs 3 compagnons sur le terrain. Vous les commandez tous ; un
+compagnon joue un peu moins souvent qu'un héros. En mode auto (Tab), héros et
+compagnons suivent leurs tactiques.
 Échap > **Compagnons** : choisir la créature de chaque héros (sinon, la
 première créature libre de l'équipe). Les boss sont réglés pour une équipe
 complète et **équipée**.
@@ -114,6 +154,10 @@ le Temple gelé. Les quêtes acceptées s'inscrivent dans le **Journal** (Échap
 Journal), avec l'étape où vous en êtes. Elles rapportent or et équipement.
 
 ## Après la fin
+
+Loin des villes et des entrées des cartes, la nature est plus dense : les
+rencontres sont plus fréquentes et les créatures viennent en **meutes** (jusqu'à
+six). Les attaques de zone y font merveille.
 
 Le Givrecorne vaincu, une faille s'ouvre au fond de son sanctuaire : la
 **Source des Brumes**, d'où vient la brume qui rend les créatures sauvages.
@@ -318,5 +362,5 @@ moments marquants. `brumeval --demo` le montre jouer dans la fenêtre.
   `data/LISEZMOI.md`.
 - `docs/` : guide pour reprendre le projet et planning.
 - La sauvegarde est écrite dans `%APPDATA%\Brumeval\Brumeval\sauvegarde.txt`,
-  les options (volumes, plein écran, touches) dans `options.txt` à côté
+  les options (volumes, plein écran, vitesse, touches) dans `options.txt` à côté
   (le mode test utilise `sauvegarde_test.txt` et l'efface à la fin)

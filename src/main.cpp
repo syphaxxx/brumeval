@@ -11,6 +11,10 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
+#ifdef _MSC_VER
+#include <crtdbg.h>
+#include <cstdlib>
+#endif
 
 #include <algorithm>
 #include <cmath>
@@ -157,6 +161,19 @@ static int runTests(const char* outDir, bool partie = false) {
   std::setvbuf(stdout, nullptr, _IONBF, 0);  // affichage immédiat, même en cas de plantage
 #ifdef _WIN32
   SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX);  // plantage : on s'arrête tout de suite, sans fenêtre de Windows
+#endif
+#ifdef _MSC_VER
+  // Version Debug : une erreur détectée (indice hors limites…) s'écrit dans la console au lieu
+  // d'ouvrir une fenêtre « Debug Assertion Failed » qui attend un clic ; le programme s'arrête
+  _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
+  _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
+  _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
+  _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
+  _set_abort_behavior(0, _WRITE_ABORT_MSG | _CALL_REPORTFAULT);
+  _set_invalid_parameter_handler([](const wchar_t*, const wchar_t*, const wchar_t*, unsigned, uintptr_t) {
+    std::fputs("[PLANTAGE] paramètre invalide (voir l'erreur au-dessus)\n", stdout);
+    std::_Exit(3);
+  });
 #endif
   SDL_Init(0);
   std::string err = loadAll();
@@ -305,7 +322,7 @@ int main(int argc, char* argv[]) {
       Uint64 now = SDL_GetPerformanceCounter();
       float dt = std::min(.05f, float(now - last) / float(SDL_GetPerformanceFrequency()));
       last = now;
-      game.update(dt);
+      for (int i = 0, n = game.speed(); i < n; i++) game.update(dt);  // vitesse ×2, ×3 : plusieurs pas par image
       screen.begin(game.g);
       game.draw();
       screen.present();

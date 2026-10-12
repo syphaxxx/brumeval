@@ -35,6 +35,10 @@ static const std::vector<TacticCond> CONDS = {
     {"soi_pm_moins", "Soi : PM < {n} %", TSide::Self, 30, 10, 90, 10, "Quand ses propres PM passent sous ce seuil (gauche/droite)."},
     {"soi_limite", "Soi : Limite prête", TSide::Self, 0, 0, 0, 0, "Quand sa jauge Limite est pleine."},
     {"soi_sans_effet", "Soi : sans l'effet", TSide::Self, 0, 0, 0, 0, "Quand il n'a pas encore le bonus de l'action (Carapace…)."},
+    {"soi_menace", "Soi : zone annoncée", TSide::Self, 0, 0, 0, 0, "Quand l'attaque annoncée d'un boss va toucher sa case (zone rouge)."},
+    {"ennemis_groupes", "Ennemis : {n} dans la zone", TSide::Foe, 2, 2, 4, 1,
+     "Une cible dont la zone de l'action touche au moins ce nombre d'ennemis (gauche/droite : nombre)."},
+    {"allie_avant_pv_moins", "Allié avant : PV < {n} %", TSide::Ally, 50, 10, 90, 10, "Un allié de la colonne avant, blessé sous ce seuil (gauche/droite)."},
 };
 static const std::vector<TacticAuto> AUTOS = {
     {"attaque", "Meilleure attaque", TSide::Foe, "La technique ou le sort qui fait le plus de dégâts à la cible (peut dépenser des PM)."},
@@ -43,6 +47,7 @@ static const std::vector<TacticAuto> AUTOS = {
     {"reanimation", "Réanimation", TSide::Ally, "Un sort qui relève un allié K.O."},
     {"guerison", "Guérison", TSide::Ally, "Un sort qui guérit les états (poison, sommeil…)."},
     {"limite", "Limite", TSide::Any, "La technique ultime, quand la jauge Limite est pleine."},
+    {"esquiver", "Se mettre à l'abri", TSide::Ally, "Changer de case pour sortir de la zone rouge annoncée par un boss (action rapide)."},
 };
 
 const std::vector<TacticCond>& tacticConds() { return CONDS; }
@@ -430,18 +435,18 @@ void TacticsEditor::pickAction(int i, bool isNew, const Tactic& draft) {
   if (T.fighter) {
     auto techs = T.fighter->techs(), spells = T.fighter->spells();
     if (!techs.empty()) m.items.push_back(menuHeader("Techniques"));
-    for (auto& id : techs) add(Tactic::Act::Move, id, typeName(moveInfo(id).type), moveDetails(moveInfo(id)));
+    for (auto& id : techs) add(Tactic::Act::Move, id, typeName(moveInfo(id).type), moveHelp(moveInfo(id), T.fighter.get()));
     if (!spells.empty()) m.items.push_back(menuHeader("Sorts"));
     for (auto& id : spells) {
       const Move& mv = moveInfo(id);
-      add(Tactic::Act::Move, id, std::to_string(mv.cost) + " PM", mv.desc.empty() ? moveDetails(mv) : mv.desc + " (" + moveDetails(mv) + ")");
+      add(Tactic::Act::Move, id, std::to_string(mv.cost) + " PM", moveHelp(mv, T.fighter.get()));
     }
   }
   m.items.push_back(menuHeader("Objets (pris dans le sac)"));
   for (auto& d : allItems()) {
     if (!d.battle) continue;
     int n = G.items.count(d.id) ? G.items.at(d.id) : 0;
-    add(Tactic::Act::Item, d.id, "×" + std::to_string(n), d.desc);
+    add(Tactic::Act::Item, d.id, "×" + std::to_string(n), itemHelp(d));
   }
   m.onCancel = [self, i, isNew] {
     if (isNew) self->menuList(self->first() + i);

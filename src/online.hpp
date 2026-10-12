@@ -33,6 +33,7 @@ class Online {
   static constexpr int MAX_PLAYERS = 4;  // l'hôte et trois invités
   explicit Online(Game& g);
   bool onScreen() const { return screen_; }  // les écrans du multijoueur remplacent l'écran titre
+  bool connected() const { return state_ != State::Menu; }  // en train de rejoindre, au salon, en duel ou en expédition
   void menu(int sel = 0);
   void update(float dt);  // réseau, à chaque image (aussi pendant le combat)
   void draw(Gfx& g);

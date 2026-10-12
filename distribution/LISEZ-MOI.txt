@@ -36,21 +36,42 @@ COMMANDES
   Entrée ou Espace    parler, valider
   Échap               annuler, menu (équipe, tactiques, objets, sauvegarde)
   Tab (en combat)     mode auto : les tactiques jouent à votre place
+  F1                  aide (statistiques, damier, zones, états, types)
+  F2                  vitesse du jeu ×1, ×2 ou ×3
   F11                 plein écran ou fenêtre
   La souris marche aussi dans les menus.
 
   Échap > Équipement : arme, armure et accessoire de chaque membre (en
   vente dans les boutiques). Équipez-vous avant chaque boss !
 
+  Évolution : à un certain niveau, une créature peut devenir plus forte
+  (« Évoluer ? » après le combat ; Non : Échap > Évolution plus tard).
+
+  Forge de Forgeroc (après l'arrivée de Brann) : armes et armures +1 à
+  +3, avec de l'or, du minerai, des cœurs de braise, des cristaux de givre
+  et les trophées des boss.
+
   Échap > Compagnons : la créature qui combat aux côtés de chaque héros.
-  Elle agit toute seule en combat ; vous commandez les héros.
+  Vous la commandez en combat, comme les héros (Tab : leurs tactiques).
+  Loin des villes, les créatures arrivent en meutes (jusqu'à six).
+
+  Échap > Formation : la place de chacun sur le damier de combat (16 cases,
+  de l'avant à l'arrière). Au corps à corps, on ne touche que l'avant ennemi ;
+  l'arrière est protégé. En combat, « Se déplacer » change de case.
+  Zone rouge : un boss prépare une grosse attaque, écartez-vous !
 
   Échap > Réserve : les créatures capturées quand l'équipe (8 membres)
   est complète. Échap > Bestiaire : toutes les créatures rencontrées.
   En boutique, « Vendre… » rachète vos objets à moitié prix.
 
   Options (écran titre, ou Échap > Options) : volume de la musique et des
-  effets, plein écran, touches du clavier.
+  effets, plein écran, vitesse du jeu, touches du clavier.
+
+  Échap > Aide (ou F1) : ce que font les statistiques, le calcul des
+  dégâts, le damier et les zones, les états, et le tableau des types (qui
+  est efficace contre qui). Chaque technique et chaque objet détaille son
+  effet en bas de l'écran quand on le choisit ; le Bestiaire donne les
+  faiblesses de chaque créature.
 
   Manette : croix ou stick pour se déplacer, A valider, B annuler, Start
   menu, Select mode auto. Elle se branche à tout moment.

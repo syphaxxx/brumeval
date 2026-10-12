@@ -48,8 +48,8 @@ static void reorderKeys(Json& o, const std::vector<std::string>& order) {
 }
 static const std::vector<std::string> SPECIES_KEYS = {"id", "nom", "type", "types", "base", "precision", "esquive", "critique", "resistances",
                                                       "immunites", "humain", "apparence", "role", "forme", "couleurs", "apprend", "limite",
-                                                      "tactiques"};
-static const std::vector<std::string> MOVE_KEYS = {"id", "nom", "type", "genre", "cible", "puissance", "cout", "precision", "critique", "rythme",
+                                                      "evolution", "taille", "tactiques"};
+static const std::vector<std::string> MOVE_KEYS = {"id", "nom", "type", "genre", "cible", "puissance", "portee", "zone", "cout", "precision", "critique", "rythme",
                                                    "effet", "effets", "description"};
 static const std::vector<std::string> ITEM_KEYS = {"id", "nom", "description", "prix", "combat", "menu", "important", "soin_pv", "soin_pm",
                                                    "rappel", "capture", "soin_statut"};
@@ -313,6 +313,7 @@ void Settings::menuStartItems(int sel) {
   m.x = 24, m.y = 30, m.w = 200, m.rows = 12;
   m.sel = sel;
   for (auto& d : allItems()) {
+    if (d.forged) continue;  // objets forgés : générés à partir de leur objet d'origine
     std::string id = d.id;
     m.items.push_back(numItem(d.name, d.desc,
                               [id] {
@@ -338,6 +339,7 @@ void Settings::menuDrops(int sel) {
   m.x = 24, m.y = 30, m.w = 200, m.rows = 12;
   m.sel = sel;
   for (auto& d : allItems()) {
+    if (d.forged) continue;
     std::string id = d.id;
     m.items.push_back(numItem(d.name, "Chance de trouver cet objet après un combat contre des créatures sauvages.",
                               [id] {
@@ -489,6 +491,31 @@ void Settings::editSpecies(const std::string& id, int sel) {
                [this, id] { editSpecies(id, 20); });
     };
     m.items.push_back(lim);
+  }
+  if (!species(id).human) {  // évolution : l'espèce suivante (ou aucune) et son niveau
+    std::vector<std::string> ids = {""};
+    for (auto& s : allSpecies())
+      if (!s.human && s.id != id) ids.push_back(s.id);
+    int n = (int)ids.size();
+    auto index = [ids, id] {
+      auto it = std::find(ids.begin(), ids.end(), species(id).evolveTo);
+      return it == ids.end() ? 0 : int(it - ids.begin());
+    };
+    m.items.push_back(cycleItem("Évolution", "L'espèce qu'elle devient au niveau choisi (Oui/Non proposé au joueur après le combat).", index,
+                                [this, id, ids](int k) {
+                                  EDIT_SPECIES(id, {
+                                    if (k == 0) o.erase("evolution");
+                                    else o["evolution"] = Json{{"espece", ids[(size_t)k]}, {"niveau", std::max(2, species(id).evolveLvl ? species(id).evolveLvl : 20)}};
+                                  });
+                                },
+                                n, [ids](int k) { return k == 0 ? std::string("aucune") : utf8Prefix(species(ids[(size_t)k]).name, 10); }));
+    m.items.push_back(numItem("Niveau d'évolution", "Niveau à partir duquel l'évolution est proposée.",
+                              [id] { return (double)species(id).evolveLvl; },
+                              [this, id](double v) {
+                                if (species(id).evolveTo.empty()) return;
+                                EDIT_SPECIES(id, { o["evolution"]["niveau"] = (int)v; });
+                              },
+                              1, 2, 100));
   }
   m.items.push_back(menuHeader("Fiche"));
   m.items.push_back(numItem("Niveau de la fiche", "Niveau utilisé pour la fiche de droite (seulement l'aperçu).",
@@ -654,7 +681,7 @@ void Settings::pickMove(const std::string& title, const std::string& current, st
       any = true;
       std::string id = mv.id;
       if (id == current) m.sel = (int)m.items.size();
-      m.items.push_back({utf8Prefix(mv.name, 18), "", moveDetails(mv), true, [done, id] { done(id); }, [this, id] {
+      m.items.push_back({utf8Prefix(mv.name, 18), "", "Entrée : choisir cette technique (détails à droite).", true, [done, id] { done(id); }, [this, id] {
                            panel_ = Panel::Move;
                            panelId_ = id;
                          }});
@@ -751,6 +778,27 @@ void Settings::editMove(const std::string& id, int sel) {
                                 });
                               },
                               3, [](int k) { return std::string(paceName(Pace(k))); }));
+  m.items.push_back(cycleItem("Portée", "Corps à corps : seulement la colonne ennemie la plus avancée encore debout. À distance : n'importe quelle case.",
+                              [id] { return moveInfo(id).melee ? 0 : 1; },
+                              [this, id](int k) {
+                                bool def = moveInfo(id).kind == Kind::Physical;  // par défaut : physique = corps à corps
+                                EDIT_MOVE(id, {
+                                  if ((k == 0) == def) o.erase("portee");
+                                  else o["portee"] = k == 0 ? "corps" : "distance";
+                                });
+                              },
+                              2, [](int k) { return std::string(k == 0 ? "Corps à corps" : "À distance"); }));
+  m.items.push_back(cycleItem("Zone", "Cases touchées autour de la cible ; les voisines prennent un peu moins (règles, combat).",
+                              [id] { return (int)moveInfo(id).zone; },
+                              [this, id](int k) {
+                                Target tg = moveInfo(id).target;
+                                Area def = tg == Target::AllEnemies || tg == Target::AllAllies ? Area::All : Area::Single;
+                                EDIT_MOVE(id, {
+                                  if (Area(k) == def) o.erase("zone");
+                                  else o["zone"] = zoneId(Area(k));
+                                });
+                              },
+                              5, [](int k) { return std::string(zoneName(Area(k))); }));
   {
     MenuItem e{"Effet", "", "État, bonus/malus ou guérison.", true, [this, id] { menuEffect(id); }};
     e.rightFn = [id] {
@@ -935,6 +983,7 @@ void Settings::menuItemsList(const std::string& sel) {
   m.title = "Objets";
   m.x = 4, m.y = 18, m.w = 152, m.rows = 14;
   for (auto& d : allItems()) {
+    if (d.forged) continue;
     std::string id = d.id;
     if (id == sel) m.sel = (int)m.items.size();
     m.items.push_back({d.name, "", d.desc, true, [this, id] { editItem(id); }, [this, id] {

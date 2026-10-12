@@ -47,13 +47,18 @@ importantes ont un commentaire d'une ligne au-dessus.
 | Domaine | Fichiers | Ce qu'on y trouve |
 |---|---|---|
 | Démarrage, fenêtre | `main.cpp` | Taille de l'image, plein écran, manettes, boucle |
-| Jeu | `game.hpp/.cpp` | Écran titre, carte, menus (équipe, équipement, journal, objets, options…), sauvegarde |
+| Jeu | `game.hpp/.cpp` | Écran titre, carte, boucle du jeu, dessin |
+| Menus | `menus.cpp` | Menu de pause (équipe, compagnons, réserve, bestiaire, équipement, journal, objets, magie), boutique, options |
+| Sauvegarde | `save.cpp` | `saveGame`, `loadGame`, `readMemberLine` |
 | Événements, quêtes | `events.hpp/.cpp` | Actions des événements (`Game::execAction`), conditions, quêtes |
 | Combat | `battle.hpp/.cpp`, `tactics.hpp/.cpp` | Jauges ATB, dégâts, IA, tactiques, animations, combat en ligne |
 | Données | `data.hpp/.cpp`, `world.hpp/.cpp`, `store.hpp/.cpp` | Lecture et vérification de `data/`, cartes, fichiers du joueur |
 | Dessin | `gfx.hpp/.cpp`, `sprites.hpp/.cpp`, `ui.hpp/.cpp` | Formes, police, fenêtres ; créatures, humains, tuiles ; menus |
 | Son | `audio.hpp/.cpp` | Synthèse des musiques et bruitages de `data/sons.json` |
-| Options | `options.hpp/.cpp` | Volumes, plein écran, touches (`options.txt`) |
+| Options | `options.hpp/.cpp` | Volumes, plein écran, vitesse du jeu, touches (`options.txt`) |
+| Évolution | `evolution.cpp` | Question « Évoluer ? » après un combat, effet de lumière, menu Échap > Évolution |
+| Forge | `forge.cpp` | Forge de Forgeroc : menu, coûts, forger (objets forgés générés dans `data.cpp`) |
+| Aide | `help.cpp` | Pages d'aide (Échap > Aide, F1) : statistiques, dégâts, damier, zones, rythme, états, tableau des types, touches |
 | Expédition | `expedition.hpp/.cpp`, `procgen.hpp/.cpp` | Monde généré à partir d'une graine, Camp, sauvegarde à part |
 | Multijoueur | `net.hpp/.cpp`, `online.hpp/.cpp`, `coop.cpp`, `trade.cpp` | Connexions, salon, duel, expédition à plusieurs, échanges |
 | Outils | `arena`, `settings`, `mapedit`, `storyedit` | Arène, réglages, éditeur de cartes, éditeur d'histoire |
@@ -87,7 +92,9 @@ membres de la réserve ; `vu` et `pris` pour le bestiaire. La progression de l'h
 les coffres ouverts et les quêtes sont des **drapeaux** (`Game::flags`).
 
 **Qui combat** : `frontOf` (data.cpp) — les 3 premiers héros valides, chacun
-suivi de sa créature compagnon. Les compagnons agissent seuls en combat.
+suivi de sa créature compagnon. Le joueur commande héros et compagnons ; la
+jauge des compagnons avance moins vite. Chacun a sa case sur le damier
+(`formation`, `Battle::cells_`).
 
 ## 4. Recettes
 
@@ -139,6 +146,12 @@ défaut et le menu de réglage, storyedit.cpp).
 
 **Une option** : un champ dans `Options` (options.hpp), sa lecture et son
 écriture (`loadOptions` / `saveOptions`), une ligne dans `Game::optionsMenu`.
+
+**Une page d'aide** : une entrée dans `helpPages()` (help.cpp). Écrire les
+nombres à partir de `rules()` (jamais en dur) : l'aide reste juste quand on
+règle le jeu. Les descriptions des techniques et des objets sont calculées
+(`moveDetails`, `itemDetails` dans battle.cpp) : le champ `description` des
+données n'est qu'une phrase d'ambiance, affichée avant ces détails.
 
 **Un message réseau** : l'envoyer avec `Online::sendTo` (champ `t` : son nom),
 le traiter dans `Online::onMessage` (ou `Battle::netMessage` en combat).

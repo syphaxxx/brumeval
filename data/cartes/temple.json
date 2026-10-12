@@ -50,7 +50,7 @@
   "coffres": [
     {"x": 25, "y": 8, "objet": "cle_givre", "quantite": 1},
     {"x": 11, "y": 4, "objet": "superpotion", "quantite": 2},
-    {"x": 26, "y": 16, "objet": "ether", "quantite": 3},
+    {"x": 26, "y": 16, "objet": "cristal_givre", "quantite": 2},
     {"x": 23, "y": 13, "objet": "lanterne_or", "quantite": 1},
     {"x": 20, "y": 7, "objet": "elixir", "quantite": 1}
   ],
@@ -84,8 +84,10 @@
       "niveau_min": 25,
       "niveau_max": 28,
       "max_ennemis": 3,
-      "creatures": ["givrelin", "ferrolin", "cristallin", "glaconnet", "esprillon"]
+      "creatures": ["givrelin", "ferrolin", "cristallin", "glaconnet", "esprillon", "banquisot"]
     }
   ],
-  "boss": [{"x": 37, "y": 4, "espece": "cristallin", "drapeau": "cristal_apaise", "evenement": "gardien_cristal"}]
+  "boss": [
+    {"x": 37, "y": 4, "espece": "cristallin", "drapeau": "cristal_apaise", "evenement": "gardien_cristal"}
+  ]
 }

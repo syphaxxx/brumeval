@@ -1,6 +1,7 @@
 # Planning de la suite de Brumeval
 
-État au 9 octobre 2026 : version **1.5** publiée (boss renforcés, compagnons).
+État au 12 octobre 2026 : version **2.2** publiée (les 1.7 à 2.2 en une fois : damier 4x4, zones, vitesse, Aide,
+forge, évolution, graphismes). Avant elle : 1.6 (réserve, bestiaire, Source des Brumes), 1.5 (boss renforcés, compagnons).
 Avant elle : 1.3 (son, options, manette, animations d'attaque, Ignarok
 redessiné, intérieurs, équipement, quêtes annexes), 1.3.1 (musique) et 1.4
 (gardien à plusieurs, équipement en expédition et en duel).
@@ -51,13 +52,50 @@ bestiaire. Idées pour la suite :
 - Nouvelles créatures pour les nouvelles zones (formes existantes, nouvelles
   couleurs : rien à dessiner).
 
+## Étape 2 bis — Refonte des combats (demandée le 2026-10-10)
+
+« Les combats ne sont pas vraiment stratégiques » : plan validé avec
+l'utilisateur, en deux versions.
+
+- Fait (2026-10-10) : **1.7** et **1.8** ci-dessous, plus les retours du
+  premier essai (compagnons commandés, menus en bas, ATH discret, fenêtre des
+  gains, recrue à la suite, moins d'expérience, boss +10 % de PV) et les
+  **cartes agrandies** (vallée, Cendrelune, Sylve-Noire, Pics) avec des meutes
+  selon la profondeur.
+- **1.7** : damier de 9 cases par camp, corps à corps limité à
+  l'avant, arrière protégé, zones d'effet des techniques (ligne, colonne,
+  croix, tout), « Se déplacer » (action rapide), menu Formation, jusqu'à 6
+  ennemis, boss remesurés.
+- **1.8** : IA qui place et déplace ses combattants, vise les zones les plus
+  rentables, protège ses lanceurs ; attaques des boss annoncées un tour à
+  l'avance (on peut s'écarter de la zone) ; tactiques liées au damier
+  (« ennemis groupés », « allié à l'avant blessé »…).
+- **1.9** (demandée le 2026-10-12 après l'essai de la 1.8) : vitesse du jeu
+  ×1/×2/×3 (Options, F2), écran **Aide** (F1 : statistiques, dégâts, damier,
+  zones, rythme, états, tableau des types, touches), descriptions complètes
+  des techniques (cible, zone, portée, coût, puissance, effets, rythme) et
+  des objets (effets chiffrés), faiblesses dans le Bestiaire, et **plus
+  d'attaques de zone** (10 nouvelles techniques pour les héros et les
+  créatures, 4 techniques de créatures qui gagnent une zone). Boss et meutes
+  inchangés (« ça va pour le moment »).
+- **2.0** (demandée le 2026-10-12) : damier **4 × 4** (16 cases par camp ; les
+  anciennes formations sont converties) et graphismes des cartes : maisons
+  (tuiles, cheminée, volets, jardinières, soubassement, ombre), arbres en trois
+  variantes avec du volume (fruitiers dans la vallée), chemins aux bords
+  adoucis, herbe plus variée.
+- Ensuite : le joueur automatique mis à jour à chaque étape ; étape 3.
+
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
 - Fait en 1.6 : **réserve de créatures** (au-delà de 8 membres) et
   **vente** en boutique (moitié du prix).
-- **Forge de Forgeroc** : améliorer une arme avec des objets trouvés.
-- **Évolution** des créatures à un niveau donné (nouvelle espèce plus forte) :
-  à décider, car cela change l'équilibrage de toute l'histoire.
+- Fait en **2.1** (plan validé le 2026-10-12) : **forge de Forgeroc**, armes
+  et armures +1 à +3 avec minerai, cœurs de braise, cristaux de givre et un
+  trophée par boss. Idée : un forgeron à Givreval.
+- Fait en **2.2** (plan validé le 2026-10-12) : **évolution** des créatures
+  (22 lignées, question Oui/Non après le combat, Échap > Évolution pour un
+  refus, formes évoluées sauvages en fin de partie). Idées : une seconde
+  évolution pour les compagnons de départ, l'évolution dans l'Expédition.
 
 ## Étape 4 — Multijoueur plus simple (2 à 3 séances)
 
@@ -80,8 +118,8 @@ bestiaire. Idées pour la suite :
 
 ## Étape 6 — Technique (au fil de l'eau)
 
-- Découper `game.cpp` (1 500 lignes) : les menus (équipe, équipement,
-  journal, options) dans un fichier `menus.cpp`.
+- Fait le 2026-10-10 : `game.cpp` découpé (900 lignes) en `menus.cpp` et
+  `save.cpp`.
 - Le mode test prend 43 s : c'est correct ; le garder sous la minute.
 - Relancer `/graphify . --update` et l'audit (`/ponytail-audit`) après chaque
   grosse étape.

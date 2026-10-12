@@ -47,13 +47,65 @@
     "T.TT.T..T...F.TTT.......===BB==================,,TT,,,,TT######T",
     "T..TTTTT.....TT..TT.T......~~......T...........,.,,,T,...######T",
     "TTTT.T..TTT....TTT.T.T....T~~........F..T.......,TT,TTT..######T",
-    "TTTTTTTTTTTTTTTTTTTTTTTTTTT~~TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+    "TTTTTTTTTTTT...TTTTTTTTTTTT~~...TTTTTTTTTTTTT...TTTTTTTTTTTTTTTT",
+    "T.........TTT=R....,.,,,,,,~~.=..,,,,,,,R.....=.TTT,,,,,,,.....T",
+    "T.,.......,TR=RRR,,,,,,,,,,~~,=,,,,,,,,,,.....=..,,,,,,,,,.....T",
+    "T,,,,...R,RTT=R,,,,,,,,,,,,~~.=,,,,,,,,,,,....=..,,,T,,,,,..R..T",
+    "T,,,,T.,RRRR,=,TTTTT,,,,,,,~~,=,,,,,,,,,,,....=.,,,TTT,,,,,...,T",
+    "T,,,,T,RRRR,,=,,,,,,,,,,~~~~~~=~~,,,,,,,,,,...=..,TTTTT,,,,,,,,T",
+    "T,,,,T.,R,,,,=,,,,,,,,~~~~~~~~=~~~~,,,,,,,....=..,,TTT,,,,,,,,,T",
+    "T,,,,T..R,,,T,,,,,,,,,~~~~~~~~~~~~~,T,,,,,....,..,,,TTTT,T,,,,,T",
+    "T.,,,T..T,,,T,,,,,,,,~~~~~~~~~~~~~~~T,,,,...,,,,,.,,,,,,TTT,,,,T",
+    "T,,,,,.,,,,,T,,,,,,TTT~~~~~~~~~~~~~,T,,,,T.,,,,,,,..,,,TTTTT,,,T",
+    "T,,,,,,,,,,,,,,,,,,,TT~~~~~~~~~~~~~,T,,,TTT,,,,,,,...,,.TTT,,,TT",
+    "TT,,,,,,,,,,,,,,,,,,,,T,~~~~~~~~~,,,T,,,,T,,,,,,,,....,..T,,,,TT",
+    "TT,,,,...,.,,,,,,,,,,.,,,,,R~,,,,,,,,,,,,,,,,,,,,,,....R...,,,TT",
+    "TTT,,TTT....,,,,,,,,,,,,,,,R,,,,,,,,,,,,,T,,,,,,,T....RRR.....,T",
+    "TTT,,.........,.,,,,,,,,,,,R,,,,,,TTT,,,TTT,,,,,,,.....R.......T",
+    "TT.,............,,,,,.,,,,,R,,,,,....,,TTTTT,,,,,,.............T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
   ],
   "batiments": [
-    {"x": 5, "y": 3, "l": 5, "h": 4, "genre": "soin", "nom": "Maison de soin", "toit": "#b8483e", "interieur": "vallee_soin"},
-    {"x": 18, "y": 3, "l": 5, "h": 4, "genre": "boutique1", "nom": "Boutique", "toit": "#3f6fb0", "interieur": "vallee_boutique"},
-    {"x": 4, "y": 11, "l": 5, "h": 4, "genre": "chapelle", "nom": "Chapelle", "toit": "#8a6fb8", "interieur": "vallee_chapelle"},
-    {"x": 17, "y": 11, "l": 5, "h": 4, "genre": "maison", "nom": "Maison de l'ancien", "toit": "#7a8a4a", "interieur": "vallee_ancien"}
+    {
+      "x": 5,
+      "y": 3,
+      "l": 5,
+      "h": 4,
+      "genre": "soin",
+      "nom": "Maison de soin",
+      "toit": "#b8483e",
+      "interieur": "vallee_soin"
+    },
+    {
+      "x": 18,
+      "y": 3,
+      "l": 5,
+      "h": 4,
+      "genre": "boutique1",
+      "nom": "Boutique",
+      "toit": "#3f6fb0",
+      "interieur": "vallee_boutique"
+    },
+    {
+      "x": 4,
+      "y": 11,
+      "l": 5,
+      "h": 4,
+      "genre": "chapelle",
+      "nom": "Chapelle",
+      "toit": "#8a6fb8",
+      "interieur": "vallee_chapelle"
+    },
+    {
+      "x": 17,
+      "y": 11,
+      "l": 5,
+      "h": 4,
+      "genre": "maison",
+      "nom": "Maison de l'ancien",
+      "toit": "#7a8a4a",
+      "interieur": "vallee_ancien"
+    }
   ],
   "habitants": [
     {
@@ -128,8 +180,11 @@
     {"x": 55, "y": 21, "objet": "plume", "quantite": 1},
     {"x": 48, "y": 41, "objet": "lanterne", "quantite": 3},
     {"x": 3, "y": 24, "or": 80},
-    {"x": 31, "y": 41, "objet": "potion", "quantite": 3},
-    {"x": 2, "y": 2, "objet": "lanterne", "quantite": 2}
+    {"x": 31, "y": 41, "objet": "minerai", "quantite": 2},
+    {"x": 2, "y": 2, "objet": "lanterne", "quantite": 2},
+    {"x": 55, "y": 53, "objet": "lanterne_argent", "quantite": 2},
+    {"x": 21, "y": 55, "objet": "superpotion", "quantite": 2},
+    {"x": 29, "y": 46, "or": 600}
   ],
   "panneaux": [
     {"x": 12, "y": 10, "texte": "Village de Brumeval. Maison de soin au nord-ouest, boutique au nord-est."},
@@ -202,6 +257,25 @@
       "niveau_max": 6,
       "max_ennemis": 2,
       "creatures": ["piafouine", "grenouillon", "mulotin"]
+    },
+    {
+      "x": 0,
+      "y": 44,
+      "l": 64,
+      "h": 16,
+      "niveau_min": 8,
+      "niveau_max": 12,
+      "max_ennemis": 3,
+      "creatures": [
+        "piafouine",
+        "mulotin",
+        "champichou",
+        "lucioline",
+        "grenouillon",
+        "rocaillou",
+        "brumelin",
+        "louvet"
+      ]
     }
   ],
   "boss": [{"x": 59, "y": 32, "espece": "sylvarque", "drapeau": "boss1", "evenement": "sylvarque"}]
