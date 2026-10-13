@@ -5,8 +5,10 @@ choses. Il complète trois autres documents :
 
 - `README.md` : jouer, compiler, les outils intégrés.
 - `data/LISEZMOI.md` : le format de chaque fichier de données.
-- `CLAUDE.md` : la référence détaillée (rôle de chaque fichier, principes,
-  pièges, équilibrage mesuré). C'est le document que Claude Code lit en premier.
+- `CLAUDE.md` : les principes et pièges du code. C'est le document que Claude Code
+  lit en premier. Les sujets ponctuels sont dans `.claude/skills/` (équilibrage
+  mesuré, publication, multijoueur, joueur automatique) : Claude Code les lit
+  quand la tâche les concerne.
 
 Règle de base du projet : **tout le contenu est dans `data/`**. Le code sait
 *comment* jouer ; les fichiers JSON disent *quoi* (créatures, cartes,
@@ -184,7 +186,7 @@ touchent seulement des fichiers `_test`.
 
 **Partie complète** : `brumeval --partie DOSSIER` (version Release : une
 dizaine de secondes) fait jouer toute l'histoire au joueur automatique
-(`src/pilot.cpp`, voir CLAUDE.md) ; il dit où il reste bloqué. À lancer après
+(`src/pilot.cpp`, voir `.claude/skills/joueur-auto-brumeval`) ; il dit où il reste bloqué. À lancer après
 un changement d'histoire, de cartes ou d'équilibrage. `brumeval --demo` : la
 même chose à l'écran.
 

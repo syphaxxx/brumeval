@@ -30,17 +30,9 @@ de débogage MSVC (`cppvsdbg`) et une GDB.
 
 ## Publier une version pour les joueurs
 
-`.github/workflows/compilation.yml` compile le jeu sous Windows (MSVC), Mac
-(application universelle `Brumeval.app`, macOS 11+) et Linux (Ubuntu 22.04) à
-chaque envoi sur GitHub, lance le mode test sur les trois, et fabrique les
-paquets (exécutable + `data/` + `distribution/LISEZ-MOI.txt`). Pour publier :
-augmenter `BRUMEVAL_VERSION` dans `src/version.hpp`, fusionner dans `main`,
-puis `git tag v1.2` et `git push origin v1.2` : la page Releases est créée avec
-le texte de `distribution/notes.md`, puis la version est annoncée sur le canal Discord de l'utilisateur (webhook rangé dans le secret GitHub `DISCORD_WEBHOOK`, jamais dans le code : le dépôt est public ; texte = première ligne du message de l'étiquette, donc écrire `git tag -a v1.6 -m "Version 1.6 : …"` ; la section « Nouveautés » de `notes.md` est à réécrire à chaque version). Sous Windows, la bibliothèque C++ est
-intégrée (`CMAKE_MSVC_RUNTIME_LIBRARY`, `SDL_FORCE_STATIC_VCRT`) ; sous Linux,
-`-static-libstdc++`. Sur Mac, `data/` va dans `Contents/Resources` (trouvé par
-`SDL_GetBasePath`). Pour essayer une version Release ici : `cmake -S . -B
-build-release` puis `cmake --build build-release --config Release`.
+Procédure complète : compétence `publier-version` (`.claude/skills/`). Augmenter `BRUMEVAL_VERSION`
+(`src/version.hpp`) à chaque version publiée. L'adresse du webhook Discord est dans le secret GitHub
+`DISCORD_WEBHOOK` : ne jamais l'écrire dans le code ni dans la mémoire, le dépôt est public.
 
 ## Tester (à faire après chaque modification)
 
@@ -69,69 +61,13 @@ build-release/Release/brumeval --partie partie   # toute l'histoire, sans fenêt
 brumeval --demo                                  # la même chose dans la fenêtre (aussi Outils > Démo)
 ```
 
-`src/pilot.hpp/.cpp` : un joueur qui joue avec les **mêmes touches** qu'un
-humain (marcher, Entrée, menus ; en combat, l'IA `autoCommand` ou une
-lanterne). Rien n'est écrit d'avance : à chaque décision, `Pilot::goals`
-liste ce qu'il y a à faire sur toutes les cartes (habitant dont la réponse a
-changé : signature `Pilot::inspect` = page + conditions ; coffre, panneau,
-porte sans intérieur, boss, carte jamais vue), et `plan` va au plus proche
-(Dijkstra sur toutes les cartes, passages et portes compris). Ordre : se
-soigner si besoin, boutique (meilleur équipement, lanternes, potions),
-le reste, puis les combats difficiles quand l'équipe est prête (niveau du
-combat −2 pour un boss, −3 sinon, +2 par défaite), sinon entraînement dans
-les hautes herbes. Il capture des créatures tant que les héros manquent de
-compagnons (mode auto coupé pour ces combats). Il passe les écrans de fin
-(Ignarok, puis Givrecorne) et s'arrête quand il n'y a plus rien à faire.
-Rapport : journal à l'écran et `partie/rapport.txt`, captures `.bmp` des
-moments marquants, problèmes de mise en page ; code 0 si l'histoire est finie.
-« BLOQUÉ » : plus rien à faire sans écran de fin, 30 minutes de jeu sans
-progrès, ou 8 défaites contre le même combat. `BRUMEVAL_TRACE=1` affiche
-chaque décision ; `BRUMEVAL_COMPAGNON=gouttelin` choisit le premier
-compagnon. Fichiers : `sauvegarde_partie_auto.txt`, `sauvegarde_demo.txt`
-(jamais la vraie partie). En démo, une touche rend la main au joueur. La
-vérification GitHub lance aussi `--partie`. Mesuré le 2026-10-09 (12 parties,
-3 premiers compagnons) : toujours finie, 45 à 60 minutes de jeu, niveau ~48.
-Il s'améliore d'une partie à l'autre (demandé le 2026-10-10) : `pilote_memoire.txt` (dossier de l'utilisateur) garde pour chaque combat difficile la marge de niveaux qu'il lui a fallu (mêlée à la précédente, baisse après une victoire du premier coup) et, pour chaque carte, `nature:<carte>` = les meutes qui l'ont battu : les herbes profondes de cette carte lui coûtent plus cher à traverser et il s'y entraîne moins loin (la crainte baisse d'un quart à chaque partie finie). Mesuré : 6, 6, 4, 4 puis 2 défaites sur cinq parties de suite. Il place son équipe avec la formation automatique, vise les zones les plus rentables (IA) et se met à l'abri des attaques annoncées. Un nouveau genre d'interaction (objet à utiliser, énigme…) demande d'ajouter
-un objectif dans `Pilot::goals`. Méthode réutilisable pour d'autres jeux :
-compétence `joueur-automatique` de Claude Code.
+Fonctionnement, rapport et mémoire d'une partie à l'autre : compétence `joueur-auto-brumeval`. Un
+nouveau genre d'interaction (objet à utiliser, énigme…) demande d'ajouter un objectif dans `Pilot::goals`.
 
 ## Architecture (src/)
 
-| Fichier | Rôle |
-|---|---|
-| `main.cpp` | Fenêtre SDL (taille adaptée à l'écran), affichage agrandi (`Screen`), boucle principale, plein écran (F11, gardé dans `options.txt`), option `--test`, chargement de data/ |
-| `game.hpp/.cpp` | Écran titre, exploration (marche, portes, habitants, coffres), boucle `update`, dessin de la carte, écran de fin |
-| `menus.cpp` | Méthodes de `Game` : options et touches, menu de pause (équipe, compagnons, réserve, bestiaire, tactiques, équipement, journal, objets, magie), boutique (achat, vente), fiche de l'équipe |
-| `save.cpp` | Méthodes de `Game` : sauvegarde et chargement (`saveGame`, `loadGame`), `readMemberLine` (partagé avec le multijoueur) |
-| `battle.hpp/.cpp` | Combat ATB : jauges, menus, dégâts physiques/magiques, précision, critiques, états, bonus/malus, renforts ennemis, IA (`think`), tactiques des alliés (`tacticPlan`, touche Tab), journal (`log`), capture, Limites, victoire |
-| `tactics.hpp/.cpp` | Tactiques (gambits) : catalogue des conditions et actions automatiques, lecture/écriture JSON, vérifications (`tacticProblem`), lignes selon le niveau (`tacticSlots`), éditeur réutilisable (`openTacticsEditor`) |
-| `store.hpp/.cpp` | Dossier data/ : recherche, lecture et écriture JSON (nlohmann/json, `Json` = `ordered_json`) |
-| `data.hpp/.cpp` | Chargement des types, techniques, espèces, objets, apparences et règles (`Rules`, `ruleFields()`), formules de stats et d'expérience |
-| `world.hpp/.cpp` | Structures des cartes (thèmes, passages avec condition, zones déclencheuses), lecture/écriture de data/cartes/, vérification d'accessibilité (`checkMaps`) |
-| `events.hpp/.cpp` | Événements de l'histoire : chargement, vérification et exécution des actions (`Game::runEvent`) |
-| `sprites.hpp/.cpp` | Dessin en code des créatures (19 formes), humains (coiffes, armes), tuiles selon le thème, bâtiments (aucune image externe) |
-| `audio.hpp/.cpp` | Son fabriqué par le programme (synthèse) : musiques et bruitages décrits dans `data/sons.json`, mélangés dans le fil audio de SDL (`Mixer`) |
-| `gfx.hpp/.cpp` | Primitives de dessin (ellipses, polygones, dégradés), police pixel intégrée avec accents, fenêtres bleues |
-| `ui.hpp/.cpp` | Clavier, `Script` (file de messages/actions) et `MenuStack` (menus à curseur ; `MenuItem::adjust` pour régler une valeur avec gauche/droite, `rightFn` pour un texte recalculé, `menuHeader` pour un titre de section) |
-| `settings.hpp/.cpp` | Réglages (écran titre > Outils) : éditeurs des règles, espèces, techniques, types (grille) et objets ; chaque modification passe par `Settings::change` (document JSON puis `rebuildData`) |
-| `mapedit.hpp/.cpp` | Éditeur de cartes (écran titre > Outils) : calques tuiles/objets/zones, outils, menus de chaque objet, annuler/rétablir, test en jeu (`testHere`, `editorTest_`) |
-| `storyedit.hpp/.cpp` | Éditeur d'histoire (écran titre > Outils) : événements, pages, conditions, actions imbriquées ; chaque écran est un chemin JSON (`goTo`, `goUp`) ; « Jouer l'événement » (`play`, `storyTest_`) |
-| `arena.hpp/.cpp` | Arène de combat (écran titre > Outils) : composition, combat à la main, simulation progressive (`stepSim`), modèles tirés des événements et des zones, journal |
-| `procgen.hpp/.cpp` | Génération procédurale du mode Expédition : hasard reproductible (`Rng`, graine), techniques par type (`Pool`), soutiens, créatures, gardiens, personnages par classe, apparences, régions (carte, village, chemin, rivière, dresseurs, coffres, gardien, événements), au format de data/ |
-| `expedition.hpp/.cpp` | Mode Expédition (écran titre) : menus, choix du héros et de la créature, contenu généré installé à la place des données du jeu (`install`/`restore`), passage de région, défaite roguelite (éclats, record), Camp (améliorations), sauvegarde à part |
-| `upnp.hpp/.cpp` | Multijoueur (2.3) : ouverture du port sur la box par UPnP (miniupnpc, dans un fil à part : `upnp::open`, `state`, `close`), code de partie (`net::gameCode`, `decodeGameCode`, `isPublicIPv4`) ; `brumeval --upnp` vérifie la box |
-| `net.hpp/.cpp` | Réseau du multijoueur : connexions TCP non bloquantes (Windows, Mac, Linux), messages JSON précédés de leur longueur, adresses de l'ordinateur |
-| `online.hpp/.cpp` | Multijoueur (écran titre) : héberger une partie (jusqu'à 4 joueurs), rejoindre, salon, vérification de la version et des données (`dataHash`), relais des messages par l'hôte, duel en ligne |
-| `coop.cpp` | Expédition à plusieurs (fonctions de `Online`) : lancement d'une graine pour tous, état de chaque joueur (message `ou`), autres joueurs sur la carte (`avatars`), attente et combat du gardien à plusieurs |
-| `trade.cpp` | Échange de créatures (fonctions de `Online`) : dans le salon (partie principale) ou pendant l'expédition à plusieurs, une contre une ou en cadeau |
-| `options.hpp/.cpp` | Options du joueur (`options()`, fichier `options.txt`) : volumes, plein écran, vitesse du jeu, touches choisies (`K_UP`…) |
-| `evolution.cpp` | Méthodes de `Game` : évolution des créatures (`offerEvolutions` après un combat gagné, `evolveMember` avec l'effet de lumière `drawEvolution`, menu Échap > Évolution `evolutionMenu`) |
-| `forge.cpp` | Méthodes de `Game` : forge de Forgeroc (`forgeMenu`, `forge`, `forgeStock`, `forgeCost`), ouverte par l'action d'événement `forge` |
-| `help.cpp` | Méthodes de `Game` : Aide (Échap > Aide, écran titre > Aide, F1 partout) : pages `helpPages()` (statistiques, dégâts, combat, damier, zones, rythme, états, tableau des types, touches), chiffres tirés de `rules()` |
-| `events.hpp/.cpp` (quêtes) | Quêtes annexes : `quests()`, `findQuest`, `questFlag` ; action `quete` |
-| `version.hpp` | Numéro de version (`BRUMEVAL_VERSION`), affiché sur l'écran titre et comparé en multijoueur |
-| `test.cpp` | Mode test automatique |
-| `pilot.hpp/.cpp` | Joueur automatique : partie rapide (`--partie`), démo (`--demo`, Outils > Démo) |
+Chaque `.hpp` commence par un commentaire qui explique son module (le `.cpp` du même nom contient le
+code) ; `docs/GUIDE.md` les range par domaine.
 
 ### Principes à connaître
 
@@ -230,79 +166,14 @@ compétence `joueur-automatique` de Claude Code.
   À plusieurs, voir « Expédition à plusieurs » plus bas.
   `BRUMEVAL_MONDE=brume brumeval --test captures` affiche le monde de la graine
   « brume » (héros, créatures, gardiens et techniques des trois premières régions).
-- Code de partie (2.3, plan validé le 2026-10-12, sans serveur) : `Online::host` lance `upnp::open(port)` (sauf en
-  boucle locale du mode test) : la box fait suivre le port et donne son adresse Internet ; le panneau de droite affiche
-  le code (adresse IPv4 + octet de contrôle, 8 caractères Crockford « XXXX-XXXX »), « Copier le code » (salon) le met
-  dans le presse-papiers. Échec (pas d'UPnP, refus, adresse privée ou partagée 100.64/10) : message en bas avec les
-  solutions (UPnP dans la box, Tailscale). « Rejoindre » accepte un code ou une adresse. `disconnect` referme le port.
-  Bibliothèque miniupnpc 2.3.3 (FetchContent, `libminiupnpc-static`) ; `net::startup` (WSAStartup) avant la recherche.
-  Vérifié le 2026-10-12 sur la box de l'utilisateur (`--upnp` : port ouvert puis refermé). Piste suivante si des amis
-  ont une box sans adresse à elle : un serveur relais (payant, à décider).
-- Multijoueur (online.hpp, net.hpp) : TCP sur le port 47474, l'hôte (numéro 0)
-  et jusqu'à trois invités (1 à 3), reliés seulement à l'hôte : `sendTo(à qui,
-  message)` ajoute `de` (expéditeur) et, chez un invité, `a` (destinataire, -1 :
-  tous) ; l'hôte fait suivre. Chacun envoie `bonjour` (version, empreinte des
-  données, pseudo, équipe : 3 premiers membres de la partie principale) ;
-  l'hôte répond `bienvenue` (numéro, liste des joueurs, expédition en cours) et
-  envoie `joueurs` aux autres. Le duel n'est possible qu'à deux. En duel, l'**hôte**
-  calcule tout le combat (`Battle::goOnline`, `Net::Host` : les « ennemis » sont
-  l'équipe de l'invité ; quand la jauge de l'un d'eux est pleine, il envoie
-  `tour` et attend `ordre`, qu'il vérifie) et envoie son état dix fois par
-  seconde (`netState` : PV, PM, jauges, états, message en cours), plus les
-  nombres flottants, éclairs et clignotements. L'**invité** (`Net::Guest`) ne
-  fait pas avancer le temps : il affiche cet état et répond à `tour` par son
-  menu ou ses tactiques ; `useMove` envoie alors l'ordre au lieu de le jouer.
-  Un combattant dans un message : `[0, rang]` pour l'équipe de l'expéditeur,
-  `[1, rang]` pour l'autre (`Battle::mine`, `Battle::other`). Pas d'objets, ni
-  remplaçants, ni expérience en duel. Le mode test lance deux `Game` reliés
-  par 127.0.0.1 (port 47475), joue un duel complet puis une expédition à deux.
-  Augmenter `BRUMEVAL_VERSION` à chaque version publiée (et si les messages
-  changent).
-- Expédition à plusieurs (coop.cpp) : l'hôte envoie `expedition` (graine,
-  empreinte du monde `Expedition::worldHash`, région du groupe) ; chacun joue sa
-  propre `Expedition` (`group()`, sauvegarde `expedition_groupe_<pseudo>.txt`,
-  `groupTag` : deux fenêtres sur le même ordinateur ne se gênent pas) : il
-  reprend sa sauvegarde de cette graine, sinon part avec un nouveau héros de la
-  région du groupe. Chacun envoie son état quand il change (`ou` : région, case,
-  héros, gardien vaincu, en combat, `p` : prêt devant le gardien avec ses
-  combattants). `Game::bossTouched` : le gardien attend tous ceux qui ne l'ont
-  pas encore battu (`Online::missing`) ; l'hôte vérifie (`checkGuardians`) puis
-  envoie `gardien` (groupe, combattants, chef = plus petit numéro). Chez chacun,
-  le combat a les mêmes alliés dans le même ordre (`BattleSetup::allies` : ses
-  vrais combattants, des copies pour ceux des autres ; 3 seul, 2 chacun à deux,
-  1 chacun à trois ou quatre ; PV des ennemis × `guardianScale` : alliés/3
-  au-delà de trois, puis +`coopGuardian` (règle `multijoueur.gardien_par_joueur`,
-  0.15) par joueur en plus ; l'équipement de chacun passe dans `m` → `eq`). Le
-  chef (`Net::Lead`) calcule le combat comme l'hôte d'un duel, envoie `tour`
-  au joueur de l'allié (`Battle::owner`), vérifie son `ordre` (technique, ou
-  objet déjà pris dans son sac), envoie `renfort` et `issue` ; ceux qui suivent
-  (`Net::Follow`) jouent alors la fin chez eux (`victory` : expérience de leurs
-  combattants, or). Joueur parti : l'ordinateur joue ses combattants
-  (`dropPlayer`) ; chef parti : le combat s'arrête sans conséquence. Une
-  défaite en solo ramène au village (`Expedition::knockedOut`, moitié de l'or) ;
-  `groupBattle_` : défaite contre le gardien, l'expédition s'arrête
-  (`onDefeat`, puis `Online::runEnded` : retour au salon). Dans le mode test,
-  les deux `Game` partagent les données en mémoire : l'invité met de côté les
-  vraies données (celles de l'hôte), voir `shareBackup`.
-  Le monde généré doit être identique partout : `-ffp-contract=off` (GCC,
+- Multijoueur (net, online, coop, trade, upnp) : protocole, duel, expédition à plusieurs, échanges,
+  code de partie → compétence `multijoueur`. Augmenter `BRUMEVAL_VERSION` si les messages changent.
+- Le monde généré (Expédition) doit être identique sur tous les ordinateurs : `-ffp-contract=off` (GCC,
   Clang), aucun `sin`/`pow`/`std::shuffle`/`unordered_map` dans procgen.cpp,
   et jamais deux tirages au hasard dans les arguments d'un même appel (Clang
   les fait de gauche à droite, MSVC et GCC de droite à gauche) ;
   le mode test compare l'empreinte de la graine 2026 à une valeur fixe (à
   mettre à jour si on change le générateur).
-- Échange de créatures (trade.cpp, `Online::trade_`) : message `echange`, champ
-  `e` : `offre` (créature, `cadeau`, `run` : pendant l'expédition), puis
-  `contre` (créature en retour) ou `accepte` (cadeau), `fait`, `refus`
-  (`raison`). Quand tout est d'accord, celui qui a proposé envoie `go` : l'autre
-  fait l'échange chez lui (`commitTrade`) et répond `fait`, puis celui qui a
-  proposé le fait à son tour (une coupure donne au pire un double, jamais une
-  perte). Une créature dans
-  un message : `creatureJson` / `creatureFrom` (vérifiée : espèce connue ici,
-  pas un humain). Au salon, l'équipe est lue et réécrite dans la sauvegarde de
-  la partie principale (`loadMine` = `Game::loadGame`, puis `saveGame`) ;
-  pendant l'expédition, c'est `G.team`, sauvegardée aussitôt. Le menu de
-  l'échange (titre « Échange : … ») s'ouvre dans `updateTrade` dès que le joueur
-  est libre (ni combat, ni dialogue) ; l'échange s'arrête si l'autre part.
 - Tactiques (tactics.hpp) : `Fighter::tactics` (liste de `Tactic` : condition,
   seuil, action automatique / technique / objet), `Fighter::tacticsOn`,
   `Game::tacticsAuto` (touche Tab en combat). Quand la jauge d'un allié est
@@ -481,115 +352,11 @@ Le mode test vérifie les références et que chaque porte, habitant, coffre,
 panneau, passage et boss est accessible à pied (`checkMaps`). Les fichiers sont
 réécrits par `writeJson` (petites listes sur une ligne) : garder ce format.
 
-## Contenu actuel
+## Équilibrage
 
-- **Vallée de Brumeval** (64x44) : village (soin, boutique, chapelle, ancien),
-  Bois Murmurant (herbe lunaire pour recruter Maëlle), lac et pêcheur, prairies,
-  bosquet, col gardé par **Sylvarque** (N.13, Ombre) et deux Brumelins.
-- **Monts Cendrelune** (64x44) : ville de Forgeroc (soin, boutique, auberge,
-  forge), duel contre **Brann** pour le recruter, champs de cendres, rivières de
-  lave, cratère d'**Ignarok** (N.23, Feu, boss final).
-- **Grotte des Échos** (32x24) : **Golem de suie** (N.25), puis **Isra** rejoint
-  l'équipe.
-- **Forêt de Sylve-Noire** (56x40, ouverte après Sylvarque, entrée à l'ouest du
-  village) : bandits dresseurs, chef des bandits qui retient **Kael** (archer,
-  Vent), ermite qui soigne, marais, boss facultatif **Ronce-Mère** (N.18,
-  Plante/Poison).
-- **Pics Givrés** (60x44, ouverts après Ignarok, col au nord de Cendrelune) :
-  village de Givreval (soin, boutique, auberge), duel contre **Sélène**
-  (chevalière, Métal), chevaliers du givre, lac gelé.
-- **Temple gelé** (labyrinthe, clé de givre au fond) et **Sanctuaire** : boss
-  final **Givrecorne** (N.39, Glace/Roche), écran de fin. Boss de carte
-  facultatif du temple : le **gardien de cristal** (quête `cristal`).
-- **Source des Brumes** (40x30, facultative, faille au nord du Sanctuaire
-  ouverte après le Givrecorne, `data/cartes/source.json`) : Brumeloup, Nébulis,
-  Orbrume (N.33-37), deux gardiens dresseurs, la **Mère des Brumes** (N.44,
-  Ombre/Esprit, drapeau `boss4`) et un troisième écran de fin. Créée par
-  `build/outils/source.py` (outil de travail).
-- 13 types (dont Glace, Roche, Vent, Poison, Métal, Esprit). Héros : Lior,
-  Maëlle, Brann, Isra, Kael, Sélène. Starters : Braisenard, Gouttelin, Ronceau.
-  26 créatures sauvages capturables (et 16 formes évoluées, 2.2), 6 boss, 5 sortes d'ennemis humains.
-- **Attaques de zone** (1.9, demandées le 2026-10-12) : Tourbillon (Lior, ligne), Onde de choc (Brann, colonne), Nova
-  (Maëlle, croix), Salve (Kael, colonne, rapide), Éclats d'acier (Sélène, croix) ; pour les créatures Ruée, Nuée de braises,
-  Torrent, Pluie de spores, Avalanche, et Brasier, Rafale, Décharge, Morsure de gel qui gagnent une zone (aucune technique
-  de boss changée). Mesuré (BRUMEVAL_SIMULATIONS=4, avant → après ; IA / tactiques / équipement des boutiques) :
-  Givrecorne 27 → 46 / 36 → 53 / 68 → 74 %, Golem 63 → 51 / – / 71 → 55 %, les autres dans le bruit (±8) ;
-  joueur automatique : histoire finie, 1 défaite.
-- **Intérieurs** : 12 pièces dans les trois villages (soins, boutiques,
-  auberges, chapelle, maisons habitées avec un coffre), plus la cabane de
-  l'ermite (l'herboriste y soigne) et la tente du chef des bandits.
-- **Quêtes annexes** : le médaillon de l'ancien (vallée), les Tisonnels enragés
-  (boss de carte au nord-ouest de Forgeroc), une tisane contre le froid
-  (Givreval), le grimoire de l'ermite (Sylve-Noire, dans la tente du chef), le
-  gardien de cristal (Temple gelé, donnée par la mage). Journal : Échap > Journal.
-- **Équipement** : 16 armes, armures et accessoires en vente (vallée,
-  Forgeroc, Givreval), armes et armures renforcées à la forge de Forgeroc
-  (+1 à +3 ; minerai, cœurs de braise, cristaux de givre, 8 trophées de boss).
-- **Son** : 9 musiques (titre, 5 lieux, intérieur, combat, boss) et 25
-  bruitages, fabriqués par le jeu (`data/sons.json`). Options (volumes,
-  plein écran, touches) et manette.
-- Les cartes se modifient avec l'éditeur de cartes (Outils) ou directement
-  dans les JSON.
-
-**Boss renforcés le 2026-10-09** (demande de l'utilisateur : « obligé de se
-stuffer avant les boss »), puis réglés pour les compagnons (équipes des
-simulations : héros de ce moment de l'histoire + 2 ou 3 créatures). Réglages
-(`evenements.json`, niveau et `pv`) : Sylvarque N.15 ×6,5, Golem N.24 ×12,
-Ronce-Mère N.21 ×7, Ignarok N.24 ×7, Givrecorne N.36 ×10. Mesuré
-(`BRUMEVAL_SIMULATIONS=2`, sans / avec le meilleur équipement de la boutique de
-la région) : Sylvarque 12 / 42 %, Golem 55 / 70 %, Ronce-Mère 21 / 46 %,
-Ignarok 32 / 56 %, Givrecorne 26-36 / 72 %. Sans les compagnons ralentis
-(`compagnon_atb` 1), tout passait à ~100 %. Ajoutés le 2026-10-10 (même
-mesure) : gardien de cristal (équipe N.28) 48 % / 100 %, Mère des Brumes
-(équipe N.38) 36 % / 75 %. Remesuré avec le damier (1.7, 2026-10-10, BRUMEVAL_SIMULATIONS=3 pour les trois premiers) : Sylvarque 12 / 50 %, Ronce-Mère 27 / 56 %, Ignarok 17 / 48 %, Golem 70 / 85 %, Givrecorne 35 / 75 %, gardien de cristal 33 / 100 %, Mère des Brumes 46 / 86 % ; l'IA ennemie frappe au corps à corps le meilleur adversaire à portée quand sa cible préférée est à l'arrière (sinon elle abusait des attaques de zone). Le Golem réagit peu à
-l'équipement. Le mode test lit les boss dans les événements (`bossEvent`) :
-ses mesures suivent toujours le jeu.
-Avant ce renfort (IA automatique, sans objets) : combats
-normaux, bandits, chevaliers et duels gagnés à ~95-100 %, Sylvarque ≈ 80 %
-(N.11), Ronce-Mère ≈ 55-70 % (N.16), Ignarok ≈ 30-45 % (N.22), Givrecorne
-≈ 35 % (N.30, avec Sélène). Un boss trop facile vient souvent de sa lenteur ou
-d'acolytes trop faibles, pas de ses PV : regarder le journal (BRUMEVAL_JOURNAL).
-Avec les tactiques de départ (mêmes combats, `simTactics`), l'équipe soigne
-plus tôt que l'IA : Sylvarque ≈ 85 %, Ignarok ≈ 65 %, mais Givrecorne ≈ 90 %
-(Lior, Maëlle et Sélène savent tous soigner).
-Chaque ligne ne joue que 20 à 40 combats : d'une fois à l'autre, un taux varie
-de ±10 %. Pour comparer deux réglages, `BRUMEVAL_SIMULATIONS=5` joue cinq fois
-plus de combats (±4 %), et c'est plus long.
-Expédition (équipe générée : héros, créature de départ et recrue, deux niveaux
-au-dessus des créatures sauvages) : dresseurs et sauvages gagnés à 100 %,
-gardiens à 85-100 % pour une équipe bien assortie, moins quand les types se
-prêtent mal au gardien (le joueur peut capturer d'autres créatures ; les
-habitants donnent son point faible). Réglages du gardien dans
-`procgen::generateRegion` (niveau, multiplicateur de PV, acolytes, renforts).
-Le Vent fait ×4 à Plante/Poison et le Métal ×4 à Glace/Roche : la Ronce-Mère et
-le Givrecorne ont une résistance propre pour ramener cela à ×2. La Lumière fait ×2 à l'Ombre mais l'Ombre est neutre sur la Lumière :
-sinon Maëlle, ciblée en priorité par l'IA, tombe dès le début contre Sylvarque.
-Gardien à plusieurs : sans renfort, il était souvent plus facile qu'en solo
-(région 5, graine 33 : 13 % seul, 100 % à 2, 3 ou 4 joueurs). Renforcé « un
-peu » à la demande de l'utilisateur (2026-10-09) : +15 % de PV par joueur en
-plus. Mesuré ensuite (15 combats par ligne, moyenne des graines 11/22/33) :
-région 3 : 100 % seul, 84-93 % à plusieurs ; région 5 : 42 % seul, 55-64 % à
-plusieurs. +20 % rendait le groupe plus dur que le solo en région 3. Les
-simulations ordinaires n'utilisent pas l'équipement.
-Avec l'équipement (mesuré le 2026-10-09, `simGear` dans test.cpp : le meilleur
-achat de la boutique de la région pour chaque membre, borne haute) : Sylvarque
-75 → 100 %, Ronce-Mère 73 → 93 %, Ignarok 25 → 90 %, Givrecorne 35 → 92 %
-(sans tactiques) ; gardiens de l'Expédition : région 5 graine 33 6 → 40 %,
-région 8 graine 11 73 → 93 %. Tout acheter rend les boss d'Ignarok et du
-Givrecorne faciles : réglé en 1.5 (boss renforcés, voir plus haut ; ces
-chiffres-ci sont ceux d'avant le renfort).
-Duel avec l'équipement (`Online::Member::gear`, équipe `[espèce, niveau,
-équipement]`), décision du 2026-10-09.
+Mesures des boss, méthode et historique des réglages : compétence `equilibrage`. Un boss trop facile
+vient souvent de sa lenteur ou d'acolytes trop faibles, pas de ses PV.
 
 ## À faire / pistes
 
 La suite du projet, étape par étape : `docs/PLANNING.md`.
-
-1. Windows / VS Code (vérifié le 2026-10-09, sans l'interface) : extensions
-   C/C++ 1.34 et CMake Tools 1.24 installées, kits Build Tools 2022 détectés,
-   débogueur `vsdbg` présent, `build/` configuré avec « Visual Studio 17 2022 »
-   (le kit choisi par défaut, Ninja n'étant pas installé), `cmake --build build
-   --config Debug --target ALL_BUILD` (ce que fait F7) réussit. Reste à appuyer
-   une fois sur F7, Maj+F5 et F5 dans VS Code pour le confirmer de visu.
-2. Fait le 2026-10-09 : son, options, manette, animations d'attaque, Ignarok
-   (forme `magma`), intérieurs, équipement, quêtes annexes (version 1.3).
