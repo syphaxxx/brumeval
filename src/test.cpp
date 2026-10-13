@@ -531,6 +531,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     {
       FighterP boss = brute, maelle = team[1];
       boss->boss = true;
+      int keepAcc = boss->acc, keepEva = lior->eva;
+      boss->acc = 1000, lior->eva = 0;  // un coup raté par hasard ferait échouer le test (vu sur Mac)
       B.sc.clear();
       int liorCell = B.cellOf(lior);
       B.warnings_.push_back({boss, "mordant", Area::Single, liorCell});
@@ -566,6 +568,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       B.warnings_.clear();
       lior->tactics = defaultTactics(lior->S());
       boss->boss = false;
+      boss->acc = keepAcc, lior->eva = keepEva;
       check(warned && hit && moved && dodged && tactic,
             "attaque annoncée : elle frappe la zone rouge ; se mettre à l'abri (ordinateur ou tactique) l'évite");
     }
