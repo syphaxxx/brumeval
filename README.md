@@ -298,7 +298,7 @@ cache à effacer, faites **Ctrl+Maj+P > CMake: Delete Cache and Reconfigure**
 Depuis l'écran titre, **Outils** donne accès à :
 
 - **Démo** : le jeu joue tout seul une nouvelle partie, du début à la fin
-  (appuyez sur une touche pour reprendre la main ; sa sauvegarde est à part).
+  (Espace : pause et reprise, Échap : quitter, F2 : plus vite ; sa sauvegarde est à part).
 - **Arène de combat** : composez deux équipes (espèces, niveaux, PV des boss,
   renforts, décor), puis **Combattre !** pour jouer vous-même ou **Simuler**
   pour faire jouer des dizaines de combats à l'ordinateur et voir le taux de

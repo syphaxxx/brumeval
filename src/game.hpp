@@ -230,7 +230,8 @@ class Game {
   int swapFrom_ = -1;
   std::string notice_;       // petit message en bas de l'écran
   float noticeT_ = 0;
-  float speedT_ = 0;  // affiche la vitesse en grand quelques instants après un changement
+  float speedT_ = 0;
+  bool demoPaused_ = false;  // démo : Espace la met en pause (Game::onKey)  // affiche la vitesse en grand quelques instants après un changement
   std::string askText_;      // question affichée pendant un choix Oui/Non
   void notice(const std::string& s) { notice_ = s, noticeT_ = 2.2f; }
   void teamMenuAt(int sel);

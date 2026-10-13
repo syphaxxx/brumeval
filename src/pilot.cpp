@@ -20,6 +20,7 @@ Pilot::Pilot(Game& g, bool demo) : G(g), demo_(demo) {
   for (auto& m : maps()) offset_.push_back(offset_.back() + m.w() * m.h());
   G.tacticsAuto = true;  // les héros suivent leurs tactiques ; le pilote ne choisit que quand le menu s'ouvre
   loadMemory();
+  loadHistory();
   // Profondeur de chaque case de chaque carte : distance à pied du plus proche bâtiment ou passage
   depth_.assign(offset_.back(), 0);
   for (int m = 0; m < (int)maps().size(); m++) {
@@ -42,6 +43,11 @@ Pilot::Pilot(Game& g, bool demo) : G(g), demo_(demo) {
     }
     for (int i = 0; i < W * H; i++) depth_[offset_[m] + i] = std::max(0, d[(size_t)i]);
   }
+  zoneLo_.assign(offset_.back(), 0);
+  for (int m = 0; m < (int)maps().size(); m++)
+    for (auto& z : maps()[m].zones)
+      for (int y = z.y; y < z.y + z.h && y < maps()[m].h(); y++)
+        for (int x = z.x; x < z.x + z.w && x < maps()[m].w(); x++) zoneLo_[(size_t)node(m, x, y)] = std::max(zoneLo_[(size_t)node(m, x, y)], z.lo);
 }
 
 int Pilot::fear(int m) const {
@@ -49,7 +55,11 @@ int Pilot::fear(int m) const {
   return it == learned_.end() ? 0 : it->second;
 }
 
+// BRUMEVAL_SANS_MEMOIRE=1 : ni mémoire ni historique (banc d'essai : chaque partie part de zéro)
+static bool noMemory() { return SDL_getenv("BRUMEVAL_SANS_MEMOIRE") != nullptr; }
+
 void Pilot::loadMemory() {
+  if (noMemory()) return;
   std::ifstream f(userFile("pilote_memoire.txt"));
   std::string key;
   int n;
@@ -62,10 +72,39 @@ void Pilot::loadMemory() {
   }
 }
 void Pilot::saveMemory() const {
+  if (noMemory()) return;
   std::string s;
   for (auto& [k, v] : learned_) s += k + " " + std::to_string(v) + "\n";
   writeUserFile("pilote_memoire.txt", s);
 }
+void Pilot::loadHistory() {
+  if (noMemory()) return;
+  std::ifstream f(userFile("pilote_parties.txt"));
+  Run r;
+  while (f >> r.seconds >> r.defeats >> r.level >> r.starter) history_.push_back(r);
+  if (history_.empty()) return;
+  const Run* best = &history_[0];
+  for (auto& h : history_)
+    if (h.seconds < best->seconds) best = &h;
+  char b[16];
+  std::snprintf(b, sizeof b, "%d:%02d:%02d", best->seconds / 3600, best->seconds / 60 % 60, best->seconds % 60);
+  note("Partie n°" + std::to_string(history_.size() + 1) + ". Record : " + b + " (" + std::to_string(best->defeats) + " défaite(s), niveau " +
+       std::to_string(best->level) + ")");
+}
+
+// Partie finie : ajoutée à l'historique ; record battu ?
+void Pilot::recordRun() {
+  if (noMemory()) return;
+  Run r{int(clock), defeats, G.avgLevel(), G.team.size() > 1 ? G.team[1]->sp : std::string("?")};
+  bool record = !history_.empty();
+  for (auto& h : history_) record = record && r.seconds < h.seconds;
+  history_.push_back(r);
+  std::string s;
+  for (auto& h : history_) s += std::to_string(h.seconds) + " " + std::to_string(h.defeats) + " " + std::to_string(h.level) + " " + h.starter + "\n";
+  writeUserFile("pilote_parties.txt", s);
+  if (record) note("NOUVEAU RECORD : partie finie en " + hms() + " !");
+}
+
 int Pilot::margin(const std::string& key) const {
   auto f = fails_.find(key);
   auto l = learned_.find(key);
@@ -101,7 +140,12 @@ int Pilot::moveTo(int m, int x, int y, int d, int& cost) const {
   if (blockedAt(m, nx, ny)) return -1;
   // Les hautes herbes coûtent plus cher : on les évite, sauf pour s'entraîner ; d'autant plus loin
   // dans la nature d'une carte où des meutes l'ont déjà battu (mémoire)
-  cost = 1 + (tileEncounter(M.rows[ny][nx]) ? 3 + fear(m) * depth_[(size_t)node(m, nx, ny)] / 8 : 0);
+  cost = 1;
+  if (tileEncounter(M.rows[ny][nx])) {
+    size_t n = (size_t)node(m, nx, ny);
+    int over = zoneLo_[n] - G.avgLevel();  // créatures plus fortes que l'équipe : bien plus cher, surtout loin des villes
+    cost += 3 + fear(m) * depth_[n] / 8 + (over > 0 ? over * 3 * (10 + depth_[n]) / 10 : 0);
+  }
   for (auto& w : M.warps)
     if (w.x == nx && w.y == ny) {
       int t = mapIndex(w.map);
@@ -155,6 +199,7 @@ void Pilot::inspectList(const Json& list, Info& in, int depth) const {
       inspectList(a.value(ok ? "alors" : "sinon", Json::array()), in, depth);
     } else if (k == "question") inspectList(a.value("oui", Json::array()), in, depth);  // le pilote répond toujours Oui
     else if (k == "combat") {
+      if (!in.combat) in.fight = a;
       in.combat = true;
       in.boss = in.boss || jget(a, "boss", false);
       for (auto& e : a["ennemis"]) in.lvl = std::max(in.lvl, jget(e, "niveau", G.avgLevel()));
@@ -190,9 +235,89 @@ Pilot::Info Pilot::inspect(const std::string& id) const {
   return in;
 }
 
-// Prêt pour ce combat ? Niveau moyen assez proche du sien ; deux niveaux de plus à chaque défaite
-bool Pilot::ready(const Info& in, const std::string& key) const {
-  return G.avgLevel() >= in.lvl - (in.boss ? 2 : 3) + margin(key);
+// Prêt pour ce combat ? Nettement plus fort : oui. Trop faible : non. Entre les deux, il répète le
+// combat (rehearse) et y va s'il le gagne assez souvent ; plus prudent après chaque défaite (de cette
+// partie, et de la mémoire des précédentes)
+bool Pilot::ready(const Info& in, const std::string& key) {
+  int avg = G.avgLevel();
+  if (avg >= in.lvl + 3 + margin(key)) return true;
+  if (avg < in.lvl - 8 || in.fight.is_null()) return avg >= in.lvl - (in.boss ? 2 : 3) + margin(key);
+  std::string sig = teamSignature();
+  auto it = chances_.find(key);
+  if (it == chances_.end() || it->second.first != sig) {
+    float c = rehearse(in.fight, in.boss ? 12 : 8, true);
+    chances_[key] = {sig, c};
+    if (SDL_getenv("BRUMEVAL_TRACE")) std::printf("  [%s] répétition : %s, %d %% de victoires (équipe N.%d)\n", hms().c_str(), key.c_str(), int(c * 100 + .5f), avg);
+  }
+  auto f = fails_.find(key);
+  auto l = learned_.find(key);
+  float want = std::min(.97f, .85f + .05f * (f == fails_.end() ? 0 : f->second) + .03f * (l == learned_.end() ? 0 : l->second));
+  return chances_[key].second >= want;
+}
+
+std::string Pilot::teamSignature() const {
+  std::string s;
+  for (auto& f : G.front()) {
+    s += f->sp + ":" + std::to_string(f->lvl);
+    for (auto& g : f->gear) s += "," + g;
+    s += ";";
+  }
+  return s;
+}
+
+float Pilot::rehearse(const Json& fight, int n, bool fullHealth) {
+  // La partie est mise de côté : la simulation joue avec des copies (expérience, objets, or, bestiaire)
+  auto keepTeam = G.team, keepReserve = G.reserve;
+  auto keepItems = G.items;
+  int keepGold = G.gold;
+  auto keepSeen = G.seen, keepCaught = G.caught;
+  bool keepAuto = G.tacticsAuto;
+  Input keepIn = G.in;
+  int wins = 0;
+  for (int k = 0; k < n; k++) {
+    std::map<const Fighter*, FighterP> copyOf;
+    std::vector<FighterP> team;
+    for (auto& f : keepTeam) {
+      auto c = std::make_shared<Fighter>(*f);
+      if (fullHealth) c->hp = c->mhp, c->mp = c->mmp;
+      copyOf[f.get()] = c;
+      team.push_back(c);
+    }
+    for (auto& c : team) {
+      auto o = c->companion.lock();
+      if (o && copyOf.count(o.get())) c->companion = copyOf[o.get()];
+      else c->companion.reset();
+    }
+    G.team = team, G.reserve.clear(), G.items = keepItems, G.gold = keepGold;
+    BattleSetup s;
+    auto make = [&](const Json& e) {
+      auto f = makeFighter(e.at("espece").get<std::string>(), jget(e, "niveau", G.avgLevel()));
+      float mult = jget(e, "pv", 1.f);
+      if (mult != 1.f) f->mhp = std::max(1, int(f->mhp * mult + 1e-4f));
+      f->hp = f->mhp;
+      f->boss = jget(e, "boss", false);
+      return f;
+    };
+    for (auto& e : fight.value("ennemis", Json::array())) s.foes.push_back(make(e));
+    for (auto& e : fight.value("renforts", Json::array())) s.reserve.push_back(make(e));
+    if (s.foes.empty()) return 1;
+    s.boss = jget(fight, "boss", false);
+    s.canFlee = false, s.canCapture = false;
+    Battle b(G, std::move(s), maps()[G.mapId].theme);
+    b.autoPlay = true;
+    b.simTactics = true;
+    for (float t = 0; t < 600 && !b.finished(); t += .05f) {
+      G.in.confirm = true;
+      b.update(.05f);
+    }
+    if (b.finished() && b.result() == BattleResult::Win) wins++;
+  }
+  G.team = keepTeam, G.reserve = keepReserve, G.items = keepItems, G.gold = keepGold;
+  G.seen = keepSeen, G.caught = keepCaught, G.tacticsAuto = keepAuto;
+  G.in = keepIn;
+  G.menus.clear();
+  rehearsals += n;
+  return float(wins) / n;
 }
 
 // ---------------------------------------------------------------------------
@@ -219,8 +344,9 @@ std::vector<Pilot::Goal> Pilot::goals() {
       g.sig = in.sig;
       bool seen = doneSig_.count(g.key) > 0;
       if (in.combat) {  // pas encore prêt : objectif d'entraînement (seulement s'il est accessible, voir plan)
-        g.need = in.lvl - (in.boss ? 2 : 3) + margin(g.key);
-        g.kind = ready(in, g.key) ? Danger : Grind;
+        bool ok = ready(in, g.key);
+        g.need = G.avgLevel() + 1;  // un niveau de plus, puis il répète de nouveau le combat
+        g.kind = ok ? Danger : Grind;
         out.push_back(g);
         return;
       }
@@ -229,7 +355,7 @@ std::vector<Pilot::Goal> Pilot::goals() {
         h.kind = Heal;
         out.push_back(h);
       }
-      if ((!in.shop.empty() && !wishes(in.shop).empty()) || (in.forge && forgeWanted() && tries_[g.key + ":forge"] < 20)) {
+      if ((!in.shop.empty() && worthTrip(in.shop)) || (in.forge && forgeWanted() && tries_[g.key + ":forge"] < 20)) {
         Goal s = g;
         s.kind = Shop;
         if (in.forge) tries_[g.key + ":forge"]++;
@@ -307,14 +433,24 @@ void Pilot::plan() {
   for (auto& g : gs)
     if (g.kind == Grind && std::any_of(g.spots.begin(), g.spots.end(), [&](const Spot& s) { return dist_[s.node] < INT_MAX; }))
       need_ = need_ ? std::min(need_, g.need) : g.need;
-  bool hurt = ko || frac < .5f || (danger && frac < .98f);  // toujours soigné avant un combat difficile
+  bool hurt = ko || frac < (G.front().size() <= 3 ? .6f : .5f);  // petite équipe : plus prudente
 
+  // Le plus proche objectif de ce genre dont le chemin ne traverse pas d'herbes trop fortes pour
+  // l'équipe (créatures de plus d'un niveau au-dessus) ; sinon il s'entraînera d'abord (need_)
+  int avgLvl = G.avgLevel();
   auto best = [&](Kind k, Goal& out, int& at, int& face) {
     int bd = INT_MAX;
     for (auto& g : gs) {
       if (g.kind != k) continue;
-      for (auto& s : g.spots)
-        if (dist_[s.node] < bd) bd = dist_[s.node], out = g, at = s.node, face = s.face;
+      for (auto& s : g.spots) {
+        if (dist_[s.node] >= bd) continue;
+        int risk = k == Heal ? 0 : pathRisk(s.node);  // se soigner passe avant tout
+        if (risk > avgLvl + 1) {
+          need_ = need_ ? std::min(need_, risk - 1) : risk - 1;
+          continue;
+        }
+        bd = dist_[s.node], out = g, at = s.node, face = s.face;
+      }
     }
     return bd < INT_MAX;
   };
@@ -336,7 +472,14 @@ void Pilot::plan() {
       face = -1, found = true;
     }
   }
-  if (!found) found = best(Danger, g, at, face);
+  if (!found && best(Danger, g, at, face)) {  // combat difficile : en pleine forme d'abord
+    found = true;
+    if (frac < .98f) {  // l'auberge d'abord : elle rend aussi les PM
+      Goal h;
+      int hat = -1, hface = -1;
+      if (best(Heal, h, hat, hface)) g = h, at = hat, face = hface;
+    }
+  }
   if (!found && need_ > 0) {
     // Entraînement : les hautes herbes d'une zone à la mesure de l'équipe, jusqu'au niveau voulu
     int avg = G.avgLevel(), bestScore = INT_MIN;
@@ -372,6 +515,7 @@ void Pilot::plan() {
         if (it->first.rfind("nature:", 0) == 0 && (it->second = it->second * 3 / 4) == 0) it = learned_.erase(it);
         else ++it;
       saveMemory();
+      recordRun();
       note("FIN : plus rien à faire, l'histoire est terminée", "termine");
     } else {
       stuck = true;
@@ -391,6 +535,16 @@ void Pilot::plan() {
   }
   for (int v = at; v != cur && prev_[v] >= 0; v = prev_[v]) path_.push_back({prev_[v], v, prevDir_[v]});
   std::reverse(path_.begin(), path_.end());
+}
+
+int Pilot::pathRisk(int at) const {
+  int risk = 0, cur = node(G.mapId, G.px, G.py);
+  for (int v = at; v != cur && v >= 0 && prev_[v] >= 0; v = prev_[v]) {
+    int m, x, y;
+    unpack(v, m, x, y);
+    if (tileEncounter(maps()[m].rows[y][x])) risk = std::max(risk, zoneLo_[(size_t)v]);
+  }
+  return risk;
 }
 
 // Un pas vers l'objectif, ou l'action une fois arrivé
@@ -532,6 +686,10 @@ void Pilot::battleStep() {
       pickItem("Objet");
       return;
     }
+    if (shouldFlee()) {
+      if (pickItem("Fuir") == 2) flights++;
+      return;
+    }
     G.menus.clear();
     B.autoCommand(B.actor);
     return;
@@ -540,6 +698,19 @@ void Pilot::battleStep() {
   if (t.title == "Capturer" && !capture_.empty() && pickItem(capture_)) return;
   G.menus.clear();  // menu inattendu : l'ordinateur joue ce tour
   B.autoCommand(B.actor);
+}
+
+// Combat de créatures sauvages qui tourne mal (l'équipe a perdu plus des deux tiers de ses PV et
+// l'adversaire en garde plus de la moitié) : fuir plutôt que perdre la moitié de son or
+bool Pilot::shouldFlee() const {
+  const Battle& B = *G.battle_;
+  if (!battleWild_ || !B.canFlee || !capture_.empty()) return false;
+  if (fleeNow_) return true;
+  long ah = 0, am = 0, fh = 0, fm = 0;
+  for (auto& a : B.allies) ah += std::max(0, a->hp), am += a->mhp;
+  for (auto& f : B.foes) fh += std::max(0, f->hp), fm += f->mhp;
+  for (auto& f : B.reserve) fh += f->hp, fm += f->mhp;
+  return am > 0 && fm > 0 && ah * 3 < am && fh * 2 > fm;
 }
 
 int Pilot::creaturesWanted() const {
@@ -563,6 +734,19 @@ std::vector<std::string> Pilot::wishes(const std::vector<std::string>& stock) co
   std::vector<std::string> buy;
   int money = G.gold;
   std::map<std::string, int> bag = G.items;
+  auto stockUp = [&](auto better, int keep) {
+    const ItemDef* pick = nullptr;  // le meilleur qu'il peut payer
+    for (auto& id : stock)
+      if (item(id).price <= money - 40 && better(item(id), pick)) pick = &item(id);
+    if (!pick) return;
+    for (int n = bag.count(pick->id) ? bag[pick->id] : 0; n < keep && pick->price <= money - 40; n++) {
+      buy.push_back(pick->id);
+      bag[pick->id]++;
+      money -= pick->price;
+    }
+  };
+  auto heal = [](const ItemDef& d, const ItemDef* p) { return d.healHp > 0 && d.battle && d.field && !d.revive && d.healHp < 999 && (!p || d.healHp > p->healHp); };
+  stockUp(heal, 2);  // de quoi se soigner en route, avant une arme
   for (auto& f : G.team)
     for (int s = 0; s < N_GEAR; s++) {
       float have = f->gear[s].empty() ? 0 : gearScore(*f, item(f->gear[s]));
@@ -579,20 +763,29 @@ std::vector<std::string> Pilot::wishes(const std::vector<std::string>& stock) co
       buy.push_back(pick);
       money -= item(pick).price;
     }
-  auto stockUp = [&](auto better, int keep) {
-    const ItemDef* pick = nullptr;
-    for (auto& id : stock)
-      if (better(item(id), pick)) pick = &item(id);
-    if (!pick) return;
-    for (int n = bag.count(pick->id) ? bag[pick->id] : 0; n < keep && pick->price <= money - 40; n++) {
-      buy.push_back(pick->id);
-      money -= pick->price;
-    }
-  };
   if (creaturesWanted() > 0)
     stockUp([](const ItemDef& d, const ItemDef* p) { return d.capture > 0 && (!p || d.capture > p->capture); }, 5);
-  stockUp([](const ItemDef& d, const ItemDef* p) { return d.healHp > 0 && d.battle && !d.revive && (!p || d.healHp > p->healHp); }, 3);
+  // Le reste de l'or en soins : plus il est riche, plus il en garde (de 4 à 15), et des plumes
+  stockUp(heal, std::clamp(G.gold / 400, 4, 15));
+  stockUp([](const ItemDef& d, const ItemDef* p) { return d.revive > 0 && (!p || d.revive > p->revive); }, G.gold > 1500 ? 4 : 1);
   return buy;
+}
+
+bool Pilot::worthTrip(const std::vector<std::string>& stock) const {
+  int heals = 0, lanterns = 0;
+  for (auto& [id, n] : G.items)
+    if (n > 0 && hasItem(id)) {
+      const ItemDef& d = item(id);
+      if (d.healHp > 0 && d.field && !d.revive) heals += n;
+      if (d.capture > 0) lanterns += n;
+    }
+  for (auto& id : wishes(stock)) {
+    const ItemDef& d = item(id);
+    if (d.slot >= 0) return true;                                        // meilleur équipement
+    if (d.capture > 0 && lanterns == 0) return true;                     // il faut capturer
+    if (d.healHp > 0 && !d.revive && heals < 3) return true;             // presque plus de soins
+  }
+  return false;
 }
 
 void Pilot::shopping() {
@@ -693,12 +886,22 @@ void Pilot::note(const std::string& s, const std::string& capture) {
   if (!capture.empty()) shot = std::to_string(++shots_) + "_" + capture;
 }
 
+std::string Pilot::timeReport() const {
+  std::vector<std::pair<float, std::string>> v;
+  for (auto& [k, t] : timeBy) v.push_back({t, k});
+  std::sort(v.rbegin(), v.rend());
+  std::string s = "temps par activité :";
+  for (auto& [t, k] : v) s += " " + k + " " + std::to_string(int(t / 60)) + " min,";
+  s.pop_back();
+  return s;
+}
+
 std::string Pilot::summary() const {
   std::string t;
   for (auto& f : G.team) t += (t.empty() ? "" : ", ") + f->name() + " N." + std::to_string(f->lvl);
   return "temps de jeu " + hms() + " · niveau moyen " + std::to_string(G.avgLevel()) + " · " + std::to_string(battles) + " combats, " +
          std::to_string(defeats) + " défaite(s), " + std::to_string(captures) + " capture(s), " + std::to_string(purchases) + " achat(s) · " +
-         std::to_string(G.gold) + " or · équipe : " + t;
+         std::to_string(G.gold) + " or · " + std::to_string(flights) + " fuite(s), " + std::to_string(rehearsals) + " combats répétés · équipe : " + t;
 }
 
 // Ce qui a changé depuis l'image précédente : nouvelle carte, recrue, capture, drapeau, défaite
@@ -736,7 +939,8 @@ void Pilot::watch() {
   if (G.defeats_ != knownDefeats_) {
     defeats += G.defeats_ - knownDefeats_;
     knownDefeats_ = G.defeats_;
-    note("Défaite : retour chez la guérisseuse (équipe N." + std::to_string(G.avgLevel()) + ")", "defaite");
+    note("Défaite contre " + battleFoes_ + (battleWild_ ? " (sauvages, " : " (") + maps()[std::max(0, battleMap_)].name + ", équipe N." +
+             std::to_string(G.avgLevel()) + ")", "defaite");
     if (battleWild_ && battleMap_ >= 0 && battleMap_ < (int)maps().size()) {  // une meute : s'en souvenir
       int& f = learned_["nature:" + maps()[battleMap_].id];
       f = std::min(10, f + 1);
@@ -772,6 +976,12 @@ void Pilot::update(float dt) {
     return;
   }
   endingNow_ = false;
+  {  // où passe le temps (rapport)
+    bool b = G.mode == Mode::Battle;
+    const char* what = b ? (battleWild_ && goal_.kind == Grind ? "combat (entraînement)" : battleWild_ ? "combat (trajet)" : "combat difficile")
+                       : G.menus.active() ? "menus" : G.sc.busy() ? "dialogue" : goal_.kind == Grind ? "entraînement (marche)" : "trajet";
+    timeBy[what] += dt;
+  }
   watch();
   if (stuck) return;
   bool battle = G.mode == Mode::Battle && G.battle_;
@@ -780,6 +990,25 @@ void Pilot::update(float dt) {
     battles++;
     battleMap_ = G.mapId;
     battleWild_ = engaged_.empty() && G.battle_->foeName.empty() && !G.battle_->boss;
+    fleeNow_ = false;
+    if (battleWild_ && G.battle_->canFlee) {
+      int top = 0;
+      Json fight = {{"ennemis", Json::array()}};
+      for (auto& f : G.battle_->foes) {
+        top = std::max(top, f->lvl);
+        fight["ennemis"].push_back({{"espece", f->sp}, {"niveau", f->lvl}});
+      }
+      if (G.battle_->foes.size() >= 3 || top > G.avgLevel() + 1) {
+        float c = rehearse(fight, 6, false);
+        fleeNow_ = c < .5f;
+        if (SDL_getenv("BRUMEVAL_TRACE"))
+          std::printf("  [%s] meute de %d (N.%d max) : %d %% de victoires%s\n", hms().c_str(), (int)G.battle_->foes.size(), top, int(c * 100 + .5f),
+                      fleeNow_ ? ", il fuit" : "");
+      }
+    }
+    battleFoes_.clear();
+    for (auto& f : G.battle_->foes) battleFoes_ += (battleFoes_.empty() ? "" : ", ") + f->name() + " N." + std::to_string(f->lvl);
+    if (!G.battle_->reserve.empty()) battleFoes_ += " (+" + std::to_string(G.battle_->reserve.size()) + " renforts)";
     // Créatures sauvages et compagnons qui manquent : le mode auto est coupé pour ce combat, afin que
     // le menu de commande s'ouvre et que le pilote puisse lancer une lanterne (battleStep)
     const Battle& B = *G.battle_;
@@ -811,6 +1040,7 @@ void Pilot::update(float dt) {
   }
   if (demo_ && (wait_ -= dt) > 0) return;
   wait_ = 0;
+  if (battle && battleWild_ && shouldFlee()) G.tacticsAuto = false;  // le menu de commande doit s'ouvrir : « Fuir »
   if (battle) return battleStep();
   if (G.mode != Mode::Map) return;
   if (G.menus.active()) return menuStep();
@@ -838,7 +1068,8 @@ void Game::startPilot(bool demo) {
   std::string starter = st && hasSpecies(st) ? st : rules().starters.at(0);
   newGame(starter);
   pilot_ = std::make_unique<Pilot>(*this, demo);
-  if (demo) notice("Démo : le jeu joue tout seul. Une touche pour reprendre la main.");
+  demoPaused_ = false;
+  if (demo) notice("Démo : Espace pour une pause, Échap pour quitter, F2 pour aller plus vite.");
 }
 
 int Game::autoGame(SDL_Surface* target, const std::string& out) {
@@ -875,6 +1106,7 @@ int Game::autoGame(SDL_Surface* target, const std::string& out) {
   say("");
   say(P.finished ? "RÉSULTAT : histoire terminée" : "RÉSULTAT : histoire NON terminée");
   say(P.summary());
+  say(P.timeReport());
   for (auto& s : g.layoutIssues) say("mise en page : " + s);
   return P.finished && g.layoutIssues.empty() ? 0 : 1;
 }

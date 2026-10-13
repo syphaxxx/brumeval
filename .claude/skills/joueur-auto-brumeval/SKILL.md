@@ -30,3 +30,37 @@ vérification GitHub lance aussi `--partie`. Mesuré le 2026-10-09 (12 parties,
 Il s'améliore d'une partie à l'autre (demandé le 2026-10-10) : `pilote_memoire.txt` (dossier de l'utilisateur) garde pour chaque combat difficile la marge de niveaux qu'il lui a fallu (mêlée à la précédente, baisse après une victoire du premier coup) et, pour chaque carte, `nature:<carte>` = les meutes qui l'ont battu : les herbes profondes de cette carte lui coûtent plus cher à traverser et il s'y entraîne moins loin (la crainte baisse d'un quart à chaque partie finie). Mesuré : 6, 6, 4, 4 puis 2 défaites sur cinq parties de suite. Il place son équipe avec la formation automatique, vise les zones les plus rentables (IA) et se met à l'abri des attaques annoncées. Un nouveau genre d'interaction (objet à utiliser, énigme…) demande d'ajouter
 un objectif dans `Pilot::goals`. Méthode réutilisable pour d'autres jeux :
 compétence `joueur-automatique` de Claude Code.
+
+## Améliorations du 2026-10-13 (version 2.4)
+
+- **Répétition des combats** (`Pilot::ready`, `rehearse`) : avant un combat difficile (boss, dresseur) dont le niveau
+  est proche, il le simule 8 à 12 fois avec une copie de son équipe (PV pleins) sans toucher à la partie (équipe, sac,
+  or, bestiaire mis de côté puis remis) et n'y va que s'il gagne au moins 85 % du temps (+5 % par défaite de la partie,
+  +3 % par point de mémoire). Résultat gardé tant que l'équipe ne change pas (`teamSignature`). Sinon : un niveau de plus.
+- **Meutes** : au début d'un combat sauvage de 3 créatures ou plus (ou plus fortes que lui), il le répète 6 fois et fuit
+  s'il gagne moins d'une fois sur deux (`fleeNow_`) ; il fuit aussi un combat qui tourne mal (`shouldFlee`). Le mode auto
+  est alors coupé pour ce combat : sinon les tactiques jouent le tour et le menu « Fuir » ne s'ouvre jamais.
+- **Herbes trop fortes** (`zoneLo_`, `pathRisk`) : il ne prend pas un chemin qui traverse des herbes dont les créatures
+  dépassent son niveau de plus de 1 ; il s'entraîne d'abord. Ces herbes coûtent aussi plus cher dans Dijkstra.
+- **Petite équipe** (3 combattants ou moins) : soins dès 60 % des PV.
+- **Boutique** (`worthTrip`) : il n'y va exprès que pour un meilleur équipement, des lanternes qui manquent ou presque
+  plus de soins ; il achète d'abord 2 potions (le meilleur soin qu'il peut payer), et plus quand il est riche.
+- **Rapport** : chaque défaite dit contre quoi (adversaires, carte, niveau) ; « temps par activité » (combats sur les
+  trajets, combats difficiles, entraînement, trajets, menus) ; historique des parties dans `pilote_parties.txt`
+  (temps, défaites, niveau, compagnon) : « Partie n°X. Record : … », « NOUVEAU RECORD ».
+- **Démo** : aucune touche ne reprend la main ; Espace (ou Start) met en pause, Échap quitte, F1/F2/F11 marchent.
+
+## Banc d'essai (pour juger un changement)
+
+`BRUMEVAL_SANS_MEMOIRE=1` : ni mémoire ni historique (chaque partie part de zéro). Jouer **6 parties** (2 par compagnon
+de départ, `BRUMEVAL_COMPAGNON`) et comparer les moyennes (temps, défaites, niveau final, combats) : d'une partie à
+l'autre, le temps varie de ±15 min, une seule partie ne prouve rien. Pour comparer à l'ancienne version, la compiler
+à part (`git stash`, compilation, copie de l'exécutable) et mettre de côté `pilote_memoire.txt` pendant ses parties.
+
+Mesuré le 2026-10-13 (6 parties chacune) : ancienne version 73 min, 5,8 défaites, niveau 58, 240 combats ; version 2.4
+71 min, 5,0 défaites, niveau 53, 204 combats.
+
+**Leçon** : se soigner sur place avec les potions (au lieu de rentrer à l'auberge) a été essayé puis retiré : 92 min et
+11,8 défaites. Les potions ne rendent pas les PM : les lanceurs de sorts tombaient à court au combat suivant.
+L'auberge rend tout. Toujours mesurer chaque idée au banc d'essai, même celles qui semblent évidentes.
+

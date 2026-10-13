@@ -819,8 +819,10 @@ void Game::sellMenu(const std::vector<std::string>& stock, int sel) {
 
 void Game::drawTeamPanel(int x, int y, int sel) {
   if (sel < 0) {
-    int rowH = team.size() > 6 ? 20 : 22;  // plus serré avec une grande équipe, pour laisser la place à l'aide
-    int h = 22 + (int)team.size() * rowH + 6;
+    // Grande équipe (plus de 6) : une ligne par membre (le front en or), pour laisser la place à l'aide en bas
+    bool compact = team.size() > 6;
+    int rowH = compact ? 11 : 22;
+    int h = 22 + (int)team.size() * rowH + (compact ? 2 : 6);
     g.window(x, y, 320 - x - 8, h);
     g.text(x + 8, y + 5, "Équipe", GOLD);
     g.text(320 - 16, y + 5, std::to_string(gold) + " or", WHITE, 2);
@@ -829,6 +831,12 @@ void Game::drawTeamPanel(int x, int y, int sel) {
       auto& f = team[i];
       float ry = y + 20 + i * rowH;
       bool isFront = std::find(fr.begin(), fr.end(), f) != fr.end();
+      if (compact) {
+        g.text(x + 8, ry, utf8Prefix(f->name(), 12), !f->alive() ? rgb(0xff7b6b) : isFront ? GOLD : WHITE);
+        g.text(x + 86, ry, "N." + std::to_string(f->lvl), MUTED);
+        g.text(320 - 16, ry, std::to_string(f->hp) + "/" + std::to_string(f->mhp) + " PV", WHITE, 2);
+        continue;
+      }
       g.text(x + 8, ry, f->name(), f->alive() ? WHITE : rgb(0xff7b6b));
       g.text(x + 86, ry, "N." + std::to_string(f->lvl), MUTED);
       g.text(320 - 16, ry, isFront ? "front" : "repos", isFront ? GOLD : MUTED, 2);
