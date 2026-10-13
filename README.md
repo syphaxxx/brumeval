@@ -365,7 +365,7 @@ moments marquants. `brumeval --demo` le montre jouer dans la fenêtre.
 
 ## Organisation
 
-- `src/` : le code du jeu (voir `CLAUDE.md` pour le rôle de chaque fichier)
+- `src/` : le code du jeu (chaque `.hpp` explique son module en tête ; vue d'ensemble dans `docs/GUIDE.md`)
 - `data/` : tout le contenu du jeu (créatures, techniques, objets, cartes,
   dialogues, règles) en fichiers JSON modifiables, lus à chaque démarrage. Voir
   `data/LISEZMOI.md`.

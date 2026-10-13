@@ -13,7 +13,7 @@ dans l'ordre conseillé ; chacune finit par une version publiée.
 ## Étape 0 — Publier la 1.3 (fait : 1.3 à 1.5 publiées)
 
 - Relire la branche (PR), essayer le jeu, fusionner, publier `v1.3`.
-- Essayer **une fois** dans VS Code : F7, Maj+F5, F5 (voir CLAUDE.md, À faire).
+- Essayer **une fois** dans VS Code : F7, Maj+F5, F5 (voir CLAUDE.md, Compiler et lancer).
 - Faire passer les amis en 1.3 (la 1.2 ne se connecte plus à la 1.3).
 
 **Décisions prises le 9 octobre** (faites en version 1.4) : gardien à plusieurs
@@ -31,7 +31,7 @@ créature, qui agit seule).
   de fin ; son texte vient des données (action `fin`, champ `texte`).
 - Idée : faire jouer aussi l'Expédition au joueur automatique.
 - Fait en 1.5 : équilibrage des boss **avec l'équipement** (`simGear` dans
-  test.cpp ; chiffres dans CLAUDE.md, section Équilibrage).
+  test.cpp ; chiffres dans `.claude/skills/equilibrage`).
 - Mode auto (Tab) : un joueur a vu le menu s'ouvrir quand même pour Lior
   (combats d'histoire et boss). Pas reproduit, ni par les tests ni avec une
   version qui l'enregistrait : si ça revient, noter le combat exact.
