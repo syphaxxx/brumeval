@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <climits>
+#include <cmath>
 #include <cstdlib>
 #include <cstdio>
 #include <filesystem>
@@ -156,6 +157,29 @@ int Pilot::moveTo(int m, int x, int y, int d, int& cost) const {
   return node(m, nx, ny);
 }
 
+std::vector<int> Pilot::distFrom(int from) const {
+  std::vector<int> d(offset_.back(), INT_MAX);
+  using Q = std::pair<int, int>;
+  std::priority_queue<Q, std::vector<Q>, std::greater<Q>> q;
+  d[from] = 0;
+  q.push({0, from});
+  while (!q.empty()) {
+    auto [du, u] = q.top();
+    q.pop();
+    if (du != d[u]) continue;
+    int m, x, y;
+    unpack(u, m, x, y);
+    for (int k = 0; k < 4; k++) {
+      if (banned_.count((long long)u * 4 + k)) continue;
+      int c = 1, v = moveTo(m, x, y, k, c);
+      if (v < 0 || du + c >= d[v]) continue;
+      d[v] = du + c;
+      q.push({d[v], v});
+    }
+  }
+  return d;
+}
+
 void Pilot::dijkstra(int from) {
   int n = offset_.back();
   dist_.assign(n, INT_MAX);
@@ -195,6 +219,8 @@ static std::vector<std::string> nameList(const Json& v) {
 void Pilot::inspectList(const Json& list, Info& in, int depth) const {
   for (auto& a : list) {
     std::string k = jget<std::string>(a, "action", "");
+    // Seulement parler, attendre ou choisir le point de réveil : aucun effet sur la partie
+    if (k != "dire" && k != "attendre" && k != "si" && k != "question" && k != "reveil" && k != "evenement") in.effect = true;
     if (k == "si") {
       bool ok = G.checkCond(a["condition"]);
       in.sig += ok ? '1' : '0';
@@ -218,6 +244,7 @@ void Pilot::inspectList(const Json& list, Info& in, int depth) const {
         in.lvl = std::max(in.lvl, sub.lvl);
         in.shop.insert(in.shop.end(), sub.shop.begin(), sub.shop.end());
         in.forge = in.forge || sub.forge;
+        in.effect = in.effect || sub.effect;
       }
     }
   }
@@ -247,12 +274,17 @@ bool Pilot::ready(const Info& in, const std::string& key) {
   std::string sig = teamSignature();
   auto it = chances_.find(key);
   if (it == chances_.end() || it->second.first != sig) {
-    float c = rehearse(in.fight, in.boss ? 12 : 8, true);
+    int n = in.boss ? 16 : 8;
+    float c = prudent(rehearse(in.fight, n, true), n);
     chances_[key] = {sig, c};
     if (SDL_getenv("BRUMEVAL_TRACE")) std::printf("  [%s] répétition : %s, %d %% de victoires (équipe N.%d)\n", hms().c_str(), key.c_str(), int(c * 100 + .5f), avg);
   }
   return chances_[key].second >= wantChance(key);
 }
+
+// Estimation prudente : la part de victoires moins sa marge d'erreur (un écart type). Sans elle, à force de
+// répéter après chaque petit changement, un tirage chanceux finissait par passer le seuil (et il perdait)
+float Pilot::prudent(float c, int n) { return c - std::sqrt(c * (1 - c) / float(n)); }
 
 float Pilot::wantChance(const std::string& key) const {
   auto f = fails_.find(key);
@@ -367,6 +399,7 @@ std::vector<Pilot::Goal> Pilot::goals() {
         if (in.forge) tries_[g.key + ":forge"]++;
         out.push_back(s);
       }
+      if (!in.effect) return;  // rien qu'une conversation : pas la peine d'y aller
       if ((in.heal || !in.shop.empty() || in.forge) ? !seen : (!seen || doneSig_[g.key] != in.sig) && tries_[g.key] < 6) {
         g.kind = Normal;
         out.push_back(g);
@@ -379,8 +412,7 @@ std::vector<Pilot::Goal> Pilot::goals() {
       g.key = "pnj:" + M.id + ":" + std::to_string(i);
       g.what = (n.event.empty() ? "parler à un habitant" : "parler : " + n.event) + " (" + M.name + ")";
       around(g, n.x, n.y, 1, 1);
-      if (!n.event.empty()) byEvent(g, n.event);
-      else if (!n.lines.empty() && !doneSig_.count(g.key)) out.push_back(g);
+      if (!n.event.empty()) byEvent(g, n.event);  // un simple dialogue (n.lines) n'a aucun effet : il n'y va pas
     }
     for (auto& c : M.chests) {
       Goal g;
@@ -390,14 +422,7 @@ std::vector<Pilot::Goal> Pilot::goals() {
       around(g, c.x, c.y, 1, 1);
       out.push_back(g);
     }
-    for (auto& s : M.signs) {
-      Goal g;
-      g.key = "panneau:" + M.id + ":" + std::to_string(s.x) + ":" + std::to_string(s.y);
-      if (doneSig_.count(g.key)) continue;
-      g.what = "lire un panneau (" + M.name + ")";
-      around(g, s.x, s.y, 1, 1);
-      out.push_back(g);
-    }
+    // Les panneaux ne font que donner un texte : il ne va pas les lire
     for (auto& b : M.buildings) {
       if (!b.interior.empty() || b.event.empty()) continue;  // une maison avec un intérieur : c'est un passage
       Goal g;
@@ -467,7 +492,73 @@ void Pilot::plan() {
   };
   Goal g;
   int at = -1, face = -1;
-  bool found = (hurt && best(Heal, g, at, face)) || best(Shop, g, at, face) || best(Normal, g, at, face);
+  // Objectifs ordinaires : le circuit (les 10 plus proches, accessibles sans herbes trop fortes)
+  auto tour = [&](Goal& out, int& at, int& face) {
+    struct C {
+      Goal g;
+      int node, face, d;
+    };
+    std::vector<C> cs;
+    for (auto& g : gs) {
+      if (g.kind != Normal) continue;
+      int bn = -1, bf = -1, bd = INT_MAX;
+      for (auto& s : g.spots)
+        if (dist_[s.node] < bd && pathRisk(s.node) <= avgLvl + 1) bd = dist_[s.node], bn = s.node, bf = s.face;
+      if (bn >= 0) cs.push_back({g, bn, bf, bd});
+    }
+    if (cs.empty()) return false;
+    std::sort(cs.begin(), cs.end(), [](const C& a, const C& b) { return a.d < b.d; });
+    if (cs.size() > 10) cs.resize(10);
+    std::vector<std::string> keys;
+    for (auto& c : cs) keys.push_back(c.g.key);
+    std::vector<std::string> sorted = keys;
+    std::sort(sorted.begin(), sorted.end());
+    std::string set;
+    for (auto& k : sorted) set += k + "|";
+    if (set != tourSet_ || tour_.empty()) {  // nouveau circuit
+      size_t n = cs.size();
+      std::vector<std::vector<int>> D(n, std::vector<int>(n, 0));
+      for (size_t i = 0; i < n; i++) {
+        auto d = distFrom(cs[i].node);
+        for (size_t j = 0; j < n; j++) D[i][j] = d[cs[j].node] == INT_MAX ? 1 << 20 : d[cs[j].node];
+      }
+      std::vector<int> order;  // le plus proche d'abord, en partant d'ici
+      std::vector<bool> used(n, false);
+      int last = -1;
+      for (size_t s = 0; s < n; s++) {
+        int bi = -1, bv = INT_MAX;
+        for (size_t i = 0; i < n; i++)
+          if (!used[i] && (last < 0 ? cs[i].d : D[last][i]) < bv) bv = last < 0 ? cs[i].d : D[last][i], bi = (int)i;
+        used[bi] = true, order.push_back(bi), last = bi;
+      }
+      auto len = [&](const std::vector<int>& o) {
+        long t = cs[o[0]].d;
+        for (size_t i = 1; i < o.size(); i++) t += D[o[i - 1]][o[i]];
+        return t;
+      };
+      for (bool better = true; better;) {  // 2-opt : inverser un morceau du circuit tant que c'est plus court
+        better = false;
+        for (size_t i = 0; i + 1 < n; i++)
+          for (size_t j = i + 1; j < n; j++) {
+            auto o = order;
+            std::reverse(o.begin() + i, o.begin() + j + 1);
+            if (len(o) < len(order)) order = o, better = true;
+          }
+      }
+      tour_.clear();
+      for (int i : order) tour_.push_back(cs[(size_t)i].g.key);
+      tourSet_ = set;
+    }
+    for (auto& k : tour_)
+      for (auto& c : cs)
+        if (c.g.key == k) {
+          out = c.g, at = c.node, face = c.face;
+          return true;
+        }
+    return false;
+  };
+  bool found = (hurt && best(Heal, g, at, face)) || best(Shop, g, at, face) ||
+               tour(g, at, face);
   if (!found) {  // une carte encore jamais vue
     int bd = INT_MAX;
     for (int n = 0; n < (int)dist_.size(); n++) {
@@ -490,7 +581,7 @@ void Pilot::plan() {
     bool goNow = frac >= .98f && mpFrac >= .9f;
     if (!goNow && !g.fight.is_null()) {
       std::string k = g.key + "@" + teamSignature() + "/" + std::to_string(int(frac * 10)) + "/" + std::to_string(int(mpFrac * 10));
-      if (!nowChances_.count(k)) nowChances_[k] = rehearse(g.fight, 10, false);
+      if (!nowChances_.count(k)) nowChances_[k] = prudent(rehearse(g.fight, 16, false), 16);
       goNow = nowChances_[k] >= wantChance(g.key);
     }
     if (!goNow) {  // l'auberge d'abord : PV et PM
@@ -1037,8 +1128,8 @@ void Pilot::update(float dt) {
         fight["ennemis"].push_back({{"espece", f->sp}, {"niveau", f->lvl}});
       }
       if (G.battle_->foes.size() >= 3 || top > G.avgLevel() + 1) {
-        float c = rehearse(fight, 6, false);
-        fleeNow_ = c < .5f;
+        float c = prudent(rehearse(fight, 8, false), 8);
+        fleeNow_ = c < .7f;  // fuir coûte peu, perdre coûte cher (retour, soins, moitié de l'or)
         if (SDL_getenv("BRUMEVAL_TRACE"))
           std::printf("  [%s] meute de %d (N.%d max) : %d %% de victoires%s\n", hms().c_str(), (int)G.battle_->foes.size(), top, int(c * 100 + .5f),
                       fleeNow_ ? ", il fuit" : "");

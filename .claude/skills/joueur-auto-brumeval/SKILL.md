@@ -70,10 +70,21 @@ en trois : combats sur les trajets, trajets (les coffres d'abord), combats diffi
 
 - **Ordre des trajets** : un objectif d'une autre carte compte 40 cases de plus (finir la carte en cours d'abord).
   Mesuré : même temps (68 min), un peu moins de défaites ; la marche dépend surtout de la carte du jeu.
+- **Circuit** (`tour_`, `distFrom`) : les 10 objectifs ordinaires les plus proches sont ordonnés avec les vraies
+  distances à pied entre eux (le plus proche d'abord, puis 2-opt) ; il suit ce circuit tant que la liste ne change pas.
+- **Conversations sans effet** (`Info::effect`) : une page qui ne fait que parler (dire, attendre, réveil) ne vaut
+  pas le trajet ; il ne lit plus les panneaux ni les simples dialogues.
+- **Estimation prudente** (`prudent`) : la part de victoires répétée moins un écart type ; 16 répétitions pour un boss.
+  Sans elle, à force de répéter après chaque petit changement, un tirage chanceux passait le seuil et il perdait.
+  Meutes : 8 répétitions, fuite si l'estimation prudente est sous 70 %.
 - **Entraînement avec mémoire** (2026-10-13, 5 parties de suite) : 1 h 02, 1 h 20, 1 h 19, 0 h 58 (record, 0 défaite),
   1 h 17. Braisenard est le compagnon le plus rapide (environ 1 h), Gouttelin et Ronceau environ 1 h 18.
 
-**Essais ratés** (mesurés puis retirés) : fuir toute rencontre de 8 niveaux sous le sien (il fuyait aussi dans ses
+Mesuré ensuite sur **12 parties** (plus fiable que 6) : circuit 69 min et 3,1 défaites ; + estimation prudente 68 min
+et 3,0 ; + fuite des meutes à 70 % **67 min et 1,5 défaite** (de 54 à 78 min).
+
+**Essais ratés** (mesurés puis retirés) : l'IA du jeu à la place des tactiques pour chaque action (69 min, 3,5
+défaites : les tactiques soignent plus tôt) ; fuir toute rencontre de 8 niveaux sous le sien (il fuyait aussi dans ses
 zones d'entraînement : 5 parties sur 6 bloquées) ; seuil de répétition à 60 % (plus de défaites que de temps gagné).
 
 **Leçon** : se soigner sur place avec les potions (au lieu de rentrer à l'auberge) a été essayé puis retiré : 92 min et

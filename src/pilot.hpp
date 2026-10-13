@@ -59,6 +59,7 @@ class Pilot {
     std::vector<std::string> shop;
     bool forge = false;  // ouvre la forge (Forgeroc)
     Json fight;          // l'action « combat » (pour la répéter avant d'y aller)
+    bool effect = false; // la page fait quelque chose (objet, drapeau, quête, combat…), pas seulement parler
   };
   struct Step {
     int from, to, dir;
@@ -78,6 +79,12 @@ class Pilot {
   int moveTo(int m, int x, int y, int d, int& cost) const;  // case d'arrivée en allant vers d (-1 : impossible)
   std::vector<int> dist_, prev_, prevDir_;
   void dijkstra(int from);
+  std::vector<int> distFrom(int from) const;  // distances à pied depuis cette case (sans chemin)
+  // Parcours (2.4) : les prochains objectifs ordinaires (les 10 plus proches) sont ordonnés en un
+  // circuit (le plus proche d'abord, puis amélioré en inversant des morceaux : 2-opt) avec les vraies
+  // distances à pied entre eux ; il suit ce circuit tant que la liste d'objectifs ne change pas
+  std::vector<std::string> tour_;  // clés des objectifs, dans l'ordre du circuit
+  std::string tourSet_;            // les objectifs dont il a été calculé
 
   // Objectifs
   std::map<std::string, std::string> doneSig_;  // dernière réponse vue de chaque habitant, porte, boss
@@ -103,6 +110,7 @@ class Pilot {
   void inspectList(const Json& list, Info& in, int depth) const;
   bool ready(const Info& in, const std::string& key);
   float wantChance(const std::string& key) const;  // part de victoires demandée pour ce combat
+  static float prudent(float chance, int n);       // part de victoires moins sa marge d'erreur
   std::map<std::string, float> nowChances_;        // combat + état (PV, PM) → part de victoires avec l'état actuel
   // Répétition (2.4) : avant un combat difficile, il le simule plusieurs fois avec une copie de son
   // équipe (niveaux, équipement, techniques) sans toucher à la partie, et n'y va que s'il gagne
