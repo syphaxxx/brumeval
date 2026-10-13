@@ -531,6 +531,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     {
       FighterP boss = brute, maelle = team[1];
       boss->boss = true;
+      int keepAcc = boss->acc, keepEva = lior->eva;
+      boss->acc = 1000, lior->eva = 0;  // un coup raté par hasard ferait échouer le test (vu sur Mac)
       B.sc.clear();
       int liorCell = B.cellOf(lior);
       B.warnings_.push_back({boss, "mordant", Area::Single, liorCell});
@@ -566,6 +568,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       B.warnings_.clear();
       lior->tactics = defaultTactics(lior->S());
       boss->boss = false;
+      boss->acc = keepAcc, lior->eva = keepEva;
       check(warned && hit && moved && dodged && tactic,
             "attaque annoncée : elle frappe la zone rouge ; se mettre à l'abri (ordinateur ou tactique) l'évite");
     }
@@ -2381,7 +2384,26 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     bool talked = pilot_ && flags.count("quete:medaillon") > 0;
     size_t steps = pilot_ ? pilot_->journal.size() : 0;
     check(talked && steps >= 4, "démo : le joueur automatique avance (quête du médaillon acceptée, " + std::to_string(steps) + " étapes au journal)");
-    titleMenu();  // comme un joueur qui reprend la main puis revient à l'écran titre
+    // Commandes de la démo : Espace pause / reprise, une autre touche ne fait rien, Échap quitte
+    bool ctl = false;
+    if (pilot_) {
+      onKey(SDL_SCANCODE_SPACE, true, false);
+      onKey(SDL_SCANCODE_SPACE, false, false);
+      float c0 = pilot_->clock;
+      for (int i = 0; i < 60; i++) update(1 / 30.f);
+      bool paused = demoPaused_ && pilot_->clock == c0;
+      snap("demo_pause");
+      onKey(SDL_SCANCODE_SPACE, true, false);
+      for (int i = 0; i < 30; i++) update(1 / 30.f);
+      bool resumed = !demoPaused_ && pilot_->clock > c0;
+      onKey(SDL_SCANCODE_A, true, false);
+      onKey(SDL_SCANCODE_A, false, false);
+      bool kept = pilot_ != nullptr;
+      onKey(SDL_SCANCODE_ESCAPE, true, false);
+      ctl = paused && resumed && kept && !pilot_ && mode == Mode::Title;
+    }
+    check(ctl, "démo : Espace la met en pause puis la reprend, une autre touche ne la coupe pas, Échap la quitte");
+    titleMenu();  // revenir à l'écran titre (déjà fait par Échap) : rien ne casse
     check(!pilot_ && saveName_ == keepSave, "démo : revenir à l'écran titre arrête la démo et rend le fichier de sauvegarde habituel (" + saveName_ + ")");
     menus.clear();
     sc.clear();

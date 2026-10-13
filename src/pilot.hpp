@@ -31,8 +31,10 @@ class Pilot {
   std::vector<std::string> journal;  // étapes marquantes, avec l'heure de jeu
   std::string shot;       // nom d'une capture à prendre maintenant (partie rapide), sinon vide
   float clock = 0;        // temps de jeu écoulé (secondes)
-  int battles = 0, defeats = 0, captures = 0, purchases = 0;
+  int battles = 0, defeats = 0, captures = 0, purchases = 0, flights = 0;
   std::string summary() const;  // une ligne : temps, niveau, équipe, progression
+  std::map<std::string, float> timeBy;  // temps de jeu par activité (combat, entraînement, trajet, menus, dialogue)
+  std::string timeReport() const;
 
  private:
   // Case où se tenir, et direction à regarder avant d'appuyer sur Entrée (-1 : y arriver suffit)
@@ -46,6 +48,7 @@ class Pilot {
     std::vector<Spot> spots;
     std::string sig;  // réponse attendue de l'événement (voir Info)
     int need = 0;     // combat pas encore prêt (Grind) : niveau moyen à atteindre
+    Json fight;       // combat difficile (Danger) : l'action « combat », pour le répéter avec l'état actuel
   };
   // Ce que ferait un événement maintenant : page choisie et résultat de ses conditions
   // (sig), combat (niveau le plus haut, boss), boutique, soins, fin de l'histoire
@@ -55,6 +58,8 @@ class Pilot {
     int lvl = 0;
     std::vector<std::string> shop;
     bool forge = false;  // ouvre la forge (Forgeroc)
+    Json fight;          // l'action « combat » (pour la répéter avant d'y aller)
+    bool effect = false; // la page fait quelque chose (objet, drapeau, quête, combat…), pas seulement parler
   };
   struct Step {
     int from, to, dir;
@@ -74,6 +79,12 @@ class Pilot {
   int moveTo(int m, int x, int y, int d, int& cost) const;  // case d'arrivée en allant vers d (-1 : impossible)
   std::vector<int> dist_, prev_, prevDir_;
   void dijkstra(int from);
+  std::vector<int> distFrom(int from) const;  // distances à pied depuis cette case (sans chemin)
+  // Parcours (2.4) : les prochains objectifs ordinaires (les 10 plus proches) sont ordonnés en un
+  // circuit (le plus proche d'abord, puis amélioré en inversant des morceaux : 2-opt) avec les vraies
+  // distances à pied entre eux ; il suit ce circuit tant que la liste d'objectifs ne change pas
+  std::vector<std::string> tour_;  // clés des objectifs, dans l'ordre du circuit
+  std::string tourSet_;            // les objectifs dont il a été calculé
 
   // Objectifs
   std::map<std::string, std::string> doneSig_;  // dernière réponse vue de chaque habitant, porte, boss
@@ -88,14 +99,26 @@ class Pilot {
   // Profondeur de chaque case (comme Game::wildDepth : distance aux bâtiments et passages) et
   // crainte de la nature profonde de chaque carte (« nature:<carte> » : meutes qui l'ont battu)
   std::vector<int> depth_;
+  std::vector<int> zoneLo_;  // niveau le plus bas des créatures de la zone de chaque case d'herbe (0 : aucune)
   int fear(int m) const;
   int battleMap_ = -1;
+  std::string battleFoes_;  // adversaires du combat en cours (pour le journal d'une défaite)
   bool battleWild_ = false;
   std::set<int> visited_;                       // cartes déjà vues
   std::vector<Goal> goals();
   Info inspect(const std::string& event) const;
   void inspectList(const Json& list, Info& in, int depth) const;
-  bool ready(const Info& in, const std::string& key) const;
+  bool ready(const Info& in, const std::string& key);
+  float wantChance(const std::string& key) const;  // part de victoires demandée pour ce combat
+  static float prudent(float chance, int n);       // part de victoires moins sa marge d'erreur
+  std::map<std::string, float> nowChances_;        // combat + état (PV, PM) → part de victoires avec l'état actuel
+  // Répétition (2.4) : avant un combat difficile, il le simule plusieurs fois avec une copie de son
+  // équipe (niveaux, équipement, techniques) sans toucher à la partie, et n'y va que s'il gagne
+  // assez souvent. Résultat gardé tant que l'équipe ne change pas.
+  float rehearse(const Json& fight, int n, bool fullHealth);  // fullHealth : il se soignera avant d'y aller
+  std::string teamSignature() const;
+  std::map<std::string, std::pair<std::string, float>> chances_;  // combat → (signature de l'équipe, part de victoires)
+  int rehearsals = 0;
   int need_ = 0;  // niveau visé pour le prochain combat difficile (entraînement)
 
   // Chemin en cours
@@ -121,6 +144,21 @@ class Pilot {
   std::string capture_, lantern_;  // capture en cours : créature visée, lanterne
 
   int menuMoves_ = 0;
+  bool shouldFlee() const;  // combat sauvage qui tourne mal : mieux vaut fuir
+  bool fleeNow_ = false;    // meute jugée trop forte dès le début du combat (répétition) : fuir
+  int pathRisk(int at) const;  // niveau le plus haut des créatures des herbes sur le chemin jusqu'à cette case
+  // Cases dans le champ de vision d'un dresseur (Npc::sight) qu'il n'est pas encore prêt à battre :
+  // presque infranchissables (sinon le dresseur l'arrête et le bat)
+  std::set<int> watched_;
+  void watchSight();
+  // Historique des parties (pilote_parties.txt : temps, défaites, niveau, compagnon) : pour mesurer ses progrès
+  struct Run {
+    int seconds, defeats, level;
+    std::string starter;
+  };
+  std::vector<Run> history_;
+  void loadHistory();
+  void recordRun();
   void battleStep();
   void menuStep();
   // Amène le curseur sur ce libellé (une touche par image), puis Entrée : 0 absent, 1 en route, 2 validé
@@ -133,6 +171,9 @@ class Pilot {
   bool forgeWanted() const;  // une arme ou armure portée peut être forgée maintenant
   float gearScore(const Fighter& f, const ItemDef& d) const;
   std::vector<std::string> wishes(const std::vector<std::string>& stock) const;  // achats utiles dans ce stock
+  // Vaut-il le détour ? Un meilleur équipement, presque plus de soins, ou des lanternes qui manquent.
+  // Sinon il refait seulement le plein quand il passe devant (sans quoi il ferait des allers-retours)
+  bool worthTrip(const std::vector<std::string>& stock) const;
   int creaturesWanted() const;  // créatures qui manquent pour accompagner les héros
 
   // Progrès (pour repérer un blocage)

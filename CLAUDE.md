@@ -58,7 +58,7 @@ les plus longs : y ajouter tout nouvel écran.
 ```bash
 cmake --build build-release --config Release
 build-release/Release/brumeval --partie partie   # toute l'histoire, sans fenêtre, ~10 s
-brumeval --demo                                  # la même chose dans la fenêtre (aussi Outils > Démo)
+brumeval --demo                                  # la même chose dans la fenêtre (aussi Outils > Démo) ; Espace : pause, Échap : quitter
 ```
 
 Fonctionnement, rapport et mémoire d'une partie à l'autre : compétence `joueur-auto-brumeval`. Un

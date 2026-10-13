@@ -29,6 +29,7 @@ Game::~Game() = default;
 // Échap pour annuler et ouvrir le menu.
 // ---------------------------------------------------------------------------
 void Game::onMouse(int x, int y, int button, bool down) {
+  if (pilot_ && pilot_->demo()) return;  // la souris ne dérange pas la démo
   if (in.mx != x || in.my != y) in.moved = true;
   in.mx = x, in.my = y;
   in.mouseOn = true;
@@ -44,6 +45,10 @@ void Game::onWheel(int dy) {
 // Manette : croix ou stick pour se déplacer, A valider, B annuler, Start menu, Select mode auto (Tab),
 // gâchettes hautes page précédente / suivante (éditeurs)
 void Game::onPad(int button, bool down) {
+  if (pilot_ && pilot_->demo()) {  // démo : Start met en pause ou reprend
+    if (down && button == SDL_CONTROLLER_BUTTON_START) demoPaused_ = !demoPaused_;
+    return;
+  }
   if (textOn_ || bindKey_ >= 0) return;
   switch (button) {
     case SDL_CONTROLLER_BUTTON_DPAD_UP: return padDirection(UP, down);
@@ -66,6 +71,7 @@ void Game::onPad(int button, bool down) {
   }
 }
 void Game::onStick(int axis, int value) {
+  if (pilot_ && pilot_->demo()) return;
   if (axis != SDL_CONTROLLER_AXIS_LEFTX && axis != SDL_CONTROLLER_AXIS_LEFTY) return;
   int neg = axis == SDL_CONTROLLER_AXIS_LEFTX ? LEFT : UP, pos = axis == SDL_CONTROLLER_AXIS_LEFTX ? RIGHT : DOWN;
   // Seuils différents pour pousser et relâcher : pas de tremblement autour de la limite
@@ -90,10 +96,10 @@ void Game::padDirection(int d, bool on) {
 }
 
 void Game::onKey(SDL_Scancode k, bool down, bool repeat) {
-  if (pilot_ && pilot_->demo() && down) {  // démo : une touche rend la main au joueur
-    pilot_.reset();
-    for (bool& h : in.hold) h = false;
-    notice("Vous reprenez la main (sauvegarde à part : " + saveName_ + ").");
+  bool shortcut = k == SDL_SCANCODE_F1 || k == SDL_SCANCODE_F2 || k == SDL_SCANCODE_F11;  // aide, vitesse, plein écran
+  if (pilot_ && pilot_->demo() && !shortcut) {  // démo : Espace met en pause ou reprend, Échap la quitte ; rien d'autre
+    if (down && !repeat && k == SDL_SCANCODE_SPACE) demoPaused_ = !demoPaused_;
+    if (down && !repeat && k == SDL_SCANCODE_ESCAPE) titleMenu();
     return;
   }
   in.ctrl = (SDL_GetModState() & KMOD_CTRL) != 0;
@@ -227,6 +233,11 @@ void Game::update(float dt) {
       }
     }
   if (online_) online_->update(dt);  // réseau du multijoueur, dans tous les écrans
+  if (pilot_ && pilot_->demo() && demoPaused_) {  // démo en pause : tout attend
+    updateMusic();
+    in.endFrame();
+    return;
+  }
   if (pilot_) pilot_->update(dt);    // joueur automatique : il choisit les touches de cette image
   banner -= dt;
   noticeT_ -= dt;
@@ -636,6 +647,7 @@ void Game::ask(const std::string& q, std::function<void()> yes, std::function<vo
 // ---------------------------------------------------------------------------
 void Game::titleMenu() {
   pilot_.reset();  // fin de la démo : la partie reprend son fichier de sauvegarde habituel
+  demoPaused_ = false;
   if (!saveBeforePilot_.empty()) saveName_ = saveBeforePilot_, saveBeforePilot_.clear();
   if (expedition_) expedition_->leave();  // remet les données du jeu à la place de celles de l'expédition
   if (online_) online_->leave();          // ferme les connexions du multijoueur
@@ -769,11 +781,19 @@ void Game::draw() {
       g.text(g.right() - 11, y + 1, s, GOLD, 1, false);
     }
   }
-  if (pilot_ && pilot_->demo()) {  // bandeau de la démo, en haut de l'écran
+  if (pilot_ && pilot_->demo()) {  // bandeau de la démo, en haut de l'écran ; en pause, les commandes
     std::string s = "DÉMO · " + pilot_->status;
     if (s.size() > 60) s = utf8Prefix(s, 44) + "…";
     g.rect(g.left(), 0, g.fullW, 11, rgb(0x000010, 170));
     g.text(160, 2, s, rgb(0xffd34d), 1);
+    if (demoPaused_) {
+      g.rect(g.left(), 11, g.fullW, SCREEN_H - 11, rgb(0x000010, 110));
+      g.newLayer();
+      g.window(70, 96, 180, 50);
+      g.text(160, 102, "Démo en pause", GOLD, 1);
+      g.text(160, 116, "Espace : reprendre", WHITE, 1);
+      g.text(160, 128, "Échap : quitter · F2 : vitesse", MUTED, 1);
+    }
   }
 }
 

@@ -1,18 +1,10 @@
 ## Nouveautés
 
-- **Multijoueur plus simple** : l'hôte reçoit un **code de partie** (par exemple `BJMV-Z6FX`) à donner à ses amis ; le jeu ouvre lui-même le port de la box (UPnP). Tailscale n'est plus nécessaire quand la box l'accepte.
+- **Démo plus agréable** (Outils > Démo) : le jeu joue tout seul et ne vous rend plus la main au moindre appui. **Espace** met en pause et reprend, **Échap** quitte, **F2** accélère.
+- **Joueur automatique bien plus malin** : avant un boss, il « répète » le combat dans sa tête et n'y va que s'il a de bonnes chances ; il fuit les meutes trop fortes, évite les herbes dangereuses et le regard des dresseurs, et planifie ses trajets. Il perd quatre fois moins souvent qu'avant et garde ses records d'une partie à l'autre.
+- Menu de pause : le résumé de l'équipe tient à l'écran même avec plus de 6 membres.
 
-Depuis la 1.6 :
-
-- **Combats stratégiques** : chaque camp se place sur un **damier de 16 cases** ; le corps à corps ne touche que l'avant ennemi, les techniques ont des **zones** (ligne, colonne, croix), « Se déplacer » et la **Formation** (Échap). Les boss **annoncent** leurs grosses attaques : écartez-vous de la zone rouge !
-- **Compagnons** commandés comme les héros, bas d'écran plus discret, **meutes** plus nombreuses loin des villes, cartes agrandies.
-- **Plus d'attaques de zone** pour les héros et les créatures.
-- **Vitesse du jeu ×1, ×2, ×3** (touche F2) et une **Aide** complète (F1) : statistiques, dégâts, états, **tableau des types**. Chaque technique et chaque objet détaille son effet.
-- **Forge de Forgeroc** : armes et armures +1 à +3, avec des matériaux et les trophées des boss.
-- **Évolution** : 22 créatures deviennent plus fortes à un certain niveau.
-- **Graphismes** : combattants posés sur le sol, maisons, arbres et chemins redessinés.
-
-En multijoueur, tout le monde doit passer en VERSION.
+Dans la 2.3 : l'hôte d'une partie à plusieurs reçoit un **code de partie** à donner à ses amis ; le jeu ouvre lui-même le port de la box (UPnP).
 
 ## Télécharger
 
