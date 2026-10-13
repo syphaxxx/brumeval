@@ -314,6 +314,23 @@ code) ; `docs/GUIDE.md` les range par domaine.
   aussi (les ennemis gardent l'ancienne notation, sur laquelle la difficulté
   est réglée). Principe des techniques : une faible est rapide et souvent avec
   un effet, une forte est lourde, pour qu'aucune ne devienne inutile.
+- Brisure (2.5, Octopath) : `Fighter::shield/shieldMax/broken`, posés dans le
+  constructeur de `Battle` (ennemi d'un événement `bouclier`, sinon espèce,
+  sinon `brisure.bouclier(_boss)` ; + talent Cuirasse ; jamais en duel). Dans
+  `applyHit`, un coup sur une faiblesse retire 1 (2 si ×4, + Briseur) et
+  l'allié l'apprend (`Game::weak`, lignes `faible` de la sauvegarde) ;
+  `breakFoe` : tour perdu (`skipTurn` le restaure), annonces annulées, dégâts
+  × `brisure.degats`. Réseau : 8e et 9e nombres de chaque combattant de `etat`.
+  `attackScore` (alliés) favorise la brisure. Frise `turnOrder`/`drawTurnOrder`
+  (FFX, prédiction sans hasard). Talents (Pokémon) : `Rules::talents`,
+  `talentOf`/`talentValue(s, effet)`, appliqués au début du combat (vif,
+  intimidation), dans `applyHit` (résistances, rage, critique, furtif, briseur,
+  piquant), dans `afterAction` (régénération, méditation, soin des voisins en
+  croix) et `immuneTo` (sans_etats). Effets visuels : `drawTypeFx` (par type,
+  `Anim::type`, champ `ty` du réseau), `shakeT_`, entrée en combat et bandeau du
+  boss à la fin de `Battle::draw`. Mesuré (2.5) : boss relevés pour que la
+  victoire demande faiblesses + équipement (Golem 50 % IA / 75 % forgé, Mère des
+  Brumes 11 % / 63 %).
 - Données en mémoire : `dataDoc(DF_…)` garde chaque fichier de data/ sous forme
   de JSON ; `rebuildData()` reconstruit les structures du jeu à partir de ces
   documents, `saveDataDoc` les écrit. Les Réglages ne touchent qu'aux documents,

@@ -108,7 +108,18 @@ float moveEff(const Move& m, const Species& s) {
 }
 std::string typesName(const Species& s) { return s.type2 >= 0 ? std::string(typeName(s.type)) + "/" + typeName(s.type2) : typeName(s.type); }
 bool hasType(const Species& s, Type t) { return s.type == t || s.type2 == t; }
+const Rules::Talent* talentOf(const Species& s) {
+  for (auto& t : RULES.talents)
+    if (t.id == s.talent) return &t;
+  return nullptr;
+}
+double talentValue(const Species& s, const char* kind) {
+  const Rules::Talent* t = talentOf(s);
+  return t && t->kind == kind ? t->value : 0;
+}
+
 bool immuneTo(const Species& s, Status st) {
+  if (talentValue(s, "sans_etats") > 0) return true;
   std::string id = statusId(st);
   auto in = [&](const std::vector<std::string>& v) { return std::find(v.begin(), v.end(), id) != v.end(); };
   if (in(s.immune)) return true;
@@ -162,6 +173,9 @@ std::vector<RuleField> ruleFields(Rules& r) {
       D("combat", "boss_annonce_puissance", "Boss : puissance de l'attaque annoncée", r.bossBurst, 1, 5, .1),
       I("combat", "retard_lourde", "Technique lourde : retard de la jauge (%)", r.heavyDelay, 0, 200, 5),
       D("combat", "compagnon_atb", "Compagnons : vitesse de la jauge ATB", r.companionAtb, .1, 2, .05),
+      I("brisure", "bouclier", "Brisure : bouclier d'un ennemi", r.breakShield, 0, 20, 1),
+      I("brisure", "bouclier_boss", "Brisure : bouclier d'un boss", r.breakShieldBoss, 0, 40, 1),
+      D("brisure", "degats", "Brisure : dégâts reçus par un ennemi brisé", r.breakDamage, 1, 5, .05),
       D("etats", "poison_degats", "Poison : part des PV perdus par tour", r.poisonDmg, 0, 1, .01),
       D("etats", "brulure_degats", "Brûlure : part des PV perdus par tour", r.burnDmg, 0, 1, .01),
       D("etats", "brulure_attaque", "Brûlure : multiplicateur d'Attaque", r.burnAtk, 0, 1, .05),
@@ -231,6 +245,9 @@ static void loadRules(const Json& j) {
   if (j.contains("recompenses"))
     for (auto& b : j["recompenses"].value("butin_type", Json::array()))
       r.typeDrops.push_back({b.at("type").get<std::string>(), b.at("objet").get<std::string>(), b.at("chance").get<double>()});
+  for (auto& t : j.value("talents", Json::array()))
+    r.talents.push_back({t.at("id").get<std::string>(), t.at("nom").get<std::string>(), jget<std::string>(t, "description", ""),
+                         t.at("effet").get<std::string>(), jget(t, "valeur", 0.0)});
   for (auto& l : j.value("forge", Json::array())) {
     Rules::ForgeLevel f;
     f.bonus = jget(l, "bonus", 0.0);
@@ -367,6 +384,8 @@ void rebuildData() {
       s.evolveLvl = o["evolution"].at("niveau").get<int>();
     }
     s.size = jget(o, "taille", 1.f);
+    s.shield = jget(o, "bouclier", 0);
+    s.talent = jget<std::string>(o, "talent", "");
     for (auto& t : o.value("tactiques", Json::array())) s.tactics.push_back(tacticFromJson(t));
     return s;
   });
@@ -473,6 +492,13 @@ std::vector<std::string> checkData() {
     if (!hasItem(id)) err.push_back("Objet de départ inconnu : " + id);
   for (auto& [id, c] : r.drops)
     if (!hasItem(id)) err.push_back("Butin inconnu : " + id);
+  static const char* KINDS_T[] = {"resiste_physique", "resiste_magie", "rage", "soin_voisins", "regeneration", "meditation", "esquive_arriere",
+                                  "vif", "briseur", "critique", "sans_etats", "intimidation", "piquant", "cuirasse"};
+  for (auto& t : r.talents)
+    if (std::find(std::begin(KINDS_T), std::end(KINDS_T), t.kind) == std::end(KINDS_T))
+      err.push_back("Talent " + t.name + " : effet inconnu « " + t.kind + " »");
+  for (auto& s : SPECIES)
+    if (!s.talent.empty() && !talentOf(s)) err.push_back("Espèce " + s.name + " : talent inconnu « " + s.talent + " »");
   for (auto& s : SPECIES)
     if (!s.evolveTo.empty()) {
       if (!hasSpecies(s.evolveTo)) err.push_back("Espèce " + s.name + " : évolution inconnue « " + s.evolveTo + " »");
@@ -683,6 +709,8 @@ void Fighter::clearBattle() {
   status = Status::None;
   statusTurns = 0;
   stage.fill(0);
+  broken = false;
+  shield = shieldMax;
 }
 float Fighter::stageMult(int st) const {
   int n = stage[st];

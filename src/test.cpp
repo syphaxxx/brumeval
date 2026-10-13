@@ -766,6 +766,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   changeMap(mi("cendrelune"), 48, 4, UP);
   startBattle({makeFighter("tisonnel", 19), makeFighter("ignarok", 23), makeFighter("tisonnel", 19)}, true, nullptr, false, false);
   battle_->foes[1]->boss = true;
+  run(.3f);
+  snap("98_entree_boss");  // transition d'entrée et bandeau du boss
   for (int i = 0; i < 1500 && !menus.active(); i++) frame();
   snap("18_boss_ignarok");
   check(audio::currentMusic() == "boss", "son : musique du boss");
@@ -797,6 +799,39 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   check(saved && loaded && team.size() == 2 && team[0]->lvl == 9 && gold == 321 && has("boss1") && items["potion"] == 7 &&
             M().id == "cendrelune" && px == 12 && has(chestFlag(0)),
         "sauvegarde puis chargement");
+
+  // --- Brisure (2.5) : bouclier, faiblesse découverte, ennemi brisé (jauge, dégâts, tour perdu), sauvegarde ---
+  {
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+    weak.clear();
+    auto maelle = makeFighter("maelle", 20);
+    team = {maelle};
+    startBattle({makeFighter("brumelin", 12)}, false, nullptr);
+    Battle& B = *battle_;
+    FighterP foe = B.foes[0];
+    const Move& light = moveInfo("lumiere");  // Lumière contre Ombre : efficace (magie : jamais d'esquive)
+    bool shield = foe->shieldMax == rules().breakShield && foe->shield == foe->shieldMax && moveEff(light, foe->S()) > 1;
+    foe->atb = 80;
+    int hp0 = foe->hp = foe->mhp * 10;  // qu'il survive aux coups
+    foe->mhp = foe->hp;
+    for (int i = 0; i < foe->shieldMax && !foe->broken; i++) B.applyHit(maelle, foe, light);
+    int dmgOne = hp0 - foe->hp;
+    bool broken = foe->broken && foe->atb == 0 && weakKnown("brumelin", light.type);
+    int before = foe->hp;
+    B.applyHit(maelle, foe, light);  // brisé : il encaisse plus (même coup, au hasard des dégâts près)
+    bool more = before - foe->hp > dmgOne / foe->shieldMax;
+    bool skipped = B.skipTurn(foe) && !foe->broken && foe->shield == foe->shieldMax;
+    B.sc.clear();
+    battle_.reset();
+    mode = Mode::Map;
+    bool saved = saveGame();
+    weak.clear();
+    bool kept = saved && loadGame() && weakKnown("brumelin", light.type);
+    check(shield && broken && more && skipped && kept,
+          "brisure : chaque faiblesse entame le bouclier et se découvre ; brisé, l'ennemi perd sa jauge, encaisse plus, saute son tour ; faiblesse gardée dans la sauvegarde");
+    sc.clear(), menus.clear();
+  }
 
   // --- Forge de Forgeroc (2.1) : or et matériaux, objet porté ou dans le sac, +3 avec un trophée, sauvegarde ---
   {
@@ -2526,6 +2561,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         if (mult != 1.f) x->mhp = std::max(1, int(x->mhp * mult + 1e-4f));
         x->hp = x->mhp;
         x->boss = jget(e, "boss", false);
+        x->shieldMax = jget(e, "bouclier", 0);
         return x;
       };
       Json foes = f.value("ennemis", Json::array()), more = f.value("renforts", Json::array());
@@ -2684,6 +2720,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
             if (mult != 1.f) x->mhp = std::max(1, int(x->mhp * mult + 1e-4f));
             x->hp = x->mhp;
             x->boss = jget(e, "boss", false);
+            x->shieldMax = jget(e, "bouclier", 0);
+        x->shieldMax = jget(e, "bouclier", 0);
             return x;
           };
           for (auto& e : f.at("ennemis")) s.foes.push_back(make(e));

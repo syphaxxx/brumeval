@@ -730,7 +730,7 @@ void Game::newGame(const std::string& starter) {
   sc.clear();
   team = {makeFighter(r.hero, r.startLevel), makeFighter(starter, r.startLevel)};
   reserve.clear();
-  seen.clear(), caught.clear();
+  seen.clear(), caught.clear(), weak.clear();
   items.clear();
   for (auto& [id, n] : r.startItems) items[id] = n;
   gold = r.startGold;

@@ -1,10 +1,12 @@
 ## Nouveautés
 
-- **Démo plus agréable** (Outils > Démo) : le jeu joue tout seul et ne vous rend plus la main au moindre appui. **Espace** met en pause et reprend, **Échap** quitte, **F2** accélère.
-- **Joueur automatique bien plus malin** : avant un boss, il « répète » le combat dans sa tête et n'y va que s'il a de bonnes chances ; il fuit les meutes trop fortes, évite les herbes dangereuses et le regard des dresseurs, et planifie ses trajets. Il perd quatre fois moins souvent qu'avant et garde ses records d'une partie à l'autre.
-- Menu de pause : le résumé de l'équipe tient à l'écran même avec plus de 6 membres.
+- **Brisure** (comme dans Octopath Traveler) : chaque ennemi a un **bouclier** (l'écu bleu sous lui). Frappez ses **faiblesses** pour l'user : à zéro, il est **BRISÉ**, perd son prochain tour et encaisse 50 % de dégâts en plus. Les faiblesses se découvrent en les essayant et le Bestiaire s'en souvient.
+- **Ordre des tours** (comme Final Fantasy X) : une frise en haut de l'écran montre qui va jouer.
+- **Talents** (comme Pokémon) : chaque espèce a un pouvoir permanent — Carapace, Soigneur, Vif, Intimidation, Peau piquante, Rage… (fiche de l'équipe, Bestiaire, Aide).
+- **Boss plus durs** : viser leurs faiblesses et s'équiper devient indispensable.
+- **Graphismes** : effets propres à chaque type (flammes, gouttes, éclairs, cristaux…), l'écran tremble sur un critique ou une brisure, entrée en combat animée et nom du boss en bandeau.
 
-Dans la 2.3 : l'hôte d'une partie à plusieurs reçoit un **code de partie** à donner à ses amis ; le jeu ouvre lui-même le port de la box (UPnP).
+Dans la 2.4 : démo qui ne rend plus la main au moindre appui (Espace : pause, Échap : quitter), joueur automatique bien plus malin.
 
 ## Télécharger
 

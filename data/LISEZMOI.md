@@ -16,7 +16,7 @@ toutes les références existent et que chaque lieu des cartes est accessible.
 |---|---|
 | `types.json` | Les 13 types (Feu, Eau, Glace, Roche, Vent, Poison, Métal, Esprit…), leur couleur, leurs immunités et la table d'efficacité |
 | `techniques.json` | Techniques, sorts et Limites |
-| `especes.json` | Héros, créatures et boss : statistiques de base, techniques apprises, `evolution` (`espece` et `niveau` : la forme qu'elle peut prendre), `taille` (dessin agrandi, 1.15 pour les formes évoluées) |
+| `especes.json` | Héros, créatures et boss : statistiques de base, techniques apprises, `evolution` (`espece` et `niveau` : la forme qu'elle peut prendre), `taille` (dessin agrandi, 1.15 pour les formes évoluées), `talent` (identifiant d'un talent de `regles.json`), `bouclier` (bouclier de Brisure en ennemi ; absent : valeur des règles) |
 | `objets.json` | Objets : prix, effets (soin, PM, réanimation, capture), équipement (`equipement` : `arme`, `armure` ou `accessoire`, et `bonus` : `pv`, `pm`, `attaque`, `defense`, `magie`, `resistance`, `vitesse`, `precision`, `esquive`, `critique`) ; `"trophee": true` pour un trophée de boss (forge). Les armes et armures forgées (`epee_fer+1`…) sont créées par le jeu, pas écrites ici |
 | `apparences.json` | Couleurs et accessoires des personnages |
 | `regles.json` | Départ de la partie, rencontres, formules de combat, récompenses (dont `butin_type` : matériaux selon le type de la créature vaincue), forge, tactiques de départ… |
@@ -118,6 +118,21 @@ dans `regles.json`, sections `combat` et `etats`.
 +1, +2… ; son prix de vente monte de l'or de la forge. Les matériaux tombent
 des créatures selon `recompenses.butin_type` (`type`, `objet`, `chance`) et se
 trouvent dans des coffres ; chaque boss donne son trophée (action `donner`).
+
+**Brisure** (`regles.json`, `brisure`) : `bouclier` (bouclier d'un ennemi
+ordinaire), `bouclier_boss`, `degats` (multiplicateur des dégâts reçus par un
+ennemi brisé). Une espèce (`especes.json`) ou un ennemi d'un combat
+(`evenements.json`) peut avoir son propre `bouclier`.
+
+**Talents** (`regles.json`, `talents`) : `id`, `nom`, `description`, `effet` et
+`valeur`. Les effets possibles : `resiste_physique` et `resiste_magie` (part des
+dégâts retirée), `rage` (dégâts en plus avec une technique de son type sous un
+tiers des PV), `soin_voisins`, `regeneration` et `meditation` (part des PV ou PM
+max rendue à la fin du tour), `esquive_arriere`, `vif` (points de jauge ATB au
+début du combat), `briseur` (points de bouclier retirés en plus), `critique`,
+`sans_etats`, `intimidation`, `piquant` (part des PV max de l'attaquant au corps
+à corps), `cuirasse` (points de bouclier en plus). Chaque espèce choisit le sien
+avec `"talent"`.
 
 **Adversaires** : l'action `combat` accepte `nom` (« Le braconnier vous défie ! »)
 et `renforts`, une liste d'ennemis qui entrent un par un quand un adversaire
@@ -230,7 +245,7 @@ page dont la condition `si` est vraie.
 | `or` | Ajoute ou retire de l'or | `quantite` (négative pour payer) |
 | `drapeau` | Retient qu'un événement a eu lieu | `nom`, `valeur` (false pour l'effacer) |
 | `recruter` | Un personnage rejoint l'équipe | `espece`, `niveau` |
-| `combat` | Lance un combat | `ennemis` (1 à 6 : `espece`, `niveau`, `pv` multiplicateur, `boss`), `renforts`, `nom`, `boss`, `fuite`, `capture`, `victoire`, `defaite` |
+| `combat` | Lance un combat | `ennemis` (1 à 6 : `espece`, `niveau`, `pv` multiplicateur, `bouclier`, `boss`), `renforts`, `nom`, `boss`, `fuite`, `capture`, `victoire`, `defaite` |
 | `question` | Question Oui / Non | `texte`, `oui`, `non` |
 | `si` | Condition | `condition`, `alors`, `sinon` |
 | `soigner` | Soigne l'équipe | `pv`, `pm` (true par défaut) |

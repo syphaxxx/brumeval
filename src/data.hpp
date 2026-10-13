@@ -133,6 +133,8 @@ struct Species {
   std::string evolveTo;
   int evolveLvl = 0;
   float size = 1;  // taille du dessin (formes évoluées : un peu plus grandes)
+  int shield = 0;  // Brisure (2.5) : points de bouclier de l'espèce en ennemi (0 : valeur des règles)
+  std::string talent;  // Talent passif (2.5, inspiré de Pokémon) : identifiant dans les règles (« talents »)
 };
 
 // Équipement : une arme, une armure et un accessoire par combattant. Armes et armures sont
@@ -193,6 +195,9 @@ struct Rules {
   double bossWarn = .35;                 // chance qu'un boss annonce sa plus grosse attaque (un tour à l'avance)
   double bossBurst = 1.6;                // puissance de l'attaque annoncée (sur ceux restés dans la zone)
   double companionAtb = .5;              // compagnons : vitesse de leur jauge ATB (ils agissent moins souvent que les héros)
+  // Brisure (2.5, inspirée d'Octopath Traveler) : bouclier des ennemis (créature, boss), dégâts sur un ennemi brisé
+  int breakShield = 2, breakShieldBoss = 8;
+  double breakDamage = 1.5;
   // États
   double poisonDmg = .1, burnDmg = .0625, burnAtk = .75, paraSpeed = .5, paraSkip = .25;
   int sleepMin = 1, sleepMax = 3;
@@ -216,6 +221,12 @@ struct Rules {
     double chance;
   };
   std::vector<TypeDrop> typeDrops;
+  // Talents (2.5) : effet passif de chaque espèce ; « effet » choisit ce que fait le code, « valeur » le règle
+  struct Talent {
+    std::string id, name, desc, kind;
+    double value = 0;
+  };
+  std::vector<Talent> talents;
   // Forge de Forgeroc (« forge ») : un niveau par entrée (+1, +2, +3). bonus : part du bonus de
   // l'objet ajoutée (0.3 : +30 %), or et matériaux (« trophee » : n'importe quel trophée de boss)
   struct ForgeLevel {
@@ -278,6 +289,9 @@ float moveEff(const Move& m, const Species& s);
 std::string typesName(const Species& s);  // « Eau » ou « Eau/Glace »
 bool hasType(const Species& s, Type t);
 bool immuneTo(const Species& s, Status st);
+// Talent de l'espèce (nullptr : aucun) ; talentValue : sa valeur si son effet est « kind », sinon 0
+const Rules::Talent* talentOf(const Species& s);
+double talentValue(const Species& s, const char* kind);
 
 // Un combattant (allié ou ennemi)
 struct Fighter {
@@ -299,6 +313,10 @@ struct Fighter {
   std::array<std::string, N_GEAR> gear;  // équipement porté (objets de data/objets.json, vide : rien)
   int cell = -1;                         // formation : case choisie sur le damier (-1 : automatique)
   bool evolveLater = false;              // évolution refusée : proposée de nouveau seulement par Échap > Évolution
+  // Brisure (2.5), seulement pendant un combat : bouclier d'un ennemi ; un coup sur une faiblesse
+  // retire un point ; à zéro, il est brisé jusqu'à son prochain tour (perdu) et subit plus de dégâts
+  int shield = 0, shieldMax = 0;
+  bool broken = false;
   // Héros : la créature compagnon choisie par le joueur (vide : la première créature libre de l'équipe)
   std::weak_ptr<Fighter> companion;
 

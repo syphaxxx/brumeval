@@ -15,6 +15,16 @@ Méthode :
 
 ## Historique des mesures
 
+- **Brisure et talents** (2.5, 2026-10-14, « plus dur mais que la stratégie soit récompensée ») : sans réglage, les
+  boss devenaient trop faciles (brisés, ils perdent des tours : Ronce 19 → 53 %, Ignarok 11 → 52 %) sauf la Mère des
+  Brumes (0 % : Intimidation du Brumeloup, Esprit clair). Réglages (`evenements.json` : niveau, `pv`, `bouclier`) :
+  Golem N.28 ×16 bouclier 12, Ignarok N.24 ×9, Ronce-Mère N.21 ×9,5, Givrecorne N.39 ×11, gardien de cristal N.39 ×14
+  bouclier 10, Mère des Brumes N.40 ×8. Mesuré (BRUMEVAL_SIMULATIONS=2 ; IA / boutiques / forgé) : Sylvarque 3 / 30 /
+  47 %, Golem 50 / 57 / 75 %, Ronce-Mère 23 / 63 / 66 %, Ignarok 33 / 52 / 67 %, Givrecorne 33 / 78 / 81 %, cristal
+  53 / 86 / 96 %, Mère des Brumes 11 / 43 / 63 %. L'équipement et la forge comptent beaucoup plus qu'avant.
+  Le bouclier d'un boss (8 par défaut) règle combien de faiblesses il faut pour le briser : un gros bouclier rend la
+  Brisure rare, donc le boss plus dur sans toucher à ses PV.
+
 - **Attaques de zone** (1.9, demandées le 2026-10-12) : Tourbillon (Lior, ligne), Onde de choc (Brann, colonne), Nova
   (Maëlle, croix), Salve (Kael, colonne, rapide), Éclats d'acier (Sélène, croix) ; pour les créatures Ruée, Nuée de braises,
   Torrent, Pluie de spores, Avalanche, et Brasier, Rafale, Décharge, Morsure de gel qui gagnent une zone (aucune technique

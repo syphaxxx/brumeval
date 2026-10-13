@@ -32,6 +32,11 @@ bool Game::saveGame() {
     if (hasSpecies(sp)) f << "vu " << sp << '\n';
   for (auto& sp : caught)
     if (hasSpecies(sp)) f << "pris " << sp << '\n';
+  for (auto& w : weak) {  // « espèce:numéro du type » : écrit avec l'identifiant du type (stable si on en ajoute)
+    auto c = w.find(':');
+    int t = std::atoi(w.c_str() + c + 1);
+    if (hasSpecies(w.substr(0, c)) && t >= 0 && t < (int)types().size()) f << "faible " << w.substr(0, c) << ' ' << types()[t].id << '\n';
+  }
   static const char KIND[] = {'a', 't', 'o'};  // action automatique, technique, objet
   auto member = [&](const FighterP& m) {
     f << "membre " << m->sp << ' ' << m->lvl << ' ' << m->xp << ' ' << m->hp << ' ' << m->mp << ' ' << m->lim << '\n';
@@ -119,7 +124,7 @@ bool Game::loadGame() {
   if (!f || !std::getline(f, head) || head.rfind("BRUMEVAL", 0) != 0) return false;
   team.clear();
   reserve.clear();
-  seen.clear(), caught.clear();
+  seen.clear(), caught.clear(), weak.clear();
   bool inReserve = false;                      // après la ligne « reserve »
   std::vector<std::pair<size_t, int>> links;  // lignes « compagnon » : reliées à la fin
   items.clear();
@@ -163,6 +168,11 @@ bool Game::loadGame() {
     else if (k == "vu" || k == "pris") {
       s >> v;
       if (hasSpecies(v)) (k == "vu" ? seen : caught).insert(v);
+    } else if (k == "faible") {
+      std::string t;
+      s >> v >> t;
+      for (int i = 0; i < (int)types().size(); i++)
+        if (types()[i].id == t && hasSpecies(v)) weak.insert(v + ":" + std::to_string(i));
     } else if (k == "reserve") inReserve = true;
     else if (inReserve) readMemberLine(k, s, reserve, nullptr);
     else readMemberLine(k, s, team, &links);

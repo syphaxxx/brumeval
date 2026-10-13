@@ -6,6 +6,7 @@
 #pragma once
 #include <functional>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -26,7 +27,8 @@ std::string moveHelp(const Move& m, const Fighter* user = nullptr);
 std::string itemDetails(const ItemDef& d);
 std::string itemHelp(const ItemDef& d);
 // Forces et faiblesses d'une espèce (types, résistances propres, états impossibles), pour sa fiche
-std::string matchupText(const Species& s);
+// known : faiblesses découvertes (Game::weak) ; seulement celles-là sont citées (créature pas encore obtenue)
+std::string matchupText(const Species& s, const std::set<std::string>* known = nullptr);
 
 // Préparation d'un combat
 struct BattleSetup {
@@ -150,13 +152,19 @@ class Battle {
     Color col;
     bool limit = false;
     float t0 = -10;
+    int type = -1;  // type de la technique : effet propre à chaque type (flammes, gouttes, feuilles…)
   };
   Anim anim_;
-  void startAnim(const FighterP& a, const std::vector<FighterP>& targets, Fx fx, Color col, bool limit = false);
+  void startAnim(const FighterP& a, const std::vector<FighterP>& targets, Fx fx, Color col, bool limit = false, int type = -1);
+  void drawTypeFx(const Pt& p, float k);  // particules propres au type de la technique (anim_.type)
   Pt offset(const FighterP& f) const;  // décalage du dessin : élan, ou secousse quand il est touché
   void drawAnim();
 
   void tickATB(float dt);
+  // Ordre des tours (2.5, inspiré de Final Fantasy X) : les n prochains tours prévus d'après les
+  // jauges et les vitesses actuelles (sans le hasard de la paralysie)
+  std::vector<FighterP> turnOrder(int n) const;
+  void drawTurnOrder(float y);
   bool skipTurn(FighterP f);  // sommeil ou paralysie : le tour est perdu
   void command(FighterP a);
   void autoCommand(FighterP a);
@@ -201,6 +209,8 @@ class Battle {
   void finish(BattleResult r);
   int applyHit(const FighterP& a, const FighterP& d, const Move& m, float mult = 1);  // -1 si raté ; mult : autour de la cible d'une zone
   void applyEffect(const FighterP& t, const Effect& e);
+  void breakFoe(const FighterP& d);  // Brisure : bouclier à zéro
+  float shakeT_ = -10;               // l'écran tremble (brisure, coup critique)
   void knockOut(const FighterP& f);
 
   // Menus de commande

@@ -75,6 +75,9 @@ class Game {
   std::vector<FighterP> reserve;       // créatures en plus de l'équipe (captures et cadeaux quand elle est complète)
   // Bestiaire : espèces de créatures rencontrées et obtenues (lignes « vu » et « pris » de la sauvegarde)
   std::set<std::string> seen, caught;
+  // Brisure (2.5) : faiblesses découvertes (« espèce:type ») en frappant un ennemi sur l'une d'elles
+  std::set<std::string> weak;
+  bool weakKnown(const std::string& sp, int type) const { return weak.count(sp + ":" + std::to_string(type)) > 0; }
   void see(const Fighter& f) {
     if (!f.S().human) seen.insert(f.sp);
   }

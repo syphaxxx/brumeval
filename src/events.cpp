@@ -249,6 +249,7 @@ void Game::execAction(const Json& a) {
       if (mult != 1.f) f->mhp = std::max(1, int(f->mhp * mult + 1e-4f));
       f->hp = f->mhp;
       f->boss = jget(e, "boss", false);
+      f->shieldMax = jget(e, "bouclier", 0);
       return f;
     };
     BattleSetup setup;

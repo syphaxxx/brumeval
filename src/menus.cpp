@@ -289,6 +289,7 @@ void Game::noteBestiary() {
 // « Évolue en Ronceflore au niveau 16. » / « Évolution de Ronceau (niveau 16). »
 static std::string evolutionText(const Species& s) {
   std::string t;
+  if (const Rules::Talent* tl = talentOf(s)) t += "Talent : " + tl->name + ". ";
   if (!s.evolveTo.empty() && hasSpecies(s.evolveTo))
     t += "Évolue en " + species(s.evolveTo).name + " au niveau " + std::to_string(s.evolveLvl) + ". ";
   for (auto& o : allSpecies())
@@ -314,7 +315,7 @@ void Game::bestiaryMenu(int sel) {
     std::snprintf(num, sizeof num, "%02d ", int(i + 1));
     std::string id = s.id;
     MenuItem it{num + (v ? s.name : std::string("???")), c ? "★" : v ? "vu" : "",
-                c ? "Obtenue. " + evolutionText(s) + matchupText(s) : v ? "Rencontrée, pas encore obtenue. " + evolutionText(s) + matchupText(s) : "Pas encore rencontrée.", true, nullptr, [this, id] { bestiarySel_ = id; }};
+                c ? "Obtenue. " + evolutionText(s) + matchupText(s) : v ? "Rencontrée, pas encore obtenue. " + evolutionText(s) + matchupText(s, &weak) : "Pas encore rencontrée.", true, nullptr, [this, id] { bestiarySel_ = id; }};
     it.shrink = true;
     m.items.push_back(it);
   }
@@ -856,8 +857,8 @@ void Game::drawTeamPanel(int x, int y, int sel) {
   g.window(x, y, w, std::min(SCREEN_H - y - 2, 34 + 4 * 11 + 3 + 4 * 11 + 3 + lines * 11 + 6));
   g.text(x + 8, y + 6, f.name(), GOLD);
   g.text(x + w - 8, y + 6, "Niveau " + std::to_string(f.lvl), WHITE, 2);
-  std::string role = f.S().human ? f.S().role : std::string("Créature de type ") + typeName(f.S().type);
-  g.text(x + 8, y + 19, role.size() > 40 ? typeName(f.S().type) : role, MUTED);
+  if (const Rules::Talent* tl = talentOf(f.S())) g.text(x + 8, y + 19, "Talent : " + tl->name, rgb(0xffd34d));  // (Aide > Talents)
+  else g.text(x + 8, y + 19, f.S().human ? utf8Prefix(f.S().role, 24) : typeName(f.S().type), MUTED);
   if (f.S().human) drawHuman(g, look(f.S().look), x + w - 40, y + 32, 2, DOWN, 0, false);  // sous la ligne du rôle
   else drawCreature(g, f.sp, x + w - 26, y + 48, .9f, false, time);
   int ly = y + 34;

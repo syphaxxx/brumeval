@@ -69,6 +69,38 @@ l'**avant** à l'**arrière**, sur quatre lignes.
   y sont restés : écartez-vous ! En mode auto, la tactique « Soi : zone
   annoncée → Se mettre à l'abri » le fait pour vous.
 
+## Brisure, ordre des tours et talents (2.5)
+
+Inspiré d'Octopath Traveler, de Final Fantasy X et de Pokémon :
+
+- **Brisure** : chaque ennemi a un **bouclier** (le chiffre dans l'écu bleu,
+  sous lui ; 2 pour une créature, 8 à 12 pour un boss). Chaque coup sur une de
+  ses **faiblesses** en retire 1 (2 si c'est très efficace). À zéro, il est
+  **BRISÉ** : il perd son prochain tour, ses attaques annoncées sont annulées,
+  et il encaisse **50 % de dégâts en plus** jusqu'à ce qu'il se ressaisisse
+  (bouclier plein). Viser les faiblesses et garder ses gros coups pour le
+  moment où il est brisé, c'est la clé des boss.
+- Les faiblesses se **découvrent** : un point de couleur apparaît sous la barre
+  de PV pour chaque faiblesse trouvée, et le Bestiaire s'en souvient (celles
+  d'une créature capturée sont toutes connues).
+- **Ordre des tours** : la frise en haut de l'écran montre qui joue ensuite
+  (bleu : vos alliés, rouge : les ennemis, or : le boss ; barré : un tour perdu
+  par un ennemi brisé). Les techniques rapides et lourdes la font bouger.
+- **Talents** : chaque espèce a un pouvoir permanent, gardé quand elle évolue :
+  Carapace et Écorce runique (moins de dégâts physiques ou magiques), Rage,
+  Soigneur (soigne ses voisins de damier), Régénération, Méditation, Furtif
+  (esquive à l'arrière), Vif (commence avec la jauge avancée), Briseur (use
+  plus les boucliers), Œil perçant, Esprit clair (insensible aux états),
+  Intimidation (baisse l'Attaque adverse en début de combat), Peau piquante,
+  Cuirasse (gros bouclier). Visible sur la fiche (Échap > Équipe) et dans
+  le Bestiaire ; détails dans l'Aide (F1).
+- Chaque type a son effet visuel (flammes, gouttes, éclairs, cristaux…) ;
+  l'écran tremble sur un coup critique ou une brisure, et les boss entrent en
+  scène avec leur nom.
+
+Les boss sont plus durs qu'avant : sans viser leurs faiblesses ni s'équiper,
+on perd souvent.
+
 ## Techniques rapides et lourdes
 
 Chaque technique a un rythme, indiqué dans l'aide en bas de l'écran :

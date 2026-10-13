@@ -60,6 +60,19 @@ static std::vector<HelpPage> helpPages() {
                 "Objets : soins, remèdes. Une lanterne capture une créature sauvage : plus elle est affaiblie, mieux c'est.",
                 "Fuir : " + pct(R.flee) + " de chance de réussir, pas contre tous les adversaires.",
                 "Changer : un autre membre de l'équipe prend la place d'un combattant."}});
+  p.push_back({"Brisure", "Le bouclier des ennemis, leurs faiblesses, l'ennemi brisé.",
+               {"Chaque ennemi a un bouclier (le nombre à gauche de sa barre de vie) : " + std::to_string(R.breakShield) + " points en général, " +
+                    std::to_string(R.breakShieldBoss) + " pour un boss.",
+                "Le frapper sur une faiblesse (un type efficace contre lui) retire un point, deux s'il est doublement faible. La faiblesse est alors découverte : une pastille de sa couleur s'affiche sous sa barre, et le Bestiaire la retient.",
+                "Bouclier à zéro : l'ennemi est BRISÉ. Sa jauge retombe à zéro, son attaque annoncée est annulée, il subit ×" + num(R.breakDamage) +
+                    " de dégâts et perd son prochain tour. Puis il se ressaisit, bouclier rechargé.",
+                "Le bon moment pour les plus gros coups et les Limites : brisez d'abord, frappez ensuite.",
+                "Dans le menu de la cible, « faiblesse ! » signale un type déjà découvert ; « ? », un type pas encore essayé contre lui."}});
+  {
+    std::vector<std::string> tl = {"Chaque espèce a un talent, un effet permanent (fiche d'un membre : Échap > Équipe ; Bestiaire). Une évolution le garde."};
+    for (auto& t : R.talents) tl.push_back(t.name + " : " + t.desc);
+    p.push_back({"Talents", "Le pouvoir passif de chaque espèce.", tl});
+  }
   p.push_back({"Damier", "Les " + std::to_string(N_CELLS) + " cases de chaque camp, corps à corps et distance.",
                {"Chaque camp a " + std::to_string(N_CELLS) + " cases : " + std::to_string(GRID) + " colonnes (de l'avant à l'arrière) et " +
                     std::to_string(GRID) + " lignes. L'avant est du côté de l'adversaire.",
@@ -147,7 +160,7 @@ void Game::helpMenu(int sel) {
   panelMode_ = 0;  // le menu prend la place du résumé de l'équipe
   Menu m;
   m.title = "Aide";
-  m.x = 96, m.y = 30, m.w = 128, m.rows = (int)pages.size() + 1, m.sel = sel;
+  m.x = 96, m.y = 30, m.w = 128, m.rows = std::min(9, (int)pages.size() + 1), m.sel = sel;  // au-delà, la liste défile
   for (size_t i = 0; i < pages.size(); i++)
     m.items.push_back({pages[i].title, "", pages[i].summary + " (aussi avec F1)", true, [this, i] { openHelp((int)i); }});
   m.items.push_back({"Retour", "", "", true, [this, panel] {

@@ -31,6 +31,107 @@
     "retard_lourde": 25,
     "compagnon_atb": 0.5
   },
+  "brisure": {"bouclier": 2, "bouclier_boss": 8, "degats": 1.5},
+  "talents": [
+    {
+      "id": "carapace",
+      "nom": "Carapace",
+      "description": "Reçoit 20 % de dégâts physiques en moins.",
+      "effet": "resiste_physique",
+      "valeur": 0.2
+    },
+    {
+      "id": "ecorce",
+      "nom": "Écorce runique",
+      "description": "Reçoit 20 % de dégâts magiques en moins.",
+      "effet": "resiste_magie",
+      "valeur": 0.2
+    },
+    {
+      "id": "rage",
+      "nom": "Rage",
+      "description": "PV sous le tiers : ses techniques de son type font 40 % de dégâts en plus.",
+      "effet": "rage",
+      "valeur": 0.4
+    },
+    {
+      "id": "soigneur",
+      "nom": "Soigneur",
+      "description": "À la fin de son tour, soigne ses voisins de 6 % de leurs PV max.",
+      "effet": "soin_voisins",
+      "valeur": 0.06
+    },
+    {
+      "id": "regeneration",
+      "nom": "Régénération",
+      "description": "À la fin de son tour, regagne 5 % de ses PV max.",
+      "effet": "regeneration",
+      "valeur": 0.05
+    },
+    {
+      "id": "meditation",
+      "nom": "Méditation",
+      "description": "À la fin de son tour, regagne 6 % de ses PM max.",
+      "effet": "meditation",
+      "valeur": 0.06
+    },
+    {
+      "id": "furtif",
+      "nom": "Furtif",
+      "description": "À l'arrière, esquive 15 % des coups physiques en plus.",
+      "effet": "esquive_arriere",
+      "valeur": 0.15
+    },
+    {
+      "id": "vif",
+      "nom": "Vif",
+      "description": "Commence chaque combat avec la jauge ATB avancée de 40 %.",
+      "effet": "vif",
+      "valeur": 40
+    },
+    {
+      "id": "briseur",
+      "nom": "Briseur",
+      "description": "Sur une faiblesse, retire un point de bouclier de plus.",
+      "effet": "briseur",
+      "valeur": 1
+    },
+    {
+      "id": "oeil",
+      "nom": "Œil perçant",
+      "description": "10 % de coups critiques en plus.",
+      "effet": "critique",
+      "valeur": 10
+    },
+    {
+      "id": "esprit_clair",
+      "nom": "Esprit clair",
+      "description": "Insensible au poison, à la brûlure, à la paralysie et au sommeil.",
+      "effet": "sans_etats",
+      "valeur": 1
+    },
+    {
+      "id": "intimidation",
+      "nom": "Intimidation",
+      "description": "En début de combat, baisse l'Attaque des adversaires d'un niveau.",
+      "effet": "intimidation",
+      "valeur": 1
+    },
+    {
+      "id": "piquant",
+      "nom": "Peau piquante",
+      "description": "Qui le frappe au corps à corps perd 5 % de ses PV max.",
+      "effet": "piquant",
+      "valeur": 0.05
+    },
+    {
+      "id": "cuirasse",
+      "nom": "Cuirasse",
+      "description": "Bouclier de Brisure plus gros de 4 points.",
+      "effet": "cuirasse",
+      "valeur": 4
+    }
+  ],
   "etats": {
     "poison_degats": 0.1,
     "brulure_degats": 0.0625,
