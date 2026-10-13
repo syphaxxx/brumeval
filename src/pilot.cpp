@@ -450,13 +450,17 @@ void Pilot::plan() {
     for (auto& g : gs) {
       if (g.kind != k) continue;
       for (auto& s : g.spots) {
-        if (dist_[s.node] >= bd) continue;
+        if (dist_[s.node] == INT_MAX) continue;  // pas encore accessible
+        int sm, sx, sy;
+        unpack(s.node, sm, sx, sy);
+        int d = dist_[s.node] + (k == Normal && sm != G.mapId ? 40 : 0);  // finir la carte en cours d'abord
+        if (d >= bd) continue;
         int risk = k == Heal ? 0 : pathRisk(s.node);  // se soigner passe avant tout
         if (risk > avgLvl + 1) {
           need_ = need_ ? std::min(need_, risk - 1) : risk - 1;
           continue;
         }
-        bd = dist_[s.node], out = g, at = s.node, face = s.face;
+        bd = d, out = g, at = s.node, face = s.face;
       }
     }
     return bd < INT_MAX;

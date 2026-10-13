@@ -68,6 +68,11 @@ Mesuré le 2026-10-13 (6 parties chacune) : ancienne version 73 min, 5,8 défait
 68 min, 2,5 défaites, niveau 53, 218 combats (meilleure partie : 53 min, 1 défaite). Le temps se partage à peu près
 en trois : combats sur les trajets, trajets (les coffres d'abord), combats difficiles.
 
+- **Ordre des trajets** : un objectif d'une autre carte compte 40 cases de plus (finir la carte en cours d'abord).
+  Mesuré : même temps (68 min), un peu moins de défaites ; la marche dépend surtout de la carte du jeu.
+- **Entraînement avec mémoire** (2026-10-13, 5 parties de suite) : 1 h 02, 1 h 20, 1 h 19, 0 h 58 (record, 0 défaite),
+  1 h 17. Braisenard est le compagnon le plus rapide (environ 1 h), Gouttelin et Ronceau environ 1 h 18.
+
 **Essais ratés** (mesurés puis retirés) : fuir toute rencontre de 8 niveaux sous le sien (il fuyait aussi dans ses
 zones d'entraînement : 5 parties sur 6 bloquées) ; seuil de répétition à 60 % (plus de défaites que de temps gagné).
 
