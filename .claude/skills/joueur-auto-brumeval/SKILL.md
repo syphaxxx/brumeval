@@ -43,6 +43,13 @@ compétence `joueur-automatique` de Claude Code.
 - **Herbes trop fortes** (`zoneLo_`, `pathRisk`) : il ne prend pas un chemin qui traverse des herbes dont les créatures
   dépassent son niveau de plus de 1 ; il s'entraîne d'abord. Ces herbes coûtent aussi plus cher dans Dijkstra.
 - **Petite équipe** (3 combattants ou moins) : soins dès 60 % des PV.
+- **Avant un combat difficile** : PV et PM presque pleins (la répétition les suppose pleins) ; sinon il répète le
+  combat avec son état actuel (`nowChances_`) et y va quand même si c'est assez sûr. Exiger des PV et PM pleins
+  sans cette répétition faisait des centaines d'allers-retours entre l'auberge des Pics et le boss du Temple.
+- **Regard des dresseurs** (`watched_`, `watchSight`) : les cases vues par un dresseur (`Npc::sight`) qu'il n'est
+  pas prêt à battre coûtent 500 : il passe ailleurs (le Braconnier le battait à chaque début de partie).
+- **Herbes** : coût 1 de plus qu'un chemin (mesuré : 1, 3 et 8 se valent à peu près, 1 un peu mieux : les combats
+  en route lui évitent de s'entraîner) ; bien plus cher si les créatures dépassent son niveau.
 - **Boutique** (`worthTrip`) : il n'y va exprès que pour un meilleur équipement, des lanternes qui manquent ou presque
   plus de soins ; il achète d'abord 2 potions (le meilleur soin qu'il peut payer), et plus quand il est riche.
 - **Rapport** : chaque défaite dit contre quoi (adversaires, carte, niveau) ; « temps par activité » (combats sur les
@@ -58,7 +65,11 @@ l'autre, le temps varie de ±15 min, une seule partie ne prouve rien. Pour compa
 à part (`git stash`, compilation, copie de l'exécutable) et mettre de côté `pilote_memoire.txt` pendant ses parties.
 
 Mesuré le 2026-10-13 (6 parties chacune) : ancienne version 73 min, 5,8 défaites, niveau 58, 240 combats ; version 2.4
-71 min, 5,0 défaites, niveau 53, 204 combats.
+68 min, 2,5 défaites, niveau 53, 218 combats (meilleure partie : 53 min, 1 défaite). Le temps se partage à peu près
+en trois : combats sur les trajets, trajets (les coffres d'abord), combats difficiles.
+
+**Essais ratés** (mesurés puis retirés) : fuir toute rencontre de 8 niveaux sous le sien (il fuyait aussi dans ses
+zones d'entraînement : 5 parties sur 6 bloquées) ; seuil de répétition à 60 % (plus de défaites que de temps gagné).
 
 **Leçon** : se soigner sur place avec les potions (au lieu de rentrer à l'auberge) a été essayé puis retiré : 92 min et
 11,8 défaites. Les potions ne rendent pas les PM : les lanceurs de sorts tombaient à court au combat suivant.

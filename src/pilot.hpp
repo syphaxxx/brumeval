@@ -48,6 +48,7 @@ class Pilot {
     std::vector<Spot> spots;
     std::string sig;  // réponse attendue de l'événement (voir Info)
     int need = 0;     // combat pas encore prêt (Grind) : niveau moyen à atteindre
+    Json fight;       // combat difficile (Danger) : l'action « combat », pour le répéter avec l'état actuel
   };
   // Ce que ferait un événement maintenant : page choisie et résultat de ses conditions
   // (sig), combat (niveau le plus haut, boss), boutique, soins, fin de l'histoire
@@ -101,6 +102,8 @@ class Pilot {
   Info inspect(const std::string& event) const;
   void inspectList(const Json& list, Info& in, int depth) const;
   bool ready(const Info& in, const std::string& key);
+  float wantChance(const std::string& key) const;  // part de victoires demandée pour ce combat
+  std::map<std::string, float> nowChances_;        // combat + état (PV, PM) → part de victoires avec l'état actuel
   // Répétition (2.4) : avant un combat difficile, il le simule plusieurs fois avec une copie de son
   // équipe (niveaux, équipement, techniques) sans toucher à la partie, et n'y va que s'il gagne
   // assez souvent. Résultat gardé tant que l'équipe ne change pas.
@@ -136,6 +139,10 @@ class Pilot {
   bool shouldFlee() const;  // combat sauvage qui tourne mal : mieux vaut fuir
   bool fleeNow_ = false;    // meute jugée trop forte dès le début du combat (répétition) : fuir
   int pathRisk(int at) const;  // niveau le plus haut des créatures des herbes sur le chemin jusqu'à cette case
+  // Cases dans le champ de vision d'un dresseur (Npc::sight) qu'il n'est pas encore prêt à battre :
+  // presque infranchissables (sinon le dresseur l'arrête et le bat)
+  std::set<int> watched_;
+  void watchSight();
   // Historique des parties (pilote_parties.txt : temps, défaites, niveau, compagnon) : pour mesurer ses progrès
   struct Run {
     int seconds, defeats, level;

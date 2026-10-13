@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <climits>
+#include <cstdlib>
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
@@ -141,10 +142,11 @@ int Pilot::moveTo(int m, int x, int y, int d, int& cost) const {
   // Les hautes herbes coûtent plus cher : on les évite, sauf pour s'entraîner ; d'autant plus loin
   // dans la nature d'une carte où des meutes l'ont déjà battu (mémoire)
   cost = 1;
+  size_t here = (size_t)node(m, nx, ny);
+  if (watched_.count((int)here)) cost += 500;  // sous le regard d'un dresseur trop fort pour lui
   if (tileEncounter(M.rows[ny][nx])) {
-    size_t n = (size_t)node(m, nx, ny);
-    int over = zoneLo_[n] - G.avgLevel();  // créatures plus fortes que l'équipe : bien plus cher, surtout loin des villes
-    cost += 3 + fear(m) * depth_[n] / 8 + (over > 0 ? over * 3 * (10 + depth_[n]) / 10 : 0);
+    int over = zoneLo_[here] - G.avgLevel();  // créatures plus fortes que l'équipe : bien plus cher, surtout loin des villes
+    cost += 1 + fear(m) * depth_[here] / 8 + (over > 0 ? over * 3 * (10 + depth_[here]) / 10 : 0);
   }
   for (auto& w : M.warps)
     if (w.x == nx && w.y == ny) {
@@ -249,10 +251,13 @@ bool Pilot::ready(const Info& in, const std::string& key) {
     chances_[key] = {sig, c};
     if (SDL_getenv("BRUMEVAL_TRACE")) std::printf("  [%s] répétition : %s, %d %% de victoires (équipe N.%d)\n", hms().c_str(), key.c_str(), int(c * 100 + .5f), avg);
   }
+  return chances_[key].second >= wantChance(key);
+}
+
+float Pilot::wantChance(const std::string& key) const {
   auto f = fails_.find(key);
   auto l = learned_.find(key);
-  float want = std::min(.97f, .85f + .05f * (f == fails_.end() ? 0 : f->second) + .03f * (l == learned_.end() ? 0 : l->second));
-  return chances_[key].second >= want;
+  return std::min(.97f, .85f + .05f * (f == fails_.end() ? 0 : f->second) + .03f * (l == learned_.end() ? 0 : l->second));
 }
 
 std::string Pilot::teamSignature() const {
@@ -345,6 +350,7 @@ std::vector<Pilot::Goal> Pilot::goals() {
       bool seen = doneSig_.count(g.key) > 0;
       if (in.combat) {  // pas encore prêt : objectif d'entraînement (seulement s'il est accessible, voir plan)
         bool ok = ready(in, g.key);
+        g.fight = in.fight;
         g.need = G.avgLevel() + 1;  // un niveau de plus, puis il répète de nouveau le combat
         g.kind = ok ? Danger : Grind;
         out.push_back(g);
@@ -421,13 +427,14 @@ void Pilot::plan() {
   path_.clear();
   grind_.clear();
   int cur = node(G.mapId, G.px, G.py);
+  watchSight();
   dijkstra(cur);
   std::vector<Goal> gs = goals();
 
-  int hp = 0, mhp = 0;
+  int hp = 0, mhp = 0, mp = 0, mmp = 0;
   bool ko = false;
-  for (auto& f : G.front()) hp += f->hp, mhp += f->mhp, ko = ko || !f->alive();
-  float frac = mhp ? float(hp) / mhp : 1;
+  for (auto& f : G.front()) hp += f->hp, mhp += f->mhp, mp += f->mp, mmp += f->mmp, ko = ko || !f->alive();
+  float frac = mhp ? float(hp) / mhp : 1, mpFrac = mmp ? float(mp) / mmp : 1;
   bool danger = std::any_of(gs.begin(), gs.end(), [](const Goal& g) { return g.kind == Danger; });
   need_ = 0;  // niveau à atteindre pour le combat difficile accessible le plus facile
   for (auto& g : gs)
@@ -474,7 +481,15 @@ void Pilot::plan() {
   }
   if (!found && best(Danger, g, at, face)) {  // combat difficile : en pleine forme d'abord
     found = true;
-    if (frac < .98f) {  // l'auberge d'abord : elle rend aussi les PM
+    // Pas en pleine forme : il répète le combat avec son état actuel ; si c'est assez sûr, il y va
+    // quand même (sinon, entre une auberge lointaine et le boss, il ferait des allers-retours sans fin)
+    bool goNow = frac >= .98f && mpFrac >= .9f;
+    if (!goNow && !g.fight.is_null()) {
+      std::string k = g.key + "@" + teamSignature() + "/" + std::to_string(int(frac * 10)) + "/" + std::to_string(int(mpFrac * 10));
+      if (!nowChances_.count(k)) nowChances_[k] = rehearse(g.fight, 10, false);
+      goNow = nowChances_[k] >= wantChance(g.key);
+    }
+    if (!goNow) {  // l'auberge d'abord : PV et PM
       Goal h;
       int hat = -1, hface = -1;
       if (best(Heal, h, hat, hface)) g = h, at = hat, face = hface;
@@ -535,6 +550,25 @@ void Pilot::plan() {
   }
   for (int v = at; v != cur && prev_[v] >= 0; v = prev_[v]) path_.push_back({prev_[v], v, prevDir_[v]});
   std::reverse(path_.begin(), path_.end());
+}
+
+void Pilot::watchSight() {
+  watched_.clear();
+  for (int m = 0; m < (int)maps().size(); m++) {
+    const MapDef& M = maps()[m];
+    for (size_t i = 0; i < M.npcs.size(); i++) {
+      const Npc& n = M.npcs[i];
+      if (n.sight <= 0 || n.event.empty() || !G.npcVisible(n) || (!n.sightUntil.empty() && G.has(n.sightUntil))) continue;
+      Info in = inspect(n.event);
+      if (!in.combat || ready(in, "pnj:" + M.id + ":" + std::to_string(i))) continue;
+      int dx = n.dir == LEFT ? -1 : n.dir == RIGHT ? 1 : 0, dy = n.dir == UP ? -1 : n.dir == DOWN ? 1 : 0;
+      for (int k = 1; k <= n.sight; k++) {
+        int x = n.x + dx * k, y = n.y + dy * k;
+        if (x < 0 || y < 0 || x >= M.w() || y >= M.h() || blockedAt(m, x, y)) break;
+        watched_.insert(node(m, x, y));
+      }
+    }
+  }
 }
 
 int Pilot::pathRisk(int at) const {
