@@ -91,3 +91,6 @@ zones d'entraînement : 5 parties sur 6 bloquées) ; seuil de répétition à 60
 11,8 défaites. Les potions ne rendent pas les PM : les lanceurs de sorts tombaient à court au combat suivant.
 L'auberge rend tout. Toujours mesurer chaque idée au banc d'essai, même celles qui semblent évidentes.
 
+**Version 2.5** (Brisure, talents, boss plus durs ; 2026-10-14, 3 parties sans mémoire, une par compagnon) : toujours
+finie, 63, 75 et 76 min, 0, 2 et 1 défaite, niveau ~52. Il vise déjà les faiblesses et les ennemis brisés : son IA
+(`attackScore`, alliés) et ses répétitions (`rehearse`, boucliers des événements) en tiennent compte.
