@@ -17,5 +17,8 @@ void drawFighterSprite(Gfx& g, const Fighter& f, float x, float y, float s, bool
 
 void drawTile(Gfx& g, const MapDef& m, int tx, int ty, int sx, int sy, float t);
 void drawBuilding(Gfx& g, const Building& b, int sx, int sy);
+// Par-dessus la nuit (2.6) : fenêtres allumées et lueur de la porte (night : 0 jour, 1 nuit) ; fumée de la cheminée
+void drawBuildingLights(Gfx& g, const Building& b, int sx, int sy, float night);
+void drawChimneySmoke(Gfx& g, const Building& b, int sx, int sy, float t);
 void drawChest(Gfx& g, int sx, int sy, bool open);
 void drawSign(Gfx& g, int sx, int sy);

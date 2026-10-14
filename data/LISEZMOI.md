@@ -134,6 +134,26 @@ début du combat), `briseur` (points de bouclier retirés en plus), `critique`,
 à corps), `cuirasse` (points de bouclier en plus). Chaque espèce choisit le sien
 avec `"talent"`.
 
+**Pousser / tirer** (2.6) : une technique avec `"deplace": "pousse"` repousse sa
+cible d'une case vers l'arrière, `"tire"` la tire vers l'avant. Case prise ou bord
+arrière : choc (`regles.json`, `damier.choc` : part des dégâts du coup, pour les
+deux). Les boss ne bougent pas.
+
+**Météo** (`regles.json`, `meteo`) : `id`, `nom`, `description`, `effet` (dessin :
+`pluie`, `soleil`, `chaleur`, `neige`, `orage`, `brume`), `decors` (où elle tombe :
+`vallee`, `cendres`, `grotte`, `foret`, `neige`), `chance`, `types` (multiplicateur
+des dégâts par type), `precision` (coups physiques, en points).
+
+**Terrain** (`regles.json`, `terrains`, et `damier.terrain_min` / `terrain_max`
+cases par camp) : `id`, `nom`, `description`, `effet` (`degats` et `soin` : part
+des PV max à la fin du tour ; `poison` : chance ; `lent` : jauge ATB plus lente ;
+`esquive` : points d'esquive ; `magie` : Magie en plus), `valeur`, `insensibles`
+(types), `decors`, `couleur`.
+
+**Duos** (`regles.json`, `duo`) : `jauge` (jauge ATB du partenaire, en %) et
+`liste` : `membres` (deux : identifiant d'espèce, `humain` ou `type:feu`) et
+`technique` (dans `techniques.json`, comme les autres ; chacun paie son `cout`).
+
 **Adversaires** : l'action `combat` accepte `nom` (« Le braconnier vous défie ! »)
 et `renforts`, une liste d'ennemis qui entrent un par un quand un adversaire
 tombe. Un habitant avec `"vue": 3` repère le joueur jusqu'à 3 cases devant lui

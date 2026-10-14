@@ -331,6 +331,20 @@ code) ; `docs/GUIDE.md` les range par domaine.
   boss à la fin de `Battle::draw`. Mesuré (2.5) : boss relevés pour que la
   victoire demande faiblesses + équipement (Golem 50 % IA / 75 % forgé, Mère des
   Brumes 11 % / 63 %).
+- Stratégie 2.6 (Into the Breach, Chrono Trigger) : `Move::shove` (champ `deplace`), `Battle::shove`/`shoveDest`
+  après le coup sur la cible principale (choc `damier.choc` si case prise ou bord, KO ajoutés à la liste du coup ;
+  boss : -2, inébranlable). Météo `weather_` et terrain `terrain_[camp][case]` tirés dans le constructeur selon
+  `themeName(bg)` (`Rules::weathers`, `terrains` : types en identifiants, résolus en combat) ; aucun en duel
+  (`goOnline`) ; envoyés au gardien à plusieurs (`meteo`, `terrain` de `etat`). Effets : `weatherMult` et précision
+  dans `applyHit`/`attackScore`, `atbRate` (verglas, aussi `turnOrder`), `terrainTurn` (fin du tour dans
+  `afterAction`, et à l'arrivée d'une poussée), herbes et cristaux dans `applyHit`. `threatened` inclut une case
+  qui blesse (`terrainHurts`) : l'IA et la tactique « Se mettre à l'abri » la quittent ; `enemyMove` aussi.
+  Duos : `Rules::duos`, `duoMember` (espèce, `humain`, `type:x`), `Battle::duoOptions` (partenaire vivant, jauge ≥
+  `duo.jauge`, PM des deux ; jamais en ligne), `duoMove` (le partenaire paie et sa jauge tombe à 0, puis `useMove`
+  avec `duoPartner_` pour le message). IA : `think` les compte × (1 - 0,45 × jauge du partenaire) ; tactiques : action
+  « attaque » (`Plan::duo`). Expédition : seuls les duos `humain`/`type:` restent (`Expedition::install`). Jour et nuit
+  sur les cartes : `Game::nightAmount` (12 min par jour, dehors seulement), `drawBuildingLights`,
+  `drawChimneySmoke` ; le combat s'assombrit aussi.
 - Données en mémoire : `dataDoc(DF_…)` garde chaque fichier de data/ sous forme
   de JSON ; `rebuildData()` reconstruit les structures du jeu à partir de ces
   documents, `saveDataDoc` les écrit. Les Réglages ne touchent qu'aux documents,

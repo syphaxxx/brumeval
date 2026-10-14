@@ -68,6 +68,39 @@ static std::vector<HelpPage> helpPages() {
                     " de dégâts et perd son prochain tour. Puis il se ressaisit, bouclier rechargé.",
                 "Le bon moment pour les plus gros coups et les Limites : brisez d'abord, frappez ensuite.",
                 "Dans le menu de la cible, « faiblesse ! » signale un type déjà découvert ; « ? », un type pas encore essayé contre lui."}});
+  p.push_back({"Pousser", "Pousser et tirer les combattants sur le damier.",
+               {"Certaines techniques poussent la cible d'une case vers l'arrière (Charge, Ruée, Rafale, Vague, Fracas…) ou la tirent vers l'avant (Flèche-grappin, Tornade, Étreinte…). Leur description le précise.",
+                "Si la case d'arrivée est déjà prise, les deux combattants se heurtent : chacun subit un choc de " + pct(R.shoveClash) +
+                    " des dégâts du coup. Poussé contre le bord arrière : choc aussi.",
+                "Tirer un mage vers l'avant le met à portée du corps à corps ; pousser un ennemi sur des braises le brûle aussitôt.",
+                "Les boss sont inébranlables. Les ennemis aussi poussent et tirent : gardez vos soigneurs loin des tireurs de grappin."}});
+  {
+    std::vector<std::string> dl = {"Deux alliés qui vont ensemble lancent une technique à deux, plus forte (menu « Duo »). Le partenaire doit avoir sa jauge ATB à " +
+                                       std::to_string(R.duoGauge) + " % au moins : il la dépense, et chacun paie les PM.",
+                                   "En mode auto, la tactique « Meilleure attaque » choisit un duo quand il vaut le coup."};
+    for (auto& d : R.duos) {
+      if (!hasMove(d.move) || d.members.size() != 2) continue;
+      auto who = [](const std::string& m) {
+        if (m == "humain") return std::string("un héros");
+        if (m.rfind("type:", 0) == 0) {
+          for (auto& t : types())
+            if (t.id == m.substr(5)) return "une créature " + t.name;
+          return m;
+        }
+        return hasSpecies(m) ? species(m).name : m;
+      };
+      dl.push_back(moveInfo(d.move).name + " : " + who(d.members[0]) + " + " + who(d.members[1]) + ".");
+    }
+    p.push_back({"Duos", "Les techniques à deux.", dl});
+  }
+  {
+    std::vector<std::string> ml = {"Chaque combat a un temps, selon le lieu (affiché sous l'ordre des tours) :"};
+    for (auto& w : R.weathers) ml.push_back(w.name + " : " + w.desc);
+    ml.push_back("Des cases du damier ont un terrain, de leur couleur. Dans « Se déplacer », chaque case dit le sien :");
+    for (auto& t : R.terrains) ml.push_back(t.name + " : " + t.desc);
+    ml.push_back("En mode auto, la tactique « Se mettre à l'abri » quitte aussi une case qui blesse ou ralentit.");
+    p.push_back({"Météo", "Le temps et les cases de terrain.", ml});
+  }
   {
     std::vector<std::string> tl = {"Chaque espèce a un talent, un effet permanent (fiche d'un membre : Échap > Équipe ; Bestiaire). Une évolution le garde."};
     for (auto& t : R.talents) tl.push_back(t.name + " : " + t.desc);

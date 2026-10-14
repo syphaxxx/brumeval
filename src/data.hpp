@@ -84,6 +84,7 @@ struct Move {
   Pace pace = Pace::Normal;  // rapide : la jauge repart plus haut ; lourde : plus bas que zéro
   Area zone = Area::Single;  // zone d'effet (par défaut : selon la cible, « tous » = tout le camp)
   bool melee = false;        // corps à corps : ne vise que la colonne ennemie la plus avancée (défaut : physique)
+  int shove = 0;             // 2.6 (Into the Breach) : +1 pousse la cible d'une case vers l'arrière, -1 la tire vers l'avant
   std::vector<Effect> effects;
   bool damaging() const { return kind == Kind::Physical || kind == Kind::Magic; }
 };
@@ -198,6 +199,10 @@ struct Rules {
   // Brisure (2.5, inspirée d'Octopath Traveler) : bouclier des ennemis (créature, boss), dégâts sur un ennemi brisé
   int breakShield = 2, breakShieldBoss = 8;
   double breakDamage = 1.5;
+  // Pousser / tirer (2.6) : choc quand la case d'arrivée est prise (part des dégâts du coup, aux deux)
+  double shoveClash = .5;
+  // Terrain (2.6) : nombre de cases spéciales sur chaque damier
+  int terrainMin = 0, terrainMax = 2;
   // États
   double poisonDmg = .1, burnDmg = .0625, burnAtk = .75, paraSpeed = .5, paraSkip = .25;
   int sleepMin = 1, sleepMax = 3;
@@ -227,6 +232,33 @@ struct Rules {
     double value = 0;
   };
   std::vector<Talent> talents;
+  // Météo du combat (2.6) : tirée selon le décor ; multiplie les dégâts de certains types
+  struct Weather {
+    std::string id, name, desc, fx;  // fx : effet visuel (pluie, chaleur, neige, orage, brume, soleil)
+    std::vector<std::string> themes;
+    double chance = 0;
+    std::map<std::string, double> typeMult;  // identifiant du type -> multiplicateur des dégâts
+    int acc = 0;                     // précision des coups physiques en plus (négatif : en moins)
+  };
+  std::vector<Weather> weathers;
+  // Cases de terrain (2.6) : posées au hasard sur les damiers selon le décor
+  struct Terrain {
+    std::string id, name, desc, kind;  // kind : degats, poison, soin, lent, esquive, magie
+    double value = 0;
+    std::vector<std::string> immune;  // types insensibles (identifiants)
+    std::vector<std::string> themes;
+    uint32_t color = 0xffffff;
+  };
+  std::vector<Terrain> terrains;
+  // Techniques en duo (2.6, inspirées de Chrono Trigger) : deux alliés qui vont ensemble. Un membre
+  // s'écrit avec l'identifiant d'une espèce, « humain » (un héros) ou « type:feu » (une créature de ce type).
+  // Le partenaire doit avoir sa jauge ATB à duoGauge % au moins ; il la dépense.
+  struct Duo {
+    std::vector<std::string> members;
+    std::string move;
+  };
+  std::vector<Duo> duos;
+  int duoGauge = 50;
   // Forge de Forgeroc (« forge ») : un niveau par entrée (+1, +2, +3). bonus : part du bonus de
   // l'objet ajoutée (0.3 : +30 %), or et matériaux (« trophee » : n'importe quel trophée de boss)
   struct ForgeLevel {
@@ -292,6 +324,8 @@ bool immuneTo(const Species& s, Status st);
 // Talent de l'espèce (nullptr : aucun) ; talentValue : sa valeur si son effet est « kind », sinon 0
 const Rules::Talent* talentOf(const Species& s);
 double talentValue(const Species& s, const char* kind);
+// Duo : l'espèce correspond-elle à ce membre (« lior », « humain », « type:feu ») ?
+bool duoMember(const std::string& spec, const Species& s);
 
 // Un combattant (allié ou ennemi)
 struct Fighter {

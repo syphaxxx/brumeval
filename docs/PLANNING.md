@@ -91,7 +91,8 @@ l'utilisateur, en deux versions.
     l'ordre des tours (FFX), talents par espèce (Pokémon), effets visuels par
     type, écran qui tremble, entrée en combat ; boss plus durs.
   - **2.6** : pousser / tirer sur le damier (Into the Breach), terrain et météo
-    du combat, techniques combinées entre deux alliés (Chrono Trigger).
+    du combat, techniques combinées entre deux alliés (Chrono Trigger) ; jour et
+    nuit sur les cartes, fumée, feuilles, papillons.
   - **2.7** : gemmes à sertir (matéria de FF7), rôles des ennemis et phases des
     boss.
   - À chaque version : graphismes (cartes vivantes, jour et nuit, portraits,

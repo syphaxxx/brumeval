@@ -101,6 +101,34 @@ Inspiré d'Octopath Traveler, de Final Fantasy X et de Pokémon :
 Les boss sont plus durs qu'avant : sans viser leurs faiblesses ni s'équiper,
 on perd souvent.
 
+## Pousser, météo, terrain et duos (2.6)
+
+Inspiré d'Into the Breach et de Chrono Trigger :
+
+- **Pousser / tirer** : Charge, Ruée, Rafale, Vague, Fracas… repoussent la cible
+  d'une case vers l'arrière ; Flèche-grappin (Kael, niveau 11), Tornade,
+  Étreinte… la tirent vers l'avant. Si la case est prise, les deux se heurtent
+  (**choc** : la moitié des dégâts du coup, pour chacun) ; poussé contre le bord
+  arrière, choc aussi. Tirer un mage vers l'avant le met à portée de l'épée.
+  Les boss sont inébranlables, mais les ennemis aussi poussent et tirent.
+- **Météo** (affichée sous l'ordre des tours) : pluie (Eau +25 %, Feu -25 %),
+  grand soleil, canicule à Cendrelune, blizzard dans les Pics, orage, brume…
+- **Terrain** : des cases colorées sur les damiers. Braises (brûlent à la fin du
+  tour, ou dès qu'on y est poussé), ronces (poison), verglas (jauge plus lente),
+  herbes hautes (esquive), source (soigne), cristaux (Magie +20 %). « Se
+  déplacer » dit le terrain de chaque case ; en mode auto, « Se mettre à l'abri »
+  quitte une case qui blesse.
+- **Duos** : deux alliés qui vont ensemble lancent une technique à deux, bien
+  plus forte (menu **Duo**). Le partenaire doit avoir sa jauge ATB à 50 % au
+  moins : il la dépense. Lior + Maëlle (Lame sacrée), Lior + Brann, Isra + Kael,
+  Maëlle + Isra, Sélène + Brann, Sélène + Kael, chaque héros avec sa créature
+  (Lame ardente avec une créature de Feu, déferlante avec l'Eau…), et des
+  créatures entre elles (Feu + Vent, Eau + Foudre). La tactique « Meilleure
+  attaque » s'en sert aussi.
+- **Jour et nuit** sur les cartes (un jour dure 12 minutes) : fenêtres allumées,
+  lanterne, lucioles ; fumée des cheminées, feuilles en forêt, papillons dans la
+  vallée.
+
 ## Techniques rapides et lourdes
 
 Chaque technique a un rythme, indiqué dans l'aide en bas de l'écran :

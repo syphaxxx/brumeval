@@ -269,7 +269,7 @@
             "action": "combat",
             "ennemis": [
               {"espece": "brumelin", "niveau": 9},
-              {"espece": "sylvarque", "niveau": 15, "pv": 7.2, "boss": true},
+              {"espece": "sylvarque", "niveau": 15, "pv": 6.5, "boss": true},
               {"espece": "brumelin", "niveau": 9}
             ],
             "boss": true,
@@ -677,7 +677,7 @@
             "action": "combat",
             "ennemis": [
               {"espece": "serpentin", "niveau": 14},
-              {"espece": "ronce_mere", "niveau": 21, "pv": 9.5, "boss": true},
+              {"espece": "ronce_mere", "niveau": 21, "pv": 8.5, "boss": true},
               {"espece": "serpentin", "niveau": 14}
             ],
             "renforts": [{"espece": "crapoison", "niveau": 13}],

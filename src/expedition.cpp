@@ -110,7 +110,21 @@ void Expedition::install() {
     events_ = events();
     backedUp_ = true;
   }
-  dataDoc(DF_MOVES) = content_.moves;
+  // Duos (2.6) : seuls ceux d'un héros et d'une créature d'un type (ou de deux types) existent dans
+  // ce monde ; leurs techniques sont ajoutées à celles générées
+  Json moves = content_.moves, duoList = Json::array();
+  {
+    Json duo = docs_[DF_RULES].value("duo", Json::object());
+    for (auto& d : duo.value("liste", Json::array())) {
+      bool generic = true;
+      for (auto& m : jget(d, "membres", std::vector<std::string>{})) generic = generic && (m == "humain" || m.rfind("type:", 0) == 0);
+      std::string id = jget<std::string>(d, "technique", "");
+      if (!generic) continue;
+      for (auto& mv : docs_[DF_MOVES])
+        if (jget<std::string>(mv, "id", "") == id) moves.push_back(mv), duoList.push_back(d);
+    }
+  }
+  dataDoc(DF_MOVES) = moves;
   dataDoc(DF_SPECIES) = content_.species;
   Json looks = docs_[DF_LOOKS];
   for (auto& l : content_.looks) looks.push_back(l);
@@ -127,6 +141,7 @@ void Expedition::install() {
   d["compagnons"] = Json::array({content_.starters[0], content_.starters[1], content_.starters[2]});
   d["reveil"] = Json{{"carte", mapId}, {"x", current_.startX}, {"y", current_.startY}};
   d.erase("evenement");
+  if (r.contains("duo")) r["duo"]["liste"] = duoList;
   dataDoc(DF_RULES) = r;
   for (auto f : {DF_TYPES, DF_ITEMS}) dataDoc(f) = docs_[f];
   rebuildData();

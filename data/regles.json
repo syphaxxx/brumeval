@@ -32,6 +32,145 @@
     "compagnon_atb": 0.5
   },
   "brisure": {"bouclier": 2, "bouclier_boss": 8, "degats": 1.5},
+  "damier": {"choc": 0.5, "terrain_min": 0, "terrain_max": 2},
+  "meteo": [
+    {
+      "id": "pluie",
+      "nom": "Pluie",
+      "description": "Eau +25 %, Feu -25 %.",
+      "effet": "pluie",
+      "decors": ["vallee", "foret"],
+      "chance": 0.18,
+      "types": {"eau": 1.25, "feu": 0.75}
+    },
+    {
+      "id": "soleil",
+      "nom": "Grand soleil",
+      "description": "Lumière et Plante +20 %.",
+      "effet": "soleil",
+      "decors": ["vallee"],
+      "chance": 0.15,
+      "types": {"lumiere": 1.2, "plante": 1.2}
+    },
+    {
+      "id": "canicule",
+      "nom": "Canicule",
+      "description": "Feu +25 %, Eau et Glace -20 %.",
+      "effet": "chaleur",
+      "decors": ["cendres"],
+      "chance": 0.35,
+      "types": {"feu": 1.25, "eau": 0.8, "glace": 0.8}
+    },
+    {
+      "id": "blizzard",
+      "nom": "Blizzard",
+      "description": "Glace +25 %, Feu -15 %, coups physiques moins précis (-5 %).",
+      "effet": "neige",
+      "decors": ["neige"],
+      "chance": 0.35,
+      "types": {"glace": 1.25, "feu": 0.85},
+      "precision": -5
+    },
+    {
+      "id": "orage",
+      "nom": "Orage",
+      "description": "Foudre +25 %, Vent +15 %.",
+      "effet": "orage",
+      "decors": ["vallee", "neige", "cendres"],
+      "chance": 0.1,
+      "types": {"foudre": 1.25, "vent": 1.15}
+    },
+    {
+      "id": "brume",
+      "nom": "Brume",
+      "description": "Ombre et Esprit +20 %, coups physiques moins précis (-10 %).",
+      "effet": "brume",
+      "decors": ["foret", "grotte"],
+      "chance": 0.25,
+      "types": {"ombre": 1.2, "esprit": 1.2},
+      "precision": -10
+    }
+  ],
+  "terrains": [
+    {
+      "id": "braises",
+      "nom": "Braises",
+      "description": "À la fin de son tour dessus, ou poussé dessus : perd 6 % de ses PV max (sauf Feu).",
+      "effet": "degats",
+      "valeur": 0.06,
+      "insensibles": ["feu"],
+      "decors": ["cendres"],
+      "couleur": "#ff7a2a"
+    },
+    {
+      "id": "ronces",
+      "nom": "Ronces",
+      "description": "À la fin de son tour dessus, ou poussé dessus : 30 % de risque d'être empoisonné (sauf Plante et Poison).",
+      "effet": "poison",
+      "valeur": 0.3,
+      "insensibles": ["plante", "poison"],
+      "decors": ["foret", "vallee"],
+      "couleur": "#4f7a32"
+    },
+    {
+      "id": "verglas",
+      "nom": "Verglas",
+      "description": "Jauge ATB 25 % plus lente dessus (sauf Glace).",
+      "effet": "lent",
+      "valeur": 0.25,
+      "insensibles": ["glace"],
+      "decors": ["neige"],
+      "couleur": "#cdeeff"
+    },
+    {
+      "id": "herbes",
+      "nom": "Herbes hautes",
+      "description": "Esquive +15 contre les coups physiques.",
+      "effet": "esquive",
+      "valeur": 15,
+      "decors": ["vallee", "foret"],
+      "couleur": "#8fd05a"
+    },
+    {
+      "id": "source",
+      "nom": "Source",
+      "description": "À la fin de son tour dessus : regagne 5 % de ses PV max.",
+      "effet": "soin",
+      "valeur": 0.05,
+      "decors": ["vallee", "grotte", "neige"],
+      "couleur": "#6fc0ff"
+    },
+    {
+      "id": "cristaux",
+      "nom": "Cristaux",
+      "description": "Magie +20 % pour qui se tient dessus.",
+      "effet": "magie",
+      "valeur": 0.2,
+      "decors": ["grotte", "neige"],
+      "couleur": "#d8b8ff"
+    }
+  ],
+  "duo": {
+    "jauge": 50,
+    "liste": [
+      {"membres": ["lior", "maelle"], "technique": "duo_lame_sacree"},
+      {"membres": ["lior", "brann"], "technique": "duo_titans"},
+      {"membres": ["isra", "kael"], "technique": "duo_etoiles"},
+      {"membres": ["maelle", "isra"], "technique": "duo_aurore"},
+      {"membres": ["selene", "brann"], "technique": "duo_mur"},
+      {"membres": ["selene", "kael"], "technique": "duo_percee"},
+      {"membres": ["humain", "type:feu"], "technique": "duo_ardente"},
+      {"membres": ["humain", "type:eau"], "technique": "duo_deferlante"},
+      {"membres": ["humain", "type:plante"], "technique": "duo_sylve"},
+      {"membres": ["humain", "type:ombre"], "technique": "duo_tenebres"},
+      {"membres": ["humain", "type:vent"], "technique": "duo_cyclone"},
+      {"membres": ["humain", "type:foudre"], "technique": "duo_foudre"},
+      {"membres": ["humain", "type:glace"], "technique": "duo_givre"},
+      {"membres": ["humain", "type:roche"], "technique": "duo_tellurique"},
+      {"membres": ["type:feu", "type:vent"], "technique": "duo_tempete_feu"},
+      {"membres": ["type:eau", "type:foudre"], "technique": "duo_electrocution"}
+    ]
+  },
   "talents": [
     {
       "id": "carapace",

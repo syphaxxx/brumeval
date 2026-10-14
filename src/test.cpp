@@ -190,6 +190,14 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   skipScript();
   run(.3f);
   snap("03_village");
+  {  // jour et nuit (2.6) : la même vue au cœur de la nuit
+    float t0 = time;
+    time = 720 * .65f;
+    bool night = nightAmount() > .9f;
+    snap("03_village_nuit");
+    time = t0;
+    check(night && nightAmount() < .1f, "jour et nuit : la nuit tombe sur la vallée, la partie commence en plein jour");
+  }
   check(mode == Mode::Map && team.size() == 2, "nouvelle partie : Lior et son compagnon sur la carte");
   check(audio::currentMusic() == audio::musicForPlace("vallee"), "son : la musique de la vallée joue sur la carte (« " + audio::currentMusic() + " »)");
   check(fillText("Lior part avec {compagnon}.") == "Lior part avec Braisenard.", "les textes remplacent {compagnon} par son nom");
@@ -831,6 +839,108 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     check(shield && broken && more && skipped && kept,
           "brisure : chaque faiblesse entame le bouclier et se découvre ; brisé, l'ennemi perd sa jauge, encaisse plus, saute son tour ; faiblesse gardée dans la sauvegarde");
     sc.clear(), menus.clear();
+  }
+
+  // --- Pousser / tirer, météo et terrain (2.6) ---
+  {
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+    auto lior = makeFighter("lior", 20);
+    team = {lior};
+    startBattle({makeFighter("brumelin", 12), makeFighter("brumelin", 12)}, false, nullptr);
+    Battle& B = *battle_;
+    FighterP f1 = B.foes[0], f2 = B.foes[1];
+    for (auto& f : B.foes) f->mhp = f->hp = 5000;
+    for (auto& side : B.terrain_) side.fill(-1);
+    B.weather_ = -1;
+    const Move &push = moveInfo("charge"), &pull = moveInfo("grappin");
+    std::vector<FighterP> ko;
+    B.cells_[f1.get()] = cellAt(0, 0), B.cells_[f2.get()] = cellAt(0, 1);
+    B.shove(lior, f1, push, 100, ko);  // case prise : choc pour les deux, personne ne bouge
+    bool clash = B.cellOf(f1) == cellAt(0, 0) && f1->hp == 5000 - 50 && f2->hp == 5000 - 50;
+    B.cells_[f2.get()] = cellAt(2, 2);
+    B.shove(lior, f1, push, 100, ko);
+    bool pushed = B.cellOf(f1) == cellAt(0, 1);
+    B.shove(lior, f1, pull, 100, ko);
+    B.shove(lior, f1, pull, 100, ko);  // déjà à l'avant : ne bouge plus
+    bool pulled = B.cellOf(f1) == cellAt(0, 0) && f1->hp == 5000 - 50;
+    B.cells_[f1.get()] = cellAt(0, BACK_COL);
+    B.shove(lior, f1, push, 100, ko);  // contre le bord
+    bool edge = B.cellOf(f1) == cellAt(0, BACK_COL) && f1->hp == 5000 - 100;
+    f2->boss = true;
+    bool boss = B.shoveDest(f2, push) == -2;
+    f2->boss = false;
+    // Terrain : braises sous f1 (Ombre : pas insensible), verglas sous f2
+    auto terrainIdx = [&](const std::string& id) {
+      for (size_t i = 0; i < rules().terrains.size(); i++)
+        if (rules().terrains[i].id == id) return (int)i;
+      return -1;
+    };
+    int braises = terrainIdx("braises"), verglas = terrainIdx("verglas");
+    B.terrain_[1][(size_t)B.cellOf(f1)] = braises;
+    B.terrain_[1][(size_t)B.cellOf(f2)] = verglas;
+    int hp1 = f1->hp;
+    float slow = B.atbRate(f2), fast = B.atbRate(f1);
+    bool burnt = braises >= 0 && !B.terrainTurn(f1, false) && f1->hp < hp1 && B.threatened(f1);
+    bool slowed = verglas >= 0 && slow < fast * .9f;
+    B.terrain_[1][(size_t)cellAt(0, 0)] = braises;  // tiré sur des braises : brûlé aussitôt
+    hp1 = f1->hp;
+    B.cells_[f1.get()] = cellAt(0, 1);
+    B.shove(lior, f1, pull, 10, ko);
+    bool onArrival = B.cellOf(f1) == cellAt(0, 0) && f1->hp < hp1 - 5;
+    // Météo : la pluie renforce l'Eau
+    for (size_t i = 0; i < rules().weathers.size(); i++)
+      if (rules().weathers[i].id == "pluie") B.weather_ = (int)i;
+    bool rain = B.weather_ >= 0 && std::abs(B.weatherMult(typeOf("eau")) - 1.25f) < 1e-4f && std::abs(B.weatherMult(typeOf("normal")) - 1) < 1e-4f;
+    B.terrain_[0][(size_t)B.cellOf(lior)] = terrainIdx("herbes");
+    B.sc.clear();
+    run(.8f);
+    snap("99_meteo_terrain");
+    check(clash && pushed && pulled && edge && boss, "pousser / tirer : choc sur une case prise et contre le bord, une case de plus, boss inébranlable");
+    check(burnt && slowed && onArrival && rain, "terrain et météo : braises (fin du tour, arrivée), verglas plus lent, pluie qui renforce l'Eau");
+    battle_.reset();
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+  }
+
+  // --- Techniques en duo (2.6) ---
+  {
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+    auto lior = makeFighter("lior", 20), maelle = makeFighter("maelle", 20), brai = makeFighter("braisenard", 20);
+    team = {lior, maelle, brai};
+    lior->companion = brai;
+    startBattle({makeFighter("brumelin", 12)}, false, nullptr);
+    Battle& B = *battle_;
+    B.start -= 2;  // sans la transition d'entrée (capture)
+    FighterP foe = B.foes[0];
+    foe->mhp = foe->hp = 5000;
+    auto has = [&](const std::vector<Battle::DuoOpt>& v, const std::string& id, const FighterP& p) {
+      for (auto& d : v)
+        if (d.move == id && d.partner == p) return true;
+      return false;
+    };
+    maelle->atb = rules().duoGauge - 10, brai->atb = 0;
+    bool notReady = !has(B.duoOptions(lior), "duo_lame_sacree", maelle) && has(B.duoOptions(lior, false), "duo_lame_sacree", maelle);
+    maelle->atb = rules().duoGauge + 10, brai->atb = rules().duoGauge + 5;
+    auto opts = B.duoOptions(lior);
+    bool ready = has(opts, "duo_lame_sacree", maelle) && has(opts, "duo_ardente", brai);
+    // Le menu de commande propose « Duo »
+    lior->atb = 100;
+    B.command(lior);
+    bool menu = false;
+    for (auto& it : menus.top().items) menu = menu || (it.label == "Duo" && it.enabled);
+    snap("duo_menu");
+    menus.clear();
+    int mp0 = maelle->mp;
+    B.duoMove(lior, maelle, "duo_lame_sacree", {foe});
+    for (int i = 0; i < 600 && B.sc.busy(); i++) frame();
+    bool spent = maelle->atb < 1 && maelle->mp == mp0 - moveInfo("duo_lame_sacree").cost && foe->hp < 5000;
+    check(notReady && ready && menu && spent,
+          "duo : il faut la jauge du partenaire ; Lior + Maëlle et Lior + une créature de Feu ; menu « Duo » ; le partenaire dépense jauge et PM");
+    battle_.reset();
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
   }
 
   // --- Forge de Forgeroc (2.1) : or et matériaux, objet porté ou dans le sac, +3 avec un trophée, sauvegarde ---

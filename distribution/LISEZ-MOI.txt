@@ -69,6 +69,12 @@ COMMANDES
   Talents : chaque espèce a un pouvoir permanent (Carapace, Soigneur,
   Vif…), visible sur sa fiche et dans le Bestiaire.
 
+  Pousser / tirer : certaines techniques déplacent la cible d'une case.
+  Case déjà prise ou bord : choc pour les deux. Météo (pluie, canicule,
+  blizzard…) et cases de terrain (braises, ronces, verglas, source…)
+  changent chaque combat. Duo : deux alliés qui vont ensemble lancent
+  une technique à deux (le partenaire dépense sa jauge ATB).
+
   Échap > Réserve : les créatures capturées quand l'équipe (8 membres)
   est complète. Échap > Bestiaire : toutes les créatures rencontrées.
   En boutique, « Vendre… » rachète vos objets à moitié prix.

@@ -118,6 +118,17 @@ double talentValue(const Species& s, const char* kind) {
   return t && t->kind == kind ? t->value : 0;
 }
 
+bool duoMember(const std::string& spec, const Species& s) {
+  if (spec == "humain") return s.human;
+  if (spec.rfind("type:", 0) == 0) {
+    if (s.human) return false;
+    for (size_t k = 0; k < TYPES.size(); k++)
+      if (TYPES[k].id == spec.substr(5)) return hasType(s, (int)k);
+    return false;
+  }
+  return s.id == spec;
+}
+
 bool immuneTo(const Species& s, Status st) {
   if (talentValue(s, "sans_etats") > 0) return true;
   std::string id = statusId(st);
@@ -176,6 +187,10 @@ std::vector<RuleField> ruleFields(Rules& r) {
       I("brisure", "bouclier", "Brisure : bouclier d'un ennemi", r.breakShield, 0, 20, 1),
       I("brisure", "bouclier_boss", "Brisure : bouclier d'un boss", r.breakShieldBoss, 0, 40, 1),
       D("brisure", "degats", "Brisure : dégâts reçus par un ennemi brisé", r.breakDamage, 1, 5, .05),
+      D("damier", "choc", "Pousser : choc (part des dégâts) si la case est prise", r.shoveClash, 0, 2, .05),
+      I("damier", "terrain_min", "Terrain : cases spéciales par camp (minimum)", r.terrainMin, 0, 8, 1),
+      I("damier", "terrain_max", "Terrain : cases spéciales par camp (maximum)", r.terrainMax, 0, 8, 1),
+      I("duo", "jauge", "Duo : jauge ATB du partenaire (%)", r.duoGauge, 0, 100, 5),
       D("etats", "poison_degats", "Poison : part des PV perdus par tour", r.poisonDmg, 0, 1, .01),
       D("etats", "brulure_degats", "Brûlure : part des PV perdus par tour", r.burnDmg, 0, 1, .01),
       D("etats", "brulure_attaque", "Brûlure : multiplicateur d'Attaque", r.burnAtk, 0, 1, .05),
@@ -245,6 +260,31 @@ static void loadRules(const Json& j) {
   if (j.contains("recompenses"))
     for (auto& b : j["recompenses"].value("butin_type", Json::array()))
       r.typeDrops.push_back({b.at("type").get<std::string>(), b.at("objet").get<std::string>(), b.at("chance").get<double>()});
+  for (auto& w : j.value("meteo", Json::array())) {
+    Rules::Weather x;
+    x.id = w.at("id").get<std::string>(), x.name = w.at("nom").get<std::string>();
+    x.desc = jget<std::string>(w, "description", ""), x.fx = jget<std::string>(w, "effet", "");
+    x.themes = jget(w, "decors", std::vector<std::string>{});
+    x.chance = jget(w, "chance", 0.0), x.acc = jget(w, "precision", 0);
+    Json tm = w.value("types", Json::object());
+    for (auto& [ty, v] : tm.items()) x.typeMult[ty] = v.get<double>();
+    r.weathers.push_back(x);
+  }
+  for (auto& t : j.value("terrains", Json::array())) {
+    Rules::Terrain x;
+    x.id = t.at("id").get<std::string>(), x.name = t.at("nom").get<std::string>();
+    x.desc = jget<std::string>(t, "description", ""), x.kind = t.at("effet").get<std::string>();
+    x.value = jget(t, "valeur", 0.0);
+    x.immune = jget(t, "insensibles", std::vector<std::string>{});
+    x.themes = jget(t, "decors", std::vector<std::string>{});
+    x.color = parseColor(t.value("couleur", Json("#ffffff")));
+    r.terrains.push_back(x);
+  }
+  {
+    Json duo = j.value("duo", Json::object());
+    for (auto& d : duo.value("liste", Json::array()))
+      r.duos.push_back({jget(d, "membres", std::vector<std::string>{}), d.at("technique").get<std::string>()});
+  }
   for (auto& t : j.value("talents", Json::array()))
     r.talents.push_back({t.at("id").get<std::string>(), t.at("nom").get<std::string>(), jget<std::string>(t, "description", ""),
                          t.at("effet").get<std::string>(), jget(t, "valeur", 0.0)});
@@ -326,6 +366,9 @@ void rebuildData() {
     bool all = m.target == Target::AllEnemies || m.target == Target::AllAllies;
     m.zone = Area(nameIndex(ZONES, jget<std::string>(o, "zone", all ? "tout" : "case"), "Zone"));
     m.melee = jget<std::string>(o, "portee", m.kind == Kind::Physical ? "corps" : "distance") == "corps";
+    std::string sh = jget<std::string>(o, "deplace", "");
+    m.shove = sh == "pousse" ? 1 : sh == "tire" ? -1 : 0;
+    if (!sh.empty() && !m.shove) throw std::runtime_error("Technique " + m.id + " : « deplace » doit valoir pousse ou tire");
     if (o.contains("effet")) m.effects.push_back(parseEffect(o["effet"]));
     for (auto& e : o.value("effets", Json::array())) m.effects.push_back(parseEffect(e));
     return m;
@@ -499,12 +542,43 @@ std::vector<std::string> checkData() {
       err.push_back("Talent " + t.name + " : effet inconnu « " + t.kind + " »");
   for (auto& s : SPECIES)
     if (!s.talent.empty() && !talentOf(s)) err.push_back("Espèce " + s.name + " : talent inconnu « " + s.talent + " »");
+  static const char* KINDS_TR[] = {"degats", "poison", "soin", "lent", "esquive", "magie"};
+  for (auto& t : r.terrains)
+    if (std::find(std::begin(KINDS_TR), std::end(KINDS_TR), t.kind) == std::end(KINDS_TR))
+      err.push_back("Terrain " + t.name + " : effet inconnu « " + t.kind + " »");
+  static const char* THEMES_OK[] = {"vallee", "cendres", "grotte", "foret", "neige", "interieur"};
+  for (auto& w : r.weathers)
+    for (auto& th : w.themes)
+      if (std::find(std::begin(THEMES_OK), std::end(THEMES_OK), th) == std::end(THEMES_OK)) err.push_back("Météo " + w.name + " : décor inconnu « " + th + " »");
+  for (auto& t : r.terrains)
+    for (auto& th : t.themes)
+      if (std::find(std::begin(THEMES_OK), std::end(THEMES_OK), th) == std::end(THEMES_OK)) err.push_back("Terrain " + t.name + " : décor inconnu « " + th + " »");
   for (auto& s : SPECIES)
     if (!s.evolveTo.empty()) {
       if (!hasSpecies(s.evolveTo)) err.push_back("Espèce " + s.name + " : évolution inconnue « " + s.evolveTo + " »");
       else if (species(s.evolveTo).human || s.human) err.push_back("Espèce " + s.name + " : un humain n'évolue pas");
       if (s.evolveLvl < 2) err.push_back("Espèce " + s.name + " : niveau d'évolution trop bas");
     }
+  auto knownType = [](const std::string& id) {
+    for (auto& t : TYPES)
+      if (t.id == id) return true;
+    return false;
+  };
+  for (auto& w : r.weathers)
+    for (auto& [ty, v] : w.typeMult)
+      if (!knownType(ty)) err.push_back("Météo " + w.name + " : type inconnu « " + ty + " »");
+  for (auto& t : r.terrains)
+    for (auto& ty : t.immune)
+      if (!knownType(ty)) err.push_back("Terrain " + t.name + " : type inconnu « " + ty + " »");
+  for (auto& d : r.duos) {
+    if (!hasMove(d.move)) err.push_back("Duo : technique inconnue « " + d.move + " »");
+    if (d.members.size() != 2) err.push_back("Duo " + d.move + " : il faut deux membres");
+    for (auto& m : d.members) {
+      bool ok = m == "humain" || (m.rfind("type:", 0) == 0 && knownType(m.substr(5)));
+      for (auto& s : SPECIES) ok = ok || s.id == m;
+      if (!ok) err.push_back("Duo " + d.move + " : membre inconnu « " + m + " »");
+    }
+  }
   for (auto& td : r.typeDrops) {
     if (!hasItem(td.item)) err.push_back("Butin par type : objet inconnu « " + td.item + " »");
     bool known = false;

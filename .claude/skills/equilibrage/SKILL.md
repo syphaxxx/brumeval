@@ -15,6 +15,14 @@ Méthode :
 
 ## Historique des mesures
 
+- **Pousser, météo, terrain, duos** (2.6, 2026-10-14) : les ennemis poussent et tirent aussi, la canicule de
+  Cendrelune renforce Ignarok ; les duos renforcent l'équipe. L'IA dépensait les PM de Maëlle dans des duos (Sylvarque
+  forgé 47 → 17 %) : un duo n'est choisi par l'IA ou les tactiques que si le partenaire garde 40 % de ses PM.
+  Sylvarque ×7,2 → ×6,5, Ronce-Mère ×9,5 → ×8,5. Mesuré (BRUMEVAL_SIMULATIONS=2 ; IA / boutiques / forgé) :
+  Sylvarque 3 / 31 / 27 %, Golem 45 / 57 / 50 %, Ronce-Mère 18 / 56 / 71 %, Ignarok 23 / 55 / 61 %, Givrecorne
+  52 / 70 / 78 %, cristal 51 / 93 / 91 %, Mère des Brumes 11 / 46 / 65 % (proche de la 2.5). Météo et terrain sont
+  tirés au hasard : ±10 points d'une mesure à l'autre.
+
 - **Brisure et talents** (2.5, 2026-10-14, « plus dur mais que la stratégie soit récompensée ») : sans réglage, les
   boss devenaient trop faciles (brisés, ils perdent des tours : Ronce 19 → 53 %, Ignarok 11 → 52 %) sauf la Mère des
   Brumes (0 % : Intimidation du Brumeloup, Esprit clair). Réglages (`evenements.json` : niveau, `pv`, `bouclier`) :

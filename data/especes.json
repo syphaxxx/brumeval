@@ -84,7 +84,14 @@
     "humain": true,
     "apparence": "kael",
     "role": "Archer de Sylve-Noire",
-    "apprend": [[1, "tir"], [1, "fleche_vent"], [8, "salve"], [14, "oeil"], [18, "pluie_fleches"]]
+    "apprend": [
+      [1, "tir"],
+      [1, "fleche_vent"],
+      [8, "salve"],
+      [11, "grappin"],
+      [14, "oeil"],
+      [18, "pluie_fleches"]
+    ]
   },
   {
     "id": "selene",

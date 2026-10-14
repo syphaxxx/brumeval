@@ -200,6 +200,10 @@ class Game {
   // Dessin
   void drawTitle();
   void drawMap();
+  // Jour et nuit (2.6) : 0 en plein jour, 1 au cœur de la nuit ; un jour dure 12 minutes de jeu.
+  // Seulement dehors (pas les intérieurs ni les grottes obscures)
+  float nightAmount() const;
+  bool outdoors() const;
   void drawDialogue();
   void drawEnding();
   std::string endingText_;  // texte de l'écran de fin (action « fin »)
