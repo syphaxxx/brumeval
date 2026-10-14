@@ -115,7 +115,9 @@
   ],
   "passages": [
     {"x": 19, "y": 0, "vers": "recif", "tx": 23, "ty": 34, "direction": "haut"},
-    {"x": 20, "y": 0, "vers": "recif", "tx": 24, "ty": 34, "direction": "haut"}
+    {"x": 20, "y": 0, "vers": "recif", "tx": 24, "ty": 34, "direction": "haut"},
+    {"x": 10, "y": 25, "vers": "vallee", "tx": 24, "ty": 38, "direction": "gauche"},
+    {"x": 11, "y": 25, "vers": "vallee", "tx": 24, "ty": 38, "direction": "gauche"}
   ],
   "zones": [],
   "boss": []

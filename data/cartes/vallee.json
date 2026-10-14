@@ -205,6 +205,16 @@
       "direction": "gauche",
       "condition": {"drapeau": "boss1"},
       "message": "Un garde forestier vous arrête : « La forêt est trop dangereuse tant que la brume rôde. Revenez quand le gardien du col sera vaincu. »"
+    },
+    {
+      "x": 26,
+      "y": 38,
+      "vers": "port",
+      "tx": 11,
+      "ty": 22,
+      "direction": "haut",
+      "condition": {"drapeau": "boss4"},
+      "message": "Le bateau du pêcheur. Tant que la brume couvre le lac, il ne peut pas traverser."
     }
   ],
   "zones": [

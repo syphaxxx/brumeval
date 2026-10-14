@@ -1,12 +1,13 @@
 ## Nouveautés
 
-- **Astuces** : chaque nouvelle règle (bouclier, faiblesse, rôle, météo, terrain, duo, phase d'un boss, gemme…) est expliquée la première fois qu'on la rencontre. **F1** ouvre aussitôt la page d'Aide qui va avec. Options > Astuces pour les couper.
-- **Conseils** : les aubergistes et le Journal parlent du prochain gardien (où il est, ses faiblesses déjà découvertes, quoi viser, quelle gemme apporter).
-- **Menus** : sac rangé par catégories, comparaison de l'équipement avec celui qu'on porte (et ses chatons), coût des duos en PM.
-- **Expédition** : les créatures générées ont des talents et des rôles, les gardiens ont des phases et laissent une gemme, les boutiques vendent des gemmes.
-- La police affiche enfin « œ » (« Cœur de braise »).
+- **Acte 2 : l'archipel d'Écume** ! Une fois la Mère des Brumes apaisée, le bateau du pêcheur traverse le lac vers **Port d'Écume**, le **Récif d'Écume**, les **Ruines englouties** et la **Tour de l'Orage**. Trois nouveaux boss (Kraken des récifs, Griffon tempête, Seigneur des Orages, en trois phases) et un vrai final.
+- **Énigmes** : poussez des rochers sur des dalles pour ouvrir les grilles. Coincé ? Échap > Recommencer l'énigme.
+- 8 nouvelles créatures (dont 2 évolutions), une quête (les perles du phare), de nouvelles armes et armures, la Gemme du maître et la Gemme d'orage.
+- **Astuces** : chaque nouvelle règle est expliquée la première fois (F1 : la page d'Aide qui va avec). **Conseils** des aubergistes et du Journal pour le prochain boss.
+- **Menus** : sac rangé par catégories, comparaison d'équipement, coût des duos.
+- **Expédition** : talents, rôles, gardiens en phases et gemmes.
 
-Dans la 2.7 : gemmes à sertir, rôles des ennemis, boss en plusieurs phases. Dans la 2.6 : pousser / tirer, météo, terrain, duos, jour et nuit. Dans la 2.5 : Brisure, ordre des tours, talents.
+Dans la 2.7 : gemmes, rôles des ennemis, boss en phases. Dans la 2.6 : pousser / tirer, météo, terrain, duos, jour et nuit. Dans la 2.5 : Brisure, ordre des tours, talents.
 
 ## Télécharger
 

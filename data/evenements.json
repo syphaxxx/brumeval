@@ -113,11 +113,7 @@
             "action": "dire",
             "texte": "Pêcheur : La brume est partie ! Mon bateau peut enfin traverser jusqu'à l'archipel d'Écume. Mais là-bas, on dit qu'un orage gronde…"
           },
-          {
-            "action": "question",
-            "texte": "Traverser jusqu'à Port d'Écume ?",
-            "oui": [{"action": "teleporter", "carte": "port", "x": 11, "y": 21, "direction": "haut"}]
-          }
+          {"action": "dire", "texte": "Pêcheur : Mon bateau vous attend au bord du lac, juste là, à droite. Il vous mènera à Port d'Écume."}
         ]
       },
       {
@@ -1376,14 +1372,7 @@
     ]
   },
   "passeur": {
-    "actions": [
-      {"action": "dire", "texte": "Passeur : Le vent est bon. On rentre à la vallée ?"},
-      {
-        "action": "question",
-        "texte": "Retourner à la vallée de Brumeval ?",
-        "oui": [{"action": "teleporter", "carte": "vallee", "x": 24, "y": 38, "direction": "droite"}]
-      }
-    ]
+    "actions": [{"action": "dire", "texte": "Passeur : Le bateau pour la vallée est au bout du ponton. Bon vent !"}]
   },
   "port_soin": {
     "actions": [
@@ -1557,7 +1546,7 @@
               {
                 "espece": "kraken",
                 "niveau": 53,
-                "pv": 13,
+                "pv": 17,
                 "bouclier": 12,
                 "boss": true,
                 "phases": [
@@ -1606,7 +1595,7 @@
               {
                 "espece": "griffon",
                 "niveau": 55,
-                "pv": 11,
+                "pv": 15,
                 "boss": true,
                 "phases": [
                   {
@@ -1654,7 +1643,7 @@
               {
                 "espece": "seigneur_orage",
                 "niveau": 56,
-                "pv": 10,
+                "pv": 7.5,
                 "bouclier": 14,
                 "boss": true,
                 "phases": [
@@ -1668,7 +1657,7 @@
                     "pv": 0.4,
                     "message": "Le Seigneur des Orages se divise en éclairs !",
                     "bouclier": 16,
-                    "renforts": [{"espece": "orageline", "niveau": 50}, {"espece": "nuageon", "niveau": 50}]
+                    "renforts": [{"espece": "nuageon", "niveau": 50}]
                   },
                   {"pv": 0.15, "message": "Dernier souffle de la tempête !", "bonus": {"vitesse": 1}}
                 ]

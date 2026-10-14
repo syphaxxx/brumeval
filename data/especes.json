@@ -1004,7 +1004,7 @@
     "id": "seigneur_orage",
     "nom": "Seigneur des Orages",
     "types": ["foudre", "ombre"],
-    "base": {"pv": 110, "pm": 60, "attaque": 70, "defense": 64, "magie": 80, "resistance": 70, "vitesse": 60},
+    "base": {"pv": 100, "pm": 60, "attaque": 70, "defense": 64, "magie": 68, "resistance": 70, "vitesse": 60},
     "esquive": 4,
     "immunites": ["sommeil"],
     "forme": "boss",
