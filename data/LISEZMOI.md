@@ -179,6 +179,9 @@ choisi par le code : `bouclier`, `faiblesse`, `brisure`, `ordre`, `role`, `meteo
 d'Aide que F1 ouvre ensuite) et `texte`. Chacune n'est montrée qu'une fois (ligne
 `astuce` de la sauvegarde) ; Options > Astuces les coupe.
 
+**Condition `objet_min`** (3.0) : `{"objet_min": {"perle": 4}}` = au moins quatre
+perles dans le sac (pour les quêtes qui demandent plusieurs objets).
+
 **Conseils** (2.8, `regles.json`, `conseils`), dans l'ordre de l'histoire :
 `drapeau` (posé quand le boss est battu), `boss` (espèce), `lieu`, `gemme`
 conseillée, `texte`. Le premier dont le drapeau manque est donné par l'action
@@ -239,6 +242,8 @@ Chaque ligne de `tuiles` est une rangée de cases, toutes de même longueur :
 | `c` | sol de grotte (rencontres) | `x` | cristal |
 | `d` | arbre mort | `i` | glace |
 | `n` | neige profonde (rencontres) | `z` | marais (rencontres) |
+| `O` | rocher à pousser (énigme) | `P` | dalle de l'énigme |
+| `D` | grille (ouverte par l'énigme) | | |
 
 Meubles des intérieurs (thème `interieur`) : `p` tapis (praticable), `t`
 table, `h` lit, `e` étagère, `o` comptoir, `v` tonneau.
@@ -257,6 +262,11 @@ table, `h` lit, `e` étagère, `o` comptoir, `v` tonneau.
 - `passages` : `condition` (mêmes conditions que `si` dans les événements) et
   `message` pour un passage fermé, par exemple
   `"condition": {"objet": "cle_givre"}`.
+- `enigme` (3.0) : `drapeau` posé quand chaque dalle `P` porte un rocher `O` ; il
+  ouvre les grilles `D` de la carte. `x`, `y` : la case de départ de l'énigme
+  (« Recommencer l'énigme » y ramène ; le joueur automatique y résout l'énigme).
+  Le mode test vérifie qu'il y a autant de rochers que de dalles et qu'une
+  solution existe.
 - `declencheurs` : une zone (`x`, `y`, `l`, `h`) qui lance un `evenement` quand
   on y entre, tant que le drapeau `jusqua` n'est pas posé.
 - `habitants` : `dialogue` (phrases simples) ou `evenement`, `cache_si` (disparaît

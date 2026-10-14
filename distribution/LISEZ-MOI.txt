@@ -81,6 +81,10 @@ COMMANDES
   soigne, un chef (couronne) presse ses alliés : abattez-les d'abord.
   Les boss changent de phase quand leurs PV baissent.
 
+  Acte 2 : après la Mère des Brumes, parlez au pêcheur de la vallée. Dans
+  les ruines et la tour, poussez les rochers sur les dalles pour ouvrir les
+  grilles (Échap > Recommencer l'énigme si un rocher se coince).
+
   Astuces : chaque nouvelle règle est expliquée la première fois (F1 : la
   page d'Aide qui va avec ; Options > Astuces pour les couper). Les
   aubergistes et le Journal conseillent pour le prochain gardien.

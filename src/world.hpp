@@ -15,7 +15,9 @@
 //   p  tapis (praticable)   t  table   h  lit   e  étagère   o  comptoir   v  tonneau
 // Le dessin de certaines tuiles dépend du thème de la carte (arbres, chemins, parois).
 #pragma once
+#include <functional>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "store.hpp"
@@ -101,6 +103,11 @@ struct MapDef {
   std::vector<Zone> zones;
   std::vector<BossSpot> bosses;
   std::vector<Trigger> triggers;
+  // Énigme (3.0, « enigme ») : pousser les rochers 'O' sur toutes les plaques 'P' pose le drapeau, qui ouvre
+  // les grilles 'D'. puzzleX/Y : la case d'où l'on commence (recommencer, joueur automatique)
+  std::string puzzleFlag, puzzleMsg;
+  int puzzleX = -1, puzzleY = -1;
+  int puzzleZone[4] = {0, 0, 0, 0};  // salle de l'énigme (x, y, largeur, hauteur ; 0 : toute la carte) : la recherche y reste
   int w() const { return rows.empty() ? 0 : (int)rows[0].size(); }
   int h() const { return (int)rows.size(); }
 };
@@ -118,4 +125,10 @@ std::vector<std::string> checkMaps();
 bool interiorEntry(const MapDef& in, const std::string& outside, int& x, int& y);
 
 bool tileWalkable(char c);
+// Énigme (3.0) : suite de directions (UP, DOWN, LEFT, RIGHT) qui pousse les rochers sur toutes les plaques, en
+// partant de (sx, sy) ; blocked dit si une case est fermée (hors rochers et grilles). Vide si impossible (ou
+// déjà résolue : solved = vrai)
+std::vector<int> solvePuzzle(const MapDef& m, int sx, int sy, std::vector<std::pair<int, int>> boulders,
+                             const std::function<bool(int, int)>& blocked, bool* solved = nullptr);
+std::vector<std::pair<int, int>> puzzleTiles(const MapDef& m, char c);  // cases 'O' (rochers au départ) ou 'P' (plaques)
 bool tileEncounter(char c);

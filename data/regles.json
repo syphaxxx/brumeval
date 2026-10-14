@@ -233,6 +233,11 @@
       "id": "talent",
       "aide": "Talents",
       "texte": "Chaque espèce a un talent permanent (Carapace, Soigneur, Vif…) : fiche d'un membre (Échap > Équipe) et Bestiaire."
+    },
+    {
+      "id": "enigme",
+      "aide": "Énigmes",
+      "texte": "Une énigme ! Poussez les rochers sur toutes les dalles en marchant dedans. Un rocher coincé ? Échap > Recommencer l'énigme."
     }
   ],
   "conseils": [
@@ -284,6 +289,27 @@
       "lieu": "la Source des Brumes",
       "gemme": "gemme_vol",
       "texte": "Le Nébulis (croix) la soigne : éliminez-le. La brume puis sa colère : gardez des PM pour la fin."
+    },
+    {
+      "drapeau": "kraken",
+      "boss": "kraken",
+      "lieu": "les Ruines englouties, au nord du Récif d'Écume",
+      "gemme": "gemme_vie",
+      "texte": "Il faut d'abord ouvrir la grille de l'énigme. Un Coquillon protecteur le couvre : écartez-le. Sa carapace de corail se reforme à 60 % de PV."
+    },
+    {
+      "drapeau": "griffon",
+      "boss": "griffon",
+      "lieu": "le pied de la Tour de l'Orage",
+      "gemme": "gemme_eveil",
+      "texte": "Très rapide, et son Orageline (chef) le presse encore : abattez-la d'abord. À mi-vie, l'orage éclate."
+    },
+    {
+      "drapeau": "boss5",
+      "boss": "seigneur_orage",
+      "lieu": "le sommet de la Tour de l'Orage",
+      "gemme": "gemme_maitre",
+      "texte": "Trois phases : la foudre, puis des renforts (un Nuageon soigneur : visez-le), puis un dernier souffle. Gardez Limites et duos pour la fin."
     }
   ],
   "talents": [

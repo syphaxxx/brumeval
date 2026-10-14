@@ -543,6 +543,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       boss->boss = true;
       int keepAcc = boss->acc, keepEva = lior->eva;
       boss->acc = 1000, lior->eva = 0;  // un coup raté par hasard ferait échouer le test (vu sur Mac)
+      for (auto& side : B.terrain_) side.fill(-1);  // ni braises ni ronces (une case qui blesse compte comme menacée)
+      B.weather_ = -1;
       B.sc.clear();
       int liorCell = B.cellOf(lior);
       B.warnings_.push_back({boss, "mordant", Area::Single, liorCell});
@@ -906,6 +908,50 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     battle_.reset();
     sc.clear(), menus.clear();
     mode = Mode::Map;
+  }
+
+  // --- Énigme (3.0) : pousser les rochers sur les dalles ouvre la grille ; recommencer ; solution du joueur automatique ---
+  {
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+    int ru = mi("ruines");
+    const MapDef& R = maps()[ru];
+    flags.erase(R.puzzleFlag);
+    changeMap(ru, R.puzzleX, R.puzzleY, UP);
+    resetBoulders();
+    bool closed = blocked(17, 7);
+    // un rocher poussé contre le mur, puis « Recommencer »
+    auto start = boulders_;
+    auto path = solvePuzzle(R, px, py, boulders_, [this](int x, int y) { return !boulderAt(x, y) && blocked(x, y); });
+    for (size_t i = 0; i < std::min<size_t>(3, path.size()); i++) {
+      in.hold[path[i]] = in.press[path[i]] = true;
+      frame();
+      in.hold[path[i]] = in.press[path[i]] = false;
+      for (int f = 0; f < 20 && moving; f++) frame();
+    }
+    pauseMenu();
+    bool offered = false;
+    for (auto& it : menus.top().items)
+      if (it.label == "Recommencer l'énigme") offered = true, it.act();
+    bool reset = offered && boulders_ == start && px == R.puzzleX && py == R.puzzleY;
+    menus.clear();
+    path = solvePuzzle(R, px, py, boulders_, [this](int x, int y) { return !boulderAt(x, y) && blocked(x, y); });
+    for (int d : path) {
+      in.hold[d] = in.press[d] = true;
+      frame();
+      in.hold[d] = in.press[d] = false;
+      for (int f = 0; f < 20 && moving; f++) frame();
+      for (int f = 0; f < 600 && sc.busy(); f++) in.confirm = true, frame();
+    }
+    snap("enigme");
+    bool solved = has(R.puzzleFlag) && !blocked(17, 7) && !path.empty();
+    changeMap(mi("recif"), 23, 1, DOWN);
+    changeMap(ru, R.puzzleX, R.puzzleY, UP);
+    bool stays = boulderAt(12, 9) && boulderAt(23, 9);  // résolue : les rochers restent sur les dalles
+    check(closed && reset && solved && stays, "énigme : grille fermée, « Recommencer l'énigme », rochers poussés sur les dalles (" +
+                                                  std::to_string(path.size()) + " pas), grille ouverte, rochers restés en place");
+    flags.erase(R.puzzleFlag);
+    sc.clear(), menus.clear();
   }
 
   // --- Astuces (2.8) : la première fois seulement, F1 ouvre la bonne page, gardées par la sauvegarde ---
@@ -2899,6 +2945,9 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}, {"braisenard", 30}, {"gouttelin", 30}, {"ronceau", 30}}, bossEvent("givrecorne"), 40);
   simSetup("Gardien de cristal (équipe N.28)", {{"lior", 28}, {"maelle", 28}, {"brann", 28}, {"braisenard", 28}, {"gouttelin", 28}, {"ronceau", 28}}, bossEvent("gardien_cristal"), 30);
   simSetup("Mère des Brumes (équipe N.38)", {{"lior", 38}, {"maelle", 38}, {"selene", 38}, {"braisenard", 38}, {"gouttelin", 38}, {"ronceau", 38}}, bossEvent("mere_brumes"), 30);
+  simSetup("Kraken des récifs (équipe N.46)", {{"lior", 46}, {"maelle", 46}, {"selene", 46}, {"braisenard", 46}, {"gouttelin", 46}, {"ronceau", 46}}, bossEvent("kraken"), 30);
+  simSetup("Griffon tempête (équipe N.50)", {{"lior", 50}, {"maelle", 50}, {"kael", 50}, {"braisenard", 50}, {"gouttelin", 50}, {"ronceau", 50}}, bossEvent("griffon"), 30);
+  simSetup("Seigneur des Orages (équipe N.54)", {{"lior", 54}, {"maelle", 54}, {"isra", 54}, {"braisenard", 54}, {"gouttelin", 54}, {"ronceau", 54}}, bossEvent("seigneur_orage"), 30);
 
   std::printf("\nMêmes combats, alliés guidés par les tactiques de départ :\n");
   sim("Bois (N.8 contre 3 x N.4-7)", {{"lior", 8}, {"maelle", 8}, {"braisenard", 8}},
@@ -2935,6 +2984,9 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}, {"braisenard", 30}, {"gouttelin", 30}, {"ronceau", 30}}, bossEvent("givrecorne"), 40);
   simSetup("Gardien de cristal (équipe N.28)", {{"lior", 28}, {"maelle", 28}, {"brann", 28}, {"braisenard", 28}, {"gouttelin", 28}, {"ronceau", 28}}, bossEvent("gardien_cristal"), 30);
   simSetup("Mère des Brumes (équipe N.38)", {{"lior", 38}, {"maelle", 38}, {"selene", 38}, {"braisenard", 38}, {"gouttelin", 38}, {"ronceau", 38}}, bossEvent("mere_brumes"), 30);
+  simSetup("Kraken des récifs (équipe N.46)", {{"lior", 46}, {"maelle", 46}, {"selene", 46}, {"braisenard", 46}, {"gouttelin", 46}, {"ronceau", 46}}, bossEvent("kraken"), 30);
+  simSetup("Griffon tempête (équipe N.50)", {{"lior", 50}, {"maelle", 50}, {"kael", 50}, {"braisenard", 50}, {"gouttelin", 50}, {"ronceau", 50}}, bossEvent("griffon"), 30);
+  simSetup("Seigneur des Orages (équipe N.54)", {{"lior", 54}, {"maelle", 54}, {"isra", 54}, {"braisenard", 54}, {"gouttelin", 54}, {"ronceau", 54}}, bossEvent("seigneur_orage"), 30);
 
   // Forge (2.1) : le même équipement, forgé au plus haut niveau possible à ce moment de l'histoire
   // (+1 avec le minerai de la vallée, +2 avec les cœurs de braise de Cendrelune, +3 après les Pics)
@@ -2949,6 +3001,9 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}, {"braisenard", 30}, {"gouttelin", 30}, {"ronceau", 30}}, bossEvent("givrecorne"), 40);
   simSetup("Gardien de cristal (équipe N.28)", {{"lior", 28}, {"maelle", 28}, {"brann", 28}, {"braisenard", 28}, {"gouttelin", 28}, {"ronceau", 28}}, bossEvent("gardien_cristal"), 30);
   simSetup("Mère des Brumes (équipe N.38)", {{"lior", 38}, {"maelle", 38}, {"selene", 38}, {"braisenard", 38}, {"gouttelin", 38}, {"ronceau", 38}}, bossEvent("mere_brumes"), 30);
+  simSetup("Kraken des récifs (équipe N.46)", {{"lior", 46}, {"maelle", 46}, {"selene", 46}, {"braisenard", 46}, {"gouttelin", 46}, {"ronceau", 46}}, bossEvent("kraken"), 30);
+  simSetup("Griffon tempête (équipe N.50)", {{"lior", 50}, {"maelle", 50}, {"kael", 50}, {"braisenard", 50}, {"gouttelin", 50}, {"ronceau", 50}}, bossEvent("griffon"), 30);
+  simSetup("Seigneur des Orages (équipe N.54)", {{"lior", 54}, {"maelle", 54}, {"isra", 54}, {"braisenard", 54}, {"gouttelin", 54}, {"ronceau", 54}}, bossEvent("seigneur_orage"), 30);
   simGear = 0, simForge = 0;
 
   // Expédition : gardien de chaque région contre une équipe générée (héros, créature de départ,

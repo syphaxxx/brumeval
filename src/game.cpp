@@ -222,6 +222,7 @@ void Game::cycleSpeed() {
 }
 
 void Game::update(float dt) {
+  if (mode == Mode::Map && bouldersMap_ != mapId) resetBoulders();  // après un chargement, une nouvelle partie…
   time += dt;
   // Manette : une direction tenue se répète (comme une touche du clavier), pour parcourir les menus
   for (int d = 0; d < 4; d++)
@@ -315,6 +316,7 @@ void Game::update(float dt) {
         sc.update(dt, in);
         break;
       }
+      if (!moving && !M().puzzleFlag.empty() && !puzzleSolved(M()) && tip("enigme", sc)) break;  // énigme (3.0)
       if (!tipsSeen.count("gemme") && !moving)  // astuce : la première gemme reçue (boss, coffre, boutique)
         for (auto& [id, n] : items)
           if (n > 0 && hasItem(id) && item(id).gem && tip("gemme", sc)) break;
@@ -422,6 +424,10 @@ bool Game::blocked(int x, int y) const { return blockedOn(M(), x, y); }
 bool Game::blockedOn(const MapDef& m, int x, int y) const {
   if (x < 0 || y < 0 || x >= m.w() || y >= m.h()) return true;
   if (!tileWalkable(m.rows[y][x])) return true;
+  if (m.rows[y][x] == 'D' && !puzzleSolved(m)) return true;  // grille fermée
+  if (&m == &M() && bouldersMap_ == mapId ? boulderAt(x, y)
+                                           : (m.rows[y][x] == 'O' && !puzzleSolved(m)) || (m.rows[y][x] == 'P' && puzzleSolved(m) && !m.puzzleFlag.empty()))
+    return true;  // rocher (sur la carte affichée : sa place actuelle)
   for (auto& b : m.buildings)
     if (x >= b.x && x < b.x + b.w && y >= b.y && y < b.y + b.h) return true;
   for (auto& n : m.npcs)
@@ -437,11 +443,42 @@ bool Game::blockedOn(const MapDef& m, int x, int y) const {
   return false;
 }
 
+void Game::resetBoulders() {
+  const MapDef& m = M();
+  boulders_ = puzzleTiles(m, puzzleSolved(m) && !m.puzzleFlag.empty() ? 'P' : 'O');
+  bouldersMap_ = mapId;
+}
+bool Game::boulderAt(int x, int y) const { return std::find(boulders_.begin(), boulders_.end(), std::make_pair(x, y)) != boulders_.end(); }
+
+void Game::pushBoulder(int x, int y, int dx, int dy) {
+  const MapDef& m = M();
+  int bx = x + dx, by = y + dy;
+  bool warp = false;
+  for (auto& w : m.warps) warp = warp || (w.x == bx && w.y == by);
+  if (puzzleSolved(m) || blocked(bx, by) || warp) {
+    audio::play("refus");
+    return;
+  }
+  *std::find(boulders_.begin(), boulders_.end(), std::make_pair(x, y)) = {bx, by};
+  audio::play("coup_lourd");
+  bool all = true;
+  for (auto& p : puzzleTiles(m, 'P')) all = all && boulderAt(p.first, p.second);
+  if (all) {
+    flags.insert(m.puzzleFlag);
+    audio::play("bonus");
+    sc.say(m.puzzleMsg.empty() ? "Un grondement sourd : quelque part, une grille s'ouvre !" : fillText(m.puzzleMsg));
+  }
+}
+
 void Game::tryMove(int d) {
   bool fresh = in.press[d];
   dir = d;
   int dx = d == LEFT ? -1 : d == RIGHT ? 1 : 0, dy = d == UP ? -1 : d == DOWN ? 1 : 0;
   int nx = px + dx, ny = py + dy;
+  if (boulderAt(nx, ny) && !puzzleSolved(M())) {  // énigme : pousser le rocher, puis avancer à sa place
+    pushBoulder(nx, ny, dx, dy);
+    if (boulderAt(nx, ny)) return;
+  }
   if (blocked(nx, ny)) {
     if (!fresh) return;
     for (auto& b : M().buildings)
@@ -557,6 +594,7 @@ void Game::bossTouched(const BossSpot& b) {
 void Game::changeMap(int m, int x, int y, int d) {
   bool changed = m != mapId;
   mapId = m;
+  if (changed) resetBoulders();
   px = x, py = y, dir = d;
   moving = false;
   steps = 0;
@@ -878,6 +916,28 @@ void Game::drawMap() {
   int tx0 = std::max(0, (int)std::floor((camX + g.left()) / 16)), tx1 = (int)((camX + g.right()) / 16), ty0 = std::max(0, camY / 16);
   for (int y = ty0; y <= ty0 + SCREEN_H / 16 && y < m.h(); y++)
     for (int x = tx0; x <= tx1 && x < m.w(); x++) drawTile(g, m, x, y, x * 16 - camX, y * 16 - camY, time);
+  // Énigme (3.0) : grilles (fermées : barreaux), plaques allumées, rochers
+  if (!m.puzzleFlag.empty()) {
+    bool open = puzzleSolved(m);
+    for (auto& [x, y] : puzzleTiles(m, 'D')) {
+      float sx = x * 16 - camX, sy = y * 16 - camY;
+      if (open) g.rect(sx + 1, sy + 13, 14, 2, rgb(0x5a5048, 120));
+      else {
+        g.rect(sx, sy, 16, 16, rgb(0x3a3430));
+        for (int i = 0; i < 4; i++) g.rect(sx + 1 + i * 4, sy, 2, 16, rgb(0x8a8078));
+        g.rect(sx, sy + 3, 16, 2, rgb(0x6a6058));
+      }
+    }
+    for (auto& [x, y] : puzzleTiles(m, 'P'))
+      if (boulderAt(x, y)) g.rect(x * 16 - camX + 2, y * 16 - camY + 13, 12, 2, rgb(0xffd34d, 200));
+    for (auto& [x, y] : boulders_) {
+      float sx = x * 16 - camX, sy = y * 16 - camY;
+      g.ellipse(sx + 8, sy + 13, 7, 3, rgb(0x000000, 60));
+      g.ellipse(sx + 8, sy + 8, 7, 7, rgb(0x6e6a72));
+      g.ellipse(sx + 7, sy + 6, 5, 4, rgb(0x8e8a94));
+      g.rect(sx + 9, sy + 9, 3, 1, rgb(0x504c56));
+    }
+  }
   for (auto& b : m.buildings) drawBuilding(g, b, b.x * 16 - camX, b.y * 16 - camY);
   if (m.theme != Theme::Interieur)
     for (auto& b : m.buildings) drawChimneySmoke(g, b, b.x * 16 - camX, b.y * 16 - camY, time);

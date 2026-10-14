@@ -76,6 +76,11 @@ static std::vector<HelpPage> helpPages() {
                 "Gemmes de bonus : un pourcentage de PV, d'Attaque ou de Magie en plus.",
                 "Gemmes de soutien : éveil (jauge avancée au début du combat), vampire (rend une part des dégâts infligés), riposte (rend les coups au corps à corps), brise-garde (use plus les boucliers).",
                 "On les achète dans les boutiques ; chaque grand boss en laisse une. Changer d'équipement rend au sac les gemmes qui n'ont plus de place."}});
+  p.push_back({"Énigmes", "Les rochers à pousser.",
+               {"Certaines salles ont des rochers ronds et des dalles gravées. Marchez dans un rocher pour le pousser d'une case (s'il y a de la place derrière).",
+                "Quand chaque dalle porte un rocher, une grille s'ouvre quelque part : souvent le chemin vers un boss.",
+                "Un rocher coincé contre un mur ou dans un coin ne peut plus bouger : Échap > Recommencer l'énigme remet tout en place.",
+                "En sortant de la carte sans avoir fini, les rochers reviennent aussi à leur place."}});
   p.push_back({"Rôles", "Les rôles des ennemis, les phases des boss.",
                {"Certaines créatures ont un rôle, montré par une icône à droite de leur barre de vie (et dans le menu de la cible) :",
                 "Protecteur (écu gris) : ses voisins de damier (en croix) reçoivent " + pct(R.roleGuard) + " de dégâts en moins. Abattez-le ou poussez sa cible loin de lui.",

@@ -407,5 +407,87 @@
     "description": "Un cœur de volcan, poli.",
     "prix": 1200,
     "gemme": {"technique": "pyro"}
+  },
+  {
+    "id": "perle",
+    "nom": "Perle d'écume",
+    "description": "Une perle nacrée qui brille comme la mer au matin. La gardienne du phare en cherche.",
+    "prix": 0,
+    "important": true
+  },
+  {
+    "id": "ecaille_kraken",
+    "nom": "Écaille du Kraken",
+    "description": "Trophée : une écaille irisée, dure comme l'acier.",
+    "prix": 600,
+    "trophee": true
+  },
+  {
+    "id": "plume_griffon",
+    "nom": "Plume du Griffon",
+    "description": "Trophée : elle crépite encore d'électricité.",
+    "prix": 600,
+    "trophee": true
+  },
+  {
+    "id": "coeur_orage",
+    "nom": "Cœur d'orage",
+    "description": "Trophée : le cœur du Seigneur des Orages, enfin calme.",
+    "prix": 1000,
+    "trophee": true
+  },
+  {
+    "id": "lame_ecume",
+    "nom": "Lame d'écume",
+    "description": "Une épée légère, trempée dans l'eau de mer.",
+    "prix": 2200,
+    "equipement": "arme",
+    "bonus": {"attaque": 15, "critique": 5}
+  },
+  {
+    "id": "baton_orage",
+    "nom": "Bâton d'orage",
+    "description": "Il sent l'ozone.",
+    "prix": 2200,
+    "equipement": "arme",
+    "bonus": {"magie": 15, "pm": 14}
+  },
+  {
+    "id": "armure_ecaille",
+    "nom": "Armure d'écailles",
+    "description": "Des écailles de poisson géant, cousues serré.",
+    "prix": 2000,
+    "equipement": "armure",
+    "bonus": {"defense": 13, "resistance": 7, "pv": 15}
+  },
+  {
+    "id": "robe_orage",
+    "nom": "Robe d'orage",
+    "description": "Tissée avec du fil de nuage.",
+    "prix": 1900,
+    "equipement": "armure",
+    "bonus": {"resistance": 12, "defense": 4, "pm": 8}
+  },
+  {
+    "id": "amulette_maree",
+    "nom": "Amulette des marées",
+    "description": "Elle bat au rythme des vagues.",
+    "prix": 1800,
+    "equipement": "accessoire",
+    "bonus": {"pv": 40, "resistance": 4}
+  },
+  {
+    "id": "gemme_maitre",
+    "nom": "Gemme du maître",
+    "description": "Une gemme rare, aux reflets de toutes les couleurs.",
+    "prix": 3000,
+    "gemme": {"bonus": {"pv": 0.08, "attaque": 0.08, "magie": 0.08}}
+  },
+  {
+    "id": "gemme_orage",
+    "nom": "Gemme d'orage",
+    "description": "Un éclair noir pris dans le cristal.",
+    "prix": 2500,
+    "gemme": {"technique": "foudre_noire"}
   }
 ]

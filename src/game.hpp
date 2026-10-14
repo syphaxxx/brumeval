@@ -114,7 +114,15 @@ class Game {
   std::string bannerText;
 
   bool blocked(int x, int y) const;
-  bool blockedOn(const MapDef& m, int x, int y) const;  // case occupée sur cette carte
+  bool blockedOn(const MapDef& m, int x, int y) const;
+  // Énigme de la carte (3.0) : rochers à pousser sur les plaques. boulders_ : leurs cases sur la carte affichée
+  // (remis au départ en entrant sur la carte, sauf si l'énigme est résolue : ils restent sur les plaques)
+  std::vector<std::pair<int, int>> boulders_;
+  int bouldersMap_ = -1;  // carte dont boulders_ décrit les rochers
+  void resetBoulders();
+  bool boulderAt(int x, int y) const;
+  bool puzzleSolved(const MapDef& m) const { return m.puzzleFlag.empty() || has(m.puzzleFlag); }
+  void pushBoulder(int x, int y, int dx, int dy);  // le joueur pousse le rocher de (x, y)  // case occupée sur cette carte
   bool npcVisible(const Npc& n) const;
   bool bossAlive(const BossSpot& b) const;
   void tryMove(int d);

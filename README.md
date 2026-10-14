@@ -166,6 +166,25 @@ temps :
   voit ce qu'il change par rapport à l'actuel et ses chatons ; le menu Duo
   affiche le coût en PM.
 
+## Acte 2 : l'archipel d'Écume (3.0)
+
+Une fois la Mère des Brumes apaisée, le **pêcheur** de la vallée peut enfin
+traverser : son bateau mène à **Port d'Écume** (soins, boutique avec de nouvelles
+armes, armures et gemmes, auberge, passeur pour rentrer).
+
+- **Récif d'Écume** : nouvelles créatures (Écumet, Coquillon et son évolution
+  Bastillon, Voltanguille et Fulgoray, Nuageon, Orageline, Noyelin), deux
+  dresseurs, des perles d'écume pour la quête du phare.
+- **Ruines englouties** : une **énigme** (rochers à pousser sur des dalles pour
+  ouvrir une grille), puis le **Kraken des récifs**.
+- **Tour de l'Orage** : le **Griffon tempête**, une seconde énigme à trois
+  rochers, et au sommet le **Seigneur des Orages**, en trois phases : le vrai
+  final.
+- **Énigmes** : marchez dans un rocher pour le pousser. Coincé ? Échap >
+  **Recommencer l'énigme**.
+- Quête **Les perles du phare** (quatre perles d'écume) ; la Gemme du maître et
+  la Gemme d'orage se trouvent en chemin.
+
 ## Techniques rapides et lourdes
 
 Chaque technique a un rythme, indiqué dans l'aide en bas de l'écran :

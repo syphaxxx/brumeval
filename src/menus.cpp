@@ -137,6 +137,13 @@ void Game::pauseMenu() {
                          panelMode_ = 0;
                          story_->returnFromTest();
                        }});
+  if (!M().puzzleFlag.empty() && !puzzleSolved(M()) && M().puzzleX >= 0)  // énigme bloquée : tout remettre en place (3.0)
+    m.items.push_back({"Recommencer l'énigme", "", "Les rochers reviennent à leur place, et vous au début de l'énigme.", true, [this] {
+                         menus.clear();
+                         panelMode_ = 0;
+                         resetBoulders();
+                         px = M().puzzleX, py = M().puzzleY, moving = false;
+                       }});
   m.items.push_back({"Équipe", "", "Ordre de combat et fiches.", true, [this] { teamMenu(); }});
   m.items.push_back({"Compagnons", "", "La créature qui combat aux côtés de chaque héros.", true, [this] { companionsMenu(); }});
   {

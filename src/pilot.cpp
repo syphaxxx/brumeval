@@ -424,6 +424,13 @@ std::vector<Pilot::Goal> Pilot::goals() {
       spot(g, b.doorX(), b.doorY() + 1, UP);
       byEvent(g, b.event);
     }
+    if (!M.puzzleFlag.empty() && !G.puzzleSolved(M) && tries_["enigme:" + M.id] < 5) {  // énigme (3.0) : aller à son départ
+      Goal g;
+      g.key = "enigme:" + M.id;
+      g.what = "énigme (" + M.name + ")";
+      spot(g, M.puzzleX, M.puzzleY, -1);
+      out.push_back(g);
+    }
     for (auto& b : M.bosses) {
       if (!G.bossAlive(b)) continue;
       Goal g;
@@ -672,12 +679,28 @@ int Pilot::pathRisk(int at) const {
 
 // Un pas vers l'objectif, ou l'action une fois arrivé
 void Pilot::walk(float dt) {
+  if (!puzzleMoves_.empty()) {  // énigme : un pas (ou une poussée) après l'autre
+    if (G.moving) return;
+    int d = puzzleMoves_.front();
+    puzzleMoves_.erase(puzzleMoves_.begin());
+    G.in.hold[d] = true, G.in.press[d] = true;
+    if (puzzleMoves_.empty()) needPlan_ = true;
+    return;
+  }
   int cur = node(G.mapId, G.px, G.py);
   if (cur == lastNode_) sameT_ += dt;
   else sameT_ = 0, lastNode_ = cur;
   bool there = cur == target_ || (goal_.kind == Grind && grind_.count(cur));
   if (there) {
     if (goal_.kind == Grind) return pace();
+    if (goal_.key.rfind("enigme:", 0) == 0 && !G.puzzleSolved(G.M())) {  // résoudre l'énigme (3.0)
+      tries_[goal_.key]++;
+      G.resetBoulders();  // depuis le départ : la solution vaut pour les rochers à leur place
+      puzzleMoves_ = solvePuzzle(G.M(), G.px, G.py, G.boulders_, [this](int x, int y) { return !G.boulderAt(x, y) && G.blocked(x, y); });
+      note("Énigme : " + std::to_string(puzzleMoves_.size()) + " pas (" + G.M().name + ")");
+      if (puzzleMoves_.empty()) needPlan_ = true;
+      return;
+    }
     if (targetFace_ < 0) {  // découvrir une carte : y être suffit
       needPlan_ = true;
       return;

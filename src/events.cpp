@@ -49,7 +49,7 @@ static std::vector<std::string> names(const Json& v) {
 static void checkList(const Json& list, const std::string& where, std::vector<std::string>& err);
 
 static void checkCondition(const Json& c, const std::string& where, std::vector<std::string>& err) {
-  static const std::vector<std::string> keys = {"drapeau", "sans_drapeau", "objet", "sans_objet", "or_min", "membre"};
+  static const std::vector<std::string> keys = {"drapeau", "sans_drapeau", "objet", "sans_objet", "objet_min", "or_min", "membre"};
   for (auto& [k, v] : c.items()) {
     if (std::find(keys.begin(), keys.end(), k) == keys.end()) err.push_back(where + " : condition inconnue « " + k + " »");
     if (k == "objet" || k == "sans_objet")
@@ -187,6 +187,11 @@ bool Game::checkCond(const Json& c) const {
     if (count(id) <= 0) return false;
   for (auto& id : names(c.value("sans_objet", Json())))
     if (count(id) > 0) return false;
+  {
+    Json mins = c.value("objet_min", Json::object());  // au moins N exemplaires (3.0) : {"perle": 4}
+    for (auto& [id, n] : mins.items())
+      if (count(id) < n.get<int>()) return false;
+  }
   if (c.contains("or_min") && gold < c["or_min"].get<int>()) return false;
   for (auto& id : names(c.value("membre", Json()))) {
     bool found = false;

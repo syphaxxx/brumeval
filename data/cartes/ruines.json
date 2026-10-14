@@ -1,0 +1,95 @@
+{
+  "id": "ruines",
+  "nom": "Ruines englouties",
+  "theme": "grotte",
+  "ambiance": {"effet": "brume"},
+  "tuiles": [
+    "#################..#################",
+    "#############..........#############",
+    "#############..........#############",
+    "#############..........#############",
+    "#############..........#############",
+    "#############..........#############",
+    "#############..........#############",
+    "#################DD#################",
+    "##########................##########",
+    "##########..P..........P..##########",
+    "##########................##########",
+    "##########...O........O...##########",
+    "##########................##########",
+    "##########................##########",
+    "#################..#################",
+    "####ccccc#######c..c#######ccccc####",
+    "####cxccc#######cccc#######cccxc####",
+    "####ccccc#######cccc#######ccccc####",
+    "####cccccccccccccccccccccccccccc####",
+    "####ccccccccccccccccccccccxccccc####",
+    "####cccccccccccccccccccccccccccc####",
+    "####cccccccccccccccccccccccccccc####",
+    "####cccccccxcccccccccccccccccccc####",
+    "####cccccccccccccccccccccccccccc####",
+    "################cccc################",
+    "################cccc################",
+    "################cccc################",
+    "################c..c################",
+    "################c..c################",
+    "################c..c################"
+  ],
+  "batiments": [],
+  "habitants": [],
+  "coffres": [
+    {"x": 5, "y": 15, "objet": "perle", "quantite": 1},
+    {"x": 31, "y": 15, "objet": "gemme_maitre", "quantite": 1}
+  ],
+  "panneaux": [
+    {
+      "x": 20,
+      "y": 13,
+      "texte": "Gravé dans la pierre : « Que chaque pierre trouve sa dalle, et la grille s'ouvrira. » (Échap > Recommencer l'énigme si un rocher se coince.)"
+    }
+  ],
+  "passages": [
+    {"x": 17, "y": 29, "vers": "recif", "tx": 23, "ty": 1, "direction": "bas"},
+    {"x": 18, "y": 29, "vers": "recif", "tx": 24, "ty": 1, "direction": "bas"},
+    {
+      "x": 17,
+      "y": 0,
+      "vers": "tour",
+      "tx": 14,
+      "ty": 38,
+      "direction": "haut",
+      "condition": {"drapeau": "kraken"},
+      "message": "Le Kraken bloque le passage."
+    },
+    {
+      "x": 18,
+      "y": 0,
+      "vers": "tour",
+      "tx": 15,
+      "ty": 38,
+      "direction": "haut",
+      "condition": {"drapeau": "kraken"},
+      "message": "Le Kraken bloque le passage."
+    }
+  ],
+  "enigme": {
+    "drapeau": "ruines_grille",
+    "x": 17,
+    "y": 13,
+    "message": "Les deux dalles s'enfoncent. Avec un grondement, la grille se lève !",
+    "zone": {"x": 10, "y": 8, "l": 16, "h": 6}
+  },
+  "zones": [
+    {
+      "x": 0,
+      "y": 15,
+      "l": 36,
+      "h": 15,
+      "niveau_min": 44,
+      "niveau_max": 48,
+      "max_ennemis": 4,
+      "creatures": ["noyelin", "coquillon", "voltanguille", "bastillon"]
+    }
+  ],
+  "boss": [{"x": 17, "y": 3, "espece": "kraken", "drapeau": "kraken", "evenement": "kraken"}]
+}

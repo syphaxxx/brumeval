@@ -502,6 +502,12 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
         g.rect(sx + 3 + (y % 2) * 6, sy + 8, 1, 8, rgb(0x786d66));
       }
       break;
+    case 'P':  // plaque de l'énigme (3.0) : une dalle gravée
+      ground(g, th, sx, sy, h);
+      g.rect(sx + 2, sy + 2, 12, 12, rgb(0x8a8270));
+      g.rect(sx + 3, sy + 3, 10, 10, rgb(0xa89e88));
+      g.rect(sx + 6, sy + 6, 4, 4, rgb(0x6a6252));
+      break;
     case 'R':
       ground(g, th, sx, sy, h);
       g.ellipse(sx + 8, sy + 10, 6, 5, rgb(0x8a8a92));

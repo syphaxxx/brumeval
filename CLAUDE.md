@@ -365,6 +365,12 @@ code) ; `docs/GUIDE.md` les range par domaine.
   des gardiens, phases des gardiens, gemme en récompense, gemmes en boutique (`shopStock`). Les nouveaux tirages viennent
   d'un générateur à part semé par l'identifiant (`idHash`, `stream(…, 29)`) : le reste d'un monde ne change pas, mais
   l'empreinte de la graine 2026 a changé (28da4b9e14a4ce4d). Les conseils de l'histoire sont vidés en Expédition.
+- Acte 2 (3.0) : cartes `port`, `recif`, `ruines`, `tour` (générées par un script, puis réglées à la main), le bateau
+  du pêcheur (page `boss4` de l'événement `pecheur`) et le `passeur`. Énigmes : tuiles `O`/`P`/`D`, `MapDef::puzzle*`
+  (champ `enigme`), `solvePuzzle` (world.cpp, recherche en largeur, aussi dans `checkMaps`), `Game::boulders_`
+  (`bouldersMap_` : la carte qu'ils décrivent ; remis en place en changeant de carte, sauf énigme résolue),
+  `pushBoulder` dans `tryMove`, « Recommencer l'énigme » (menu Échap), dessin dans `drawMap`. Joueur automatique :
+  objectif `enigme:<carte>` puis `puzzleMoves_`. Condition `objet_min`. Final : `boss5` (Seigneur des Orages).
 - Données en mémoire : `dataDoc(DF_…)` garde chaque fichier de data/ sous forme
   de JSON ; `rebuildData()` reconstruit les structures du jeu à partir de ces
   documents, `saveDataDoc` les écrit. Les Réglages ne touchent qu'aux documents,
