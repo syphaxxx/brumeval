@@ -99,3 +99,8 @@ finie, 63, 75 et 76 min, 0, 2 et 1 défaite, niveau ~52. Il vise déjà les faib
 et 6 défaites, presque toutes contre des meutes sauvages au début (les créatures qui poussent provoquent des chocs).
 Choc ramené de 0,5 à 0,35 des dégâts. Les duos passent par la tactique « Meilleure attaque » ; « Se mettre à l'abri »
 quitte les cases qui blessent.
+
+**Version 2.7** (gemmes, rôles, boss en phases ; 3 parties sans mémoire) : toujours finie, 62, 94 et 83 min, 2, 4 et 0
+défaite, niveau 50 à 63 (le jeu est plus dur : il s'entraîne plus longtemps). Il sertit les gemmes reçues
+(`Pilot::socketGems`, à chaque `plan`), vise d'abord soigneurs, chefs et protecteurs (`attackScore`), et ses
+répétitions de boss jouent leurs phases (`makeFoe`). Il n'achète pas encore de gemmes en boutique (piste).
