@@ -81,6 +81,10 @@ COMMANDES
   soigne, un chef (couronne) presse ses alliés : abattez-les d'abord.
   Les boss changent de phase quand leurs PV baissent.
 
+  Astuces : chaque nouvelle règle est expliquée la première fois (F1 : la
+  page d'Aide qui va avec ; Options > Astuces pour les couper). Les
+  aubergistes et le Journal conseillent pour le prochain gardien.
+
   Échap > Réserve : les créatures capturées quand l'équipe (8 membres)
   est complète. Échap > Bestiaire : toutes les créatures rencontrées.
   En boutique, « Vendre… » rachète vos objets à moitié prix.

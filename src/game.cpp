@@ -315,6 +315,9 @@ void Game::update(float dt) {
         sc.update(dt, in);
         break;
       }
+      if (!tipsSeen.count("gemme") && !moving)  // astuce : la première gemme reçue (boss, coffre, boutique)
+        for (auto& [id, n] : items)
+          if (n > 0 && hasItem(id) && item(id).gem && tip("gemme", sc)) break;
       if (moving) {
         moveT += dt * 7.5f;
         if (moveT >= 1) {
@@ -730,7 +733,7 @@ void Game::newGame(const std::string& starter) {
   sc.clear();
   team = {makeFighter(r.hero, r.startLevel), makeFighter(starter, r.startLevel)};
   reserve.clear();
-  seen.clear(), caught.clear(), weak.clear();
+  seen.clear(), caught.clear(), weak.clear(), tipsSeen.clear();
   items.clear();
   for (auto& [id, n] : r.startItems) items[id] = n;
   gold = r.startGold;

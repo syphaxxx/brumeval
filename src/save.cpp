@@ -32,6 +32,7 @@ bool Game::saveGame() {
     if (hasSpecies(sp)) f << "vu " << sp << '\n';
   for (auto& sp : caught)
     if (hasSpecies(sp)) f << "pris " << sp << '\n';
+  for (auto& t : tipsSeen) f << "astuce " << t << '\n';  // astuces déjà montrées (2.8)
   for (auto& w : weak) {  // « espèce:numéro du type » : écrit avec l'identifiant du type (stable si on en ajoute)
     auto c = w.find(':');
     int t = std::atoi(w.c_str() + c + 1);
@@ -142,7 +143,7 @@ bool Game::loadGame() {
   if (!f || !std::getline(f, head) || head.rfind("BRUMEVAL", 0) != 0) return false;
   team.clear();
   reserve.clear();
-  seen.clear(), caught.clear(), weak.clear();
+  seen.clear(), caught.clear(), weak.clear(), tipsSeen.clear();
   bool inReserve = false;                      // après la ligne « reserve »
   std::vector<std::pair<size_t, int>> links;  // lignes « compagnon » : reliées à la fin
   items.clear();
@@ -186,6 +187,9 @@ bool Game::loadGame() {
     else if (k == "vu" || k == "pris") {
       s >> v;
       if (hasSpecies(v)) (k == "vu" ? seen : caught).insert(v);
+    } else if (k == "astuce") {
+      s >> v;
+      tipsSeen.insert(v);
     } else if (k == "faible") {
       std::string t;
       s >> v >> t;

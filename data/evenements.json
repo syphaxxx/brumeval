@@ -369,6 +369,7 @@
         "action": "dire",
         "texte": "Aubergiste : Une nuit ici coûte 20 pièces d'or. Le repos rend tous les PV et PM."
       },
+      {"action": "conseil"},
       {
         "action": "question",
         "texte": "Passer la nuit (20 or) ?",

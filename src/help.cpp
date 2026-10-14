@@ -219,6 +219,37 @@ void Game::helpMenu(int sel) {
   menus.push(m);
 }
 
+bool Game::tip(const std::string& id, Script& s) {
+  if (tipsOff_ || !options().tips || pilot_ || tipsSeen.count(id)) return false;
+  for (auto& t : rules().tips) {
+    if (t.id != id) continue;
+    tipsSeen.insert(id);
+    auto pages = helpPages();
+    for (size_t i = 0; i < pages.size(); i++)
+      if (pages[i].title == t.help) lastHelp_ = (int)i;
+    s.say("Astuce : " + t.text + " (F1 : en savoir plus)", 0);
+    return true;
+  }
+  return false;
+}
+
+std::string Game::adviceText() const {
+  for (auto& a : rules().advice) {
+    if (has(a.flag) || !hasSpecies(a.boss)) continue;
+    const Species& s = species(a.boss);
+    std::string t = "Prochain gardien : " + s.name + (a.place.empty() ? "" : ", dans " + a.place) + ". ";
+    std::string known;
+    for (int ty = 0; ty < (int)types().size(); ty++)
+      if (weakKnown(a.boss, ty)) known += (known.empty() ? "" : ", ") + types()[ty].name;
+    t += known.empty() ? "Ses faiblesses sont à découvrir : essayez chaque type, le Bestiaire s'en souviendra. "
+                       : "Faiblesses connues : " + known + ". ";
+    t += a.text;
+    if (!a.gem.empty() && hasItem(a.gem)) t += " Gemme conseillée : " + item(a.gem).name + ".";
+    return t;
+  }
+  return "";
+}
+
 void Game::openHelp(int page) {
   helpPage_ = std::clamp(page, 0, (int)helpPages().size() - 1);
   helpScroll_ = 0;

@@ -152,7 +152,13 @@ class Game {
   void drawEvolution();
   std::string evoFrom_, evoTo_;              // effet en cours (espèces avant et après), vide : aucun
   float evoT_ = 0;                           // début de l'effet (Game::time)
-  bool offerEvolve_ = true;                  // le mode test les coupe (personne ne répondrait), sauf pour les tester
+  bool offerEvolve_ = true;
+  // Astuces (2.8) : celles déjà montrées (lignes « astuce » de la sauvegarde) ; le mode test les coupe sauf dans
+  // leur test ; tip() la montre dans ce script si elle est nouvelle (F1 ouvre alors sa page d'Aide)
+  std::set<std::string> tipsSeen;
+  bool tipsOff_ = false;
+  bool tip(const std::string& id, Script& s);
+  std::string adviceText() const;  // conseil pour le prochain boss (2.8) ; vide : tous battus                  // le mode test les coupe (personne ne répondrait), sauf pour les tester
   // Forge de Forgeroc (forge.cpp) : renforcer une arme ou une armure contre de l'or et des matériaux
   void forgeMenu(int sel = 0);
   bool forge(const FighterP& owner, const std::string& id);  // owner nul : l'objet est dans le sac

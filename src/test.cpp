@@ -31,6 +31,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   tacticsAuto = false;                 // les combats des tests passent par les menus (les tactiques ont leurs tests)
   g.checkLayout = true;                // chaque image dessinée vérifie la mise en page (gfx.cpp)
   offerEvolve_ = false;                // les évolutions ne sont proposées que dans leur propre test
+  tipsOff_ = true;                     // les astuces aussi (2.8)
   int fails = 0;
   auto check = [&](bool ok, const std::string& what) {
     std::printf("%s %s\n", ok ? "[ok]    " : "[ÉCHEC] ", what.c_str());
@@ -127,7 +128,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     frame();
     snap("86_options");
     bool louder = options().music == std::min(10, vol + 1);
-    menus.top().sel = 4;  // Touches
+    menus.top().sel = 5;  // Touches (après Astuces)
     in.confirm = true;
     frame();
     snap("87_touches");
@@ -154,6 +155,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
           "options : écran titre > Options, volume de la musique, nouvelle touche pour « Haut », vitesse ×3 (F2), relues depuis le fichier");
     std::remove(userFile(optionsFile).c_str());
     optionsFile = realFile;
+    noticeT_ = 0;  // « Haut : I. » ne reste pas affiché sur les captures suivantes
     options() = Options{};
     titleMenu();
     // Manette : croix vers le bas (tenue : elle se répète), A valide, B revient
@@ -675,8 +677,10 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     journalMenu();
     run(.1f);
     snap("93_journal");
-    bool listed = menus.top().title == "Journal" && menus.top().items.at(0).right == "en cours" &&
-                  menus.top().items.at(0).help.find("Bois Murmurant") != std::string::npos;
+    bool listed = false;  // la quête (après le conseil « Prochain gardien »)
+    for (auto& it : menus.top().items)
+      listed = listed || (it.right == "en cours" && it.help.find("Bois Murmurant") != std::string::npos);
+    listed = listed && menus.top().title == "Journal";
     menus.clear();
     panelMode_ = 0;
     int village = mi("vallee"), chest = -1;
@@ -902,6 +906,49 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     battle_.reset();
     sc.clear(), menus.clear();
     mode = Mode::Map;
+  }
+
+  // --- Astuces (2.8) : la première fois seulement, F1 ouvre la bonne page, gardées par la sauvegarde ---
+  {
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+    tipsOff_ = false;
+    tipsSeen.clear();
+    team = {makeFighter("lior", 20)};
+    startBattle({makeFighter("brumelin", 5)}, false, nullptr);
+    battle_->start -= 2;
+    for (int i = 0; i < 300 && !(battle_->sc.showingMessage() && battle_->sc.text().rfind("Astuce", 0) == 0); i++) {
+      in.confirm = battle_->sc.showingMessage() && battle_->sc.text().rfind("Astuce", 0) != 0;  // passer l'annonce du combat
+      frame();
+    }
+    bool shown = battle_->sc.showingMessage() && battle_->sc.text().find("bouclier") != std::string::npos && tipsSeen.count("bouclier");
+    snap("astuce");
+    int before = lastHelp_;
+    onKey(SDL_SCANCODE_F1, true, false);
+    onKey(SDL_SCANCODE_F1, false, false);
+    bool page = helpPage_ >= 0 && helpPage_ == before && before > 0;  // la page de l'astuce (Brisure), pas la première
+    helpPage_ = -1;
+    battle_.reset();
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+    bool saved = saveGame();
+    tipsSeen.clear();
+    bool kept = saved && loadGame() && tipsSeen.count("bouclier");
+    Script dummy;
+    bool once = !tip("bouclier", dummy) && tip("ordre", dummy) && !tip("ordre", dummy);
+    check(shown && page && kept && once, "astuces : montrée au premier bouclier, F1 ouvre sa page, gardée par la sauvegarde, jamais deux fois");
+    // Conseils (2.8) : le prochain boss, puis le suivant une fois battu
+    auto keep = flags;
+    for (auto& a : rules().advice) flags.erase(a.flag);
+    bool first = adviceText().find(species(rules().advice.at(0).boss).name) != std::string::npos;
+    flags.insert(rules().advice.at(0).flag);
+    bool second = adviceText().find(species(rules().advice.at(1).boss).name) != std::string::npos;
+    for (auto& a : rules().advice) flags.insert(a.flag);
+    bool done = adviceText().empty();
+    flags = keep;
+    check(first && second && done, "conseils : le prochain gardien, puis le suivant, plus rien quand tous sont battus");
+    tipsOff_ = true;
+    sc.clear(), menus.clear();
   }
 
   // --- Gemmes (2.7) : sertir par le menu, technique et bonus, chaton en trop rendu, sauvegarde ---

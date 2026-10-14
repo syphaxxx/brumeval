@@ -355,6 +355,12 @@ code) ; `docs/GUIDE.md` les range par domaine.
   Phases : `makeFoe` (data.cpp, partagé par events, pilote et tests) garde `phases` ; `Battle::checkPhase` après
   chaque technique (bouclier, bonus, techniques, météo, renforts ajoutés à `foes`) ; jamais en ligne. Portraits :
   `speakerLook` (game.cpp) ; titre animé dans `drawTitle`.
+- Confort 2.8 : astuces `Rules::tips` / `Game::tip(id, script)` (help.cpp : une fois, `tipsSeen` = lignes `astuce`,
+  `lastHelp_` = page de l'astuce pour F1 ; coupées par `options().tips`, `tipsOff_` du mode test et le joueur
+  automatique). En combat `Battle::tip` / `startTips` (une seule au début, dans `update`) ; déclencheurs dans
+  `applyHit` (faiblesse), `breakFoe`, `checkPhase`, `shove`, `command` (duo) ; la gemme dans `Game::update` (carte).
+  Conseils `Rules::advice`, `Game::adviceText` (action `conseil`, tête du Journal). Sac par catégories
+  (`itemMenuAt`), comparaison dans `gearPick`, coût des duos. Pas de niveaux de difficulté (refusé par l'utilisateur).
 - Données en mémoire : `dataDoc(DF_…)` garde chaque fichier de data/ sous forme
   de JSON ; `rebuildData()` reconstruit les structures du jeu à partir de ces
   documents, `saveDataDoc` les écrit. Les Réglages ne touchent qu'aux documents,

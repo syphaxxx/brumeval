@@ -173,6 +173,119 @@
       {"membres": ["type:eau", "type:foudre"], "technique": "duo_electrocution"}
     ]
   },
+  "astuces": [
+    {
+      "id": "bouclier",
+      "aide": "Brisure",
+      "texte": "Le chiffre dans l'écu bleu est le bouclier de l'ennemi. Frappez ses faiblesses pour l'user : à zéro, il est brisé, perd un tour et encaisse 50 % de plus."
+    },
+    {
+      "id": "faiblesse",
+      "aide": "Brisure",
+      "texte": "Faiblesse découverte ! Une pastille de sa couleur s'affiche sous la barre de vie, et le Bestiaire s'en souviendra."
+    },
+    {
+      "id": "brisure",
+      "aide": "Brisure",
+      "texte": "Ennemi brisé : c'est le moment des plus gros coups et des Limites, avant qu'il ne se ressaisisse."
+    },
+    {
+      "id": "ordre",
+      "aide": "Brisure",
+      "texte": "La frise en haut de l'écran montre qui va jouer. Les techniques rapides font rejouer plus tôt, les lourdes plus tard."
+    },
+    {
+      "id": "role",
+      "aide": "Rôles",
+      "texte": "Une icône à droite d'une barre de vie montre un rôle : écu = protecteur, croix = soigneur, couronne = chef. Abattez-les d'abord."
+    },
+    {
+      "id": "meteo",
+      "aide": "Météo",
+      "texte": "Le temps qu'il fait (sous l'ordre des tours) renforce ou affaiblit certains types."
+    },
+    {
+      "id": "terrain",
+      "aide": "Météo",
+      "texte": "Des cases colorées ont un terrain : braises, ronces, verglas, herbes hautes, source, cristaux. « Se déplacer » dit celui de chaque case."
+    },
+    {
+      "id": "pousser",
+      "aide": "Pousser",
+      "texte": "Cette technique déplace sa cible d'une case. Si la case est prise, les deux se heurtent : choc !"
+    },
+    {
+      "id": "duo",
+      "aide": "Duos",
+      "texte": "Un duo est possible : deux alliés qui vont ensemble lancent une technique à deux (menu « Duo »). Le partenaire dépense sa jauge ATB."
+    },
+    {
+      "id": "phase",
+      "aide": "Rôles",
+      "texte": "Le boss change de phase ! Bouclier rechargé, nouvelles attaques, parfois des renforts : gardez des forces."
+    },
+    {
+      "id": "gemme",
+      "aide": "Gemmes",
+      "texte": "Vous avez une gemme ! Sertissez-la dans un équipement porté : Échap > Équipement > un membre > Gemmes."
+    },
+    {
+      "id": "talent",
+      "aide": "Talents",
+      "texte": "Chaque espèce a un talent permanent (Carapace, Soigneur, Vif…) : fiche d'un membre (Échap > Équipe) et Bestiaire."
+    }
+  ],
+  "conseils": [
+    {
+      "drapeau": "boss1",
+      "boss": "sylvarque",
+      "lieu": "le Col de la Sylvarque",
+      "gemme": "gemme_vie",
+      "texte": "À mi-vie, un champichou accourt la soigner : abattez-le aussitôt."
+    },
+    {
+      "drapeau": "bandits",
+      "boss": "chef_bandit",
+      "lieu": "la forêt de Sylve-Noire",
+      "gemme": "gemme_vie",
+      "texte": "Le chef (couronne) presse ses bandits : abattez-le d'abord. Sous 40 % de PV, il appelle un renfort."
+    },
+    {
+      "drapeau": "ronce",
+      "boss": "ronce_mere",
+      "lieu": "le fond du marais de Sylve-Noire",
+      "gemme": "gemme_feu",
+      "texte": "Son Étreinte tire vos soigneurs vers l'avant. À mi-vie, un champignon guérisseur pousse : visez-le."
+    },
+    {
+      "drapeau": "boss2",
+      "boss": "ignarok",
+      "lieu": "le cratère des Monts Cendrelune",
+      "gemme": "gemme_givre",
+      "texte": "Sa carapace de lave se reforme à 60 % de PV, puis il appelle un tisonnel. Gardez un gros coup pour chaque brisure."
+    },
+    {
+      "drapeau": "cristal_apaise",
+      "boss": "cristallin",
+      "lieu": "le Temple de cristal",
+      "gemme": "gemme_force",
+      "texte": "Deux Galetor protecteurs (écu) l'entourent : poussez-les ou abattez-les. Il recharge ses cristaux à mi-vie."
+    },
+    {
+      "drapeau": "boss3",
+      "boss": "givrecorne",
+      "lieu": "le sanctuaire des Pics Givrés",
+      "gemme": "gemme_vie",
+      "texte": "À mi-vie, il déchaîne le blizzard, qui renforce la Glace : soyez prêts à soigner."
+    },
+    {
+      "drapeau": "boss4",
+      "boss": "mere_brumes",
+      "lieu": "la Source des Brumes",
+      "gemme": "gemme_vol",
+      "texte": "Le Nébulis (croix) la soigne : éliminez-le. La brume puis sa colère : gardez des PM pour la fin."
+    }
+  ],
   "talents": [
     {
       "id": "carapace",

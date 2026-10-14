@@ -504,8 +504,29 @@ void Battle::sound(const std::string& id, bool share) {
 }
 
 // ---------------------------------------------------------------------------
+void Battle::tip(const char* id) {
+  if (!shown() || autoPlay || net_ != Net::None) return;
+  G.tip(id, sc);
+}
+
+// Une seule astuce au début d'un combat : la première règle nouvelle qu'on y rencontre
+void Battle::startTips() {
+  if (!shown() || autoPlay || net_ != Net::None) return;
+  bool shield = false, role = false, terrain = false;
+  for (auto& f : foes) shield = shield || f->shieldMax > 0, role = role || !f->S().combatRole.empty();
+  for (auto& side : terrain_)
+    for (int v : side) terrain = terrain || v >= 0;
+  std::pair<const char*, bool> order[] = {{"bouclier", shield}, {"ordre", true}, {"role", role}, {"meteo", weather_ >= 0}, {"terrain", terrain}, {"talent", true}};
+  for (auto& [id, ok] : order)
+    if (ok && G.tip(id, sc)) return;
+}
+
 void Battle::update(float dt) {
   if (finished_) return;
+  if (!startTips_) {
+    startTips_ = true;
+    startTips();
+  }
   if (summaryOn_) {  // fenêtre des gains : Entrée (ou un clic) la ferme
     if (G.in.confirm || G.in.cancel || G.in.mclick[0] || autoPlay || G.time - summaryT_ > 8) {  // ou toute seule après 8 s
       summaryOn_ = false;
@@ -728,6 +749,7 @@ void Battle::command(FighterP a) {
   }
   if (!duoOptions(a, false).empty()) {  // techniques en duo possibles dans ce combat
     auto duos = duoOptions(a);
+    if (!duos.empty()) tip("duo");
     std::string why = "Technique à deux. Il faut un partenaire dont la jauge ATB atteint " + std::to_string(rules().duoGauge) +
                       " % (il la dépense) et les PM des deux.";
     m.items.push_back({"Duo", "", duos.empty() ? why : "Technique à deux : le partenaire dépense sa jauge ATB.", !duos.empty(), [this, a, duos] {
@@ -738,7 +760,8 @@ void Battle::command(FighterP a) {
                            const Move& mv = moveInfo(d.move);
                            std::string id = d.move;
                            FighterP p = d.partner;
-                           t.items.push_back({mv.name, p->name(), "Avec " + p->name() + ". " + moveHelp(mv, a.get()), true,
+                           t.items.push_back({mv.name, mv.cost ? std::to_string(mv.cost) + " PM" : p->name(),
+                                              "Avec " + p->name() + (mv.cost ? " (" + std::to_string(mv.cost) + " PM chacun)" : "") + ". " + moveHelp(mv, a.get()), true,
                                               [this, a, id, p] { moveTarget(a, id, p); }});
                          }
                          dock(t);
@@ -1434,7 +1457,7 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
   int dmg = std::max(1, int(((2 * a->lvl / 5.f + 2) * m.power * A / std::max(1.f, D) / float(R.dmgDivisor) + 2) * stab * eff * spread * k));
   d->hp = std::max(0, d->hp - dmg);
   if (eff > 1 && d->shieldMax > 0) {  // Brisure : une faiblesse entame le bouclier, et l'équipe la retient
-    if (isAlly(a)) G.weak.insert(d->sp + ":" + std::to_string(m.type));
+    if (isAlly(a) && G.weak.insert(d->sp + ":" + std::to_string(m.type)).second) tip("faiblesse");
     if (!d->broken && d->alive()) {
       d->shield = std::max(0, d->shield - (eff >= 4 ? 2 : 1) - int(talentValue(a->S(), "briseur") + gemSupport(*a, "briseur")));  // talent, gemme
       if (d->shield == 0) breakFoe(d);
@@ -1494,6 +1517,7 @@ int Battle::shoveDest(const FighterP& t, const Move& m) const {
 
 void Battle::shove(const FighterP& a, const FighterP& t, const Move& m, int dmg, std::vector<FighterP>& ko) {
   int to = shoveDest(t, m);
+  if (isAlly(a)) tip("pousser");
   if (to == -2) {
     if (t->boss) pop(t, "Inébranlable", GREY);
     return;
@@ -1529,7 +1553,6 @@ void Battle::shove(const FighterP& a, const FighterP& t, const Move& m, int dmg,
   pop(t, m.shove > 0 ? "Recule" : "Avance", rgb(0xd8e0ff));
   log.push_back("  " + t->name() + (m.shove > 0 ? " poussé : " : " tiré : ") + cellName(to));
   if (terrainTurn(t, true) && std::find(ko.begin(), ko.end(), t) == ko.end()) ko.push_back(t);
-  (void)a;
 }
 
 const Rules::Terrain* Battle::terrainOf(bool allySide, int cell) const {
@@ -1593,6 +1616,7 @@ void Battle::checkPhase(const FighterP& f) {
     if (f->hp > jget(p, "pv", .5f) * f->mhp) return;
     f->phase++;
     log.push_back("  " + f->name() + " : phase " + std::to_string(f->phase + 1));
+    tip("phase");
     sc.say(jget<std::string>(p, "message", f->name() + " entre dans une nouvelle phase !"), 1.4f);
     sound("statut");
     flashT = G.time, flashCol = rgb(0xff5a3a);
@@ -1664,6 +1688,7 @@ void Battle::breakFoe(const FighterP& d) {
   flashT = G.time, flashCol = rgb(0xffe066);
   shakeT_ = G.time;
   log.push_back("  " + d->name() + " : BRISÉ");
+  tip("brisure");
 }
 
 void Battle::applyEffect(const FighterP& t, const Effect& e) {

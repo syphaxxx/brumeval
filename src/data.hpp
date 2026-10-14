@@ -272,6 +272,16 @@ struct Rules {
     std::string move;
   };
   std::vector<Duo> duos;
+  // Astuces (2.8) : expliquées la première fois qu'on rencontre la règle ; aide = page d'Aide (F1)
+  struct Tip {
+    std::string id, help, text;
+  };
+  std::vector<Tip> tips;
+  // Conseils avant les boss (2.8), dans l'ordre de l'histoire : le premier dont le drapeau manque est le prochain
+  struct Advice {
+    std::string flag, boss, place, gem, text;
+  };
+  std::vector<Advice> advice;
   int duoGauge = 50;
   // Forge de Forgeroc (« forge ») : un niveau par entrée (+1, +2, +3). bonus : part du bonus de
   // l'objet ajoutée (0.3 : +30 %), or et matériaux (« trophee » : n'importe quel trophée de boss)

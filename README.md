@@ -152,6 +152,20 @@ temps :
 - **Portraits** dans les dialogues, **écran titre** animé (étoiles, étoile filante,
   lucioles, reflet sur le titre).
 
+## Astuces et conseils (2.8)
+
+- **Astuces** : la première fois qu'on rencontre une règle (bouclier, faiblesse,
+  rôle, météo, terrain, duo, phase d'un boss, gemme…), une courte explication
+  s'affiche ; **F1** ouvre aussitôt la page d'Aide qui va avec. Options >
+  Astuces les coupe.
+- **Conseils** : les aubergistes, et le Journal (Échap > Journal), parlent du
+  prochain gardien : où il est, ses faiblesses déjà découvertes, quoi viser et
+  quelle gemme apporter.
+- **Menus** : le sac est rangé par catégories (soins, capture, gemmes,
+  équipement, matériaux, objets importants) ; en choisissant un équipement, on
+  voit ce qu'il change par rapport à l'actuel et ses chatons ; le menu Duo
+  affiche le coût en PM.
+
 ## Techniques rapides et lourdes
 
 Chaque technique a un rythme, indiqué dans l'aide en bas de l'écran :

@@ -151,6 +151,7 @@ void Expedition::install() {
   d["reveil"] = Json{{"carte", mapId}, {"x", current_.startX}, {"y", current_.startY}};
   d.erase("evenement");
   if (r.contains("duo")) r["duo"]["liste"] = duoList;
+  r["conseils"] = Json::array();  // les conseils parlent des boss de l'histoire (2.8)
   dataDoc(DF_RULES) = r;
   for (auto f : {DF_TYPES, DF_ITEMS}) dataDoc(f) = docs_[f];
   rebuildData();

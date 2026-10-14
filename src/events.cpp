@@ -127,7 +127,7 @@ static void checkAction(const Json& a, const std::string& where, std::vector<std
   } else if (k == "attendre") need("secondes");
   else if (k == "quete") {
     if (need("id") && !findQuest(a["id"].get<std::string>())) err.push_back(w + " : quête inconnue « " + a["id"].get<std::string>() + " »");
-  } else if (k != "soigner" && k != "reveil" && k != "fin" && k != "forge") err.push_back(where + " : action inconnue « " + k + " »");
+  } else if (k != "soigner" && k != "reveil" && k != "fin" && k != "forge" && k != "conseil") err.push_back(where + " : action inconnue « " + k + " »");
 }
 
 static void checkList(const Json& list, const std::string& where, std::vector<std::string>& err) {
@@ -260,6 +260,9 @@ void Game::execAction(const Json& a) {
     else flags.erase(f);
   } else if (k == "recruter") {
     recruit(a["espece"].get<std::string>(), jget(a, "niveau", 1));
+  } else if (k == "conseil") {  // conseil pour le prochain boss (2.8)
+    std::string t = adviceText();
+    sc.say(t.empty() ? "Tous les gardiens sont apaisés. La vallée vous doit beaucoup !" : t, 0);
   } else if (k == "combat") {
     auto make = [&](const Json& e) { return makeFoe(e, avgLevel()); };
     BattleSetup setup;

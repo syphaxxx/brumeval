@@ -173,6 +173,18 @@ liste de `{"pv": 0.5, "message": …, "bouclier": 14, "bonus": {"attaque": 1},
 **Portraits** : un dialogue « Nom : … » montre le portrait de l'apparence de ce nom
 (`apparences.json`, ou un de ses autres noms dans `"aussi"`).
 
+**Astuces** (2.8, `regles.json`, `astuces`) : `id` (le moment où elle apparaît,
+choisi par le code : `bouclier`, `faiblesse`, `brisure`, `ordre`, `role`, `meteo`,
+`terrain`, `pousser`, `duo`, `phase`, `gemme`, `talent`), `aide` (titre de la page
+d'Aide que F1 ouvre ensuite) et `texte`. Chacune n'est montrée qu'une fois (ligne
+`astuce` de la sauvegarde) ; Options > Astuces les coupe.
+
+**Conseils** (2.8, `regles.json`, `conseils`), dans l'ordre de l'histoire :
+`drapeau` (posé quand le boss est battu), `boss` (espèce), `lieu`, `gemme`
+conseillée, `texte`. Le premier dont le drapeau manque est donné par l'action
+`conseil` (les aubergistes) et en tête du Journal, avec les faiblesses déjà
+découvertes.
+
 **Adversaires** : l'action `combat` accepte `nom` (« Le braconnier vous défie ! »)
 et `renforts`, une liste d'ennemis qui entrent un par un quand un adversaire
 tombe. Un habitant avec `"vue": 3` repère le joueur jusqu'à 3 cases devant lui

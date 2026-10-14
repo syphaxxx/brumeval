@@ -59,6 +59,16 @@ void Game::optionsMenu(int sel) {
     sp.rightFn = [] { return "×" + std::to_string(options().speed); };
     m.items.push_back(sp);
   }
+  {
+    auto flip = [] {
+      options().tips = !options().tips;
+      saveOptions();
+    };
+    MenuItem tp{"Astuces", "", "Expliquer chaque nouvelle règle la première fois qu'on la rencontre (F1 : en savoir plus).", true, flip};
+    tp.adjust = [flip](int) { flip(); };
+    tp.rightFn = [] { return std::string(options().tips ? "Oui" : "Non"); };
+    m.items.push_back(tp);
+  }
   m.items.push_back({"Touches", "", "Changer les touches du clavier. La manette se branche toute seule.", true, [this] { keysMenu(); }});
   m.items.push_back({"Retour", "", "", true, [this, panel] {
                        panelMode_ = panel;
@@ -645,7 +655,18 @@ void Game::gearPick(FighterP f, int who, int s) {
     int n = items.count(d.id) ? items[d.id] : 0;
     if (d.slot != s || n <= 0 || !canEquip(*f, d)) continue;
     std::string id = d.id;
-    MenuItem it{d.name, "×" + std::to_string(n), itemHelp(d), true, [equip, id] { equip(id); }};
+    // Comparaison (2.8) : statistiques gagnées ou perdues par rapport à l'objet porté, et chatons à gemmes
+    std::string cmp;
+    const std::string& cur = f->gear[(size_t)s];
+    for (int k = 0; k < N_GEAR_STATS; k++) {
+      int diff = d.bonus[k] - (cur.empty() ? 0 : item(cur).bonus[k]);
+      if (diff) cmp += (cmp.empty() ? "" : ", ") + std::string(diff > 0 ? "+" : "") + std::to_string(diff) + (k >= GS_ACC ? " % " : " ") + gearStatName(k);
+    }
+    int sockets = gemSockets(d), now = cur.empty() ? 0 : gemSockets(item(cur));
+    std::string help = (cmp.empty() ? std::string("Mêmes statistiques") : "Par rapport à l'actuel : " + cmp) + ". " +
+                       std::to_string(sockets) + (sockets > 1 ? " chatons" : " chaton") + (sockets < now ? " (moins qu'avant : des gemmes reviendront au sac)" : "") +
+                       ". " + itemHelp(d);
+    MenuItem it{d.name, "×" + std::to_string(n), help, true, [equip, id] { equip(id); }};
     it.shrink = true;
     m.items.push_back(it);
   }
@@ -660,6 +681,7 @@ void Game::journalMenu() {
   Menu m;
   m.title = "Journal";
   m.x = 8, m.y = 8, m.w = 220, m.rows = 9;
+  if (std::string adv = adviceText(); !adv.empty()) m.items.push_back({"Prochain gardien", "", adv, true, nullptr});  // conseil (2.8)
   for (auto& q : quests()) {
     std::string id = jget<std::string>(q, "id", "");
     if (!has(questFlag(id))) continue;
@@ -741,12 +763,27 @@ void Game::itemMenuAt(int sel) {
     panelMode_ = 1;
     menus.pop();
   };
-  int idx = 0;
-  for (auto& d : allItems()) {
-    int n = items.count(d.id) ? items[d.id] : 0;
-    if (n <= 0) continue;
+  // Rangé par catégories (2.8) : soins, capture, gemmes, équipement, matériaux, objets importants
+  auto category = [](const ItemDef& d) {
+    if (d.key) return 5;
+    if (d.gem) return 2;
+    if (d.slot >= 0) return 3;
+    if (d.capture > 0) return 1;
+    if (d.healHp || d.healMp || d.revive || d.cure) return 0;
+    return 4;
+  };
+  static const char* CATS[] = {"Soins", "Capture", "Gemmes", "Équipement", "Matériaux et trophées", "Objets importants"};
+  std::vector<const ItemDef*> order;
+  for (auto& d : allItems())
+    if (items.count(d.id) && items[d.id] > 0) order.push_back(&d);
+  std::stable_sort(order.begin(), order.end(), [&](const ItemDef* a, const ItemDef* b) { return category(*a) < category(*b); });
+  int lastCat = -1;
+  for (const ItemDef* dp : order) {
+    const ItemDef& d = *dp;
+    int n = items[d.id];
+    if (category(d) != lastCat) m.items.push_back(menuHeader(CATS[lastCat = category(d)]));
     std::string id = d.id;
-    int myIdx = idx++;
+    int myIdx = (int)m.items.size();
     std::string note = d.slot >= 0 ? " (à porter : Échap > Équipement)" : "";
     m.items.push_back({d.name, "×" + std::to_string(n), itemHelp(d) + note, d.field,
                        [this, id, myIdx] {
@@ -770,6 +807,8 @@ void Game::itemMenuAt(int sel) {
                        }});
   }
   if (m.items.empty()) m.items.push_back({"(sac vide)", "", "", false, nullptr});
+  if (m.sel < (int)m.items.size() && m.items[(size_t)m.sel].header) m.sel++;  // jamais sur un titre de catégorie
+  m.sel = std::clamp(m.sel, 0, (int)m.items.size() - 1);
   menus.push(m);
 }
 

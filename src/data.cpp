@@ -291,6 +291,11 @@ static void loadRules(const Json& j) {
     for (auto& d : duo.value("liste", Json::array()))
       r.duos.push_back({jget(d, "membres", std::vector<std::string>{}), d.at("technique").get<std::string>()});
   }
+  for (auto& a : j.value("conseils", Json::array()))
+    r.advice.push_back({a.at("drapeau").get<std::string>(), a.at("boss").get<std::string>(), jget<std::string>(a, "lieu", ""),
+                        jget<std::string>(a, "gemme", ""), jget<std::string>(a, "texte", "")});
+  for (auto& t : j.value("astuces", Json::array()))
+    r.tips.push_back({t.at("id").get<std::string>(), jget<std::string>(t, "aide", ""), t.at("texte").get<std::string>()});
   for (auto& t : j.value("talents", Json::array()))
     r.talents.push_back({t.at("id").get<std::string>(), t.at("nom").get<std::string>(), jget<std::string>(t, "description", ""),
                          t.at("effet").get<std::string>(), jget(t, "valeur", 0.0)});
@@ -596,6 +601,10 @@ std::vector<std::string> checkData() {
   for (auto& t : r.terrains)
     for (auto& ty : t.immune)
       if (!knownType(ty)) err.push_back("Terrain " + t.name + " : type inconnu « " + ty + " »");
+  for (auto& a : r.advice) {
+    if (!hasSpecies(a.boss)) err.push_back("Conseil : boss inconnu « " + a.boss + " »");
+    if (!a.gem.empty() && !hasItem(a.gem)) err.push_back("Conseil : gemme inconnue « " + a.gem + " »");
+  }
   for (auto& d : r.duos) {
     if (!hasMove(d.move)) err.push_back("Duo : technique inconnue « " + d.move + " »");
     if (d.members.size() != 2) err.push_back("Duo " + d.move + " : il faut deux membres");
