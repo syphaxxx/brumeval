@@ -108,7 +108,7 @@ Inspiré d'Into the Breach et de Chrono Trigger :
 - **Pousser / tirer** : Charge, Ruée, Rafale, Vague, Fracas… repoussent la cible
   d'une case vers l'arrière ; Flèche-grappin (Kael, niveau 11), Tornade,
   Étreinte… la tirent vers l'avant. Si la case est prise, les deux se heurtent
-  (**choc** : la moitié des dégâts du coup, pour chacun) ; poussé contre le bord
+  (**choc** : un tiers des dégâts du coup, pour chacun) ; poussé contre le bord
   arrière, choc aussi. Tirer un mage vers l'avant le met à portée de l'épée.
   Les boss sont inébranlables, mais les ennemis aussi poussent et tirent.
 - **Météo** (affichée sous l'ordre des tours) : pluie (Eau +25 %, Feu -25 %),

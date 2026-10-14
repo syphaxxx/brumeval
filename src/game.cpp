@@ -903,13 +903,13 @@ void Game::drawMap() {
   // Jour et nuit : la carte s'assombrit (crépuscule orangé), les fenêtres s'allument, le héros porte une lanterne
   float night = nightAmount();
   if (night > 0) {
-    g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0x0a1440, uint8_t(115 * night)));
+    g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0x0a1440, uint8_t(155 * night)));
     float dusk = night * (1 - night) * 4;
     if (dusk > 0) g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0xff8a3a, uint8_t(30 * dusk)));
     for (auto& b : m.buildings) drawBuildingLights(g, b, b.x * 16 - camX, b.y * 16 - camY, night);
     float lx = ppx - camX + 8, ly = ppy - camY + 6;
-    g.ellipse(lx, ly, 46, 34, rgb(0xffe8b0, uint8_t(18 * night)));
-    g.ellipse(lx, ly, 26, 20, rgb(0xffe8b0, uint8_t(26 * night)));
+    g.ellipse(lx, ly, 46, 34, rgb(0xffe8b0, uint8_t(14 * night)));
+    g.ellipse(lx, ly, 26, 20, rgb(0xffe8b0, uint8_t(22 * night)));
     if (m.ambiance.empty() && (m.theme == Theme::Vallee || m.theme == Theme::Foret))  // lucioles la nuit
       for (int i = 0; i < 12 * g.fullW / SCREEN_W; i++) {
         float x = g.left() + std::fmod(i * 61.f + std::sin(time * .7f + i) * 20 + 40, (float)g.fullW), y = std::fmod(i * 37.f + std::cos(time * .5f + i * 2) * 14, 240.f);

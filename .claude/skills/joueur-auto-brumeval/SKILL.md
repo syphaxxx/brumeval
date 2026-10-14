@@ -94,3 +94,8 @@ L'auberge rend tout. Toujours mesurer chaque idée au banc d'essai, même celles
 **Version 2.5** (Brisure, talents, boss plus durs ; 2026-10-14, 3 parties sans mémoire, une par compagnon) : toujours
 finie, 63, 75 et 76 min, 0, 2 et 1 défaite, niveau ~52. Il vise déjà les faiblesses et les ennemis brisés : son IA
 (`attackScore`, alliés) et ses répétitions (`rehearse`, boucliers des événements) en tiennent compte.
+
+**Version 2.6** (pousser, météo, terrain, duos ; 3 parties sans mémoire) : toujours finie, 71, 75 et 76 min, mais 5, 2
+et 6 défaites, presque toutes contre des meutes sauvages au début (les créatures qui poussent provoquent des chocs).
+Choc ramené de 0,5 à 0,35 des dégâts. Les duos passent par la tactique « Meilleure attaque » ; « Se mettre à l'abri »
+quitte les cases qui blessent.
