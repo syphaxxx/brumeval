@@ -1,12 +1,12 @@
 ## Nouveautés
 
-- **Gemmes** (comme les matérias de Final Fantasy VII) : sertissez-les dans les chatons de vos armes, armures et accessoires (Échap > Équipement > Gemmes). Elles donnent un sort (Feu, Soin, Brasier…), un bonus ou un soutien (vampire, riposte, éveil, brise-garde). En boutique, et chaque grand boss en laisse une.
-- **Rôles des ennemis** : protecteur (protège ses voisins), soigneur, chef (accélère ses alliés). Abattez-les d'abord !
-- **Boss en plusieurs phases** : sous un seuil de PV, ils changent de forme (bouclier rechargé, nouvelles attaques, météo, renforts).
-- **Graphismes** : portraits dans les dialogues, écran titre animé.
+- **Astuces** : chaque nouvelle règle (bouclier, faiblesse, rôle, météo, terrain, duo, phase d'un boss, gemme…) est expliquée la première fois qu'on la rencontre. **F1** ouvre aussitôt la page d'Aide qui va avec. Options > Astuces pour les couper.
+- **Conseils** : les aubergistes et le Journal parlent du prochain gardien (où il est, ses faiblesses déjà découvertes, quoi viser, quelle gemme apporter).
+- **Menus** : sac rangé par catégories, comparaison de l'équipement avec celui qu'on porte (et ses chatons), coût des duos en PM.
+- **Expédition** : les créatures générées ont des talents et des rôles, les gardiens ont des phases et laissent une gemme, les boutiques vendent des gemmes.
+- La police affiche enfin « œ » (« Cœur de braise »).
 
-Dans la 2.6 : pousser et tirer sur le damier, météo et terrain, techniques en duo, jour et nuit.
-Dans la 2.5 : Brisure (boucliers et faiblesses), ordre des tours, talents des espèces.
+Dans la 2.7 : gemmes à sertir, rôles des ennemis, boss en plusieurs phases. Dans la 2.6 : pousser / tirer, météo, terrain, duos, jour et nuit. Dans la 2.5 : Brisure, ordre des tours, talents.
 
 ## Télécharger
 

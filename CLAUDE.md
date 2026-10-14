@@ -361,6 +361,10 @@ code) ; `docs/GUIDE.md` les range par domaine.
   `applyHit` (faiblesse), `breakFoe`, `checkPhase`, `shove`, `command` (duo) ; la gemme dans `Game::update` (carte).
   Conseils `Rules::advice`, `Game::adviceText` (action `conseil`, tête du Journal). Sac par catégories
   (`itemMenuAt`), comparaison dans `gearPick`, coût des duos. Pas de niveaux de difficulté (refusé par l'utilisateur).
+- Expédition 2.9 (procgen.cpp) : talent par type (`typeTalent`) ou par classe, `role_combat` selon le profil, talent
+  des gardiens, phases des gardiens, gemme en récompense, gemmes en boutique (`shopStock`). Les nouveaux tirages viennent
+  d'un générateur à part semé par l'identifiant (`idHash`, `stream(…, 29)`) : le reste d'un monde ne change pas, mais
+  l'empreinte de la graine 2026 a changé (28da4b9e14a4ce4d). Les conseils de l'histoire sont vidés en Expédition.
 - Données en mémoire : `dataDoc(DF_…)` garde chaque fichier de data/ sous forme
   de JSON ; `rebuildData()` reconstruit les structures du jeu à partir de ces
   documents, `saveDataDoc` les écrit. Les Réglages ne touchent qu'aux documents,

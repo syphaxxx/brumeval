@@ -282,6 +282,15 @@ graine redonne exactement le même monde : on peut la noter et la partager.
    et de créatures proposés au départ, or et objets de départ, niveau de
    départ, captures plus faciles, plus d'expérience.
 
+Depuis la 2.9, l'Expédition profite aussi des nouveautés des versions 2.5 à 2.7 :
+les créatures générées ont un **talent** (selon leur type) et parfois un **rôle**
+(protecteur, soigneur, chef), les héros un talent selon leur classe ; chaque
+**gardien a des phases** (il se déchaîne à mi-vie, change le temps dès la région 2,
+appelle à l'aide dès la région 4) ; il laisse une **gemme**, et les boutiques en
+vendent de plus en plus. Les duos d'un héros et de sa créature marchent aussi.
+(Les mondes des graines déjà jouées gagnent ces nouveautés ; le reste ne change
+pas.)
+
 L'expédition se sauvegarde (Échap > Sauvegarder, et à chaque nouvelle région)
 dans un fichier à part, `expedition.txt` : la partie principale n'est jamais
 touchée.

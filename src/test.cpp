@@ -2161,12 +2161,20 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
             "expédition : la même graine redonne exactement le même monde");
       // À plusieurs, chaque joueur génère le monde chez lui : l'empreinte doit être la même sous Windows, Mac et Linux
       std::string wh = Expedition::worldHash(2026, 3);
-      check(wh == "cfd72e364d1f7167", "expédition : la graine 2026 donne le même monde sur tous les systèmes (empreinte " + wh + ")");
+      check(wh == "28da4b9e14a4ce4d", "expédition : la graine 2026 donne le même monde sur tous les systèmes (empreinte " + wh + ")");
       procgen::Content c1 = procgen::generateBase(7), c6 = c1;
       std::string shop1 = procgen::generateRegion(7, 1, c1).events.dump(), shop6;
       for (int k = 1; k <= 6; k++) shop6 = procgen::generateRegion(7, k, c6).events.dump();
       check(shop1.find("epee_fer") != std::string::npos && shop6.find("lame_givre") != std::string::npos,
             "expédition : les boutiques vendent de l'équipement, plus fort dans les régions lointaines");
+      // 2.9 : talents et rôles des créatures, gardiens en phases (renfort dès la région 4), gemme en récompense et en boutique
+      int talents = 0, roles = 0;
+      for (auto& sp : c6.species) talents += sp.contains("talent"), roles += sp.contains("role_combat");
+      std::string ev4 = procgen::generateRegion(7, 4, c1 = procgen::generateBase(7)).events.dump();
+      check(talents >= 20 && roles >= 2 && shop6.find("\"phases\"") != std::string::npos && ev4.find("appelle à l'aide") != std::string::npos &&
+                shop6.find("gemme_") != std::string::npos,
+            "expédition : talents (" + std::to_string(talents) + ") et rôles (" + std::to_string(roles) +
+                ") des créatures, gardiens en phases, gemmes en récompense et en boutique");
     }
     // Écran titre > Expédition, choix du héros puis de la créature
     titleMenu();
