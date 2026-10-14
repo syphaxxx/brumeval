@@ -1,10 +1,12 @@
 ## Nouveautés
 
-- **Démo plus agréable** (Outils > Démo) : le jeu joue tout seul et ne vous rend plus la main au moindre appui. **Espace** met en pause et reprend, **Échap** quitte, **F2** accélère.
-- **Joueur automatique bien plus malin** : avant un boss, il « répète » le combat dans sa tête et n'y va que s'il a de bonnes chances ; il fuit les meutes trop fortes, évite les herbes dangereuses et le regard des dresseurs, et planifie ses trajets. Il perd quatre fois moins souvent qu'avant et garde ses records d'une partie à l'autre.
-- Menu de pause : le résumé de l'équipe tient à l'écran même avec plus de 6 membres.
+- **Gemmes** (comme les matérias de Final Fantasy VII) : sertissez-les dans les chatons de vos armes, armures et accessoires (Échap > Équipement > Gemmes). Elles donnent un sort (Feu, Soin, Brasier…), un bonus ou un soutien (vampire, riposte, éveil, brise-garde). En boutique, et chaque grand boss en laisse une.
+- **Rôles des ennemis** : protecteur (protège ses voisins), soigneur, chef (accélère ses alliés). Abattez-les d'abord !
+- **Boss en plusieurs phases** : sous un seuil de PV, ils changent de forme (bouclier rechargé, nouvelles attaques, météo, renforts).
+- **Graphismes** : portraits dans les dialogues, écran titre animé.
 
-Dans la 2.3 : l'hôte d'une partie à plusieurs reçoit un **code de partie** à donner à ses amis ; le jeu ouvre lui-même le port de la box (UPnP).
+Dans la 2.6 : pousser et tirer sur le damier, météo et terrain, techniques en duo, jour et nuit.
+Dans la 2.5 : Brisure (boucliers et faiblesses), ordre des tours, talents des espèces.
 
 ## Télécharger
 

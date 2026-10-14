@@ -84,6 +84,20 @@ l'utilisateur, en deux versions.
   variantes avec du volume (fruitiers dans la vallée), chemins aux bords
   adoucis, herbe plus variée.
 - Ensuite : le joueur automatique mis à jour à chaque étape ; étape 3.
+- **Stratégie 2.5 → 2.7** (demandée le 2026-10-14 : « complexifie toute la
+  stratégie en t'inspirant d'autres jeux, améliore les graphismes, rends le jeu
+  plus dur mais que la stratégie soit récompensée ») :
+  - **2.5** : Brisure (boucliers et faiblesses à découvrir, Octopath), frise de
+    l'ordre des tours (FFX), talents par espèce (Pokémon), effets visuels par
+    type, écran qui tremble, entrée en combat ; boss plus durs.
+  - **2.6** : pousser / tirer sur le damier (Into the Breach), terrain et météo
+    du combat, techniques combinées entre deux alliés (Chrono Trigger) ; jour et
+    nuit sur les cartes, fumée, feuilles, papillons.
+  - **2.7** : gemmes à sertir (matéria de FF7), rôles des ennemis et phases des
+    boss ; portraits dans les dialogues, écran titre animé.
+  - À chaque version : graphismes (cartes vivantes, jour et nuit, portraits,
+    icônes de type, titre animé), le joueur automatique apprend la mécanique,
+    équilibrage mesuré, une page d'Aide par règle.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 

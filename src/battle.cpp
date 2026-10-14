@@ -78,6 +78,8 @@ std::string moveDetails(const Move& m, const Fighter* user) {
     s += ". Effet : ";
     for (size_t i = 0; i < m.effects.size(); i++) s += (i ? ", " : "") + effectText(m.effects[i], m);
   }
+  if (m.shove > 0) s += ". Pousse la cible d'une case vers l'arrière (case prise ou bord : choc pour les deux)";
+  if (m.shove < 0) s += ". Tire la cible d'une case vers l'avant (case prise : choc pour les deux)";
   if (m.pace == Pace::Quick) s += ". Rapide : rejoue plus tôt (jauge à " + std::to_string(R.quickGauge) + " %)";
   if (m.pace == Pace::Heavy) s += ". Lourde : rejoue plus tard (jauge à −" + std::to_string(R.heavyDelay) + " %)";
   return s + ".";
@@ -89,6 +91,17 @@ std::string moveHelp(const Move& m, const Fighter* user) { return (m.desc.empty(
 std::string itemDetails(const ItemDef& d) {
   const Rules& R = rules();
   std::vector<std::string> v;
+  if (d.gem) {  // gemme (2.7)
+    std::string g = "Gemme à sertir (Échap > Équipement > Gemmes)";
+    if (!d.gemMove.empty() && hasMove(d.gemMove)) g += " : donne " + moveInfo(d.gemMove).name;
+    for (int k = 0; k < N_GEAR_STATS; k++)
+      if (d.gemBonus[k] != 0) g += std::string(" : +") + std::to_string(int(std::lround(d.gemBonus[k] * 100))) + " % " + gearStatName(k);
+    if (d.gemSupport == "vol_vie") g += " : rend " + std::to_string(int(std::lround(d.gemValue * 100))) + " % des dégâts infligés en PV";
+    if (d.gemSupport == "contre") g += " : " + std::to_string(int(std::lround(d.gemValue * 100))) + " % de chances de riposter au corps à corps";
+    if (d.gemSupport == "eveil") g += " : jauge ATB avancée de " + std::to_string(int(d.gemValue)) + " % au début du combat";
+    if (d.gemSupport == "briseur") g += " : une faiblesse retire " + std::to_string(int(d.gemValue)) + " point de bouclier de plus";
+    v.push_back(g);
+  }
   if (d.slot >= 0) {
     std::string b = d.bonusText();
     v.push_back(std::string(gearSlotName(d.slot)) + (b.empty() ? "" : " : " + b) + (d.slot != G_ACCESSORY ? " (héros seulement)" : ""));
@@ -124,7 +137,7 @@ std::string itemDetails(const ItemDef& d) {
 
 // Forces et faiblesses d'une espèce : efficacité de chaque type d'attaque (ses deux types et ses
 // résistances propres), résistances aux coups physiques ou à la magie, états impossibles
-std::string matchupText(const Species& sp) {
+std::string matchupText(const Species& sp, const std::set<std::string>* known) {
   std::map<float, std::string, std::greater<float>> by;
   auto r = [&](const std::string& k) {
     auto it = sp.resist.find(k);
@@ -133,6 +146,19 @@ std::string matchupText(const Species& sp) {
   for (Type t = 0; t < (Type)types().size(); t++) {
     float e = typeEff(t, sp.type) * (sp.type2 >= 0 ? typeEff(t, sp.type2) : 1.f) * r(types()[t].id);
     if (e != 1) by[e] += (by[e].empty() ? "" : ", ") + types()[t].name;
+  }
+  if (known) {  // Brisure : seulement les faiblesses découvertes en combat
+    std::string found;
+    int hidden = 0;
+    for (Type t = 0; t < (Type)types().size(); t++) {
+      float e = typeEff(t, sp.type) * (sp.type2 >= 0 ? typeEff(t, sp.type2) : 1.f) * r(types()[t].id);
+      if (e <= 1) continue;
+      if (known->count(sp.id + ":" + std::to_string(t))) found += (found.empty() ? "" : ", ") + std::string(types()[t].name) + " (×" + numFr(e) + ")";
+      else hidden++;
+    }
+    std::string s = "Faiblesses découvertes : " + (found.empty() ? std::string("aucune") : found) + ".";
+    if (hidden) s += " Encore " + std::to_string(hidden) + " à découvrir (frappez-la avec d'autres types).";
+    return s;
   }
   std::string weak, strong, none;
   for (auto& [e, names] : by) {
@@ -192,8 +218,39 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
   for (auto& a : allies) a->clearBattle();
   for (auto* v : {&foes, &reserve})
     for (auto& e : *v) e->clearBattle();
+  // Brisure : bouclier de chaque ennemi (le combat, sinon l'espèce, sinon les règles)
+  for (auto* v : {&foes, &reserve})
+    for (auto& e : *v) initFoe(e);
+  // Météo et terrain (2.6) : tirés selon le décor du combat
+  for (auto& side : terrain_) side.fill(-1);
+  {
+    const Rules& R = rules();
+    std::string th = themeName(bg);
+    float r = frand();
+    for (size_t i = 0; i < R.weathers.size() && weather_ < 0; i++) {
+      const auto& w = R.weathers[i];
+      if (std::find(w.themes.begin(), w.themes.end(), th) == w.themes.end()) continue;
+      if (r < w.chance) weather_ = (int)i;
+      r -= float(w.chance);
+    }
+    std::vector<int> pool;
+    for (size_t i = 0; i < R.terrains.size(); i++)
+      if (std::find(R.terrains[i].themes.begin(), R.terrains[i].themes.end(), th) != R.terrains[i].themes.end()) pool.push_back((int)i);
+    if (!pool.empty())
+      for (auto& side : terrain_) {
+        int n = irand(R.terrainMin, std::max(R.terrainMin, R.terrainMax));
+        for (int k = 0; k < n; k++) side[(size_t)irand(0, N_CELLS - 1)] = pool[(size_t)irand(0, (int)pool.size() - 1)];
+      }
+  }
   for (auto& a : allies) a->atb = 20 + frand() * 50;
   for (auto& e : foes) e->atb = frand() * 30;
+  // Talents de début de combat : Vif (jauge avancée), Intimidation (Attaque des adversaires −1)
+  for (auto* side : {&allies, &foes})
+    for (auto& f : *side) {
+      f->atb = std::min(95.f, f->atb + float(talentValue(f->S(), "vif") + gemSupport(*f, "eveil")));  // talent Vif, gemme d'éveil
+      if (talentValue(f->S(), "intimidation") > 0)
+        for (auto& o : side == &allies ? foes : allies) o->stage[S_ATK] = std::max(-3, o->stage[S_ATK] - 1);
+    }
   G.menus.clear();
   std::string intro;
   FighterP leader = foes[0];
@@ -289,12 +346,12 @@ static Battle::Fx fxOf(const Move& m) {
   return Battle::Fx::Hit;
 }
 
-void Battle::startAnim(const FighterP& a, const std::vector<FighterP>& targets, Fx fx, Color col, bool limit) {
-  anim_ = Anim{a, targets, fx, col, limit, G.time};
+void Battle::startAnim(const FighterP& a, const std::vector<FighterP>& targets, Fx fx, Color col, bool limit, int type) {
+  anim_ = Anim{a, targets, fx, col, limit, G.time, type};
   if (net_ == Net::Host || net_ == Net::Lead) {
     Json c = Json::array();
     for (auto& f : targets) c.push_back(mine(f));
-    send_(-1, Json{{"t", "anim"}, {"a", mine(a)}, {"c", c}, {"fx", (int)fx}, {"col", Json::array({col.r, col.g, col.b})}, {"l", limit}});
+    send_(-1, Json{{"t", "anim"}, {"a", mine(a)}, {"c", c}, {"fx", (int)fx}, {"col", Json::array({col.r, col.g, col.b})}, {"l", limit}, {"ty", type}});
   }
 }
 
@@ -309,7 +366,73 @@ Pt Battle::offset(const FighterP& f) const {
     else o.y = -6 * k;
   }
   if (blink == f && G.time - blinkT < .3f) o.x += std::sin((G.time - blinkT) * 70) * 2.5f;
+  if (G.time - shakeT_ < .35f) o.y += std::sin((G.time - shakeT_) * 90) * 2.f * (1 - (G.time - shakeT_) / .35f);  // tremblement (brisure)
   return o;
+}
+
+// Particules propres au type : k va de 0 (début) à 1 (fin) ; p est le centre de la cible
+void Battle::drawTypeFx(const Pt& p, float k) {
+  Gfx& g = G.g;
+  const std::string& t = types()[anim_.type].id;
+  auto col = [&](uint32_t c, float a) {
+    Color x = rgb(c);
+    x.a = uint8_t(std::clamp(a, 0.f, 1.f) * 255);
+    return x;
+  };
+  float a = 1 - k;
+  if (t == "feu") {  // flammes qui montent
+    for (int i = 0; i < 6; i++) {
+      float x = p.x - 12 + i * 5, h = 10 + 8 * std::sin(i * 1.7f + k * 9), y = p.y + 8 - k * 14;
+      g.tri(x - 3, y, x + 3, y, x, y - h, col(i % 2 ? 0xff8a2a : 0xffd34d, a));
+    }
+  } else if (t == "eau") {  // gerbe de gouttes
+    for (int i = 0; i < 9; i++) {
+      float ang = -2.6f + i * .26f, r = 4 + k * 22;
+      g.ellipse(p.x + std::cos(ang) * r, p.y + std::sin(ang) * r + k * k * 18, 1.6f, 2.4f, col(i % 2 ? 0x7fc8ff : 0xe0f4ff, a));
+    }
+  } else if (t == "plante" || t == "poison") {  // feuilles qui tourbillonnent, ou bulles
+    for (int i = 0; i < 8; i++) {
+      float ang = i * .785f + k * 6, r = 6 + k * 18;
+      float x = p.x + std::cos(ang) * r, y = p.y + std::sin(ang) * r * .6f - (t == "poison" ? k * 16 : 0);
+      if (t == "poison") g.ellipse(x, y, 2.5f, 2.5f, col(i % 2 ? 0xb06ae0 : 0xe0b0ff, a));
+      else g.poly({{x - 3, y}, {x, y - 2}, {x + 3, y}, {x, y + 2}}, col(i % 2 ? 0x5fbf52 : 0xa8e070, a));
+    }
+  } else if (t == "foudre") {  // éclair qui tombe d'en haut
+    float x = p.x, y = p.y - 40;
+    for (int i = 0; i < 5; i++) {
+      float nx = p.x + (i % 2 ? 6 : -6) * (1 - k), ny = y + 9;
+      g.line(x, y, nx, ny, 2.5f, col(0xfff27a, a));
+      g.line(x, y, nx, ny, 1, col(0xffffff, a));
+      x = nx, y = ny;
+    }
+  } else if (t == "glace") {  // cristaux qui s'écartent
+    for (int i = 0; i < 6; i++) {
+      float ang = i * 1.047f, r = 5 + k * 16, x = p.x + std::cos(ang) * r, y = p.y + std::sin(ang) * r * .7f;
+      g.poly({{x, y - 4}, {x + 2.5f, y}, {x, y + 4}, {x - 2.5f, y}}, col(i % 2 ? 0xbfe8ff : 0xffffff, a));
+    }
+  } else if (t == "roche") {  // pierres qui tombent
+    for (int i = 0; i < 5; i++) {
+      float x = p.x - 12 + i * 6, y = p.y - 30 + std::min(1.f, k * 2 + i * .1f) * 30;
+      g.ellipse(x, y, 3, 2.5f, col(i % 2 ? 0x8a8278 : 0xb8b0a4, a + .3f));
+    }
+  } else if (t == "vent") {  // traînées
+    for (int i = 0; i < 5; i++) {
+      float y = p.y - 12 + i * 6, x0 = p.x - 20 + k * 30;
+      g.line(x0, y, x0 + 14, y - 2, 1.5f, col(0xd8f8ec, a));
+    }
+  } else if (t == "ombre" || t == "esprit") {  // volutes sombres, ou orbes
+    for (int i = 0; i < 6; i++) {
+      float ang = i * 1.047f + k * 5, r = 14 - k * 6;
+      g.ellipse(p.x + std::cos(ang) * r, p.y - 4 + std::sin(ang) * r * .5f, 3.5f, 2.5f, col(t == "ombre" ? 0x4a2a6a : 0xc8a8ff, a));
+    }
+  } else if (t == "lumiere") {  // rayon
+    g.rect(p.x - 4 * a, p.y - 50, 8 * a, 60, col(0xfff8d0, a * .8f));
+  } else if (t == "metal") {  // étincelles
+    for (int i = 0; i < 10; i++) {
+      float ang = i * .628f, r0 = 3 + k * 12, r1 = r0 + 4;
+      g.line(p.x + std::cos(ang) * r0, p.y + std::sin(ang) * r0, p.x + std::cos(ang) * r1, p.y + std::sin(ang) * r1, 1, col(0xe8f0ff, a));
+    }
+  }
 }
 
 void Battle::drawAnim() {
@@ -367,6 +490,7 @@ void Battle::drawAnim() {
         }
         break;
     }
+    if (anim_.type >= 0 && (anim_.fx == Fx::Hit || anim_.fx == Fx::Magic)) drawTypeFx(p, k);
     if (anim_.limit)  // Limite : grande étoile dorée
       for (int i = 0; i < 12; i++) {
         float ang = i * .5236f, r = 6 + k * 30;
@@ -411,12 +535,102 @@ void Battle::update(float dt) {
   tickATB(dt);
 }
 
+float Battle::atbRate(const FighterP& f) const {
+  const Rules& R = rules();
+  float rate = float((R.atbBase + f->eSpd()) * R.atbSpeed * (companion(f) ? R.companionAtb : 1));
+  const Rules::Terrain* t = terrainAt(f);
+  if (t && t->kind == "lent" && terrainHits(f, t)) rate *= float(1 - t->value);  // verglas
+  for (auto& o : sideOf(f))
+    if (o != f && o->alive() && o->S().combatRole == "chef") {  // rôle : un chef vivant presse ses alliés
+      rate *= float(1 + R.roleChief);
+      break;
+    }
+  return rate;
+}
+
+std::vector<FighterP> Battle::turnOrder(int n) const {
+  const Rules& R = rules();
+  std::vector<std::pair<float, FighterP>> ev;
+  for (auto* side : {&allies, &foes})
+    for (auto& f : *side) {
+      if (!f->alive()) continue;
+      float rate = atbRate(f);
+      if (rate <= 0) continue;
+      float t = std::max(0.f, (100 - f->atb) / rate);
+      for (int k = 0; k < n; k++) ev.push_back({t + k * 100 / rate, f});
+    }
+  std::stable_sort(ev.begin(), ev.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
+  std::vector<FighterP> out;
+  for (size_t i = 0; i < ev.size() && (int)out.size() < n; i++) out.push_back(ev[i].second);
+  return out;
+}
+
+void Battle::drawWeather() {
+  if (weather_ < 0) return;
+  Gfx& g = G.g;
+  float t = G.time, L = g.left(), W = (float)g.fullW;
+  const std::string& fx = rules().weathers[(size_t)weather_].fx;
+  auto hash = [](int i) {  // nombre pseudo-aléatoire fixe pour chaque particule (0 à 1)
+    uint32_t h = uint32_t(i) * 2654435761u;
+    h ^= h >> 13, h *= 0x5bd1e995u, h ^= h >> 15;
+    return float(h % 10000) / 10000.f;
+  };
+  if (fx == "pluie" || fx == "orage") {
+    g.rect(L, 0, W, SCREEN_H, rgb(0x203050, 40));
+    for (int i = 0; i < 70; i++) {
+      float x = L + std::fmod(hash(i) * W + t * 40, W), y = std::fmod(hash(i + 99) * SCREEN_H + t * 260, (float)SCREEN_H);
+      g.line(x, y, x - 2, y + 7, 1, rgb(0xb8d8ff, 150));
+    }
+    if (fx == "orage" && std::fmod(t, 4.3f) < .12f) g.rect(L, 0, W, SCREEN_H, rgb(0xffffff, 120));  // éclair
+  } else if (fx == "neige") {
+    g.rect(L, 0, W, SCREEN_H, rgb(0xe8f4ff, 30));
+    for (int i = 0; i < 80; i++) {
+      float x = L + std::fmod(hash(i) * W + std::sin(t + i) * 6 + t * 25, W), y = std::fmod(hash(i + 7) * SCREEN_H + t * 45, (float)SCREEN_H);
+      g.ellipse(x, y, 1.2f, 1.2f, rgb(0xffffff, 210));
+    }
+  } else if (fx == "chaleur") {
+    g.rect(L, 0, W, SCREEN_H, rgb(0xff8a3a, 28));
+    for (int i = 0; i < 30; i++) {  // cendres qui montent
+      float x = L + std::fmod(hash(i) * W + std::sin(t * 1.5f + i) * 5, W), y = SCREEN_H - std::fmod(hash(i + 3) * SCREEN_H + t * 30, (float)SCREEN_H);
+      g.rect(x, y, 1, 1, rgb(0xffb050, 200));
+    }
+  } else if (fx == "brume") {
+    for (int i = 0; i < 6; i++) {
+      float x = L + std::fmod(hash(i) * W + t * (8 + i * 2), W + 120) - 60, y = 60 + i * 22;
+      g.ellipse(x, y, 70, 12, rgb(0xd8d4e8, 38));
+    }
+  } else if (fx == "soleil") {
+    for (int i = 0; i < 4; i++) {
+      float x = 40 + i * 70 + std::sin(t * .5f + i) * 6;
+      g.poly({{x, 0}, {x + 18, 0}, {x + 70, 150}, {x + 40, 150}}, rgb(0xfff4c0, uint8_t(22 + 10 * std::sin(t + i))));
+    }
+  }
+}
+
+void Battle::drawTurnOrder(float y) {
+  Gfx& g = G.g;
+  auto order = turnOrder(8);
+  if (order.empty()) return;
+  float x = 160 - order.size() * 12.f;
+  std::map<const Fighter*, int> seenOnce;  // un ennemi brisé : seul son prochain tour est perdu
+  for (size_t i = 0; i < order.size(); i++, x += 24) {
+    const FighterP& f = order[i];
+    bool ally = isAlly(f), lost = !ally && f->broken && seenOnce[f.get()]++ == 0;
+    Color edge = ally ? rgb(0x8fd0ff) : f->boss ? rgb(0xffe066) : rgb(0xff8a7a);
+    g.rect(x, y, 22, 10, rgb(0x0a0f33, 200));
+    g.rect(x, y + 9, 22, 1, edge);
+    if (i == 0) g.rect(x, y, 22, 1, edge);  // le prochain à jouer
+    g.text(x + 11, y + 1, utf8Prefix(f->name(), 3), lost ? GREY : ally ? WHITE : edge, 1, false);
+    if (lost) g.rect(x + 2, y + 5, 18, 1, rgb(0xffe066));  // barré : tour perdu (brisé)
+  }
+}
+
 void Battle::tickATB(float dt) {
   const Rules& R = rules();
   std::vector<FighterP> all = alive(allies);
   for (auto& e : alive(foes)) all.push_back(e);
   for (auto& f : all) {
-    f->atb += dt * float((R.atbBase + f->eSpd()) * R.atbSpeed * (companion(f) ? R.companionAtb : 1));
+    f->atb += dt * atbRate(f);
     if (f->atb >= 100) {
       f->atb = 100;
       if (skipTurn(f)) return;
@@ -442,6 +656,15 @@ void Battle::tickATB(float dt) {
 }
 
 bool Battle::skipTurn(FighterP f) {
+  if (f->broken) {  // brisé : il perd ce tour, puis se ressaisit (bouclier rechargé)
+    actor = f;
+    f->broken = false;
+    f->shield = f->shieldMax;
+    log.push_back("  " + f->name() + " se ressaisit (brisé)");
+    sc.say(f->name() + " se ressaisit.", .7f);
+    sc.call([this, f] { afterAction(f); });
+    return true;
+  }
   if (f->status == Status::Sleep) {
     actor = f;
     log.push_back("  " + f->name() + " dort");
@@ -503,6 +726,25 @@ void Battle::command(FighterP a) {
                          useMove(a, lim.id, lim.target == Target::AllAllies ? alive(allies) : alive(foes), true);
                        }});
   }
+  if (!duoOptions(a, false).empty()) {  // techniques en duo possibles dans ce combat
+    auto duos = duoOptions(a);
+    std::string why = "Technique à deux. Il faut un partenaire dont la jauge ATB atteint " + std::to_string(rules().duoGauge) +
+                      " % (il la dépense) et les PM des deux.";
+    m.items.push_back({"Duo", "", duos.empty() ? why : "Technique à deux : le partenaire dépense sa jauge ATB.", !duos.empty(), [this, a, duos] {
+                         Menu t;
+                         t.title = "Duo";
+                         t.rows = 5;
+                         for (auto& d : duos) {
+                           const Move& mv = moveInfo(d.move);
+                           std::string id = d.move;
+                           FighterP p = d.partner;
+                           t.items.push_back({mv.name, p->name(), "Avec " + p->name() + ". " + moveHelp(mv, a.get()), true,
+                                              [this, a, id, p] { moveTarget(a, id, p); }});
+                         }
+                         dock(t);
+                         G.menus.push(t);
+                       }});
+  }
   m.items.push_back({"Objet", "", "Utiliser un objet du sac.", true, [this, a] {
                        Menu t;
                        t.title = "Objets";
@@ -551,9 +793,12 @@ void Battle::command(FighterP a) {
                          moveCell_ = -1;
                          G.menus.pop();
                        };
-                       for (int c : freeCells)
-                         t.items.push_back({cellName(c), "", "Avant : frappe et reçoit plus fort au corps à corps. Arrière : protégé.", true,
+                       for (int c : freeCells) {
+                         const Rules::Terrain* tr = terrainOf(true, c);
+                         t.items.push_back({cellName(c), "",
+                                            tr ? tr->name + " : " + tr->desc : "Avant : frappe et reçoit plus fort au corps à corps. Arrière : protégé.", true,
                                             [this, a, c] { moveTo(a, c); }, [this, c] { moveCell_ = c; }});
+                       }
                        dock(t, Dock::AboveLeft);
                        G.menus.push(t);
                      }});
@@ -621,38 +866,76 @@ void Battle::pickAlly(const std::string& title, bool ko, std::function<void(Figh
 }
 
 // Fiche rapide d'un ennemi visé : types, PV, état, bonus/malus et efficacité
-static std::string foeInfo(const Fighter& f, const Move* m) {
+static std::string foeInfo(const Game& G, const Fighter& f, const Move* m) {
   std::string s = typesName(f.S()) + " · " + std::to_string(f.hp) + "/" + std::to_string(f.mhp) + " PV";
+  if (!f.S().combatRole.empty()) s += " · " + std::string(f.S().combatRole == "protecteur" ? "Protecteur" : f.S().combatRole == "soigneur" ? "Soigneur" : "Chef");
+  if (f.broken) s += " · BRISÉ";
+  else if (f.shieldMax > 0) s += " · bouclier " + std::to_string(f.shield);
   if (f.status != Status::None) s += " · " + std::string(statusName(f.status));
   for (int st = 0; st < N_STAGES; st++)
     if (f.stage[st]) s += " · " + std::string(stageName(st)) + (f.stage[st] > 0 ? " +" : " ") + std::to_string(f.stage[st]);
-  if (m && m->damaging()) {
-    float e = moveEff(*m, f.S());
-    if (e == 0) s += " · aucun effet";
-    else if (e > 1) s += " · super efficace";
-    else if (e < 1) s += " · peu efficace";
+  if (m && m->damaging()) {  // seulement une faiblesse déjà découverte (Brisure : à trouver en essayant)
+    if (G.weakKnown(f.sp, m->type)) s += " · faiblesse !";
+    else if (!G.weak.empty() || G.seen.count(f.sp)) s += " · ?";
   }
   return s;
 }
 
-void Battle::moveTarget(FighterP a, const std::string& id) {
+void Battle::moveTarget(FighterP a, const std::string& id, FighterP duo) {
   const Move& m = moveInfo(id);
+  auto go = [this, a, id, duo](std::vector<FighterP> t) {
+    if (duo) duoMove(a, duo, id, std::move(t));
+    else useMove(a, id, std::move(t));
+  };
   switch (m.target) {
     case Target::Enemy:
       aiming_ = &m;
-      pickFoe("Cible", [&m](const Fighter& f) { return foeInfo(f, &m); }, [this, a, id](FighterP t) { useMove(a, id, {t}); });
+      pickFoe("Cible", [this, &m](const Fighter& f) { return foeInfo(G, f, &m); }, [go](FighterP t) { go({t}); });
       break;
-    case Target::AllEnemies: useMove(a, id, alive(foes)); break;
-    case Target::Ally: pickAlly("Sur qui ?", false, [this, a, id](FighterP t) { useMove(a, id, {t}); }); break;
-    case Target::AllAllies: useMove(a, id, alive(allies)); break;
+    case Target::AllEnemies: go(alive(foes)); break;
+    case Target::Ally: pickAlly("Sur qui ?", false, [go](FighterP t) { go({t}); }); break;
+    case Target::AllAllies: go(alive(allies)); break;
     case Target::AllyKO:
       if (alive(allies).size() == allies.size()) {
         sc.say("Personne n'est K.O.", .8f);
         return;
       }
-      pickAlly("Qui relever ?", true, [this, a, id](FighterP t) { useMove(a, id, {t}); });
+      pickAlly("Qui relever ?", true, [go](FighterP t) { go({t}); });
       break;
   }
+}
+
+std::vector<Battle::DuoOpt> Battle::duoOptions(const FighterP& a, bool ready) const {
+  std::vector<DuoOpt> out;
+  if (net_ != Net::None || !isAlly(a)) return out;  // pas de duo en ligne
+  const Rules& R = rules();
+  for (auto& d : R.duos) {
+    if (d.members.size() != 2 || !hasMove(d.move)) continue;
+    const Move& m = moveInfo(d.move);
+    FighterP best;
+    for (auto& p : allies) {
+      if (p == a || !p->alive()) continue;
+      bool match = (duoMember(d.members[0], a->S()) && duoMember(d.members[1], p->S())) ||
+                   (duoMember(d.members[1], a->S()) && duoMember(d.members[0], p->S()));
+      if (!match) continue;
+      if (ready && (p->atb < R.duoGauge || p->status == Status::Sleep || p->status == Status::Paralysis || a->mp < m.cost || p->mp < m.cost))
+        continue;
+      if (!best || p->atb > best->atb) best = p;
+    }
+    if (best) out.push_back({d.move, best});
+  }
+  return out;
+}
+
+void Battle::duoMove(FighterP a, FighterP p, const std::string& id, std::vector<FighterP> targets) {
+  const Move& m = moveInfo(id);
+  if (m.cost > 0) p->mp = std::max(0, p->mp - m.cost);
+  p->atb = 0;  // le partenaire dépense sa jauge
+  pop(p, "Duo !", rgb(0xffd34d));
+  log.push_back(a->name() + " + " + p->name() + " : duo");
+  duoPartner_ = p;
+  useMove(a, id, std::move(targets));
+  duoPartner_ = nullptr;
 }
 
 // ---------------------------------------------------------------------------
@@ -675,10 +958,30 @@ Battle::Plan Battle::think(FighterP a) {
 
   Plan best;
   float bestScore = 0;
-  auto consider = [&](const std::string& id, std::vector<FighterP> tg, float score) {
+  auto consider = [&](const std::string& id, std::vector<FighterP> tg, float score, FighterP duo = nullptr) {
     score *= .85f + frand() * .3f;
-    if (!tg.empty() && score > bestScore) bestScore = score, best = {id, tg, false};
+    if (!tg.empty() && score > bestScore) bestScore = score, best = {id, tg, false}, best.duo = duo;
   };
+  // Duos : comptés moins la part de tour que le partenaire dépense
+  if (ally)
+    for (auto& d : duoOptions(a)) {
+      const Move& m = moveInfo(d.move);
+      if (d.partner->mp - m.cost < .4f * d.partner->mmp) continue;  // garder les PM du partenaire (soins)
+      float keep = 1 - .45f * d.partner->atb / 100;
+      if (m.damaging()) {
+        if (m.target == Target::AllEnemies) {
+          float sum = 0;
+          for (auto& t : theirs) sum += attackScore(a, m, t);
+          consider(d.move, theirs, sum * .8f * keep, d.partner);
+        } else
+          for (auto& t : theirs)
+            if (reachable(a, m, t)) consider(d.move, {t}, zoneScore(a, m, t) * keep, d.partner);
+      } else if (m.kind == Kind::Heal && m.target == Target::AllAllies) {
+        float lack = 0;
+        for (auto& f : mine) lack += f->hp * 2 < f->mhp ? 1 - float(f->hp) / f->mhp : 0;
+        if (lack > 0) consider(d.move, mine, 110 * lack * keep, d.partner);
+      }
+    }
   for (auto& id : moves) {
     const Move& m = moveInfo(id);
     switch (m.kind) {
@@ -753,7 +1056,9 @@ float Battle::attackScore(const FighterP& a, const Move& m, const FighterP& t) c
   if (!reachable(a, m, t)) return 0;
   float A = magic ? a->eMag() : a->eAtk(), D = std::max(1.f, magic ? t->eRes() : t->eDef());
   float hit = std::clamp(m.acc / 100.f * a->acc / 100.f - (magic ? 0 : t->eva / 100.f), 0.f, 1.f);
-  float score = m.power * moveEff(m, t->S()) * (hasType(a->S(), m.type) ? float(R.stab) : 1.f) * A / D * hit;
+  float score = m.power * moveEff(m, t->S()) * (hasType(a->S(), m.type) ? float(R.stab) : 1.f) * A / D * hit * weatherMult(m.type) * guardMult(t);
+  if (ally && t->broken) score *= float(R.breakDamage);                                      // Brisure : il encaisse plus
+  if (ally && !t->broken && t->shieldMax > 0 && moveEff(m, t->S()) > 1) score *= 1.f + .6f / float(std::max(1, t->shield));  // près de le briser
   if (m.melee) {  // depuis l'arrière, ou sur une cible à l'arrière : moins fort
     if (cellCol(std::max(0, cellOf(a))) == BACK_COL) score *= float(R.backRow);
     if (cellCol(std::max(0, cellOf(t))) == BACK_COL) score *= float(R.backRow);
@@ -761,6 +1066,15 @@ float Battle::attackScore(const FighterP& a, const Move& m, const FighterP& t) c
   if (!ally) return score / paceTime(m);
   score *= 1 + std::min(1.f, (a->crit + m.critBonus) / 100.f) * float(R.critMult - 1);
   if (score >= t->hp * 1.2f) score += 15;  // achever un adversaire affaibli
+  if (!t->S().combatRole.empty() && !t->boss) score *= 1.25f;  // rôles : abattre d'abord soigneur, chef et protecteur
+  if (m.shove && !t->boss) {  // pousser / tirer : un choc contre un voisin ou le bord, ou une case qui blesse
+    int to = shoveDest(t, m);
+    bool clash = to == -1 && m.shove > 0;
+    for (auto& o : sideOf(t)) clash = clash || (to >= 0 && o != t && o->alive() && cellOf(o) == to);
+    if (clash) score *= 1 + float(R.shoveClash);
+    else if (to >= 0 && terrainHurts(t, to)) score += 12;
+    else if (to >= 0 && m.shove < 0) score += 4;  // tiré vers l'avant : à portée du corps à corps
+  }
   // Effets en plus : un état ou un malus sur la cible, un bonus pour le lanceur
   for (auto& e : m.effects) {
     float ch = e.chance / 100.f * hit;
@@ -781,12 +1095,13 @@ void Battle::autoCommand(FighterP a) {
     if (c >= 0) return moveTo(a, c);
   }
   Plan p = think(a);
-  useMove(a, p.move, p.targets, p.limit);
+  if (p.duo) duoMove(a, p.duo, p.move, p.targets);
+  else useMove(a, p.move, p.targets, p.limit);
 }
 
 void Battle::enemyTurn(FighterP e) {
   actor = e;
-  if (bossPlan(e) || enemyMove(e)) return;
+  if (bossPlan(e) || roleHeal(e) || enemyMove(e)) return;
   Plan p = think(e);
   useMove(e, p.move, p.targets);
 }
@@ -802,6 +1117,7 @@ bool Battle::tacticsActive() const { return autoPlay ? simTactics : G.tacticsAut
 // ---------------------------------------------------------------------------
 bool Battle::threatened(const FighterP& f) const {
   int c = cellOf(f);
+  if (terrainHurts(f, c)) return true;  // braises, ronces, verglas : mieux vaut changer de case
   for (auto& w : warnings_)
     if (inZone(w.zone, w.center, c)) return true;
   return false;
@@ -812,6 +1128,7 @@ int Battle::safeCell(const FighterP& f) const {
     bool taken = false, danger = false;
     for (auto& o : sideOf(f)) taken = taken || (o != f && cellOf(o) == c);
     for (auto& w : warnings_) danger = danger || inZone(w.zone, w.center, c);
+    danger = danger || terrainHurts(f, c);
     int d = std::abs(cellCol(c) - cellCol(from)) * 2 + std::abs(cellRow(c) - cellRow(from));  // garder sa colonne si possible
     if (!taken && !danger && c != from && d < bestD) best = c, bestD = d;
   }
@@ -870,6 +1187,12 @@ bool Battle::enemyMove(FighterP e) {
     return true;
   };
   int to = -1;
+  if (terrainHurts(e, c) && frand() < .6f)  // une case qui blesse ou ralentit : la quitter
+    for (int k : {col, col == 0 ? 1 : col - 1, col == BACK_COL ? BACK_COL - 1 : col + 1})
+      for (int rr = 0; rr < GRID && to < 0; rr++) {
+        int cc = cellAt((row + rr) % GRID, k);
+        if (freeCell(cc) && !terrainHurts(e, cc)) to = cc;
+      }
   if (caster && col <= 1 && frand() < .5f)  // un lanceur de sorts trop en avant se met à l'abri
     for (int k : {BACK_COL, BACK_COL - 1})
       if (to < 0 && freeCell(cellAt(row, k))) to = cellAt(row, k);
@@ -892,6 +1215,7 @@ bool Battle::tacticTurn(FighterP a) {
     return true;
   }
   if (!p.item.empty()) useItem(a, p.item, p.targets.at(0));
+  else if (p.duo) duoMove(a, p.duo, p.move, p.targets);
   else useMove(a, p.move, p.targets, p.limit);
   return true;
 }
@@ -901,6 +1225,7 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
     const Move* m = nullptr;  // technique, sort ou Limite
     std::string item;         // ou objet du sac
     bool limit = false;
+    FighterP duo;             // technique en duo : le partenaire
   };
   std::vector<std::string> known = a->techs();
   for (auto& id : a->spells()) known.push_back(id);
@@ -1012,6 +1337,10 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
             (k == "guerison" && m.kind == Kind::Heal && cures(m)))
           acts.push_back({&m});
       }
+    if (tc.kind == Tactic::Act::Auto && tc.act == "attaque")
+      for (auto& d : duoOptions(a))  // sans vider les PM du partenaire (il soigne peut-être)
+        if (moveInfo(d.move).damaging() && d.partner->mp - moveInfo(d.move).cost >= .4f * d.partner->mmp)
+          acts.push_back({&moveInfo(d.move), "", false, d.partner});
     // Meilleure paire (action, cible) : d'abord l'ordre de la condition, puis l'effet de l'action
     bool found = false;
     float bestKey = 0, bestScore = 0;
@@ -1045,13 +1374,14 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
             for (auto& f : side) score += healed(*x.m, f);
           else score = healed(*x.m, t);
         }
+        if (x.duo) score *= 1 - .45f * x.duo->atb / 100;  // le partenaire dépense sa jauge
         if (x.m) score -= x.m->cost * .3f;
         if (found && (key > bestKey + 1e-4f || (key > bestKey - 1e-4f && score <= bestScore))) continue;
         found = true;
         bestKey = key, bestScore = score;
         out = Plan{};
         out.tactic = i;
-        if (x.m) out.move = x.m->id, out.limit = x.limit;
+        if (x.m) out.move = x.m->id, out.limit = x.limit, out.duo = x.duo;
         else out.item = x.item;
         out.targets = multi ? side : std::vector<FighterP>{t};
       }
@@ -1069,6 +1399,9 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
   bool magic = m.kind == Kind::Magic;
   // Précision : l'esquive ne joue que contre les attaques physiques
   float hit = m.acc / 100.f * a->acc / 100.f - (magic ? 0 : d->eva / 100.f);
+  if (!magic && cellCol(std::max(0, cellOf(d))) == BACK_COL) hit -= float(talentValue(d->S(), "esquive_arriere"));  // talent Furtif
+  if (!magic && weather_ >= 0) hit += R.weathers[(size_t)weather_].acc / 100.f;                            // brume, blizzard
+  if (const Rules::Terrain* tr = terrainAt(d); !magic && tr && tr->kind == "esquive") hit -= float(tr->value) / 100.f;  // herbes hautes
   if (frand() >= hit) {
     pop(d, "Raté", GREY);
     sound("rate");
@@ -1085,28 +1418,252 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
   float D = magic ? d->eRes() : d->eDef();
   float stab = hasType(a->S(), m.type) ? float(R.stab) : 1.f;
   float spread = float(R.spreadMin) + frand() * float(1 - R.spreadMin);
-  bool crit = frand() * 100 < a->crit + m.critBonus;
+  bool crit = frand() * 100 < a->crit + m.critBonus + float(talentValue(a->S(), "critique"));  // talent Œil perçant
   float k = crit ? float(R.critMult) : 1.f;
   if (m.melee) {  // damier : l'arrière frappe et reçoit moins fort au corps à corps
     if (cellCol(std::max(0, cellOf(a))) == BACK_COL) k *= float(R.backRow);
     if (cellCol(std::max(0, cellOf(d))) == BACK_COL) k *= float(R.backRow);
   }
   k *= mult;
+  if (d->broken) k *= float(R.breakDamage);  // Brisure : un ennemi brisé encaisse plus
+  k *= 1 - float(talentValue(d->S(), magic ? "resiste_magie" : "resiste_physique"));  // talents Carapace, Écorce runique
+  if (hasType(a->S(), m.type) && a->hp * 3 < a->mhp) k *= 1 + float(talentValue(a->S(), "rage"));  // talent Rage
+  k *= weatherMult(m.type);                                                                          // météo
+  k *= guardMult(d);                                                                                 // rôle : protecteur voisin
+  if (const Rules::Terrain* tr = terrainAt(a); magic && tr && tr->kind == "magie") k *= 1 + float(tr->value);  // cristaux
   int dmg = std::max(1, int(((2 * a->lvl / 5.f + 2) * m.power * A / std::max(1.f, D) / float(R.dmgDivisor) + 2) * stab * eff * spread * k));
   d->hp = std::max(0, d->hp - dmg);
+  if (eff > 1 && d->shieldMax > 0) {  // Brisure : une faiblesse entame le bouclier, et l'équipe la retient
+    if (isAlly(a)) G.weak.insert(d->sp + ":" + std::to_string(m.type));
+    if (!d->broken && d->alive()) {
+      d->shield = std::max(0, d->shield - (eff >= 4 ? 2 : 1) - int(talentValue(a->S(), "briseur") + gemSupport(*a, "briseur")));  // talent, gemme
+      if (d->shield == 0) breakFoe(d);
+    }
+  }
   setBlink(d);
   // Bruitage : sort selon l'élément (« sort_feu »…), coup selon le rythme (rapide, normal, lourd)
   std::string fx = crit ? "critique" : magic ? "sort_" + types()[m.type].id : m.pace == Pace::Quick ? "coup_rapide" : m.pace == Pace::Heavy ? "coup_lourd" : "coup";
   if (!audio::has(fx)) fx = magic ? "sort" : "coup";
   sound(fx);
   pop(d, std::to_string(dmg), eff > 1 ? GOLD : eff < 1 ? GREY : WHITE);
-  if (crit) pop(d, "Critique !", RED);
+  if (crit) pop(d, "Critique !", RED), shakeT_ = G.time;
   if (eff > 1) pop(d, "Efficace !", GOLD);
   else if (eff < 1) pop(d, "Résiste", GREY);
   if (isAlly(d) || duel()) d->lim = std::min(100.f, d->lim + dmg * float(R.limitGain) / d->mhp);  // en duel, les deux équipes
+  if (double steal = gemSupport(*a, "vol_vie"); steal > 0 && a->alive() && a->hp < a->mhp) {  // gemme de vol de vie
+    int h = std::max(1, int(dmg * steal));
+    a->hp = std::min(a->mhp, a->hp + h);
+    pop(a, "+" + std::to_string(h), GREEN);
+  }
+  if (m.melee && a->alive() && d->alive() && !countering_ && frand() < gemSupport(*d, "contre") && !d->techs().empty()) {  // gemme de riposte
+    const Move& c = moveInfo(d->techs()[0]);
+    if (c.damaging()) {
+      countering_ = true;
+      pop(d, "Riposte !", rgb(0xffd34d));
+      log.push_back("  " + d->name() + " riposte");
+      if (applyHit(d, a, c, .7f) >= 0 && !a->alive()) knockOut(a);
+      countering_ = false;
+      if (!a->alive()) return dmg;
+    }
+  }
+  if (m.melee && a->alive()) {  // talent Peau piquante : qui le frappe au corps à corps se blesse
+    double v = talentValue(d->S(), "piquant");
+    if (v > 0) {
+      int thorn = std::max(1, int(a->mhp * v));
+      a->hp = std::max(0, a->hp - thorn);
+      pop(a, std::to_string(thorn), GREY);
+      if (!a->alive()) knockOut(a);
+    }
+  }
   log.push_back(a->name() + " > " + d->name() + " : " + m.name + " " + std::to_string(dmg) + (crit ? " critique" : "") +
                 (eff > 1 ? " efficace" : eff < 1 ? " résiste" : "") + " (reste " + std::to_string(d->hp) + "/" + std::to_string(d->mhp) + ")");
   return dmg;
+}
+
+// ---------------------------------------------------------------------------
+// Pousser / tirer, météo et terrain (2.6)
+// ---------------------------------------------------------------------------
+int Battle::shoveDest(const FighterP& t, const Move& m) const {
+  if (t->boss) return -2;
+  int c = cellOf(t);
+  if (c < 0) return -2;
+  int col = cellCol(c) + m.shove;
+  if (col < 0 || col > BACK_COL) return -1;
+  return cellAt(cellRow(c), col);
+}
+
+void Battle::shove(const FighterP& a, const FighterP& t, const Move& m, int dmg, std::vector<FighterP>& ko) {
+  int to = shoveDest(t, m);
+  if (to == -2) {
+    if (t->boss) pop(t, "Inébranlable", GREY);
+    return;
+  }
+  int clash = std::max(1, int(dmg * rules().shoveClash));
+  auto hurt = [&](const FighterP& f) {
+    f->hp = std::max(0, f->hp - clash);
+    pop(f, std::to_string(clash), rgb(0xffb070));
+    setBlink(f);
+    if (!f->alive() && std::find(ko.begin(), ko.end(), f) == ko.end()) ko.push_back(f);
+  };
+  if (to == -1) {  // pousser contre le bord du damier : choc ; tirer depuis l'avant : rien
+    if (m.shove > 0) {
+      hurt(t);
+      pop(t, "Choc !", rgb(0xffb070));
+      shakeT_ = G.time;
+      log.push_back("  " + t->name() + " poussé contre le bord : choc " + std::to_string(clash));
+    }
+    return;
+  }
+  FighterP occ;
+  for (auto& o : sideOf(t))
+    if (o != t && cellOf(o) == to) occ = o;
+  if (occ && occ->alive()) {  // case prise : les deux se heurtent
+    hurt(t), hurt(occ);
+    pop(t, "Choc !", rgb(0xffb070));
+    shakeT_ = G.time;
+    log.push_back("  " + t->name() + " heurte " + occ->name() + " : choc " + std::to_string(clash));
+    return;
+  }
+  if (occ) cells_[occ.get()] = cellOf(t);  // un combattant K.O. sur la case : il prend la place
+  cells_[t.get()] = to;
+  pop(t, m.shove > 0 ? "Recule" : "Avance", rgb(0xd8e0ff));
+  log.push_back("  " + t->name() + (m.shove > 0 ? " poussé : " : " tiré : ") + cellName(to));
+  if (terrainTurn(t, true) && std::find(ko.begin(), ko.end(), t) == ko.end()) ko.push_back(t);
+  (void)a;
+}
+
+const Rules::Terrain* Battle::terrainOf(bool allySide, int cell) const {
+  if (cell < 0 || cell >= N_CELLS) return nullptr;
+  int i = terrain_[allySide ? 0 : 1][(size_t)cell];
+  return i >= 0 && i < (int)rules().terrains.size() ? &rules().terrains[(size_t)i] : nullptr;
+}
+const Rules::Terrain* Battle::terrainAt(const FighterP& f) const { return terrainOf(isAlly(f), cellOf(f)); }
+bool Battle::terrainHits(const FighterP& f, const Rules::Terrain* t) const {
+  if (!t) return false;
+  for (auto& ty : t->immune)
+    for (size_t k = 0; k < types().size(); k++)
+      if (types()[k].id == ty && hasType(f->S(), (int)k)) return false;
+  return true;
+}
+bool Battle::terrainHurts(const FighterP& f, int cell) const {
+  const Rules::Terrain* t = terrainOf(isAlly(f), cell);
+  if (!t || !terrainHits(f, t)) return false;
+  return t->kind == "degats" || t->kind == "lent" || (t->kind == "poison" && f->status == Status::None && !immuneTo(f->S(), Status::Poison));
+}
+bool Battle::terrainTurn(const FighterP& f, bool arrived) {
+  const Rules::Terrain* t = terrainAt(f);
+  if (!t || !f->alive() || !terrainHits(f, t)) return false;
+  if (t->kind == "degats") {
+    int dmg = std::max(1, int(f->mhp * t->value));
+    f->hp = std::max(0, f->hp - dmg);
+    setBlink(f);
+    pop(f, std::to_string(dmg), rgb(t->color));
+    log.push_back("  " + f->name() + " : " + t->name + " " + std::to_string(dmg));
+    return !f->alive();
+  }
+  if (t->kind == "poison" && f->status == Status::None && !immuneTo(f->S(), Status::Poison) && frand() < t->value) {
+    f->status = Status::Poison;
+    pop(f, statusName(Status::Poison), rgb(statusColor(Status::Poison)));
+    log.push_back("  " + f->name() + " : " + t->name + ", empoisonné");
+  }
+  if (t->kind == "soin" && !arrived && f->hp < f->mhp) {
+    int h = std::max(1, int(f->mhp * t->value));
+    f->hp = std::min(f->mhp, f->hp + h);
+    pop(f, "+" + std::to_string(h), GREEN);
+  }
+  return false;
+}
+float Battle::weatherMult(int type) const {
+  if (weather_ < 0 || type < 0 || type >= (int)types().size()) return 1;
+  const auto& tm = rules().weathers[(size_t)weather_].typeMult;
+  auto it = tm.find(types()[(size_t)type].id);
+  return it == tm.end() ? 1.f : float(it->second);
+}
+
+void Battle::initFoe(const FighterP& e) {
+  if (e->shieldMax <= 0) e->shieldMax = e->S().shield > 0 ? e->S().shield : e->boss ? rules().breakShieldBoss : rules().breakShield;
+  e->shieldMax += int(talentValue(e->S(), "cuirasse"));  // talent Cuirasse : bouclier plus gros
+  e->shield = e->shieldMax, e->broken = false;
+}
+
+void Battle::checkPhase(const FighterP& f) {
+  if (net_ != Net::None || !f->alive() || isAlly(f) || !f->phases.is_array()) return;
+  while (f->phase < (int)f->phases.size()) {
+    const Json& p = f->phases[(size_t)f->phase];
+    if (f->hp > jget(p, "pv", .5f) * f->mhp) return;
+    f->phase++;
+    log.push_back("  " + f->name() + " : phase " + std::to_string(f->phase + 1));
+    sc.say(jget<std::string>(p, "message", f->name() + " entre dans une nouvelle phase !"), 1.4f);
+    sound("statut");
+    flashT = G.time, flashCol = rgb(0xff5a3a);
+    shakeT_ = G.time;
+    int sh = jget(p, "bouclier", -1);
+    if (sh >= 0) f->shieldMax = sh;
+    f->shield = f->shieldMax, f->broken = false;  // il se ressaisit, bouclier rechargé
+    for (auto& id : jget(p, "techniques", std::vector<std::string>{}))
+      if (hasMove(id)) f->bonusMoves.push_back(id);
+    Json b = p.value("bonus", Json::object());
+    for (auto& [st, v] : b.items()) f->stage[(size_t)stageOf(st)] = std::clamp(f->stage[(size_t)stageOf(st)] + v.get<int>(), -3, 3);
+    if (float heal = jget(p, "soin", 0.f); heal > 0) {
+      int h = int(f->mhp * heal);
+      f->hp = std::min(f->mhp, f->hp + h);
+      pop(f, "+" + std::to_string(h), GREEN);
+    }
+    std::string w = jget<std::string>(p, "meteo", "");
+    for (size_t i = 0; i < rules().weathers.size(); i++)
+      if (rules().weathers[i].id == w) weather_ = (int)i;
+    for (auto& r : p.value("renforts", Json::array())) {
+      if (alive(foes).size() >= 6) break;
+      int cell = -1;
+      for (int col = 0; col <= BACK_COL && cell < 0; col++)
+        for (int row = 0; row < GRID && cell < 0; row++) {
+          int c = cellAt(row, col);
+          bool taken = false;
+          for (auto& o : foes) taken = taken || (o->alive() && cellOf(o) == c);
+          if (!taken) cell = c;
+        }
+      if (cell < 0) break;
+      FighterP n = makeFoe(r, std::max(1, f->lvl - 4));
+      initFoe(n);
+      n->atb = frand() * 30;
+      cells_[n.get()] = cell;
+      foes.push_back(n);
+      roster_.push_back(n);
+      G.see(*n);
+      sc.say(n->name() + " vient à l'aide de " + f->name() + " !", 1.0f);
+    }
+  }
+}
+
+float Battle::guardMult(const FighterP& d) const {
+  if (d->S().combatRole == "protecteur") return 1;
+  for (auto& o : sideOf(d))
+    if (o != d && o->alive() && o->S().combatRole == "protecteur" && inZone(Area::Cross, cellOf(o), cellOf(d))) return float(1 - rules().roleGuard);
+  return 1;
+}
+
+bool Battle::roleHeal(const FighterP& e) {
+  if (e->S().combatRole != "soigneur" || isAlly(e) || !hasMove("soin")) return false;
+  FighterP worst;
+  for (auto& o : alive(foes))
+    if (o->hp * 2 < o->mhp && (!worst || o->hp * worst->mhp < worst->hp * o->mhp)) worst = o;
+  if (!worst || frand() < .25f) return false;
+  useMove(e, "soin", {worst});
+  return true;
+}
+
+// Brisure : bouclier à zéro. Sa jauge retombe, son attaque annoncée est annulée, il perd son prochain tour
+void Battle::breakFoe(const FighterP& d) {
+  d->broken = true;
+  d->atb = 0;
+  for (auto it = warnings_.begin(); it != warnings_.end();)
+    if (it->who == d) it = warnings_.erase(it);
+    else ++it;
+  pop(d, "BRISÉ !", GOLD);
+  sound("critique");
+  flashT = G.time, flashCol = rgb(0xffe066);
+  shakeT_ = G.time;
+  log.push_back("  " + d->name() + " : BRISÉ");
 }
 
 void Battle::applyEffect(const FighterP& t, const Effect& e) {
@@ -1163,15 +1720,17 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
   if (center) targets = zoneTargets(m, center);
   if (m.cost > 0) a->mp = std::max(0, a->mp - m.cost);
   if (isLimit) a->lim = 0;
-  startAnim(a, targets, fxOf(m), rgb(types()[m.type].color), isLimit);
-  sc.say(isLimit ? "LIMITE — " + a->name() + " : " + m.name + " !" : a->name() + " : " + m.name, isLimit ? .9f : .55f);
+  startAnim(a, targets, fxOf(m), rgb(types()[m.type].color), isLimit, m.damaging() ? m.type : -1);
+  if (duoPartner_) sc.say("DUO — " + a->name() + " et " + duoPartner_->name() + " : " + m.name + " !", .9f);
+  else sc.say(isLimit ? "LIMITE — " + a->name() + " : " + m.name + " !" : a->name() + " : " + m.name, isLimit ? .9f : .55f);
+  bool duo = duoPartner_ != nullptr;
   auto ko = std::make_shared<std::vector<FighterP>>();
-  sc.call([this, a, targets, center, &m, isLimit, ko, boost] {
-    if (isLimit) sound("limite");
+  sc.call([this, a, targets, center, &m, isLimit, ko, boost, duo] {
+    if (isLimit || duo) sound("limite");
     if (m.kind == Kind::Heal || m.kind == Kind::Revive) sound("soin");
-    if (isLimit || m.target == Target::AllEnemies) {
+    if (isLimit || duo || m.target == Target::AllEnemies) {
       flashT = G.time;
-      flashCol = m.kind == Kind::Heal ? rgb(0xfff4c0) : isLimit ? rgb(0xff8ac8) : rgb(0xffffff);
+      flashCol = m.kind == Kind::Heal ? rgb(0xfff4c0) : isLimit ? rgb(0xff8ac8) : duo ? rgb(0xffe066) : rgb(0xffffff);
       if (net_ == Net::Host || net_ == Net::Lead) send_(-1, Json{{"t", "eclair"}, {"c", Json::array({flashCol.r, flashCol.g, flashCol.b})}});
     }
     bool landed = false;
@@ -1211,15 +1770,18 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
         if (dmg < 0) continue;
         landed = true;
         if (!t->alive()) ko->push_back(t);
-        else
+        else {
           for (auto& e : m.effects)
             if (!e.self) applyEffect(t, e);
+          if (m.shove && t == targets[0] && dmg > 0) shove(a, t, m, dmg, *ko);
+        }
       }
     }
     if (landed || m.kind == Kind::Status)
       for (auto& e : m.effects)
         if (e.self) applyEffect(a, e);
     for (auto& f : *ko) knockOut(f);
+    for (auto& t : targets) checkPhase(t);  // un boss passe peut-être une phase
   });
   sc.wait(.75f);
   sc.call([this, ko] {
@@ -1357,6 +1919,28 @@ void Battle::afterAction(FighterP a, float gauge) {
       knockOut(a);
       sc.say(a->name() + (isAlly(a) || duel() ? " est K.O. !" : " est vaincu !"), .75f);
     }
+  }
+  // Case de terrain (braises, ronces, source)
+  if (a->alive() && terrainTurn(a, false)) {
+    knockOut(a);
+    sc.say(a->name() + (isAlly(a) || duel() ? " est K.O. !" : " est vaincu !"), .75f);
+  }
+  // Talents de fin de tour
+  if (a->alive()) {
+    int regen = int(a->mhp * talentValue(a->S(), "regeneration")), mpGain = int(a->mmp * talentValue(a->S(), "meditation"));
+    if (regen > 0 && a->hp < a->mhp) {
+      a->hp = std::min(a->mhp, a->hp + regen);
+      pop(a, "+" + std::to_string(regen), GREEN);
+    }
+    if (mpGain > 0) a->mp = std::min(a->mmp, a->mp + mpGain);
+    double heal = talentValue(a->S(), "soin_voisins");
+    if (heal > 0)
+      for (auto& o : sideOf(a))
+        if (o != a && o->alive() && o->hp < o->mhp && inZone(Area::Cross, cellOf(a), cellOf(o))) {
+          int h = std::max(1, int(o->mhp * heal));
+          o->hp = std::min(o->mhp, o->hp + h);
+          pop(o, "+" + std::to_string(h), GREEN);
+        }
   }
   sc.call([this] { checkEnd(); });
 }
@@ -1549,6 +2133,8 @@ void Battle::draw() {
       g.tri(x - 4, HZ - 1, x, HZ - 16, x + 4, HZ - 1, rgb(0x7fd6ff));
     }
   }
+  if (float night = shown() ? G.nightAmount() : 0.f; night > 0)  // jour et nuit (2.6), comme sur la carte
+    g.rect(L, 0, W, SCREEN_H, rgb(0x0a1440, uint8_t(80 * night)));
   bool blinking = blink && t - blinkT < .42f && int((t - blinkT) / .07f) % 2 == 0;
   // Damier : une marque au sol par case ; la zone de la technique visée et la case choisie pour se déplacer en or
   for (int side = 0; side < 2; side++)
@@ -1557,6 +2143,28 @@ void Battle::draw() {
       // une dalle claire en losange, vue en perspective
       g.poly({{p.x - 14, p.y + 13}, {p.x, p.y + 8}, {p.x + 14, p.y + 13}, {p.x, p.y + 18}}, rgb(0xffffff, 34));
       g.poly({{p.x - 10, p.y + 13}, {p.x, p.y + 9.5f}, {p.x + 10, p.y + 13}, {p.x, p.y + 16.5f}}, rgb(0x000000, 18));
+      if (const Rules::Terrain* tr = terrainOf(side == 1, c)) {  // case de terrain (2.6) : couleur et petit décor animé
+        Color col = rgb(tr->color);
+        col.a = 120;
+        g.poly({{p.x - 14, p.y + 13}, {p.x, p.y + 8}, {p.x + 14, p.y + 13}, {p.x, p.y + 18}}, col);
+        float ph = t * 3 + c * 1.3f + side * 5;
+        const std::string& k = tr->kind;
+        if (k == "degats")  // braises qui rougeoient
+          for (int i = 0; i < 3; i++) g.ellipse(p.x - 6 + i * 6, p.y + 13 + (i % 2) * 2 - std::fmod(ph + i, 3.f), 1.5f, 1.5f, rgb(i % 2 ? 0xffd34d : 0xff5a1a));
+        else if (k == "poison")  // épines
+          for (int i = 0; i < 4; i++) g.line(p.x - 8 + i * 5, p.y + 15, p.x - 6 + i * 5, p.y + 10, 1, rgb(0x2e4a1e));
+        else if (k == "esquive")  // brins d'herbe qui ondulent
+          for (int i = 0; i < 5; i++) g.line(p.x - 9 + i * 4.5f, p.y + 15, p.x - 9 + i * 4.5f + std::sin(ph + i) * 1.5f, p.y + 9, 1, rgb(0x4f8a2a));
+        else if (k == "soin")  // ondes de la source
+          g.ellipse(p.x, p.y + 13, 4 + std::fmod(ph, 2.f) * 4, 1.5f + std::fmod(ph, 2.f) * 1.5f, rgb(0xe0f4ff, uint8_t(160 - std::fmod(ph, 2.f) * 70)));
+        else if (k == "lent")  // reflet du verglas
+          g.line(p.x - 6 + std::fmod(ph, 4.f) * 3, p.y + 11, p.x - 3 + std::fmod(ph, 4.f) * 3, p.y + 15, 1, rgb(0xffffff, 200));
+        else if (k == "magie")  // petits cristaux
+          for (int i = 0; i < 2; i++) {
+            float x = p.x - 4 + i * 8, y = p.y + 13;
+            g.poly({{x, y - 5}, {x + 2, y}, {x, y + 1}, {x - 2, y}}, rgb(0xf0e0ff, uint8_t(170 + 60 * std::sin(ph + i))));
+          }
+      }
     }
   if (aiming_ && cursor && cursor->alive())
     for (int c = 0; c < N_CELLS; c++)
@@ -1591,7 +2199,36 @@ void Battle::draw() {
       if (!(blinking && blink == f)) drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, s, true, t + p.x * .01f);
       float bw = f->boss ? 24 : 15, by = p.y - (f->boss ? 42 : 26);
       g.rect(p.x - bw - 1, by - 1, bw * 2 + 2, 4, rgb(0x0a0f33));
-      g.rect(p.x - bw, by, bw * 2 * f->hp / f->mhp, 2, rgb(0xff8a7a));
+      g.rect(p.x - bw, by, bw * 2 * f->hp / f->mhp, 2, rgb(f->broken ? 0xffe066 : 0xff8a7a));
+      // Brisure : bouclier (points restants) à gauche de la barre, ou « BRISÉ » ; dessous, les faiblesses découvertes
+      if (f->broken) {
+        g.text(p.x, by - 20, "BRISÉ", rgb(0xffe066, uint8_t(180 + 70 * std::sin(t * 9))), 1);
+      } else if (f->shieldMax > 0) {
+        float sx = p.x - bw - 9, sy = by - 4;
+        g.poly({{sx - 5, sy - 1}, {sx + 5, sy - 1}, {sx + 5, sy + 6}, {sx, sy + 10}, {sx - 5, sy + 6}}, rgb(0xc8d6f0));
+        g.poly({{sx - 4, sy}, {sx + 4, sy}, {sx + 4, sy + 6}, {sx, sy + 9}, {sx - 4, sy + 6}}, rgb(0x2a4a8a));
+        g.text(sx + 1, sy + 1, std::to_string(f->shield), WHITE, 1, false);
+      }
+      // Rôle (2.7) : petite icône à droite de la barre (écu gris, croix verte, couronne dorée)
+      if (const std::string& role = f->S().combatRole; !role.empty()) {
+        float rx = p.x + bw + 5, ry = by - 2;
+        if (role == "protecteur") {
+          g.poly({{rx - 3, ry}, {rx + 3, ry}, {rx + 3, ry + 4}, {rx, ry + 6}, {rx - 3, ry + 4}}, rgb(0xd8dce8));
+          g.rect(rx - .5f, ry + 1, 1, 4, rgb(0x5a6070));
+        } else if (role == "soigneur") {
+          g.rect(rx - 1, ry, 2, 6, rgb(0x6fe08a));
+          g.rect(rx - 3, ry + 2, 6, 2, rgb(0x6fe08a));
+        } else {
+          g.poly({{rx - 3, ry + 5}, {rx - 3, ry}, {rx - 1.5f, ry + 2}, {rx, ry}, {rx + 1.5f, ry + 2}, {rx + 3, ry}, {rx + 3, ry + 5}}, rgb(0xffd34d));
+        }
+      }
+      int nw = 0;
+      for (int ty = 0; ty < (int)types().size(); ty++)
+        if (G.weakKnown(f->sp, ty)) {
+          g.rect(p.x - bw + nw * 5, by + 4, 4, 3, rgb(0x0a0f33));
+          g.rect(p.x - bw + nw * 5, by + 4, 3, 2, rgb(types()[ty].color));
+          nw++;
+        }
       drawStatusTag(*f, p.x, by - 10);
       if (cursor == f) g.cursor(p.x - 3, by - 12 + std::sin(t * 8));  // son nom est dans le menu de la cible
       continue;
@@ -1618,11 +2255,15 @@ void Battle::draw() {
   else if (sc.showingMessage()) top = utf8Prefix(sc.text(), sc.visibleChars());
   else if (follower() && !netMsg_.empty()) top = utf8Prefix(netMsg_, int((t - netMsgT_) * 60));
   else if (!choosing().empty()) top = choosing() + " choisit…";
+  float orderY = 3;
   if (!top.empty()) {
     auto lines = Gfx::wrap(top, 300);
     g.window(4, 2, 312, 7 + 11 * (int)lines.size());
     for (size_t i = 0; i < lines.size(); i++) g.text(160, 5 + i * 11, lines[i], WHITE, 1);
+    orderY = 2 + 7 + 11 * (int)lines.size() + 2;
   }
+  if (!ending_ && !summaryOn_ && !follower()) drawTurnOrder(orderY);  // ordre des prochains tours, sous le message
+  if (weather_ >= 0 && !ending_ && !summaryOn_) g.text(6, orderY + 12, rules().weathers[(size_t)weather_].name, rgb(0xe8ecff));
   // ATH discret, à droite du bas de l'écran (à gauche : le menu de commande) : deux colonnes de
   // trois alliés ; pour chacun, nom et PV, puis quatre traits : PV (vert), PM (bleu), jauge ATB
   // (blanche, or quand elle est pleine) et Limite (rose). Au-dessus : renforts et mode auto.
@@ -1653,6 +2294,7 @@ void Battle::draw() {
     else line(x + 54, 24, a->alive() ? a->atb / 100 : 0, a->atb >= 100 ? GOLD : rgb(0xe8ecff));
     line(x + 82, 18, a->lim / 100, a->lim >= 100 && int(t * 5) % 2 ? WHITE : rgb(0xff6fb0));
   }
+  drawWeather();
   if (summaryOn_) {  // fenêtre des gains de la victoire
     int h = 36 + 11 * (int)summary_.size(), y = std::max(26, 92 - h / 2);
     g.window(30, y, 260, h);
@@ -1661,8 +2303,30 @@ void Battle::draw() {
     g.text(160, y + h - 12, "Entrée : continuer", lab, 1);
   }
   G.menus.draw(g, t);
-  float k = (t - start) / .35f;
-  if (k < 1) g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0xffffff, uint8_t(255 * (1 - k))));
+  // Entrée en combat : bandes sombres qui s'écartent en alternance, après un éclair blanc ;
+  // contre un boss, son nom passe dans un bandeau
+  float k = (t - start) / .6f;
+  if (k < 1) {
+    const int BANDS = 12;
+    float bh = SCREEN_H / float(BANDS), e = k * k * (3 - 2 * k);
+    for (int i = 0; i < BANDS; i++) {
+      float off = e * (g.fullW + 20) * (i % 2 ? 1 : -1);
+      g.rect(g.left() + off, i * bh, g.fullW, bh + 1, rgb(boss ? 0x1a0610 : 0x0a0f33));
+    }
+    if (k < .3f) g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0xffffff, uint8_t(255 * (1 - k / .3f))));
+  }
+  float kb = (t - start) / 1.6f;
+  std::string bossName = foeName;
+  for (auto& f : foes)
+    if (bossName.empty() && f->boss) bossName = f->name();
+  if (boss && kb < 1 && !bossName.empty()) {
+    float a = std::min({1.f, kb * 6, (1 - kb) * 5});
+    float y = 80, h = 22 * a;
+    g.rect(g.left(), y - h / 2, g.fullW, h, rgb(0x1a0610, uint8_t(220 * a)));
+    g.rect(g.left(), y - h / 2, g.fullW, 1, rgb(0xffe066, uint8_t(255 * a)));
+    g.rect(g.left(), y + h / 2 - 1, g.fullW, 1, rgb(0xffe066, uint8_t(255 * a)));
+    if (a > .5f) g.text(160 + (1 - std::min(1.f, kb * 4)) * 60, y - 4, bossName, rgb(0xffe066), 1);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1675,6 +2339,10 @@ void Battle::goOnline(Net mode, std::function<void(const Json&)> send, const std
   net_ = mode;
   send_ = [send = std::move(send)](int, const Json& m) { send(m); };
   names_[0] = me, names_[1] = other;
+  for (auto* v : {&foes, &reserve})  // pas de Brisure en duel : les deux camps sont des joueurs
+    for (auto& e : *v) e->shieldMax = e->shield = 0, e->broken = false;
+  weather_ = -1;  // ni météo ni terrain : le duel reste le même chez les deux joueurs
+  for (auto& side : terrain_) side.fill(-1);
   sc.clear();
   if (mode == Net::Host) sc.say("Duel : " + me + " contre " + other + " !", 1.3f);
 }
@@ -1733,7 +2401,7 @@ Json Battle::netState() const {
     for (auto& f : v) {
       Json st = Json::array();
       for (int k = 0; k < N_STAGES; k++) st.push_back(f->stage[k]);
-      a.push_back(Json::array({f->hp, f->mp, (int)std::lround(f->atb), (int)std::lround(f->lim), (int)f->status, st, cellOf(f)}));
+      a.push_back(Json::array({f->hp, f->mp, (int)std::lround(f->atb), (int)std::lround(f->lim), (int)f->status, st, cellOf(f), f->shield, f->broken ? 1 : 0}));
     }
     return a;
   };
@@ -1745,8 +2413,11 @@ Json Battle::netState() const {
   }
   Json warn = Json::array();
   for (auto& w : warnings_) warn.push_back(Json::array({w.center, (int)w.zone}));
+  Json ter = Json::array();
+  for (auto& side : terrain_)
+    for (int v : side) ter.push_back(v);
   return Json{{"t", "etat"}, {"a", pack(allies)}, {"b", pack(foes)}, {"msg", sc.showingMessage() ? sc.text() : std::string()}, {"attente", wait},
-              {"w", warn}};
+              {"w", warn}, {"meteo", weather_}, {"terrain", ter}};
 }
 
 void Battle::netMessage(const Json& m) {
@@ -1762,7 +2433,8 @@ void Battle::netMessage(const Json& m) {
       FighterP a = other(m.value("a", Json()));
       if (a && col.size() == 3) {
         Color cc = rgb(uint32_t(col[0].get<int>()) << 16 | uint32_t(col[1].get<int>()) << 8 | uint32_t(col[2].get<int>()));
-        anim_ = Anim{a, c, Fx(std::clamp(jget(m, "fx", 0), 0, 4)), cc, jget(m, "l", false), G.time};
+        int ty = jget(m, "ty", -1);
+        anim_ = Anim{a, c, Fx(std::clamp(jget(m, "fx", 0), 0, 4)), cc, jget(m, "l", false), G.time, ty >= 0 && ty < (int)types().size() ? ty : -1};
       }
       return;
     }
@@ -1774,6 +2446,7 @@ void Battle::netMessage(const Json& m) {
           const Json& x = a[i];
           Fighter& f = *v[i];
           if (x.size() > 6) cells_[&f] = std::clamp(x.at(6).get<int>(), -1, N_CELLS - 1);  // la case, décidée chez l'hôte
+          if (x.size() > 8) f.shield = x.at(7).get<int>(), f.broken = x.at(8).get<int>() != 0;  // Brisure
           // at() : une liste trop courte lève une erreur (rattrapée par Online::update) au lieu de lire n'importe quoi
           f.hp = x.at(0).get<int>(), f.mp = x.at(1).get<int>(), f.atb = x.at(2).get<float>(), f.lim = x.at(3).get<float>();
           f.status = Status(std::clamp(x.at(4).get<int>(), 0, 4));
@@ -1788,6 +2461,14 @@ void Battle::netMessage(const Json& m) {
       for (auto& w : m.value("w", Json::array()))
         if (w.is_array() && w.size() == 2) netWarn_.push_back({std::clamp(w[0].get<int>(), 0, N_CELLS - 1), std::clamp(w[1].get<int>(), 0, 4)});
       netWait_ = jget<std::string>(m, "attente", "");
+      int wi = jget(m, "meteo", -1);
+      weather_ = wi >= 0 && wi < (int)rules().weathers.size() ? wi : -1;
+      Json ter = m.value("terrain", Json::array());
+      if (ter.size() == 2 * N_CELLS)
+        for (size_t i = 0; i < ter.size(); i++) {
+          int v = ter[i].is_number_integer() ? ter[i].get<int>() : -1;
+          terrain_[i / N_CELLS][i % N_CELLS] = v >= 0 && v < (int)rules().terrains.size() ? v : -1;
+        }
     } else if (k == "tour") {
       int i = jget(m, "i", -1);
       if (i < 0 || i >= (int)allies.size() || !allies[(size_t)i]->alive() || !mineToCommand(allies[(size_t)i])) return;

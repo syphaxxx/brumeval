@@ -31,6 +31,248 @@
     "retard_lourde": 25,
     "compagnon_atb": 0.5
   },
+  "brisure": {"bouclier": 2, "bouclier_boss": 8, "degats": 1.5},
+  "roles": {"protection": 0.3, "chef": 0.2},
+  "gemmes": {"chatons_arme": 1, "chatons_armure": 1, "chatons_accessoire": 1, "forge_chaton": 2},
+  "damier": {"choc": 0.35, "terrain_min": 0, "terrain_max": 2},
+  "meteo": [
+    {
+      "id": "pluie",
+      "nom": "Pluie",
+      "description": "Eau +25 %, Feu -25 %.",
+      "effet": "pluie",
+      "decors": ["vallee", "foret"],
+      "chance": 0.18,
+      "types": {"eau": 1.25, "feu": 0.75}
+    },
+    {
+      "id": "soleil",
+      "nom": "Grand soleil",
+      "description": "Lumière et Plante +20 %.",
+      "effet": "soleil",
+      "decors": ["vallee"],
+      "chance": 0.15,
+      "types": {"lumiere": 1.2, "plante": 1.2}
+    },
+    {
+      "id": "canicule",
+      "nom": "Canicule",
+      "description": "Feu +25 %, Eau et Glace -20 %.",
+      "effet": "chaleur",
+      "decors": ["cendres"],
+      "chance": 0.35,
+      "types": {"feu": 1.25, "eau": 0.8, "glace": 0.8}
+    },
+    {
+      "id": "blizzard",
+      "nom": "Blizzard",
+      "description": "Glace +25 %, Feu -15 %, coups physiques moins précis (-5 %).",
+      "effet": "neige",
+      "decors": ["neige"],
+      "chance": 0.35,
+      "types": {"glace": 1.25, "feu": 0.85},
+      "precision": -5
+    },
+    {
+      "id": "orage",
+      "nom": "Orage",
+      "description": "Foudre +25 %, Vent +15 %.",
+      "effet": "orage",
+      "decors": ["vallee", "neige", "cendres"],
+      "chance": 0.1,
+      "types": {"foudre": 1.25, "vent": 1.15}
+    },
+    {
+      "id": "brume",
+      "nom": "Brume",
+      "description": "Ombre et Esprit +20 %, coups physiques moins précis (-10 %).",
+      "effet": "brume",
+      "decors": ["foret", "grotte"],
+      "chance": 0.25,
+      "types": {"ombre": 1.2, "esprit": 1.2},
+      "precision": -10
+    }
+  ],
+  "terrains": [
+    {
+      "id": "braises",
+      "nom": "Braises",
+      "description": "À la fin de son tour dessus, ou poussé dessus : perd 6 % de ses PV max (sauf Feu).",
+      "effet": "degats",
+      "valeur": 0.06,
+      "insensibles": ["feu"],
+      "decors": ["cendres"],
+      "couleur": "#ff7a2a"
+    },
+    {
+      "id": "ronces",
+      "nom": "Ronces",
+      "description": "À la fin de son tour dessus, ou poussé dessus : 30 % de risque d'être empoisonné (sauf Plante et Poison).",
+      "effet": "poison",
+      "valeur": 0.3,
+      "insensibles": ["plante", "poison"],
+      "decors": ["foret", "vallee"],
+      "couleur": "#4f7a32"
+    },
+    {
+      "id": "verglas",
+      "nom": "Verglas",
+      "description": "Jauge ATB 25 % plus lente dessus (sauf Glace).",
+      "effet": "lent",
+      "valeur": 0.25,
+      "insensibles": ["glace"],
+      "decors": ["neige"],
+      "couleur": "#cdeeff"
+    },
+    {
+      "id": "herbes",
+      "nom": "Herbes hautes",
+      "description": "Esquive +15 contre les coups physiques.",
+      "effet": "esquive",
+      "valeur": 15,
+      "decors": ["vallee", "foret"],
+      "couleur": "#8fd05a"
+    },
+    {
+      "id": "source",
+      "nom": "Source",
+      "description": "À la fin de son tour dessus : regagne 5 % de ses PV max.",
+      "effet": "soin",
+      "valeur": 0.05,
+      "decors": ["vallee", "grotte", "neige"],
+      "couleur": "#6fc0ff"
+    },
+    {
+      "id": "cristaux",
+      "nom": "Cristaux",
+      "description": "Magie +20 % pour qui se tient dessus.",
+      "effet": "magie",
+      "valeur": 0.2,
+      "decors": ["grotte", "neige"],
+      "couleur": "#d8b8ff"
+    }
+  ],
+  "duo": {
+    "jauge": 50,
+    "liste": [
+      {"membres": ["lior", "maelle"], "technique": "duo_lame_sacree"},
+      {"membres": ["lior", "brann"], "technique": "duo_titans"},
+      {"membres": ["isra", "kael"], "technique": "duo_etoiles"},
+      {"membres": ["maelle", "isra"], "technique": "duo_aurore"},
+      {"membres": ["selene", "brann"], "technique": "duo_mur"},
+      {"membres": ["selene", "kael"], "technique": "duo_percee"},
+      {"membres": ["humain", "type:feu"], "technique": "duo_ardente"},
+      {"membres": ["humain", "type:eau"], "technique": "duo_deferlante"},
+      {"membres": ["humain", "type:plante"], "technique": "duo_sylve"},
+      {"membres": ["humain", "type:ombre"], "technique": "duo_tenebres"},
+      {"membres": ["humain", "type:vent"], "technique": "duo_cyclone"},
+      {"membres": ["humain", "type:foudre"], "technique": "duo_foudre"},
+      {"membres": ["humain", "type:glace"], "technique": "duo_givre"},
+      {"membres": ["humain", "type:roche"], "technique": "duo_tellurique"},
+      {"membres": ["type:feu", "type:vent"], "technique": "duo_tempete_feu"},
+      {"membres": ["type:eau", "type:foudre"], "technique": "duo_electrocution"}
+    ]
+  },
+  "talents": [
+    {
+      "id": "carapace",
+      "nom": "Carapace",
+      "description": "Reçoit 20 % de dégâts physiques en moins.",
+      "effet": "resiste_physique",
+      "valeur": 0.2
+    },
+    {
+      "id": "ecorce",
+      "nom": "Écorce runique",
+      "description": "Reçoit 20 % de dégâts magiques en moins.",
+      "effet": "resiste_magie",
+      "valeur": 0.2
+    },
+    {
+      "id": "rage",
+      "nom": "Rage",
+      "description": "PV sous le tiers : ses techniques de son type font 40 % de dégâts en plus.",
+      "effet": "rage",
+      "valeur": 0.4
+    },
+    {
+      "id": "soigneur",
+      "nom": "Soigneur",
+      "description": "À la fin de son tour, soigne ses voisins de 6 % de leurs PV max.",
+      "effet": "soin_voisins",
+      "valeur": 0.06
+    },
+    {
+      "id": "regeneration",
+      "nom": "Régénération",
+      "description": "À la fin de son tour, regagne 5 % de ses PV max.",
+      "effet": "regeneration",
+      "valeur": 0.05
+    },
+    {
+      "id": "meditation",
+      "nom": "Méditation",
+      "description": "À la fin de son tour, regagne 6 % de ses PM max.",
+      "effet": "meditation",
+      "valeur": 0.06
+    },
+    {
+      "id": "furtif",
+      "nom": "Furtif",
+      "description": "À l'arrière, esquive 15 % des coups physiques en plus.",
+      "effet": "esquive_arriere",
+      "valeur": 0.15
+    },
+    {
+      "id": "vif",
+      "nom": "Vif",
+      "description": "Commence chaque combat avec la jauge ATB avancée de 40 %.",
+      "effet": "vif",
+      "valeur": 40
+    },
+    {
+      "id": "briseur",
+      "nom": "Briseur",
+      "description": "Sur une faiblesse, retire un point de bouclier de plus.",
+      "effet": "briseur",
+      "valeur": 1
+    },
+    {
+      "id": "oeil",
+      "nom": "Œil perçant",
+      "description": "10 % de coups critiques en plus.",
+      "effet": "critique",
+      "valeur": 10
+    },
+    {
+      "id": "esprit_clair",
+      "nom": "Esprit clair",
+      "description": "Insensible au poison, à la brûlure, à la paralysie et au sommeil.",
+      "effet": "sans_etats",
+      "valeur": 1
+    },
+    {
+      "id": "intimidation",
+      "nom": "Intimidation",
+      "description": "En début de combat, baisse l'Attaque des adversaires d'un niveau.",
+      "effet": "intimidation",
+      "valeur": 1
+    },
+    {
+      "id": "piquant",
+      "nom": "Peau piquante",
+      "description": "Qui le frappe au corps à corps perd 5 % de ses PV max.",
+      "effet": "piquant",
+      "valeur": 0.05
+    },
+    {
+      "id": "cuirasse",
+      "nom": "Cuirasse",
+      "description": "Bouclier de Brisure plus gros de 4 points.",
+      "effet": "cuirasse",
+      "valeur": 4
+    }
+  ],
   "etats": {
     "poison_degats": 0.1,
     "brulure_degats": 0.0625,

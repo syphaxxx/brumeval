@@ -269,14 +269,14 @@
             "action": "combat",
             "ennemis": [
               {"espece": "brumelin", "niveau": 9},
-              {"espece": "sylvarque", "niveau": 15, "pv": 7.2, "boss": true},
+              {"espece": "sylvarque", "niveau": 15, "pv": 6.5, "boss": true, "phases": [{"pv": 0.5, "message": "La Sylvarque se dresse, furieuse ! Un champichou accourt la soigner.", "bonus": {"attaque": 1}, "renforts": [{"espece": "champichou", "niveau": 10}]}]},
               {"espece": "brumelin", "niveau": 9}
             ],
             "boss": true,
             "fuite": false,
             "capture": false,
             "victoire": [
-              {"action": "drapeau", "nom": "boss1"}, {"action": "donner", "objet": "ecaille_sylvarque"},
+              {"action": "drapeau", "nom": "boss1"}, {"action": "donner", "objet": "ecaille_sylvarque"}, {"action": "donner", "objet": "gemme_eveil"},
               {
                 "action": "dire",
                 "texte": "Sylvarque se dissout dans un souffle de vent. La brume se lève sur toute la vallée !"
@@ -303,12 +303,12 @@
         "oui": [
           {
             "action": "combat",
-            "ennemis": [{"espece": "golem", "niveau": 25, "pv": 13.2, "boss": true}],
+            "ennemis": [{"espece": "golem", "niveau": 28, "pv": 16, "bouclier": 12, "boss": true, "phases": [{"pv": 0.5, "message": "Le golem s'embrase de suie ! Son armure se reforme.", "bouclier": 14, "bonus": {"attaque": 1, "vitesse": 1}}]}],
             "boss": true,
             "fuite": false,
             "capture": false,
             "victoire": [
-              {"action": "drapeau", "nom": "golem"}, {"action": "donner", "objet": "coeur_suie"},
+              {"action": "drapeau", "nom": "golem"}, {"action": "donner", "objet": "coeur_suie"}, {"action": "donner", "objet": "gemme_contre"},
               {
                 "action": "dire",
                 "texte": "Le Golem s'effondre en un tas de cailloux. Une voix vous appelle au fond de la grotte…"
@@ -330,7 +330,7 @@
             "action": "combat",
             "ennemis": [
               {"espece": "tisonnel", "niveau": 19},
-              {"espece": "ignarok", "niveau": 24, "pv": 7.7, "boss": true},
+              {"espece": "ignarok", "niveau": 24, "pv": 8, "boss": true, "phases": [{"pv": 0.6, "message": "Ignarok s'embrase : sa carapace de lave se reforme !", "bouclier": 10}, {"pv": 0.3, "message": "Ignarok rugit et appelle un tisonnel !", "renforts": [{"espece": "tisonnel", "niveau": 20}]}]},
               {"espece": "tisonnel", "niveau": 19}
             ],
             "boss": true,
@@ -353,13 +353,13 @@
     ]
   },
   "boutique1": {
-    "actions": [{"action": "boutique", "objets": ["potion", "ether", "remede", "plume", "lanterne", "epee_fer", "baton_chene", "tunique_cuir", "amulette_vie"]}]
+    "actions": [{"action": "boutique", "objets": ["potion", "ether", "remede", "plume", "lanterne", "epee_fer", "baton_chene", "tunique_cuir", "amulette_vie", "gemme_vie", "gemme_soin"]}]
   },
   "boutique2": {
     "actions": [
       {
         "action": "boutique",
-        "objets": ["potion", "superpotion", "ether", "remede", "plume", "lanterne", "lanterne_argent", "hache_braise", "baton_lune", "arc_frene", "cotte_mailles", "robe_mage", "bague_vif", "talisman_esprit"]
+        "objets": ["potion", "superpotion", "ether", "remede", "plume", "lanterne", "lanterne_argent", "hache_braise", "baton_lune", "arc_frene", "cotte_mailles", "robe_mage", "bague_vif", "talisman_esprit", "gemme_feu", "gemme_givre", "gemme_foudre", "gemme_force", "gemme_esprit", "gemme_eveil"]
       }
     ]
   },
@@ -527,13 +527,13 @@
           {
             "action": "combat",
             "nom": "Le gardien de cristal",
-            "ennemis": [{"espece": "galetor", "niveau": 34}, {"espece": "cristallin", "niveau": 39, "pv": 11, "boss": true}, {"espece": "galetor", "niveau": 34}],
+            "ennemis": [{"espece": "galetor", "niveau": 34}, {"espece": "cristallin", "niveau": 39, "pv": 14, "bouclier": 10, "boss": true, "phases": [{"pv": 0.5, "message": "Le gardien se couvre de nouveaux cristaux !", "bouclier": 14, "bonus": {"resistance": 1}}]}, {"espece": "galetor", "niveau": 34}],
             "renforts": [{"espece": "givrelin", "niveau": 33}],
             "boss": true,
             "fuite": true,
             "capture": false,
             "victoire": [
-              {"action": "drapeau", "nom": "cristal_apaise"}, {"action": "donner", "objet": "eclat_gardien"},
+              {"action": "drapeau", "nom": "cristal_apaise"}, {"action": "donner", "objet": "eclat_gardien"}, {"action": "donner", "objet": "gemme_briseur"},
               {"action": "dire", "texte": "Le gardien se calme. Sa glace chante de nouveau, claire et douce."}
             ]
           }
@@ -617,7 +617,7 @@
         "action": "combat",
         "nom": "Le chef des bandits",
         "ennemis": [
-          {"espece": "chef_bandit", "niveau": 13, "pv": 2, "boss": true},
+          {"espece": "chef_bandit", "niveau": 13, "pv": 1.7, "boss": true, "phases": [{"pv": 0.4, "message": "« À moi, les gars ! » Un bandit accourt.", "renforts": [{"espece": "bandit", "niveau": 12}]}]},
           {"espece": "louvet", "niveau": 12}
         ],
         "renforts": [{"espece": "bandit", "niveau": 12}, {"espece": "louvet", "niveau": 12}],
@@ -677,7 +677,7 @@
             "action": "combat",
             "ennemis": [
               {"espece": "serpentin", "niveau": 14},
-              {"espece": "ronce_mere", "niveau": 21, "pv": 7.7, "boss": true},
+              {"espece": "ronce_mere", "niveau": 21, "pv": 8.5, "boss": true, "phases": [{"pv": 0.5, "message": "La Ronce-Mère fait germer un champignon guérisseur !", "renforts": [{"espece": "champichou", "niveau": 16}]}]},
               {"espece": "serpentin", "niveau": 14}
             ],
             "renforts": [{"espece": "crapoison", "niveau": 13}],
@@ -685,7 +685,7 @@
             "fuite": false,
             "capture": false,
             "victoire": [
-              {"action": "drapeau", "nom": "ronce"}, {"action": "donner", "objet": "epine_ronce"},
+              {"action": "drapeau", "nom": "ronce"}, {"action": "donner", "objet": "epine_ronce"}, {"action": "donner", "objet": "gemme_vol"},
               {"action": "dire", "texte": "La Ronce-Mère se fane dans un dernier soupir de pollen."},
               {
                 "action": "dire",
@@ -727,7 +727,11 @@
           "sceptre_aurore",
           "armure_givre",
           "plume_ange",
-          "pendentif_brume"
+          "pendentif_brume",
+          "gemme_rempart",
+          "gemme_contre",
+          "gemme_vol",
+          "gemme_pyro"
         ]
       }
     ]
@@ -981,7 +985,7 @@
         "oui": [
           {
             "action": "combat",
-            "ennemis": [{"espece": "nebulis", "niveau": 36}, {"espece": "mere_brumes", "niveau": 44, "pv": 9.9, "boss": true}, {"espece": "brumeloup", "niveau": 36}],
+            "ennemis": [{"espece": "nebulis", "niveau": 36}, {"espece": "mere_brumes", "niveau": 40, "pv": 7.5, "boss": true, "phases": [{"pv": 0.66, "message": "La brume s'épaissit autour de la Mère des Brumes…", "meteo": "brume"}, {"pv": 0.33, "message": "La Mère des Brumes se déchaîne !", "bonus": {"magie": 1}, "techniques": ["suie"]}]}, {"espece": "brumeloup", "niveau": 36}],
             "renforts": [{"espece": "orbrume", "niveau": 36}],
             "boss": true,
             "fuite": false,
@@ -1014,7 +1018,7 @@
             "action": "combat",
             "ennemis": [
               {"espece": "givrelin", "niveau": 27},
-              {"espece": "givrecorne", "niveau": 39, "pv": 11, "boss": true},
+              {"espece": "givrecorne", "niveau": 39, "pv": 11, "boss": true, "phases": [{"pv": 0.5, "message": "Le Givrecorne déchaîne le blizzard !", "meteo": "blizzard", "bonus": {"defense": 1}}]},
               {"espece": "givrelin", "niveau": 27}
             ],
             "renforts": [{"espece": "cristallin", "niveau": 26}],
@@ -1022,7 +1026,7 @@
             "fuite": false,
             "capture": false,
             "victoire": [
-              {"action": "drapeau", "nom": "boss3"}, {"action": "donner", "objet": "corne_givrecorne"},
+              {"action": "drapeau", "nom": "boss3"}, {"action": "donner", "objet": "corne_givrecorne"}, {"action": "donner", "objet": "gemme_rempart"},
               {
                 "action": "dire",
                 "texte": "Le Givrecorne s'apaise et se couche sur l'autel. La neige cesse de tomber."

@@ -91,3 +91,16 @@ zones d'entraînement : 5 parties sur 6 bloquées) ; seuil de répétition à 60
 11,8 défaites. Les potions ne rendent pas les PM : les lanceurs de sorts tombaient à court au combat suivant.
 L'auberge rend tout. Toujours mesurer chaque idée au banc d'essai, même celles qui semblent évidentes.
 
+**Version 2.5** (Brisure, talents, boss plus durs ; 2026-10-14, 3 parties sans mémoire, une par compagnon) : toujours
+finie, 63, 75 et 76 min, 0, 2 et 1 défaite, niveau ~52. Il vise déjà les faiblesses et les ennemis brisés : son IA
+(`attackScore`, alliés) et ses répétitions (`rehearse`, boucliers des événements) en tiennent compte.
+
+**Version 2.6** (pousser, météo, terrain, duos ; 3 parties sans mémoire) : toujours finie, 71, 75 et 76 min, mais 5, 2
+et 6 défaites, presque toutes contre des meutes sauvages au début (les créatures qui poussent provoquent des chocs).
+Choc ramené de 0,5 à 0,35 des dégâts. Les duos passent par la tactique « Meilleure attaque » ; « Se mettre à l'abri »
+quitte les cases qui blessent.
+
+**Version 2.7** (gemmes, rôles, boss en phases ; 3 parties sans mémoire) : toujours finie, 62, 94 et 83 min, 2, 4 et 0
+défaite, niveau 50 à 63 (le jeu est plus dur : il s'entraîne plus longtemps). Il sertit les gemmes reçues
+(`Pilot::socketGems`, à chaque `plan`), vise d'abord soigneurs, chefs et protecteurs (`attackScore`), et ses
+répétitions de boss jouent leurs phases (`makeFoe`). Il n'achète pas encore de gemmes en boutique (piste).

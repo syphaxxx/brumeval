@@ -75,6 +75,9 @@ class Game {
   std::vector<FighterP> reserve;       // créatures en plus de l'équipe (captures et cadeaux quand elle est complète)
   // Bestiaire : espèces de créatures rencontrées et obtenues (lignes « vu » et « pris » de la sauvegarde)
   std::set<std::string> seen, caught;
+  // Brisure (2.5) : faiblesses découvertes (« espèce:type ») en frappant un ennemi sur l'une d'elles
+  std::set<std::string> weak;
+  bool weakKnown(const std::string& sp, int type) const { return weak.count(sp + ":" + std::to_string(type)) > 0; }
   void see(const Fighter& f) {
     if (!f.S().human) seen.insert(f.sp);
   }
@@ -167,6 +170,7 @@ class Game {
   void swapReserve(FighterP out, FighterP in);  // out : de l'équipe à la réserve ; in : de la réserve à l'équipe
   void sellMenu(const std::vector<std::string>& stock, int sel);  // boutique : vendre à moitié prix
   void gearMenu(int sel = 0);
+  void gemMenu(FighterP f, int who, int sel = 0);  // gemmes serties dans l'équipement de f (2.7)
   void gearSlots(FighterP f, int who, int sel = 0);
   void gearPick(FighterP f, int who, int slot);
   void optionsMenu(int sel = 0);
@@ -197,6 +201,10 @@ class Game {
   // Dessin
   void drawTitle();
   void drawMap();
+  // Jour et nuit (2.6) : 0 en plein jour, 1 au cœur de la nuit ; un jour dure 12 minutes de jeu.
+  // Seulement dehors (pas les intérieurs ni les grottes obscures)
+  float nightAmount() const;
+  bool outdoors() const;
   void drawDialogue();
   void drawEnding();
   std::string endingText_;  // texte de l'écran de fin (action « fin »)

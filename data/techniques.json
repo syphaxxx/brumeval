@@ -51,6 +51,7 @@
     "puissance": 80,
     "precision": 85,
     "rythme": "lourde",
+    "deplace": "pousse",
     "description": "Une frappe qui ébranle le sol."
   },
   {
@@ -81,7 +82,8 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 30,
-    "rythme": "rapide"
+    "rythme": "rapide",
+    "deplace": "pousse"
   },
   {
     "id": "flam",
@@ -123,6 +125,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 65,
+    "deplace": "pousse",
     "portee": "distance",
     "zone": "ligne"
   },
@@ -444,6 +447,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 30,
+    "deplace": "tire",
     "portee": "distance",
     "effet": {"stat": "vitesse", "niveaux": -1, "chance": 70}
   },
@@ -510,6 +514,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 45,
+    "deplace": "pousse",
     "portee": "distance",
     "zone": "ligne"
   },
@@ -529,6 +534,7 @@
     "genre": "magique",
     "cible": "ennemi",
     "puissance": 45,
+    "deplace": "tire",
     "zone": "ligne"
   },
   {
@@ -792,7 +798,9 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 60,
-    "effet": {"stat": "vitesse", "niveaux": -1}
+    "deplace": "tire",
+    "effet": {"stat": "vitesse", "niveaux": -1},
+    "portee": "distance"
   },
   {
     "id": "pollen",
@@ -810,6 +818,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 70,
+    "deplace": "pousse",
     "critique": 10
   },
   {
@@ -838,6 +847,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 50,
+    "deplace": "pousse",
     "zone": "colonne",
     "description": "Un coup de hache dans le sol qui ébranle tout un rang."
   },
@@ -865,6 +875,18 @@
     "description": "Trois flèches tirées d'un coup sur tout un rang."
   },
   {
+    "id": "grappin",
+    "nom": "Flèche-grappin",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 34,
+    "portee": "distance",
+    "rythme": "rapide",
+    "deplace": "tire",
+    "description": "Une flèche à crochet qui ramène l'ennemi vers l'avant."
+  },
+  {
     "id": "eclats_acier",
     "nom": "Éclats d'acier",
     "type": "metal",
@@ -881,6 +903,7 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 38,
+    "deplace": "pousse",
     "zone": "ligne"
   },
   {
@@ -1342,5 +1365,177 @@
     "genre": "magique",
     "cible": "tous_ennemis",
     "puissance": 67
+  },
+  {
+    "id": "duo_lame_sacree",
+    "nom": "Lame sacrée",
+    "type": "lumiere",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 95,
+    "cout": 6,
+    "description": "Maëlle bénit l'épée de Lior, qui frappe d'un éclat de lumière."
+  },
+  {
+    "id": "duo_titans",
+    "nom": "Frappe des titans",
+    "type": "normal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 100,
+    "zone": "colonne",
+    "rythme": "lourde",
+    "deplace": "pousse",
+    "description": "Épée et hache s'abattent ensemble sur toute une colonne."
+  },
+  {
+    "id": "duo_etoiles",
+    "nom": "Pluie d'étoiles",
+    "type": "lumiere",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 62,
+    "cout": 8,
+    "description": "Les flèches de Kael, chargées de la magie d'Isra, pleuvent sur tous les ennemis."
+  },
+  {
+    "id": "duo_aurore",
+    "nom": "Aurore",
+    "type": "lumiere",
+    "genre": "soin",
+    "cible": "tous_allies",
+    "puissance": 40,
+    "cout": 8,
+    "effet": {"guerison": true},
+    "description": "Une lumière douce soigne toute l'équipe et guérit ses maux."
+  },
+  {
+    "id": "duo_mur",
+    "nom": "Mur d'acier",
+    "type": "metal",
+    "genre": "statut",
+    "cible": "tous_allies",
+    "puissance": 0,
+    "cout": 6,
+    "effets": [{"stat": "defense", "niveaux": 1}, {"stat": "resistance", "niveaux": 1}],
+    "description": "Bouclier et hache levés : la Défense et la Résistance de l'équipe montent."
+  },
+  {
+    "id": "duo_percee",
+    "nom": "Percée",
+    "type": "metal",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 90,
+    "zone": "ligne",
+    "portee": "distance",
+    "cout": 4,
+    "description": "La lance de Sélène ouvre la voie à une flèche qui transperce toute la ligne."
+  },
+  {
+    "id": "duo_ardente",
+    "nom": "Lame ardente",
+    "type": "feu",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 78,
+    "cout": 4,
+    "description": "La créature enflamme l'arme de son héros."
+  },
+  {
+    "id": "duo_deferlante",
+    "nom": "Lame déferlante",
+    "type": "eau",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 78,
+    "cout": 4,
+    "description": "Une vague porte le coup du héros."
+  },
+  {
+    "id": "duo_sylve",
+    "nom": "Lame sylvestre",
+    "type": "plante",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 74,
+    "cout": 4,
+    "effet": {"statut": "poison", "chance": 30},
+    "description": "Des ronces suivent la lame et empoisonnent parfois."
+  },
+  {
+    "id": "duo_tenebres",
+    "nom": "Lame des ténèbres",
+    "type": "ombre",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 78,
+    "cout": 4,
+    "description": "Le héros frappe depuis l'ombre de sa créature."
+  },
+  {
+    "id": "duo_cyclone",
+    "nom": "Lame cyclone",
+    "type": "vent",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 70,
+    "cout": 4,
+    "deplace": "pousse",
+    "description": "Un tourbillon porte le coup et repousse la cible."
+  },
+  {
+    "id": "duo_foudre",
+    "nom": "Lame foudroyante",
+    "type": "foudre",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 74,
+    "cout": 4,
+    "effet": {"statut": "paralysie", "chance": 25},
+    "description": "La foudre suit la lame et paralyse parfois."
+  },
+  {
+    "id": "duo_givre",
+    "nom": "Lame de givre",
+    "type": "glace",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 78,
+    "cout": 4,
+    "description": "La lame se couvre de givre."
+  },
+  {
+    "id": "duo_tellurique",
+    "nom": "Lame tellurique",
+    "type": "roche",
+    "genre": "physique",
+    "cible": "ennemi",
+    "puissance": 78,
+    "cout": 4,
+    "description": "Le sol se soulève sous le coup du héros."
+  },
+  {
+    "id": "duo_tempete_feu",
+    "nom": "Tempête de feu",
+    "type": "feu",
+    "genre": "magique",
+    "cible": "ennemi",
+    "puissance": 75,
+    "zone": "croix",
+    "cout": 6,
+    "description": "Le vent attise les flammes en croix."
+  },
+  {
+    "id": "duo_electrocution",
+    "nom": "Électrocution",
+    "type": "foudre",
+    "genre": "magique",
+    "cible": "ennemi",
+    "puissance": 75,
+    "zone": "colonne",
+    "cout": 6,
+    "effet": {"statut": "paralysie", "chance": 30},
+    "description": "La foudre court dans l'eau sur toute une colonne."
   }
 ]

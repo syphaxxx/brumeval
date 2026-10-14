@@ -232,8 +232,12 @@ static std::unordered_map<uint32_t, Glyph> buildFont() {
   Glyph C = f['C'];
   put(C, 9, "..#../.#...");
   f[0xC7] = C;
-  // Ligatures (approximations)
-  f[0x153] = f['e'];
+  // Ligatures œ et Œ (« cœur ») : o et e serrés
+  Glyph oe, OE;
+  put(oe, 4, ".#.#./#.#.#/#.###/#.#../.#.##");
+  put(OE, 2, ".####/#.#../#.#../#.###/#.#../#.#../.####");
+  f[0x153] = oe;
+  f[0x152] = OE;
   return f;
 }
 static const std::unordered_map<uint32_t, Glyph>& font() {

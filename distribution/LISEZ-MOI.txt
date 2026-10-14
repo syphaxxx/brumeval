@@ -60,6 +60,27 @@ COMMANDES
   l'arrière est protégé. En combat, « Se déplacer » change de case.
   Zone rouge : un boss prépare une grosse attaque, écartez-vous !
 
+  Brisure : chaque ennemi a un bouclier (le chiffre dans l'écu bleu).
+  Chaque coup sur une de ses faiblesses l'use ; à zéro, il est BRISÉ : il
+  perd son prochain tour et encaisse 50 % de dégâts en plus. Les faiblesses
+  se découvrent en les essayant (le Bestiaire s'en souvient). En haut de
+  l'écran, la frise montre l'ordre des prochains tours.
+
+  Talents : chaque espèce a un pouvoir permanent (Carapace, Soigneur,
+  Vif…), visible sur sa fiche et dans le Bestiaire.
+
+  Pousser / tirer : certaines techniques déplacent la cible d'une case.
+  Case déjà prise ou bord : choc pour les deux. Météo (pluie, canicule,
+  blizzard…) et cases de terrain (braises, ronces, verglas, source…)
+  changent chaque combat. Duo : deux alliés qui vont ensemble lancent
+  une technique à deux (le partenaire dépense sa jauge ATB).
+
+  Gemmes : Échap > Équipement > un membre > Gemmes. Chaque équipement a
+  des chatons où sertir des gemmes (un sort, un bonus, un soutien).
+  Rôles : un protecteur (écu) protège ses voisins, un soigneur (croix)
+  soigne, un chef (couronne) presse ses alliés : abattez-les d'abord.
+  Les boss changent de phase quand leurs PV baissent.
+
   Échap > Réserve : les créatures capturées quand l'équipe (8 membres)
   est complète. Échap > Bestiaire : toutes les créatures rencontrées.
   En boutique, « Vendre… » rachète vos objets à moitié prix.
@@ -68,10 +89,10 @@ COMMANDES
   effets, plein écran, vitesse du jeu, touches du clavier.
 
   Échap > Aide (ou F1) : ce que font les statistiques, le calcul des
-  dégâts, le damier et les zones, les états, et le tableau des types (qui
+  dégâts, la Brisure, les talents, le damier et les zones, les états, et le tableau des types (qui
   est efficace contre qui). Chaque technique et chaque objet détaille son
   effet en bas de l'écran quand on le choisit ; le Bestiaire donne les
-  faiblesses de chaque créature.
+  faiblesses de chaque créature capturée (celles des autres se découvrent).
 
   Manette : croix ou stick pour se déplacer, A valider, B annuler, Start
   menu, Select mode auto. Elle se branche à tout moment.

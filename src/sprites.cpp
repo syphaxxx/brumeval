@@ -726,6 +726,32 @@ void drawBuilding(Gfx& g, const Building& b, int sx, int sy) {
   }
 }
 
+void drawBuildingLights(Gfx& g, const Building& b, int sx, int sy, float night) {
+  if (night <= 0) return;
+  int W = b.w * 16, H = b.h * 16, roofH = H * 45 / 100;
+  int dx = (b.doorX() - b.x) * 16 + 4;
+  auto lit = [&](int wx) {
+    int wy = sy + roofH + 5;
+    g.ellipse(wx + 3.5f, wy + 3.5f, 10, 8, rgb(0xffc86a, uint8_t(40 * night)));
+    g.rect(wx, wy, 7, 7, rgb(0xffd27a, uint8_t(230 * night)));
+    g.rect(wx + 3, wy, 1, 7, rgb(0x6a4a2a, uint8_t(200 * night)));
+    g.rect(wx, wy + 3, 7, 1, rgb(0x6a4a2a, uint8_t(200 * night)));
+  };
+  if (dx > 18) lit(sx + 9);
+  if (dx + 8 < W - 18) lit(sx + W - 16);
+  g.ellipse(sx + dx + 4, sy + H + 2, 12, 5, rgb(0xffc86a, uint8_t(55 * night)));  // lumière devant la porte
+}
+
+void drawChimneySmoke(Gfx& g, const Building& b, int sx, int sy, float t) {
+  if (b.kind == "chapelle") return;
+  int W = b.w * 16, cx = sx + W - 18 - (b.x % 2) * 8 + 3;
+  for (int i = 0; i < 4; i++) {
+    float k = std::fmod(t * .35f + i * .25f + b.x * .13f, 1.f);  // chaque bouffée monte puis s'efface
+    float x = cx + std::sin(t * 1.3f + i * 2.f) * 2 + k * 6, y = sy - 7 - k * 22;
+    g.ellipse(x, y, 2.5f + k * 4, 2 + k * 3, rgb(0xd8d4d0, uint8_t(120 * (1 - k))));
+  }
+}
+
 void drawChest(Gfx& g, int sx, int sy, bool open) {
   g.ellipse(sx + 8, sy + 14, 7, 2, rgb(0, 50));
   g.rect(sx + 2, sy + 7, 12, 8, rgb(0x8a5a2a));

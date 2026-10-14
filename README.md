@@ -69,6 +69,89 @@ l'**avant** à l'**arrière**, sur quatre lignes.
   y sont restés : écartez-vous ! En mode auto, la tactique « Soi : zone
   annoncée → Se mettre à l'abri » le fait pour vous.
 
+## Brisure, ordre des tours et talents (2.5)
+
+Inspiré d'Octopath Traveler, de Final Fantasy X et de Pokémon :
+
+- **Brisure** : chaque ennemi a un **bouclier** (le chiffre dans l'écu bleu,
+  sous lui ; 2 pour une créature, 8 à 12 pour un boss). Chaque coup sur une de
+  ses **faiblesses** en retire 1 (2 si c'est très efficace). À zéro, il est
+  **BRISÉ** : il perd son prochain tour, ses attaques annoncées sont annulées,
+  et il encaisse **50 % de dégâts en plus** jusqu'à ce qu'il se ressaisisse
+  (bouclier plein). Viser les faiblesses et garder ses gros coups pour le
+  moment où il est brisé, c'est la clé des boss.
+- Les faiblesses se **découvrent** : un point de couleur apparaît sous la barre
+  de PV pour chaque faiblesse trouvée, et le Bestiaire s'en souvient (celles
+  d'une créature capturée sont toutes connues).
+- **Ordre des tours** : la frise en haut de l'écran montre qui joue ensuite
+  (bleu : vos alliés, rouge : les ennemis, or : le boss ; barré : un tour perdu
+  par un ennemi brisé). Les techniques rapides et lourdes la font bouger.
+- **Talents** : chaque espèce a un pouvoir permanent, gardé quand elle évolue :
+  Carapace et Écorce runique (moins de dégâts physiques ou magiques), Rage,
+  Soigneur (soigne ses voisins de damier), Régénération, Méditation, Furtif
+  (esquive à l'arrière), Vif (commence avec la jauge avancée), Briseur (use
+  plus les boucliers), Œil perçant, Esprit clair (insensible aux états),
+  Intimidation (baisse l'Attaque adverse en début de combat), Peau piquante,
+  Cuirasse (gros bouclier). Visible sur la fiche (Échap > Équipe) et dans
+  le Bestiaire ; détails dans l'Aide (F1).
+- Chaque type a son effet visuel (flammes, gouttes, éclairs, cristaux…) ;
+  l'écran tremble sur un coup critique ou une brisure, et les boss entrent en
+  scène avec leur nom.
+
+Les boss sont plus durs qu'avant : sans viser leurs faiblesses ni s'équiper,
+on perd souvent.
+
+## Pousser, météo, terrain et duos (2.6)
+
+Inspiré d'Into the Breach et de Chrono Trigger :
+
+- **Pousser / tirer** : Charge, Ruée, Rafale, Vague, Fracas… repoussent la cible
+  d'une case vers l'arrière ; Flèche-grappin (Kael, niveau 11), Tornade,
+  Étreinte… la tirent vers l'avant. Si la case est prise, les deux se heurtent
+  (**choc** : un tiers des dégâts du coup, pour chacun) ; poussé contre le bord
+  arrière, choc aussi. Tirer un mage vers l'avant le met à portée de l'épée.
+  Les boss sont inébranlables, mais les ennemis aussi poussent et tirent.
+- **Météo** (affichée sous l'ordre des tours) : pluie (Eau +25 %, Feu -25 %),
+  grand soleil, canicule à Cendrelune, blizzard dans les Pics, orage, brume…
+- **Terrain** : des cases colorées sur les damiers. Braises (brûlent à la fin du
+  tour, ou dès qu'on y est poussé), ronces (poison), verglas (jauge plus lente),
+  herbes hautes (esquive), source (soigne), cristaux (Magie +20 %). « Se
+  déplacer » dit le terrain de chaque case ; en mode auto, « Se mettre à l'abri »
+  quitte une case qui blesse.
+- **Duos** : deux alliés qui vont ensemble lancent une technique à deux, bien
+  plus forte (menu **Duo**). Le partenaire doit avoir sa jauge ATB à 50 % au
+  moins : il la dépense. Lior + Maëlle (Lame sacrée), Lior + Brann, Isra + Kael,
+  Maëlle + Isra, Sélène + Brann, Sélène + Kael, chaque héros avec sa créature
+  (Lame ardente avec une créature de Feu, déferlante avec l'Eau…), et des
+  créatures entre elles (Feu + Vent, Eau + Foudre). La tactique « Meilleure
+  attaque » s'en sert aussi.
+- **Jour et nuit** sur les cartes (un jour dure 12 minutes) : fenêtres allumées,
+  lanterne, lucioles ; fumée des cheminées, feuilles en forêt, papillons dans la
+  vallée.
+
+## Gemmes, rôles et phases des boss (2.7)
+
+Inspiré des matérias de Final Fantasy VII et des combats de boss en plusieurs
+temps :
+
+- **Gemmes** : chaque équipement porté a des **chatons** (1 par arme, armure et
+  accessoire ; un de plus forgé à +2). Échap > Équipement > un membre > **Gemmes**.
+  Gemmes de technique (Feu, Givre, Foudre, Soin, Rempart, Brasier : même une
+  créature peut les lancer), de bonus (+15 % PV, +10 % Attaque ou Magie) et de
+  soutien (éveil : jauge avancée ; vampire : rend une part des dégâts ; riposte ;
+  brise-garde : use plus les boucliers). En boutique, et chaque grand boss en
+  laisse une.
+- **Rôles des ennemis** (icône à droite de leur barre de vie) : **protecteur**
+  (écu : ses voisins prennent 30 % de dégâts en moins), **soigneur** (croix verte :
+  soigne ses alliés), **chef** (couronne : ses alliés vont 20 % plus vite). L'IA et
+  les tactiques les visent en priorité. Vos créatures protectrices et chefs aident
+  aussi votre équipe.
+- **Phases des boss** : sous un seuil de PV, un boss change : bouclier rechargé,
+  bonus, nouvelles techniques, autre météo, renforts (Ignarok reforme sa carapace
+  (sa carapace se reforme) puis appelle un tisonnel, la Ronce-Mère fait germer des soigneurs…).
+- **Portraits** dans les dialogues, **écran titre** animé (étoiles, étoile filante,
+  lucioles, reflet sur le titre).
+
 ## Techniques rapides et lourdes
 
 Chaque technique a un rythme, indiqué dans l'aide en bas de l'écran :

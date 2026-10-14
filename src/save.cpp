@@ -32,6 +32,11 @@ bool Game::saveGame() {
     if (hasSpecies(sp)) f << "vu " << sp << '\n';
   for (auto& sp : caught)
     if (hasSpecies(sp)) f << "pris " << sp << '\n';
+  for (auto& w : weak) {  // « espèce:numéro du type » : écrit avec l'identifiant du type (stable si on en ajoute)
+    auto c = w.find(':');
+    int t = std::atoi(w.c_str() + c + 1);
+    if (hasSpecies(w.substr(0, c)) && t >= 0 && t < (int)types().size()) f << "faible " << w.substr(0, c) << ' ' << types()[t].id << '\n';
+  }
   static const char KIND[] = {'a', 't', 'o'};  // action automatique, technique, objet
   auto member = [&](const FighterP& m) {
     f << "membre " << m->sp << ' ' << m->lvl << ' ' << m->xp << ' ' << m->hp << ' ' << m->mp << ' ' << m->lim << '\n';
@@ -40,6 +45,12 @@ bool Game::saveGame() {
       for (auto& g : m->gear) f << ' ' << (g.empty() ? "-" : g);
       f << '\n';
     }
+    for (int s = 0; s < N_GEAR; s++)  // gemmes serties (2.7)
+      if (!m->gems[(size_t)s].empty()) {
+        f << "gemmes " << s;
+        for (auto& g : m->gems[(size_t)s]) f << ' ' << g;
+        f << '\n';
+      }
     if (m->cell >= 0) f << "case4 " << m->cell << '\n';  // formation sur le damier 4x4
     if (m->evolveLater) f << "evolution_plus_tard\n";       // évolution refusée (Échap > Évolution)
     auto c = std::find(team.begin(), team.end(), m->companion.lock());
@@ -72,7 +83,9 @@ bool readMemberLine(const std::string& k, std::istream& s, std::vector<FighterP>
     team.push_back(m);
     return true;
   }
-  if (k != "equipement" && k != "tactiques" && k != "tactique" && k != "compagnon" && k != "case" && k != "case4" && k != "evolution_plus_tard") return false;
+  if (k != "equipement" && k != "gemmes" && k != "tactiques" && k != "tactique" && k != "compagnon" && k != "case" && k != "case4" &&
+      k != "evolution_plus_tard")
+    return false;
   if (team.empty() || !team.back()) return true;
   Fighter& m = *team.back();
   if (k == "evolution_plus_tard") {
@@ -91,6 +104,16 @@ bool readMemberLine(const std::string& k, std::istream& s, std::vector<FighterP>
   if (k == "compagnon") {  // rang de sa créature compagnon dans l'équipe (relié une fois tout lu)
     int i = -1;
     if (s >> i && links) links->push_back({team.size() - 1, i});
+    return true;
+  }
+  if (k == "gemmes") {
+    int slot = -1;
+    std::string id;
+    if (s >> slot && slot >= 0 && slot < N_GEAR)
+      while (s >> id)
+        if (hasItem(id) && item(id).gem) m.gems[(size_t)slot].push_back(id);
+    trimGems(m);
+    m.recalc();
     return true;
   }
   if (k == "equipement") {
@@ -119,7 +142,7 @@ bool Game::loadGame() {
   if (!f || !std::getline(f, head) || head.rfind("BRUMEVAL", 0) != 0) return false;
   team.clear();
   reserve.clear();
-  seen.clear(), caught.clear();
+  seen.clear(), caught.clear(), weak.clear();
   bool inReserve = false;                      // après la ligne « reserve »
   std::vector<std::pair<size_t, int>> links;  // lignes « compagnon » : reliées à la fin
   items.clear();
@@ -163,6 +186,11 @@ bool Game::loadGame() {
     else if (k == "vu" || k == "pris") {
       s >> v;
       if (hasSpecies(v)) (k == "vu" ? seen : caught).insert(v);
+    } else if (k == "faible") {
+      std::string t;
+      s >> v >> t;
+      for (int i = 0; i < (int)types().size(); i++)
+        if (types()[i].id == t && hasSpecies(v)) weak.insert(v + ":" + std::to_string(i));
     } else if (k == "reserve") inReserve = true;
     else if (inReserve) readMemberLine(k, s, reserve, nullptr);
     else readMemberLine(k, s, team, &links);

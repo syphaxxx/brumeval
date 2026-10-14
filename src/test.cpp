@@ -190,6 +190,14 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   skipScript();
   run(.3f);
   snap("03_village");
+  {  // jour et nuit (2.6) : la même vue au cœur de la nuit
+    float t0 = time;
+    time = 720 * .65f;
+    bool night = nightAmount() > .9f;
+    snap("03_village_nuit");
+    time = t0;
+    check(night && nightAmount() < .1f, "jour et nuit : la nuit tombe sur la vallée, la partie commence en plein jour");
+  }
   check(mode == Mode::Map && team.size() == 2, "nouvelle partie : Lior et son compagnon sur la carte");
   check(audio::currentMusic() == audio::musicForPlace("vallee"), "son : la musique de la vallée joue sur la carte (« " + audio::currentMusic() + " »)");
   check(fillText("Lior part avec {compagnon}.") == "Lior part avec Braisenard.", "les textes remplacent {compagnon} par son nom");
@@ -766,6 +774,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   changeMap(mi("cendrelune"), 48, 4, UP);
   startBattle({makeFighter("tisonnel", 19), makeFighter("ignarok", 23), makeFighter("tisonnel", 19)}, true, nullptr, false, false);
   battle_->foes[1]->boss = true;
+  run(.3f);
+  snap("98_entree_boss");  // transition d'entrée et bandeau du boss
   for (int i = 0; i < 1500 && !menus.active(); i++) frame();
   snap("18_boss_ignarok");
   check(audio::currentMusic() == "boss", "son : musique du boss");
@@ -797,6 +807,237 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   check(saved && loaded && team.size() == 2 && team[0]->lvl == 9 && gold == 321 && has("boss1") && items["potion"] == 7 &&
             M().id == "cendrelune" && px == 12 && has(chestFlag(0)),
         "sauvegarde puis chargement");
+
+  // --- Brisure (2.5) : bouclier, faiblesse découverte, ennemi brisé (jauge, dégâts, tour perdu), sauvegarde ---
+  {
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+    weak.clear();
+    auto maelle = makeFighter("maelle", 20);
+    team = {maelle};
+    startBattle({makeFighter("brumelin", 12)}, false, nullptr);
+    Battle& B = *battle_;
+    FighterP foe = B.foes[0];
+    const Move& light = moveInfo("lumiere");  // Lumière contre Ombre : efficace (magie : jamais d'esquive)
+    bool shield = foe->shieldMax == rules().breakShield && foe->shield == foe->shieldMax && moveEff(light, foe->S()) > 1;
+    foe->atb = 80;
+    int hp0 = foe->hp = foe->mhp * 10;  // qu'il survive aux coups
+    foe->mhp = foe->hp;
+    for (int i = 0; i < foe->shieldMax && !foe->broken; i++) B.applyHit(maelle, foe, light);
+    int dmgOne = hp0 - foe->hp;
+    bool broken = foe->broken && foe->atb == 0 && weakKnown("brumelin", light.type);
+    int before = foe->hp;
+    B.applyHit(maelle, foe, light);  // brisé : il encaisse plus (même coup, au hasard des dégâts près)
+    bool more = before - foe->hp > dmgOne / foe->shieldMax;
+    bool skipped = B.skipTurn(foe) && !foe->broken && foe->shield == foe->shieldMax;
+    B.sc.clear();
+    battle_.reset();
+    mode = Mode::Map;
+    bool saved = saveGame();
+    weak.clear();
+    bool kept = saved && loadGame() && weakKnown("brumelin", light.type);
+    check(shield && broken && more && skipped && kept,
+          "brisure : chaque faiblesse entame le bouclier et se découvre ; brisé, l'ennemi perd sa jauge, encaisse plus, saute son tour ; faiblesse gardée dans la sauvegarde");
+    sc.clear(), menus.clear();
+  }
+
+  // --- Pousser / tirer, météo et terrain (2.6) ---
+  {
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+    auto lior = makeFighter("lior", 20);
+    team = {lior};
+    startBattle({makeFighter("brumelin", 12), makeFighter("brumelin", 12)}, false, nullptr);
+    Battle& B = *battle_;
+    FighterP f1 = B.foes[0], f2 = B.foes[1];
+    for (auto& f : B.foes) f->mhp = f->hp = 5000;
+    for (auto& side : B.terrain_) side.fill(-1);
+    B.weather_ = -1;
+    const Move &push = moveInfo("charge"), &pull = moveInfo("grappin");
+    std::vector<FighterP> ko;
+    B.cells_[f1.get()] = cellAt(0, 0), B.cells_[f2.get()] = cellAt(0, 1);
+    B.shove(lior, f1, push, 100, ko);  // case prise : choc pour les deux, personne ne bouge
+    int ch = std::max(1, int(100 * rules().shoveClash));
+    bool clash = B.cellOf(f1) == cellAt(0, 0) && f1->hp == 5000 - ch && f2->hp == 5000 - ch;
+    B.cells_[f2.get()] = cellAt(2, 2);
+    B.shove(lior, f1, push, 100, ko);
+    bool pushed = B.cellOf(f1) == cellAt(0, 1);
+    B.shove(lior, f1, pull, 100, ko);
+    B.shove(lior, f1, pull, 100, ko);  // déjà à l'avant : ne bouge plus
+    bool pulled = B.cellOf(f1) == cellAt(0, 0) && f1->hp == 5000 - ch;
+    B.cells_[f1.get()] = cellAt(0, BACK_COL);
+    B.shove(lior, f1, push, 100, ko);  // contre le bord
+    bool edge = B.cellOf(f1) == cellAt(0, BACK_COL) && f1->hp == 5000 - 2 * ch;
+    f2->boss = true;
+    bool boss = B.shoveDest(f2, push) == -2;
+    f2->boss = false;
+    // Terrain : braises sous f1 (Ombre : pas insensible), verglas sous f2
+    auto terrainIdx = [&](const std::string& id) {
+      for (size_t i = 0; i < rules().terrains.size(); i++)
+        if (rules().terrains[i].id == id) return (int)i;
+      return -1;
+    };
+    int braises = terrainIdx("braises"), verglas = terrainIdx("verglas");
+    B.terrain_[1][(size_t)B.cellOf(f1)] = braises;
+    B.terrain_[1][(size_t)B.cellOf(f2)] = verglas;
+    int hp1 = f1->hp;
+    float slow = B.atbRate(f2), fast = B.atbRate(f1);
+    bool burnt = braises >= 0 && !B.terrainTurn(f1, false) && f1->hp < hp1 && B.threatened(f1);
+    bool slowed = verglas >= 0 && slow < fast * .9f;
+    B.terrain_[1][(size_t)cellAt(0, 0)] = braises;  // tiré sur des braises : brûlé aussitôt
+    hp1 = f1->hp;
+    B.cells_[f1.get()] = cellAt(0, 1);
+    B.shove(lior, f1, pull, 10, ko);
+    bool onArrival = B.cellOf(f1) == cellAt(0, 0) && f1->hp < hp1 - 5;
+    // Météo : la pluie renforce l'Eau
+    for (size_t i = 0; i < rules().weathers.size(); i++)
+      if (rules().weathers[i].id == "pluie") B.weather_ = (int)i;
+    bool rain = B.weather_ >= 0 && std::abs(B.weatherMult(typeOf("eau")) - 1.25f) < 1e-4f && std::abs(B.weatherMult(typeOf("normal")) - 1) < 1e-4f;
+    B.terrain_[0][(size_t)B.cellOf(lior)] = terrainIdx("herbes");
+    B.sc.clear();
+    run(.8f);
+    snap("99_meteo_terrain");
+    check(clash && pushed && pulled && edge && boss, "pousser / tirer : choc sur une case prise et contre le bord, une case de plus, boss inébranlable");
+    check(burnt && slowed && onArrival && rain, "terrain et météo : braises (fin du tour, arrivée), verglas plus lent, pluie qui renforce l'Eau");
+    battle_.reset();
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+  }
+
+  // --- Gemmes (2.7) : sertir par le menu, technique et bonus, chaton en trop rendu, sauvegarde ---
+  {
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+    auto lior = makeFighter("lior", 20);
+    team = {lior};
+    lior->gear[G_WEAPON] = "epee_fer";
+    lior->recalc();
+    lior->hp = lior->mhp;
+    int hp0 = lior->mhp;
+    items = {{"gemme_feu", 1}, {"gemme_vie", 1}};
+    gearMenu();
+    in.confirm = true;  // Lior
+    frame();
+    auto& slots = menus.top().items;
+    for (size_t i = 0; i < slots.size(); i++)
+      if (slots[i].label == "Gemmes") menus.top().sel = (int)i;
+    in.confirm = true;  // Gemmes
+    frame();
+    in.confirm = true;  // chaton de l'arme
+    frame();
+    snap("gemmes");
+    for (size_t i = 0; i < menus.top().items.size(); i++)
+      if (menus.top().items[i].label == item("gemme_feu").name) menus.top().sel = (int)i;
+    in.confirm = true;  // Gemme de feu
+    frame();
+    auto sp = lior->spells();
+    bool fire = lior->gems[G_WEAPON].size() == 1 && std::find(sp.begin(), sp.end(), "feu") != sp.end() && items["gemme_feu"] == 0;
+    menus.clear();
+    lior->gear[G_ARMOR] = "tunique_cuir";
+    lior->gems[G_ARMOR] = {"gemme_vie"};
+    items["gemme_vie"] = 0;
+    lior->recalc();
+    bool life = lior->mhp > hp0;
+    bool saved = saveGame();
+    team.clear();
+    bool loaded = saved && loadGame() && !team.empty() && team[0]->gems[G_WEAPON] == std::vector<std::string>{"gemme_feu"} &&
+                  team[0]->gems[G_ARMOR] == std::vector<std::string>{"gemme_vie"};
+    lior = team.empty() ? lior : team[0];
+    lior->gear[G_WEAPON] = "";  // plus d'arme : la gemme n'a plus de chaton
+    auto back = trimGems(*lior);
+    bool trimmed = back == std::vector<std::string>{"gemme_feu"} && lior->gems[G_WEAPON].empty();
+    bool sockets = gemSockets(item("epee_fer")) == rules().socketWeapon && gemSockets(item(forgedId("epee_fer", rules().socketForge))) == rules().socketWeapon + 1;
+    check(fire && life && loaded && trimmed && sockets,
+          "gemmes : sertie par le menu (Feu appris), bonus de PV, gardées par la sauvegarde, rendues sans chaton, un chaton de plus forgé");
+    menus.clear();
+    sc.clear();
+  }
+
+  // --- Rôles des ennemis et phases des boss (2.7) ---
+  {
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+    team = {makeFighter("lior", 30)};
+    Json spec = Json::parse(R"({"espece": "golem", "niveau": 20, "pv": 3, "boss": true, "phases": [{"pv": 0.5, "message": "Phase !", "bouclier": 5,
+      "bonus": {"attaque": 1}, "techniques": ["pyro"], "meteo": "pluie", "renforts": [{"espece": "brumelin", "niveau": 5}]}]})");
+    auto boss = makeFoe(spec, 1);
+    startBattle({boss}, true, nullptr, false, false);
+    Battle& B = *battle_;
+    boss->hp = boss->mhp * 6 / 10;
+    B.checkPhase(boss);
+    bool early = boss->phase == 0 && B.foes.size() == 1;
+    boss->hp = boss->mhp * 4 / 10;
+    B.checkPhase(boss);
+    auto sp = boss->spells();
+    bool phased = boss->phase == 1 && boss->shieldMax == 5 && boss->shield == 5 && boss->stage[S_ATK] == 1 &&
+                  std::find(sp.begin(), sp.end(), "pyro") != sp.end() && B.foes.size() == 2 && B.weather_ >= 0 &&
+                  rules().weathers[(size_t)B.weather_].id == "pluie";
+    battle_.reset();
+    sc.clear();
+    // Protecteur : ses voisins prennent moins ; chef : ses alliés vont plus vite ; soigneur : soigne
+    startBattle({makeFighter("galetor", 10), makeFighter("brumelin", 10), makeFighter("louvet", 10), makeFighter("champichou", 10)}, false, nullptr);
+    Battle& C = *battle_;
+    FighterP gal = C.foes[0], bru = C.foes[1], lou = C.foes[2], cha = C.foes[3];
+    C.cells_[gal.get()] = cellAt(1, 0), C.cells_[bru.get()] = cellAt(1, 1), C.cells_[lou.get()] = cellAt(3, 3), C.cells_[cha.get()] = cellAt(0, 3);
+    bool guarded = std::abs(C.guardMult(bru) - float(1 - rules().roleGuard)) < 1e-4f;
+    C.cells_[bru.get()] = cellAt(3, 1);
+    bool alone = C.guardMult(bru) == 1;
+    float fast = C.atbRate(bru);
+    lou->hp = 0;
+    bool chief = fast > C.atbRate(bru) * 1.1f;
+    bru->hp = bru->mhp / 4;
+    bool healed = false;
+    for (int i = 0; i < 40 && !healed; i++) {
+      healed = C.roleHeal(cha);
+      C.sc.clear();
+    }
+    check(early && phased, "boss en phases : sous le seuil, bouclier, bonus, technique, météo et renfort");
+    check(guarded && alone && chief && healed, "rôles : le protecteur protège ses voisins, le chef presse ses alliés, le soigneur soigne");
+    battle_.reset();
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+  }
+
+  // --- Techniques en duo (2.6) ---
+  {
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+    auto lior = makeFighter("lior", 20), maelle = makeFighter("maelle", 20), brai = makeFighter("braisenard", 20);
+    team = {lior, maelle, brai};
+    lior->companion = brai;
+    startBattle({makeFighter("brumelin", 12)}, false, nullptr);
+    Battle& B = *battle_;
+    B.start -= 2;  // sans la transition d'entrée (capture)
+    FighterP foe = B.foes[0];
+    foe->mhp = foe->hp = 5000;
+    foe->eva = 0, lior->acc = 1000;  // le coup du duo ne doit pas rater (Furtif, esquive)
+    auto has = [&](const std::vector<Battle::DuoOpt>& v, const std::string& id, const FighterP& p) {
+      for (auto& d : v)
+        if (d.move == id && d.partner == p) return true;
+      return false;
+    };
+    maelle->atb = rules().duoGauge - 10, brai->atb = 0;
+    bool notReady = !has(B.duoOptions(lior), "duo_lame_sacree", maelle) && has(B.duoOptions(lior, false), "duo_lame_sacree", maelle);
+    maelle->atb = rules().duoGauge + 10, brai->atb = rules().duoGauge + 5;
+    auto opts = B.duoOptions(lior);
+    bool ready = has(opts, "duo_lame_sacree", maelle) && has(opts, "duo_ardente", brai);
+    // Le menu de commande propose « Duo »
+    lior->atb = 100;
+    B.command(lior);
+    bool menu = false;
+    for (auto& it : menus.top().items) menu = menu || (it.label == "Duo" && it.enabled);
+    snap("duo_menu");
+    menus.clear();
+    int mp0 = maelle->mp;
+    B.duoMove(lior, maelle, "duo_lame_sacree", {foe});
+    for (int i = 0; i < 600 && B.sc.busy(); i++) frame();
+    bool spent = maelle->atb < 1 && maelle->mp == mp0 - moveInfo("duo_lame_sacree").cost && foe->hp < 5000;
+    check(notReady && ready && menu && spent,
+          "duo : il faut la jauge du partenaire ; Lior + Maëlle et Lior + une créature de Feu ; menu « Duo » ; le partenaire dépense jauge et PM");
+    battle_.reset();
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+  }
 
   // --- Forge de Forgeroc (2.1) : or et matériaux, objet porté ou dans le sac, +3 avec un trophée, sauvegarde ---
   {
@@ -2437,6 +2678,15 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         if (!id.empty() && !hasItem(id)) id.clear();
       for (int s : {G_WEAPON, G_ARMOR})
         if (simForge && !f->gear[s].empty()) f->gear[s] = forgedId(f->gear[s], std::min(simForge, (int)rules().forge.size()));
+      // Gemmes des boutiques de la région (2.7) : vie dans l'armure, force ou esprit dans l'arme, éveil ou vie à l'accessoire
+      for (auto& v : f->gems) v.clear();
+      auto gem = [&](int s, const char* id) {
+        if (!f->gear[(size_t)s].empty() && hasItem(id) && (int)f->gems[(size_t)s].size() < gemSockets(item(f->gear[(size_t)s]))) f->gems[(size_t)s].push_back(id);
+      };
+      gem(G_ARMOR, "gemme_vie");
+      if (tier >= 2) gem(G_WEAPON, mage ? "gemme_esprit" : "gemme_force");
+      gem(G_ACCESSORY, tier >= 2 && f->S().human ? "gemme_eveil" : "gemme_vie");
+      if (tier >= 3) gem(G_WEAPON, mage ? "gemme_pyro" : "gemme_vol");
       f->recalc();
       f->hp = f->mhp, f->mp = f->mmp;
     }
@@ -2520,14 +2770,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     Json f = find(*findEvent(id));
     return [f] {
       BattleSetup s;
-      auto make = [](const Json& e) {
-        auto x = makeFighter(e.at("espece").get<std::string>(), jget(e, "niveau", 1));
-        float mult = jget(e, "pv", 1.f);
-        if (mult != 1.f) x->mhp = std::max(1, int(x->mhp * mult + 1e-4f));
-        x->hp = x->mhp;
-        x->boss = jget(e, "boss", false);
-        return x;
-      };
+      auto make = [](const Json& e) { return makeFoe(e, 1); };
       Json foes = f.value("ennemis", Json::array()), more = f.value("renforts", Json::array());
       for (auto& e : foes) s.foes.push_back(make(e));
       for (auto& e : more) s.reserve.push_back(make(e));
@@ -2678,14 +2921,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         Json f = *fight;
         auto mk = [f, L] {
           BattleSetup s;
-          auto make = [&](const Json& e) {
-            auto x = makeFighter(e.at("espece").get<std::string>(), jget(e, "niveau", L));
-            float mult = jget(e, "pv", 1.f);
-            if (mult != 1.f) x->mhp = std::max(1, int(x->mhp * mult + 1e-4f));
-            x->hp = x->mhp;
-            x->boss = jget(e, "boss", false);
-            return x;
-          };
+          auto make = [&](const Json& e) { return makeFoe(e, L); };
           for (auto& e : f.at("ennemis")) s.foes.push_back(make(e));
           Json res = f.value("renforts", Json::array());  // variable : la boucle doit la garder en vie
           for (auto& e : res) s.reserve.push_back(make(e));

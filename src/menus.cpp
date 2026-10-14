@@ -289,6 +289,7 @@ void Game::noteBestiary() {
 // « Évolue en Ronceflore au niveau 16. » / « Évolution de Ronceau (niveau 16). »
 static std::string evolutionText(const Species& s) {
   std::string t;
+  if (const Rules::Talent* tl = talentOf(s)) t += "Talent : " + tl->name + ". ";
   if (!s.evolveTo.empty() && hasSpecies(s.evolveTo))
     t += "Évolue en " + species(s.evolveTo).name + " au niveau " + std::to_string(s.evolveLvl) + ". ";
   for (auto& o : allSpecies())
@@ -314,7 +315,7 @@ void Game::bestiaryMenu(int sel) {
     std::snprintf(num, sizeof num, "%02d ", int(i + 1));
     std::string id = s.id;
     MenuItem it{num + (v ? s.name : std::string("???")), c ? "★" : v ? "vu" : "",
-                c ? "Obtenue. " + evolutionText(s) + matchupText(s) : v ? "Rencontrée, pas encore obtenue. " + evolutionText(s) + matchupText(s) : "Pas encore rencontrée.", true, nullptr, [this, id] { bestiarySel_ = id; }};
+                c ? "Obtenue. " + evolutionText(s) + matchupText(s) : v ? "Rencontrée, pas encore obtenue. " + evolutionText(s) + matchupText(s, &weak) : "Pas encore rencontrée.", true, nullptr, [this, id] { bestiarySel_ = id; }};
     it.shrink = true;
     m.items.push_back(it);
   }
@@ -544,6 +545,77 @@ void Game::gearSlots(FighterP f, int who, int sel) {
     m.items.push_back(it);
   }
   m.sel = 1 + 2 * std::clamp(sel, 0, N_GEAR - 1);
+  int sockets = 0, set = 0;
+  for (int s = 0; s < N_GEAR; s++) {
+    const std::string& id = f->gear[(size_t)s];
+    if (!id.empty() && hasItem(id)) sockets += gemSockets(item(id));
+    set += (int)f->gems[(size_t)s].size();
+  }
+  m.items.push_back({"Gemmes", sockets ? std::to_string(set) + "/" + std::to_string(sockets) : "",
+                     sockets ? "Sertir des gemmes dans les chatons de l'équipement porté." : "Il faut porter un équipement pour sertir des gemmes.", sockets > 0,
+                     [this, f, who] { gemMenu(f, who); }});
+  m.items.push_back({"Retour", "", "", true, [this] { menus.pop(); }});
+  teamPanelSel_ = who;
+  menus.push(m);
+}
+
+// Gemmes (2.7) : chaque chaton de l'équipement porté, puis la gemme du sac à y mettre (ou la retirer)
+void Game::gemMenu(FighterP f, int who, int sel) {
+  Menu m;
+  m.title = "Gemmes";
+  m.x = 8, m.y = 8, m.w = 132, m.rows = 8;
+  auto reopen = [this, f, who](int at) {
+    menus.pop();
+    menus.pop();
+    gemMenu(f, who, at);
+  };
+  int row = 0;
+  for (int s = 0; s < N_GEAR; s++) {
+    const std::string& gid = f->gear[(size_t)s];
+    if (gid.empty() || !hasItem(gid)) continue;
+    int n = gemSockets(item(gid));
+    for (int k = 0; k < n; k++, row++) {
+      auto& slot = f->gems[(size_t)s];
+      std::string cur = k < (int)slot.size() ? slot[(size_t)k] : "";
+      MenuItem it{std::string(gearSlotName(s)) + " : " + (cur.empty() ? "(vide)" : item(cur).name), "",
+                  cur.empty() ? "Entrée : choisir une gemme du sac." : itemHelp(item(cur)), true, [this, f, s, k, cur, reopen, row] {
+                    Menu p;
+                    p.title = "Sertir";
+                    p.x = 8, p.y = 8, p.w = 132, p.rows = 7;
+                    auto put = [this, f, s, k, cur, reopen, row](const std::string& id) {
+                      auto& v = f->gems[(size_t)s];
+                      if (!cur.empty()) {
+                        items[cur]++;
+                        v.erase(v.begin() + k);
+                      }
+                      if (!id.empty()) {
+                        items[id]--;
+                        v.insert(v.begin() + std::min(k, (int)v.size()), id);
+                      }
+                      int lostHp = f->mhp - f->hp, lostMp = f->mmp - f->mp;
+                      f->recalc();
+                      f->hp = std::clamp(f->mhp - lostHp, f->alive() ? 1 : 0, f->mhp);
+                      f->mp = std::clamp(f->mmp - lostMp, 0, f->mmp);
+                      audio::play("achat");
+                      reopen(row);
+                    };
+                    for (auto& d : allItems()) {
+                      int have = items.count(d.id) ? items[d.id] : 0;
+                      if (!d.gem || have <= 0) continue;
+                      std::string id = d.id;
+                      MenuItem g{d.name, "×" + std::to_string(have), itemHelp(d), true, [put, id] { put(id); }};
+                      g.shrink = true;
+                      p.items.push_back(g);
+                    }
+                    if (!cur.empty()) p.items.push_back({"Retirer", "", "Remettre " + item(cur).name + " dans le sac.", true, [put] { put(""); }});
+                    if (p.items.empty()) p.items.push_back({"(aucune gemme)", "", "Les gemmes se trouvent dans les boutiques, les coffres et sur les boss.", false, nullptr});
+                    menus.push(p);
+                  }};
+      it.shrink = true;
+      m.items.push_back(it);
+    }
+  }
+  m.sel = std::clamp(sel, 0, std::max(0, (int)m.items.size() - 1));
   m.items.push_back({"Retour", "", "", true, [this] { menus.pop(); }});
   teamPanelSel_ = who;
   menus.push(m);
@@ -557,6 +629,7 @@ void Game::gearPick(FighterP f, int who, int s) {
     if (!id.empty()) items[id]--;
     int lostHp = f->mhp - f->hp, lostMp = f->mmp - f->mp;
     cur = id;
+    for (auto& g : trimGems(*f)) items[g]++;  // gemmes en trop (moins de chatons) : rendues au sac
     f->recalc();
     f->hp = std::clamp(f->mhp - lostHp, f->alive() ? 1 : 0, f->mhp);  // les PV perdus restent perdus
     f->mp = std::clamp(f->mmp - lostMp, 0, f->mmp);
@@ -856,8 +929,8 @@ void Game::drawTeamPanel(int x, int y, int sel) {
   g.window(x, y, w, std::min(SCREEN_H - y - 2, 34 + 4 * 11 + 3 + 4 * 11 + 3 + lines * 11 + 6));
   g.text(x + 8, y + 6, f.name(), GOLD);
   g.text(x + w - 8, y + 6, "Niveau " + std::to_string(f.lvl), WHITE, 2);
-  std::string role = f.S().human ? f.S().role : std::string("Créature de type ") + typeName(f.S().type);
-  g.text(x + 8, y + 19, role.size() > 40 ? typeName(f.S().type) : role, MUTED);
+  if (const Rules::Talent* tl = talentOf(f.S())) g.text(x + 8, y + 19, "Talent : " + tl->name, rgb(0xffd34d));  // (Aide > Talents)
+  else g.text(x + 8, y + 19, f.S().human ? utf8Prefix(f.S().role, 24) : typeName(f.S().type), MUTED);
   if (f.S().human) drawHuman(g, look(f.S().look), x + w - 40, y + 32, 2, DOWN, 0, false);  // sous la ligne du rôle
   else drawCreature(g, f.sp, x + w - 26, y + 48, .9f, false, time);
   int ly = y + 34;

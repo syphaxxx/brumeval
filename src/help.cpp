@@ -60,6 +60,67 @@ static std::vector<HelpPage> helpPages() {
                 "Objets : soins, remèdes. Une lanterne capture une créature sauvage : plus elle est affaiblie, mieux c'est.",
                 "Fuir : " + pct(R.flee) + " de chance de réussir, pas contre tous les adversaires.",
                 "Changer : un autre membre de l'équipe prend la place d'un combattant."}});
+  p.push_back({"Brisure", "Le bouclier des ennemis, leurs faiblesses, l'ennemi brisé.",
+               {"Chaque ennemi a un bouclier (le nombre à gauche de sa barre de vie) : " + std::to_string(R.breakShield) + " points en général, " +
+                    std::to_string(R.breakShieldBoss) + " pour un boss.",
+                "Le frapper sur une faiblesse (un type efficace contre lui) retire un point, deux s'il est doublement faible. La faiblesse est alors découverte : une pastille de sa couleur s'affiche sous sa barre, et le Bestiaire la retient.",
+                "Bouclier à zéro : l'ennemi est BRISÉ. Sa jauge retombe à zéro, son attaque annoncée est annulée, il subit ×" + num(R.breakDamage) +
+                    " de dégâts et perd son prochain tour. Puis il se ressaisit, bouclier rechargé.",
+                "Le bon moment pour les plus gros coups et les Limites : brisez d'abord, frappez ensuite.",
+                "Dans le menu de la cible, « faiblesse ! » signale un type déjà découvert ; « ? », un type pas encore essayé contre lui."}});
+  p.push_back({"Gemmes", "Sertir des gemmes dans l'équipement.",
+               {"Chaque équipement porté a des chatons : " + std::to_string(R.socketWeapon) + " pour une arme, " + std::to_string(R.socketArmor) +
+                    " pour une armure, " + std::to_string(R.socketAccessory) + " pour un accessoire, un de plus forgé à +" + std::to_string(R.socketForge) + ".",
+                "Échap > Équipement > un membre > Gemmes : choisir un chaton, puis la gemme du sac (ou la retirer).",
+                "Gemmes de technique : donnent un sort ou une technique (Feu, Soin, Rempart…), même à une créature.",
+                "Gemmes de bonus : un pourcentage de PV, d'Attaque ou de Magie en plus.",
+                "Gemmes de soutien : éveil (jauge avancée au début du combat), vampire (rend une part des dégâts infligés), riposte (rend les coups au corps à corps), brise-garde (use plus les boucliers).",
+                "On les achète dans les boutiques ; chaque grand boss en laisse une. Changer d'équipement rend au sac les gemmes qui n'ont plus de place."}});
+  p.push_back({"Rôles", "Les rôles des ennemis, les phases des boss.",
+               {"Certaines créatures ont un rôle, montré par une icône à droite de leur barre de vie (et dans le menu de la cible) :",
+                "Protecteur (écu gris) : ses voisins de damier (en croix) reçoivent " + pct(R.roleGuard) + " de dégâts en moins. Abattez-le ou poussez sa cible loin de lui.",
+                "Soigneur (croix verte) : soigne ses alliés blessés au lieu d'attaquer. À éliminer en premier.",
+                "Chef (couronne) : tant qu'il est debout, la jauge ATB de ses alliés va " + pct(R.roleChief) + " plus vite.",
+                "Vos créatures protectrices et chefs aident aussi votre équipe.",
+                "Les boss ont des phases : sous un seuil de PV, ils changent (bouclier rechargé, bonus, nouvelles techniques, autre météo, renforts). Gardez de quoi encaisser leur seconde forme."}});
+  p.push_back({"Pousser", "Pousser et tirer les combattants sur le damier.",
+               {"Certaines techniques poussent la cible d'une case vers l'arrière (Charge, Ruée, Rafale, Vague, Fracas…) ou la tirent vers l'avant (Flèche-grappin, Tornade, Étreinte…). Leur description le précise.",
+                "Si la case d'arrivée est déjà prise, les deux combattants se heurtent : chacun subit un choc de " + pct(R.shoveClash) +
+                    " des dégâts du coup. Poussé contre le bord arrière : choc aussi.",
+                "Tirer un mage vers l'avant le met à portée du corps à corps ; pousser un ennemi sur des braises le brûle aussitôt.",
+                "Les boss sont inébranlables. Les ennemis aussi poussent et tirent : gardez vos soigneurs loin des tireurs de grappin."}});
+  {
+    std::vector<std::string> dl = {"Deux alliés qui vont ensemble lancent une technique à deux, plus forte (menu « Duo »). Le partenaire doit avoir sa jauge ATB à " +
+                                       std::to_string(R.duoGauge) + " % au moins : il la dépense, et chacun paie les PM.",
+                                   "En mode auto, la tactique « Meilleure attaque » choisit un duo quand il vaut le coup."};
+    for (auto& d : R.duos) {
+      if (!hasMove(d.move) || d.members.size() != 2) continue;
+      auto who = [](const std::string& m) {
+        if (m == "humain") return std::string("un héros");
+        if (m.rfind("type:", 0) == 0) {
+          for (auto& t : types())
+            if (t.id == m.substr(5)) return "une créature " + t.name;
+          return m;
+        }
+        return hasSpecies(m) ? species(m).name : m;
+      };
+      dl.push_back(moveInfo(d.move).name + " : " + who(d.members[0]) + " + " + who(d.members[1]) + ".");
+    }
+    p.push_back({"Duos", "Les techniques à deux.", dl});
+  }
+  {
+    std::vector<std::string> ml = {"Chaque combat a un temps, selon le lieu (affiché sous l'ordre des tours) :"};
+    for (auto& w : R.weathers) ml.push_back(w.name + " : " + w.desc);
+    ml.push_back("Des cases du damier ont un terrain, de leur couleur. Dans « Se déplacer », chaque case dit le sien :");
+    for (auto& t : R.terrains) ml.push_back(t.name + " : " + t.desc);
+    ml.push_back("En mode auto, la tactique « Se mettre à l'abri » quitte aussi une case qui blesse ou ralentit.");
+    p.push_back({"Météo", "Le temps et les cases de terrain.", ml});
+  }
+  {
+    std::vector<std::string> tl = {"Chaque espèce a un talent, un effet permanent (fiche d'un membre : Échap > Équipe ; Bestiaire). Une évolution le garde."};
+    for (auto& t : R.talents) tl.push_back(t.name + " : " + t.desc);
+    p.push_back({"Talents", "Le pouvoir passif de chaque espèce.", tl});
+  }
   p.push_back({"Damier", "Les " + std::to_string(N_CELLS) + " cases de chaque camp, corps à corps et distance.",
                {"Chaque camp a " + std::to_string(N_CELLS) + " cases : " + std::to_string(GRID) + " colonnes (de l'avant à l'arrière) et " +
                     std::to_string(GRID) + " lignes. L'avant est du côté de l'adversaire.",
@@ -147,7 +208,7 @@ void Game::helpMenu(int sel) {
   panelMode_ = 0;  // le menu prend la place du résumé de l'équipe
   Menu m;
   m.title = "Aide";
-  m.x = 96, m.y = 30, m.w = 128, m.rows = (int)pages.size() + 1, m.sel = sel;
+  m.x = 96, m.y = 30, m.w = 128, m.rows = std::min(9, (int)pages.size() + 1), m.sel = sel;  // au-delà, la liste défile
   for (size_t i = 0; i < pages.size(); i++)
     m.items.push_back({pages[i].title, "", pages[i].summary + " (aussi avec F1)", true, [this, i] { openHelp((int)i); }});
   m.items.push_back({"Retour", "", "", true, [this, panel] {

@@ -314,6 +314,47 @@ code) ; `docs/GUIDE.md` les range par domaine.
   aussi (les ennemis gardent l'ancienne notation, sur laquelle la difficulté
   est réglée). Principe des techniques : une faible est rapide et souvent avec
   un effet, une forte est lourde, pour qu'aucune ne devienne inutile.
+- Brisure (2.5, Octopath) : `Fighter::shield/shieldMax/broken`, posés dans le
+  constructeur de `Battle` (ennemi d'un événement `bouclier`, sinon espèce,
+  sinon `brisure.bouclier(_boss)` ; + talent Cuirasse ; jamais en duel). Dans
+  `applyHit`, un coup sur une faiblesse retire 1 (2 si ×4, + Briseur) et
+  l'allié l'apprend (`Game::weak`, lignes `faible` de la sauvegarde) ;
+  `breakFoe` : tour perdu (`skipTurn` le restaure), annonces annulées, dégâts
+  × `brisure.degats`. Réseau : 8e et 9e nombres de chaque combattant de `etat`.
+  `attackScore` (alliés) favorise la brisure. Frise `turnOrder`/`drawTurnOrder`
+  (FFX, prédiction sans hasard). Talents (Pokémon) : `Rules::talents`,
+  `talentOf`/`talentValue(s, effet)`, appliqués au début du combat (vif,
+  intimidation), dans `applyHit` (résistances, rage, critique, furtif, briseur,
+  piquant), dans `afterAction` (régénération, méditation, soin des voisins en
+  croix) et `immuneTo` (sans_etats). Effets visuels : `drawTypeFx` (par type,
+  `Anim::type`, champ `ty` du réseau), `shakeT_`, entrée en combat et bandeau du
+  boss à la fin de `Battle::draw`. Mesuré (2.5) : boss relevés pour que la
+  victoire demande faiblesses + équipement (Golem 50 % IA / 75 % forgé, Mère des
+  Brumes 11 % / 63 %).
+- Stratégie 2.6 (Into the Breach, Chrono Trigger) : `Move::shove` (champ `deplace`), `Battle::shove`/`shoveDest`
+  après le coup sur la cible principale (choc `damier.choc` si case prise ou bord, KO ajoutés à la liste du coup ;
+  boss : -2, inébranlable). Météo `weather_` et terrain `terrain_[camp][case]` tirés dans le constructeur selon
+  `themeName(bg)` (`Rules::weathers`, `terrains` : types en identifiants, résolus en combat) ; aucun en duel
+  (`goOnline`) ; envoyés au gardien à plusieurs (`meteo`, `terrain` de `etat`). Effets : `weatherMult` et précision
+  dans `applyHit`/`attackScore`, `atbRate` (verglas, aussi `turnOrder`), `terrainTurn` (fin du tour dans
+  `afterAction`, et à l'arrivée d'une poussée), herbes et cristaux dans `applyHit`. `threatened` inclut une case
+  qui blesse (`terrainHurts`) : l'IA et la tactique « Se mettre à l'abri » la quittent ; `enemyMove` aussi.
+  Duos : `Rules::duos`, `duoMember` (espèce, `humain`, `type:x`), `Battle::duoOptions` (partenaire vivant, jauge ≥
+  `duo.jauge`, PM des deux ; jamais en ligne), `duoMove` (le partenaire paie et sa jauge tombe à 0, puis `useMove`
+  avec `duoPartner_` pour le message). IA : `think` les compte × (1 - 0,45 × jauge du partenaire) ; tactiques : action
+  « attaque » (`Plan::duo`). Expédition : seuls les duos `humain`/`type:` restent (`Expedition::install`). Jour et nuit
+  sur les cartes : `Game::nightAmount` (12 min par jour, dehors seulement), `drawBuildingLights`,
+  `drawChimneySmoke` ; le combat s'assombrit aussi.
+- Stratégie 2.7 (FF7, boss en phases) : gemmes `ItemDef::gem` (`gemMove`, `gemBonus` en %, `gemSupport`/`gemValue`),
+  `Fighter::gems[emplacement]` (ligne `gemmes <emplacement> id…` après `equipement`, aussi dans les échanges),
+  `gemSockets` (règles `gemmes`), `trimGems` (rendues au sac quand l'équipement change), `gemSupport(f, effet)` ;
+  `recalc` ajoute les bonus, `techs`/`spells` les techniques (et `bonusMoves`) ; effets dans `applyHit` (vol de vie,
+  riposte avec `countering_`, briseur) et le constructeur (éveil). Menu `Game::gemMenu` (Équipement > Gemmes) ;
+  `Pilot::socketGems` (à chaque `plan`). Rôles `Species::combatRole` (champ `role_combat`) : `guardMult` (protecteur,
+  dans `applyHit` et `attackScore`), `atbRate` (chef), `roleHeal` (soigneur, dans `enemyTurn`) ; icône dans `draw`.
+  Phases : `makeFoe` (data.cpp, partagé par events, pilote et tests) garde `phases` ; `Battle::checkPhase` après
+  chaque technique (bouclier, bonus, techniques, météo, renforts ajoutés à `foes`) ; jamais en ligne. Portraits :
+  `speakerLook` (game.cpp) ; titre animé dans `drawTitle`.
 - Données en mémoire : `dataDoc(DF_…)` garde chaque fichier de data/ sous forme
   de JSON ; `rebuildData()` reconstruit les structures du jeu à partir de ces
   documents, `saveDataDoc` les écrit. Les Réglages ne touchent qu'aux documents,

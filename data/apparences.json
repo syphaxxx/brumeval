@@ -47,7 +47,8 @@
     "haut": "#4e8c5a",
     "bas": "#5a4a3a",
     "coiffe": "aucune",
-    "arme": "aucune"
+    "arme": "aucune",
+    "aussi": ["Habitant", "Aubergiste"]
   },
   {
     "id": "ancien",
@@ -77,7 +78,8 @@
     "haut": "#8a8f9a",
     "bas": "#3a3a44",
     "coiffe": "bandeau",
-    "arme": "aucune"
+    "arme": "aucune",
+    "aussi": ["Gardien", "Gardien des brumes"]
   },
   {
     "id": "villageoise",
@@ -87,7 +89,8 @@
     "haut": "#c85a7a",
     "bas": "#5a3a4a",
     "coiffe": "aucune",
-    "arme": "aucune"
+    "arme": "aucune",
+    "aussi": ["Apprentie", "Guérisseuse", "Herboriste", "Gardienne", "Gardienne des brumes"]
   },
   {
     "id": "pecheur",
@@ -157,7 +160,8 @@
     "haut": "#9ab4d8",
     "bas": "#4a5a7a",
     "coiffe": "casque",
-    "arme": "lance"
+    "arme": "lance",
+    "aussi": ["Chevalier"]
   },
   {
     "id": "mage_givre",

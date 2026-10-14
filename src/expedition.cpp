@@ -110,7 +110,30 @@ void Expedition::install() {
     events_ = events();
     backedUp_ = true;
   }
-  dataDoc(DF_MOVES) = content_.moves;
+  // Duos (2.6) : seuls ceux d'un héros et d'une créature d'un type (ou de deux types) existent dans
+  // ce monde ; leurs techniques sont ajoutées à celles générées
+  Json moves = content_.moves, duoList = Json::array();
+  {
+    Json duo = docs_[DF_RULES].value("duo", Json::object());
+    for (auto& d : duo.value("liste", Json::array())) {
+      bool generic = true;
+      for (auto& m : jget(d, "membres", std::vector<std::string>{})) generic = generic && (m == "humain" || m.rfind("type:", 0) == 0);
+      std::string id = jget<std::string>(d, "technique", "");
+      if (!generic) continue;
+      for (auto& mv : docs_[DF_MOVES])
+        if (jget<std::string>(mv, "id", "") == id) moves.push_back(mv), duoList.push_back(d);
+    }
+  }
+  for (auto& it : docs_[DF_ITEMS]) {  // gemmes (2.7) : leur technique s'ajoute à celles générées
+    std::string id = jget<std::string>(it.value("gemme", Json::object()), "technique", "");
+    if (id.empty()) continue;
+    bool have = false;
+    for (auto& mv : moves) have = have || jget<std::string>(mv, "id", "") == id;
+    if (!have)
+      for (auto& mv : docs_[DF_MOVES])
+        if (jget<std::string>(mv, "id", "") == id) moves.push_back(mv);
+  }
+  dataDoc(DF_MOVES) = moves;
   dataDoc(DF_SPECIES) = content_.species;
   Json looks = docs_[DF_LOOKS];
   for (auto& l : content_.looks) looks.push_back(l);
@@ -127,6 +150,7 @@ void Expedition::install() {
   d["compagnons"] = Json::array({content_.starters[0], content_.starters[1], content_.starters[2]});
   d["reveil"] = Json{{"carte", mapId}, {"x", current_.startX}, {"y", current_.startY}};
   d.erase("evenement");
+  if (r.contains("duo")) r["duo"]["liste"] = duoList;
   dataDoc(DF_RULES) = r;
   for (auto f : {DF_TYPES, DF_ITEMS}) dataDoc(f) = docs_[f];
   rebuildData();
@@ -262,7 +286,7 @@ void Expedition::begin(const std::string& hero, const std::string& starter) {
   G.sc.clear();
   G.team = {makeFighter(hero, lvl), makeFighter(starter, lvl)};
   G.reserve.clear();
-  G.seen.clear(), G.caught.clear();
+  G.seen.clear(), G.caught.clear(), G.weak.clear();
   G.items = {{"potion", 3 + 2 * P.up[U_BAG]}, {"lanterne", 4 + P.up[U_BAG]}, {"ether", 1}, {"plume", 1}};
   G.gold = 100 + 60 * P.up[U_GOLD] + 60 * (region_ - 1);
   G.flags.clear();

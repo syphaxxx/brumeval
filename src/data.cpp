@@ -108,7 +108,29 @@ float moveEff(const Move& m, const Species& s) {
 }
 std::string typesName(const Species& s) { return s.type2 >= 0 ? std::string(typeName(s.type)) + "/" + typeName(s.type2) : typeName(s.type); }
 bool hasType(const Species& s, Type t) { return s.type == t || s.type2 == t; }
+const Rules::Talent* talentOf(const Species& s) {
+  for (auto& t : RULES.talents)
+    if (t.id == s.talent) return &t;
+  return nullptr;
+}
+double talentValue(const Species& s, const char* kind) {
+  const Rules::Talent* t = talentOf(s);
+  return t && t->kind == kind ? t->value : 0;
+}
+
+bool duoMember(const std::string& spec, const Species& s) {
+  if (spec == "humain") return s.human;
+  if (spec.rfind("type:", 0) == 0) {
+    if (s.human) return false;
+    for (size_t k = 0; k < TYPES.size(); k++)
+      if (TYPES[k].id == spec.substr(5)) return hasType(s, (int)k);
+    return false;
+  }
+  return s.id == spec;
+}
+
 bool immuneTo(const Species& s, Status st) {
+  if (talentValue(s, "sans_etats") > 0) return true;
   std::string id = statusId(st);
   auto in = [&](const std::vector<std::string>& v) { return std::find(v.begin(), v.end(), id) != v.end(); };
   if (in(s.immune)) return true;
@@ -162,6 +184,19 @@ std::vector<RuleField> ruleFields(Rules& r) {
       D("combat", "boss_annonce_puissance", "Boss : puissance de l'attaque annoncée", r.bossBurst, 1, 5, .1),
       I("combat", "retard_lourde", "Technique lourde : retard de la jauge (%)", r.heavyDelay, 0, 200, 5),
       D("combat", "compagnon_atb", "Compagnons : vitesse de la jauge ATB", r.companionAtb, .1, 2, .05),
+      I("brisure", "bouclier", "Brisure : bouclier d'un ennemi", r.breakShield, 0, 20, 1),
+      I("brisure", "bouclier_boss", "Brisure : bouclier d'un boss", r.breakShieldBoss, 0, 40, 1),
+      D("brisure", "degats", "Brisure : dégâts reçus par un ennemi brisé", r.breakDamage, 1, 5, .05),
+      I("gemmes", "chatons_arme", "Gemmes : chatons d'une arme", r.socketWeapon, 0, 4, 1),
+      I("gemmes", "chatons_armure", "Gemmes : chatons d'une armure", r.socketArmor, 0, 4, 1),
+      I("gemmes", "chatons_accessoire", "Gemmes : chatons d'un accessoire", r.socketAccessory, 0, 4, 1),
+      I("gemmes", "forge_chaton", "Gemmes : niveau de forge qui ajoute un chaton", r.socketForge, 1, 9, 1),
+      D("roles", "protection", "Protecteur : dégâts retirés à ses voisins", r.roleGuard, 0, 1, .05),
+      D("roles", "chef", "Chef : vitesse ATB en plus de ses alliés", r.roleChief, 0, 2, .05),
+      D("damier", "choc", "Pousser : choc (part des dégâts) si la case est prise", r.shoveClash, 0, 2, .05),
+      I("damier", "terrain_min", "Terrain : cases spéciales par camp (minimum)", r.terrainMin, 0, 8, 1),
+      I("damier", "terrain_max", "Terrain : cases spéciales par camp (maximum)", r.terrainMax, 0, 8, 1),
+      I("duo", "jauge", "Duo : jauge ATB du partenaire (%)", r.duoGauge, 0, 100, 5),
       D("etats", "poison_degats", "Poison : part des PV perdus par tour", r.poisonDmg, 0, 1, .01),
       D("etats", "brulure_degats", "Brûlure : part des PV perdus par tour", r.burnDmg, 0, 1, .01),
       D("etats", "brulure_attaque", "Brûlure : multiplicateur d'Attaque", r.burnAtk, 0, 1, .05),
@@ -231,6 +266,34 @@ static void loadRules(const Json& j) {
   if (j.contains("recompenses"))
     for (auto& b : j["recompenses"].value("butin_type", Json::array()))
       r.typeDrops.push_back({b.at("type").get<std::string>(), b.at("objet").get<std::string>(), b.at("chance").get<double>()});
+  for (auto& w : j.value("meteo", Json::array())) {
+    Rules::Weather x;
+    x.id = w.at("id").get<std::string>(), x.name = w.at("nom").get<std::string>();
+    x.desc = jget<std::string>(w, "description", ""), x.fx = jget<std::string>(w, "effet", "");
+    x.themes = jget(w, "decors", std::vector<std::string>{});
+    x.chance = jget(w, "chance", 0.0), x.acc = jget(w, "precision", 0);
+    Json tm = w.value("types", Json::object());
+    for (auto& [ty, v] : tm.items()) x.typeMult[ty] = v.get<double>();
+    r.weathers.push_back(x);
+  }
+  for (auto& t : j.value("terrains", Json::array())) {
+    Rules::Terrain x;
+    x.id = t.at("id").get<std::string>(), x.name = t.at("nom").get<std::string>();
+    x.desc = jget<std::string>(t, "description", ""), x.kind = t.at("effet").get<std::string>();
+    x.value = jget(t, "valeur", 0.0);
+    x.immune = jget(t, "insensibles", std::vector<std::string>{});
+    x.themes = jget(t, "decors", std::vector<std::string>{});
+    x.color = parseColor(t.value("couleur", Json("#ffffff")));
+    r.terrains.push_back(x);
+  }
+  {
+    Json duo = j.value("duo", Json::object());
+    for (auto& d : duo.value("liste", Json::array()))
+      r.duos.push_back({jget(d, "membres", std::vector<std::string>{}), d.at("technique").get<std::string>()});
+  }
+  for (auto& t : j.value("talents", Json::array()))
+    r.talents.push_back({t.at("id").get<std::string>(), t.at("nom").get<std::string>(), jget<std::string>(t, "description", ""),
+                         t.at("effet").get<std::string>(), jget(t, "valeur", 0.0)});
   for (auto& l : j.value("forge", Json::array())) {
     Rules::ForgeLevel f;
     f.bonus = jget(l, "bonus", 0.0);
@@ -309,6 +372,9 @@ void rebuildData() {
     bool all = m.target == Target::AllEnemies || m.target == Target::AllAllies;
     m.zone = Area(nameIndex(ZONES, jget<std::string>(o, "zone", all ? "tout" : "case"), "Zone"));
     m.melee = jget<std::string>(o, "portee", m.kind == Kind::Physical ? "corps" : "distance") == "corps";
+    std::string sh = jget<std::string>(o, "deplace", "");
+    m.shove = sh == "pousse" ? 1 : sh == "tire" ? -1 : 0;
+    if (!sh.empty() && !m.shove) throw std::runtime_error("Technique " + m.id + " : « deplace » doit valoir pousse ou tire");
     if (o.contains("effet")) m.effects.push_back(parseEffect(o["effet"]));
     for (auto& e : o.value("effets", Json::array())) m.effects.push_back(parseEffect(e));
     return m;
@@ -324,6 +390,7 @@ void rebuildData() {
     l.bottom = parseColor(o.at("bas"));
     l.hat = nameIndex(HATS, jget<std::string>(o, "coiffe", "aucune"), "Coiffe");
     l.weapon = nameIndex(WEAPONS, jget<std::string>(o, "arme", "aucune"), "Arme");
+    l.aliases = jget(o, "aussi", std::vector<std::string>{});
     return l;
   });
 
@@ -367,6 +434,9 @@ void rebuildData() {
       s.evolveLvl = o["evolution"].at("niveau").get<int>();
     }
     s.size = jget(o, "taille", 1.f);
+    s.shield = jget(o, "bouclier", 0);
+    s.talent = jget<std::string>(o, "talent", "");
+    s.combatRole = jget<std::string>(o, "role_combat", "");
     for (auto& t : o.value("tactiques", Json::array())) s.tactics.push_back(tacticFromJson(t));
     return s;
   });
@@ -399,6 +469,21 @@ void rebuildData() {
         while (i < N_GEAR_STATS && k != STATS[i]) i++;
         if (i == N_GEAR_STATS) throw std::runtime_error("Objet « " + d.id + " » : bonus inconnu « " + k + " »");
         d.bonus[i] = v.get<int>();
+      }
+    }
+    if (o.contains("gemme")) {
+      const Json& g = o["gemme"];
+      static const char* STATS[] = {"pv", "pm", "attaque", "defense", "magie", "resistance", "vitesse", "precision", "esquive", "critique"};
+      d.gem = true;
+      d.gemMove = jget<std::string>(g, "technique", "");
+      d.gemSupport = jget<std::string>(g, "soutien", "");
+      d.gemValue = jget(g, "valeur", 0.0);
+      Json bonus = g.value("bonus", Json::object());
+      for (auto& [k, v] : bonus.items()) {
+        int i = 0;
+        while (i < N_GEAR_STATS && k != STATS[i]) i++;
+        if (i == N_GEAR_STATS) throw std::runtime_error("Gemme « " + d.id + " » : bonus inconnu « " + k + " »");
+        d.gemBonus[i] = v.get<double>();
       }
     }
     return d;
@@ -473,11 +558,59 @@ std::vector<std::string> checkData() {
     if (!hasItem(id)) err.push_back("Objet de départ inconnu : " + id);
   for (auto& [id, c] : r.drops)
     if (!hasItem(id)) err.push_back("Butin inconnu : " + id);
+  static const char* KINDS_T[] = {"resiste_physique", "resiste_magie", "rage", "soin_voisins", "regeneration", "meditation", "esquive_arriere",
+                                  "vif", "briseur", "critique", "sans_etats", "intimidation", "piquant", "cuirasse"};
+  for (auto& t : r.talents)
+    if (std::find(std::begin(KINDS_T), std::end(KINDS_T), t.kind) == std::end(KINDS_T))
+      err.push_back("Talent " + t.name + " : effet inconnu « " + t.kind + " »");
+  for (auto& s : SPECIES)
+    if (!s.combatRole.empty() && s.combatRole != "protecteur" && s.combatRole != "soigneur" && s.combatRole != "chef")
+      err.push_back("Espèce " + s.name + " : rôle en combat inconnu « " + s.combatRole + " » (protecteur, soigneur ou chef)");
+  for (auto& s : SPECIES)
+    if (!s.talent.empty() && !talentOf(s)) err.push_back("Espèce " + s.name + " : talent inconnu « " + s.talent + " »");
+  static const char* KINDS_TR[] = {"degats", "poison", "soin", "lent", "esquive", "magie"};
+  for (auto& t : r.terrains)
+    if (std::find(std::begin(KINDS_TR), std::end(KINDS_TR), t.kind) == std::end(KINDS_TR))
+      err.push_back("Terrain " + t.name + " : effet inconnu « " + t.kind + " »");
+  static const char* THEMES_OK[] = {"vallee", "cendres", "grotte", "foret", "neige", "interieur"};
+  for (auto& w : r.weathers)
+    for (auto& th : w.themes)
+      if (std::find(std::begin(THEMES_OK), std::end(THEMES_OK), th) == std::end(THEMES_OK)) err.push_back("Météo " + w.name + " : décor inconnu « " + th + " »");
+  for (auto& t : r.terrains)
+    for (auto& th : t.themes)
+      if (std::find(std::begin(THEMES_OK), std::end(THEMES_OK), th) == std::end(THEMES_OK)) err.push_back("Terrain " + t.name + " : décor inconnu « " + th + " »");
   for (auto& s : SPECIES)
     if (!s.evolveTo.empty()) {
       if (!hasSpecies(s.evolveTo)) err.push_back("Espèce " + s.name + " : évolution inconnue « " + s.evolveTo + " »");
       else if (species(s.evolveTo).human || s.human) err.push_back("Espèce " + s.name + " : un humain n'évolue pas");
       if (s.evolveLvl < 2) err.push_back("Espèce " + s.name + " : niveau d'évolution trop bas");
+    }
+  auto knownType = [](const std::string& id) {
+    for (auto& t : TYPES)
+      if (t.id == id) return true;
+    return false;
+  };
+  for (auto& w : r.weathers)
+    for (auto& [ty, v] : w.typeMult)
+      if (!knownType(ty)) err.push_back("Météo " + w.name + " : type inconnu « " + ty + " »");
+  for (auto& t : r.terrains)
+    for (auto& ty : t.immune)
+      if (!knownType(ty)) err.push_back("Terrain " + t.name + " : type inconnu « " + ty + " »");
+  for (auto& d : r.duos) {
+    if (!hasMove(d.move)) err.push_back("Duo : technique inconnue « " + d.move + " »");
+    if (d.members.size() != 2) err.push_back("Duo " + d.move + " : il faut deux membres");
+    for (auto& m : d.members) {
+      bool ok = m == "humain" || (m.rfind("type:", 0) == 0 && knownType(m.substr(5)));
+      for (auto& s : SPECIES) ok = ok || s.id == m;
+      if (!ok) err.push_back("Duo " + d.move + " : membre inconnu « " + m + " »");
+    }
+  }
+  static const char* SUPPORTS[] = {"vol_vie", "contre", "eveil", "briseur"};
+  for (auto& d : ITEMS)
+    if (d.gem) {
+      if (!d.gemMove.empty() && !hasMove(d.gemMove)) err.push_back("Gemme " + d.name + " : technique inconnue « " + d.gemMove + " »");
+      if (!d.gemSupport.empty() && std::find(std::begin(SUPPORTS), std::end(SUPPORTS), d.gemSupport) == std::end(SUPPORTS))
+        err.push_back("Gemme " + d.name + " : soutien inconnu « " + d.gemSupport + " » (vol_vie, contre, eveil, briseur)");
     }
   for (auto& td : r.typeDrops) {
     if (!hasItem(td.item)) err.push_back("Butin par type : objet inconnu « " + td.item + " »");
@@ -548,6 +681,14 @@ void Fighter::recalc() {
     mhp += g[GS_HP], mmp += g[GS_MP], atk += g[GS_ATK], def += g[GS_DEF], mag += g[GS_MAG], res += g[GS_RES], spd += g[GS_SPD];
     acc += g[GS_ACC], eva += g[GS_EVA], crit += g[GS_CRIT];
   }
+  std::array<double, N_GEAR_STATS> pct{};  // gemmes de bonus : en pourcentage
+  for (auto& slot : gems)
+    for (auto& id : slot)
+      if (hasItem(id))
+        for (int k = 0; k < N_GEAR_STATS; k++) pct[k] += item(id).gemBonus[k];
+  auto up = [&](int& v, int k) { v += int(std::lround(v * pct[k])); };
+  up(mhp, GS_HP), up(mmp, GS_MP), up(atk, GS_ATK), up(def, GS_DEF), up(mag, GS_MAG), up(res, GS_RES), up(spd, GS_SPD);
+  acc += int(pct[GS_ACC] * 100), eva += int(pct[GS_EVA] * 100), crit += int(pct[GS_CRIT] * 100);
   mhp = std::max(1, mhp), mmp = std::max(0, mmp);
 }
 
@@ -577,6 +718,28 @@ void evolve(Fighter& f) {
   f.hp = alive ? std::clamp(int(std::lround(f.mhp * hp)), 1, f.mhp) : 0;
   f.mp = std::clamp(int(std::lround(f.mmp * mp)), 0, f.mmp);
 }
+int gemSockets(const ItemDef& d) {
+  const Rules& r = RULES;
+  int n = d.slot == G_WEAPON ? r.socketWeapon : d.slot == G_ARMOR ? r.socketArmor : d.slot == G_ACCESSORY ? r.socketAccessory : 0;
+  return n + (d.forged >= r.socketForge ? 1 : 0);
+}
+double gemSupport(const Fighter& f, const char* kind) {
+  double v = 0;
+  for (auto& slot : f.gems)
+    for (auto& id : slot)
+      if (hasItem(id) && item(id).gemSupport == kind) v += item(id).gemValue;
+  return v;
+}
+std::vector<std::string> trimGems(Fighter& f) {
+  std::vector<std::string> out;
+  for (int s = 0; s < N_GEAR; s++) {
+    auto& v = f.gems[(size_t)s];
+    int n = f.gear[(size_t)s].empty() || !hasItem(f.gear[(size_t)s]) ? 0 : gemSockets(item(f.gear[(size_t)s]));
+    while ((int)v.size() > n) out.push_back(v.back()), v.pop_back();
+  }
+  return out;
+}
+
 bool canEquip(const Fighter& f, const ItemDef& d) { return d.slot == G_ACCESSORY || (d.slot >= 0 && f.S().human); }
 
 // Héros ? (faux pour une espèce disparue : monde d'une expédition déjà remis en place)
@@ -683,6 +846,8 @@ void Fighter::clearBattle() {
   status = Status::None;
   statusTurns = 0;
   stage.fill(0);
+  broken = false;
+  shield = shieldMax;
 }
 float Fighter::stageMult(int st) const {
   int n = stage[st];
@@ -701,13 +866,36 @@ std::vector<std::string> Fighter::techs() const {
   for (auto& l : S().learn)
     if (l.lvl <= lvl && moveInfo(l.move).cost == 0) v.push_back(l.move);
   if (v.size() > 4) v.erase(v.begin(), v.end() - 4);
+  for (auto& id : bonusMoves)
+    if (hasMove(id) && moveInfo(id).cost == 0 && std::find(v.begin(), v.end(), id) == v.end()) v.push_back(id);
+  for (auto& slot : gems)  // gemmes serties
+    for (auto& g : slot)
+      if (hasItem(g) && hasMove(item(g).gemMove) && moveInfo(item(g).gemMove).cost == 0 && std::find(v.begin(), v.end(), item(g).gemMove) == v.end())
+        v.push_back(item(g).gemMove);
   return v;
 }
 std::vector<std::string> Fighter::spells() const {
   std::vector<std::string> v;
   for (auto& l : S().learn)
     if (l.lvl <= lvl && moveInfo(l.move).cost > 0) v.push_back(l.move);
+  for (auto& id : bonusMoves)
+    if (hasMove(id) && moveInfo(id).cost > 0 && std::find(v.begin(), v.end(), id) == v.end()) v.push_back(id);
+  for (auto& slot : gems)  // gemmes serties
+    for (auto& g : slot)
+      if (hasItem(g) && hasMove(item(g).gemMove) && moveInfo(item(g).gemMove).cost > 0 && std::find(v.begin(), v.end(), item(g).gemMove) == v.end())
+        v.push_back(item(g).gemMove);
   return v;
+}
+
+FighterP makeFoe(const Json& e, int defaultLevel) {
+  auto f = makeFighter(e.at("espece").get<std::string>(), jget(e, "niveau", defaultLevel));
+  float mult = jget(e, "pv", 1.f);
+  if (mult != 1.f) f->mhp = std::max(1, int(f->mhp * mult + 1e-4f));
+  f->hp = f->mhp;
+  f->boss = jget(e, "boss", false);
+  f->shieldMax = jget(e, "bouclier", 0);
+  if (e.contains("phases") && e["phases"].is_array()) f->phases = e["phases"];
+  return f;
 }
 
 FighterP makeFighter(const std::string& id, int lvl) {

@@ -316,5 +316,96 @@
     "description": "Un vieux livre de recettes de plantes, couvert de notes.",
     "prix": 0,
     "important": true
+  },
+  {
+    "id": "gemme_vie",
+    "nom": "Gemme de vie",
+    "description": "Une pierre rouge qui bat comme un cœur.",
+    "prix": 350,
+    "gemme": {"bonus": {"pv": 0.15}}
+  },
+  {
+    "id": "gemme_soin",
+    "nom": "Gemme de soin",
+    "description": "Une pierre laiteuse et tiède.",
+    "prix": 300,
+    "gemme": {"technique": "soin"}
+  },
+  {
+    "id": "gemme_feu",
+    "nom": "Gemme de feu",
+    "description": "Une flamme prise dans le verre.",
+    "prix": 300,
+    "gemme": {"technique": "feu"}
+  },
+  {
+    "id": "gemme_givre",
+    "nom": "Gemme de givre",
+    "description": "Toujours froide au toucher.",
+    "prix": 300,
+    "gemme": {"technique": "givre"}
+  },
+  {
+    "id": "gemme_foudre",
+    "nom": "Gemme de foudre",
+    "description": "Elle crépite dans la main.",
+    "prix": 300,
+    "gemme": {"technique": "foudre"}
+  },
+  {
+    "id": "gemme_force",
+    "nom": "Gemme de force",
+    "description": "Une pierre brune, lourde comme un poing.",
+    "prix": 450,
+    "gemme": {"bonus": {"attaque": 0.1}}
+  },
+  {
+    "id": "gemme_esprit",
+    "nom": "Gemme d'esprit",
+    "description": "Une pierre bleue où tournent des étoiles.",
+    "prix": 450,
+    "gemme": {"bonus": {"magie": 0.1}}
+  },
+  {
+    "id": "gemme_eveil",
+    "nom": "Gemme d'éveil",
+    "description": "Elle donne l'impression d'avoir déjà agi.",
+    "prix": 600,
+    "gemme": {"soutien": "eveil", "valeur": 35}
+  },
+  {
+    "id": "gemme_rempart",
+    "nom": "Gemme rempart",
+    "description": "Un éclat de mur ancien.",
+    "prix": 700,
+    "gemme": {"technique": "rempart"}
+  },
+  {
+    "id": "gemme_contre",
+    "nom": "Gemme de riposte",
+    "description": "Elle rend coup pour coup.",
+    "prix": 800,
+    "gemme": {"soutien": "contre", "valeur": 0.3}
+  },
+  {
+    "id": "gemme_vol",
+    "nom": "Gemme vampire",
+    "description": "Elle boit un peu de chaque blessure.",
+    "prix": 900,
+    "gemme": {"soutien": "vol_vie", "valeur": 0.12}
+  },
+  {
+    "id": "gemme_briseur",
+    "nom": "Gemme brise-garde",
+    "description": "Elle trouve la faille de chaque bouclier.",
+    "prix": 1000,
+    "gemme": {"soutien": "briseur", "valeur": 1}
+  },
+  {
+    "id": "gemme_pyro",
+    "nom": "Gemme de brasier",
+    "description": "Un cœur de volcan, poli.",
+    "prix": 1200,
+    "gemme": {"technique": "pyro"}
   }
 ]

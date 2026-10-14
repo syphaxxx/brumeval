@@ -6,6 +6,7 @@
 #pragma once
 #include <functional>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -26,7 +27,8 @@ std::string moveHelp(const Move& m, const Fighter* user = nullptr);
 std::string itemDetails(const ItemDef& d);
 std::string itemHelp(const ItemDef& d);
 // Forces et faiblesses d'une espèce (types, résistances propres, états impossibles), pour sa fiche
-std::string matchupText(const Species& s);
+// known : faiblesses découvertes (Game::weak) ; seulement celles-là sont citées (créature pas encore obtenue)
+std::string matchupText(const Species& s, const std::set<std::string>* known = nullptr);
 
 // Préparation d'un combat
 struct BattleSetup {
@@ -80,7 +82,16 @@ class Battle {
     std::string item;  // objet du sac à utiliser à la place d'une technique
     int tactic = -1;   // numéro de la tactique qui a choisi cette action
     int cell = -1;     // se déplacer vers cette case (tactique « Se mettre à l'abri »)
+    FighterP duo;      // technique en duo : le partenaire
   };
+  // Techniques en duo (2.6) : celles que a peut lancer maintenant, avec quel partenaire
+  struct DuoOpt {
+    std::string move;
+    FighterP partner;
+  };
+  std::vector<DuoOpt> duoOptions(const FighterP& a, bool ready = true) const;  // ready = false : sans regarder jauges et PM
+  void duoMove(FighterP a, FighterP partner, const std::string& id, std::vector<FighterP> targets);
+  FighterP duoPartner_;  // pendant useMove : le partenaire du duo (message)
   // Attaques annoncées (1.8) : un boss prépare sa plus grosse attaque, concentrée sur une zone du
   // damier allié ; elle part à son tour suivant sur ceux qui y sont restés (plus forte)
   struct Warning {
@@ -150,13 +161,19 @@ class Battle {
     Color col;
     bool limit = false;
     float t0 = -10;
+    int type = -1;  // type de la technique : effet propre à chaque type (flammes, gouttes, feuilles…)
   };
   Anim anim_;
-  void startAnim(const FighterP& a, const std::vector<FighterP>& targets, Fx fx, Color col, bool limit = false);
+  void startAnim(const FighterP& a, const std::vector<FighterP>& targets, Fx fx, Color col, bool limit = false, int type = -1);
+  void drawTypeFx(const Pt& p, float k);  // particules propres au type de la technique (anim_.type)
   Pt offset(const FighterP& f) const;  // décalage du dessin : élan, ou secousse quand il est touché
   void drawAnim();
 
   void tickATB(float dt);
+  // Ordre des tours (2.5, inspiré de Final Fantasy X) : les n prochains tours prévus d'après les
+  // jauges et les vitesses actuelles (sans le hasard de la paralysie)
+  std::vector<FighterP> turnOrder(int n) const;
+  void drawTurnOrder(float y);
   bool skipTurn(FighterP f);  // sommeil ou paralysie : le tour est perdu
   void command(FighterP a);
   void autoCommand(FighterP a);
@@ -201,13 +218,39 @@ class Battle {
   void finish(BattleResult r);
   int applyHit(const FighterP& a, const FighterP& d, const Move& m, float mult = 1);  // -1 si raté ; mult : autour de la cible d'une zone
   void applyEffect(const FighterP& t, const Effect& e);
+  void breakFoe(const FighterP& d);  // Brisure : bouclier à zéro
+  void initFoe(const FighterP& e);   // bouclier de Brisure d'un ennemi qui entre (début, renfort)
+  // Phases d'un boss (2.7) : sous un seuil de PV, message, bouclier rechargé, bonus, techniques,
+  // météo, renforts (jamais en ligne)
+  void checkPhase(const FighterP& f);
+  // Rôles (2.7) : protecteur (ses voisins prennent moins de dégâts), soigneur (l'ordinateur soigne
+  // ses alliés), chef (ses alliés ont une jauge plus rapide)
+  float guardMult(const FighterP& d) const;  // dégâts reçus par d (protecteur voisin vivant)
+  bool roleHeal(const FighterP& e);          // ennemi soigneur : soigne un allié blessé ; vrai si joué
+  // 2.6 : pousser / tirer (Into the Breach). La cible change de colonne ; case prise ou bord : choc.
+  // Les combattants mis K.O. par le choc sont ajoutés à ko.
+  void shove(const FighterP& a, const FighterP& t, const Move& m, int dmg, std::vector<FighterP>& ko);
+  int shoveDest(const FighterP& t, const Move& m) const;  // case d'arrivée (-1 : bord ; -2 : boss, ne bouge pas)
+  // Météo (indice dans rules().weathers, -1 : temps calme) et cases de terrain de chaque damier
+  int weather_ = -1;
+  std::array<std::array<int, N_CELLS>, 2> terrain_{};  // [0] alliés, [1] ennemis : indice dans rules().terrains, -1 : rien
+  const Rules::Terrain* terrainOf(bool allySide, int cell) const;
+  const Rules::Terrain* terrainAt(const FighterP& f) const;  // case spéciale sous ce combattant (nullptr : aucune)
+  bool terrainHits(const FighterP& f, const Rules::Terrain* t) const;  // le terrain agit sur lui (pas insensible)
+  bool terrainHurts(const FighterP& f, int cell) const;                 // cette case de son camp le blesse ou le ralentit
+  bool terrainTurn(const FighterP& f, bool arrived);                    // effet de sa case ; vrai s'il tombe K.O.
+  float weatherMult(int type) const;
+  float atbRate(const FighterP& f) const;  // vitesse de sa jauge ATB (compagnon, verglas)
+  void drawWeather();
+  float shakeT_ = -10;               // l'écran tremble (brisure, coup critique)
+  bool countering_ = false;          // une riposte (gemme) est en cours : pas de riposte à la riposte
   void knockOut(const FighterP& f);
 
   // Menus de commande
   void pickFoe(const std::string& title, std::function<std::string(const Fighter&)> info, std::function<void(FighterP)> done,
                bool creaturesOnly = false);
   void pickAlly(const std::string& title, bool ko, std::function<void(FighterP)> done);
-  void moveTarget(FighterP a, const std::string& mv);
+  void moveTarget(FighterP a, const std::string& mv, FighterP duo = nullptr);
   void drawStatusTag(const Fighter& f, float x, float y);
   friend class Game;
   friend class Pilot;

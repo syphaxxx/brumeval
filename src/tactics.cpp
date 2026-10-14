@@ -35,19 +35,19 @@ static const std::vector<TacticCond> CONDS = {
     {"soi_pm_moins", "Soi : PM < {n} %", TSide::Self, 30, 10, 90, 10, "Quand ses propres PM passent sous ce seuil (gauche/droite)."},
     {"soi_limite", "Soi : Limite prête", TSide::Self, 0, 0, 0, 0, "Quand sa jauge Limite est pleine."},
     {"soi_sans_effet", "Soi : sans l'effet", TSide::Self, 0, 0, 0, 0, "Quand il n'a pas encore le bonus de l'action (Carapace…)."},
-    {"soi_menace", "Soi : zone annoncée", TSide::Self, 0, 0, 0, 0, "Quand l'attaque annoncée d'un boss va toucher sa case (zone rouge)."},
+    {"soi_menace", "Soi : zone annoncée", TSide::Self, 0, 0, 0, 0, "Quand une attaque annoncée (zone rouge) va toucher sa case, ou que sa case le blesse."},
     {"ennemis_groupes", "Ennemis : {n} dans la zone", TSide::Foe, 2, 2, 4, 1,
      "Une cible dont la zone de l'action touche au moins ce nombre d'ennemis (gauche/droite : nombre)."},
     {"allie_avant_pv_moins", "Allié avant : PV < {n} %", TSide::Ally, 50, 10, 90, 10, "Un allié de la colonne avant, blessé sous ce seuil (gauche/droite)."},
 };
 static const std::vector<TacticAuto> AUTOS = {
-    {"attaque", "Meilleure attaque", TSide::Foe, "La technique ou le sort qui fait le plus de dégâts à la cible (peut dépenser des PM)."},
+    {"attaque", "Meilleure attaque", TSide::Foe, "La technique, le sort ou le duo qui fait le plus de dégâts (peut dépenser des PM)."},
     {"technique", "Attaque sans PM", TSide::Foe, "La technique gratuite qui fait le plus de dégâts : garde les PM pour les soins."},
     {"soin", "Meilleur soin", TSide::Ally, "Le sort de soin le plus utile, de groupe si plusieurs alliés sont blessés."},
     {"reanimation", "Réanimation", TSide::Ally, "Un sort qui relève un allié K.O."},
     {"guerison", "Guérison", TSide::Ally, "Un sort qui guérit les états (poison, sommeil…)."},
     {"limite", "Limite", TSide::Any, "La technique ultime, quand la jauge Limite est pleine."},
-    {"esquiver", "Se mettre à l'abri", TSide::Ally, "Changer de case pour sortir de la zone rouge annoncée par un boss (action rapide)."},
+    {"esquiver", "Se mettre à l'abri", TSide::Ally, "Changer de case pour fuir la zone rouge d'un boss ou une case qui blesse (action rapide)."},
 };
 
 const std::vector<TacticCond>& tacticConds() { return CONDS; }

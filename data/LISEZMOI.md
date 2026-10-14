@@ -16,7 +16,7 @@ toutes les références existent et que chaque lieu des cartes est accessible.
 |---|---|
 | `types.json` | Les 13 types (Feu, Eau, Glace, Roche, Vent, Poison, Métal, Esprit…), leur couleur, leurs immunités et la table d'efficacité |
 | `techniques.json` | Techniques, sorts et Limites |
-| `especes.json` | Héros, créatures et boss : statistiques de base, techniques apprises, `evolution` (`espece` et `niveau` : la forme qu'elle peut prendre), `taille` (dessin agrandi, 1.15 pour les formes évoluées) |
+| `especes.json` | Héros, créatures et boss : statistiques de base, techniques apprises, `evolution` (`espece` et `niveau` : la forme qu'elle peut prendre), `taille` (dessin agrandi, 1.15 pour les formes évoluées), `talent` (identifiant d'un talent de `regles.json`), `bouclier` (bouclier de Brisure en ennemi ; absent : valeur des règles) |
 | `objets.json` | Objets : prix, effets (soin, PM, réanimation, capture), équipement (`equipement` : `arme`, `armure` ou `accessoire`, et `bonus` : `pv`, `pm`, `attaque`, `defense`, `magie`, `resistance`, `vitesse`, `precision`, `esquive`, `critique`) ; `"trophee": true` pour un trophée de boss (forge). Les armes et armures forgées (`epee_fer+1`…) sont créées par le jeu, pas écrites ici |
 | `apparences.json` | Couleurs et accessoires des personnages |
 | `regles.json` | Départ de la partie, rencontres, formules de combat, récompenses (dont `butin_type` : matériaux selon le type de la créature vaincue), forge, tactiques de départ… |
@@ -118,6 +118,60 @@ dans `regles.json`, sections `combat` et `etats`.
 +1, +2… ; son prix de vente monte de l'or de la forge. Les matériaux tombent
 des créatures selon `recompenses.butin_type` (`type`, `objet`, `chance`) et se
 trouvent dans des coffres ; chaque boss donne son trophée (action `donner`).
+
+**Brisure** (`regles.json`, `brisure`) : `bouclier` (bouclier d'un ennemi
+ordinaire), `bouclier_boss`, `degats` (multiplicateur des dégâts reçus par un
+ennemi brisé). Une espèce (`especes.json`) ou un ennemi d'un combat
+(`evenements.json`) peut avoir son propre `bouclier`.
+
+**Talents** (`regles.json`, `talents`) : `id`, `nom`, `description`, `effet` et
+`valeur`. Les effets possibles : `resiste_physique` et `resiste_magie` (part des
+dégâts retirée), `rage` (dégâts en plus avec une technique de son type sous un
+tiers des PV), `soin_voisins`, `regeneration` et `meditation` (part des PV ou PM
+max rendue à la fin du tour), `esquive_arriere`, `vif` (points de jauge ATB au
+début du combat), `briseur` (points de bouclier retirés en plus), `critique`,
+`sans_etats`, `intimidation`, `piquant` (part des PV max de l'attaquant au corps
+à corps), `cuirasse` (points de bouclier en plus). Chaque espèce choisit le sien
+avec `"talent"`.
+
+**Pousser / tirer** (2.6) : une technique avec `"deplace": "pousse"` repousse sa
+cible d'une case vers l'arrière, `"tire"` la tire vers l'avant. Case prise ou bord
+arrière : choc (`regles.json`, `damier.choc` : part des dégâts du coup, pour les
+deux). Les boss ne bougent pas.
+
+**Météo** (`regles.json`, `meteo`) : `id`, `nom`, `description`, `effet` (dessin :
+`pluie`, `soleil`, `chaleur`, `neige`, `orage`, `brume`), `decors` (où elle tombe :
+`vallee`, `cendres`, `grotte`, `foret`, `neige`), `chance`, `types` (multiplicateur
+des dégâts par type), `precision` (coups physiques, en points).
+
+**Terrain** (`regles.json`, `terrains`, et `damier.terrain_min` / `terrain_max`
+cases par camp) : `id`, `nom`, `description`, `effet` (`degats` et `soin` : part
+des PV max à la fin du tour ; `poison` : chance ; `lent` : jauge ATB plus lente ;
+`esquive` : points d'esquive ; `magie` : Magie en plus), `valeur`, `insensibles`
+(types), `decors`, `couleur`.
+
+**Duos** (`regles.json`, `duo`) : `jauge` (jauge ATB du partenaire, en %) et
+`liste` : `membres` (deux : identifiant d'espèce, `humain` ou `type:feu`) et
+`technique` (dans `techniques.json`, comme les autres ; chacun paie son `cout`).
+
+**Gemmes** (2.7, `objets.json`) : un objet avec `"gemme": {…}` : `technique` (donnée
+à qui la porte), `bonus` (`{"pv": 0.15}` : pourcentage), ou `soutien` (`vol_vie`,
+`contre`, `eveil`, `briseur`) et `valeur`. Chatons : `regles.json`, `gemmes`
+(`chatons_arme`, `chatons_armure`, `chatons_accessoire`, `forge_chaton` : niveau de
+forge qui en ajoute un).
+
+**Rôles** (2.7) : `"role_combat"` d'une espèce (`protecteur`, `soigneur`, `chef`) ;
+réglages dans `regles.json`, `roles` (`protection`, `chef`). À ne pas confondre avec
+`role`, la courte description d'un humain.
+
+**Phases d'un boss** (2.7) : dans un combat, un ennemi peut avoir `"phases"` : une
+liste de `{"pv": 0.5, "message": …, "bouclier": 14, "bonus": {"attaque": 1},
+"techniques": […], "meteo": "canicule", "renforts": [{"espece": …, "niveau": …}],
+"soin": 0.1}`. Chaque phase se déclenche une fois, quand ses PV passent sous la part
+`pv` (jamais en ligne).
+
+**Portraits** : un dialogue « Nom : … » montre le portrait de l'apparence de ce nom
+(`apparences.json`, ou un de ses autres noms dans `"aussi"`).
 
 **Adversaires** : l'action `combat` accepte `nom` (« Le braconnier vous défie ! »)
 et `renforts`, une liste d'ennemis qui entrent un par un quand un adversaire
@@ -230,7 +284,7 @@ page dont la condition `si` est vraie.
 | `or` | Ajoute ou retire de l'or | `quantite` (négative pour payer) |
 | `drapeau` | Retient qu'un événement a eu lieu | `nom`, `valeur` (false pour l'effacer) |
 | `recruter` | Un personnage rejoint l'équipe | `espece`, `niveau` |
-| `combat` | Lance un combat | `ennemis` (1 à 6 : `espece`, `niveau`, `pv` multiplicateur, `boss`), `renforts`, `nom`, `boss`, `fuite`, `capture`, `victoire`, `defaite` |
+| `combat` | Lance un combat | `ennemis` (1 à 6 : `espece`, `niveau`, `pv` multiplicateur, `bouclier`, `boss`, `phases`), `renforts`, `nom`, `boss`, `fuite`, `capture`, `victoire`, `defaite` |
 | `question` | Question Oui / Non | `texte`, `oui`, `non` |
 | `si` | Condition | `condition`, `alors`, `sinon` |
 | `soigner` | Soigne l'équipe | `pv`, `pm` (true par défaut) |
