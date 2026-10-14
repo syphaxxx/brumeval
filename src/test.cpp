@@ -1010,6 +1010,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     B.start -= 2;  // sans la transition d'entrée (capture)
     FighterP foe = B.foes[0];
     foe->mhp = foe->hp = 5000;
+    foe->eva = 0, lior->acc = 1000;  // le coup du duo ne doit pas rater (Furtif, esquive)
     auto has = [&](const std::vector<Battle::DuoOpt>& v, const std::string& id, const FighterP& p) {
       for (auto& d : v)
         if (d.move == id && d.partner == p) return true;
