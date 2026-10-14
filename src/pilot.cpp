@@ -327,15 +327,7 @@ float Pilot::rehearse(const Json& fight, int n, bool fullHealth) {
     }
     G.team = team, G.reserve.clear(), G.items = keepItems, G.gold = keepGold;
     BattleSetup s;
-    auto make = [&](const Json& e) {
-      auto f = makeFighter(e.at("espece").get<std::string>(), jget(e, "niveau", G.avgLevel()));
-      float mult = jget(e, "pv", 1.f);
-      if (mult != 1.f) f->mhp = std::max(1, int(f->mhp * mult + 1e-4f));
-      f->hp = f->mhp;
-      f->boss = jget(e, "boss", false);
-      f->shieldMax = jget(e, "bouclier", 0);
-      return f;
-    };
+    auto make = [&](const Json& e) { return makeFoe(e, G.avgLevel()); };
     for (auto& e : fight.value("ennemis", Json::array())) s.foes.push_back(make(e));
     for (auto& e : fight.value("renforts", Json::array())) s.reserve.push_back(make(e));
     if (s.foes.empty()) return 1;
@@ -453,6 +445,7 @@ void Pilot::plan() {
   path_.clear();
   grind_.clear();
   int cur = node(G.mapId, G.px, G.py);
+  socketGems();  // une gemme reçue (boss, coffre) : sertie aussitôt
   watchSight();
   dijkstra(cur);
   std::vector<Goal> gs = goals();
@@ -995,11 +988,64 @@ void Pilot::equipBest() {
       G.items[pick]--;
       int lostHp = f->mhp - f->hp, lostMp = f->mmp - f->mp;
       cur = pick;
+      for (auto& g : trimGems(*f)) G.items[g]++;
       f->recalc();
       f->hp = std::clamp(f->mhp - lostHp, f->alive() ? 1 : 0, f->mhp);
       f->mp = std::clamp(f->mmp - lostMp, 0, f->mmp);
       note("Équipe " + f->name() + " : " + item(pick).name);
     }
+  socketGems();
+}
+
+// Gemmes du sac (2.7) : chacune dans le chaton libre où elle sert le plus (combattants d'abord)
+void Pilot::socketGems() {
+  auto front = G.front();
+  auto worth = [&](const Fighter& f, const ItemDef& g) {
+    bool mage = f.mag > f.atk;
+    float v = 0;
+    if (g.gemBonus[GS_HP] > 0) v += 10;
+    if (g.gemBonus[GS_ATK] > 0) v += mage ? 3 : 12;
+    if (g.gemBonus[GS_MAG] > 0) v += mage ? 12 : 3;
+    if (g.gemSupport == "eveil") v += 9;
+    if (g.gemSupport == "vol_vie") v += mage ? 4 : 11;
+    if (g.gemSupport == "contre") v += mage ? 2 : 8;
+    if (g.gemSupport == "briseur") v += 10;
+    if (!g.gemMove.empty() && hasMove(g.gemMove)) {
+      auto known = f.techs(), sp = f.spells();
+      known.insert(known.end(), sp.begin(), sp.end());
+      if (std::find(known.begin(), known.end(), g.gemMove) != known.end()) return 0.f;
+      const Move& m = moveInfo(g.gemMove);
+      v += m.kind == ::Kind::Heal || m.kind == ::Kind::Status ? 7 : mage ? 9 + m.power / 20.f : 2;
+    }
+    return v;
+  };
+  for (bool placed = true; placed;) {
+    placed = false;
+    float best = 0;
+    FighterP who;
+    int slot = -1;
+    std::string gem;
+    for (auto& [id, n] : G.items) {
+      if (n <= 0 || !hasItem(id) || !item(id).gem) continue;
+      for (auto& f : G.team)
+        for (int s = 0; s < N_GEAR; s++) {
+          const std::string& gid = f->gear[(size_t)s];
+          if (gid.empty() || !hasItem(gid) || (int)f->gems[(size_t)s].size() >= gemSockets(item(gid))) continue;
+          bool fights = std::find(front.begin(), front.end(), f) != front.end();
+          float v = worth(*f, item(id)) * (fights ? 2 : 1);
+          if (v > best) best = v, who = f, slot = s, gem = id;
+        }
+    }
+    if (!who) break;
+    G.items[gem]--;
+    who->gems[(size_t)slot].push_back(gem);
+    int lostHp = who->mhp - who->hp, lostMp = who->mmp - who->mp;
+    who->recalc();
+    who->hp = std::clamp(who->mhp - lostHp, who->alive() ? 1 : 0, who->mhp);
+    who->mp = std::clamp(who->mmp - lostMp, 0, who->mmp);
+    note("Sertit " + item(gem).name + " : " + who->name());
+    placed = true;
+  }
 }
 
 // ---------------------------------------------------------------------------

@@ -32,6 +32,8 @@
     "compagnon_atb": 0.5
   },
   "brisure": {"bouclier": 2, "bouclier_boss": 8, "degats": 1.5},
+  "roles": {"protection": 0.3, "chef": 0.2},
+  "gemmes": {"chatons_arme": 1, "chatons_armure": 1, "chatons_accessoire": 1, "forge_chaton": 2},
   "damier": {"choc": 0.35, "terrain_min": 0, "terrain_max": 2},
   "meteo": [
     {

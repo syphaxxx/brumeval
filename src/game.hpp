@@ -170,6 +170,7 @@ class Game {
   void swapReserve(FighterP out, FighterP in);  // out : de l'équipe à la réserve ; in : de la réserve à l'équipe
   void sellMenu(const std::vector<std::string>& stock, int sel);  // boutique : vendre à moitié prix
   void gearMenu(int sel = 0);
+  void gemMenu(FighterP f, int who, int sel = 0);  // gemmes serties dans l'équipement de f (2.7)
   void gearSlots(FighterP f, int who, int sel = 0);
   void gearPick(FighterP f, int who, int slot);
   void optionsMenu(int sel = 0);

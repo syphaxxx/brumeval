@@ -129,6 +129,29 @@ Inspiré d'Into the Breach et de Chrono Trigger :
   lanterne, lucioles ; fumée des cheminées, feuilles en forêt, papillons dans la
   vallée.
 
+## Gemmes, rôles et phases des boss (2.7)
+
+Inspiré des matérias de Final Fantasy VII et des combats de boss en plusieurs
+temps :
+
+- **Gemmes** : chaque équipement porté a des **chatons** (1 par arme, armure et
+  accessoire ; un de plus forgé à +2). Échap > Équipement > un membre > **Gemmes**.
+  Gemmes de technique (Feu, Givre, Foudre, Soin, Rempart, Brasier : même une
+  créature peut les lancer), de bonus (+15 % PV, +10 % Attaque ou Magie) et de
+  soutien (éveil : jauge avancée ; vampire : rend une part des dégâts ; riposte ;
+  brise-garde : use plus les boucliers). En boutique, et chaque grand boss en
+  laisse une.
+- **Rôles des ennemis** (icône à droite de leur barre de vie) : **protecteur**
+  (écu : ses voisins prennent 30 % de dégâts en moins), **soigneur** (croix verte :
+  soigne ses alliés), **chef** (couronne : ses alliés vont 20 % plus vite). L'IA et
+  les tactiques les visent en priorité. Vos créatures protectrices et chefs aident
+  aussi votre équipe.
+- **Phases des boss** : sous un seuil de PV, un boss change : bouclier rechargé,
+  bonus, nouvelles techniques, autre météo, renforts (Ignarok reforme sa carapace
+  (sa carapace se reforme) puis appelle un tisonnel, la Ronce-Mère fait germer des soigneurs…).
+- **Portraits** dans les dialogues, **écran titre** animé (étoiles, étoile filante,
+  lucioles, reflet sur le titre).
+
 ## Techniques rapides et lourdes
 
 Chaque technique a un rythme, indiqué dans l'aide en bas de l'écran :

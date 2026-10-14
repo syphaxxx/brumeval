@@ -45,6 +45,12 @@ bool Game::saveGame() {
       for (auto& g : m->gear) f << ' ' << (g.empty() ? "-" : g);
       f << '\n';
     }
+    for (int s = 0; s < N_GEAR; s++)  // gemmes serties (2.7)
+      if (!m->gems[(size_t)s].empty()) {
+        f << "gemmes " << s;
+        for (auto& g : m->gems[(size_t)s]) f << ' ' << g;
+        f << '\n';
+      }
     if (m->cell >= 0) f << "case4 " << m->cell << '\n';  // formation sur le damier 4x4
     if (m->evolveLater) f << "evolution_plus_tard\n";       // évolution refusée (Échap > Évolution)
     auto c = std::find(team.begin(), team.end(), m->companion.lock());
@@ -77,7 +83,9 @@ bool readMemberLine(const std::string& k, std::istream& s, std::vector<FighterP>
     team.push_back(m);
     return true;
   }
-  if (k != "equipement" && k != "tactiques" && k != "tactique" && k != "compagnon" && k != "case" && k != "case4" && k != "evolution_plus_tard") return false;
+  if (k != "equipement" && k != "gemmes" && k != "tactiques" && k != "tactique" && k != "compagnon" && k != "case" && k != "case4" &&
+      k != "evolution_plus_tard")
+    return false;
   if (team.empty() || !team.back()) return true;
   Fighter& m = *team.back();
   if (k == "evolution_plus_tard") {
@@ -96,6 +104,16 @@ bool readMemberLine(const std::string& k, std::istream& s, std::vector<FighterP>
   if (k == "compagnon") {  // rang de sa créature compagnon dans l'équipe (relié une fois tout lu)
     int i = -1;
     if (s >> i && links) links->push_back({team.size() - 1, i});
+    return true;
+  }
+  if (k == "gemmes") {
+    int slot = -1;
+    std::string id;
+    if (s >> slot && slot >= 0 && slot < N_GEAR)
+      while (s >> id)
+        if (hasItem(id) && item(id).gem) m.gems[(size_t)slot].push_back(id);
+    trimGems(m);
+    m.recalc();
     return true;
   }
   if (k == "equipement") {

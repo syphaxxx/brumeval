@@ -806,7 +806,30 @@ void Game::drawTitle() {
          rgb(0x262a52));
   g.rect(L, 160, W, 80, rgb(0x1d2148));
   for (int i = 0; i < 6 * W / SCREEN_W; i++) g.ellipse(L + std::fmod(i * 70 + time * 18, W + 100) - 50, 112 + (i % 6) * 10, 90, 7, rgb(0xe6ebff, 26));
+  // Étoiles qui scintillent, étoile filante, lucioles (2.7)
+  for (int i = 0; i < 40 * W / SCREEN_W; i++) {
+    uint32_t h = uint32_t(i) * 2654435761u;
+    float x = L + float(h % 1000) / 1000.f * W, y = float((h >> 10) % 70);
+    float tw = .5f + .5f * std::sin(time * (1.5f + (h % 7) * .4f) + i);
+    g.rect(x, y, 1, 1, rgb(0xffffff, uint8_t(60 + 150 * tw)));
+  }
+  float shoot = std::fmod(time, 7.f);
+  if (shoot < .8f) {
+    float k = shoot / .8f, sx = L + W * (.15f + .6f * k), sy = 10 + 40 * k;
+    g.line(sx, sy, sx - 18, sy - 12, 1, rgb(0xffffff, uint8_t(220 * (1 - k))));
+  }
+  for (int i = 0; i < 10 * W / SCREEN_W; i++) {
+    float x = L + std::fmod(i * 61.f + std::sin(time * .7f + i) * 20 + 40, W), y = 150 + std::fmod(i * 23.f + std::cos(time * .5f + i * 2) * 10, 60.f);
+    g.ellipse(x, y, 1.5f, 1.5f, rgb(0xe8ff9a, uint8_t(90 + 80 * std::sin(time * 3 + i))));
+  }
   g.textBig(160, 26, "BRUMEVAL", GOLD, 4, 1);
+  {  // reflet qui passe sur le titre
+    float k = std::fmod(time, 4.f) / 1.2f;
+    if (k < 1) {
+      float x = 70 + 180 * k;
+      g.poly({{x, 22}, {x + 6, 22}, {x - 4, 58}, {x - 10, 58}}, rgb(0xffffff, uint8_t(110 * std::sin(k * 3.14159f))));
+    }
+  }
   g.text(160, 76, "Les gardiens de la vallée", rgb(0xc9cbe0), 1);
   drawHuman(g, look(0), 144, 92, 2, DOWN, 0, false);
   drawCreature(g, "braisenard", 92, 124, 1, true, time);
@@ -1008,6 +1031,22 @@ void Game::drawMap() {
   }
 }
 
+// Portrait de celui qui parle (2.7) : « Maëlle : … » ; son apparence par son nom, ses autres noms
+// (« aussi » dans apparences.json) ou le début de son nom (« Kael (ligoté) »). nullptr : pas de portrait
+static const Look* speakerLook(const std::string& text) {
+  auto c = text.find(" : ");
+  if (c == std::string::npos || c > 40) return nullptr;
+  std::string who = text.substr(0, c);
+  for (auto& l : allLooks()) {
+    if (l.name == who) return &l;
+    for (auto& a : l.aliases)
+      if (a == who) return &l;
+  }
+  for (auto& l : allLooks())
+    if (who.rfind(l.name + " ", 0) == 0) return &l;
+  return nullptr;
+}
+
 void Game::drawDialogue() {
   std::string text;
   bool done = true;
@@ -1017,6 +1056,11 @@ void Game::drawDialogue() {
     done = sc.messageDone();
   } else return;
   int y = askText_.empty() ? 170 : 84;
+  if (const Look* lk = askText_.empty() && mode != Mode::Battle ? speakerLook(sc.text()) : nullptr) {  // portrait au-dessus de la fenêtre
+    g.window(4, y - 50, 44, 48);
+    g.rect(8, y - 46, 36, 40, rgb(0x1a2058));
+    drawHuman(g, *lk, 10, y - 44, 2, DOWN, 0, false);
+  }
   g.window(4, y, 312, 66);
   auto full = Gfx::wrap(askText_.empty() ? sc.text() : askText_, 296);
   // Découpe le texte visible selon les mêmes lignes que le texte complet

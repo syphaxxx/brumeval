@@ -124,6 +124,15 @@ void Expedition::install() {
         if (jget<std::string>(mv, "id", "") == id) moves.push_back(mv), duoList.push_back(d);
     }
   }
+  for (auto& it : docs_[DF_ITEMS]) {  // gemmes (2.7) : leur technique s'ajoute à celles générées
+    std::string id = jget<std::string>(it.value("gemme", Json::object()), "technique", "");
+    if (id.empty()) continue;
+    bool have = false;
+    for (auto& mv : moves) have = have || jget<std::string>(mv, "id", "") == id;
+    if (!have)
+      for (auto& mv : docs_[DF_MOVES])
+        if (jget<std::string>(mv, "id", "") == id) moves.push_back(mv);
+  }
   dataDoc(DF_MOVES) = moves;
   dataDoc(DF_SPECIES) = content_.species;
   Json looks = docs_[DF_LOOKS];

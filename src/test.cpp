@@ -857,16 +857,17 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     std::vector<FighterP> ko;
     B.cells_[f1.get()] = cellAt(0, 0), B.cells_[f2.get()] = cellAt(0, 1);
     B.shove(lior, f1, push, 100, ko);  // case prise : choc pour les deux, personne ne bouge
-    bool clash = B.cellOf(f1) == cellAt(0, 0) && f1->hp == 5000 - 50 && f2->hp == 5000 - 50;
+    int ch = std::max(1, int(100 * rules().shoveClash));
+    bool clash = B.cellOf(f1) == cellAt(0, 0) && f1->hp == 5000 - ch && f2->hp == 5000 - ch;
     B.cells_[f2.get()] = cellAt(2, 2);
     B.shove(lior, f1, push, 100, ko);
     bool pushed = B.cellOf(f1) == cellAt(0, 1);
     B.shove(lior, f1, pull, 100, ko);
     B.shove(lior, f1, pull, 100, ko);  // déjà à l'avant : ne bouge plus
-    bool pulled = B.cellOf(f1) == cellAt(0, 0) && f1->hp == 5000 - 50;
+    bool pulled = B.cellOf(f1) == cellAt(0, 0) && f1->hp == 5000 - ch;
     B.cells_[f1.get()] = cellAt(0, BACK_COL);
     B.shove(lior, f1, push, 100, ko);  // contre le bord
-    bool edge = B.cellOf(f1) == cellAt(0, BACK_COL) && f1->hp == 5000 - 100;
+    bool edge = B.cellOf(f1) == cellAt(0, BACK_COL) && f1->hp == 5000 - 2 * ch;
     f2->boss = true;
     bool boss = B.shoveDest(f2, push) == -2;
     f2->boss = false;
@@ -898,6 +899,100 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     snap("99_meteo_terrain");
     check(clash && pushed && pulled && edge && boss, "pousser / tirer : choc sur une case prise et contre le bord, une case de plus, boss inébranlable");
     check(burnt && slowed && onArrival && rain, "terrain et météo : braises (fin du tour, arrivée), verglas plus lent, pluie qui renforce l'Eau");
+    battle_.reset();
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+  }
+
+  // --- Gemmes (2.7) : sertir par le menu, technique et bonus, chaton en trop rendu, sauvegarde ---
+  {
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+    auto lior = makeFighter("lior", 20);
+    team = {lior};
+    lior->gear[G_WEAPON] = "epee_fer";
+    lior->recalc();
+    lior->hp = lior->mhp;
+    int hp0 = lior->mhp;
+    items = {{"gemme_feu", 1}, {"gemme_vie", 1}};
+    gearMenu();
+    in.confirm = true;  // Lior
+    frame();
+    auto& slots = menus.top().items;
+    for (size_t i = 0; i < slots.size(); i++)
+      if (slots[i].label == "Gemmes") menus.top().sel = (int)i;
+    in.confirm = true;  // Gemmes
+    frame();
+    in.confirm = true;  // chaton de l'arme
+    frame();
+    snap("gemmes");
+    for (size_t i = 0; i < menus.top().items.size(); i++)
+      if (menus.top().items[i].label == item("gemme_feu").name) menus.top().sel = (int)i;
+    in.confirm = true;  // Gemme de feu
+    frame();
+    auto sp = lior->spells();
+    bool fire = lior->gems[G_WEAPON].size() == 1 && std::find(sp.begin(), sp.end(), "feu") != sp.end() && items["gemme_feu"] == 0;
+    menus.clear();
+    lior->gear[G_ARMOR] = "tunique_cuir";
+    lior->gems[G_ARMOR] = {"gemme_vie"};
+    items["gemme_vie"] = 0;
+    lior->recalc();
+    bool life = lior->mhp > hp0;
+    bool saved = saveGame();
+    team.clear();
+    bool loaded = saved && loadGame() && !team.empty() && team[0]->gems[G_WEAPON] == std::vector<std::string>{"gemme_feu"} &&
+                  team[0]->gems[G_ARMOR] == std::vector<std::string>{"gemme_vie"};
+    lior = team.empty() ? lior : team[0];
+    lior->gear[G_WEAPON] = "";  // plus d'arme : la gemme n'a plus de chaton
+    auto back = trimGems(*lior);
+    bool trimmed = back == std::vector<std::string>{"gemme_feu"} && lior->gems[G_WEAPON].empty();
+    bool sockets = gemSockets(item("epee_fer")) == rules().socketWeapon && gemSockets(item(forgedId("epee_fer", rules().socketForge))) == rules().socketWeapon + 1;
+    check(fire && life && loaded && trimmed && sockets,
+          "gemmes : sertie par le menu (Feu appris), bonus de PV, gardées par la sauvegarde, rendues sans chaton, un chaton de plus forgé");
+    menus.clear();
+    sc.clear();
+  }
+
+  // --- Rôles des ennemis et phases des boss (2.7) ---
+  {
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+    team = {makeFighter("lior", 30)};
+    Json spec = Json::parse(R"({"espece": "golem", "niveau": 20, "pv": 3, "boss": true, "phases": [{"pv": 0.5, "message": "Phase !", "bouclier": 5,
+      "bonus": {"attaque": 1}, "techniques": ["pyro"], "meteo": "pluie", "renforts": [{"espece": "brumelin", "niveau": 5}]}]})");
+    auto boss = makeFoe(spec, 1);
+    startBattle({boss}, true, nullptr, false, false);
+    Battle& B = *battle_;
+    boss->hp = boss->mhp * 6 / 10;
+    B.checkPhase(boss);
+    bool early = boss->phase == 0 && B.foes.size() == 1;
+    boss->hp = boss->mhp * 4 / 10;
+    B.checkPhase(boss);
+    auto sp = boss->spells();
+    bool phased = boss->phase == 1 && boss->shieldMax == 5 && boss->shield == 5 && boss->stage[S_ATK] == 1 &&
+                  std::find(sp.begin(), sp.end(), "pyro") != sp.end() && B.foes.size() == 2 && B.weather_ >= 0 &&
+                  rules().weathers[(size_t)B.weather_].id == "pluie";
+    battle_.reset();
+    sc.clear();
+    // Protecteur : ses voisins prennent moins ; chef : ses alliés vont plus vite ; soigneur : soigne
+    startBattle({makeFighter("galetor", 10), makeFighter("brumelin", 10), makeFighter("louvet", 10), makeFighter("champichou", 10)}, false, nullptr);
+    Battle& C = *battle_;
+    FighterP gal = C.foes[0], bru = C.foes[1], lou = C.foes[2], cha = C.foes[3];
+    C.cells_[gal.get()] = cellAt(1, 0), C.cells_[bru.get()] = cellAt(1, 1), C.cells_[lou.get()] = cellAt(3, 3), C.cells_[cha.get()] = cellAt(0, 3);
+    bool guarded = std::abs(C.guardMult(bru) - float(1 - rules().roleGuard)) < 1e-4f;
+    C.cells_[bru.get()] = cellAt(3, 1);
+    bool alone = C.guardMult(bru) == 1;
+    float fast = C.atbRate(bru);
+    lou->hp = 0;
+    bool chief = fast > C.atbRate(bru) * 1.1f;
+    bru->hp = bru->mhp / 4;
+    bool healed = false;
+    for (int i = 0; i < 40 && !healed; i++) {
+      healed = C.roleHeal(cha);
+      C.sc.clear();
+    }
+    check(early && phased, "boss en phases : sous le seuil, bouclier, bonus, technique, météo et renfort");
+    check(guarded && alone && chief && healed, "rôles : le protecteur protège ses voisins, le chef presse ses alliés, le soigneur soigne");
     battle_.reset();
     sc.clear(), menus.clear();
     mode = Mode::Map;
@@ -2582,6 +2677,15 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         if (!id.empty() && !hasItem(id)) id.clear();
       for (int s : {G_WEAPON, G_ARMOR})
         if (simForge && !f->gear[s].empty()) f->gear[s] = forgedId(f->gear[s], std::min(simForge, (int)rules().forge.size()));
+      // Gemmes des boutiques de la région (2.7) : vie dans l'armure, force ou esprit dans l'arme, éveil ou vie à l'accessoire
+      for (auto& v : f->gems) v.clear();
+      auto gem = [&](int s, const char* id) {
+        if (!f->gear[(size_t)s].empty() && hasItem(id) && (int)f->gems[(size_t)s].size() < gemSockets(item(f->gear[(size_t)s]))) f->gems[(size_t)s].push_back(id);
+      };
+      gem(G_ARMOR, "gemme_vie");
+      if (tier >= 2) gem(G_WEAPON, mage ? "gemme_esprit" : "gemme_force");
+      gem(G_ACCESSORY, tier >= 2 && f->S().human ? "gemme_eveil" : "gemme_vie");
+      if (tier >= 3) gem(G_WEAPON, mage ? "gemme_pyro" : "gemme_vol");
       f->recalc();
       f->hp = f->mhp, f->mp = f->mmp;
     }
@@ -2665,15 +2769,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     Json f = find(*findEvent(id));
     return [f] {
       BattleSetup s;
-      auto make = [](const Json& e) {
-        auto x = makeFighter(e.at("espece").get<std::string>(), jget(e, "niveau", 1));
-        float mult = jget(e, "pv", 1.f);
-        if (mult != 1.f) x->mhp = std::max(1, int(x->mhp * mult + 1e-4f));
-        x->hp = x->mhp;
-        x->boss = jget(e, "boss", false);
-        x->shieldMax = jget(e, "bouclier", 0);
-        return x;
-      };
+      auto make = [](const Json& e) { return makeFoe(e, 1); };
       Json foes = f.value("ennemis", Json::array()), more = f.value("renforts", Json::array());
       for (auto& e : foes) s.foes.push_back(make(e));
       for (auto& e : more) s.reserve.push_back(make(e));
@@ -2824,16 +2920,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         Json f = *fight;
         auto mk = [f, L] {
           BattleSetup s;
-          auto make = [&](const Json& e) {
-            auto x = makeFighter(e.at("espece").get<std::string>(), jget(e, "niveau", L));
-            float mult = jget(e, "pv", 1.f);
-            if (mult != 1.f) x->mhp = std::max(1, int(x->mhp * mult + 1e-4f));
-            x->hp = x->mhp;
-            x->boss = jget(e, "boss", false);
-            x->shieldMax = jget(e, "bouclier", 0);
-        x->shieldMax = jget(e, "bouclier", 0);
-            return x;
-          };
+          auto make = [&](const Json& e) { return makeFoe(e, L); };
           for (auto& e : f.at("ennemis")) s.foes.push_back(make(e));
           Json res = f.value("renforts", Json::array());  // variable : la boucle doit la garder en vie
           for (auto& e : res) s.reserve.push_back(make(e));

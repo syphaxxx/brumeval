@@ -91,6 +91,17 @@ std::string moveHelp(const Move& m, const Fighter* user) { return (m.desc.empty(
 std::string itemDetails(const ItemDef& d) {
   const Rules& R = rules();
   std::vector<std::string> v;
+  if (d.gem) {  // gemme (2.7)
+    std::string g = "Gemme à sertir (Échap > Équipement > Gemmes)";
+    if (!d.gemMove.empty() && hasMove(d.gemMove)) g += " : donne " + moveInfo(d.gemMove).name;
+    for (int k = 0; k < N_GEAR_STATS; k++)
+      if (d.gemBonus[k] != 0) g += std::string(" : +") + std::to_string(int(std::lround(d.gemBonus[k] * 100))) + " % " + gearStatName(k);
+    if (d.gemSupport == "vol_vie") g += " : rend " + std::to_string(int(std::lround(d.gemValue * 100))) + " % des dégâts infligés en PV";
+    if (d.gemSupport == "contre") g += " : " + std::to_string(int(std::lround(d.gemValue * 100))) + " % de chances de riposter au corps à corps";
+    if (d.gemSupport == "eveil") g += " : jauge ATB avancée de " + std::to_string(int(d.gemValue)) + " % au début du combat";
+    if (d.gemSupport == "briseur") g += " : une faiblesse retire " + std::to_string(int(d.gemValue)) + " point de bouclier de plus";
+    v.push_back(g);
+  }
   if (d.slot >= 0) {
     std::string b = d.bonusText();
     v.push_back(std::string(gearSlotName(d.slot)) + (b.empty() ? "" : " : " + b) + (d.slot != G_ACCESSORY ? " (héros seulement)" : ""));
@@ -209,11 +220,7 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
     for (auto& e : *v) e->clearBattle();
   // Brisure : bouclier de chaque ennemi (le combat, sinon l'espèce, sinon les règles)
   for (auto* v : {&foes, &reserve})
-    for (auto& e : *v) {
-      if (e->shieldMax <= 0) e->shieldMax = e->S().shield > 0 ? e->S().shield : e->boss ? rules().breakShieldBoss : rules().breakShield;
-      e->shieldMax += int(talentValue(e->S(), "cuirasse"));  // talent Cuirasse : bouclier plus gros
-      e->shield = e->shieldMax, e->broken = false;
-    }
+    for (auto& e : *v) initFoe(e);
   // Météo et terrain (2.6) : tirés selon le décor du combat
   for (auto& side : terrain_) side.fill(-1);
   {
@@ -240,7 +247,7 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
   // Talents de début de combat : Vif (jauge avancée), Intimidation (Attaque des adversaires −1)
   for (auto* side : {&allies, &foes})
     for (auto& f : *side) {
-      f->atb = std::min(95.f, f->atb + float(talentValue(f->S(), "vif")));
+      f->atb = std::min(95.f, f->atb + float(talentValue(f->S(), "vif") + gemSupport(*f, "eveil")));  // talent Vif, gemme d'éveil
       if (talentValue(f->S(), "intimidation") > 0)
         for (auto& o : side == &allies ? foes : allies) o->stage[S_ATK] = std::max(-3, o->stage[S_ATK] - 1);
     }
@@ -533,6 +540,11 @@ float Battle::atbRate(const FighterP& f) const {
   float rate = float((R.atbBase + f->eSpd()) * R.atbSpeed * (companion(f) ? R.companionAtb : 1));
   const Rules::Terrain* t = terrainAt(f);
   if (t && t->kind == "lent" && terrainHits(f, t)) rate *= float(1 - t->value);  // verglas
+  for (auto& o : sideOf(f))
+    if (o != f && o->alive() && o->S().combatRole == "chef") {  // rôle : un chef vivant presse ses alliés
+      rate *= float(1 + R.roleChief);
+      break;
+    }
   return rate;
 }
 
@@ -856,6 +868,7 @@ void Battle::pickAlly(const std::string& title, bool ko, std::function<void(Figh
 // Fiche rapide d'un ennemi visé : types, PV, état, bonus/malus et efficacité
 static std::string foeInfo(const Game& G, const Fighter& f, const Move* m) {
   std::string s = typesName(f.S()) + " · " + std::to_string(f.hp) + "/" + std::to_string(f.mhp) + " PV";
+  if (!f.S().combatRole.empty()) s += " · " + std::string(f.S().combatRole == "protecteur" ? "Protecteur" : f.S().combatRole == "soigneur" ? "Soigneur" : "Chef");
   if (f.broken) s += " · BRISÉ";
   else if (f.shieldMax > 0) s += " · bouclier " + std::to_string(f.shield);
   if (f.status != Status::None) s += " · " + std::string(statusName(f.status));
@@ -1043,7 +1056,7 @@ float Battle::attackScore(const FighterP& a, const Move& m, const FighterP& t) c
   if (!reachable(a, m, t)) return 0;
   float A = magic ? a->eMag() : a->eAtk(), D = std::max(1.f, magic ? t->eRes() : t->eDef());
   float hit = std::clamp(m.acc / 100.f * a->acc / 100.f - (magic ? 0 : t->eva / 100.f), 0.f, 1.f);
-  float score = m.power * moveEff(m, t->S()) * (hasType(a->S(), m.type) ? float(R.stab) : 1.f) * A / D * hit * weatherMult(m.type);
+  float score = m.power * moveEff(m, t->S()) * (hasType(a->S(), m.type) ? float(R.stab) : 1.f) * A / D * hit * weatherMult(m.type) * guardMult(t);
   if (ally && t->broken) score *= float(R.breakDamage);                                      // Brisure : il encaisse plus
   if (ally && !t->broken && t->shieldMax > 0 && moveEff(m, t->S()) > 1) score *= 1.f + .6f / float(std::max(1, t->shield));  // près de le briser
   if (m.melee) {  // depuis l'arrière, ou sur une cible à l'arrière : moins fort
@@ -1053,6 +1066,7 @@ float Battle::attackScore(const FighterP& a, const Move& m, const FighterP& t) c
   if (!ally) return score / paceTime(m);
   score *= 1 + std::min(1.f, (a->crit + m.critBonus) / 100.f) * float(R.critMult - 1);
   if (score >= t->hp * 1.2f) score += 15;  // achever un adversaire affaibli
+  if (!t->S().combatRole.empty() && !t->boss) score *= 1.25f;  // rôles : abattre d'abord soigneur, chef et protecteur
   if (m.shove && !t->boss) {  // pousser / tirer : un choc contre un voisin ou le bord, ou une case qui blesse
     int to = shoveDest(t, m);
     bool clash = to == -1 && m.shove > 0;
@@ -1087,7 +1101,7 @@ void Battle::autoCommand(FighterP a) {
 
 void Battle::enemyTurn(FighterP e) {
   actor = e;
-  if (bossPlan(e) || enemyMove(e)) return;
+  if (bossPlan(e) || roleHeal(e) || enemyMove(e)) return;
   Plan p = think(e);
   useMove(e, p.move, p.targets);
 }
@@ -1415,13 +1429,14 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
   k *= 1 - float(talentValue(d->S(), magic ? "resiste_magie" : "resiste_physique"));  // talents Carapace, Écorce runique
   if (hasType(a->S(), m.type) && a->hp * 3 < a->mhp) k *= 1 + float(talentValue(a->S(), "rage"));  // talent Rage
   k *= weatherMult(m.type);                                                                          // météo
+  k *= guardMult(d);                                                                                 // rôle : protecteur voisin
   if (const Rules::Terrain* tr = terrainAt(a); magic && tr && tr->kind == "magie") k *= 1 + float(tr->value);  // cristaux
   int dmg = std::max(1, int(((2 * a->lvl / 5.f + 2) * m.power * A / std::max(1.f, D) / float(R.dmgDivisor) + 2) * stab * eff * spread * k));
   d->hp = std::max(0, d->hp - dmg);
   if (eff > 1 && d->shieldMax > 0) {  // Brisure : une faiblesse entame le bouclier, et l'équipe la retient
     if (isAlly(a)) G.weak.insert(d->sp + ":" + std::to_string(m.type));
     if (!d->broken && d->alive()) {
-      d->shield = std::max(0, d->shield - (eff >= 4 ? 2 : 1) - int(talentValue(a->S(), "briseur")));  // talent Briseur
+      d->shield = std::max(0, d->shield - (eff >= 4 ? 2 : 1) - int(talentValue(a->S(), "briseur") + gemSupport(*a, "briseur")));  // talent, gemme
       if (d->shield == 0) breakFoe(d);
     }
   }
@@ -1435,6 +1450,22 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
   if (eff > 1) pop(d, "Efficace !", GOLD);
   else if (eff < 1) pop(d, "Résiste", GREY);
   if (isAlly(d) || duel()) d->lim = std::min(100.f, d->lim + dmg * float(R.limitGain) / d->mhp);  // en duel, les deux équipes
+  if (double steal = gemSupport(*a, "vol_vie"); steal > 0 && a->alive() && a->hp < a->mhp) {  // gemme de vol de vie
+    int h = std::max(1, int(dmg * steal));
+    a->hp = std::min(a->mhp, a->hp + h);
+    pop(a, "+" + std::to_string(h), GREEN);
+  }
+  if (m.melee && a->alive() && d->alive() && !countering_ && frand() < gemSupport(*d, "contre") && !d->techs().empty()) {  // gemme de riposte
+    const Move& c = moveInfo(d->techs()[0]);
+    if (c.damaging()) {
+      countering_ = true;
+      pop(d, "Riposte !", rgb(0xffd34d));
+      log.push_back("  " + d->name() + " riposte");
+      if (applyHit(d, a, c, .7f) >= 0 && !a->alive()) knockOut(a);
+      countering_ = false;
+      if (!a->alive()) return dmg;
+    }
+  }
   if (m.melee && a->alive()) {  // talent Peau piquante : qui le frappe au corps à corps se blesse
     double v = talentValue(d->S(), "piquant");
     if (v > 0) {
@@ -1547,6 +1578,78 @@ float Battle::weatherMult(int type) const {
   const auto& tm = rules().weathers[(size_t)weather_].typeMult;
   auto it = tm.find(types()[(size_t)type].id);
   return it == tm.end() ? 1.f : float(it->second);
+}
+
+void Battle::initFoe(const FighterP& e) {
+  if (e->shieldMax <= 0) e->shieldMax = e->S().shield > 0 ? e->S().shield : e->boss ? rules().breakShieldBoss : rules().breakShield;
+  e->shieldMax += int(talentValue(e->S(), "cuirasse"));  // talent Cuirasse : bouclier plus gros
+  e->shield = e->shieldMax, e->broken = false;
+}
+
+void Battle::checkPhase(const FighterP& f) {
+  if (net_ != Net::None || !f->alive() || isAlly(f) || !f->phases.is_array()) return;
+  while (f->phase < (int)f->phases.size()) {
+    const Json& p = f->phases[(size_t)f->phase];
+    if (f->hp > jget(p, "pv", .5f) * f->mhp) return;
+    f->phase++;
+    log.push_back("  " + f->name() + " : phase " + std::to_string(f->phase + 1));
+    sc.say(jget<std::string>(p, "message", f->name() + " entre dans une nouvelle phase !"), 1.4f);
+    sound("statut");
+    flashT = G.time, flashCol = rgb(0xff5a3a);
+    shakeT_ = G.time;
+    int sh = jget(p, "bouclier", -1);
+    if (sh >= 0) f->shieldMax = sh;
+    f->shield = f->shieldMax, f->broken = false;  // il se ressaisit, bouclier rechargé
+    for (auto& id : jget(p, "techniques", std::vector<std::string>{}))
+      if (hasMove(id)) f->bonusMoves.push_back(id);
+    Json b = p.value("bonus", Json::object());
+    for (auto& [st, v] : b.items()) f->stage[(size_t)stageOf(st)] = std::clamp(f->stage[(size_t)stageOf(st)] + v.get<int>(), -3, 3);
+    if (float heal = jget(p, "soin", 0.f); heal > 0) {
+      int h = int(f->mhp * heal);
+      f->hp = std::min(f->mhp, f->hp + h);
+      pop(f, "+" + std::to_string(h), GREEN);
+    }
+    std::string w = jget<std::string>(p, "meteo", "");
+    for (size_t i = 0; i < rules().weathers.size(); i++)
+      if (rules().weathers[i].id == w) weather_ = (int)i;
+    for (auto& r : p.value("renforts", Json::array())) {
+      if (alive(foes).size() >= 6) break;
+      int cell = -1;
+      for (int col = 0; col <= BACK_COL && cell < 0; col++)
+        for (int row = 0; row < GRID && cell < 0; row++) {
+          int c = cellAt(row, col);
+          bool taken = false;
+          for (auto& o : foes) taken = taken || (o->alive() && cellOf(o) == c);
+          if (!taken) cell = c;
+        }
+      if (cell < 0) break;
+      FighterP n = makeFoe(r, std::max(1, f->lvl - 4));
+      initFoe(n);
+      n->atb = frand() * 30;
+      cells_[n.get()] = cell;
+      foes.push_back(n);
+      roster_.push_back(n);
+      G.see(*n);
+      sc.say(n->name() + " vient à l'aide de " + f->name() + " !", 1.0f);
+    }
+  }
+}
+
+float Battle::guardMult(const FighterP& d) const {
+  if (d->S().combatRole == "protecteur") return 1;
+  for (auto& o : sideOf(d))
+    if (o != d && o->alive() && o->S().combatRole == "protecteur" && inZone(Area::Cross, cellOf(o), cellOf(d))) return float(1 - rules().roleGuard);
+  return 1;
+}
+
+bool Battle::roleHeal(const FighterP& e) {
+  if (e->S().combatRole != "soigneur" || isAlly(e) || !hasMove("soin")) return false;
+  FighterP worst;
+  for (auto& o : alive(foes))
+    if (o->hp * 2 < o->mhp && (!worst || o->hp * worst->mhp < worst->hp * o->mhp)) worst = o;
+  if (!worst || frand() < .25f) return false;
+  useMove(e, "soin", {worst});
+  return true;
 }
 
 // Brisure : bouclier à zéro. Sa jauge retombe, son attaque annoncée est annulée, il perd son prochain tour
@@ -1678,6 +1781,7 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
       for (auto& e : m.effects)
         if (e.self) applyEffect(a, e);
     for (auto& f : *ko) knockOut(f);
+    for (auto& t : targets) checkPhase(t);  // un boss passe peut-être une phase
   });
   sc.wait(.75f);
   sc.call([this, ko] {
@@ -2104,6 +2208,19 @@ void Battle::draw() {
         g.poly({{sx - 5, sy - 1}, {sx + 5, sy - 1}, {sx + 5, sy + 6}, {sx, sy + 10}, {sx - 5, sy + 6}}, rgb(0xc8d6f0));
         g.poly({{sx - 4, sy}, {sx + 4, sy}, {sx + 4, sy + 6}, {sx, sy + 9}, {sx - 4, sy + 6}}, rgb(0x2a4a8a));
         g.text(sx + 1, sy + 1, std::to_string(f->shield), WHITE, 1, false);
+      }
+      // Rôle (2.7) : petite icône à droite de la barre (écu gris, croix verte, couronne dorée)
+      if (const std::string& role = f->S().combatRole; !role.empty()) {
+        float rx = p.x + bw + 5, ry = by - 2;
+        if (role == "protecteur") {
+          g.poly({{rx - 3, ry}, {rx + 3, ry}, {rx + 3, ry + 4}, {rx, ry + 6}, {rx - 3, ry + 4}}, rgb(0xd8dce8));
+          g.rect(rx - .5f, ry + 1, 1, 4, rgb(0x5a6070));
+        } else if (role == "soigneur") {
+          g.rect(rx - 1, ry, 2, 6, rgb(0x6fe08a));
+          g.rect(rx - 3, ry + 2, 6, 2, rgb(0x6fe08a));
+        } else {
+          g.poly({{rx - 3, ry + 5}, {rx - 3, ry}, {rx - 1.5f, ry + 2}, {rx, ry}, {rx + 1.5f, ry + 2}, {rx + 3, ry}, {rx + 3, ry + 5}}, rgb(0xffd34d));
+        }
       }
       int nw = 0;
       for (int ty = 0; ty < (int)types().size(); ty++)

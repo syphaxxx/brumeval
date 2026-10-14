@@ -187,6 +187,12 @@ std::vector<RuleField> ruleFields(Rules& r) {
       I("brisure", "bouclier", "Brisure : bouclier d'un ennemi", r.breakShield, 0, 20, 1),
       I("brisure", "bouclier_boss", "Brisure : bouclier d'un boss", r.breakShieldBoss, 0, 40, 1),
       D("brisure", "degats", "Brisure : dégâts reçus par un ennemi brisé", r.breakDamage, 1, 5, .05),
+      I("gemmes", "chatons_arme", "Gemmes : chatons d'une arme", r.socketWeapon, 0, 4, 1),
+      I("gemmes", "chatons_armure", "Gemmes : chatons d'une armure", r.socketArmor, 0, 4, 1),
+      I("gemmes", "chatons_accessoire", "Gemmes : chatons d'un accessoire", r.socketAccessory, 0, 4, 1),
+      I("gemmes", "forge_chaton", "Gemmes : niveau de forge qui ajoute un chaton", r.socketForge, 1, 9, 1),
+      D("roles", "protection", "Protecteur : dégâts retirés à ses voisins", r.roleGuard, 0, 1, .05),
+      D("roles", "chef", "Chef : vitesse ATB en plus de ses alliés", r.roleChief, 0, 2, .05),
       D("damier", "choc", "Pousser : choc (part des dégâts) si la case est prise", r.shoveClash, 0, 2, .05),
       I("damier", "terrain_min", "Terrain : cases spéciales par camp (minimum)", r.terrainMin, 0, 8, 1),
       I("damier", "terrain_max", "Terrain : cases spéciales par camp (maximum)", r.terrainMax, 0, 8, 1),
@@ -384,6 +390,7 @@ void rebuildData() {
     l.bottom = parseColor(o.at("bas"));
     l.hat = nameIndex(HATS, jget<std::string>(o, "coiffe", "aucune"), "Coiffe");
     l.weapon = nameIndex(WEAPONS, jget<std::string>(o, "arme", "aucune"), "Arme");
+    l.aliases = jget(o, "aussi", std::vector<std::string>{});
     return l;
   });
 
@@ -429,6 +436,7 @@ void rebuildData() {
     s.size = jget(o, "taille", 1.f);
     s.shield = jget(o, "bouclier", 0);
     s.talent = jget<std::string>(o, "talent", "");
+    s.combatRole = jget<std::string>(o, "role_combat", "");
     for (auto& t : o.value("tactiques", Json::array())) s.tactics.push_back(tacticFromJson(t));
     return s;
   });
@@ -461,6 +469,21 @@ void rebuildData() {
         while (i < N_GEAR_STATS && k != STATS[i]) i++;
         if (i == N_GEAR_STATS) throw std::runtime_error("Objet « " + d.id + " » : bonus inconnu « " + k + " »");
         d.bonus[i] = v.get<int>();
+      }
+    }
+    if (o.contains("gemme")) {
+      const Json& g = o["gemme"];
+      static const char* STATS[] = {"pv", "pm", "attaque", "defense", "magie", "resistance", "vitesse", "precision", "esquive", "critique"};
+      d.gem = true;
+      d.gemMove = jget<std::string>(g, "technique", "");
+      d.gemSupport = jget<std::string>(g, "soutien", "");
+      d.gemValue = jget(g, "valeur", 0.0);
+      Json bonus = g.value("bonus", Json::object());
+      for (auto& [k, v] : bonus.items()) {
+        int i = 0;
+        while (i < N_GEAR_STATS && k != STATS[i]) i++;
+        if (i == N_GEAR_STATS) throw std::runtime_error("Gemme « " + d.id + " » : bonus inconnu « " + k + " »");
+        d.gemBonus[i] = v.get<double>();
       }
     }
     return d;
@@ -541,6 +564,9 @@ std::vector<std::string> checkData() {
     if (std::find(std::begin(KINDS_T), std::end(KINDS_T), t.kind) == std::end(KINDS_T))
       err.push_back("Talent " + t.name + " : effet inconnu « " + t.kind + " »");
   for (auto& s : SPECIES)
+    if (!s.combatRole.empty() && s.combatRole != "protecteur" && s.combatRole != "soigneur" && s.combatRole != "chef")
+      err.push_back("Espèce " + s.name + " : rôle en combat inconnu « " + s.combatRole + " » (protecteur, soigneur ou chef)");
+  for (auto& s : SPECIES)
     if (!s.talent.empty() && !talentOf(s)) err.push_back("Espèce " + s.name + " : talent inconnu « " + s.talent + " »");
   static const char* KINDS_TR[] = {"degats", "poison", "soin", "lent", "esquive", "magie"};
   for (auto& t : r.terrains)
@@ -579,6 +605,13 @@ std::vector<std::string> checkData() {
       if (!ok) err.push_back("Duo " + d.move + " : membre inconnu « " + m + " »");
     }
   }
+  static const char* SUPPORTS[] = {"vol_vie", "contre", "eveil", "briseur"};
+  for (auto& d : ITEMS)
+    if (d.gem) {
+      if (!d.gemMove.empty() && !hasMove(d.gemMove)) err.push_back("Gemme " + d.name + " : technique inconnue « " + d.gemMove + " »");
+      if (!d.gemSupport.empty() && std::find(std::begin(SUPPORTS), std::end(SUPPORTS), d.gemSupport) == std::end(SUPPORTS))
+        err.push_back("Gemme " + d.name + " : soutien inconnu « " + d.gemSupport + " » (vol_vie, contre, eveil, briseur)");
+    }
   for (auto& td : r.typeDrops) {
     if (!hasItem(td.item)) err.push_back("Butin par type : objet inconnu « " + td.item + " »");
     bool known = false;
@@ -648,6 +681,14 @@ void Fighter::recalc() {
     mhp += g[GS_HP], mmp += g[GS_MP], atk += g[GS_ATK], def += g[GS_DEF], mag += g[GS_MAG], res += g[GS_RES], spd += g[GS_SPD];
     acc += g[GS_ACC], eva += g[GS_EVA], crit += g[GS_CRIT];
   }
+  std::array<double, N_GEAR_STATS> pct{};  // gemmes de bonus : en pourcentage
+  for (auto& slot : gems)
+    for (auto& id : slot)
+      if (hasItem(id))
+        for (int k = 0; k < N_GEAR_STATS; k++) pct[k] += item(id).gemBonus[k];
+  auto up = [&](int& v, int k) { v += int(std::lround(v * pct[k])); };
+  up(mhp, GS_HP), up(mmp, GS_MP), up(atk, GS_ATK), up(def, GS_DEF), up(mag, GS_MAG), up(res, GS_RES), up(spd, GS_SPD);
+  acc += int(pct[GS_ACC] * 100), eva += int(pct[GS_EVA] * 100), crit += int(pct[GS_CRIT] * 100);
   mhp = std::max(1, mhp), mmp = std::max(0, mmp);
 }
 
@@ -677,6 +718,28 @@ void evolve(Fighter& f) {
   f.hp = alive ? std::clamp(int(std::lround(f.mhp * hp)), 1, f.mhp) : 0;
   f.mp = std::clamp(int(std::lround(f.mmp * mp)), 0, f.mmp);
 }
+int gemSockets(const ItemDef& d) {
+  const Rules& r = RULES;
+  int n = d.slot == G_WEAPON ? r.socketWeapon : d.slot == G_ARMOR ? r.socketArmor : d.slot == G_ACCESSORY ? r.socketAccessory : 0;
+  return n + (d.forged >= r.socketForge ? 1 : 0);
+}
+double gemSupport(const Fighter& f, const char* kind) {
+  double v = 0;
+  for (auto& slot : f.gems)
+    for (auto& id : slot)
+      if (hasItem(id) && item(id).gemSupport == kind) v += item(id).gemValue;
+  return v;
+}
+std::vector<std::string> trimGems(Fighter& f) {
+  std::vector<std::string> out;
+  for (int s = 0; s < N_GEAR; s++) {
+    auto& v = f.gems[(size_t)s];
+    int n = f.gear[(size_t)s].empty() || !hasItem(f.gear[(size_t)s]) ? 0 : gemSockets(item(f.gear[(size_t)s]));
+    while ((int)v.size() > n) out.push_back(v.back()), v.pop_back();
+  }
+  return out;
+}
+
 bool canEquip(const Fighter& f, const ItemDef& d) { return d.slot == G_ACCESSORY || (d.slot >= 0 && f.S().human); }
 
 // Héros ? (faux pour une espèce disparue : monde d'une expédition déjà remis en place)
@@ -803,13 +866,36 @@ std::vector<std::string> Fighter::techs() const {
   for (auto& l : S().learn)
     if (l.lvl <= lvl && moveInfo(l.move).cost == 0) v.push_back(l.move);
   if (v.size() > 4) v.erase(v.begin(), v.end() - 4);
+  for (auto& id : bonusMoves)
+    if (hasMove(id) && moveInfo(id).cost == 0 && std::find(v.begin(), v.end(), id) == v.end()) v.push_back(id);
+  for (auto& slot : gems)  // gemmes serties
+    for (auto& g : slot)
+      if (hasItem(g) && hasMove(item(g).gemMove) && moveInfo(item(g).gemMove).cost == 0 && std::find(v.begin(), v.end(), item(g).gemMove) == v.end())
+        v.push_back(item(g).gemMove);
   return v;
 }
 std::vector<std::string> Fighter::spells() const {
   std::vector<std::string> v;
   for (auto& l : S().learn)
     if (l.lvl <= lvl && moveInfo(l.move).cost > 0) v.push_back(l.move);
+  for (auto& id : bonusMoves)
+    if (hasMove(id) && moveInfo(id).cost > 0 && std::find(v.begin(), v.end(), id) == v.end()) v.push_back(id);
+  for (auto& slot : gems)  // gemmes serties
+    for (auto& g : slot)
+      if (hasItem(g) && hasMove(item(g).gemMove) && moveInfo(item(g).gemMove).cost > 0 && std::find(v.begin(), v.end(), item(g).gemMove) == v.end())
+        v.push_back(item(g).gemMove);
   return v;
+}
+
+FighterP makeFoe(const Json& e, int defaultLevel) {
+  auto f = makeFighter(e.at("espece").get<std::string>(), jget(e, "niveau", defaultLevel));
+  float mult = jget(e, "pv", 1.f);
+  if (mult != 1.f) f->mhp = std::max(1, int(f->mhp * mult + 1e-4f));
+  f->hp = f->mhp;
+  f->boss = jget(e, "boss", false);
+  f->shieldMax = jget(e, "bouclier", 0);
+  if (e.contains("phases") && e["phases"].is_array()) f->phases = e["phases"];
+  return f;
 }
 
 FighterP makeFighter(const std::string& id, int lvl) {

@@ -75,6 +75,12 @@ COMMANDES
   changent chaque combat. Duo : deux alliés qui vont ensemble lancent
   une technique à deux (le partenaire dépense sa jauge ATB).
 
+  Gemmes : Échap > Équipement > un membre > Gemmes. Chaque équipement a
+  des chatons où sertir des gemmes (un sort, un bonus, un soutien).
+  Rôles : un protecteur (écu) protège ses voisins, un soigneur (croix)
+  soigne, un chef (couronne) presse ses alliés : abattez-les d'abord.
+  Les boss changent de phase quand leurs PV baissent.
+
   Échap > Réserve : les créatures capturées quand l'équipe (8 membres)
   est complète. Échap > Bestiaire : toutes les créatures rencontrées.
   En boutique, « Vendre… » rachète vos objets à moitié prix.

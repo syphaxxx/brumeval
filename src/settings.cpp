@@ -48,7 +48,7 @@ static void reorderKeys(Json& o, const std::vector<std::string>& order) {
 }
 static const std::vector<std::string> SPECIES_KEYS = {"id", "nom", "type", "types", "base", "precision", "esquive", "critique", "resistances",
                                                       "immunites", "humain", "apparence", "role", "forme", "couleurs", "apprend", "limite",
-                                                      "talent", "bouclier", "evolution", "taille", "tactiques"};
+                                                      "talent", "role_combat", "bouclier", "evolution", "taille", "tactiques"};
 static const std::vector<std::string> MOVE_KEYS = {"id", "nom", "type", "genre", "cible", "puissance", "portee", "zone", "cout", "precision", "critique", "rythme",
                                                    "effet", "effets", "description"};
 static const std::vector<std::string> ITEM_KEYS = {"id", "nom", "description", "prix", "combat", "menu", "important", "soin_pv", "soin_pm",

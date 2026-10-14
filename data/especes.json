@@ -146,7 +146,8 @@
     "apparence": "chef_bandit",
     "role": "Chef des bandits",
     "apprend": [[1, "hache"], [1, "coup_bas"], [1, "hurlement"], [1, "brise"]],
-    "talent": "intimidation"
+    "talent": "intimidation",
+    "role_combat": "chef"
   },
   {
     "id": "chevalier",
@@ -157,7 +158,8 @@
     "apparence": "chevalier",
     "role": "Gardien du temple",
     "apprend": [[1, "lance_acier"], [1, "bouclier"], [1, "eclat_glace"]],
-    "talent": "carapace"
+    "talent": "carapace",
+    "role_combat": "protecteur"
   },
   {
     "id": "mage_givre",
@@ -168,7 +170,8 @@
     "apparence": "mage_givre",
     "role": "Prêtresse du givre",
     "apprend": [[1, "baton"], [1, "eclat_glace"], [1, "poudreuse"], [1, "glaciation"], [1, "soin"]],
-    "talent": "meditation"
+    "talent": "meditation",
+    "role_combat": "soigneur"
   },
   {
     "id": "braisenard",
@@ -257,6 +260,7 @@
     "apprend": [[1, "charge"], [4, "bulle"], [10, "givre"], [12, "torrent"]],
     "limite": "lim_grenouillon",
     "talent": "regeneration",
+    "role_combat": "soigneur",
     "evolution": {"espece": "crapoison", "niveau": 18}
   },
   {
@@ -269,6 +273,7 @@
     "apprend": [[1, "charge"], [4, "spore"], [12, "seve"], [14, "pluie_spores"]],
     "limite": "lim_champichou",
     "talent": "regeneration",
+    "role_combat": "soigneur",
     "evolution": {"espece": "champignard", "niveau": 17}
   },
   {
@@ -282,6 +287,7 @@
     "apprend": [[1, "charge"], [7, "eboul"], [12, "avalanche"]],
     "limite": "lim_rocaillou",
     "talent": "carapace",
+    "role_combat": "protecteur",
     "evolution": {"espece": "galetor", "niveau": 16}
   },
   {
@@ -333,6 +339,7 @@
     "apprend": [[1, "charge"], [1, "eboul"], [1, "avalanche"], [16, "fracas"]],
     "limite": "lim_galetor",
     "talent": "carapace",
+    "role_combat": "protecteur",
     "taille": 1.15
   },
   {
@@ -396,6 +403,7 @@
     "apprend": [[1, "mordant"], [1, "hurlement"], [14, "ruee"], [16, "coup_bas"]],
     "limite": "lim_louvet",
     "talent": "intimidation",
+    "role_combat": "chef",
     "evolution": {"espece": "brumeloup", "niveau": 30}
   },
   {
@@ -409,6 +417,7 @@
     "apprend": [[1, "onde"], [1, "hypnose"], [15, "cauchemar"], [24, "hurlement_spectral"]],
     "limite": "lim_esprillon",
     "talent": "furtif",
+    "role_combat": "soigneur",
     "evolution": {"espece": "nebulis", "niveau": 32}
   },
   {
@@ -442,6 +451,7 @@
     "apprend": [[1, "jet_pierres"], [1, "carapace"], [13, "jet"], [17, "seisme"]],
     "limite": "lim_carapierre",
     "talent": "carapace",
+    "role_combat": "protecteur",
     "evolution": {"espece": "carapic", "niveau": 28}
   },
   {
@@ -481,6 +491,7 @@
     "apprend": [[1, "coup_acier"], [1, "blindage"], [25, "seisme"], [28, "eclats_acier"]],
     "limite": "lim_ferrolin",
     "talent": "carapace",
+    "role_combat": "protecteur",
     "evolution": {"espece": "ferrogeant", "niveau": 34}
   },
   {
@@ -584,6 +595,7 @@
     "apprend": [[1, "charge"], [4, "spore"], [12, "seve"], [14, "pluie_spores"], [24, "nuage_toxique"]],
     "limite": "lim_champignard",
     "talent": "regeneration",
+    "role_combat": "soigneur",
     "taille": 1.15
   },
   {
@@ -621,6 +633,7 @@
     "apprend": [[1, "bulle"], [1, "gel"], [12, "givre"], [26, "poudreuse"], [32, "glaciation"]],
     "limite": "lim_banquisot",
     "talent": "ecorce",
+    "role_combat": "protecteur",
     "taille": 1.15
   },
   {
@@ -679,6 +692,7 @@
     ],
     "limite": "lim_carapic",
     "talent": "carapace",
+    "role_combat": "protecteur",
     "taille": 1.15
   },
   {
@@ -725,6 +739,7 @@
     ],
     "limite": "lim_ferrogeant",
     "talent": "carapace",
+    "role_combat": "protecteur",
     "taille": 1.15
   },
   {
@@ -819,6 +834,7 @@
     ],
     "limite": "lim_brumeloup",
     "talent": "intimidation",
+    "role_combat": "chef",
     "taille": 1.15
   },
   {
@@ -832,6 +848,7 @@
     "apprend": [[1, "onde"], [1, "regard"], [1, "cauchemar"], [1, "hypnose"], [34, "hurlement_spectral"]],
     "limite": "lim_esprillon",
     "talent": "furtif",
+    "role_combat": "soigneur",
     "taille": 1.15
   },
   {
@@ -844,7 +861,8 @@
     "couleurs": ["#5a4f78", "#c8bff0"],
     "apprend": [[1, "jet_pierres"], [1, "voile"], [1, "brume"], [36, "seisme"]],
     "limite": "lim_galetor",
-    "talent": "ecorce"
+    "talent": "ecorce",
+    "role_combat": "protecteur"
   },
   {
     "id": "mere_brumes",

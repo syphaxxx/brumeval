@@ -18,8 +18,10 @@ static Json creatureJson(const Fighter& f) {
   for (auto& t : f.tactics) tac.push_back(Json::array({t.on, t.cond, t.value, (int)t.kind, t.act}));
   Json gear = Json::array();
   for (auto& g : f.gear) gear.push_back(g);
+  Json gems = Json::array();  // gemmes serties (2.7) : elles partent avec leur équipement
+  for (auto& slot : f.gems) gems.push_back(slot);
   return Json{{"sp", f.sp}, {"lvl", f.lvl}, {"xp", f.xp}, {"hp", f.hp}, {"mp", f.mp}, {"lim", (int)f.lim}, {"auto", f.tacticsOn}, {"tac", tac},
-              {"equipement", gear}};
+              {"equipement", gear}, {"gemmes", gems}};
 }
 
 // Une créature reçue, vérifiée : espèce connue ici (à plusieurs, une créature d'une région pas
@@ -34,6 +36,12 @@ static FighterP creatureFrom(const Json& j) {
     if (gear[i].is_string() && hasItem(gear[i].get<std::string>()) && item(gear[i].get<std::string>()).slot == (int)i &&
         canEquip(*f, item(gear[i].get<std::string>())))
       f->gear[i] = gear[i].get<std::string>();
+  Json gems = j.value("gemmes", Json::array());
+  for (size_t i = 0; i < gems.size() && i < f->gems.size(); i++)
+    if (gems[i].is_array())
+      for (auto& g : gems[i])
+        if (g.is_string() && hasItem(g.get<std::string>()) && item(g.get<std::string>()).gem) f->gems[i].push_back(g.get<std::string>());
+  trimGems(*f);
   f->recalc();
   f->xp = std::clamp(jget(j, "xp", 0), 0, f->need());
   f->hp = std::clamp(jget(j, "hp", f->mhp), 0, f->mhp);

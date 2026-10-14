@@ -545,6 +545,77 @@ void Game::gearSlots(FighterP f, int who, int sel) {
     m.items.push_back(it);
   }
   m.sel = 1 + 2 * std::clamp(sel, 0, N_GEAR - 1);
+  int sockets = 0, set = 0;
+  for (int s = 0; s < N_GEAR; s++) {
+    const std::string& id = f->gear[(size_t)s];
+    if (!id.empty() && hasItem(id)) sockets += gemSockets(item(id));
+    set += (int)f->gems[(size_t)s].size();
+  }
+  m.items.push_back({"Gemmes", sockets ? std::to_string(set) + "/" + std::to_string(sockets) : "",
+                     sockets ? "Sertir des gemmes dans les chatons de l'équipement porté." : "Il faut porter un équipement pour sertir des gemmes.", sockets > 0,
+                     [this, f, who] { gemMenu(f, who); }});
+  m.items.push_back({"Retour", "", "", true, [this] { menus.pop(); }});
+  teamPanelSel_ = who;
+  menus.push(m);
+}
+
+// Gemmes (2.7) : chaque chaton de l'équipement porté, puis la gemme du sac à y mettre (ou la retirer)
+void Game::gemMenu(FighterP f, int who, int sel) {
+  Menu m;
+  m.title = "Gemmes";
+  m.x = 8, m.y = 8, m.w = 132, m.rows = 8;
+  auto reopen = [this, f, who](int at) {
+    menus.pop();
+    menus.pop();
+    gemMenu(f, who, at);
+  };
+  int row = 0;
+  for (int s = 0; s < N_GEAR; s++) {
+    const std::string& gid = f->gear[(size_t)s];
+    if (gid.empty() || !hasItem(gid)) continue;
+    int n = gemSockets(item(gid));
+    for (int k = 0; k < n; k++, row++) {
+      auto& slot = f->gems[(size_t)s];
+      std::string cur = k < (int)slot.size() ? slot[(size_t)k] : "";
+      MenuItem it{std::string(gearSlotName(s)) + " : " + (cur.empty() ? "(vide)" : item(cur).name), "",
+                  cur.empty() ? "Entrée : choisir une gemme du sac." : itemHelp(item(cur)), true, [this, f, s, k, cur, reopen, row] {
+                    Menu p;
+                    p.title = "Sertir";
+                    p.x = 8, p.y = 8, p.w = 132, p.rows = 7;
+                    auto put = [this, f, s, k, cur, reopen, row](const std::string& id) {
+                      auto& v = f->gems[(size_t)s];
+                      if (!cur.empty()) {
+                        items[cur]++;
+                        v.erase(v.begin() + k);
+                      }
+                      if (!id.empty()) {
+                        items[id]--;
+                        v.insert(v.begin() + std::min(k, (int)v.size()), id);
+                      }
+                      int lostHp = f->mhp - f->hp, lostMp = f->mmp - f->mp;
+                      f->recalc();
+                      f->hp = std::clamp(f->mhp - lostHp, f->alive() ? 1 : 0, f->mhp);
+                      f->mp = std::clamp(f->mmp - lostMp, 0, f->mmp);
+                      audio::play("achat");
+                      reopen(row);
+                    };
+                    for (auto& d : allItems()) {
+                      int have = items.count(d.id) ? items[d.id] : 0;
+                      if (!d.gem || have <= 0) continue;
+                      std::string id = d.id;
+                      MenuItem g{d.name, "×" + std::to_string(have), itemHelp(d), true, [put, id] { put(id); }};
+                      g.shrink = true;
+                      p.items.push_back(g);
+                    }
+                    if (!cur.empty()) p.items.push_back({"Retirer", "", "Remettre " + item(cur).name + " dans le sac.", true, [put] { put(""); }});
+                    if (p.items.empty()) p.items.push_back({"(aucune gemme)", "", "Les gemmes se trouvent dans les boutiques, les coffres et sur les boss.", false, nullptr});
+                    menus.push(p);
+                  }};
+      it.shrink = true;
+      m.items.push_back(it);
+    }
+  }
+  m.sel = std::clamp(sel, 0, std::max(0, (int)m.items.size() - 1));
   m.items.push_back({"Retour", "", "", true, [this] { menus.pop(); }});
   teamPanelSel_ = who;
   menus.push(m);
@@ -558,6 +629,7 @@ void Game::gearPick(FighterP f, int who, int s) {
     if (!id.empty()) items[id]--;
     int lostHp = f->mhp - f->hp, lostMp = f->mmp - f->mp;
     cur = id;
+    for (auto& g : trimGems(*f)) items[g]++;  // gemmes en trop (moins de chatons) : rendues au sac
     f->recalc();
     f->hp = std::clamp(f->mhp - lostHp, f->alive() ? 1 : 0, f->mhp);  // les PV perdus restent perdus
     f->mp = std::clamp(f->mmp - lostMp, 0, f->mmp);

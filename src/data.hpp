@@ -99,6 +99,7 @@ struct Look {
   uint32_t hair, skin, top, bottom;
   int hat;     // 0 aucune, 1 capuche, 2 chapeau pointu, 3 bandeau, 4 casque, 5 foulard
   int weapon;  // 0 aucune, 1 épée, 2 bâton, 3 hache, 4 dague, 5 arc, 6 lance
+  std::vector<std::string> aliases;  // autres noms de celui qui parle (« aussi ») : son portrait dans les dialogues
 };
 
 // Tactique (comme les « gambits » de Final Fantasy XII) : « si condition, alors action ».
@@ -135,6 +136,7 @@ struct Species {
   int evolveLvl = 0;
   float size = 1;  // taille du dessin (formes évoluées : un peu plus grandes)
   int shield = 0;  // Brisure (2.5) : points de bouclier de l'espèce en ennemi (0 : valeur des règles)
+  std::string combatRole;  // Rôle en combat (2.7, « role_combat ») : protecteur, soigneur ou chef (vide : aucun)
   std::string talent;  // Talent passif (2.5, inspiré de Pokémon) : identifiant dans les règles (« talents »)
 };
 
@@ -163,6 +165,13 @@ struct ItemDef {
   // chargement (pas dans objets.json) : forged = son niveau, base = l'objet d'origine
   int forged = 0;
   std::string base;
+  // Gemme (2.7, comme les matérias de Final Fantasy VII) : se sertit dans un chaton d'un équipement
+  // porté. gemMove : technique qu'elle donne ; gemBonus : statistiques en pourcentage (0.1 = +10 %) ;
+  // gemSupport / gemValue : effet de soutien (vol_vie, contre, eveil, briseur)
+  bool gem = false;
+  std::string gemMove, gemSupport;
+  double gemValue = 0;
+  std::array<double, N_GEAR_STATS> gemBonus{};
   std::string bonusText() const;  // « +4 Attaque, +10 PV »
 };
 std::string forgedId(const std::string& base, int level);  // "epee_fer" et 2 : "epee_fer+2"
@@ -201,6 +210,11 @@ struct Rules {
   double breakDamage = 1.5;
   // Pousser / tirer (2.6) : choc quand la case d'arrivée est prise (part des dégâts du coup, aux deux)
   double shoveClash = .5;
+  // Rôles des ennemis (2.7) : protection des voisins du protecteur (part des dégâts retirée),
+  // vitesse ATB en plus des alliés d'un chef
+  double roleGuard = .3, roleChief = .2;
+  // Gemmes (2.7) : chatons d'une arme, d'une armure, d'un accessoire ; niveau de forge qui en ajoute un
+  int socketWeapon = 1, socketArmor = 1, socketAccessory = 1, socketForge = 2;
   // Terrain (2.6) : nombre de cases spéciales sur chaque damier
   int terrainMin = 0, terrainMax = 2;
   // États
@@ -345,12 +359,18 @@ struct Fighter {
   std::vector<Tactic> tactics;
   bool tacticsOn = true;
   std::array<std::string, N_GEAR> gear;  // équipement porté (objets de data/objets.json, vide : rien)
+  std::array<std::vector<std::string>, N_GEAR> gems;  // gemmes serties dans chaque équipement (2.7)
   int cell = -1;                         // formation : case choisie sur le damier (-1 : automatique)
   bool evolveLater = false;              // évolution refusée : proposée de nouveau seulement par Échap > Évolution
   // Brisure (2.5), seulement pendant un combat : bouclier d'un ennemi ; un coup sur une faiblesse
   // retire un point ; à zéro, il est brisé jusqu'à son prochain tour (perdu) et subit plus de dégâts
   int shield = 0, shieldMax = 0;
   bool broken = false;
+  // Phases d'un boss (2.7) : la liste « phases » de l'ennemi dans son combat (evenements.json) ; phase :
+  // nombre de phases déjà passées. bonusMoves : techniques en plus (phase d'un boss)
+  Json phases;
+  int phase = 0;
+  std::vector<std::string> bonusMoves;
   // Héros : la créature compagnon choisie par le joueur (vide : la première créature libre de l'équipe)
   std::weak_ptr<Fighter> companion;
 
@@ -375,6 +395,8 @@ float frand();              // nombre entre 0 et 1
 int irand(int lo, int hi);  // entier entre lo et hi inclus
 
 FighterP makeFighter(const std::string& id, int lvl);
+// Un ennemi décrit dans un combat (« espece », « niveau », « pv » multiplicateur, « boss », « bouclier », « phases »)
+FighterP makeFoe(const Json& e, int defaultLevel);
 // Qui combat : les « heroes » premiers héros valides de l'équipe, chacun suivi de son compagnon
 // (sa créature choisie, sinon la première créature libre, dans l'ordre de l'équipe). Une équipe
 // sans héros (mode test, Arène) combat comme avant : ses premiers membres valides.
@@ -392,6 +414,11 @@ float guardianScale(int allies, int players);
 Json gearJson(const Fighter& f);
 void applyGear(Fighter& f, const Json& gear);
 bool canEquip(const Fighter& f, const ItemDef& d);  // emplacement permis pour ce combattant
+// Gemmes (2.7) : chatons d'un équipement (règles « gemmes », + 1 forgé à partir de +2) ; valeur d'un
+// effet de soutien serti (somme) ; retire les gemmes en trop (rendues au sac par l'appelant)
+int gemSockets(const ItemDef& d);
+double gemSupport(const Fighter& f, const char* kind);
+std::vector<std::string> trimGems(Fighter& f);
 // Évolution : la créature a atteint le niveau de son évolution ; evolve la fait évoluer (même niveau,
 // équipement, tactiques et case ; PV et PM gardent la même proportion)
 bool canEvolve(const Fighter& f);

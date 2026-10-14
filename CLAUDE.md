@@ -345,6 +345,16 @@ code) ; `docs/GUIDE.md` les range par domaine.
   « attaque » (`Plan::duo`). Expédition : seuls les duos `humain`/`type:` restent (`Expedition::install`). Jour et nuit
   sur les cartes : `Game::nightAmount` (12 min par jour, dehors seulement), `drawBuildingLights`,
   `drawChimneySmoke` ; le combat s'assombrit aussi.
+- Stratégie 2.7 (FF7, boss en phases) : gemmes `ItemDef::gem` (`gemMove`, `gemBonus` en %, `gemSupport`/`gemValue`),
+  `Fighter::gems[emplacement]` (ligne `gemmes <emplacement> id…` après `equipement`, aussi dans les échanges),
+  `gemSockets` (règles `gemmes`), `trimGems` (rendues au sac quand l'équipement change), `gemSupport(f, effet)` ;
+  `recalc` ajoute les bonus, `techs`/`spells` les techniques (et `bonusMoves`) ; effets dans `applyHit` (vol de vie,
+  riposte avec `countering_`, briseur) et le constructeur (éveil). Menu `Game::gemMenu` (Équipement > Gemmes) ;
+  `Pilot::socketGems` (à chaque `plan`). Rôles `Species::combatRole` (champ `role_combat`) : `guardMult` (protecteur,
+  dans `applyHit` et `attackScore`), `atbRate` (chef), `roleHeal` (soigneur, dans `enemyTurn`) ; icône dans `draw`.
+  Phases : `makeFoe` (data.cpp, partagé par events, pilote et tests) garde `phases` ; `Battle::checkPhase` après
+  chaque technique (bouclier, bonus, techniques, météo, renforts ajoutés à `foes`) ; jamais en ligne. Portraits :
+  `speakerLook` (game.cpp) ; titre animé dans `drawTitle`.
 - Données en mémoire : `dataDoc(DF_…)` garde chaque fichier de data/ sous forme
   de JSON ; `rebuildData()` reconstruit les structures du jeu à partir de ces
   documents, `saveDataDoc` les écrit. Les Réglages ne touchent qu'aux documents,

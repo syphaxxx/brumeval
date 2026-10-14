@@ -15,6 +15,15 @@ Méthode :
 
 ## Historique des mesures
 
+- **Rôles, phases, gemmes** (2.7, 2026-10-14) : les simulations « équipées » sertissent aussi les gemmes des
+  boutiques de la région (`equipParty`). Premier essai trop dur (Ignarok 2 / 8 / 8 %, Mère des Brumes 3 / 5 / 6 %) :
+  la canicule de la phase d'Ignarok annulait l'avantage de l'Eau (remplacée par une carapace reformée, bouclier 10),
+  la Mère gagnait un Brumeloup chef en renfort (retiré), la Ronce-Mère deux soigneurs (un seul). Ignarok ×8, chef des
+  bandits ×1,7, Mère des Brumes ×7,5. Mesuré (BRUMEVAL_SIMULATIONS=2 ; IA sans équipement / boutiques et gemmes /
+  forgé) : Sylvarque 5 / 43 / 47 %, Golem 30 / 60 / 60 %, Ronce-Mère 6 / 51 / 58 %, Ignarok 8 / 43 / 56 %,
+  Givrecorne 48 / 80 / 92 %, cristal 25 / 96 / 98 %, Mère des Brumes 1 / 26 / 55 %, chef des bandits 1 % (IA).
+  Sans équipement on perd presque toujours : s'équiper, sertir et viser soigneurs et faiblesses est indispensable.
+
 - **Pousser, météo, terrain, duos** (2.6, 2026-10-14) : les ennemis poussent et tirent aussi, la canicule de
   Cendrelune renforce Ignarok ; les duos renforcent l'équipe. L'IA dépensait les PM de Maëlle dans des duos (Sylvarque
   forgé 47 → 17 %) : un duo n'est choisi par l'IA ou les tactiques que si le partenaire garde 40 % de ses PM.

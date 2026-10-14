@@ -167,6 +167,7 @@ class Pilot {
   bool shopPlanned_ = false;
   void shopping();
   void equipBest();
+  void socketGems();  // gemmes du sac dans les chatons libres (2.7)
   void forging();            // forge : renforce l'équipement porté tant que l'or et les matériaux le permettent
   bool forgeWanted() const;  // une arme ou armure portée peut être forgée maintenant
   float gearScore(const Fighter& f, const ItemDef& d) const;

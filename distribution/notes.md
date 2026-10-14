@@ -1,11 +1,12 @@
 ## Nouveautés
 
-- **Pousser et tirer** (comme dans Into the Breach) : Charge, Ruée, Rafale, Vague, Fracas… repoussent l'ennemi d'une case ; la Flèche-grappin de Kael, Tornade ou Étreinte le tirent vers l'avant. Case déjà prise ou bord du damier : **choc** pour les deux ! Les ennemis aussi vous poussent.
-- **Météo et terrain** : pluie, canicule, blizzard, orage, brume… renforcent ou affaiblissent certains types. Des cases spéciales apparaissent sur le damier : braises, ronces, verglas, herbes hautes, source, cristaux.
-- **Duos** (comme Chrono Trigger) : deux alliés qui vont ensemble lancent une technique à deux, bien plus forte (menu **Duo**) : Lame sacrée de Lior et Maëlle, chaque héros avec sa créature, Feu + Vent…
-- **Jour et nuit** sur les cartes : fenêtres allumées, lanterne, lucioles ; fumée des cheminées, feuilles qui tombent, papillons.
+- **Gemmes** (comme les matérias de Final Fantasy VII) : sertissez-les dans les chatons de vos armes, armures et accessoires (Échap > Équipement > Gemmes). Elles donnent un sort (Feu, Soin, Brasier…), un bonus ou un soutien (vampire, riposte, éveil, brise-garde). En boutique, et chaque grand boss en laisse une.
+- **Rôles des ennemis** : protecteur (protège ses voisins), soigneur, chef (accélère ses alliés). Abattez-les d'abord !
+- **Boss en plusieurs phases** : sous un seuil de PV, ils changent de forme (bouclier rechargé, nouvelles attaques, météo, renforts).
+- **Graphismes** : portraits dans les dialogues, écran titre animé.
 
-Dans la 2.5 : Brisure (boucliers et faiblesses), ordre des tours, talents des espèces, effets visuels par type, boss plus durs.
+Dans la 2.6 : pousser et tirer sur le damier, météo et terrain, techniques en duo, jour et nuit.
+Dans la 2.5 : Brisure (boucliers et faiblesses), ordre des tours, talents des espèces.
 
 ## Télécharger
 

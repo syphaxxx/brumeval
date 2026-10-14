@@ -94,7 +94,7 @@ l'utilisateur, en deux versions.
     du combat, techniques combinées entre deux alliés (Chrono Trigger) ; jour et
     nuit sur les cartes, fumée, feuilles, papillons.
   - **2.7** : gemmes à sertir (matéria de FF7), rôles des ennemis et phases des
-    boss.
+    boss ; portraits dans les dialogues, écran titre animé.
   - À chaque version : graphismes (cartes vivantes, jour et nuit, portraits,
     icônes de type, titre animé), le joueur automatique apprend la mécanique,
     équilibrage mesuré, une page d'Aide par règle.

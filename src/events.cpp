@@ -82,8 +82,26 @@ static void checkAction(const Json& a, const std::string& where, std::vector<std
   } else if (k == "combat") {
     if (need("ennemis")) {
       if (a["ennemis"].empty() || a["ennemis"].size() > 6) err.push_back(w + " : il faut entre 1 et 6 ennemis");
-      for (auto& e : a["ennemis"])
+      for (auto& e : a["ennemis"]) {
         if (!hasSpecies(jget<std::string>(e, "espece", ""))) err.push_back(w + " : espèce inconnue « " + jget<std::string>(e, "espece", "") + " »");
+        for (auto& p : e.value("phases", Json::array())) {  // phases d'un boss (2.7)
+          float pv = jget(p, "pv", 0.f);
+          if (pv <= 0 || pv >= 1) err.push_back(w + " : une phase doit avoir « pv » entre 0 et 1");
+          for (auto& r : p.value("renforts", Json::array()))
+            if (!hasSpecies(jget<std::string>(r, "espece", ""))) err.push_back(w + " : phase, renfort inconnu « " + jget<std::string>(r, "espece", "") + " »");
+          for (auto& m : jget(p, "techniques", std::vector<std::string>{}))
+            if (!hasMove(m)) err.push_back(w + " : phase, technique inconnue « " + m + " »");
+          std::string me = jget<std::string>(p, "meteo", "");
+          bool okW = me.empty();
+          for (auto& x : rules().weathers) okW = okW || x.id == me;
+          if (!okW) err.push_back(w + " : phase, météo inconnue « " + me + " »");
+          Json b = p.value("bonus", Json::object());
+          for (auto& [st, v] : b.items()) {
+            static const char* ST[] = {"attaque", "defense", "magie", "resistance", "vitesse"};
+            if (std::find(std::begin(ST), std::end(ST), st) == std::end(ST)) err.push_back(w + " : phase, bonus inconnu « " + st + " »");
+          }
+        }
+      }
     }
     for (auto& e : a.value("renforts", Json::array()))
       if (!hasSpecies(jget<std::string>(e, "espece", ""))) err.push_back(w + " : espèce inconnue en renfort « " + jget<std::string>(e, "espece", "") + " »");
@@ -243,15 +261,7 @@ void Game::execAction(const Json& a) {
   } else if (k == "recruter") {
     recruit(a["espece"].get<std::string>(), jget(a, "niveau", 1));
   } else if (k == "combat") {
-    auto make = [&](const Json& e) {
-      auto f = makeFighter(e.at("espece").get<std::string>(), jget(e, "niveau", avgLevel()));
-      float mult = jget(e, "pv", 1.f);
-      if (mult != 1.f) f->mhp = std::max(1, int(f->mhp * mult + 1e-4f));
-      f->hp = f->mhp;
-      f->boss = jget(e, "boss", false);
-      f->shieldMax = jget(e, "bouclier", 0);
-      return f;
-    };
+    auto make = [&](const Json& e) { return makeFoe(e, avgLevel()); };
     BattleSetup setup;
     for (auto& e : a["ennemis"]) setup.foes.push_back(make(e));
     for (auto& e : a.value("renforts", Json::array())) setup.reserve.push_back(make(e));

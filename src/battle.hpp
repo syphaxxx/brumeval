@@ -219,6 +219,14 @@ class Battle {
   int applyHit(const FighterP& a, const FighterP& d, const Move& m, float mult = 1);  // -1 si raté ; mult : autour de la cible d'une zone
   void applyEffect(const FighterP& t, const Effect& e);
   void breakFoe(const FighterP& d);  // Brisure : bouclier à zéro
+  void initFoe(const FighterP& e);   // bouclier de Brisure d'un ennemi qui entre (début, renfort)
+  // Phases d'un boss (2.7) : sous un seuil de PV, message, bouclier rechargé, bonus, techniques,
+  // météo, renforts (jamais en ligne)
+  void checkPhase(const FighterP& f);
+  // Rôles (2.7) : protecteur (ses voisins prennent moins de dégâts), soigneur (l'ordinateur soigne
+  // ses alliés), chef (ses alliés ont une jauge plus rapide)
+  float guardMult(const FighterP& d) const;  // dégâts reçus par d (protecteur voisin vivant)
+  bool roleHeal(const FighterP& e);          // ennemi soigneur : soigne un allié blessé ; vrai si joué
   // 2.6 : pousser / tirer (Into the Breach). La cible change de colonne ; case prise ou bord : choc.
   // Les combattants mis K.O. par le choc sont ajoutés à ko.
   void shove(const FighterP& a, const FighterP& t, const Move& m, int dmg, std::vector<FighterP>& ko);
@@ -235,6 +243,7 @@ class Battle {
   float atbRate(const FighterP& f) const;  // vitesse de sa jauge ATB (compagnon, verglas)
   void drawWeather();
   float shakeT_ = -10;               // l'écran tremble (brisure, coup critique)
+  bool countering_ = false;          // une riposte (gemme) est en cours : pas de riposte à la riposte
   void knockOut(const FighterP& f);
 
   // Menus de commande

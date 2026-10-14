@@ -68,6 +68,21 @@ static std::vector<HelpPage> helpPages() {
                     " de dégâts et perd son prochain tour. Puis il se ressaisit, bouclier rechargé.",
                 "Le bon moment pour les plus gros coups et les Limites : brisez d'abord, frappez ensuite.",
                 "Dans le menu de la cible, « faiblesse ! » signale un type déjà découvert ; « ? », un type pas encore essayé contre lui."}});
+  p.push_back({"Gemmes", "Sertir des gemmes dans l'équipement.",
+               {"Chaque équipement porté a des chatons : " + std::to_string(R.socketWeapon) + " pour une arme, " + std::to_string(R.socketArmor) +
+                    " pour une armure, " + std::to_string(R.socketAccessory) + " pour un accessoire, un de plus forgé à +" + std::to_string(R.socketForge) + ".",
+                "Échap > Équipement > un membre > Gemmes : choisir un chaton, puis la gemme du sac (ou la retirer).",
+                "Gemmes de technique : donnent un sort ou une technique (Feu, Soin, Rempart…), même à une créature.",
+                "Gemmes de bonus : un pourcentage de PV, d'Attaque ou de Magie en plus.",
+                "Gemmes de soutien : éveil (jauge avancée au début du combat), vampire (rend une part des dégâts infligés), riposte (rend les coups au corps à corps), brise-garde (use plus les boucliers).",
+                "On les achète dans les boutiques ; chaque grand boss en laisse une. Changer d'équipement rend au sac les gemmes qui n'ont plus de place."}});
+  p.push_back({"Rôles", "Les rôles des ennemis, les phases des boss.",
+               {"Certaines créatures ont un rôle, montré par une icône à droite de leur barre de vie (et dans le menu de la cible) :",
+                "Protecteur (écu gris) : ses voisins de damier (en croix) reçoivent " + pct(R.roleGuard) + " de dégâts en moins. Abattez-le ou poussez sa cible loin de lui.",
+                "Soigneur (croix verte) : soigne ses alliés blessés au lieu d'attaquer. À éliminer en premier.",
+                "Chef (couronne) : tant qu'il est debout, la jauge ATB de ses alliés va " + pct(R.roleChief) + " plus vite.",
+                "Vos créatures protectrices et chefs aident aussi votre équipe.",
+                "Les boss ont des phases : sous un seuil de PV, ils changent (bouclier rechargé, bonus, nouvelles techniques, autre météo, renforts). Gardez de quoi encaisser leur seconde forme."}});
   p.push_back({"Pousser", "Pousser et tirer les combattants sur le damier.",
                {"Certaines techniques poussent la cible d'une case vers l'arrière (Charge, Ruée, Rafale, Vague, Fracas…) ou la tirent vers l'avant (Flèche-grappin, Tornade, Étreinte…). Leur description le précise.",
                 "Si la case d'arrivée est déjà prise, les deux combattants se heurtent : chacun subit un choc de " + pct(R.shoveClash) +
