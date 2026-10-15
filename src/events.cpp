@@ -152,7 +152,8 @@ std::vector<std::string> checkEvents() {
     for (auto& t : m.triggers) ref(t.event, m.name + T(", déclencheur (") + std::to_string(t.x) + ", " + std::to_string(t.y) + ")");
     for (auto& w : m.warps)
       if (!w.condition.is_null()) checkCondition(w.condition, m.name + T(", passage (") + std::to_string(w.x) + ", " + std::to_string(w.y) + ")", err);
-    for (auto& b : m.buildings) ref(b.event, m.name + T(", bâtiment « ") + b.name + " »");
+    for (auto& b : m.buildings)
+      if (!b.decor()) ref(b.event, m.name + T(", bâtiment « ") + b.name + " »");
     for (auto& b : m.bosses) ref(b.event, m.name + T(", boss « ") + b.id + " »");
   }
   ref(rules().startEvent, T("Règles, départ"));

@@ -1,5 +1,6 @@
 #include "sprites.hpp"
 
+#include <algorithm>
 #include <cmath>
 
 static const Color INK = rgb(0x1a1a24);
@@ -13,9 +14,21 @@ static void eyes(const Xf& x, float x1, float x2, float y, float r = 2) {
 // ---------------------------------------------------------------------------
 // Créatures (regard tourné vers la gauche par défaut)
 // ---------------------------------------------------------------------------
+// Échelle d'un sprite : un nombre entier de fois (pixels nets) ; seulement pour les petites vignettes, une
+// réduction
+static float crisp(float k) { return k >= .8f ? std::max(1.f, std::round(k)) : k; }
+
 void drawCreature(Gfx& g, const std::string& id, float x, float y, float s, bool flip, float t) {
   const Species& sp = species(id);
   s *= sp.size;
+  if (const SpriteRect* r = sp.sprite.empty() ? nullptr : findSprite(sp.sprite)) {
+    // Sprite (regard vers la gauche) : centré en x, posé sur l'ombre (y + 15)
+    float k = crisp(s);
+    float bob = std::round(std::sin(t * 3.1f));
+    g.ellipse(x, y + 15 * s, std::max(6.f, r->w * k * .38f), 3 * s, rgb(0, 46));
+    g.sprite(*r, std::round(x - r->w * k / 2), std::round(y + 16 * s - r->h * k + bob), flip, k);
+    return;
+  }
   Color C = rgb(sp.c1), L = rgb(sp.c2), D = shade(C, .3f);
   Xf X{g, x, y + std::round(std::sin(t * 3.1f)), s, flip};
   X.ell(0, 15, 15, 3.5f, rgb(0, 46));
@@ -216,7 +229,49 @@ void drawCreature(Gfx& g, const std::string& id, float x, float y, float s, bool
 // ---------------------------------------------------------------------------
 // Humains
 // ---------------------------------------------------------------------------
+// Sprite d'un personnage : (x, y) = coin haut-gauche de sa case de 16x16 agrandie s fois. Sur la carte (s < 1,5) :
+// <sprite>_<direction>_<image> (gauche = droite retournée et inversement ; direction absente : de face) ; en plus
+// grand (combat, menus) : <sprite>_combat, tourné vers la gauche.
+static bool humanSprite(Gfx& g, const Look& lk, float x, float y, float s, int dir, int step) {
+  if (lk.sprite.empty()) return false;
+  const std::string& p = lk.sprite;
+  if (s >= 1.5f) {
+    const SpriteRect* r = findSprite(p + "_combat");
+    float k = std::max(1.f, std::round(s / 2));
+    if (!r) {  // pas de grand sprite : celui de la carte, agrandi
+      r = findSprite(p + "_bas_0");
+      k = std::max(1.f, std::round(s * .75f));
+    }
+    if (!r) return false;
+    float cx = x + 8 * s, bottom = y + 16 * s;
+    g.ellipse(cx, bottom - 1, r->w * k * .36f, 2 * k, rgb(0, 50));
+    g.sprite(*r, std::round(cx - r->w * k / 2), std::round(bottom - r->h * k), dir == 3, k);
+    return true;
+  }
+  static const char* NAMES[] = {"haut", "bas", "gauche", "droite"};
+  auto frame = [&](const std::string& d) -> const SpriteRect* {
+    // pas de marche : 0 immobile, 1 et 2 en alternance ; 4 images (0 et 2 au repos) ou 2 images
+    bool four = findSprite(p + "_" + d + "_3") != nullptr;
+    int f = step == 0 ? 0 : step == 1 ? 1 : (four ? 3 : 1);
+    const SpriteRect* r = findSprite(p + "_" + d + "_" + std::to_string(f));
+    return r ? r : findSprite(p + "_" + d + "_0");
+  };
+  bool flip = false;
+  const SpriteRect* r = frame(NAMES[dir & 3]);
+  if (!r && (dir == 2 || dir == 3)) {
+    r = frame(NAMES[dir == 2 ? 3 : 2]);
+    flip = r != nullptr;
+  }
+  if (!r) r = frame("bas");
+  if (!r && (r = findSprite(p))) flip = dir == 3;  // animal : un seul sprite, tourné vers la gauche
+  if (!r) return false;
+  g.ellipse(x + 8 * s, y + 15 * s, 6 * s, 2 * s, rgb(0, 50));
+  g.sprite(*r, std::round(x + (16 * s - r->w * s) / 2), std::round(y + 16 * s - r->h * s), flip, s);
+  return true;
+}
+
 void drawHuman(Gfx& g, const Look& lk, float x, float y, float s, int dir, int step, bool weapon) {
+  if (humanSprite(g, lk, x, y, s, dir, step)) return;
   bool flip = dir == 3;
   int pose = flip ? 2 : dir;
   Xf X{g, flip ? x + 16 * s : x, y, s, flip};
@@ -294,6 +349,17 @@ void drawHuman(Gfx& g, const Look& lk, float x, float y, float s, int dir, int s
   }
 }
 
+float fighterTop(const Fighter& f, float s) {
+  const Species& sp = f.S();
+  if (sp.human) {
+    const Look& lk = look(sp.look);
+    if (const SpriteRect* r = lk.sprite.empty() ? nullptr : findSprite(lk.sprite + "_combat")) return r->h * std::max(1.f, std::round(s)) - 12 * s;
+    return 22 * s;
+  }
+  if (const SpriteRect* r = sp.sprite.empty() ? nullptr : findSprite(sp.sprite)) return r->h * crisp(s * sp.size) - 16 * s;
+  return 18 * s * sp.size;
+}
+
 void drawFighterSprite(Gfx& g, const Fighter& f, float x, float y, float s, bool faceRight, float t) {
   const Species& sp = f.S();
   if (sp.human) {
@@ -313,7 +379,16 @@ void drawFighterSprite(Gfx& g, const Fighter& f, float x, float y, float s, bool
 // et le dessin sortirait de l'image : plantage sur les Mac à processeur Apple).
 static int hsh(int x, int y) { return int((unsigned(x) * 73856093u ^ unsigned(y) * 19349663u) & 0x7fffffffu); }
 
-static void ground(Gfx& g, Theme th, int sx, int sy, int h) {
+// Texture de 32x32 de l'atlas (tex_…) : chaque case en prend un quart selon sa position (moins de répétition)
+static bool texTile(Gfx& g, const char* id, int x, int y, int sx, int sy) {
+  const SpriteRect* r = findSprite(id);
+  if (!r) return false;
+  g.sprite(SpriteRect{r->x + (x & 1) * 16, r->y + (y & 1) * 16, 16, 16}, sx, sy);
+  return true;
+}
+
+static void ground(Gfx& g, Theme th, int sx, int sy, int h, int x, int y) {
+  if (th == Theme::Interieur && texTile(g, "tex_bois", x, y, sx, sy)) return;  // parquet
   if (th == Theme::Vallee) {
     g.rect(sx, sy, 16, 16, rgb(0x67b35d));
     g.rect(sx + h % 13, sy + (h >> 4) % 13, 2, 1, rgb(0x57a04f));
@@ -350,15 +425,88 @@ static void ground(Gfx& g, Theme th, int sx, int sy, int h) {
   }
 }
 
+// Sprite de l'objet haut d'une case (nullptr : aucun, ou dessin en code)
+static const SpriteRect* propSprite(const MapDef& m, int x, int y) {
+  char c = m.rows[y][x];
+  int h = hsh(x, y);
+  Theme th = m.theme;
+  const char* id = nullptr;
+  switch (c) {
+    case 'T': {
+      int v = (h >> 3) % 20;
+      if (th == Theme::Neige) id = v < 5 ? "sapin_neige_petit" : "sapin_neige";
+      else if (th == Theme::Foret) id = v < 10 ? "sapin" : v < 16 ? "arbre" : "sapin_petit";
+      else if (th == Theme::Cendres) id = v < 12 ? "arbre_automne" : "arbre_automne_petit";
+      else if (th == Theme::Vallee) id = v < 12 ? "arbre" : v < 16 ? "arbre_petit" : v == 16 ? "arbre_automne" : v == 17 ? "arbre_rose" : "sapin";
+      break;
+    }
+    case 'R': id = th == Theme::Grotte ? nullptr : (h >> 2) % 3 == 0 ? "rochers" : (h >> 2) % 3 == 1 ? "pierres_moussues" : "rocher"; break;
+    case 'v': id = (h >> 2) % 2 ? "tonneau" : "tonneau_2"; break;
+    case 'L': id = th == Theme::Vallee ? "reverbere" : "lampadaire"; break;
+    case 'Y': id = "puits"; break;
+    case 'C': id = (h >> 2) % 3 == 0 ? "caisse" : (h >> 2) % 3 == 1 ? "caisse_2" : "sac"; break;
+    case 'U': {
+      static const char* B[] = {"buisson", "buisson_2", "buisson_baies", "buisson_3", "buisson_fleurs", "buisson_4"};
+      id = B[(h >> 2) % 6];
+      break;
+    }
+    case 'Q': id = "banc"; break;
+    case 'K': id = "charrette"; break;
+    case 'M': id = (h >> 2) % 3 ? "etal" : "etal_2"; break;
+    case 'X': id = "feu_bois"; break;
+    case 'G': id = "tableau_annonces"; break;
+    case 'J': id = "banniere"; break;
+  }
+  return id ? findSprite(id) : nullptr;
+}
+bool hasProp(const MapDef& m, int x, int y) { return propSprite(m, x, y) != nullptr; }
+void drawProp(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
+  const SpriteRect* r = propSprite(m, x, y);
+  if (!r) return;
+  int h = hsh(x, y);
+  char c = m.rows[y][x];
+  int jx = c == 'T' ? (h >> 7) % 5 - 2 : 0;  // arbres un peu décalés : une forêt moins alignée
+  if (c != 'C' && c != 'U') g.ellipse(sx + 8 + jx, sy + 14, std::min(8.f, r->w * .4f), 2.5f, rgb(0, 45));
+  g.sprite(*r, sx + 8 + jx - r->w / 2, sy + 16 - r->h + (c == 'T' ? 1 : 0), c == 'T' && (h >> 11) % 2);
+}
+
 void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
   char c = m.rows[y][x];
   int h = hsh(x, y);
   Theme th = m.theme;
+  if (propSprite(m, x, y)) {  // l'objet est dessiné avec les personnages (drawProp) : ici le sol seul
+    ground(g, th, sx, sy, h, x, y);
+    return;
+  }
   auto at = [&](int xx, int yy) { return (xx < 0 || yy < 0 || xx >= m.w() || yy >= m.h()) ? ' ' : m.rows[yy][xx]; };
   switch (c) {
-    case '.': ground(g, th, sx, sy, h); break;
+    case '.': ground(g, th, sx, sy, h, x, y); break;
+    case 'q': {  // pavés (places et rues des villes)
+      if (!g.sprite(th == Theme::Neige ? "sol_1_3" : th == Theme::Cendres ? "sol_0_5" : "sol_0_3", sx, sy)) {
+        g.rect(sx, sy, 16, 16, rgb(0xa8a49c));
+        g.frame(sx, sy, 16, 16, rgb(0x8a867e));
+      }
+      break;
+    }
+    case 'H': {  // clôture
+      ground(g, th, sx, sy, h, x, y);
+      if (const SpriteRect* r = findSprite("cloture")) g.sprite(*r, sx + 8 - r->w / 2, sy + 15 - r->h);
+      else {
+        g.rect(sx, sy + 6, 16, 2, rgb(0x8a5a32));
+        g.rect(sx, sy + 11, 16, 2, rgb(0x8a5a32));
+        g.rect(sx + 3, sy + 4, 2, 11, rgb(0x6b4a2f)), g.rect(sx + 11, sy + 4, 2, 11, rgb(0x6b4a2f));
+      }
+      break;
+    }
     case 'F': {
-      ground(g, th, sx, sy, h);
+      ground(g, th, sx, sy, h, x, y);
+      static const char* FL[] = {"fleurs_1", "fleurs_2", "fleurs_3", "fleurs_4"};
+      if (const SpriteRect* a = findSprite(FL[h % 4])) {
+        const SpriteRect* b = findSprite(FL[(h >> 4) % 4]);
+        g.sprite(*a, sx + 1 + (h >> 8) % 3, sy + 7 - a->h / 2 + (h >> 10) % 3);
+        if (b) g.sprite(*b, sx + 8 + (h >> 12) % 3, sy + 13 - b->h);
+        break;
+      }
       const uint32_t cols[] = {0xf7e27a, 0xf29bb5, 0xffffff, 0xb59cf0};
       g.rect(sx + 3, sy + 4, 2, 2, rgb(cols[h % 4]));
       g.rect(sx + 10, sy + 9, 2, 2, rgb(cols[(h >> 3) % 4]));
@@ -378,7 +526,7 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
       break;
     }
     case 'n': {  // neige profonde (rencontres)
-      g.rect(sx, sy, 16, 16, rgb(0xd4e0f0));
+      if (!texTile(g, "tex_neige", x, y, sx, sy)) g.rect(sx, sy, 16, 16, rgb(0xd4e0f0));
       for (int i = 0; i < 4; i++) {
         float bx = sx + 2 + i * 4 + ((h >> i) & 1);
         g.ellipse(bx, sy + 11 - ((h >> (i + 2)) & 3), 3, 3, rgb(0xffffff));
@@ -404,7 +552,7 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
       break;
     }
     case 'T':
-      ground(g, th, sx, sy, h);
+      ground(g, th, sx, sy, h, x, y);
       g.ellipse(sx + 9, sy + 14, 7, 2.5f, rgb(0x000000, 40));  // ombre douce au pied
       g.rect(sx + 6, sy + 10, 4, 5, rgb(0x6b4a2f));
       if (th == Theme::Neige) {  // sapin enneigé
@@ -426,7 +574,7 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
       }
       break;
     case 'd':
-      ground(g, th, sx, sy, h);
+      ground(g, th, sx, sy, h, x, y);
       g.rect(sx + 7, sy + 4, 2, 11, rgb(0x4a3a30));
       g.line(sx + 8, sy + 8, sx + 3, sy + 3, 1.5f, rgb(0x4a3a30));
       g.line(sx + 8, sy + 6, sx + 13, sy + 2, 1.5f, rgb(0x4a3a30));
@@ -503,18 +651,19 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
       }
       break;
     case 'P':  // plaque de l'énigme (3.0) : une dalle gravée
-      ground(g, th, sx, sy, h);
+      ground(g, th, sx, sy, h, x, y);
       g.rect(sx + 2, sy + 2, 12, 12, rgb(0x8a8270));
       g.rect(sx + 3, sy + 3, 10, 10, rgb(0xa89e88));
       g.rect(sx + 6, sy + 6, 4, 4, rgb(0x6a6252));
       break;
     case 'R':
-      ground(g, th, sx, sy, h);
+      ground(g, th, sx, sy, h, x, y);
       g.ellipse(sx + 8, sy + 10, 6, 5, rgb(0x8a8a92));
       g.ellipse(sx + 7, sy + 8, 4, 3, rgb(0xa9a9b3));
       break;
     case 'W': {
-      g.rect(sx, sy, 16, 16, rgb(0xd9c08a));
+      bool paved = at(x - 1, y) == 'q' || at(x + 1, y) == 'q' || at(x, y - 1) == 'q' || at(x, y + 1) == 'q';
+      if (!(paved && g.sprite("sol_0_3", sx, sy))) g.rect(sx, sy, 16, 16, rgb(0xd9c08a));  // sur une place : les pavés autour
       int l = at(x - 1, y) == 'W' ? 0 : 2, r = at(x + 1, y) == 'W' ? 16 : 14;
       int tp = at(x, y - 1) == 'W' ? 0 : 2, bt = at(x, y + 1) == 'W' ? 16 : 14;
       g.rect(sx + l, sy + tp, r - l, bt - tp, rgb(0xa8a8b4));
@@ -562,10 +711,10 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
         if (at(x, y - 1) != '#') g.rect(sx, sy, 16, 2, rgb(0x5f9a52));
       }
       break;
-    case 'a': ground(g, th, sx, sy, h); break;
+    case 'a': ground(g, th, sx, sy, h, x, y); break;
     case 'l':
     case 'b': {
-      g.rect(sx, sy, 16, 16, rgb(0xc8441a));
+      if (!texTile(g, "tex_lave", x, y, sx, sy)) g.rect(sx, sy, 16, 16, rgb(0xc8441a));
       float ph = t * 1.5f + (x * 3 + y * 5) * .4f;
       g.ellipse(sx + 4 + std::sin(ph) * 2, sy + 5, 3, 2, rgb(0xffb347));
       g.ellipse(sx + 11, sy + 11 + std::cos(ph) * 2, 3, 2, rgb(0xff8a2a));
@@ -580,20 +729,20 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
       break;
     }
     case 'm':
-      ground(g, th, sx, sy, h);
+      ground(g, th, sx, sy, h, x, y);
       g.tri(sx - 1, sy + 16, sx + 8, sy - 1, sx + 17, sy + 16, rgb(0x5a4a44));
       g.tri(sx + 8, sy - 1, sx + 17, sy + 16, sx + 10, sy + 16, rgb(0x4a3c37));
       g.tri(sx + 5, sy + 5, sx + 8, sy - 1, sx + 10, sy + 4, rgb(0x8a7a72));
       break;
     case 'k':
-      ground(g, th, sx, sy, h);
+      ground(g, th, sx, sy, h, x, y);
       g.tri(sx - 1, sy + 16, sx + 8, sy - 2, sx + 17, sy + 16, rgb(0x5a4a44));
       g.ellipse(sx + 8, sy + 13, 5, 7, rgb(0x120e18));
       g.rect(sx + 3, sy + 13, 10, 3, rgb(0x120e18));
       break;
-    case 'c': ground(g, th, sx, sy, h); break;
+    case 'c': ground(g, th, sx, sy, h, x, y); break;
     case 'x': {
-      ground(g, th, sx, sy, h);
+      ground(g, th, sx, sy, h, x, y);
       Color glow = rgb(0x7fd6ff, uint8_t(60 + 40 * std::sin(t * 2 + x)));
       g.ellipse(sx + 8, sy + 9, 8, 7, glow);
       g.poly({{sx + 5.f, sy + 15.f}, {sx + 4.f, sy + 6.f}, {sx + 7.f, sy + 1.f}, {sx + 9.f, sy + 7.f}, {sx + 8.f, sy + 15.f}}, rgb(0x7fd6ff));
@@ -602,7 +751,7 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
     }
     // Meubles des intérieurs
     case 'p': {  // tapis
-      ground(g, th, sx, sy, h);
+      ground(g, th, sx, sy, h, x, y);
       bool l = at(x - 1, y) == 'p', r = at(x + 1, y) == 'p', u = at(x, y - 1) == 'p', d = at(x, y + 1) == 'p';
       int x0 = l ? 0 : 1, x1 = r ? 16 : 15, y0 = u ? 0 : 1, y1 = d ? 16 : 15;
       g.rect(sx + x0, sy + y0, x1 - x0, y1 - y0, rgb(0xa83a3a));
@@ -614,7 +763,7 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
       break;
     }
     case 't':  // table
-      ground(g, th, sx, sy, h);
+      ground(g, th, sx, sy, h, x, y);
       g.rect(sx + 3, sy + 10, 2, 5, rgb(0x6b4a2f));
       g.rect(sx + 11, sy + 10, 2, 5, rgb(0x6b4a2f));
       g.rect(sx + 1, sy + 4, 14, 7, rgb(0x9a6a3a));
@@ -623,7 +772,7 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
       if (h % 3 == 0) g.ellipse(sx + 8, sy + 6, 2, 1.5f, rgb(0xefe2c6));  // une tasse
       break;
     case 'h':  // lit
-      ground(g, th, sx, sy, h);
+      ground(g, th, sx, sy, h, x, y);
       g.rect(sx + 1, sy + 1, 14, 15, rgb(0x7a5230));
       g.rect(sx + 2, sy + 2, 12, 13, rgb(0xf2ece0));
       g.rect(sx + 3, sy + 3, 10, 3, rgb(0xffffff));
@@ -647,18 +796,86 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
       g.rect(sx + 4, sy + 8, 8, 6, rgb(0x7a5230));
       break;
     case 'v':  // tonneau
-      ground(g, th, sx, sy, h);
+      ground(g, th, sx, sy, h, x, y);
       g.ellipse(sx + 8, sy + 14, 6, 2, rgb(0, 50));
       g.rect(sx + 3, sy + 3, 10, 11, rgb(0x8a5a2a));
       g.ellipse(sx + 8, sy + 3, 5, 2, rgb(0xa06a32));
       g.rect(sx + 3, sy + 6, 10, 1, rgb(0x4a4a52));
       g.rect(sx + 3, sy + 11, 10, 1, rgb(0x4a4a52));
       break;
-    default: ground(g, th, sx, sy, h);
+    default: ground(g, th, sx, sy, h, x, y);
   }
 }
 
+// Bâtiment dessiné avec un sprite : le genre donne le dessin (maison, taverne…), la largeur la plus grande qui
+// tient dans l'emprise (64, 80 ou 96 px : jamais agrandi), et la couleur du toit une variante de la maison.
+struct BuildingLook {
+  const SpriteRect* r = nullptr;
+  float door = .5f;             // position de la porte dans le sprite (fraction de la largeur)
+  float chimX = -1, chimY = 0;  // haut de la cheminée (fractions ; -1 : pas de cheminée)
+  int x = 0, y = 0;             // coin haut-gauche à l'écran
+};
+static BuildingLook buildingLook(const Building& b, int sx, int sy) {
+  BuildingLook L;
+  std::string base;
+  if (b.decor()) {  // décor : le sprite tel quel, centré sur l'emprise, posé sur son bas
+    if ((L.r = findSprite(b.look))) L.x = sx + b.w * 8 - L.r->w / 2, L.y = sy + b.h * 16 + 2 - L.r->h;
+    return L;
+  }
+  if (!b.look.empty() && b.look != "maison") {  // dessin choisi dans la carte (« dessin »)
+    base = b.look;
+    if (base == "boutique") L.door = .66f, L.chimX = .72f, L.chimY = .07f;
+    if (base == "eglise") L.door = .59f;
+    if (base == "entrepot") L.chimX = -1;
+  } else if (b.kind == "maison" || b.kind == "soin") {
+    base = "maison", L.door = .47f, L.chimX = .8f, L.chimY = .04f;
+    if (b.kind == "maison") {  // couleur du toit : rouge, bleu, vert ou ardoise
+      Color c = rgb(b.roof);
+      int mx = std::max({c.r, c.g, c.b}), mn = std::min({c.r, c.g, c.b});
+      if (mx - mn < 40) base = "maison_ardoise";
+      else if (c.b == mx) base = "maison_bleu";
+      else if (c.g == mx) base = "maison_vert";
+      else if (c.b > c.g + 20) base = "maison_ardoise";  // toit violet
+    }
+  } else if (b.kind == "boutique1" || b.kind == "boutique2") base = "boutique", L.door = .66f, L.chimX = .72f, L.chimY = .07f;
+  else if (b.kind == "auberge") base = "taverne";
+  else if (b.kind == "chapelle") base = "eglise", L.door = .59f;
+  else if (b.kind == "forge") base = "entrepot", L.chimX = .25f, L.chimY = .1f;
+  else return L;
+  for (int w : {96, 80, 64})
+    if (w <= b.w * 16 || w == 64)
+      if ((L.r = findSprite(base + "_" + std::to_string(w)))) break;
+  if (!L.r) return L;
+  int doorCx = sx + (b.doorX() - b.x) * 16 + 8;
+  L.x = doorCx - int(std::lround(L.door * L.r->w));
+  L.y = sy + b.h * 16 + 2 - L.r->h;  // posé sur le bas de l'emprise
+  return L;
+}
+
 void drawBuilding(Gfx& g, const Building& b, int sx, int sy) {
+  if (BuildingLook L = buildingLook(b, sx, sy); L.r) {
+    g.sprite(*L.r, L.x, L.y);
+    // Enseigne pendue à côté de la porte : on reconnaît le lieu d'un coup d'œil
+    int ex = L.x + int(L.door * L.r->w) + 9, ey = sy + b.h * 16 - 22;
+    auto plaque = [&](Color bg) {
+      g.rect(ex, ey - 3, 1, 3, rgb(0x3a2a22));
+      g.rect(ex - 4, ey, 9, 9, rgb(0x3a2a22));
+      g.rect(ex - 3, ey + 1, 7, 7, bg);
+    };
+    if (b.decor()) return;
+    if (b.kind == "soin") {
+      plaque(rgb(0xffffff));
+      g.rect(ex - 1, ey + 2, 3, 5, rgb(0xd2493f)), g.rect(ex - 2, ey + 3, 5, 3, rgb(0xd2493f));
+    } else if (b.kind == "boutique1" || b.kind == "boutique2") {
+      plaque(rgb(0x3a6ab0));
+      g.ellipse(ex + .5f, ey + 5, 2, 2, rgb(0xff6a8a));
+      g.rect(ex, ey + 2, 1, 1, rgb(0xffffff));
+    } else if (b.kind == "forge") {
+      plaque(rgb(0xd9a53a));
+      g.rect(ex - 2, ey + 3, 5, 2, rgb(0x2a2a30)), g.rect(ex - 1, ey + 5, 3, 2, rgb(0x2a2a30));
+    }
+    return;
+  }
   int W = b.w * 16, H = b.h * 16;
   int roofH = H * 45 / 100;
   bool stone = b.kind == "forge" || b.kind == "boutique2" || b.kind == "auberge" || b.kind == "soin";
@@ -734,6 +951,14 @@ void drawBuilding(Gfx& g, const Building& b, int sx, int sy) {
 
 void drawBuildingLights(Gfx& g, const Building& b, int sx, int sy, float night) {
   if (night <= 0) return;
+  if (b.decor()) return;
+  if (BuildingLook L = buildingLook(b, sx, sy); L.r) {  // sprite : façade éclairée et lumière devant la porte
+    float dx = L.x + L.door * L.r->w, by = sy + b.h * 16;
+    g.ellipse(dx, by - 18, L.r->w * .42f, 14, rgb(0xffc86a, uint8_t(34 * night)));
+    g.ellipse(dx, by - 8, 5, 8, rgb(0xffd27a, uint8_t(70 * night)));
+    g.ellipse(dx, by + 3, 13, 5, rgb(0xffc86a, uint8_t(55 * night)));
+    return;
+  }
   int W = b.w * 16, H = b.h * 16, roofH = H * 45 / 100;
   int dx = (b.doorX() - b.x) * 16 + 4;
   auto lit = [&](int wx) {
@@ -749,8 +974,13 @@ void drawBuildingLights(Gfx& g, const Building& b, int sx, int sy, float night) 
 }
 
 void drawChimneySmoke(Gfx& g, const Building& b, int sx, int sy, float t) {
-  if (b.kind == "chapelle") return;
+  if (b.kind == "chapelle" || b.decor()) return;
   int W = b.w * 16, cx = sx + W - 18 - (b.x % 2) * 8 + 3;
+  if (BuildingLook L = buildingLook(b, sx, sy); L.r) {
+    if (L.chimX < 0) return;
+    cx = L.x + int(L.chimX * L.r->w) - 3;
+    sy = L.y + int(L.chimY * L.r->h) + 2;
+  }
   for (int i = 0; i < 4; i++) {
     float k = std::fmod(t * .35f + i * .25f + b.x * .13f, 1.f);  // chaque bouffée monte puis s'efface
     float x = cx + std::sin(t * 1.3f + i * 2.f) * 2 + k * 6, y = sy - 7 - k * 22;
@@ -760,6 +990,11 @@ void drawChimneySmoke(Gfx& g, const Building& b, int sx, int sy, float t) {
 
 void drawChest(Gfx& g, int sx, int sy, bool open) {
   g.ellipse(sx + 8, sy + 14, 7, 2, rgb(0, 50));
+  if (const SpriteRect* r = findSprite("coffre")) {  // ouvert : assombri, couvercle rabattu
+    g.sprite(*r, sx + 8 - r->w / 2, sy + 15 - r->h, false, 1, open ? rgb(0x8a8a9a) : rgb(0xffffff));
+    if (open) g.rect(sx + 8 - r->w / 2 + 2, sy + 15 - r->h + 2, r->w - 4, 2, rgb(0x2a1a0a));
+    return;
+  }
   g.rect(sx + 2, sy + 7, 12, 8, rgb(0x8a5a2a));
   g.rect(sx + 2, sy + 10, 12, 1, rgb(0xd9a53a));
   if (open) {
@@ -772,6 +1007,11 @@ void drawChest(Gfx& g, int sx, int sy, bool open) {
 }
 
 void drawSign(Gfx& g, int sx, int sy) {
+  if (const SpriteRect* r = findSprite("poteau")) {
+    g.ellipse(sx + 8, sy + 14, 5, 2, rgb(0, 50));
+    g.sprite(*r, sx + 8 - r->w / 2, sy + 15 - r->h);
+    return;
+  }
   g.rect(sx + 7, sy + 8, 2, 7, rgb(0x6b4a2f));
   g.rect(sx + 2, sy + 2, 12, 8, rgb(0xb88a52));
   g.frame(sx + 2, sy + 2, 12, 8, rgb(0x7a5230));

@@ -57,7 +57,9 @@ COMMANDES
 
   Échap > Formation : la place de chacun sur le damier de combat (16 cases,
   de l'avant à l'arrière). Au corps à corps, on ne touche que l'avant ennemi ;
-  l'arrière est protégé. En combat, « Se déplacer » change de case.
+  l'arrière est protégé. En combat, « Se déplacer » change de case. La case et la
+  cible se choisissent sur le damier (flèches ou souris) ; en survolant une
+  technique, sa zone s'allume.
   Zone rouge : un boss prépare une grosse attaque, écartez-vous !
 
   Brisure : chaque ennemi a un bouclier (le chiffre dans l'écu bleu).

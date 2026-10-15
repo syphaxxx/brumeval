@@ -51,7 +51,7 @@
       "niveau_min": 13,
       "niveau_max": 16,
       "max_ennemis": 3,
-      "creatures": ["galetor", "fumerole", "glaconnet", "tisonnel"]
+      "creatures": ["galetor", "fumerole", "glaconnet", "tisonnel", "tisseline"]
     }
   ],
   "boss": [{"x": 24, "y": 3, "espece": "golem", "drapeau": "golem", "evenement": "golem"}]

@@ -1,5 +1,5 @@
-// Dessin des personnages, créatures, tuiles et décors (tout est dessiné en code,
-// aucune image externe n'est nécessaire).
+// Dessin des personnages, créatures, tuiles et décors : avec les sprites de l'atlas (data/sprites.png, voir gfx.hpp)
+// quand ils existent, sinon en code (formes, couleurs).
 #pragma once
 #include <string>
 
@@ -14,8 +14,14 @@ void drawCreature(Gfx& g, const std::string& sp, float x, float y, float s, bool
 void drawHuman(Gfx& g, const Look& lk, float x, float y, float s, int dir, int step, bool weapon);
 // Combattant en combat (humain ou créature), centré sur (x, y)
 void drawFighterSprite(Gfx& g, const Fighter& f, float x, float y, float s, bool faceRight, float t);
+// Hauteur du dessin d'un combattant au-dessus de son point (x, y) de drawFighterSprite (barre de PV, repères)
+float fighterTop(const Fighter& f, float s);
 
 void drawTile(Gfx& g, const MapDef& m, int tx, int ty, int sx, int sy, float t);
+// Objet haut posé sur une case (arbre, réverbère, puits, étal…) : dessiné avec les personnages, triés de haut en
+// bas, pour passer devant ou derrière eux. Faux si la case n'en a pas (drawTile dessine alors tout).
+bool hasProp(const MapDef& m, int tx, int ty);
+void drawProp(Gfx& g, const MapDef& m, int tx, int ty, int sx, int sy, float t);
 void drawBuilding(Gfx& g, const Building& b, int sx, int sy);
 // Par-dessus la nuit (2.6) : fenêtres allumées et lueur de la porte (night : 0 jour, 1 nuit) ; fumée de la cheminée
 void drawBuildingLights(Gfx& g, const Building& b, int sx, int sy, float night);

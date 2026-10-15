@@ -2,6 +2,7 @@
   {
     "id": "lior",
     "nom": "Lior",
+    "sprite": "lior",
     "cheveux": "#5a3a22",
     "peau": "#f2c9a0",
     "haut": "#d2493f",
@@ -12,6 +13,7 @@
   {
     "id": "maelle",
     "nom": "Maëlle",
+    "sprite": "maelle",
     "cheveux": "#e8d27a",
     "peau": "#f6d6b8",
     "haut": "#f2f0ea",
@@ -22,6 +24,7 @@
   {
     "id": "brann",
     "nom": "Brann",
+    "sprite": "brann",
     "cheveux": "#8a3b1e",
     "peau": "#d9a47a",
     "haut": "#6b4a2f",
@@ -32,6 +35,7 @@
   {
     "id": "isra",
     "nom": "Isra",
+    "sprite": "isra",
     "cheveux": "#2b2238",
     "peau": "#eec4a8",
     "haut": "#5b3f8c",
@@ -42,6 +46,7 @@
   {
     "id": "villageois",
     "nom": "Villageois",
+    "sprite": "homme",
     "cheveux": "#6b4a2f",
     "peau": "#f2c9a0",
     "haut": "#4e8c5a",
@@ -53,6 +58,7 @@
   {
     "id": "ancien",
     "nom": "Ancien",
+    "sprite": "vieux",
     "cheveux": "#c9c4bc",
     "peau": "#e8c0a0",
     "haut": "#7a5c9a",
@@ -63,6 +69,7 @@
   {
     "id": "enfant",
     "nom": "Enfant",
+    "sprite": "enfant",
     "cheveux": "#d98a3a",
     "peau": "#f2c9a0",
     "haut": "#e0b34a",
@@ -73,6 +80,7 @@
   {
     "id": "garde",
     "nom": "Garde",
+    "sprite": "soldat",
     "cheveux": "#3a2a1e",
     "peau": "#c99a74",
     "haut": "#8a8f9a",
@@ -84,6 +92,7 @@
   {
     "id": "villageoise",
     "nom": "Villageoise",
+    "sprite": "femme",
     "cheveux": "#4a2e1e",
     "peau": "#f2d0b0",
     "haut": "#c85a7a",
@@ -95,6 +104,7 @@
   {
     "id": "pecheur",
     "nom": "Pêcheur",
+    "sprite": "pecheur",
     "cheveux": "#9a9a9a",
     "peau": "#e0b898",
     "haut": "#3f6f8f",
@@ -105,6 +115,7 @@
   {
     "id": "braconnier",
     "nom": "Braconnier",
+    "sprite": "braconnier",
     "cheveux": "#3a2a1e",
     "peau": "#d9a47a",
     "haut": "#5a6b3a",
@@ -115,6 +126,7 @@
   {
     "id": "kael",
     "nom": "Kael",
+    "sprite": "archere",
     "cheveux": "#2a4a2a",
     "peau": "#e0b08a",
     "haut": "#3f7a4a",
@@ -125,6 +137,7 @@
   {
     "id": "selene",
     "nom": "Sélène",
+    "sprite": "selene",
     "cheveux": "#e6e6f0",
     "peau": "#f6d6c0",
     "haut": "#8aa0c8",
@@ -135,6 +148,7 @@
   {
     "id": "bandit",
     "nom": "Bandit",
+    "sprite": "bandit",
     "cheveux": "#3a2a1e",
     "peau": "#d9a47a",
     "haut": "#6a4a3a",
@@ -145,6 +159,7 @@
   {
     "id": "chef_bandit",
     "nom": "Chef des bandits",
+    "sprite": "chef_bandit",
     "cheveux": "#1a1a1a",
     "peau": "#c99a74",
     "haut": "#5a2a2a",
@@ -155,6 +170,7 @@
   {
     "id": "chevalier",
     "nom": "Chevalier du givre",
+    "sprite": "chevalier",
     "cheveux": "#8a8a96",
     "peau": "#f2c9a0",
     "haut": "#9ab4d8",
@@ -166,6 +182,7 @@
   {
     "id": "mage_givre",
     "nom": "Mage du givre",
+    "sprite": "mage_givre",
     "cheveux": "#cfe6ff",
     "peau": "#f6d6c0",
     "haut": "#e6f2ff",
@@ -176,6 +193,7 @@
   {
     "id": "ermite",
     "nom": "Ermite",
+    "sprite": "vieux",
     "cheveux": "#d8d8d8",
     "peau": "#e0b898",
     "haut": "#6a5a3a",
@@ -186,11 +204,133 @@
   {
     "id": "montagnard",
     "nom": "Montagnard",
+    "sprite": "paysan",
     "cheveux": "#6a4a2f",
     "peau": "#f2c9a0",
     "haut": "#b84a3a",
     "bas": "#3a3a44",
     "coiffe": "casque",
+    "arme": "aucune"
+  },
+  {
+    "id": "marchande",
+    "nom": "Marchande",
+    "sprite": "marchande",
+    "cheveux": "#3a2a1e",
+    "peau": "#f2d0b0",
+    "haut": "#c83a3a",
+    "bas": "#5a3a4a",
+    "coiffe": "foulard",
+    "arme": "aucune"
+  },
+  {
+    "id": "barman",
+    "nom": "Aubergiste",
+    "sprite": "barman",
+    "cheveux": "#4a2e1e",
+    "peau": "#e0b898",
+    "haut": "#f2f0ea",
+    "bas": "#3a3a44",
+    "coiffe": "aucune",
+    "arme": "aucune"
+  },
+  {
+    "id": "docteur",
+    "nom": "Soigneur",
+    "sprite": "docteur",
+    "cheveux": "#2a2a2a",
+    "peau": "#e0b898",
+    "haut": "#f2f0ea",
+    "bas": "#3a4a6a",
+    "coiffe": "aucune",
+    "arme": "aucune"
+  },
+  {
+    "id": "forgeron",
+    "nom": "Forgeron",
+    "sprite": "forgeron",
+    "cheveux": "#3a2a1e",
+    "peau": "#c99a74",
+    "haut": "#5a4a3a",
+    "bas": "#3a3a44",
+    "coiffe": "aucune",
+    "arme": "aucune"
+  },
+  {
+    "id": "voyageuse",
+    "nom": "Voyageuse",
+    "sprite": "voyageuse",
+    "cheveux": "#5a3a22",
+    "peau": "#f2c9a0",
+    "haut": "#8a3a2a",
+    "bas": "#3a3a44",
+    "coiffe": "aucune",
+    "arme": "aucune"
+  },
+  {
+    "id": "paysan",
+    "nom": "Paysan",
+    "sprite": "paysan",
+    "cheveux": "#6a4a2f",
+    "peau": "#f2c9a0",
+    "haut": "#5a7a4a",
+    "bas": "#5a4a3a",
+    "coiffe": "chapeau",
+    "arme": "aucune"
+  },
+  {
+    "id": "chien",
+    "nom": "Chien",
+    "sprite": "chien",
+    "cheveux": "#c88a4a",
+    "peau": "#c88a4a",
+    "haut": "#c88a4a",
+    "bas": "#c88a4a",
+    "coiffe": "aucune",
+    "arme": "aucune"
+  },
+  {
+    "id": "chat",
+    "nom": "Chat",
+    "sprite": "chat",
+    "cheveux": "#5a5a62",
+    "peau": "#5a5a62",
+    "haut": "#5a5a62",
+    "bas": "#5a5a62",
+    "coiffe": "aucune",
+    "arme": "aucune"
+  },
+  {
+    "id": "poule",
+    "nom": "Poule",
+    "sprite": "poule",
+    "cheveux": "#f2f0ea",
+    "peau": "#f2f0ea",
+    "haut": "#f2f0ea",
+    "bas": "#d2493f",
+    "coiffe": "aucune",
+    "arme": "aucune"
+  },
+  {
+    "id": "vache",
+    "nom": "Vache",
+    "sprite": "vache",
+    "cheveux": "#f2f0ea",
+    "peau": "#2a2a2a",
+    "haut": "#f2f0ea",
+    "bas": "#2a2a2a",
+    "coiffe": "aucune",
+    "arme": "aucune"
+  },
+  {
+    "id": "cheval",
+    "nom": "Cheval",
+    "sprite": "cheval",
+    "cheveux": "#6a4a2f",
+    "peau": "#8a5a32",
+    "haut": "#8a5a32",
+    "bas": "#6a4a2f",
+    "coiffe": "aucune",
     "arme": "aucune"
   }
 ]

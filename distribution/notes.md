@@ -1,14 +1,12 @@
 ## Nouveautés
 
-- **English!** Options > Langue / Language : tout le jeu passe en anglais (au premier lancement, il prend la langue de l'ordinateur).
-- **Acte 2 : l'archipel d'Écume** ! Une fois la Mère des Brumes apaisée, le bateau du pêcheur traverse le lac vers **Port d'Écume**, le **Récif d'Écume**, les **Ruines englouties** et la **Tour de l'Orage**. Trois nouveaux boss (Kraken des récifs, Griffon tempête, Seigneur des Orages, en trois phases) et un vrai final.
-- **Énigmes** : poussez des rochers sur des dalles pour ouvrir les grilles. Coincé ? Échap > Recommencer l'énigme.
-- 8 nouvelles créatures (dont 2 évolutions), une quête (les perles du phare), de nouvelles armes et armures, la Gemme du maître et la Gemme d'orage.
-- **Astuces** : chaque nouvelle règle est expliquée la première fois (F1 : la page d'Aide qui va avec). **Conseils** des aubergistes et du Journal pour le prochain boss.
-- **Menus** : sac rangé par catégories, comparaison d'équipement, coût des duos.
-- **Expédition** : talents, rôles, gardiens en phases et gemmes.
+- **Nouveaux graphismes** : personnages, habitants, animaux et les 62 créatures de l'histoire en sprites dessinés, boss en grand format, effets de sorts, invocations pendant les Limites, icônes d'objets dans les menus, visages de Lior dans les dialogues.
+- **Combat plus lisible** : un ATH en tableau (PV, PM, ATB, Limite pour chaque combattant), des descriptions courtes et chiffrées, et la **zone d'une attaque visible dès qu'on la survole**.
+- **Tout se choisit sur le damier** : la cible d'une attaque et la case de « Se déplacer » se choisissent directement sur le damier, aux flèches ou à la souris.
+- **Villes redessinées** : place pavée, marché et jardins dans la Vallée, ferme au moulin, rue pavée et forge à Forgeroc, Givreval, le port et le camp des bandits ; on passe derrière les toits et les arbres. Marchande, aubergiste, soigneur, forgeron, voyageuse et animaux.
+- **6 nouvelles créatures** : Tisseline (Grotte), Osselet (Ruines et Tour), Gobelard et Brutor (Sylve-Noire), Draconnet (rare, au volcan) et un coffre des Ruines qui a des dents…
 
-Dans la 2.7 : gemmes, rôles des ennemis, boss en phases. Dans la 2.6 : pousser / tirer, météo, terrain, duos, jour et nuit. Dans la 2.5 : Brisure, ordre des tours, talents.
+Dans la 3.1 : le jeu en anglais. Dans la 3.0 : l'acte 2 (archipel d'Écume), les énigmes, les astuces.
 
 ## Télécharger
 

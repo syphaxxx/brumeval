@@ -22,7 +22,9 @@ const std::vector<TileInfo>& tilePalette() {
       {'~', "Eau"},           {'B', "Pont de bois"},   {'W', "Fontaine"},      {'#', "Paroi"},         {'m', "Montagne"}, {'k', "Entrée de grotte"},
       {'a', "Cendre"},        {'g', "Herbes sèches"},  {'l', "Lave"},          {'b', "Pont de pierre"}, {'c', "Sol de grotte"}, {'x', "Cristal"},
       {'d', "Arbre mort"},    {'i', "Glace"},          {'n', "Neige profonde"}, {'z', "Marais"},        {'p', "Tapis"},   {'t', "Table"},
-      {'h', "Lit"},           {'e', "Étagère"},        {'o', "Comptoir"},      {'v', "Tonneau"}};
+      {'h', "Lit"},           {'e', "Étagère"},        {'o', "Comptoir"},      {'v', "Tonneau"},       {'q', "Pavés"},   {'H', "Clôture"},
+      {'L', "Réverbère"},     {'Y', "Puits"},          {'C', "Caisses"},       {'U', "Buisson"},       {'Q', "Banc"},    {'K', "Charrette"},
+      {'M', "Étal"},          {'X', "Feu de camp"},    {'G', "Tableau"},       {'J', "Bannière"}};
   return v;
 }
 static std::string tileName(char c) {

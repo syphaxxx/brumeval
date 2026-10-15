@@ -2,6 +2,7 @@
   {
     "id": "potion",
     "nom": "Potion",
+    "icone": "ic_potion",
     "description": "Un flacon d'eau de source aux herbes.",
     "prix": 30,
     "combat": true,
@@ -11,6 +12,7 @@
   {
     "id": "superpotion",
     "nom": "Super-potion",
+    "icone": "ic_superpotion",
     "description": "Une potion concentrée, au goût amer.",
     "prix": 90,
     "combat": true,
@@ -20,6 +22,7 @@
   {
     "id": "ether",
     "nom": "Éther",
+    "icone": "ic_ether",
     "description": "Une eau bleutée qui éclaircit l'esprit.",
     "prix": 70,
     "combat": true,
@@ -29,6 +32,7 @@
   {
     "id": "elixir",
     "nom": "Élixir",
+    "icone": "ic_elixir",
     "description": "Un remède rare, précieux entre tous.",
     "prix": 400,
     "combat": true,
@@ -39,6 +43,7 @@
   {
     "id": "plume",
     "nom": "Plume ravivante",
+    "icone": "ic_plume",
     "description": "Une plume tiède qui chasse l'évanouissement.",
     "prix": 120,
     "combat": true,
@@ -48,6 +53,7 @@
   {
     "id": "remede",
     "nom": "Remède",
+    "icone": "ic_remede",
     "description": "Un sachet d'herbes contre tous les maux.",
     "prix": 25,
     "combat": true,
@@ -56,6 +62,7 @@
   {
     "id": "lanterne",
     "nom": "Lanterne",
+    "icone": "ic_lanterne",
     "description": "Sa lueur attire une créature et la retient.",
     "prix": 40,
     "combat": true,
@@ -64,6 +71,7 @@
   {
     "id": "lanterne_argent",
     "nom": "Lanterne d'argent",
+    "icone": "ic_lanterne_argent",
     "description": "Une lueur plus vive, qui retient mieux.",
     "prix": 110,
     "combat": true,
@@ -72,21 +80,30 @@
   {
     "id": "lanterne_or",
     "nom": "Lanterne d'or",
+    "icone": "ic_lanterne_or",
     "description": "Une lueur dorée à laquelle presque rien ne résiste.",
     "prix": 300,
     "combat": true,
     "capture": 2.5
   },
-  {"id": "minerai", "nom": "Minerai de fer", "description": "Un morceau de roche veiné de fer.", "prix": 40},
+  {
+    "id": "minerai",
+    "nom": "Minerai de fer",
+    "icone": "ic_minerai",
+    "description": "Un morceau de roche veiné de fer.",
+    "prix": 40
+  },
   {
     "id": "coeur_braise",
     "nom": "Cœur de braise",
+    "icone": "ic_gemme_coeur",
     "description": "Une pierre qui garde la chaleur d'un volcan.",
     "prix": 80
   },
   {
     "id": "cristal_givre",
     "nom": "Cristal de givre",
+    "icone": "ic_gemme_cristal",
     "description": "Un éclat de glace qui ne fond jamais.",
     "prix": 120
   },
@@ -157,6 +174,7 @@
   {
     "id": "herbe",
     "nom": "Herbe lunaire",
+    "icone": "ic_herbe",
     "description": "Une herbe qui luit doucement. Maëlle en a besoin.",
     "prix": 0,
     "important": true
@@ -171,6 +189,7 @@
   {
     "id": "epee_fer",
     "nom": "Épée de fer",
+    "icone": "ic_epee_1",
     "description": "Une lame simple et solide.",
     "prix": 150,
     "equipement": "arme",
@@ -179,6 +198,7 @@
   {
     "id": "baton_chene",
     "nom": "Bâton de chêne",
+    "icone": "ic_sceptre_1",
     "description": "Un bâton de mage taillé dans le chêne de la vallée.",
     "prix": 150,
     "equipement": "arme",
@@ -187,6 +207,7 @@
   {
     "id": "tunique_cuir",
     "nom": "Tunique de cuir",
+    "icone": "ic_armure_2",
     "description": "Protège un peu des coups comme des sorts.",
     "prix": 120,
     "equipement": "armure",
@@ -195,6 +216,7 @@
   {
     "id": "amulette_vie",
     "nom": "Amulette de vie",
+    "icone": "ic_acc_4",
     "description": "Une pierre rouge qui donne de la vigueur.",
     "prix": 200,
     "equipement": "accessoire",
@@ -203,6 +225,7 @@
   {
     "id": "hache_braise",
     "nom": "Hache de braise",
+    "icone": "ic_hache_4",
     "description": "Forgée à Forgeroc, encore tiède.",
     "prix": 450,
     "equipement": "arme",
@@ -211,6 +234,7 @@
   {
     "id": "baton_lune",
     "nom": "Bâton de lune",
+    "icone": "ic_baton_2",
     "description": "Sa pierre blanche garde la lumière de la lune.",
     "prix": 450,
     "equipement": "arme",
@@ -219,6 +243,7 @@
   {
     "id": "arc_frene",
     "nom": "Arc de frêne",
+    "icone": "ic_arc_2",
     "description": "Léger et précis.",
     "prix": 400,
     "equipement": "arme",
@@ -227,6 +252,7 @@
   {
     "id": "cotte_mailles",
     "nom": "Cotte de mailles",
+    "icone": "ic_armure_1",
     "description": "Solide, mais un peu lourde.",
     "prix": 400,
     "equipement": "armure",
@@ -235,6 +261,7 @@
   {
     "id": "robe_mage",
     "nom": "Robe de mage",
+    "icone": "ic_armure_4",
     "description": "Tissée de fils qui repoussent la magie.",
     "prix": 400,
     "equipement": "armure",
@@ -243,6 +270,7 @@
   {
     "id": "bague_vif",
     "nom": "Bague de vivacité",
+    "icone": "ic_acc_1",
     "description": "Celui qui la porte agit plus vite.",
     "prix": 500,
     "equipement": "accessoire",
@@ -251,6 +279,7 @@
   {
     "id": "talisman_esprit",
     "nom": "Talisman d'esprit",
+    "icone": "ic_acc_3",
     "description": "Un petit sceau qui calme l'esprit.",
     "prix": 350,
     "equipement": "accessoire",
@@ -259,6 +288,7 @@
   {
     "id": "lame_givre",
     "nom": "Lame de givre",
+    "icone": "ic_epee_3",
     "description": "Une épée qui ne s'émousse jamais.",
     "prix": 1100,
     "equipement": "arme",
@@ -267,6 +297,7 @@
   {
     "id": "sceptre_aurore",
     "nom": "Sceptre d'aurore",
+    "icone": "ic_baton_4",
     "description": "Il brille comme le ciel du matin.",
     "prix": 1100,
     "equipement": "arme",
@@ -275,6 +306,7 @@
   {
     "id": "armure_givre",
     "nom": "Armure de givre",
+    "icone": "ic_armure_3",
     "description": "L'armure des chevaliers de Givreval.",
     "prix": 1000,
     "equipement": "armure",
@@ -283,6 +315,7 @@
   {
     "id": "plume_ange",
     "nom": "Plume d'ange",
+    "icone": "ic_acc_6",
     "description": "Plus légère que l'air.",
     "prix": 800,
     "equipement": "accessoire",
@@ -291,6 +324,7 @@
   {
     "id": "pendentif_brume",
     "nom": "Pendentif de brume",
+    "icone": "ic_acc_7",
     "description": "La brume de la vallée y dort.",
     "prix": 900,
     "equipement": "accessoire",
@@ -299,6 +333,7 @@
   {
     "id": "medaillon",
     "nom": "Médaillon d'argent",
+    "icone": "ic_acc_2",
     "description": "Orné d'une pierre bleue. Il appartient à l'ancien.",
     "prix": 0,
     "important": true
@@ -313,6 +348,7 @@
   {
     "id": "grimoire",
     "nom": "Grimoire de l'ermite",
+    "icone": "ic_livre",
     "description": "Un vieux livre de recettes de plantes, couvert de notes.",
     "prix": 0,
     "important": true
@@ -320,6 +356,7 @@
   {
     "id": "gemme_vie",
     "nom": "Gemme de vie",
+    "icone": "ic_gemme_vie",
     "description": "Une pierre rouge qui bat comme un cœur.",
     "prix": 350,
     "gemme": {"bonus": {"pv": 0.15}}
@@ -327,6 +364,7 @@
   {
     "id": "gemme_soin",
     "nom": "Gemme de soin",
+    "icone": "ic_gemme_soin",
     "description": "Une pierre laiteuse et tiède.",
     "prix": 300,
     "gemme": {"technique": "soin"}
@@ -334,6 +372,7 @@
   {
     "id": "gemme_feu",
     "nom": "Gemme de feu",
+    "icone": "ic_gemme_feu",
     "description": "Une flamme prise dans le verre.",
     "prix": 300,
     "gemme": {"technique": "feu"}
@@ -341,6 +380,7 @@
   {
     "id": "gemme_givre",
     "nom": "Gemme de givre",
+    "icone": "ic_gemme_givre",
     "description": "Toujours froide au toucher.",
     "prix": 300,
     "gemme": {"technique": "givre"}
@@ -348,6 +388,7 @@
   {
     "id": "gemme_foudre",
     "nom": "Gemme de foudre",
+    "icone": "ic_gemme_foudre",
     "description": "Elle crépite dans la main.",
     "prix": 300,
     "gemme": {"technique": "foudre"}
@@ -355,6 +396,7 @@
   {
     "id": "gemme_force",
     "nom": "Gemme de force",
+    "icone": "ic_gemme_force",
     "description": "Une pierre brune, lourde comme un poing.",
     "prix": 450,
     "gemme": {"bonus": {"attaque": 0.1}}
@@ -362,6 +404,7 @@
   {
     "id": "gemme_esprit",
     "nom": "Gemme d'esprit",
+    "icone": "ic_gemme_esprit",
     "description": "Une pierre bleue où tournent des étoiles.",
     "prix": 450,
     "gemme": {"bonus": {"magie": 0.1}}
@@ -369,6 +412,7 @@
   {
     "id": "gemme_eveil",
     "nom": "Gemme d'éveil",
+    "icone": "ic_gemme_eveil",
     "description": "Elle donne l'impression d'avoir déjà agi.",
     "prix": 600,
     "gemme": {"soutien": "eveil", "valeur": 35}
@@ -376,6 +420,7 @@
   {
     "id": "gemme_rempart",
     "nom": "Gemme rempart",
+    "icone": "ic_gemme_rempart",
     "description": "Un éclat de mur ancien.",
     "prix": 700,
     "gemme": {"technique": "rempart"}
@@ -383,6 +428,7 @@
   {
     "id": "gemme_contre",
     "nom": "Gemme de riposte",
+    "icone": "ic_gemme_contre",
     "description": "Elle rend coup pour coup.",
     "prix": 800,
     "gemme": {"soutien": "contre", "valeur": 0.3}
@@ -390,6 +436,7 @@
   {
     "id": "gemme_vol",
     "nom": "Gemme vampire",
+    "icone": "ic_gemme_vol",
     "description": "Elle boit un peu de chaque blessure.",
     "prix": 900,
     "gemme": {"soutien": "vol_vie", "valeur": 0.12}
@@ -397,6 +444,7 @@
   {
     "id": "gemme_briseur",
     "nom": "Gemme brise-garde",
+    "icone": "ic_gemme_briseur",
     "description": "Elle trouve la faille de chaque bouclier.",
     "prix": 1000,
     "gemme": {"soutien": "briseur", "valeur": 1}
@@ -404,6 +452,7 @@
   {
     "id": "gemme_pyro",
     "nom": "Gemme de brasier",
+    "icone": "ic_gemme_pyro",
     "description": "Un cœur de volcan, poli.",
     "prix": 1200,
     "gemme": {"technique": "pyro"}
@@ -411,6 +460,7 @@
   {
     "id": "perle",
     "nom": "Perle d'écume",
+    "icone": "ic_gemme_perle",
     "description": "Une perle nacrée qui brille comme la mer au matin. La gardienne du phare en cherche.",
     "prix": 0,
     "important": true
@@ -439,6 +489,7 @@
   {
     "id": "lame_ecume",
     "nom": "Lame d'écume",
+    "icone": "ic_epee_2",
     "description": "Une épée légère, trempée dans l'eau de mer.",
     "prix": 2200,
     "equipement": "arme",
@@ -447,6 +498,7 @@
   {
     "id": "baton_orage",
     "nom": "Bâton d'orage",
+    "icone": "ic_sceptre_4",
     "description": "Il sent l'ozone.",
     "prix": 2200,
     "equipement": "arme",
@@ -455,6 +507,7 @@
   {
     "id": "armure_ecaille",
     "nom": "Armure d'écailles",
+    "icone": "ic_armure_7",
     "description": "Des écailles de poisson géant, cousues serré.",
     "prix": 2000,
     "equipement": "armure",
@@ -463,6 +516,7 @@
   {
     "id": "robe_orage",
     "nom": "Robe d'orage",
+    "icone": "ic_armure_8",
     "description": "Tissée avec du fil de nuage.",
     "prix": 1900,
     "equipement": "armure",
@@ -471,6 +525,7 @@
   {
     "id": "amulette_maree",
     "nom": "Amulette des marées",
+    "icone": "ic_acc_5",
     "description": "Elle bat au rythme des vagues.",
     "prix": 1800,
     "equipement": "accessoire",
@@ -479,6 +534,7 @@
   {
     "id": "gemme_maitre",
     "nom": "Gemme du maître",
+    "icone": "ic_gemme_maitre",
     "description": "Une gemme rare, aux reflets de toutes les couleurs.",
     "prix": 3000,
     "gemme": {"bonus": {"pv": 0.08, "attaque": 0.08, "magie": 0.08}}
@@ -486,6 +542,7 @@
   {
     "id": "gemme_orage",
     "nom": "Gemme d'orage",
+    "icone": "ic_gemme_orage",
     "description": "Un éclair noir pris dans le cristal.",
     "prix": 2500,
     "gemme": {"technique": "foudre_noire"}

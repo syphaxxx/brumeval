@@ -37,8 +37,9 @@ sinon scène en cours, sinon déplacement sur la carte), choisit la musique
 (`updateMusic`), puis `Game::draw` dessine l'écran du mode actuel.
 
 L'image fait 320×240 pixels (élargie à la forme de l'écran), puis elle est
-agrandie à la taille de la fenêtre. Tout est dessiné par le code (`gfx.cpp`,
-`sprites.cpp`) : aucune image ni aucun son n'est chargé depuis un fichier.
+agrandie à la taille de la fenêtre. Les sons sont fabriqués par le code (`audio.cpp`) ; les images viennent d'un
+atlas de sprites (`data/sprites.png`, fabriqué par `outils/sprites/decoupe.py` à partir des planches de
+`outils/sprites/planches/`), et ce qui n'a pas de sprite est dessiné par le code (`gfx.cpp`, `sprites.cpp`).
 
 **Convention des fichiers** : chaque `.hpp` commence par un commentaire qui
 explique son module ; le `.cpp` du même nom contient le code. Les fonctions
@@ -105,8 +106,10 @@ captures`, lire la fin (« TOUS LES TESTS PASSENT ») et regarder les captures
 concernées dans `captures/`.
 
 **Une créature** : une entrée dans `data/especes.json` (statistiques,
-`forme`, `couleurs`, `apprend`), puis l'ajouter à une zone de rencontres d'une
-carte (`zones`, champ `pool`). Une nouvelle *forme* (dessin) : ajouter une
+`forme`, `couleurs`, `apprend`, et `sprite` : un nom de `data/sprites.json`), puis l'ajouter à une zone de
+rencontres d'une carte (`zones`, champ `pool`). **Un nouveau sprite** : sa boîte dans
+`outils/sprites/decoupe.json` (ou une recoloration dans `variantes.json`), puis `python outils/sprites/decoupe.py`
+et regarder `outils/sprites/apercu.png`. Une nouvelle *forme* (dessin) : ajouter une
 valeur à `Shape` (data.hpp) **avant** `Human`, son nom dans `SHAPES`
 (data.cpp), et son dessin dans `drawCreature` (sprites.cpp).
 

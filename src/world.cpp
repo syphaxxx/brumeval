@@ -13,7 +13,7 @@
 bool tileWalkable(char c) {
   if (c == 'O' || c == 'P' || c == 'D') return true;  // rochers, plaques et grilles de l'énigme : gérés par Game::blockedOn
   return c == '.' || c == ',' || c == '=' || c == 'F' || c == 'B' || c == 'a' || c == 'g' || c == 'b' || c == 'k' || c == 'c' || c == 'i' ||
-         c == 'n' || c == 'z' || c == 'p';
+         c == 'n' || c == 'z' || c == 'p' || c == 'q';
 }
 std::vector<std::pair<int, int>> puzzleTiles(const MapDef& m, char c) {
   std::vector<std::pair<int, int>> v;
@@ -164,6 +164,7 @@ MapDef mapFromJson(const Json& j) {
                o.at("genre").get<std::string>(), tr(jget<std::string>(o, "nom", "")), parseColor(o.value("toit", Json("#7a8a4a")))};
     b.event = jget<std::string>(o, "evenement", b.kind);
     b.interior = jget<std::string>(o, "interieur", "");
+    b.look = jget<std::string>(o, "dessin", "");
     m.buildings.push_back(b);
   }
   for (auto& o : j.value("habitants", Json::array())) {
@@ -228,6 +229,7 @@ Json mapToJson(const MapDef& m) {
     Json p = {{"x", x.x}, {"y", x.y}, {"l", x.w}, {"h", x.h}, {"genre", x.kind}, {"nom", x.name}, {"toit", colorStr(x.roof)}};
     if (x.event != x.kind) p["evenement"] = x.event;
     if (!x.interior.empty()) p["interieur"] = x.interior;
+    if (!x.look.empty()) p["dessin"] = x.look;
     b.push_back(p);
   }
   o["batiments"] = b;
@@ -417,7 +419,7 @@ std::vector<std::string> checkMaps() {
       return R.count({x + 1, y}) || R.count({x - 1, y}) || R.count({x, y + 1}) || R.count({x, y - 1});
     };
     for (auto& b : m.buildings)
-      if (!r0.count({b.doorX(), b.doorY() + 1})) E("porte inaccessible : " + b.name + " " + at(b.doorX(), b.doorY()));
+      if (!b.decor() && !r0.count({b.doorX(), b.doorY() + 1})) E("porte inaccessible : " + b.name + " " + at(b.doorX(), b.doorY()));
     for (auto& n : m.npcs)
       if (!adj(n.x, n.y, r1)) E("habitant inaccessible " + at(n.x, n.y));
     for (auto& c : m.chests)

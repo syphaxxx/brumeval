@@ -102,6 +102,21 @@ l'utilisateur, en deux versions.
     icônes de type, titre animé), le joueur automatique apprend la mécanique,
     équilibrage mesuré, une page d'Aide par règle.
 
+## Étape 2 ter — Refonte graphique (3.2, demandée le 2026-10-15, publiée le 2026-10-15)
+
+« Refonte complète des graphismes » à partir des planches de sprites de l'utilisateur, plus un ATH plus clair, des
+descriptions plus courtes mais précises, la zone d'effet visible en survolant une attaque, la case et la cible
+choisies directement sur le damier, et des villes plus réalistes.
+
+- Fait : outil de découpe des planches (`outils/sprites/`), atlas lu par le jeu ; Lior, héros, habitants, animaux et
+  les 62 créatures de l'histoire en sprites (boss en grand) ; arbres, rochers, objets et bâtiments triés avec les
+  personnages ; effets des sorts, invocations des Limites, icônes d'objets, visages de Lior, textures.
+- Fait : combat avec ATH en tableau, descriptions brèves, aperçu de la zone, cible et case choisies sur le damier.
+- Fait : Vallée (place, marché, jardins, ferme au moulin), Forgeroc, Givreval, port et camp de Sylve-Noire
+  redessinés ; nouvelles créatures d'après les monstres restants (Tisseline, Osselet, Gobelard, Brutor, Draconnet,
+  Coffrelin).
+- Publiée en 3.2 (2026-10-15). Ensuite : les retours de l'utilisateur après son essai.
+
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
 - Fait en 1.6 : **réserve de créatures** (au-delà de 8 membres) et

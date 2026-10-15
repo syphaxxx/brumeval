@@ -101,6 +101,7 @@ struct Look {
   int hat;     // 0 aucune, 1 capuche, 2 chapeau pointu, 3 bandeau, 4 casque, 5 foulard
   int weapon;  // 0 aucune, 1 épée, 2 bâton, 3 hache, 4 dague, 5 arc, 6 lance
   std::vector<std::string> aliases;  // autres noms de celui qui parle (« aussi ») : son portrait dans les dialogues
+  std::string sprite;  // préfixe des sprites de l'atlas (<sprite>_bas_0…, <sprite>_combat) ; vide : dessiné en code
 };
 
 // Tactique (comme les « gambits » de Final Fantasy XII) : « si condition, alors action ».
@@ -136,6 +137,7 @@ struct Species {
   std::string evolveTo;
   int evolveLvl = 0;
   float size = 1;  // taille du dessin (formes évoluées : un peu plus grandes)
+  std::string sprite;  // sprite de l'atlas (créatures ; vide : dessinée en code)
   int shield = 0;  // Brisure (2.5) : points de bouclier de l'espèce en ennemi (0 : valeur des règles)
   std::string combatRole;  // Rôle en combat (2.7, « role_combat ») : protecteur, soigneur ou chef (vide : aucun)
   std::string talent;  // Talent passif (2.5, inspiré de Pokémon) : identifiant dans les règles (« talents »)
@@ -151,6 +153,7 @@ const char* gearStatName(int s);  // « Attaque »…
 
 struct ItemDef {
   std::string id, name, desc;
+  std::string icon;  // icône dans les menus (sprite de l'atlas, champ « icone » ; vide : aucune)
   int price;
   bool battle;  // utilisable en combat
   bool field;   // utilisable depuis le menu

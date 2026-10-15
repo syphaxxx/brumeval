@@ -88,6 +88,55 @@ std::string moveDetails(const Move& m, const Fighter* user) {
 
 std::string moveHelp(const Move& m, const Fighter* user) { return (m.desc.empty() ? "" : m.desc + " ") + moveDetails(m, user); }
 
+std::string moveBrief(const Move& m, const Fighter* user) {
+  const Rules& R = rules();
+  static const char* KIND[] = {"Physique", "Magique", "Soin", "Réanimation", "Statut"};
+  std::vector<std::string> v;
+  v.push_back(std::string(T(KIND[(int)m.kind])) + " " + typeName(m.type));
+  if (m.damaging()) v.push_back(T("Puiss. ") + std::to_string(m.power));
+  v.push_back(m.cost > 0 ? std::to_string(m.cost) + T(" PM") : std::string(T("Gratuit")));
+  if (m.acc < 100) v.push_back(T("Préc. ") + std::to_string(m.acc) + " %");
+  if (m.critBonus > 0) v.push_back(T("Crit. +") + std::to_string(m.critBonus) + " %");
+  if (m.damaging() && m.target == Target::Enemy && m.zone != Area::All) v.push_back(m.melee ? T("Mêlée") : T("Distance"));
+  std::string side = m.damaging() ? T(" (voisins ") + pct(R.zoneSide) + ")" : "";
+  switch (m.target) {
+    case Target::Enemy:
+      switch (m.zone) {
+        case Area::Line: v.push_back(T("Ligne") + side); break;
+        case Area::Column: v.push_back(T("Colonne") + side); break;
+        case Area::Cross: v.push_back(T("Croix") + side); break;
+        case Area::All: v.push_back(T("Tous les ennemis")); break;
+        case Area::Single: break;
+      }
+      break;
+    case Target::AllEnemies: v.push_back(T("Tous les ennemis")); break;
+    case Target::Ally: v.push_back(T("1 allié")); break;
+    case Target::AllAllies: v.push_back(T("Toute l'équipe")); break;
+    case Target::AllyKO: v.push_back(T("1 allié K.O.")); break;
+  }
+  if (m.kind == Kind::Heal && m.power > 0)
+    v.push_back(user ? T("Rend ≈") + std::to_string(int(m.power * user->eMag() / 20) + 2) + T(" PV") : T("Rend Puiss. × Magie ÷ 20 PV"));
+  if (m.kind == Kind::Revive) v.push_back(T("Relève à ") + std::to_string(m.power) + T(" % des PV"));
+  bool onAllies = m.target == Target::Ally || m.target == Target::AllAllies || m.target == Target::AllyKO;
+  for (auto& e : m.effects) {
+    std::string s;
+    if (e.cure) s = T("Guérit les états");
+    if (e.status != Status::None) s = statusName(e.status);
+    if (e.stat >= 0)
+      s = std::string(stageName(e.stat)) + (e.stages > 0 ? " +" : " −") + std::to_string(std::abs(e.stages)) +
+          (e.self ? T(" lanceur") : m.target == Target::AllAllies ? T(" équipe") : onAllies ? T(" allié") : T(" cible"));
+    if (e.chance < 100) s += " " + std::to_string(e.chance) + " %";
+    v.push_back(s);
+  }
+  if (m.shove > 0) v.push_back(T("Repousse d'1 case"));
+  if (m.shove < 0) v.push_back(T("Attire d'1 case"));
+  if (m.pace == Pace::Quick) v.push_back(T("Rapide (jauge ") + std::to_string(R.quickGauge) + " %)");
+  if (m.pace == Pace::Heavy) v.push_back(T("Lourde (jauge −") + std::to_string(R.heavyDelay) + " %)");
+  std::string s;
+  for (auto& x : v) s += (s.empty() ? "" : " · ") + x;
+  return s;
+}
+
 // Ce que fait un objet, chiffré : soins, réanimation, capture, bonus d'équipement, où l'utiliser
 std::string itemDetails(const ItemDef& d) {
   const Rules& R = rules();
@@ -113,7 +162,7 @@ std::string itemDetails(const ItemDef& d) {
   if (d.cure) v.push_back(T("Guérit poison, brûlure, paralysie et sommeil"));
   if (d.capture > 0) {
     double lo = std::min(R.capMax, R.capBase * d.capture), hi = std::min(R.capMax, (R.capBase + R.capHp) * d.capture);
-    v.push_back(T("Capture : ") + pct(lo) + T(" de chance sur une créature en pleine forme, jusqu'à ") + pct(hi) + T(" presque K.O."));
+    v.push_back(T("Capture : ") + pct(lo) + T(" (pleine forme) à ") + pct(hi) + T(" (presque K.O.)"));
   }
   for (size_t L = 0; L < R.forge.size(); L++)  // matériau de la forge
     for (auto& [id, n] : R.forge[L].items)
@@ -130,7 +179,7 @@ std::string itemDetails(const ItemDef& d) {
   if (d.key && d.trophy) v.push_back(T("Trophée"));
   else if (d.key) v.push_back(T("Objet important"));
   else if (d.slot < 0 && (d.battle || d.field))
-    v.push_back(d.battle && d.field ? T("En combat et dans le menu") : d.battle ? T("En combat seulement") : T("Dans le menu seulement"));
+    v.push_back(d.battle && d.field ? T("Combat et menu") : d.battle ? T("Combat seulement") : T("Menu seulement"));
   std::string s;
   for (auto& x : v) s += (s.empty() ? "" : ". ") + x;
   return s.empty() ? s : s + ".";
@@ -279,7 +328,7 @@ Pt Battle::cellPos(bool allySide, int c) const {
   if (c < 0 || c >= N_CELLS) c = cellAt(1, 1);
   float col = (float)cellCol(c), row = (float)cellRow(c);
   float x = 196 + col * 30 + row * 4;  // 4 colonnes de 30 px, chaque ligne un peu décalée (perspective)
-  return {allySide ? x : 320 - x, 58 + row * 26};
+  return {allySide ? x : 320 - x, 72 + row * 22};
 }
 Pt Battle::pos(const FighterP& f) const { return cellPos(isAlly(f), cellOf(f)); }
 
@@ -372,9 +421,37 @@ Pt Battle::offset(const FighterP& f) const {
 }
 
 // Particules propres au type : k va de 0 (début) à 1 (fin) ; p est le centre de la cible
+// Effets dessinés d'après la planche des sorts (3.2) : une suite d'images par type, jouée sur la cible pendant
+// l'effet (k de 0 à 1). Faux si ce type n'en a pas (les particules en code restent).
+static bool spriteFx(Gfx& g, const std::string& type, const Pt& p, float k, bool heal) {
+  static const std::map<std::string, std::vector<const char*>> FX = {
+      {"feu", {"fx_feu_1", "fx_feu_2", "fx_feu_3"}},
+      {"glace", {"fx_glace_1", "fx_glace_2", "fx_glace_cristal"}},
+      {"foudre", {"fx_eclair_2", "fx_eclair_1", "fx_eclair_pilier"}},
+      {"vent", {"fx_vent_1", "fx_vent_2", "fx_vent_tornade"}},
+      {"eau", {"fx_eau_1", "fx_eau_2", "fx_eau_3"}},
+      {"poison", {"fx_poison_2", "fx_poison_4", "fx_poison_5", "fx_poison_nuage"}},
+      {"plante", {"fx_soin_1", "fx_regen"}},
+      {"roche", {"fx_terre_1", "fx_terre_2", "fx_terre_pics"}},
+      {"ombre", {"fx_ombre_1", "fx_ombre_3", "fx_ombre_4", "fx_ombre_5"}},
+      {"esprit", {"fx_ombre_2", "fx_teleport"}},
+      {"lumiere", {"fx_revelation"}},
+      {"soin", {"fx_soin_1", "fx_soin_2", "fx_soin_3", "fx_soin_4"}},
+  };
+  auto it = FX.find(heal ? "soin" : type);
+  if (it == FX.end()) return false;
+  const auto& v = it->second;
+  const SpriteRect* r = findSprite(v[std::min(v.size() - 1, size_t(k * v.size()))]);
+  if (!r) return false;
+  Color c{255, 255, 255, uint8_t(255 * std::clamp((1 - k) * 2.5f, 0.f, 1.f))};
+  g.sprite(*r, std::round(p.x - r->w / 2.f), std::round(p.y + 12 - r->h), false, 1, c);
+  return true;
+}
+
 void Battle::drawTypeFx(const Pt& p, float k) {
   Gfx& g = G.g;
   const std::string& t = types()[anim_.type].id;
+  if (spriteFx(g, t, p, k, false)) return;
   auto col = [&](uint32_t c, float a) {
     Color x = rgb(c);
     x.a = uint8_t(std::clamp(a, 0.f, 1.f) * 255);
@@ -445,6 +522,21 @@ void Battle::drawAnim() {
     c.a = uint8_t(std::clamp(a, 0.f, 1.f) * 255);
     return c;
   };
+  // Limite : une invocation (planche des sorts) se dresse au-dessus des cibles, selon le type de la technique
+  if (anim_.limit && !anim_.targets.empty()) {
+    std::string ty = anim_.type >= 0 ? types()[anim_.type].id : "";
+    const char* who = ty == "feu" || ty == "foudre" ? "inv_dragon"
+                      : ty == "eau" || ty == "glace" || ty == "esprit" || ty == "lumiere" ? "inv_esprit"
+                      : ty == "plante" || ty == "roche" || ty == "metal" || ty == "poison" ? "inv_orc" : "inv_loup";
+    if (const SpriteRect* r = findSprite(who)) {
+      Pt c{0, 0};
+      for (auto& f : anim_.targets) c.x += pos(f).x, c.y += pos(f).y;
+      c.x /= anim_.targets.size(), c.y /= anim_.targets.size();
+      float a = std::min({1.f, k * 4, (1 - k) * 3});
+      g.sprite(*r, std::round(c.x - r->w / 2.f), std::round(c.y - 14 - r->h + (1 - std::min(1.f, k * 3)) * 10), false, 1,
+               Color{255, 255, 255, uint8_t(230 * a)});
+    }
+  }
   for (auto& f : anim_.targets) {
     Pt p = pos(f);
     p.y -= 4;
@@ -477,6 +569,7 @@ void Battle::drawAnim() {
         break;
       case Fx::Heal:
       case Fx::Capture:
+        if (anim_.fx == Fx::Heal && spriteFx(g, "", p, k, true)) break;
         for (int i = 0; i < 7; i++) {  // étincelles qui montent
           float x = std::sin(i * 2.4f) * 13, y = 12 - std::fmod(k * 40 + i * 6, 40.f);
           g.ellipse(p.x + x, p.y + y, 1.6f, 1.6f, fade(i % 2 ? white : c, 1 - k * .8f));
@@ -492,7 +585,10 @@ void Battle::drawAnim() {
         break;
     }
     if (anim_.type >= 0 && (anim_.fx == Fx::Hit || anim_.fx == Fx::Magic)) drawTypeFx(p, k);
-    if (anim_.limit)  // Limite : grande étoile dorée
+    if (anim_.limit)  // Limite : explosion, puis grande étoile dorée
+      if (const SpriteRect* r = findSprite(k < .5f ? "fx_explosion" : "fx_impact"))
+        g.sprite(*r, std::round(p.x - r->w / 2.f), std::round(p.y + 14 - r->h), false, 1, Color{255, 255, 255, uint8_t(255 * std::min(1.f, (1 - k) * 2))});
+    if (anim_.limit)
       for (int i = 0; i < 12; i++) {
         float ang = i * .5236f, r = 6 + k * 30;
         g.line(p.x, p.y, p.x + std::cos(ang) * r, p.y + std::sin(ang) * r, 1.5f, fade(rgb(0xffd34d), 1 - k));
@@ -550,6 +646,7 @@ void Battle::update(float dt) {
   }
   if (ending_) return;
   if (G.menus.active()) {
+    if (boardPicking() && !G.pilot_) boardInput();
     G.menus.update(G.in);
     return;
   }
@@ -628,11 +725,11 @@ void Battle::drawWeather() {
   }
 }
 
-void Battle::drawTurnOrder(float y) {
+void Battle::drawTurnOrder(float y, float minX) {
   Gfx& g = G.g;
   auto order = turnOrder(8);
   if (order.empty()) return;
-  float x = 160 - order.size() * 12.f;
+  float x = std::max(minX, 160 - order.size() * 12.f);
   std::map<const Fighter*, int> seenOnce;  // un ennemi brisé : seul son prochain tour est perdu
   for (size_t i = 0; i < order.size(); i++, x += 24) {
     const FighterP& f = order[i];
@@ -718,7 +815,8 @@ void Battle::command(FighterP a) {
                        t.rows = 5;
                        for (auto& id : a->techs()) {
                          const Move& mv = moveInfo(id);
-                         t.items.push_back({mv.name, typeName(mv.type), moveHelp(mv, a.get()), true, [this, a, id] { moveTarget(a, id); }});
+                         t.items.push_back({mv.name, typeName(mv.type), moveBrief(mv, a.get()), true, [this, a, id] { moveTarget(a, id); },
+                                            [this, a, id] { previewMove(a, id); }});
                        }
                        dock(t);
                        G.menus.push(t);
@@ -731,8 +829,8 @@ void Battle::command(FighterP a) {
                          t.rows = 5;
                          for (auto& id : sp) {
                            const Move& mv = moveInfo(id);
-                           t.items.push_back({mv.name, std::to_string(mv.cost) + T(" PM"), moveHelp(mv, a.get()), a->mp >= mv.cost,
-                                              [this, a, id] { moveTarget(a, id); }});
+                           t.items.push_back({mv.name, std::to_string(mv.cost) + T(" PM"), moveBrief(mv, a.get()), a->mp >= mv.cost,
+                                              [this, a, id] { moveTarget(a, id); }, [this, a, id] { previewMove(a, id); }});
                          }
                          dock(t);
                          G.menus.push(t);
@@ -760,8 +858,8 @@ void Battle::command(FighterP a) {
                            std::string id = d.move;
                            FighterP p = d.partner;
                            t.items.push_back({mv.name, mv.cost ? std::to_string(mv.cost) + T(" PM") : p->name(),
-                                              T("Avec ") + p->name() + (mv.cost ? " (" + std::to_string(mv.cost) + T(" PM chacun)") : "") + ". " + moveHelp(mv, a.get()), true,
-                                              [this, a, id, p] { moveTarget(a, id, p); }});
+                                              T("Avec ") + p->name() + (mv.cost ? " (" + std::to_string(mv.cost) + T(" PM chacun)") : "") + ". " + moveBrief(mv, a.get()), true,
+                                              [this, a, id, p] { moveTarget(a, id, p); }, [this, a, id] { previewMove(a, id); }});
                          }
                          dock(t);
                          G.menus.push(t);
@@ -779,7 +877,7 @@ void Battle::command(FighterP a) {
                          std::string id = d.id;
                          bool ok = true;
                          bool lantern = d.capture > 0;
-                         std::string help = itemHelp(d);
+                         std::string help = itemDetails(d);  // en combat : sans la phrase d'ambiance
                          if (lantern) {
                            ok = canCapture && creature;
                            if (!canCapture) help = T("Impossible de capturer ici.");
@@ -811,18 +909,23 @@ void Battle::command(FighterP a) {
                        Menu t;
                        t.title = T("Se déplacer");
                        t.rows = 5;
-                       t.onCancel = [this] {
-                         moveCell_ = -1;
-                         G.menus.pop();
-                       };
                        for (int c : freeCells) {
                          const Rules::Terrain* tr = terrainOf(true, c);
-                         t.items.push_back({cellName(c), "",
-                                            tr ? tr->name + " : " + tr->desc : T("Avant : frappe et reçoit plus fort au corps à corps. Arrière : protégé."), true,
-                                            [this, a, c] { moveTo(a, c); }, [this, c] { moveCell_ = c; }});
+                         std::string where = cellCol(c) == 0 ? T("Avant : frappe et reçoit plus fort au corps à corps.")
+                                             : cellCol(c) == BACK_COL ? T("Arrière : moins de dégâts au corps à corps (donnés et reçus).")
+                                                                      : T("Milieu.");
+                         t.items.push_back({cellName(c), "", cellName(c) + " · " + (tr ? tr->name + " : " + tr->desc : where), true,
+                                            [this, a, c] { moveTo(a, c); }});
                        }
-                       dock(t, Dock::AboveLeft);
-                       G.menus.push(t);
+                       // la case libre la plus proche du combattant d'abord
+                       Pt from = cellPos(true, cellOf(a));
+                       float best = 1e9f;
+                       for (size_t i = 0; i < freeCells.size(); i++) {
+                         Pt p = cellPos(true, freeCells[i]);
+                         float d = std::abs(p.x - from.x) + std::abs(p.y - from.y);
+                         if (d < best) best = d, t.sel = (int)i;
+                       }
+                       boardMenu(t, true, freeCells, true);
                      }});
   std::vector<FighterP> bench;  // avec des héros : un héros n'est remplacé que par un héros
   for (auto& r : G.team)
@@ -860,13 +963,25 @@ void Battle::pickFoe(const std::string& title, std::function<std::string(const F
     aiming_ = nullptr;
     G.menus.pop();
   };
+  std::vector<FighterP> list;
   for (auto& f : alive(foes)) {
     if (creaturesOnly && f->S().human) continue;
     if (aiming_ && !reachable(actor, *aiming_, f)) continue;  // corps à corps : seulement l'avant
-    t.items.push_back({f->name(), T("N.") + std::to_string(f->lvl), info(*f), true, [done, f] { done(f); }, [this, f] { cursor = f; }});
+    list.push_back(f);
   }
-  dock(t);
-  G.menus.push(t);
+  // dans l'ordre du damier (de haut en bas, de l'avant à l'arrière) : Haut et Bas suivent l'écran
+  std::stable_sort(list.begin(), list.end(), [&](const FighterP& a, const FighterP& b) {
+    int ca = std::max(0, cellOf(a)), cb = std::max(0, cellOf(b));
+    return cellRow(ca) != cellRow(cb) ? cellRow(ca) < cellRow(cb) : cellCol(ca) < cellCol(cb);
+  });
+  std::vector<int> cells;
+  for (auto& f : list) {
+    if (f == cursor) t.sel = (int)t.items.size();  // la cible de l'aperçu
+    t.items.push_back({f->name(), T("N.") + std::to_string(f->lvl), f->name() + T(" N.") + std::to_string(f->lvl) + " · " + info(*f), true,
+                       [done, f] { done(f); }, [this, f] { cursor = f; }});
+    cells.push_back(cellOf(f));
+  }
+  boardMenu(t, false, cells);
 }
 void Battle::pickAlly(const std::string& title, bool ko, std::function<void(FighterP)> done) {
   Menu t;
@@ -876,15 +991,99 @@ void Battle::pickAlly(const std::string& title, bool ko, std::function<void(Figh
     cursor = nullptr;
     G.menus.pop();
   };
+  std::vector<int> cells;
+  int first = -1;  // le premier choix possible
   for (auto& f : allies) {
     bool ok = ko ? !f->alive() : f->alive();
     std::string st = f->status != Status::None ? std::string(" · ") + statusName(f->status) : "";
+    if (ok && first < 0) first = (int)t.items.size();
     t.items.push_back({f->name(), std::to_string(f->hp) + "/" + std::to_string(f->mhp),
-                       std::to_string(f->mp) + "/" + std::to_string(f->mmp) + T(" PM") + (f->alive() ? st : T(" · K.O.")), ok, [done, f] { done(f); },
-                       [this, f] { cursor = f; }});
+                       f->name() + " · " + std::to_string(f->hp) + "/" + std::to_string(f->mhp) + T(" PV · ") + std::to_string(f->mp) + "/" +
+                           std::to_string(f->mmp) + T(" PM") + (f->alive() ? st : T(" · K.O.")),
+                       ok, [done, f] { done(f); }, [this, f] { cursor = f; }});
+    cells.push_back(cellOf(f));
   }
-  dock(t, Dock::AboveLeft);
+  t.sel = std::max(0, first);
+  boardMenu(t, true, cells);
+}
+
+// ---------------------------------------------------------------------------
+// Choix sur le damier (3.2)
+// ---------------------------------------------------------------------------
+void Battle::boardMenu(Menu t, bool allySide, std::vector<int> cells, bool move) {
+  t.hidden = true;
+  dock(t);
+  pick_ = {G.menus.depth() + 1, allySide, std::move(cells), move};
   G.menus.push(t);
+}
+bool Battle::boardPicking() const {
+  return pick_.depth && G.menus.depth() == pick_.depth && G.menus.active() && G.menus.top().hidden;
+}
+int Battle::cellUnder(bool allySide, float x, float y, const std::vector<int>& among) const {
+  int best = -1;
+  float bd = 1e9f;
+  for (size_t i = 0; i < among.size(); i++) {
+    Pt p = cellPos(allySide, among[i]);
+    if (std::abs(x - p.x) > 15 || y < p.y - 26 || y > p.y + 19) continue;  // la dalle et le combattant debout dessus
+    float d = std::abs(x - p.x) + std::abs(y - (p.y + 4));
+    if (d < bd) bd = d, best = (int)i;
+  }
+  return best;
+}
+void Battle::boardInput() {
+  Input& in = G.in;
+  Menu& m = G.menus.top();
+  int n = (int)std::min(m.items.size(), pick_.cells.size());
+  if (n == 0) return;
+  auto choose = [&](int i) {
+    if (i < 0 || i == m.sel || !m.items[(size_t)i].enabled) return;
+    m.sel = i;
+    audio::play("curseur");
+    if (m.items[(size_t)i].hover) m.items[(size_t)i].hover();
+  };
+  // Flèches : la case la plus proche dans cette direction, à l'écran
+  static const float DX[4] = {0, 0, -1, 1}, DY[4] = {-1, 1, 0, 0};
+  for (int d = 0; d < 4; d++) {
+    if (!in.press[d]) continue;
+    in.press[d] = false;
+    Pt from = cellPos(pick_.allySide, pick_.cells[(size_t)std::clamp(m.sel, 0, n - 1)]);
+    int best = -1;
+    float bs = 1e9f;
+    for (int i = 0; i < n; i++) {
+      if (i == m.sel || !m.items[(size_t)i].enabled) continue;
+      Pt p = cellPos(pick_.allySide, pick_.cells[(size_t)i]);
+      float vx = p.x - from.x, vy = p.y - from.y, along = vx * DX[d] + vy * DY[d], across = std::abs(vx * DY[d] - vy * DX[d]);
+      if (along < 3) continue;
+      if (along + across * 2 < bs) bs = along + across * 2, best = i;
+    }
+    choose(best);
+  }
+  if (in.mouseOn) {
+    int at = cellUnder(pick_.allySide, (float)in.mx, (float)in.my, pick_.cells);
+    if (at >= n) at = -1;
+    if (in.moved) choose(at);
+    if (in.mclick[0]) {
+      in.mclick[0] = false;
+      if (at >= 0 && m.items[(size_t)at].enabled) {
+        m.sel = at;
+        in.confirm = true;
+      }
+    }
+  }
+}
+// Survol d'une technique : sa zone autour de la cible probable (la dernière visée si elle est encore à portée,
+// sinon le premier ennemi à portée)
+void Battle::previewMove(const FighterP& a, const std::string& id) {
+  preview_ = id;
+  previewDepth_ = G.menus.depth();
+  const Move& m = moveInfo(id);
+  if (m.target != Target::Enemy) return;
+  if (cursor && cursor->alive() && !isAlly(cursor) && reachable(a, m, cursor)) return;
+  cursor = nullptr;
+  for (auto& f : alive(foes)) {
+    if (!reachable(a, m, f)) continue;
+    if (!cursor || cellCol(std::max(0, cellOf(f))) < cellCol(std::max(0, cellOf(cursor)))) cursor = f;
+  }
 }
 
 // Fiche rapide d'un ennemi visé : types, PV, état, bonus/malus et efficacité
@@ -1883,7 +2082,6 @@ void Battle::useItem(FighterP a, const std::string& id, FighterP t) {
 
 void Battle::moveTo(FighterP a, int cell) {
   G.menus.clear();
-  moveCell_ = -1;
   if (follower()) {  // l'invité envoie son ordre ; l'hôte (ou le chef) vérifie et déplace
     send_(net_ == Net::Follow ? leader_ : -1, Json{{"t", "ordre"}, {"i", mine(a)[1]}, {"deplacer", cell}});
     actor = nullptr;
@@ -2082,6 +2280,114 @@ void Battle::finish(BattleResult r) {
 // ---------------------------------------------------------------------------
 // Dessin
 // ---------------------------------------------------------------------------
+// Dalle d'une case (losange) : pleine, ou seulement son contour
+static void tile(Gfx& g, Pt p, Color c, bool outline = false) {
+  std::vector<Pt> d{{p.x - 14, p.y + 13}, {p.x, p.y + 8}, {p.x + 14, p.y + 13}, {p.x, p.y + 18}};
+  if (!outline) return g.poly(d, c);
+  for (int i = 0; i < 4; i++) g.line(d[i].x, d[i].y, d[(i + 1) % 4].x, d[(i + 1) % 4].y, 1, c);
+}
+
+// Zones sur le damier (3.2) : technique survolée dans le menu (aperçu autour de la cible probable), cible ou case
+// en train d'être choisie. Or : la case visée ; orange : le reste de la zone ; contour blanc : les autres choix.
+void Battle::drawZones(float t) {
+  Gfx& g = G.g;
+  float pulse = .5f + .5f * std::sin(t * 7);
+  bool picking = boardPicking();
+  const Move* mv = nullptr;
+  int center = -1;
+  bool side = false;  // camp de la zone (vrai : alliés)
+  if (picking) {
+    Menu& m = G.menus.top();
+    side = pick_.allySide;
+    for (size_t i = 0; i < pick_.cells.size() && i < m.items.size(); i++)
+      if ((int)i != m.sel && m.items[i].enabled) tile(g, cellPos(side, pick_.cells[i]), rgb(0xffffff, uint8_t(90 + 60 * pulse)), true);
+    if (m.sel >= 0 && m.sel < (int)pick_.cells.size()) center = pick_.cells[(size_t)m.sel];
+    if (!pick_.move) mv = aiming_;
+    if (pick_.move && center >= 0 && actor) {  // le combattant en transparence sur la case choisie
+      Pt p = cellPos(true, center);
+      g.alpha = .45f;
+      drawFighterSprite(g, *actor, p.x, p.y, 1, false, t);
+      g.alpha = 1;
+    }
+  } else if (!preview_.empty() && previewDepth_ == G.menus.depth() && G.menus.active() && actor) {
+    mv = &moveInfo(preview_);
+    if (mv->target == Target::Enemy) {
+      if (cursor && cursor->alive()) center = cellOf(cursor);
+      // corps à corps : les ennemis hors de portée sont barrés
+      for (auto& f : alive(foes))
+        if (!reachable(actor, *mv, f)) {
+          Pt p = cellPos(false, cellOf(f));
+          g.line(p.x - 6, p.y + 10, p.x + 6, p.y + 16, 2, rgb(0xff5a4a, 200));
+          g.line(p.x + 6, p.y + 10, p.x - 6, p.y + 16, 2, rgb(0xff5a4a, 200));
+        }
+    } else if (mv->target == Target::Ally || mv->target == Target::AllyKO) {
+      side = true;
+      center = cellOf(actor);
+    } else side = mv->target == Target::AllAllies;
+  }
+  if (!mv && center >= 0) {  // objet, allié, case : seulement la case choisie
+    tile(g, cellPos(side, center), rgb(0xffd34d, uint8_t(150 + 80 * pulse)));
+    return;
+  }
+  if (!mv) return;
+  bool all = mv->zone == Area::All || mv->target == Target::AllEnemies || mv->target == Target::AllAllies;
+  for (int c = 0; c < N_CELLS; c++) {
+    bool main = c == center, in = all || (center >= 0 && inZone(mv->zone, center, c));
+    if (!in) continue;
+    tile(g, cellPos(side, c), main ? rgb(0xffd34d, uint8_t(150 + 80 * pulse)) : rgb(0xff9a3a, uint8_t(90 + 50 * pulse)));
+    if (main) tile(g, cellPos(side, c), rgb(0xfff6c8, 230), true);
+  }
+}
+
+// ATH (3.2) : un tableau en bas à droite (à gauche : le menu de commande), une ligne par allié avec ses PV
+// (chiffres et barre colorée), ses PM, sa jauge ATB (or : prêt ; rouge : en retard après une technique lourde)
+// et sa Limite (rose, clignote quand elle est prête). Les compagnons sont en retrait sous leur héros. Au-dessus,
+// les titres des colonnes, le mode (Tab), les renforts ennemis.
+void Battle::drawHud(float t) {
+  Gfx& g = G.g;
+  Color lab = rgb(0xaab3d8);
+  size_t n = std::min<size_t>(allies.size(), 6);
+  const float hx = 104, rowH = 10, hy = SCREEN_H - 2 - rowH * n;
+  g.rect(hx - 4, hy - 13, g.right() - hx + 4, SCREEN_H - hy + 13, rgb(0x060a24, 190));
+  g.rect(hx - 4, hy - 13, g.right() - hx + 4, 1, rgb(0x8090c8, 120));
+  bool flash = t - toggledT_ < 1.2f && int(t * 8) % 2;  // Tab : mode auto activé ou coupé
+  g.text(hx, hy - 12, G.tacticsAuto ? T("Auto") : T("Manuel"), flash ? WHITE : G.tacticsAuto ? GOLD : lab);
+  g.text(hx + 92, hy - 12, T("PV"), lab, 2);
+  g.text(hx + 152, hy - 12, T("PM"), lab, 2);
+  g.text(hx + 175, hy - 12, T("ATB"), lab, 1);
+  g.text(hx + 203, hy - 12, T("Lim"), lab, 1);
+  for (size_t i = 0; i < n; i++) {
+    auto& a = allies[i];
+    float y = hy + i * rowH;
+    bool comp = companion(a);
+    if (actor == a) g.rect(hx - 3, y - 1, 216, rowH, rgb(0xffd34d, 40));
+    // Gardien à plusieurs : les combattants des autres joueurs en bleu
+    Color nc = !a->alive() ? rgb(0xff7b6b) : !mineToCommand(a) ? BLUE : actor == a ? GOLD : comp ? rgb(0xd8def2) : WHITE;
+    g.text(hx + (comp ? 5 : 0), y - 2, utf8Prefix(a->name(), comp ? 6 : 7), nc);
+    if (a->status != Status::None && a->alive()) {  // état : sa pastille à la fin du nom
+      Color sc2 = rgb(statusColor(a->status));
+      g.rect(hx + 45, y + 1, 5, 5, sc2);
+    }
+    float r = a->mhp ? float(a->hp) / a->mhp : 0;
+    Color hc = r > .5f ? GREEN : r > .25f ? GOLD : RED;
+    g.text(hx + 92, y - 2, std::to_string(std::max(0, a->hp)), a->alive() ? (r <= .25f ? hc : WHITE) : rgb(0xff7b6b), 2);
+    g.rect(hx + 95, y + 2, 34, 4, rgb(0x1a2050));
+    g.rect(hx + 95, y + 2, 34 * std::clamp(r, 0.f, 1.f), 4, hc);
+    g.rect(hx + 95, y + 2, 34 * std::clamp(r, 0.f, 1.f), 1, shade(hc, -.35f));
+    g.text(hx + 152, y - 2, std::to_string(a->mp), rgb(0x9fd0ff), 2);
+    // Jauge ATB
+    float bx = hx + 158, bw = 34;
+    g.rect(bx, y + 2, bw, 4, rgb(0x1a2050));
+    if (a->alive() && a->atb < 0) g.rect(bx, y + 2, bw * std::clamp(-a->atb / 100, 0.f, 1.f), 4, RED);
+    else if (a->alive()) g.rect(bx, y + 2, bw * std::clamp(a->atb / 100, 0.f, 1.f), 4, a->atb >= 100 ? GOLD : rgb(0xe8ecff));
+    // Limite
+    float lx = hx + 196, lw = 14, lr = std::clamp(a->lim / 100, 0.f, 1.f);
+    g.rect(lx, y + 2, lw, 4, rgb(0x1a2050));
+    g.rect(lx, y + 2, lw * lr, 4, lr >= 1 && int(t * 5) % 2 ? WHITE : rgb(0xff6fb0));
+  }
+  if (!reserve.empty()) g.text(6, 148, T("Renforts : ") + std::to_string(reserve.size()), GREY);
+}
+
 void Battle::drawStatusTag(const Fighter& f, float x, float y) {
   if (f.status == Status::None || !f.alive()) return;
   Gfx& g = G.g;
@@ -2190,16 +2496,7 @@ void Battle::draw() {
           }
       }
     }
-  if (aiming_ && cursor && cursor->alive())
-    for (int c = 0; c < N_CELLS; c++)
-      if (inZone(aiming_->zone, cellOf(cursor), c)) {
-        Pt p = cellPos(isAlly(cursor), c);
-        g.ellipse(p.x, p.y + 13, 13, 5, rgb(0xffd34d, uint8_t(c == cellOf(cursor) ? 190 : 110)));
-      }
-  if (moveCell_ >= 0) {
-    Pt p = cellPos(true, moveCell_);
-    g.ellipse(p.x, p.y + 13, 13, 5, rgb(0xffd34d, uint8_t(150 + 60 * std::sin(t * 8))));
-  }
+  drawZones(t);
   // Zones des attaques annoncées par les boss, en rouge sur le damier allié
   std::vector<std::pair<int, int>> warn = netWarn_;
   for (auto& w : warnings_) warn.push_back({w.center, (int)w.zone});
@@ -2215,13 +2512,36 @@ void Battle::draw() {
     if (f->alive()) shown.push_back(f);
   for (auto& a : allies) shown.push_back(a);
   std::stable_sort(shown.begin(), shown.end(), [&](const FighterP& a, const FighterP& b) { return pos(a).y < pos(b).y; });
+  // Zone en cours (choix sur le damier, ou aperçu de la technique survolée) : les combattants du camp visé hors de
+  // la zone sont estompés, pour que la cible ressorte même quand ils se chevauchent
+  int zSide = -1, zCenter = -1;
+  std::set<int> zCells;
+  {
+    const Move* zm = nullptr;
+    bool side = false;
+    if (boardPicking()) {
+      Menu& m = G.menus.top();
+      if (!pick_.move && m.sel >= 0 && m.sel < (int)pick_.cells.size()) zCenter = pick_.cells[(size_t)m.sel], side = pick_.allySide, zm = aiming_;
+    } else if (!preview_.empty() && previewDepth_ == G.menus.depth() && G.menus.active() && cursor && cursor->alive() && !isAlly(cursor) &&
+               moveInfo(preview_).target == Target::Enemy) {
+      zm = &moveInfo(preview_);
+      zCenter = cellOf(cursor);
+    }
+    if (zCenter >= 0) {
+      zSide = side;
+      for (int c = 0; c < N_CELLS; c++)
+        if (c == zCenter || (zm && (zm->zone == Area::All || inZone(zm->zone, zCenter, c)))) zCells.insert(c);
+    }
+  }
   for (auto& f : shown) {
     Pt p = pos(f);
     Pt o = offset(f);
+    bool dim = zSide >= 0 && isAlly(f) == (zSide == 1) && !zCells.count(cellOf(f));
     if (!isAlly(f)) {  // ennemi : barre de PV au-dessus, nom sous le curseur
       float s = f->boss ? 1.45f : f->sp == "brumelin" ? .85f : 1.f;
+      if (dim) g.alpha = .45f;
       if (!(blinking && blink == f)) drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, s, true, t + p.x * .01f);
-      float bw = f->boss ? 24 : 15, by = p.y - (f->boss ? 42 : 26);
+      float bw = f->boss ? 24 : 15, by = std::max(46.f, p.y - fighterTop(*f, s) - 6);
       g.rect(p.x - bw - 1, by - 1, bw * 2 + 2, 4, rgb(0x0a0f33));
       g.rect(p.x - bw, by, bw * 2 * f->hp / f->mhp, 2, rgb(f->broken ? 0xffe066 : 0xff8a7a));
       // Brisure : bouclier (points restants) à gauche de la barre, ou « BRISÉ » ; dessous, les faiblesses découvertes
@@ -2254,15 +2574,27 @@ void Battle::draw() {
           nw++;
         }
       drawStatusTag(*f, p.x, by - 10);
-      if (cursor == f) g.cursor(p.x - 3, by - 12 + std::sin(t * 8));  // son nom est dans le menu de la cible
+      g.alpha = 1;
       continue;
     }
     if (!f->alive()) g.alpha = .35f;
+    else if (dim) g.alpha = .45f;
     if (!(blinking && blink == f)) drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, 1, false, t + p.x * .01f);
     g.alpha = 1;
     drawStatusTag(*f, p.x - 26, p.y - 18);
     if (actor == f) g.tri(p.x - 4, p.y - 34, p.x + 4, p.y - 34, p.x, p.y - 28, rgb(0xffd34d));
     if (cursor == f) g.cursor(p.x - 24, p.y - 4);
+  }
+  // Par-dessus les combattants : contour de la zone et flèche au-dessus de la cible (le sprite cache sa case)
+  if (zSide >= 0) {
+    for (int c : zCells) tile(g, cellPos(zSide == 1, c), rgb(c == zCenter ? 0xfff2a0 : 0xffb050, 210), true);
+    for (auto& f : zSide == 1 ? allies : foes)
+      if (cellOf(f) == zCenter) {
+        Pt p = cellPos(zSide == 1, zCenter);
+        float y = std::max(48.f, p.y - fighterTop(*f, 1) - 16) + std::sin(t * 8) * 1.5f;
+        g.tri(p.x - 5, y, p.x + 5, y, p.x, y + 6, rgb(0xffe066));
+        g.tri(p.x - 3, y + 1, p.x + 3, y + 1, p.x, y + 4, rgb(0xfff8d0));
+      }
   }
   drawAnim();
   // Nombres flottants
@@ -2280,51 +2612,29 @@ void Battle::draw() {
   else if (follower() && !netMsg_.empty()) top = utf8Prefix(netMsg_, int((t - netMsgT_) * 60));
   else if (!choosing().empty()) top = choosing() + T(" choisit…");
   float orderY = 3;
+  if (boardPicking() && !top.empty()) top += T(" · Flèches/souris, Entrée, Échap");
   if (!top.empty()) {
     auto lines = Gfx::wrap(top, 300);
+    if (lines.size() > 3) lines.resize(3);
     g.window(4, 2, 312, 7 + 11 * (int)lines.size());
     for (size_t i = 0; i < lines.size(); i++) g.text(160, 5 + i * 11, lines[i], WHITE, 1);
     orderY = 2 + 7 + 11 * (int)lines.size() + 2;
   }
-  if (!ending_ && !summaryOn_ && !follower()) drawTurnOrder(orderY);  // ordre des prochains tours, sous le message
-  if (weather_ >= 0 && !ending_ && !summaryOn_) g.text(6, orderY + 12, rules().weathers[(size_t)weather_].name, rgb(0xe8ecff));
-  // ATH discret, à droite du bas de l'écran (à gauche : le menu de commande) : deux colonnes de
-  // trois alliés ; pour chacun, nom et PV, puis quatre traits : PV (vert), PM (bleu), jauge ATB
-  // (blanche, or quand elle est pleine) et Limite (rose). Au-dessus : renforts et mode auto.
-  Color lab = rgb(0xaab3d8);
-  if (!reserve.empty()) g.text(6, 176, T("Renforts : ") + std::to_string(reserve.size()), GREY);
-  bool flash = t - toggledT_ < 1.2f && int(t * 8) % 2;  // Tab : mode auto activé ou coupé
-  if (G.menus.depth() <= 1)  // caché par un sous-menu (au-dessus de l'ATH)
-    g.text(314, 176, G.tacticsAuto ? T("Auto (Tab)") : T("Manuel (Tab)"), flash ? WHITE : G.tacticsAuto ? GOLD : lab, 2);
-  const float hx = 104, hy = 189;
-  g.rect(hx - 4, hy - 3, g.right() - hx + 4, SCREEN_H - hy + 3, rgb(0x060a24, 165));
-  for (size_t i = 0; i < allies.size() && i < 6; i++) {
-    auto& a = allies[i];
-    float x = hx + (i / 3) * 108.f, y = hy + (i % 3) * 16.f;
-    if (actor == a) g.rect(x - 2, y - 2, 106, 16, rgb(0xffffff, 30));
-    // Gardien à plusieurs : les combattants des autres joueurs en bleu ; compagnon : en retrait
-    Color nc = !a->alive() ? rgb(0xff7b6b) : a->status != Status::None ? rgb(statusColor(a->status)) : !mineToCommand(a) ? BLUE : actor == a ? GOLD : WHITE;
-    g.text(x + (companion(a) ? 4 : 0), y, utf8Prefix(a->name(), companion(a) ? 6 : 7), nc);
-    g.text(x + 102, y, std::to_string(a->hp) + "/" + std::to_string(a->mhp), a->hp * 4 < a->mhp ? GOLD : WHITE, 2);
-    float by = y + 11;
-    auto line = [&](float bx, float w, float r, Color c) {
-      g.rect(bx, by, w, 2, rgb(0x2a3270));
-      g.rect(bx, by, w * std::clamp(r, 0.f, 1.f), 2, c);
-    };
-    line(x, 28, float(a->hp) / a->mhp, GREEN);
-    line(x + 32, 18, a->mmp ? float(a->mp) / a->mmp : 0, BLUE);
-    // Après une technique lourde, la jauge part en dessous de zéro : trait rouge qui se vide
-    if (a->alive() && a->atb < 0) line(x + 54, 24, -a->atb / 100, RED);
-    else line(x + 54, 24, a->alive() ? a->atb / 100 : 0, a->atb >= 100 ? GOLD : rgb(0xe8ecff));
-    line(x + 82, 18, a->lim / 100, a->lim >= 100 && int(t * 5) % 2 ? WHITE : rgb(0xff6fb0));
+  float orderX = 6;
+  if (weather_ >= 0 && !ending_ && !summaryOn_) {  // météo, puis l'ordre des tours sur la même ligne
+    const std::string& wn = rules().weathers[(size_t)weather_].name;
+    g.text(6, orderY, wn, rgb(0xe8ecff));
+    orderX += Gfx::textW(wn) + 6;
   }
+  if (!ending_ && !summaryOn_ && !follower()) drawTurnOrder(orderY, orderX);  // ordre des prochains tours, sous le message
+  drawHud(t);
   drawWeather();
   if (summaryOn_) {  // fenêtre des gains de la victoire
     int h = 36 + 11 * (int)summary_.size(), y = std::max(26, 92 - h / 2);
     g.window(30, y, 260, h);
     g.text(160, y + 5, T("Victoire !"), GOLD, 1);
     for (size_t i = 0; i < summary_.size(); i++) g.text(38, y + 19 + i * 11, summary_[i], WHITE);
-    g.text(160, y + h - 12, T("Entrée : continuer"), lab, 1);
+    g.text(160, y + h - 12, T("Entrée : continuer"), rgb(0xaab3d8), 1);
   }
   G.menus.draw(g, t);
   // Entrée en combat : bandes sombres qui s'écartent en alternance, après un éclair blanc ;

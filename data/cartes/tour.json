@@ -45,7 +45,9 @@
     "####nnnnnnnnnn..nnnnnnnnnn####",
     "##############..##############"
   ],
-  "batiments": [],
+  "batiments": [
+    {"x": 4, "y": 22, "l": 8, "h": 4, "genre": "decor", "nom": "Tour", "toit": "#7a8a4a", "dessin": "chateau"}
+  ],
   "habitants": [],
   "coffres": [
     {"x": 5, "y": 27, "objet": "elixir", "quantite": 2},
@@ -72,7 +74,7 @@
       "niveau_min": 48,
       "niveau_max": 52,
       "max_ennemis": 4,
-      "creatures": ["orageline", "fulgoray", "noyelin", "bastillon", "nuageon"]
+      "creatures": ["orageline", "fulgoray", "noyelin", "bastillon", "nuageon", "osselet"]
     }
   ],
   "boss": [

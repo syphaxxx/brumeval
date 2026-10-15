@@ -176,6 +176,7 @@
   {
     "id": "braisenard",
     "nom": "Braisenard",
+    "sprite": "braisenard",
     "type": "feu",
     "base": {"pv": 45, "pm": 22, "attaque": 56, "defense": 42, "magie": 40, "resistance": 41, "vitesse": 200},
     "critique": 8,
@@ -189,6 +190,7 @@
   {
     "id": "gouttelin",
     "nom": "Gouttelin",
+    "sprite": "slime",
     "type": "eau",
     "base": {"pv": 50, "pm": 22, "attaque": 50, "defense": 54, "magie": 42, "resistance": 48, "vitesse": 46},
     "forme": "goutte",
@@ -201,6 +203,7 @@
   {
     "id": "ronceau",
     "nom": "Ronceau",
+    "sprite": "ronceau",
     "type": "plante",
     "base": {"pv": 52, "pm": 24, "attaque": 50, "defense": 52, "magie": 44, "resistance": 48, "vitesse": 44},
     "forme": "bourgeon",
@@ -213,6 +216,7 @@
   {
     "id": "piafouine",
     "nom": "Piafouine",
+    "sprite": "piafouine",
     "type": "normal",
     "base": {"pv": 40, "pm": 10, "attaque": 45, "defense": 38, "magie": 20, "resistance": 29, "vitesse": 58},
     "esquive": 10,
@@ -226,6 +230,7 @@
   {
     "id": "mulotin",
     "nom": "Mulotin",
+    "sprite": "mulotin",
     "type": "normal",
     "base": {"pv": 38, "pm": 10, "attaque": 50, "defense": 36, "magie": 20, "resistance": 28, "vitesse": 52},
     "esquive": 8,
@@ -240,6 +245,7 @@
   {
     "id": "lucioline",
     "nom": "Lucioline",
+    "sprite": "lucioline",
     "type": "feu",
     "base": {"pv": 40, "pm": 16, "attaque": 48, "defense": 40, "magie": 40, "resistance": 40, "vitesse": 55},
     "esquive": 6,
@@ -253,6 +259,7 @@
   {
     "id": "grenouillon",
     "nom": "Grenouillon",
+    "sprite": "grenouillon",
     "type": "eau",
     "base": {"pv": 48, "pm": 16, "attaque": 46, "defense": 48, "magie": 36, "resistance": 42, "vitesse": 42},
     "forme": "grenouille",
@@ -266,6 +273,7 @@
   {
     "id": "champichou",
     "nom": "Champichou",
+    "sprite": "champichou",
     "type": "plante",
     "base": {"pv": 50, "pm": 18, "attaque": 44, "defense": 50, "magie": 40, "resistance": 45, "vitesse": 36},
     "forme": "champignon",
@@ -279,6 +287,7 @@
   {
     "id": "rocaillou",
     "nom": "Rocaillou",
+    "sprite": "elem_terre",
     "type": "roche",
     "base": {"pv": 50, "pm": 8, "attaque": 52, "defense": 66, "magie": 20, "resistance": 43, "vitesse": 28},
     "esquive": 0,
@@ -293,6 +302,7 @@
   {
     "id": "brumelin",
     "nom": "Brumelin",
+    "sprite": "brumelin",
     "type": "ombre",
     "base": {"pv": 40, "pm": 20, "attaque": 44, "defense": 40, "magie": 44, "resistance": 42, "vitesse": 50},
     "esquive": 8,
@@ -306,6 +316,7 @@
   {
     "id": "tisonnel",
     "nom": "Tisonnel",
+    "sprite": "tisonnel",
     "type": "feu",
     "base": {"pv": 52, "pm": 20, "attaque": 58, "defense": 46, "magie": 40, "resistance": 43, "vitesse": 56},
     "forme": "lezard",
@@ -318,6 +329,7 @@
   {
     "id": "voltigeon",
     "nom": "Voltigeon",
+    "sprite": "voltigeon",
     "types": ["foudre", "vent"],
     "base": {"pv": 46, "pm": 20, "attaque": 52, "defense": 40, "magie": 48, "resistance": 44, "vitesse": 64},
     "esquive": 10,
@@ -331,6 +343,7 @@
   {
     "id": "galetor",
     "nom": "Galetor",
+    "sprite": "golem_pierre",
     "type": "roche",
     "base": {"pv": 62, "pm": 8, "attaque": 60, "defense": 72, "magie": 22, "resistance": 47, "vitesse": 26},
     "esquive": 0,
@@ -345,6 +358,7 @@
   {
     "id": "glaconnet",
     "nom": "Glaçonnet",
+    "sprite": "glaconnet",
     "types": ["glace", "eau"],
     "base": {"pv": 50, "pm": 24, "attaque": 44, "defense": 52, "magie": 52, "resistance": 52, "vitesse": 44},
     "forme": "goutte",
@@ -357,6 +371,7 @@
   {
     "id": "fumerole",
     "nom": "Fumerole",
+    "sprite": "fumerole",
     "types": ["ombre", "poison"],
     "base": {"pv": 44, "pm": 26, "attaque": 40, "defense": 44, "magie": 56, "resistance": 50, "vitesse": 50},
     "esquive": 6,
@@ -370,6 +385,7 @@
   {
     "id": "serpentin",
     "nom": "Serpentin",
+    "sprite": "serpentin",
     "type": "poison",
     "base": {"pv": 48, "pm": 16, "attaque": 54, "defense": 42, "magie": 40, "resistance": 40, "vitesse": 56},
     "forme": "serpent",
@@ -382,6 +398,7 @@
   {
     "id": "chauvenuit",
     "nom": "Chauvenuit",
+    "sprite": "chauve_souris",
     "types": ["ombre", "vent"],
     "base": {"pv": 44, "pm": 18, "attaque": 50, "defense": 38, "magie": 48, "resistance": 44, "vitesse": 66},
     "esquive": 10,
@@ -395,6 +412,7 @@
   {
     "id": "louvet",
     "nom": "Louvet",
+    "sprite": "loup",
     "type": "normal",
     "base": {"pv": 56, "pm": 14, "attaque": 62, "defense": 46, "magie": 26, "resistance": 36, "vitesse": 60},
     "critique": 10,
@@ -409,6 +427,7 @@
   {
     "id": "esprillon",
     "nom": "Esprillon",
+    "sprite": "fantome",
     "type": "esprit",
     "base": {"pv": 42, "pm": 26, "attaque": 30, "defense": 40, "magie": 58, "resistance": 56, "vitesse": 52},
     "esquive": 8,
@@ -423,6 +442,7 @@
   {
     "id": "crapoison",
     "nom": "Crapoison",
+    "sprite": "crapoison",
     "types": ["poison", "eau"],
     "base": {"pv": 54, "pm": 20, "attaque": 48, "defense": 50, "magie": 46, "resistance": 48, "vitesse": 42},
     "forme": "grenouille",
@@ -443,6 +463,7 @@
   {
     "id": "carapierre",
     "nom": "Carapierre",
+    "sprite": "carapierre",
     "types": ["roche", "eau"],
     "base": {"pv": 60, "pm": 12, "attaque": 50, "defense": 70, "magie": 30, "resistance": 52, "vitesse": 26},
     "esquive": 0,
@@ -457,6 +478,7 @@
   {
     "id": "givrelin",
     "nom": "Givrelin",
+    "sprite": "givrelin",
     "type": "glace",
     "base": {"pv": 50, "pm": 26, "attaque": 52, "defense": 44, "magie": 58, "resistance": 50, "vitesse": 64},
     "critique": 8,
@@ -470,6 +492,7 @@
   {
     "id": "zephyrin",
     "nom": "Zéphyrin",
+    "sprite": "zephyrin",
     "type": "vent",
     "base": {"pv": 46, "pm": 22, "attaque": 56, "defense": 40, "magie": 46, "resistance": 42, "vitesse": 72},
     "esquive": 12,
@@ -483,6 +506,7 @@
   {
     "id": "ferrolin",
     "nom": "Ferrolin",
+    "sprite": "ferrolin",
     "type": "metal",
     "base": {"pv": 58, "pm": 10, "attaque": 60, "defense": 78, "magie": 24, "resistance": 50, "vitesse": 28},
     "esquive": 0,
@@ -497,6 +521,7 @@
   {
     "id": "cristallin",
     "nom": "Cristallin",
+    "sprite": "cristallin",
     "types": ["roche", "lumiere"],
     "base": {"pv": 52, "pm": 30, "attaque": 40, "defense": 64, "magie": 60, "resistance": 62, "vitesse": 40},
     "esquive": 0,
@@ -510,6 +535,7 @@
   {
     "id": "etincelot",
     "nom": "Étincelot",
+    "sprite": "etincelot",
     "type": "foudre",
     "base": {"pv": 42, "pm": 22, "attaque": 46, "defense": 38, "magie": 58, "resistance": 46, "vitesse": 66},
     "esquive": 6,
@@ -523,6 +549,7 @@
   {
     "id": "flammenard",
     "nom": "Flammenard",
+    "sprite": "flammenard",
     "type": "feu",
     "base": {"pv": 50, "pm": 24, "attaque": 62, "defense": 46, "magie": 44, "resistance": 45, "vitesse": 220},
     "critique": 8,
@@ -536,6 +563,7 @@
   {
     "id": "torrentin",
     "nom": "Torrentin",
+    "sprite": "elem_eau",
     "type": "eau",
     "base": {"pv": 55, "pm": 24, "attaque": 55, "defense": 59, "magie": 46, "resistance": 53, "vitesse": 51},
     "forme": "goutte",
@@ -555,6 +583,7 @@
   {
     "id": "ronceflore",
     "nom": "Ronceflore",
+    "sprite": "ronceflore",
     "type": "plante",
     "base": {"pv": 57, "pm": 26, "attaque": 55, "defense": 57, "magie": 48, "resistance": 53, "vitesse": 48},
     "forme": "bourgeon",
@@ -574,6 +603,7 @@
   {
     "id": "rongecrin",
     "nom": "Rongecrin",
+    "sprite": "rongecrin",
     "type": "normal",
     "base": {"pv": 42, "pm": 11, "attaque": 55, "defense": 40, "magie": 22, "resistance": 31, "vitesse": 57},
     "esquive": 8,
@@ -588,6 +618,7 @@
   {
     "id": "champignard",
     "nom": "Champignard",
+    "sprite": "champignard",
     "type": "plante",
     "base": {"pv": 55, "pm": 20, "attaque": 48, "defense": 55, "magie": 44, "resistance": 50, "vitesse": 40},
     "forme": "champignon",
@@ -601,6 +632,7 @@
   {
     "id": "lucifee",
     "nom": "Lucifée",
+    "sprite": "lucifee",
     "type": "feu",
     "base": {"pv": 44, "pm": 18, "attaque": 53, "defense": 44, "magie": 44, "resistance": 44, "vitesse": 61},
     "esquive": 6,
@@ -614,6 +646,7 @@
   {
     "id": "fournezard",
     "nom": "Fournézard",
+    "sprite": "dragonnet_b",
     "type": "feu",
     "base": {"pv": 57, "pm": 22, "attaque": 64, "defense": 51, "magie": 44, "resistance": 47, "vitesse": 62},
     "forme": "lezard",
@@ -626,6 +659,7 @@
   {
     "id": "banquisot",
     "nom": "Banquisot",
+    "sprite": "banquisot",
     "types": ["glace", "eau"],
     "base": {"pv": 55, "pm": 26, "attaque": 48, "defense": 57, "magie": 57, "resistance": 57, "vitesse": 48},
     "forme": "goutte",
@@ -639,6 +673,7 @@
   {
     "id": "serpentox",
     "nom": "Serpentox",
+    "sprite": "serpentox",
     "type": "poison",
     "base": {"pv": 53, "pm": 18, "attaque": 59, "defense": 46, "magie": 44, "resistance": 44, "vitesse": 62},
     "forme": "serpent",
@@ -651,6 +686,7 @@
   {
     "id": "noctaile",
     "nom": "Noctaile",
+    "sprite": "noctaile",
     "types": ["ombre", "vent"],
     "base": {"pv": 48, "pm": 20, "attaque": 55, "defense": 42, "magie": 53, "resistance": 48, "vitesse": 73},
     "esquive": 10,
@@ -664,6 +700,7 @@
   {
     "id": "orageon",
     "nom": "Orageon",
+    "sprite": "orageon",
     "types": ["foudre", "vent"],
     "base": {"pv": 51, "pm": 22, "attaque": 57, "defense": 44, "magie": 53, "resistance": 48, "vitesse": 70},
     "esquive": 10,
@@ -677,6 +714,7 @@
   {
     "id": "carapic",
     "nom": "Carapic",
+    "sprite": "carapic",
     "types": ["roche", "eau"],
     "base": {"pv": 66, "pm": 13, "attaque": 55, "defense": 77, "magie": 33, "resistance": 57, "vitesse": 29},
     "esquive": 0,
@@ -698,6 +736,7 @@
   {
     "id": "fulgurin",
     "nom": "Fulgurin",
+    "sprite": "fulgurin",
     "type": "foudre",
     "base": {"pv": 46, "pm": 24, "attaque": 51, "defense": 42, "magie": 64, "resistance": 51, "vitesse": 73},
     "esquive": 6,
@@ -711,6 +750,7 @@
   {
     "id": "givrenard",
     "nom": "Givrenard",
+    "sprite": "givrenard",
     "type": "glace",
     "base": {"pv": 55, "pm": 29, "attaque": 57, "defense": 48, "magie": 64, "resistance": 55, "vitesse": 70},
     "critique": 8,
@@ -724,6 +764,7 @@
   {
     "id": "ferrogeant",
     "nom": "Ferrogeant",
+    "sprite": "ferrogeant",
     "type": "metal",
     "base": {"pv": 64, "pm": 11, "attaque": 66, "defense": 86, "magie": 26, "resistance": 55, "vitesse": 31},
     "esquive": 0,
@@ -745,6 +786,7 @@
   {
     "id": "prismalin",
     "nom": "Prismalin",
+    "sprite": "prismalin",
     "types": ["roche", "lumiere"],
     "base": {"pv": 57, "pm": 33, "attaque": 44, "defense": 70, "magie": 66, "resistance": 68, "vitesse": 44},
     "esquive": 0,
@@ -758,6 +800,7 @@
   {
     "id": "sylvarque",
     "nom": "Sylvarque",
+    "sprite": "sylvarque",
     "type": "ombre",
     "base": {"pv": 80, "pm": 40, "attaque": 48, "defense": 46, "magie": 46, "resistance": 46, "vitesse": 45},
     "esquive": 6,
@@ -769,6 +812,7 @@
   {
     "id": "golem",
     "nom": "Golem de suie",
+    "sprite": "golem_suie",
     "type": "ombre",
     "base": {"pv": 90, "pm": 10, "attaque": 60, "defense": 66, "magie": 30, "resistance": 48, "vitesse": 24},
     "esquive": 0,
@@ -782,6 +826,7 @@
   {
     "id": "ronce_mere",
     "nom": "Ronce-Mère",
+    "sprite": "ronce_mere",
     "types": ["plante", "poison"],
     "base": {"pv": 90, "pm": 30, "attaque": 56, "defense": 54, "magie": 58, "resistance": 56, "vitesse": 50},
     "esquive": 0,
@@ -795,6 +840,7 @@
   {
     "id": "ignarok",
     "nom": "Ignarok",
+    "sprite": "golem_feu_grand",
     "type": "feu",
     "base": {"pv": 95, "pm": 40, "attaque": 60, "defense": 56, "magie": 58, "resistance": 57, "vitesse": 50},
     "esquive": 0,
@@ -806,6 +852,7 @@
   {
     "id": "givrecorne",
     "nom": "Givrecorne",
+    "sprite": "troll_grand",
     "types": ["glace", "roche"],
     "base": {"pv": 100, "pm": 40, "attaque": 66, "defense": 62, "magie": 60, "resistance": 60, "vitesse": 50},
     "esquive": 0,
@@ -819,6 +866,7 @@
   {
     "id": "brumeloup",
     "nom": "Brumeloup",
+    "sprite": "loup_garou",
     "type": "ombre",
     "base": {"pv": 66, "pm": 20, "attaque": 74, "defense": 54, "magie": 32, "resistance": 46, "vitesse": 68},
     "critique": 10,
@@ -840,6 +888,7 @@
   {
     "id": "nebulis",
     "nom": "Nébulis",
+    "sprite": "nebulis",
     "type": "esprit",
     "base": {"pv": 52, "pm": 36, "attaque": 30, "defense": 48, "magie": 74, "resistance": 66, "vitesse": 60},
     "esquive": 8,
@@ -854,6 +903,7 @@
   {
     "id": "orbrume",
     "nom": "Orbrume",
+    "sprite": "orbrume",
     "types": ["ombre", "roche"],
     "base": {"pv": 64, "pm": 26, "attaque": 56, "defense": 76, "magie": 52, "resistance": 60, "vitesse": 34},
     "esquive": 0,
@@ -867,6 +917,7 @@
   {
     "id": "mere_brumes",
     "nom": "Mère des Brumes",
+    "sprite": "mere_brumes",
     "types": ["ombre", "esprit"],
     "base": {"pv": 110, "pm": 60, "attaque": 64, "defense": 62, "magie": 76, "resistance": 68, "vitesse": 56},
     "esquive": 4,
@@ -879,6 +930,7 @@
   {
     "id": "ecumet",
     "nom": "Écumet",
+    "sprite": "ecumet",
     "type": "eau",
     "base": {"pv": 50, "pm": 22, "attaque": 54, "defense": 44, "magie": 52, "resistance": 46, "vitesse": 66},
     "esquive": 6,
@@ -891,6 +943,7 @@
   {
     "id": "coquillon",
     "nom": "Coquillon",
+    "sprite": "coquillon",
     "types": ["eau", "roche"],
     "base": {"pv": 58, "pm": 14, "attaque": 52, "defense": 70, "magie": 30, "resistance": 52, "vitesse": 30},
     "forme": "tortue",
@@ -904,6 +957,7 @@
   {
     "id": "bastillon",
     "nom": "Bastillon",
+    "sprite": "bastillon",
     "types": ["eau", "roche"],
     "base": {"pv": 66, "pm": 15, "attaque": 58, "defense": 80, "magie": 32, "resistance": 58, "vitesse": 32},
     "forme": "tortue",
@@ -917,6 +971,7 @@
   {
     "id": "voltanguille",
     "nom": "Voltanguille",
+    "sprite": "voltanguille",
     "types": ["foudre", "eau"],
     "base": {"pv": 50, "pm": 24, "attaque": 58, "defense": 42, "magie": 58, "resistance": 44, "vitesse": 64},
     "forme": "serpent",
@@ -929,6 +984,7 @@
   {
     "id": "fulgoray",
     "nom": "Fulgoray",
+    "sprite": "fulgoray",
     "types": ["foudre", "eau"],
     "base": {"pv": 56, "pm": 28, "attaque": 62, "defense": 46, "magie": 66, "resistance": 50, "vitesse": 70},
     "forme": "serpent",
@@ -941,6 +997,7 @@
   {
     "id": "nuageon",
     "nom": "Nuageon",
+    "sprite": "nuageon",
     "types": ["vent", "esprit"],
     "base": {"pv": 52, "pm": 34, "attaque": 30, "defense": 48, "magie": 64, "resistance": 62, "vitesse": 58},
     "esquive": 8,
@@ -954,6 +1011,7 @@
   {
     "id": "orageline",
     "nom": "Orageline",
+    "sprite": "orageline",
     "types": ["vent", "foudre"],
     "base": {"pv": 50, "pm": 22, "attaque": 60, "defense": 42, "magie": 54, "resistance": 44, "vitesse": 72},
     "esquive": 8,
@@ -967,6 +1025,7 @@
   {
     "id": "noyelin",
     "nom": "Noyelin",
+    "sprite": "noyelin",
     "types": ["esprit", "eau"],
     "base": {"pv": 48, "pm": 32, "attaque": 40, "defense": 46, "magie": 66, "resistance": 58, "vitesse": 62},
     "esquive": 10,
@@ -979,6 +1038,7 @@
   {
     "id": "kraken",
     "nom": "Kraken des récifs",
+    "sprite": "kraken",
     "types": ["eau", "foudre"],
     "base": {"pv": 90, "pm": 40, "attaque": 62, "defense": 60, "magie": 64, "resistance": 58, "vitesse": 46},
     "esquive": 0,
@@ -991,6 +1051,7 @@
   {
     "id": "griffon",
     "nom": "Griffon tempête",
+    "sprite": "griffon",
     "types": ["vent", "foudre"],
     "base": {"pv": 84, "pm": 40, "attaque": 68, "defense": 52, "magie": 58, "resistance": 52, "vitesse": 70},
     "esquive": 4,
@@ -1003,6 +1064,7 @@
   {
     "id": "seigneur_orage",
     "nom": "Seigneur des Orages",
+    "sprite": "seigneur_orage",
     "types": ["foudre", "ombre"],
     "base": {"pv": 100, "pm": 60, "attaque": 70, "defense": 64, "magie": 68, "resistance": 70, "vitesse": 60},
     "esquive": 4,
@@ -1011,5 +1073,74 @@
     "couleurs": ["#2a2a4a", "#ffe94a"],
     "apprend": [[1, "foudre_noire"], [1, "eclipse"], [1, "orage"], [1, "ouragan"], [1, "hurlement_spectral"]],
     "talent": "esprit_clair"
+  },
+  {
+    "id": "tisseline",
+    "nom": "Tisseline",
+    "sprite": "araignee",
+    "types": ["poison", "ombre"],
+    "base": {"pv": 50, "pm": 18, "attaque": 56, "defense": 44, "magie": 44, "resistance": 42, "vitesse": 62},
+    "esquive": 5,
+    "forme": "insecte",
+    "couleurs": ["#4a3a4a", "#e05a3a"],
+    "apprend": [[1, "venin"], [1, "coup_bas"], [14, "acide"]],
+    "talent": "piquant"
+  },
+  {
+    "id": "osselet",
+    "nom": "Osselet",
+    "sprite": "squelette",
+    "types": ["ombre", "esprit"],
+    "base": {"pv": 46, "pm": 28, "attaque": 54, "defense": 40, "magie": 60, "resistance": 52, "vitesse": 60},
+    "forme": "fantome",
+    "couleurs": ["#e8e0d0", "#8a7a6a"],
+    "apprend": [[1, "coup_bas"], [1, "onde"], [44, "cauchemar"]],
+    "talent": "furtif"
+  },
+  {
+    "id": "gobelard",
+    "nom": "Gobelard",
+    "sprite": "gobelin",
+    "type": "normal",
+    "base": {"pv": 50, "pm": 10, "attaque": 60, "defense": 42, "magie": 24, "resistance": 34, "vitesse": 64},
+    "critique": 10,
+    "forme": "souris",
+    "couleurs": ["#5a8a3a", "#c8b07a"],
+    "apprend": [[1, "ruee"], [1, "coup_bas"], [12, "hurlement"]],
+    "talent": "vif"
+  },
+  {
+    "id": "brutor",
+    "nom": "Brutor",
+    "sprite": "orc",
+    "types": ["normal", "roche"],
+    "base": {"pv": 70, "pm": 8, "attaque": 72, "defense": 58, "magie": 20, "resistance": 38, "vitesse": 34},
+    "forme": "golem",
+    "couleurs": ["#4a7a3a", "#8a6a4a"],
+    "apprend": [[1, "ruee"], [1, "hurlement"], [14, "seisme"]],
+    "talent": "rage",
+    "role_combat": "protecteur"
+  },
+  {
+    "id": "draconnet",
+    "nom": "Draconnet",
+    "sprite": "dragonnet",
+    "types": ["feu", "vent"],
+    "base": {"pv": 52, "pm": 22, "attaque": 56, "defense": 46, "magie": 52, "resistance": 44, "vitesse": 58},
+    "forme": "lezard",
+    "couleurs": ["#c83a2a", "#ffb050"],
+    "apprend": [[1, "flam"], [1, "crocs"], [14, "brasier"]],
+    "talent": "vif"
+  },
+  {
+    "id": "coffrelin",
+    "nom": "Coffrelin",
+    "sprite": "mimique",
+    "type": "metal",
+    "base": {"pv": 80, "pm": 10, "attaque": 78, "defense": 80, "magie": 30, "resistance": 60, "vitesse": 40},
+    "forme": "rocher",
+    "couleurs": ["#8a5a2a", "#ffd34d"],
+    "apprend": [[1, "crocs"], [1, "coup_acier"], [1, "blindage"], [40, "eclats_acier"]],
+    "talent": "carapace"
   }
 ]

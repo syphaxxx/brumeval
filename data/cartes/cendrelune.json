@@ -31,19 +31,19 @@
     "maaaaaaaaRaaaaaaaaaaaaaaaa=aaallllllllllllllllllllllllllllaaaaaagaaaaaaaggggggggggggdggm",
     "maaaaaaRaaaaaaaRaRaaaaaadm=aaalllllllllllllllllllllllllllladamamaaaaaaaggggggggggggggggm",
     "maaaaaaaaaaaaaaaaaaaaaaaaa=aaaamaaaaaaaaRaaaaaaaadaaaaaaagggaaamaaaaaaaagggggggggggggggm",
-    "maaaaaaaaaaaaaaaaaaaaaaaaa=aaaaaaadaaaaammmmmmmmaaaaaaaagggggaamaagaaaaaaaagmggggggggggm",
+    "maaaUaaaaaaaaaaaaaaaaaaaaU=aaaaaaadaaaaammmmmmmmaaaaaaaagggggaamaagaaaaaaaagmggggggggggm",
     "maaaaaaaaaaaaaaaaaaaaaaaaa=aaaaaaaaaaaaaammmmmmmaaaaaaagggggggamagggaaaaaaammmgggggggggm",
-    "maaaaaaaaaaaaaaaaaaaaaaaaa=aaaaaaaaaamaaammmkmmmRaaaaaagggggggamggmggaaaaaaamggggggggggm",
+    "maaaGaaaaaaaaaaaaaCaaaaavv=aaaaaaaaaamaaammmkmmmRaaaaaagggggggamggmggaaaaaaamggggggggggm",
     "maaaaaaaaaaaaaaaaaaaaaaaaa=aaaadaaadaaaaaaaa=aaaaaaaaaagggggggamgmmmgaamgaaaaagggggmmmmm",
-    "maaaaaa=aaaaaa=aaaaaa=aaaa=aaaaaaaaaaaaaaaaa=aaaaaaaaaaagggggaammmmgggmmmgmmmaaaaagaaamm",
-    "maaaaaa=aaaaaa=aaaaaa=aaaa=aaaaaaaaadmaadaaa=aaaaaaaaRaaagggaaaagmgggggmggggggRaagggggmm",
-    "=============================================aaaagggggggaaaaaaaa========gggggggaggggmmmm",
-    "===aaaaaaaaaaaaa=aaaaaaaaaaadaaaaaaRaaaaaaaaRaaggggmggggggaaaaaaggggggggggggggggggggggmm",
-    "maaaaaaaaaaaaaaa=aaaaaaaaaaaRaaaaaaaaaaaaaaaaagggggggggggggdaaamgggggggggRdgggggmmmggggm",
-    "maaaaaaaaaaaaaaa=aaaaaaaaaaaaaaRaagggggaaaaaaagggggggggggggaaaamggggggRgddddmggagggggggm",
-    "maaaaaaaaaaaaaaa=aaaaaaaaaaaaaaagggggggggaaaaagggggggggmgggaaaamggggggRggRmmmmmagggggggm",
-    "maaaaaaaaaaaaaaa=aaaaaaaaaaaaaaagggggggggaaaaaagggggggggggadaaamggggggRggRggmaaagggggggm",
-    "maaaaaaaa=aaaaaa=aaa=aaaaaaaaaaagggggggggaadaaaaagmgggggaRaaaRamgggggggggRgaaaaggggggggm",
+    "maLqqqqqqqLqqqqqqLqqqqqqqL=aaaaaaaaaaaaaaaaa=aaaaaaaaaaagggggaammmmgggmmmgmmmaaaaagaaamm",
+    "maaqqqqqqqqqqqqqqqqqqqqqqq=aaaaaaaaadmaadaaa=aaaaaaaaRaaagggaaaagmgggggmggggggRaagggggmm",
+    "=qqqqqqqqqqqqqqqqqqqqqqqqqqq=================aaaagggggggaaaaaaaa========gggggggaggggmmmm",
+    "===aaaaaaqaaaaaaqaaaaaaaaLaadaaaaaaRaaaaaaaaRaaggggmggggggaaaaaaggggggggggggggggggggggmm",
+    "maLaaaaaaaaaCaaaqaaaaaaaaaaaRaaaaaaaaaaaaaaaaagggggggggggggdaaamgggggggggRdgggggmmmggggm",
+    "maaaaaaaaaaaXaaaqaaaaaaaaaaaaaaRaagggggaaaaaaagggggggggggggaaaamggggggRgddddmggagggggggm",
+    "maaaaCaaaaaaaaaaqaaaaaaaaaaaaaaagggggggggaaaaagggggggggmgggaaaamggggggRggRmmmmmagggggggm",
+    "maaaavaaaaaaaKaaqaaaaaaaaaaaaaaagggggggggaaaaaagggggggggggadaaamggggggRggRggmaaagggggggm",
+    "maaaaaaaqqqqqqqqqqqqqqaaaaaaaaaagggggggggaadaaaaagmgggggaRaaaRamgggggggggRgaaaaggggggggm",
     "maaaaaaaa============aaaaaaaaaaaaagggggamaaaagggggaRaaaaaaaaaaamggggggggggaaaaaagggggggm",
     "maaaaaaaaaaaaaaaaaaaaaaaaaaaaaRaaaaaaaaaaaaagggggggaaaaaaaaaaaamggggggggggaaaaaagggggggm",
     "maaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaadaaaaagggggaaaaaaaaaaaammgggggggggggggaaaaaggggmm",
@@ -153,6 +153,23 @@
         "Les lanternes d'argent de la boutique attrapent presque tout.",
         "Pratique pour les créatures têtues des montagnes."
       ]
+    },
+    {
+      "x": 13,
+      "y": 37,
+      "apparence": "forgeron",
+      "direction": "gauche",
+      "dialogue": [
+        "Le feu de la forge ne s'éteint jamais.",
+        "Brann y travaille l'acier des montagnes : demande-lui, à l'enclume."
+      ]
+    },
+    {
+      "x": 22,
+      "y": 31,
+      "apparence": "chat",
+      "direction": "gauche",
+      "dialogue": ["Le chat de l'auberge se chauffe sur les pavés tièdes."]
     }
   ],
   "coffres": [
@@ -237,7 +254,7 @@
       "niveau_min": 15,
       "niveau_max": 19,
       "max_ennemis": 3,
-      "creatures": ["tisonnel", "galetor", "voltigeon", "glaconnet", "fumerole"]
+      "creatures": ["tisonnel", "galetor", "voltigeon", "glaconnet", "fumerole", "draconnet"]
     },
     {
       "x": 0,
@@ -247,7 +264,7 @@
       "niveau_min": 15,
       "niveau_max": 19,
       "max_ennemis": 3,
-      "creatures": ["tisonnel", "galetor", "voltigeon", "glaconnet", "fumerole"]
+      "creatures": ["tisonnel", "galetor", "voltigeon", "glaconnet", "fumerole", "draconnet"]
     }
   ],
   "boss": [

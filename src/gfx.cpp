@@ -5,6 +5,8 @@
 #include <cmath>
 #include <unordered_map>
 
+#include "store.hpp"
+
 Color rgb(uint32_t h, uint8_t a) { return Color{uint8_t(h >> 16), uint8_t(h >> 8), uint8_t(h), a}; }
 Color shade(Color c, float k) {
   auto f = [&](uint8_t v) {
@@ -59,6 +61,72 @@ void Gfx::rect(float x, float y, float w, float h, Color c) {
   SDL_Rect rc{(int)std::lround(x) + ox, (int)std::lround(y), (int)std::lround(w), (int)std::lround(h)};
   SDL_RenderFillRect(r_, &rc);
 }
+// ---------------------------------------------------------------------------
+// Sprites (atlas data/sprites.png)
+// ---------------------------------------------------------------------------
+struct Atlas {
+  std::unordered_map<std::string, SpriteRect> rects;
+  int w = 0, h = 0;
+  std::vector<uint8_t> px;
+};
+static Atlas& atlas() {
+  static Atlas a = [] {
+    Atlas r;
+    try {
+      Json j = readJson("sprites.json");
+      for (auto& [k, v] : j.items()) r.rects[k] = {v[0].get<int>(), v[1].get<int>(), v[2].get<int>(), v[3].get<int>()};
+      if (!loadPng(dataDir() + "/sprites.png", r.w, r.h, r.px)) r.rects.clear();
+    } catch (const std::exception&) {
+      r.rects.clear();  // pas d'atlas : tout est dessiné en code
+    }
+    return r;
+  }();
+  return a;
+}
+const SpriteRect* findSprite(const std::string& id) {
+  auto& a = atlas();
+  auto it = a.rects.find(id);
+  return it == a.rects.end() ? nullptr : &it->second;
+}
+void Gfx::resetTextures() {
+  if (atlas_) SDL_DestroyTexture(atlas_);
+  atlas_ = nullptr;
+}
+void Gfx::sprite(const SpriteRect& s, float x, float y, bool flip, float scale, Color tint, float flash) {
+  if (!sane(x) || !sane(y) || scale <= 0) return;
+  if (!atlas_) {
+    auto& a = atlas();
+    if (a.px.empty()) return;
+    SDL_Surface* surf = SDL_CreateRGBSurfaceWithFormatFrom(a.px.data(), a.w, a.h, 32, a.w * 4, SDL_PIXELFORMAT_RGBA32);
+    if (!surf) return;
+    atlas_ = SDL_CreateTextureFromSurface(r_, surf);
+    SDL_FreeSurface(surf);
+    if (!atlas_) return;
+    SDL_SetTextureBlendMode(atlas_, SDL_BLENDMODE_BLEND);
+    SDL_SetTextureScaleMode(atlas_, SDL_ScaleModeNearest);
+  }
+  SDL_Rect src{s.x, s.y, s.w, s.h};
+  SDL_Rect dst{(int)std::lround(x) + ox, (int)std::lround(y), (int)std::lround(s.w * scale), (int)std::lround(s.h * scale)};
+  SDL_RendererFlip fl = flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+  SDL_SetTextureBlendMode(atlas_, SDL_BLENDMODE_BLEND);
+  SDL_SetTextureColorMod(atlas_, tint.r, tint.g, tint.b);
+  SDL_SetTextureAlphaMod(atlas_, uint8_t(tint.a * std::clamp(alpha, 0.f, 1.f)));
+  SDL_RenderCopyEx(r_, atlas_, &src, &dst, 0, nullptr, fl);
+  if (flash > 0) {  // éclat blanc : le sprite rajouté en mode additif
+    SDL_SetTextureBlendMode(atlas_, SDL_BLENDMODE_ADD);
+    SDL_SetTextureColorMod(atlas_, 255, 255, 255);
+    SDL_SetTextureAlphaMod(atlas_, uint8_t(255 * std::clamp(flash, 0.f, 1.f) * std::clamp(alpha, 0.f, 1.f)));
+    SDL_RenderCopyEx(r_, atlas_, &src, &dst, 0, nullptr, fl);
+    SDL_SetTextureBlendMode(atlas_, SDL_BLENDMODE_BLEND);
+  }
+}
+bool Gfx::sprite(const std::string& id, float x, float y, bool flip, float scale, Color tint, float flash) {
+  const SpriteRect* s = findSprite(id);
+  if (!s) return false;
+  sprite(*s, x, y, flip, scale, tint, flash);
+  return true;
+}
+
 void Gfx::frame(float x, float y, float w, float h, Color c) {
   rect(x, y, w, 1, c);
   rect(x, y + h - 1, w, 1, c);
@@ -186,7 +254,7 @@ static std::unordered_map<uint32_t, Glyph> buildFont() {
       {0xBB, 4, "#.#../.#.#./..#.#/.#.#./#.#.."}, {0x25BC, 5, "#####/.###./..#.."}, {0x25B6, 2, "#..../##.../###../####./###../##.../#...."},
       {0x2605, 2, "..#../..#../#####/.###./.#.#./#...#"}, {0x2026, 8, "#.#.#"}, {'=', 4, "#####/...../#####"},
       {0xB7, 5, "..#.."}, {'#', 3, ".#.#./#####/.#.#./#####/.#.#."}, {'<', 3, "...#./..#../.#.../..#../...#."},
-      {'>', 3, ".#.../..#../...#./..#../.#..."}, {'*', 3, "#.#.#/.###./#####/.###./#.#.#"}, {0x2665, 3, ".#.#./#####/#####/.###./..#.."},
+      {'>', 3, ".#.../..#../...#./..#../.#..."}, {'*', 3, "#.#.#/.###./#####/.###./#.#.#"}, {0x2665, 3, ".#.#./#####/#####/.###./..#.."}, {0x2248, 4, ".#..#/#.##./...../.#..#/#.##."},
   };
   for (auto& d : defs) {
     Glyph g;

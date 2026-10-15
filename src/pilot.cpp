@@ -419,7 +419,7 @@ std::vector<Pilot::Goal> Pilot::goals() {
     }
     // Les panneaux ne font que donner un texte : il ne va pas les lire
     for (auto& b : M.buildings) {
-      if (!b.interior.empty() || b.event.empty()) continue;  // une maison avec un intérieur : c'est un passage
+      if (!b.interior.empty() || b.event.empty() || b.decor()) continue;  // une maison avec un intérieur : c'est un passage
       Goal g;
       g.key = "porte:" + M.id + ":" + b.name;
       g.what = "porte : " + b.name + " (" + M.name + ")";

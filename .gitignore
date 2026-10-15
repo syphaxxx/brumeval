@@ -9,3 +9,7 @@ build-*/
 dist/
 pkg/
 graphify-out/
+
+# Outil des sprites : fichiers fabriqués
+outils/sprites/__pycache__/
+outils/sprites/apercu.png
