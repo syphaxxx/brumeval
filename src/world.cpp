@@ -164,6 +164,7 @@ MapDef mapFromJson(const Json& j) {
                o.at("genre").get<std::string>(), tr(jget<std::string>(o, "nom", "")), parseColor(o.value("toit", Json("#7a8a4a")))};
     b.event = jget<std::string>(o, "evenement", b.kind);
     b.interior = jget<std::string>(o, "interieur", "");
+    b.look = jget<std::string>(o, "dessin", "");
     m.buildings.push_back(b);
   }
   for (auto& o : j.value("habitants", Json::array())) {
@@ -228,6 +229,7 @@ Json mapToJson(const MapDef& m) {
     Json p = {{"x", x.x}, {"y", x.y}, {"l", x.w}, {"h", x.h}, {"genre", x.kind}, {"nom", x.name}, {"toit", colorStr(x.roof)}};
     if (x.event != x.kind) p["evenement"] = x.event;
     if (!x.interior.empty()) p["interieur"] = x.interior;
+    if (!x.look.empty()) p["dessin"] = x.look;
     b.push_back(p);
   }
   o["batiments"] = b;

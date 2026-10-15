@@ -14,9 +14,7 @@
     "#####p#####"
   ],
   "batiments": [],
-  "habitants": [
-    {"x": 5, "y": 3, "apparence": "villageoise", "evenement": "soin", "direction": "bas"}
-  ],
+  "habitants": [{"x": 5, "y": 3, "apparence": "docteur", "evenement": "soin", "direction": "bas"}],
   "coffres": [],
   "panneaux": [],
   "passages": [{"x": 5, "y": 8, "vers": "pics", "tx": 20, "ty": 32, "direction": "bas"}],

@@ -809,7 +809,12 @@ struct BuildingLook {
 static BuildingLook buildingLook(const Building& b, int sx, int sy) {
   BuildingLook L;
   std::string base;
-  if (b.kind == "maison" || b.kind == "soin") {
+  if (!b.look.empty() && b.look != "maison") {  // dessin choisi dans la carte (« dessin »)
+    base = b.look;
+    if (base == "boutique") L.door = .66f, L.chimX = .72f, L.chimY = .07f;
+    if (base == "eglise") L.door = .59f;
+    if (base == "entrepot") L.chimX = -1;
+  } else if (b.kind == "maison" || b.kind == "soin") {
     base = "maison", L.door = .47f, L.chimX = .8f, L.chimY = .04f;
     if (b.kind == "maison") {  // couleur du toit : rouge, bleu, vert ou ardoise
       Color c = rgb(b.roof);

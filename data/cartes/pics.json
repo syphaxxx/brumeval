@@ -33,18 +33,18 @@
     "##...~~~~~~~.T................==............=====iiiiiii~.##nnnnnnnnnnnnn#nnnnnn...#",
     "##.T.~~iii~~..................==................~iiiiiii~.##.Tnn##nnnnn#####nnnnn..#",
     "##T.~~iiiii~~T................==..............TT~iiiiiii~.##TTT####nnn#nn#nnnnnn...#",
-    "##..~~iiiii~~.................==.................~iiiii~..##.T..####.###nnnnnnn...n#",
-    "##..~~iiiii~~.................==.................~iiiii~.T##.nnnn######n.nnn.....nn#",
-    "##..~~iiiii~~T................==.................T~iii~.....nnnnnnn#nnnnnnnn.....nn#",
-    "##..~~iiiii~~T......=......=..==.....=.........T...~~~T.....========#nnnnnnn.n..nnn#",
-    "##TT.~~iii~~T.......=......=..==.....=..........T...........nnnnnnn###TTnnnnnnnn.nn#",
-    "##..T~~~BBBB===...=========================.............T.##.nnnnn#####Tn#nnnnnnnnn#",
-    "##.....~~~T..T................==..............T.........T.##...n.n.###nnn#nnnnnnn.n#",
+    "##..~~iiiii~~...T.............==........C........~iiiii~..##.T..####.###nnnnnnn...n#",
+    "##..~~iiiii~~.................==........C........~iiiii~.T##.nnnn######n.nnn.....nn#",
+    "##..~~iiiii~~T...U......U.....==........v........T~iii~.....nnnnnnn#nnnnnnnn.....nn#",
+    "##..~~iiiii~~T......=.....LqqqqqqqqL.=.........T...~~~T.....========#nnnnnnn.n..nnn#",
+    "##TT.~~iii~~T......L=......qqqqqqqq..=...L..T...T...........nnnnnnn###TTnnnnnnnn.nn#",
+    "##..T~~~BBBB===...qqqqqqqqqqqqqqqqqqqqqqqqq.............T.##.nnnnn#####Tn#nnnnnnnnn#",
+    "##.....~~~T..T.T..........LqqqqqqqqL..........T.........T.##...n.n.###nnn#nnnnnnn.n#",
     "##.T..TT..TT..................==........................T.##nnnnnnnn#nnnn#nnnnnnnn.#",
-    "##.....T......................==...............T..T......T##nnnnnnnnnnnnnnnnnnnnnn.#",
-    "##............................==..........................##nnnnnnnnnnnnnnnnnnnnnnn#",
+    "##.....T....................Y.==.Q.............T..T......T##nnnnnnnnnnnnnnnnnnnnnn.#",
+    "##..............T.............==...........T..............##nnnnnnnnnnnnnnnnnnnnnnn#",
     "##..T.......T.................==..........................##nnnnnnnnnnnnnnnnnn.nnn.#",
-    "##....T.T.....................==........................T.##nnnnnnnnnnnnnnnnn#n.n..#",
+    "##....T.T..........HHHHHHH....==..HHHHHHH...............T.##nnnnnnnnnnnnnnnnn#n.n..#",
     "##....TT......................==...............TT...T.....##...nnnnnnnnnnnnnnnnnnnn#",
     "##############################==############################...nnnnnnnnnnnnnnnnnnnn#",
     "##############################==####################################################"
@@ -155,6 +155,20 @@
       "evenement": "chevalier2",
       "vue": 2,
       "vue_jusqua": "chevalier2"
+    },
+    {
+      "x": 29,
+      "y": 33,
+      "apparence": "voyageuse",
+      "direction": "bas",
+      "dialogue": ["Je viens du port, de l'autre côté du lac.", "Ici, même les pavés ont froid !"]
+    },
+    {
+      "x": 38,
+      "y": 39,
+      "apparence": "chien",
+      "direction": "gauche",
+      "dialogue": ["Le chien a de la neige plein les moustaches."]
     }
   ],
   "coffres": [

@@ -36,6 +36,7 @@ struct Building {
   unsigned roof;
   std::string event;     // événement lancé à la porte (par défaut : le genre)
   std::string interior;  // carte de l'intérieur : la porte y fait entrer (l'événement est alors celui d'un habitant)
+  std::string look;      // dessin (sprite) à la place de celui du genre : « maison », « taverne », « boutique », « eglise », « entrepot »
   int doorX() const { return x + w / 2; }
   int doorY() const { return y + h - 1; }
 };

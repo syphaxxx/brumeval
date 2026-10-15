@@ -20,13 +20,13 @@
     "TT..TT.TT.....TT.,,,,====================.T..,,,,,,,T.TT",
     "TT.....TT..T.TTTTT,,,,,TT...T.T.TT.TT..T=T.T.,,,,,,,TTTT",
     "TT.TT..............TTT.TT.TTT.T...,,,,,.=T....,,,,,T.TTT",
-    "TT.T............TTTT...T..T..T..T,,,,,,,=T.TTT.,,,T..TTT",
+    "TTCT.....J......TTTT...T..T..T..T,,,,,,,=T.TTT.,,,T..TTT",
     "TTT...............T..TT...T.T.TT.,,,,,,,=..T.....T.TT.TT",
-    "TT......................T..T...T.,,,,,,,=T............TT",
+    "TTv.......X.............T..T...T.,,,,,,,=T............TT",
     "TT.................TTTT...T.T..T..,,,,,T=.............TT",
-    "TT.................T..T.TT....TTT..T....=.............TT",
+    "TT............Cv...T..T.TT....TTT..T....=.............TT",
     "TT..........============================================",
-    "TT.................,,,,,,,TTTT....=.TT.T=............TTT",
+    "TT..............G..,,,,,,,TTTT....=.TT.T=............TTT",
     "TT.................,,,,,,,T.T....T=T.T.T=...........TTTT",
     "TTT................,,,,,,,TT....T.=TTTT.=............TTT",
     "TT...............T..,,,,,.T.T...T.=.....=.T......TTTTTTT",
@@ -71,7 +71,8 @@
       "genre": "maison",
       "nom": "Cabane de l'ermite",
       "toit": "#6a5a3a",
-      "interieur": "sylvenoire_cabane"
+      "interieur": "sylvenoire_cabane",
+      "dessin": "entrepot"
     },
     {
       "x": 5,
@@ -81,7 +82,8 @@
       "genre": "maison",
       "nom": "Tente des bandits",
       "toit": "#8a3a2a",
-      "interieur": "sylvenoire_tente"
+      "interieur": "sylvenoire_tente",
+      "dessin": "entrepot"
     },
     {
       "x": 11,
@@ -91,7 +93,8 @@
       "genre": "maison",
       "nom": "Tente des bandits",
       "toit": "#7a4a2a",
-      "evenement": "tente"
+      "evenement": "tente",
+      "dessin": "entrepot"
     }
   ],
   "habitants": [
