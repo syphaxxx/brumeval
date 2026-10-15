@@ -96,6 +96,7 @@ struct Menu {
   int x = 8, y = 8, w = 120, rows = 6;
   bool cancelable = true;
   std::function<void()> onCancel;
+  bool hidden = false;  // pas dessiné, ni cliquable : le choix se fait ailleurs (damier du combat) ; aide et touches restent
 };
 
 class MenuStack {

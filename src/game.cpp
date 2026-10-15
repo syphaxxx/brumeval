@@ -939,18 +939,24 @@ void Game::drawMap() {
       g.rect(sx + 9, sy + 9, 3, 1, rgb(0x504c56));
     }
   }
-  for (auto& b : m.buildings) drawBuilding(g, b, b.x * 16 - camX, b.y * 16 - camY);
-  if (m.theme != Theme::Interieur)
-    for (auto& b : m.buildings) drawChimneySmoke(g, b, b.x * 16 - camX, b.y * 16 - camY, time);
   for (size_t i = 0; i < m.chests.size(); i++)
     drawChest(g, m.chests[i].x * 16 - camX, m.chests[i].y * 16 - camY, has(chestFlag((int)i)));
   for (auto& s : m.signs) drawSign(g, s.x * 16 - camX, s.y * 16 - camY);
-  // Personnages triés de haut en bas
+  // Personnages, bâtiments et objets hauts (arbres, réverbères…) triés de haut en bas : on passe derrière un toit
+  // ou un arbre plus bas que soi
   struct Actor {
     float y;
     std::function<void()> draw;
   };
   std::vector<Actor> actors;
+  for (auto& b : m.buildings)
+    actors.push_back({float((b.y + b.h) * 16 - 8), [&, b] {
+                        drawBuilding(g, b, b.x * 16 - camX, b.y * 16 - camY);
+                        if (m.theme != Theme::Interieur) drawChimneySmoke(g, b, b.x * 16 - camX, b.y * 16 - camY, time);
+                      }});
+  for (int y = ty0; y <= ty0 + SCREEN_H / 16 + 3 && y < m.h(); y++)  // + 3 : un arbre plus bas dépasse vers le haut
+    for (int x = std::max(0, tx0 - 1); x <= tx1 + 1 && x < m.w(); x++)
+      if (hasProp(m, x, y)) actors.push_back({float(y * 16 + 1), [&, x, y] { drawProp(g, m, x, y, x * 16 - camX, y * 16 - camY, time); }});
   for (auto& n : m.npcs)
     if (npcVisible(n)) actors.push_back({float(n.y * 16), [&, n] { drawHuman(g, look(n.look), n.x * 16 - camX, n.y * 16 - camY - 2, 1, n.dir, 0, false); }});
   for (auto& b : m.bosses)

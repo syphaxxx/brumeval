@@ -23,6 +23,8 @@ float captureChance(const Fighter& f, float mult);
 // rythme (user : le lanceur, pour chiffrer un soin). moveHelp : sa description, puis tout cela.
 std::string moveDetails(const Move& m, const Fighter* user = nullptr);
 std::string moveHelp(const Move& m, const Fighter* user = nullptr);
+// En combat (3.2) : la même chose en bref, sur deux lignes au plus (la zone est montrée sur le damier)
+std::string moveBrief(const Move& m, const Fighter* user = nullptr);
 // Ce que fait un objet, chiffré (soins, capture, bonus, où l'utiliser) ; itemHelp : puis sa description
 std::string itemDetails(const ItemDef& d);
 std::string itemHelp(const ItemDef& d);
@@ -141,7 +143,26 @@ class Battle {
   std::vector<FighterP> zoneTargets(const Move& m, const FighterP& center) const;
   float zoneScore(const FighterP& a, const Move& m, const FighterP& center) const;  // attackScore sur toute la zone
   const Move* aiming_ = nullptr;  // technique dont on choisit la cible : sa zone est surlignée
-  int moveCell_ = -1;             // « Se déplacer » : case survolée
+  // Choix sur le damier (3.2) : la cible ou la case se choisit directement sur le damier (flèches ou souris).
+  // Le menu correspondant existe toujours (joueur automatique, mode test, aide de la fenêtre du haut) mais
+  // n'est pas dessiné (Menu::hidden) ; cells : la case de chaque ligne de ce menu.
+  struct BoardPick {
+    size_t depth = 0;  // place du menu caché dans la pile (0 : aucun choix en cours)
+    bool allySide = false;
+    std::vector<int> cells;
+    bool move = false;  // « Se déplacer » : le combattant apparaît en transparence sur la case
+  };
+  BoardPick pick_;
+  void boardMenu(Menu t, bool allySide, std::vector<int> cells, bool move = false);
+  bool boardPicking() const;
+  void boardInput();
+  int cellUnder(bool allySide, float x, float y, const std::vector<int>& among) const;  // index dans among (-1 : aucune)
+  // Aperçu de la zone en survolant une technique, avant même de choisir la cible
+  std::string preview_;
+  size_t previewDepth_ = 0;
+  void previewMove(const FighterP& a, const std::string& id);
+  void drawZones(float t);
+  void drawHud(float t);
   void moveTo(FighterP a, int cell);  // change de case (action rapide)
   void pop(const FighterP& f, const std::string& t, Color c);
   // Bruitage (audio.hpp), seulement pour le combat affiché (pas les simulations) ;
@@ -173,7 +194,7 @@ class Battle {
   // Ordre des tours (2.5, inspiré de Final Fantasy X) : les n prochains tours prévus d'après les
   // jauges et les vitesses actuelles (sans le hasard de la paralysie)
   std::vector<FighterP> turnOrder(int n) const;
-  void drawTurnOrder(float y);
+  void drawTurnOrder(float y, float minX = 0);
   bool skipTurn(FighterP f);  // sommeil ou paralysie : le tour est perdu
   void command(FighterP a);
   void autoCommand(FighterP a);

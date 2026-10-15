@@ -11,6 +11,8 @@
 //   k  entrée de grotte c  sol de grotte (rencontres)   x  cristal
 //   d  arbre mort       i  glace                        n  neige profonde (rencontres)
 //   z  marais (rencontres)
+// Villes (sprites) : q  pavés (praticable)   H  clôture   L  réverbère   Y  puits   C  caisses   U  buisson
+//   Q  banc   K  charrette   M  étal de marché   X  feu de camp   G  tableau d'annonces   J  bannière
 // Intérieurs (thème « interieur ») :
 //   p  tapis (praticable)   t  table   h  lit   e  étagère   o  comptoir   v  tonneau
 // Le dessin de certaines tuiles dépend du thème de la carte (arbres, chemins, parois).

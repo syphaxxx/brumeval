@@ -53,14 +53,16 @@ def decouper(e):
     if e.get('plein'):
         s = s[m + 3:-m - 3, m + 3:-m - 3]  # le liseré de la grille des textures
         return s, np.ones(s.shape[:2], bool)
-    ecart = np.abs(s - FOND).sum(2)
+    bord = np.concatenate([s[0], s[-1], s[:, 0], s[:, -1]])
+    fond_local = np.median(bord, axis=0) if np.abs(np.median(bord, axis=0) - FOND).sum() < 40 else FOND  # fond un peu dégradé
+    ecart = np.abs(s - fond_local).sum(2)
     clair = (s.min(2) > 175) & ((s.max(2) - s.min(2)) < 45)  # liseré blanc autour des sprites
     fond = (ecart < 45) | clair
     lab, n = nd.label(fond)
     bords = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))) - {0}
     masque = ~np.isin(lab, list(bords))
     # fond visible à l'intérieur du sprite (anneau, arche) : retiré s'il est assez grand
-    trou, nt = nd.label((ecart < 30) | clair)
+    trou, nt = nd.label((ecart < 22) | (clair & bool(e.get("trous"))))
     if nt:
         taille = nd.sum(np.ones_like(ecart), trou, range(1, nt + 1))
         masque &= ~np.isin(trou, [i + 1 for i, v in enumerate(taille) if v >= (8 if e.get('fragments') else 60)])

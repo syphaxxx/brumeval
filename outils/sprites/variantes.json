@@ -8,7 +8,6 @@
   {"prefixe": "chef_bandit", "de": "soldat", "teintes": [[5, 45, -1, 1, 1], [-1, 0, 355, 1, 0.8, 0.45]]},
   {"prefixe": "mage_givre", "de": "mage", "teintes": [[180, 260, 190, 0.45, 1.35]]},
   {"prefixe": "braconnier", "de": "archere", "teintes": [[60, 170, 40, 0.7, 0.85]]},
-
   {"id": "glaconnet", "de": "slime", "teintes": [[-1, 0, 188, 0.45, 1.2]]},
   {"id": "ecumet", "de": "slime_b", "teintes": [[-1, 0, 172, 1, 1.05]]},
   {"id": "banquisot", "de": "elem_eau", "teintes": [[-1, 0, 188, 0.45, 1.2]]},
@@ -22,7 +21,18 @@
   {"id": "noyelin", "de": "fantome", "teintes": [[180, 260, 165, 1, 0.95]]},
   {"id": "ferrolin", "de": "elem_terre", "teintes": [[-1, 0, 212, 0.35, 1.1, 0.12]]},
   {"id": "ferrogeant", "de": "golem_pierre", "teintes": [[-1, 0, 212, 1, 1.1, 0.2]]},
-  {"id": "golem_suie", "de": "golem_pierre", "teintes": [[-1, 0, 265, 0.6, 0.5, 0.1]]},
-  {"id": "sylvarque", "de": "elem_terre", "teintes": [[-1, 0, 150, 1.1, 0.6, 0.3]]},
-  {"id": "seigneur_orage", "de": "demon", "teintes": [[330, 40, 262, 1, 0.9]]}
+  {"id": "golem_suie", "de": "golem_grand", "teintes": [[-1, 0, 265, 0.6, 0.5, 0.1]]},
+  {"id": "sylvarque", "de": "elem_terre_grand", "teintes": [[-1, 0, 150, 1.1, 0.6, 0.3]]},
+  {"id": "seigneur_orage", "de": "demon", "teintes": [[330, 40, 262, 1, 0.9]]},
+  {"id": "maison_bleu_64", "de": "maison_64", "teintes": [[330, 40, 215, 0.9, 0.95]]},
+  {"id": "maison_vert_64", "de": "maison_64", "teintes": [[330, 40, 105, 0.7, 0.85]]},
+  {"id": "maison_ardoise_64", "de": "maison_64", "teintes": [[330, 40, 225, 0.35, 0.75]]},
+  {"id": "maison_bleu_80", "de": "maison_80", "teintes": [[330, 40, 215, 0.9, 0.95]]},
+  {"id": "maison_vert_80", "de": "maison_80", "teintes": [[330, 40, 105, 0.7, 0.85]]},
+  {"id": "maison_ardoise_80", "de": "maison_80", "teintes": [[330, 40, 225, 0.35, 0.75]]},
+  {"id": "maison_bleu_96", "de": "maison_96", "teintes": [[330, 40, 215, 0.9, 0.95]]},
+  {"id": "maison_vert_96", "de": "maison_96", "teintes": [[330, 40, 105, 0.7, 0.85]]},
+  {"id": "maison_ardoise_96", "de": "maison_96", "teintes": [[330, 40, 225, 0.35, 0.75]]},
+  {"id": "sapin_neige", "de": "sapin", "teintes": [[60, 200, 200, 0.35, 1.55]]},
+  {"id": "sapin_neige_petit", "de": "sapin_petit", "teintes": [[60, 200, 200, 0.35, 1.55]]}
 ]

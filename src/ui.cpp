@@ -132,6 +132,7 @@ std::string MenuStack::help() const {
 
 // Élément du menu sous la souris (-1 si aucun)
 static int itemAt(const Menu& m, int mx, int my) {
+  if (m.hidden) return -1;
   int th = m.title.empty() ? 0 : 13;
   int shown = std::min(m.rows, (int)m.items.size());
   if (mx < m.x || mx >= m.x + m.w) return -1;
@@ -253,6 +254,7 @@ int MenuStack::maxRight() const {
 void MenuStack::draw(Gfx& g, float t) const {
   for (size_t k = 0; k < st_.size(); k++) {
     const Menu& m = st_[k];
+    if (m.hidden) continue;
     bool top = k + 1 == st_.size();
     int h, th;
     menuBox(m, h, th);
@@ -261,6 +263,7 @@ void MenuStack::draw(Gfx& g, float t) const {
     bool hidden = false;
     for (size_t j = k + 1; j < st_.size() && !hidden; j++) {
       const Menu& o = st_[j];
+      if (o.hidden) continue;
       int oh, oth;
       menuBox(o, oh, oth);
       bool meet = o.x < m.x + m.w && m.x < o.x + o.w && o.y < m.y + h && m.y < o.y + oh;

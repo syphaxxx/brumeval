@@ -13,7 +13,7 @@
 bool tileWalkable(char c) {
   if (c == 'O' || c == 'P' || c == 'D') return true;  // rochers, plaques et grilles de l'énigme : gérés par Game::blockedOn
   return c == '.' || c == ',' || c == '=' || c == 'F' || c == 'B' || c == 'a' || c == 'g' || c == 'b' || c == 'k' || c == 'c' || c == 'i' ||
-         c == 'n' || c == 'z' || c == 'p';
+         c == 'n' || c == 'z' || c == 'p' || c == 'q';
 }
 std::vector<std::pair<int, int>> puzzleTiles(const MapDef& m, char c) {
   std::vector<std::pair<int, int>> v;
