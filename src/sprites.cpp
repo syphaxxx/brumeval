@@ -393,7 +393,6 @@ static bool texTile(Gfx& g, const char* id, int x, int y, int sx, int sy) {
 }
 
 static void ground(Gfx& g, Theme th, int sx, int sy, int h, int x, int y) {
-  if (th == Theme::Interieur && texTile(g, "tex_bois", x, y, sx, sy)) return;  // parquet
   if (th == Theme::Vallee) {
     g.rect(sx, sy, 16, 16, rgb(0x67b35d));
     g.rect(sx + h % 13, sy + (h >> 4) % 13, 2, 1, rgb(0x57a04f));
@@ -468,6 +467,16 @@ static const SpriteRect* propSprite(const MapDef& m, int x, int y) {
     }
     case 'R': id = th == Theme::Grotte ? nullptr : (h >> 2) % 3 == 0 ? "rochers" : (h >> 2) % 3 == 1 ? "pierres_moussues" : "rocher"; break;
     case 'v': id = (h >> 2) % 2 ? "tonneau" : "tonneau_2"; break;
+    // Meubles des intérieurs (3.3) : une bibliothèque pour deux cases d'étagère, des tables et des chaises
+    case 'e': {
+      int run = 0;  // place dans la rangée d'étagères
+      while (x - run - 1 >= 0 && m.rows[y][x - run - 1] == 'e') run++;
+      id = run % 2 == 0 ? "bibliotheque" : nullptr;
+      if (!id) return nullptr;
+      break;
+    }
+    case 't': id = "banc"; break;
+    case 'j': id = "chaise"; break;
     case 'L': id = th == Theme::Vallee ? "reverbere" : "lampadaire"; break;
     case 'Y': id = "puits"; break;
     case 'C': id = (h >> 2) % 3 == 0 ? "caisse" : (h >> 2) % 3 == 1 ? "caisse_2" : "sac"; break;
@@ -492,16 +501,19 @@ void drawProp(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
   int h = hsh(x, y);
   char c = m.rows[y][x];
   int jx = c == 'T' ? (h >> 7) % 5 - 2 : 0;  // arbres un peu décalés : une forêt moins alignée
+  if (c == 'e' && x + 1 < m.w() && m.rows[y][x + 1] == 'e') jx = 8;  // bibliothèque à cheval sur deux étagères
+  if (c == 'j') jx = x > 0 && m.rows[y][x - 1] == 't' ? -2 : 2;  // la chaise contre sa table
   if (c != 'C' && c != 'U') g.ellipse(sx + 8 + jx, sy + 14, std::min(8.f, r->w * .4f), 2.5f, rgb(0, 45));
-  g.sprite(*r, sx + 8 + jx - r->w / 2, sy + 16 - r->h + (c == 'T' ? 1 : 0), c == 'T' && (h >> 11) % 2);
+  bool flip = (c == 'T' && (h >> 11) % 2) || (c == 'j' && x > 0 && m.rows[y][x - 1] == 't');  // chaise tournée vers la table
+  g.sprite(*r, sx + 8 + jx - r->w / 2, sy + 16 - r->h + (c == 'T' ? 1 : 0), flip);
 }
 
 void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
   char c = m.rows[y][x];
   int h = hsh(x, y);
   Theme th = m.theme;
-  if (propSprite(m, x, y)) {  // l'objet est dessiné avec les personnages (drawProp) : ici le sol seul
-    ground(g, th, sx, sy, h, x, y);
+  if (propSprite(m, x, y) || (c == 'e' && x > 0 && m.rows[y][x - 1] == 'e' && findSprite("bibliotheque"))) {
+    ground(g, th, sx, sy, h, x, y);  // l'objet est dessiné avec les personnages (drawProp) : ici le sol seul
     return;
   }
   auto at = [&](int xx, int yy) { return (xx < 0 || yy < 0 || xx >= m.w() || yy >= m.h()) ? ' ' : m.rows[yy][xx]; };

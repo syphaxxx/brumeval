@@ -263,7 +263,7 @@ Chaque ligne de `tuiles` est une rangée de cases, toutes de même longueur :
 | `J` | bannière | | |
 
 Meubles des intérieurs (thème `interieur`) : `p` tapis (praticable), `t`
-table, `h` lit, `e` étagère, `o` comptoir, `v` tonneau.
+table, `h` lit, `e` étagère (une bibliothèque pour deux cases), `o` comptoir, `v` tonneau, `j` chaise.
 
 - `theme` : `vallee`, `cendres`, `grotte`, `foret`, `neige` ou `interieur`
   (couleur du sol, arbres, chemins, parois et décor des combats ; `interieur` :
