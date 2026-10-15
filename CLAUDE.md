@@ -66,6 +66,45 @@ brumeval --demo                                  # la même chose dans la fenêt
 Fonctionnement, rapport et mémoire d'une partie à l'autre : compétence `joueur-auto-brumeval`. Un
 nouveau genre d'interaction (objet à utiliser, énigme…) demande d'ajouter un objectif dans `Pilot::goals`.
 
+## Revue par Codex (relecture seule)
+
+Claude reste le développeur principal : lui seul écrit et modifie le code. OpenAI Codex sert de
+relecteur indépendant : il analyse, signale les problèmes et propose des corrections, sans jamais
+modifier de fichier.
+
+**Quand** : de lui-même, sans attendre qu'on le demande, pour une nouvelle fonctionnalité importante,
+une refactorisation, un bug complexe, ou un changement du combat ou de l'équilibrage, du réseau, du
+format de sauvegarde ou de procgen. Pas pour une petite correction, un texte ou des données.
+
+**Combien** : une seule revue par tâche. Une seconde revue seulement si la première a mené à des
+corrections importantes, et jamais plus. Jamais de boucle entre les deux IA : Codex ne relance pas
+Claude, et Claude ne renvoie pas les réponses de Codex à Codex.
+
+**Commande** :
+
+    git diff | codex.cmd exec --sandbox read-only --ephemeral --color never -C <dépôt> -o <scratchpad>/codex_avis.txt "<consigne>"
+
+- Toujours `--sandbox read-only` : jamais `workspace-write`, `--full-auto` ni `--dangerously-…`.
+- La consigne donne à Codex le but du changement, la liste des fichiers concernés et les pièges de
+  CLAUDE.md qui s'y appliquent (par exemple : procgen identique sur tous les ordinateurs, `T("…")`,
+  sauvegarde, `BRUMEVAL_VERSION`). Elle demande une liste de problèmes concrets (fichier:ligne,
+  scénario qui casse, correction proposée), et lui dit de lire les fichiers avec
+  `Get-Content -Encoding UTF8`.
+- Ne jamais envoyer de secret à Codex (webhook Discord, fichiers `.env`).
+- Si Codex échoue (erreur, quota atteint, délai dépassé) : prévenir l'utilisateur, ne pas réessayer
+  en boucle, et continuer la tâche sans revue.
+
+**Après la revue** :
+1. Vérifier chaque remarque dans le code. Corriger celles qui sont justes, écarter les autres.
+2. Lancer les tests (`--test captures`, et le joueur automatique si l'histoire, les cartes ou
+   l'équilibrage ont changé).
+3. Vérifier que `git status` ne montre que les changements de Claude.
+4. Présenter à l'utilisateur un résumé : le travail fait, les remarques de Codex retenues ou écartées
+   (avec la raison), et le résultat des tests.
+
+Demander à l'utilisateur avant toute suppression, toute modification massive ou toute opération
+irréversible, même quand l'idée vient de Codex.
+
 ## Architecture (src/)
 
 Chaque `.hpp` commence par un commentaire qui explique son module (le `.cpp` du même nom contient le
