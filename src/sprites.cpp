@@ -4,6 +4,12 @@
 #include <cmath>
 
 static const Color INK = rgb(0x1a1a24);
+// Petit hasard stable tiré d'un identifiant (choix d'un sprite pour l'Expédition)
+static unsigned idHash(const std::string& s) {
+  unsigned h = 2166136261u;
+  for (unsigned char c : s) h = (h ^ c) * 16777619u;
+  return h;
+}
 static void eyes(const Xf& x, float x1, float x2, float y, float r = 2) {
   for (float e : {x1, x2}) {
     x.ell(e, y, r, r + .6f, INK);
@@ -18,15 +24,49 @@ static void eyes(const Xf& x, float x1, float x2, float y, float r = 2) {
 // réduction
 static float crisp(float k) { return k >= .8f ? std::max(1.f, std::round(k)) : k; }
 
+// Expédition (3.3) : une créature générée n'a pas de sprite à elle ; elle prend celui d'une créature de l'histoire de
+// la même forme (choisi d'après son identifiant), teinté de sa couleur. Le monde généré ne change pas (dessin seul).
+static const SpriteRect* borrowedSprite(const Species& sp, Color& tint) {
+  static const std::vector<std::vector<const char*>> BY_SHAPE = {
+      {"braisenard", "givrelin", "flammenard", "givrenard"},              // renard
+      {"slime", "slime_b", "glaconnet", "ecumet", "elem_eau"},            // goutte
+      {"ronceau", "ronceflore"},                                          // bourgeon
+      {"piafouine", "voltigeon", "zephyrin", "orageon", "orageline"},     // oiseau
+      {"mulotin", "rongecrin"},                                           // souris
+      {"lucioline", "etincelot", "lucifee", "fulgurin", "araignee"},      // insecte
+      {"grenouillon", "crapoison"},                                       // grenouille
+      {"champichou", "champignard"},                                      // champignon
+      {"elem_terre", "golem_pierre", "ferrolin"},                         // rocher
+      {"brumelin", "fumerole", "nuageon"},                                // feu follet
+      {"troll_grand", "demon", "golem_grand"},                            // boss
+      {"tisonnel", "lezard", "dragonnet", "lezard_b"},                    // lézard
+      {"golem_pierre", "golem_feu", "troll"},                             // golem
+      {"serpentin", "voltanguille", "fulgoray", "serpentox"},             // serpent
+      {"chauve_souris", "noctaile"},                                      // chauve-souris
+      {"loup", "loup_b", "loup_garou"},                                   // loup
+      {"carapierre", "carapic", "coquillon", "bastillon"},                // tortue
+      {"fantome", "fantome_b", "nebulis", "noyelin", "squelette"},        // fantôme
+      {"cristallin", "prismalin", "orbrume"},                             // cristal
+      {"golem_feu_grand"},                                                // magma
+  };
+  size_t k = (size_t)sp.shape;
+  if (k >= BY_SHAPE.size() || BY_SHAPE[k].empty()) return nullptr;
+  const auto& v = BY_SHAPE[k];
+  tint = mix(rgb(sp.c1), rgb(0xffffff), .55f);
+  return findSprite(v[idHash(sp.id) % v.size()]);
+}
+
 void drawCreature(Gfx& g, const std::string& id, float x, float y, float s, bool flip, float t) {
   const Species& sp = species(id);
   s *= sp.size;
-  if (const SpriteRect* r = sp.sprite.empty() ? nullptr : findSprite(sp.sprite)) {
+  Color tint = rgb(0xffffff);
+  const SpriteRect* own = sp.sprite.empty() ? borrowedSprite(sp, tint) : findSprite(sp.sprite);
+  if (const SpriteRect* r = own) {
     // Sprite (regard vers la gauche) : centré en x, posé sur l'ombre (y + 15)
     float k = crisp(s);
     float bob = std::round(std::sin(t * 3.1f));
     g.ellipse(x, y + 15 * s, std::max(6.f, r->w * k * .38f), 3 * s, rgb(0, 46));
-    g.sprite(*r, std::round(x - r->w * k / 2), std::round(y + 16 * s - r->h * k + bob), flip, k);
+    g.sprite(*r, std::round(x - r->w * k / 2), std::round(y + 16 * s - r->h * k + bob), flip, k, tint);
     return;
   }
   Color C = rgb(sp.c1), L = rgb(sp.c2), D = shade(C, .3f);
@@ -233,8 +273,17 @@ void drawCreature(Gfx& g, const std::string& id, float x, float y, float s, bool
 // <sprite>_<direction>_<image> (gauche = droite retournée et inversement ; direction absente : de face) ; en plus
 // grand (combat, menus) : <sprite>_combat, tourné vers la gauche.
 static bool humanSprite(Gfx& g, const Look& lk, float x, float y, float s, int dir, int step, bool run) {
-  if (lk.sprite.empty()) return false;
-  const std::string& p = lk.sprite;
+  // Expédition (3.3) : un personnage généré (lk_…) prend le dessin d'un personnage de la planche selon son arme
+  static const char* BY_WEAPON[] = {"homme", "aventuriere", "mage", "soldat", "aventuriere", "archere", "soldat"};
+  std::string borrowed;
+  Color tint = rgb(0xffffff);
+  if (lk.sprite.empty() && lk.id.rfind("lk_", 0) == 0) {
+    borrowed = BY_WEAPON[std::clamp(lk.weapon, 0, 6)];
+    if (lk.weapon == 0 && idHash(lk.id) % 2) borrowed = "femme";
+    tint = mix(rgb(lk.top), rgb(0xffffff), .5f);
+  }
+  if (lk.sprite.empty() && borrowed.empty()) return false;
+  const std::string& p = lk.sprite.empty() ? borrowed : lk.sprite;
   if (s >= 1.5f) {
     const SpriteRect* r = findSprite(p + "_combat");
     float k = std::max(1.f, std::round(s / 2));
@@ -245,7 +294,7 @@ static bool humanSprite(Gfx& g, const Look& lk, float x, float y, float s, int d
     if (!r) return false;
     float cx = x + 8 * s, bottom = y + 16 * s;
     g.ellipse(cx, bottom - 1, r->w * k * .36f, 2 * k, rgb(0, 50));
-    g.sprite(*r, std::round(cx - r->w * k / 2), std::round(bottom - r->h * k), dir == 3, k);
+    g.sprite(*r, std::round(cx - r->w * k / 2), std::round(bottom - r->h * k), dir == 3, k, tint);
     return true;
   }
   static const char* NAMES[] = {"haut", "bas", "gauche", "droite"};
@@ -271,7 +320,7 @@ static bool humanSprite(Gfx& g, const Look& lk, float x, float y, float s, int d
   if (!r && (r = findSprite(p))) flip = dir == 3;  // animal : un seul sprite, tourné vers la gauche
   if (!r) return false;
   g.ellipse(x + 8 * s, y + 15 * s, 6 * s, 2 * s, rgb(0, 50));
-  g.sprite(*r, std::round(x + (16 * s - r->w * s) / 2), std::round(y + 16 * s - r->h * s), flip, s);
+  g.sprite(*r, std::round(x + (16 * s - r->w * s) / 2), std::round(y + 16 * s - r->h * s), flip, s, tint);
   return true;
 }
 
@@ -361,7 +410,8 @@ float fighterTop(const Fighter& f, float s) {
     if (const SpriteRect* r = lk.sprite.empty() ? nullptr : findSprite(lk.sprite + "_combat")) return r->h * std::max(1.f, std::round(s)) - 12 * s;
     return 22 * s;
   }
-  if (const SpriteRect* r = sp.sprite.empty() ? nullptr : findSprite(sp.sprite)) return r->h * crisp(s * sp.size) - 16 * s;
+  Color tint;
+  if (const SpriteRect* r = sp.sprite.empty() ? borrowedSprite(sp, tint) : findSprite(sp.sprite)) return r->h * crisp(s * sp.size) - 16 * s;
   return 18 * s * sp.size;
 }
 
