@@ -1,5 +1,6 @@
 #include "sprites.hpp"
 
+#include <algorithm>
 #include <cmath>
 
 static const Color INK = rgb(0x1a1a24);
@@ -13,9 +14,20 @@ static void eyes(const Xf& x, float x1, float x2, float y, float r = 2) {
 // ---------------------------------------------------------------------------
 // Créatures (regard tourné vers la gauche par défaut)
 // ---------------------------------------------------------------------------
+// Échelle d'un sprite : proche de 1, on garde 1 (pixels nets)
+static float crisp(float k) { return std::fabs(k - 1) < .2f ? 1.f : k; }
+
 void drawCreature(Gfx& g, const std::string& id, float x, float y, float s, bool flip, float t) {
   const Species& sp = species(id);
   s *= sp.size;
+  if (const SpriteRect* r = sp.sprite.empty() ? nullptr : findSprite(sp.sprite)) {
+    // Sprite (regard vers la gauche) : centré en x, posé sur l'ombre (y + 15)
+    float k = crisp(s);
+    float bob = std::round(std::sin(t * 3.1f));
+    g.ellipse(x, y + 15 * s, std::max(6.f, r->w * k * .38f), 3 * s, rgb(0, 46));
+    g.sprite(*r, std::round(x - r->w * k / 2), std::round(y + 16 * s - r->h * k + bob), flip, k);
+    return;
+  }
   Color C = rgb(sp.c1), L = rgb(sp.c2), D = shade(C, .3f);
   Xf X{g, x, y + std::round(std::sin(t * 3.1f)), s, flip};
   X.ell(0, 15, 15, 3.5f, rgb(0, 46));
@@ -216,7 +228,48 @@ void drawCreature(Gfx& g, const std::string& id, float x, float y, float s, bool
 // ---------------------------------------------------------------------------
 // Humains
 // ---------------------------------------------------------------------------
+// Sprite d'un personnage : (x, y) = coin haut-gauche de sa case de 16x16 agrandie s fois. Sur la carte (s < 1,5) :
+// <sprite>_<direction>_<image> (gauche = droite retournée et inversement ; direction absente : de face) ; en plus
+// grand (combat, menus) : <sprite>_combat, tourné vers la gauche.
+static bool humanSprite(Gfx& g, const Look& lk, float x, float y, float s, int dir, int step) {
+  if (lk.sprite.empty()) return false;
+  const std::string& p = lk.sprite;
+  if (s >= 1.5f) {
+    const SpriteRect* r = findSprite(p + "_combat");
+    float k = std::max(1.f, std::round(s / 2));
+    if (!r) {  // pas de grand sprite : celui de la carte, agrandi
+      r = findSprite(p + "_bas_0");
+      k = std::max(1.f, std::round(s * .75f));
+    }
+    if (!r) return false;
+    float cx = x + 8 * s, bottom = y + 16 * s;
+    g.ellipse(cx, bottom - 1, r->w * k * .36f, 2 * k, rgb(0, 50));
+    g.sprite(*r, std::round(cx - r->w * k / 2), std::round(bottom - r->h * k), dir == 3, k);
+    return true;
+  }
+  static const char* NAMES[] = {"haut", "bas", "gauche", "droite"};
+  auto frame = [&](const std::string& d) -> const SpriteRect* {
+    // pas de marche : 0 immobile, 1 et 2 en alternance ; 4 images (0 et 2 au repos) ou 2 images
+    bool four = findSprite(p + "_" + d + "_3") != nullptr;
+    int f = step == 0 ? 0 : step == 1 ? 1 : (four ? 3 : 1);
+    const SpriteRect* r = findSprite(p + "_" + d + "_" + std::to_string(f));
+    return r ? r : findSprite(p + "_" + d + "_0");
+  };
+  bool flip = false;
+  const SpriteRect* r = frame(NAMES[dir & 3]);
+  if (!r && (dir == 2 || dir == 3)) {
+    r = frame(NAMES[dir == 2 ? 3 : 2]);
+    flip = r != nullptr;
+  }
+  if (!r) r = frame("bas");
+  if (!r) return false;
+  g.ellipse(x + 8 * s, y + 15 * s, 6 * s, 2 * s, rgb(0, 50));
+  g.sprite(*r, std::round(x + (16 * s - r->w * s) / 2), std::round(y + 16 * s - r->h * s), flip, s);
+  return true;
+}
+
 void drawHuman(Gfx& g, const Look& lk, float x, float y, float s, int dir, int step, bool weapon) {
+  if (humanSprite(g, lk, x, y, s, dir, step)) return;
   bool flip = dir == 3;
   int pose = flip ? 2 : dir;
   Xf X{g, flip ? x + 16 * s : x, y, s, flip};

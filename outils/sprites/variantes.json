@@ -1,0 +1,28 @@
+[
+  {"prefixe": "maelle", "de": "mage", "teintes": [[180, 260, 45, 0.18, 1.55]]},
+  {"prefixe": "isra", "de": "aventuriere", "teintes": [[0, 60, 275, 0.75, 0.85]]},
+  {"prefixe": "brann", "de": "soldat", "teintes": [[5, 45, -1, 1, 1], [-1, 0, 22, 1, 1.05, 0.38]]},
+  {"prefixe": "selene", "de": "soldat", "teintes": [[5, 45, -1, 1, 1], [-1, 0, 215, 1, 1.25, 0.18]]},
+  {"prefixe": "chevalier", "de": "soldat", "teintes": [[5, 45, -1, 1, 1], [-1, 0, 198, 1, 1.3, 0.32]]},
+  {"prefixe": "bandit", "de": "soldat", "teintes": [[5, 45, -1, 1, 1], [-1, 0, 15, 1, 0.9, 0.3]]},
+  {"prefixe": "chef_bandit", "de": "soldat", "teintes": [[5, 45, -1, 1, 1], [-1, 0, 355, 1, 0.8, 0.45]]},
+  {"prefixe": "mage_givre", "de": "mage", "teintes": [[180, 260, 190, 0.45, 1.35]]},
+  {"prefixe": "braconnier", "de": "archere", "teintes": [[60, 170, 40, 0.7, 0.85]]},
+
+  {"id": "glaconnet", "de": "slime", "teintes": [[-1, 0, 188, 0.45, 1.2]]},
+  {"id": "ecumet", "de": "slime_b", "teintes": [[-1, 0, 172, 1, 1.05]]},
+  {"id": "banquisot", "de": "elem_eau", "teintes": [[-1, 0, 188, 0.45, 1.2]]},
+  {"id": "tisonnel", "de": "lezard", "teintes": [[60, 180, 14, 1.1, 1.05]]},
+  {"id": "serpentin", "de": "lezard", "teintes": [[60, 180, 285, 0.9, 0.95]]},
+  {"id": "serpentox", "de": "lezard_b", "teintes": [[60, 180, 285, 0.9, 0.9]]},
+  {"id": "voltanguille", "de": "lezard", "teintes": [[60, 180, 48, 1.2, 1.15]]},
+  {"id": "fulgoray", "de": "lezard_b", "teintes": [[60, 180, 210, 1.1, 1.05]]},
+  {"id": "noctaile", "de": "chauve_souris", "teintes": [[-1, 0, 268, 1.3, 0.95]]},
+  {"id": "nebulis", "de": "fantome_b", "teintes": [[180, 260, 272, 1, 1]]},
+  {"id": "noyelin", "de": "fantome", "teintes": [[180, 260, 165, 1, 0.95]]},
+  {"id": "ferrolin", "de": "elem_terre", "teintes": [[-1, 0, 212, 0.35, 1.1, 0.12]]},
+  {"id": "ferrogeant", "de": "golem_pierre", "teintes": [[-1, 0, 212, 1, 1.1, 0.2]]},
+  {"id": "golem_suie", "de": "golem_pierre", "teintes": [[-1, 0, 265, 0.6, 0.5, 0.1]]},
+  {"id": "sylvarque", "de": "elem_terre", "teintes": [[-1, 0, 150, 1.1, 0.6, 0.3]]},
+  {"id": "seigneur_orage", "de": "demon", "teintes": [[330, 40, 262, 1, 0.9]]}
+]

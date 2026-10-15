@@ -1,0 +1,3208 @@
+[
+{
+"id": "lior_bas_0",
+"planche": "heros",
+"boite": [
+289,
+128,
+368,
+253
+],
+"h": 24
+},
+{
+"id": "lior_bas_1",
+"planche": "heros",
+"boite": [
+401,
+127,
+479,
+253
+],
+"h": 24
+},
+{
+"id": "lior_bas_2",
+"planche": "heros",
+"boite": [
+510,
+127,
+591,
+253
+],
+"h": 24
+},
+{
+"id": "lior_bas_3",
+"planche": "heros",
+"boite": [
+627,
+126,
+706,
+253
+],
+"h": 24
+},
+{
+"id": "lior_haut_0",
+"planche": "heros",
+"boite": [
+289,
+277,
+368,
+406
+],
+"h": 24
+},
+{
+"id": "lior_haut_1",
+"planche": "heros",
+"boite": [
+402,
+276,
+479,
+406
+],
+"h": 24
+},
+{
+"id": "lior_haut_2",
+"planche": "heros",
+"boite": [
+512,
+276,
+590,
+406
+],
+"h": 24
+},
+{
+"id": "lior_haut_3",
+"planche": "heros",
+"boite": [
+628,
+276,
+706,
+406
+],
+"h": 24
+},
+{
+"id": "lior_gauche_0",
+"planche": "heros",
+"boite": [
+777,
+126,
+858,
+272
+],
+"h": 24
+},
+{
+"id": "lior_gauche_1",
+"planche": "heros",
+"boite": [
+891,
+126,
+973,
+271
+],
+"h": 24
+},
+{
+"id": "lior_gauche_2",
+"planche": "heros",
+"boite": [
+1005,
+125,
+1084,
+271
+],
+"h": 24
+},
+{
+"id": "lior_gauche_3",
+"planche": "heros",
+"boite": [
+1114,
+125,
+1194,
+271
+],
+"h": 24
+},
+{
+"id": "lior_combat",
+"planche": "heros",
+"boite": [
+777,
+126,
+858,
+272
+],
+"h": 36
+},
+{
+"id": "lior_lancer_0",
+"planche": "heros",
+"boite": [
+31,
+862,
+98,
+974
+],
+"h": 36,
+"miroir": true
+},
+{
+"id": "lior_lancer_1",
+"planche": "heros",
+"boite": [
+115,
+863,
+190,
+974
+],
+"h": 36,
+"miroir": true
+},
+{
+"id": "lior_lancer_2",
+"planche": "heros",
+"boite": [
+202,
+863,
+279,
+974
+],
+"h": 36,
+"miroir": true
+},
+{
+"id": "lior_lancer_3",
+"planche": "heros",
+"boite": [
+291,
+862,
+372,
+974
+],
+"h": 36,
+"miroir": true
+},
+{
+"id": "lior_lancer_4",
+"planche": "heros",
+"boite": [
+383,
+861,
+458,
+974
+],
+"h": 36,
+"miroir": true
+},
+{
+"id": "lior_victoire",
+"planche": "heros",
+"boite": [
+611,
+846,
+691,
+1000
+],
+"h": 40
+},
+{
+"id": "lior_ko",
+"planche": "heros",
+"boite": [
+806,
+863,
+892,
+993
+],
+"h": 34
+},
+{
+"id": "lior_visage_0",
+"planche": "heros",
+"boite": [
+32,
+1066,
+138,
+1199
+],
+"h": 30
+},
+{
+"id": "lior_visage_1",
+"planche": "heros",
+"boite": [
+171,
+1068,
+278,
+1199
+],
+"h": 30
+},
+{
+"id": "lior_visage_2",
+"planche": "heros",
+"boite": [
+313,
+1068,
+419,
+1199
+],
+"h": 30
+},
+{
+"id": "lior_visage_3",
+"planche": "heros",
+"boite": [
+454,
+1068,
+561,
+1199
+],
+"h": 30
+},
+{
+"id": "lior_visage_4",
+"planche": "heros",
+"boite": [
+600,
+1067,
+708,
+1199
+],
+"h": 30
+},
+{
+"id": "balle",
+"planche": "heros",
+"boite": [
+515,
+889,
+540,
+916
+],
+"h": 7
+},
+{
+"id": "aventuriere_bas_0",
+"planche": "decor",
+"boite": [
+16,
+185,
+58,
+234
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "aventuriere_droite_0",
+"planche": "decor",
+"boite": [
+16,
+230,
+58,
+280
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "aventuriere_droite_2",
+"planche": "decor",
+"boite": [
+16,
+276,
+58,
+325
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "aventuriere_haut_0",
+"planche": "decor",
+"boite": [
+16,
+321,
+58,
+371
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "aventuriere_bas_1",
+"planche": "decor",
+"boite": [
+61,
+185,
+98,
+234
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "aventuriere_droite_1",
+"planche": "decor",
+"boite": [
+61,
+230,
+98,
+280
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "aventuriere_droite_3",
+"planche": "decor",
+"boite": [
+61,
+276,
+98,
+325
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "aventuriere_haut_1",
+"planche": "decor",
+"boite": [
+61,
+321,
+98,
+371
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "mage_bas_0",
+"planche": "decor",
+"boite": [
+123,
+185,
+162,
+234
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "mage_droite_0",
+"planche": "decor",
+"boite": [
+123,
+230,
+162,
+280
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "mage_droite_2",
+"planche": "decor",
+"boite": [
+123,
+276,
+162,
+325
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "mage_haut_0",
+"planche": "decor",
+"boite": [
+123,
+321,
+162,
+371
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "mage_bas_1",
+"planche": "decor",
+"boite": [
+167,
+185,
+204,
+234
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "mage_droite_1",
+"planche": "decor",
+"boite": [
+167,
+230,
+204,
+280
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "mage_droite_3",
+"planche": "decor",
+"boite": [
+167,
+276,
+204,
+325
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "mage_haut_1",
+"planche": "decor",
+"boite": [
+167,
+321,
+204,
+371
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "archere_bas_0",
+"planche": "decor",
+"boite": [
+226,
+185,
+265,
+234
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "archere_droite_0",
+"planche": "decor",
+"boite": [
+226,
+230,
+265,
+280
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "archere_droite_2",
+"planche": "decor",
+"boite": [
+226,
+276,
+265,
+325
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "archere_haut_0",
+"planche": "decor",
+"boite": [
+226,
+321,
+265,
+371
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "archere_bas_1",
+"planche": "decor",
+"boite": [
+269,
+185,
+309,
+234
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "archere_droite_1",
+"planche": "decor",
+"boite": [
+269,
+230,
+309,
+280
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "archere_droite_3",
+"planche": "decor",
+"boite": [
+269,
+276,
+309,
+325
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "archere_haut_1",
+"planche": "decor",
+"boite": [
+269,
+321,
+309,
+371
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "soldat_bas_0",
+"planche": "decor",
+"boite": [
+337,
+185,
+375,
+234
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "soldat_droite_0",
+"planche": "decor",
+"boite": [
+337,
+230,
+375,
+280
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "soldat_droite_2",
+"planche": "decor",
+"boite": [
+337,
+276,
+375,
+325
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "soldat_haut_0",
+"planche": "decor",
+"boite": [
+337,
+321,
+375,
+371
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "vieux_bas_0",
+"planche": "decor",
+"boite": [
+383,
+185,
+416,
+234
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "vieux_droite_0",
+"planche": "decor",
+"boite": [
+383,
+230,
+416,
+280
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "vieux_droite_2",
+"planche": "decor",
+"boite": [
+383,
+276,
+416,
+325
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "vieux_haut_0",
+"planche": "decor",
+"boite": [
+383,
+321,
+416,
+371
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "voyageuse_bas_0",
+"planche": "decor",
+"boite": [
+446,
+185,
+481,
+234
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "voyageuse_droite_0",
+"planche": "decor",
+"boite": [
+446,
+230,
+481,
+280
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "voyageuse_droite_2",
+"planche": "decor",
+"boite": [
+446,
+276,
+481,
+325
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "voyageuse_haut_0",
+"planche": "decor",
+"boite": [
+446,
+321,
+481,
+371
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "voyageuse_bas_1",
+"planche": "decor",
+"boite": [
+481,
+185,
+515,
+234
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "voyageuse_droite_1",
+"planche": "decor",
+"boite": [
+481,
+230,
+515,
+280
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "voyageuse_droite_3",
+"planche": "decor",
+"boite": [
+481,
+276,
+515,
+325
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "voyageuse_haut_1",
+"planche": "decor",
+"boite": [
+481,
+321,
+515,
+371
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "marchande_bas_0",
+"planche": "decor",
+"boite": [
+533,
+185,
+569,
+234
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "marchande_droite_0",
+"planche": "decor",
+"boite": [
+533,
+230,
+569,
+280
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "marchande_droite_2",
+"planche": "decor",
+"boite": [
+533,
+276,
+569,
+325
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "marchande_haut_0",
+"planche": "decor",
+"boite": [
+533,
+321,
+569,
+371
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "marchande_bas_1",
+"planche": "decor",
+"boite": [
+573,
+185,
+608,
+234
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "marchande_droite_1",
+"planche": "decor",
+"boite": [
+573,
+230,
+608,
+280
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "marchande_droite_3",
+"planche": "decor",
+"boite": [
+573,
+276,
+608,
+325
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "marchande_haut_1",
+"planche": "decor",
+"boite": [
+573,
+321,
+608,
+371
+],
+"h": 24,
+"seul": true,
+"vif": true
+},
+{
+"id": "aventuriere_combat",
+"planche": "decor",
+"boite": [
+25,
+70,
+89,
+179
+],
+"h": 36,
+"miroir": true
+},
+{
+"id": "mage_combat",
+"planche": "decor",
+"boite": [
+126,
+76,
+192,
+177
+],
+"h": 36,
+"miroir": true
+},
+{
+"id": "archere_combat",
+"planche": "decor",
+"boite": [
+230,
+74,
+306,
+179
+],
+"h": 36,
+"miroir": true
+},
+{
+"id": "soldat_combat",
+"planche": "decor",
+"boite": [
+346,
+73,
+401,
+175
+],
+"h": 36,
+"miroir": false
+},
+{
+"id": "vieux_combat",
+"planche": "decor",
+"boite": [
+447,
+81,
+511,
+174
+],
+"h": 36,
+"miroir": false
+},
+{
+"id": "marchande_combat",
+"planche": "decor",
+"boite": [
+538,
+80,
+591,
+175
+],
+"h": 36,
+"miroir": true
+},
+{
+"id": "enfant_bas_0",
+"planche": "decor",
+"boite": [
+638,
+87,
+671,
+145
+],
+"h": 22
+},
+{
+"id": "femme_bas_0",
+"planche": "decor",
+"boite": [
+688,
+77,
+724,
+145
+],
+"h": 24
+},
+{
+"id": "homme_bas_0",
+"planche": "decor",
+"boite": [
+744,
+74,
+780,
+144
+],
+"h": 24
+},
+{
+"id": "barman_bas_0",
+"planche": "decor",
+"boite": [
+801,
+73,
+845,
+145
+],
+"h": 24
+},
+{
+"id": "paysan_bas_0",
+"planche": "decor",
+"boite": [
+638,
+200,
+681,
+272
+],
+"h": 24
+},
+{
+"id": "paysan_bas_1",
+"planche": "decor",
+"boite": [
+639,
+287,
+677,
+352
+],
+"h": 24
+},
+{
+"id": "pecheur_bas_0",
+"planche": "decor",
+"boite": [
+693,
+200,
+736,
+269
+],
+"h": 24
+},
+{
+"id": "pecheur_bas_1",
+"planche": "decor",
+"boite": [
+691,
+284,
+730,
+352
+],
+"h": 24
+},
+{
+"id": "forgeron_bas_0",
+"planche": "decor",
+"boite": [
+752,
+198,
+793,
+274
+],
+"h": 24
+},
+{
+"id": "forgeron_bas_1",
+"planche": "decor",
+"boite": [
+752,
+284,
+790,
+352
+],
+"h": 24
+},
+{
+"id": "docteur_bas_0",
+"planche": "decor",
+"boite": [
+811,
+198,
+848,
+276
+],
+"h": 24
+},
+{
+"id": "docteur_bas_1",
+"planche": "decor",
+"boite": [
+816,
+288,
+853,
+352
+],
+"h": 24
+},
+{
+"id": "chien",
+"planche": "decor",
+"boite": [
+896,
+304,
+939,
+398
+],
+"h": 12,
+"part": [
+0,
+0,
+1,
+0.36
+],
+"seul": true
+},
+{
+"id": "chat",
+"planche": "decor",
+"boite": [
+970,
+307,
+1001,
+367
+],
+"h": 11,
+"part": [
+0,
+0,
+1,
+0.5
+],
+"seul": true
+},
+{
+"id": "poule",
+"planche": "decor",
+"boite": [
+1031,
+309,
+1061,
+399
+],
+"h": 12,
+"part": [
+0,
+0,
+1,
+0.36
+],
+"seul": true
+},
+{
+"id": "vache",
+"planche": "decor",
+"boite": [
+1090,
+303,
+1143,
+343
+],
+"h": 16
+},
+{
+"id": "cheval",
+"planche": "decor",
+"boite": [
+1162,
+295,
+1222,
+343
+],
+"h": 20
+},
+{
+"id": "slime",
+"planche": "monstres",
+"boite": [
+24,
+82,
+62,
+114
+],
+"h": 22,
+"miroir": false
+},
+{
+"id": "slime_b",
+"planche": "monstres",
+"boite": [
+78,
+81,
+119,
+114
+],
+"h": 22,
+"miroir": false
+},
+{
+"id": "loup",
+"planche": "monstres",
+"boite": [
+189,
+74,
+256,
+121
+],
+"h": 30,
+"miroir": true
+},
+{
+"id": "loup_b",
+"planche": "monstres",
+"boite": [
+187,
+127,
+257,
+177
+],
+"h": 30,
+"miroir": true
+},
+{
+"id": "gobelin",
+"planche": "monstres",
+"boite": [
+435,
+74,
+480,
+121
+],
+"h": 30,
+"miroir": false
+},
+{
+"id": "araignee",
+"planche": "monstres",
+"boite": [
+18,
+229,
+76,
+266
+],
+"h": 24,
+"miroir": false
+},
+{
+"id": "mimique",
+"planche": "monstres",
+"boite": [
+240,
+225,
+288,
+277
+],
+"h": 28,
+"miroir": false
+},
+{
+"id": "lezard",
+"planche": "monstres",
+"boite": [
+443,
+227,
+500,
+276
+],
+"h": 28,
+"miroir": true
+},
+{
+"id": "lezard_b",
+"planche": "monstres",
+"boite": [
+505,
+226,
+552,
+276
+],
+"h": 30,
+"miroir": true
+},
+{
+"id": "loup_garou",
+"planche": "monstres",
+"boite": [
+16,
+391,
+79,
+463
+],
+"h": 44,
+"miroir": true
+},
+{
+"id": "dragonnet",
+"planche": "monstres",
+"boite": [
+239,
+394,
+327,
+449
+],
+"h": 30,
+"miroir": true
+},
+{
+"id": "dragonnet_b",
+"planche": "monstres",
+"boite": [
+339,
+393,
+431,
+463
+],
+"h": 38,
+"miroir": true
+},
+{
+"id": "golem_feu",
+"planche": "monstres",
+"boite": [
+449,
+390,
+531,
+462
+],
+"h": 44,
+"miroir": false
+},
+{
+"id": "squelette",
+"planche": "monstres",
+"boite": [
+630,
+70,
+664,
+121
+],
+"h": 30,
+"miroir": false
+},
+{
+"id": "orc",
+"planche": "monstres",
+"boite": [
+856,
+66,
+905,
+122
+],
+"h": 34,
+"miroir": false
+},
+{
+"id": "chauve_souris",
+"planche": "monstres",
+"boite": [
+1053,
+76,
+1114,
+114
+],
+"h": 22,
+"miroir": false
+},
+{
+"id": "troll",
+"planche": "monstres",
+"boite": [
+846,
+218,
+922,
+282
+],
+"h": 44,
+"miroir": false
+},
+{
+"id": "fantome",
+"planche": "monstres",
+"boite": [
+1052,
+235,
+1098,
+274
+],
+"h": 28,
+"miroir": true
+},
+{
+"id": "fantome_b",
+"planche": "monstres",
+"boite": [
+1120,
+221,
+1169,
+276
+],
+"h": 32,
+"miroir": true
+},
+{
+"id": "elem_terre",
+"planche": "monstres",
+"boite": [
+774,
+394,
+833,
+459
+],
+"h": 40,
+"miroir": false
+},
+{
+"id": "demon",
+"planche": "monstres",
+"boite": [
+1111,
+384,
+1235,
+544
+],
+"h": 64,
+"miroir": false
+},
+{
+"id": "golem_pierre",
+"planche": "monstres",
+"boite": [
+636,
+216,
+718,
+282
+],
+"h": 40
+},
+{
+"id": "elem_eau",
+"planche": "monstres",
+"boite": [
+608,
+393,
+680,
+540
+],
+"h": 40,
+"seul": true,
+"miroir": true
+},
+{
+"id": "fx_feu_boule",
+"planche": "monstres",
+"boite": [
+22,
+922,
+66,
+956
+],
+"h": 14,
+"fragments": true
+},
+{
+"id": "fx_feu_1",
+"planche": "monstres",
+"boite": [
+72,
+909,
+110,
+966
+],
+"h": 22,
+"fragments": true
+},
+{
+"id": "fx_feu_2",
+"planche": "monstres",
+"boite": [
+118,
+900,
+162,
+971
+],
+"h": 26,
+"fragments": true
+},
+{
+"id": "fx_feu_3",
+"planche": "monstres",
+"boite": [
+171,
+906,
+219,
+971
+],
+"h": 28,
+"fragments": true
+},
+{
+"id": "fx_feu_cercle",
+"planche": "monstres",
+"boite": [
+227,
+890,
+314,
+981
+],
+"h": 34,
+"fragments": true
+},
+{
+"id": "fx_glace_trait",
+"planche": "monstres",
+"boite": [
+335,
+922,
+384,
+950
+],
+"h": 12,
+"fragments": true
+},
+{
+"id": "fx_glace_1",
+"planche": "monstres",
+"boite": [
+390,
+912,
+444,
+962
+],
+"h": 20,
+"fragments": true
+},
+{
+"id": "fx_glace_2",
+"planche": "monstres",
+"boite": [
+455,
+903,
+505,
+969
+],
+"h": 22,
+"fragments": true
+},
+{
+"id": "fx_glace_cristal",
+"planche": "monstres",
+"boite": [
+509,
+903,
+566,
+973
+],
+"h": 28,
+"fragments": true
+},
+{
+"id": "fx_glace_cercle",
+"planche": "monstres",
+"boite": [
+574,
+889,
+627,
+981
+],
+"h": 34,
+"fragments": true
+},
+{
+"id": "fx_soin_1",
+"planche": "monstres",
+"boite": [
+72,
+1022,
+110,
+1063
+],
+"h": 14,
+"fragments": true
+},
+{
+"id": "fx_soin_2",
+"planche": "monstres",
+"boite": [
+120,
+1016,
+162,
+1069
+],
+"h": 18,
+"fragments": true
+},
+{
+"id": "fx_soin_3",
+"planche": "monstres",
+"boite": [
+169,
+1009,
+231,
+1078
+],
+"h": 24,
+"fragments": true
+},
+{
+"id": "fx_soin_4",
+"planche": "monstres",
+"boite": [
+240,
+998,
+314,
+1085
+],
+"h": 32,
+"fragments": true
+},
+{
+"id": "fx_poison_1",
+"planche": "monstres",
+"boite": [
+334,
+1028,
+377,
+1071
+],
+"h": 16,
+"fragments": true
+},
+{
+"id": "fx_poison_2",
+"planche": "monstres",
+"boite": [
+384,
+1021,
+417,
+1073
+],
+"h": 18,
+"fragments": true
+},
+{
+"id": "fx_poison_3",
+"planche": "monstres",
+"boite": [
+419,
+1028,
+455,
+1082
+],
+"h": 18,
+"fragments": true
+},
+{
+"id": "fx_poison_4",
+"planche": "monstres",
+"boite": [
+464,
+1019,
+505,
+1078
+],
+"h": 20,
+"fragments": true
+},
+{
+"id": "fx_poison_5",
+"planche": "monstres",
+"boite": [
+508,
+1011,
+567,
+1080
+],
+"h": 26,
+"fragments": true
+},
+{
+"id": "fx_poison_nuage",
+"planche": "monstres",
+"boite": [
+574,
+1003,
+627,
+1085
+],
+"h": 30,
+"fragments": true
+},
+{
+"id": "fx_bouclier",
+"planche": "monstres",
+"boite": [
+16,
+1119,
+94,
+1199
+],
+"h": 30,
+"fragments": true
+},
+{
+"id": "fx_vitesse",
+"planche": "monstres",
+"boite": [
+108,
+1138,
+193,
+1191
+],
+"h": 22,
+"fragments": true
+},
+{
+"id": "fx_regen",
+"planche": "monstres",
+"boite": [
+298,
+1114,
+367,
+1201
+],
+"h": 30,
+"fragments": true
+},
+{
+"id": "fx_teleport",
+"planche": "monstres",
+"boite": [
+439,
+1109,
+495,
+1196
+],
+"h": 32,
+"fragments": true
+},
+{
+"id": "fx_revelation",
+"planche": "monstres",
+"boite": [
+507,
+1116,
+577,
+1191
+],
+"h": 28,
+"fragments": true
+},
+{
+"id": "fx_eclair_1",
+"planche": "monstres",
+"boite": [
+677,
+900,
+740,
+973
+],
+"h": 26,
+"fragments": true
+},
+{
+"id": "fx_eclair_2",
+"planche": "monstres",
+"boite": [
+745,
+912,
+806,
+966
+],
+"h": 22,
+"fragments": true
+},
+{
+"id": "fx_eclair_3",
+"planche": "monstres",
+"boite": [
+798,
+897,
+834,
+975
+],
+"h": 28,
+"fragments": true
+},
+{
+"id": "fx_eclair_pilier",
+"planche": "monstres",
+"boite": [
+859,
+881,
+927,
+986
+],
+"h": 44,
+"fragments": true
+},
+{
+"id": "fx_vent_1",
+"planche": "monstres",
+"boite": [
+944,
+912,
+991,
+962
+],
+"h": 18,
+"fragments": true
+},
+{
+"id": "fx_vent_2",
+"planche": "monstres",
+"boite": [
+1000,
+906,
+1052,
+966
+],
+"h": 22,
+"fragments": true
+},
+{
+"id": "fx_vent_3",
+"planche": "monstres",
+"boite": [
+1060,
+898,
+1116,
+966
+],
+"h": 26,
+"fragments": true
+},
+{
+"id": "fx_vent_tornade",
+"planche": "monstres",
+"boite": [
+1114,
+890,
+1182,
+978
+],
+"h": 38,
+"fragments": true
+},
+{
+"id": "fx_vent_cercle",
+"planche": "monstres",
+"boite": [
+1182,
+904,
+1236,
+969
+],
+"h": 26,
+"fragments": true
+},
+{
+"id": "fx_terre_1",
+"planche": "monstres",
+"boite": [
+676,
+1021,
+737,
+1075
+],
+"h": 20,
+"fragments": true
+},
+{
+"id": "fx_terre_2",
+"planche": "monstres",
+"boite": [
+743,
+1021,
+799,
+1078
+],
+"h": 20,
+"fragments": true
+},
+{
+"id": "fx_terre_pics",
+"planche": "monstres",
+"boite": [
+804,
+997,
+924,
+1082
+],
+"h": 34,
+"fragments": true
+},
+{
+"id": "fx_ombre_1",
+"planche": "monstres",
+"boite": [
+944,
+1019,
+997,
+1075
+],
+"h": 20,
+"fragments": true
+},
+{
+"id": "fx_ombre_2",
+"planche": "monstres",
+"boite": [
+1003,
+1022,
+1050,
+1069
+],
+"h": 18,
+"fragments": true
+},
+{
+"id": "fx_ombre_3",
+"planche": "monstres",
+"boite": [
+1056,
+1011,
+1104,
+1077
+],
+"h": 22,
+"fragments": true
+},
+{
+"id": "fx_ombre_4",
+"planche": "monstres",
+"boite": [
+1113,
+1006,
+1163,
+1082
+],
+"h": 26,
+"fragments": true
+},
+{
+"id": "fx_ombre_5",
+"planche": "monstres",
+"boite": [
+1169,
+1011,
+1238,
+1082
+],
+"h": 28,
+"fragments": true
+},
+{
+"id": "fx_explosion",
+"planche": "monstres",
+"boite": [
+924,
+1116,
+1026,
+1221
+],
+"h": 40,
+"fragments": true
+},
+{
+"id": "fx_impact",
+"planche": "monstres",
+"boite": [
+1032,
+1117,
+1134,
+1226
+],
+"h": 36,
+"fragments": true
+},
+{
+"id": "fx_ombre_impact",
+"planche": "monstres",
+"boite": [
+1144,
+1119,
+1241,
+1223
+],
+"h": 36,
+"fragments": true
+},
+{
+"id": "arbre",
+"planche": "decor",
+"boite": [
+16,
+439,
+90,
+540
+],
+"h": 40
+},
+{
+"id": "sapin",
+"planche": "decor",
+"boite": [
+98,
+437,
+168,
+539
+],
+"h": 40
+},
+{
+"id": "arbre_rose",
+"planche": "decor",
+"boite": [
+175,
+438,
+243,
+540
+],
+"h": 38
+},
+{
+"id": "arbre_automne",
+"planche": "decor",
+"boite": [
+249,
+437,
+314,
+541
+],
+"h": 38
+},
+{
+"id": "arbre_petit",
+"planche": "decor",
+"boite": [
+21,
+547,
+80,
+618
+],
+"h": 28
+},
+{
+"id": "sapin_petit",
+"planche": "decor",
+"boite": [
+104,
+546,
+159,
+619
+],
+"h": 28
+},
+{
+"id": "arbre_rose_petit",
+"planche": "decor",
+"boite": [
+184,
+548,
+235,
+617
+],
+"h": 28
+},
+{
+"id": "arbre_automne_petit",
+"planche": "decor",
+"boite": [
+252,
+547,
+311,
+620
+],
+"h": 28
+},
+{
+"id": "buisson",
+"planche": "decor",
+"boite": [
+338,
+433,
+385,
+475
+],
+"h": 14
+},
+{
+"id": "buisson_2",
+"planche": "decor",
+"boite": [
+398,
+434,
+442,
+471
+],
+"h": 14
+},
+{
+"id": "buisson_baies",
+"planche": "decor",
+"boite": [
+339,
+518,
+388,
+558
+],
+"h": 14
+},
+{
+"id": "buisson_3",
+"planche": "decor",
+"boite": [
+397,
+518,
+443,
+556
+],
+"h": 14
+},
+{
+"id": "buisson_fleurs",
+"planche": "decor",
+"boite": [
+340,
+562,
+386,
+600
+],
+"h": 14
+},
+{
+"id": "buisson_4",
+"planche": "decor",
+"boite": [
+398,
+561,
+442,
+597
+],
+"h": 14
+},
+{
+"id": "herbe_1",
+"planche": "decor",
+"boite": [
+469,
+434,
+506,
+467
+],
+"h": 12
+},
+{
+"id": "herbe_2",
+"planche": "decor",
+"boite": [
+509,
+433,
+540,
+466
+],
+"h": 12
+},
+{
+"id": "herbe_3",
+"planche": "decor",
+"boite": [
+467,
+473,
+517,
+512
+],
+"h": 12
+},
+{
+"id": "herbe_4",
+"planche": "decor",
+"boite": [
+467,
+518,
+514,
+558
+],
+"h": 12
+},
+{
+"id": "fleurs_1",
+"planche": "decor",
+"boite": [
+602,
+438,
+625,
+465
+],
+"h": 10
+},
+{
+"id": "fleurs_2",
+"planche": "decor",
+"boite": [
+602,
+474,
+624,
+506
+],
+"h": 10
+},
+{
+"id": "fleurs_3",
+"planche": "decor",
+"boite": [
+602,
+524,
+625,
+557
+],
+"h": 10
+},
+{
+"id": "fleurs_4",
+"planche": "decor",
+"boite": [
+604,
+570,
+624,
+598
+],
+"h": 10
+},
+{
+"id": "caisse",
+"planche": "decor",
+"boite": [
+774,
+426,
+810,
+458
+],
+"h": 12
+},
+{
+"id": "caisse_2",
+"planche": "decor",
+"boite": [
+822,
+422,
+862,
+458
+],
+"h": 12
+},
+{
+"id": "tonneau",
+"planche": "decor",
+"boite": [
+878,
+420,
+911,
+462
+],
+"h": 14
+},
+{
+"id": "coffre",
+"planche": "decor",
+"boite": [
+927,
+425,
+962,
+461
+],
+"h": 12
+},
+{
+"id": "sac",
+"planche": "decor",
+"boite": [
+974,
+423,
+1009,
+462
+],
+"h": 12
+},
+{
+"id": "lanterne",
+"planche": "decor",
+"boite": [
+1051,
+423,
+1078,
+464
+],
+"h": 12
+},
+{
+"id": "banniere",
+"planche": "decor",
+"boite": [
+1093,
+420,
+1125,
+466
+],
+"h": 18
+},
+{
+"id": "reverbere",
+"planche": "decor",
+"boite": [
+1195,
+420,
+1225,
+509
+],
+"h": 30
+},
+{
+"id": "tonneau_2",
+"planche": "decor",
+"boite": [
+905,
+472,
+936,
+511
+],
+"h": 14
+},
+{
+"id": "feu_camp",
+"planche": "decor",
+"boite": [
+1063,
+476,
+1094,
+514
+],
+"h": 14
+},
+{
+"id": "buche",
+"planche": "decor",
+"boite": [
+1112,
+474,
+1145,
+508
+],
+"h": 10
+},
+{
+"id": "chaise",
+"planche": "decor",
+"boite": [
+774,
+516,
+805,
+553
+],
+"h": 14
+},
+{
+"id": "bibliotheque",
+"planche": "decor",
+"boite": [
+987,
+520,
+1046,
+570
+],
+"h": 20
+},
+{
+"id": "tableau_annonces",
+"planche": "decor",
+"boite": [
+1187,
+522,
+1227,
+560
+],
+"h": 18
+},
+{
+"id": "table",
+"planche": "decor",
+"boite": [
+779,
+564,
+834,
+600
+],
+"h": 16
+},
+{
+"id": "banc",
+"planche": "decor",
+"boite": [
+936,
+579,
+992,
+614
+],
+"h": 12
+},
+{
+"id": "charrette",
+"planche": "decor",
+"boite": [
+1060,
+575,
+1139,
+625
+],
+"h": 22
+},
+{
+"id": "cloture",
+"planche": "decor",
+"boite": [
+1186,
+567,
+1233,
+605
+],
+"h": 14
+},
+{
+"id": "rocher",
+"planche": "decor",
+"boite": [
+18,
+1160,
+46,
+1190
+],
+"h": 14
+},
+{
+"id": "rochers",
+"planche": "decor",
+"boite": [
+55,
+1161,
+106,
+1193
+],
+"h": 14
+},
+{
+"id": "pierres_moussues",
+"planche": "decor",
+"boite": [
+114,
+1160,
+166,
+1194
+],
+"h": 14
+},
+{
+"id": "puits",
+"planche": "decor",
+"boite": [
+323,
+1170,
+356,
+1201
+],
+"h": 16
+},
+{
+"id": "puits_2",
+"planche": "decor",
+"boite": [
+19,
+1197,
+54,
+1236
+],
+"h": 18
+},
+{
+"id": "panneau",
+"planche": "decor",
+"boite": [
+136,
+1201,
+161,
+1232
+],
+"h": 14
+},
+{
+"id": "poteau",
+"planche": "decor",
+"boite": [
+174,
+1202,
+195,
+1233
+],
+"h": 16
+},
+{
+"id": "fanion",
+"planche": "decor",
+"boite": [
+206,
+1196,
+231,
+1230
+],
+"h": 16
+},
+{
+"id": "reverbere_2",
+"planche": "decor",
+"boite": [
+431,
+1149,
+455,
+1194
+],
+"h": 22
+},
+{
+"id": "maison",
+"planche": "decor",
+"boite": [
+16,
+1004,
+120,
+1120
+],
+"w": 64,
+"couleurs": 32
+},
+{
+"id": "taverne",
+"planche": "decor",
+"boite": [
+143,
+1013,
+243,
+1123
+],
+"w": 72,
+"couleurs": 32
+},
+{
+"id": "boutique",
+"planche": "decor",
+"boite": [
+258,
+1015,
+360,
+1120
+],
+"w": 64,
+"couleurs": 32
+},
+{
+"id": "eglise",
+"planche": "decor",
+"boite": [
+380,
+1004,
+486,
+1119
+],
+"w": 72,
+"couleurs": 32
+},
+{
+"id": "chateau",
+"planche": "decor",
+"boite": [
+502,
+992,
+646,
+1121
+],
+"w": 112,
+"couleurs": 32
+},
+{
+"id": "ruines",
+"planche": "decor",
+"boite": [
+662,
+1017,
+777,
+1118
+],
+"w": 72,
+"couleurs": 32
+},
+{
+"id": "entrepot",
+"planche": "decor",
+"boite": [
+805,
+1019,
+926,
+1120
+],
+"w": 80,
+"couleurs": 32
+},
+{
+"id": "moulin",
+"planche": "decor",
+"boite": [
+953,
+1008,
+1032,
+1120
+],
+"w": 56,
+"couleurs": 32
+},
+{
+"id": "sol_0_0",
+"planche": "decor",
+"boite": [
+21,
+727,
+61,
+767
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_0_1",
+"planche": "decor",
+"boite": [
+67,
+727,
+106,
+767
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_0_2",
+"planche": "decor",
+"boite": [
+112,
+727,
+152,
+767
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_0_3",
+"planche": "decor",
+"boite": [
+158,
+727,
+198,
+767
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_0_4",
+"planche": "decor",
+"boite": [
+204,
+727,
+244,
+767
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_0_5",
+"planche": "decor",
+"boite": [
+250,
+727,
+290,
+767
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_0_6",
+"planche": "decor",
+"boite": [
+296,
+727,
+335,
+767
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_0_7",
+"planche": "decor",
+"boite": [
+341,
+727,
+381,
+767
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_1_0",
+"planche": "decor",
+"boite": [
+21,
+773,
+61,
+813
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_1_1",
+"planche": "decor",
+"boite": [
+67,
+773,
+106,
+813
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_1_2",
+"planche": "decor",
+"boite": [
+112,
+773,
+152,
+813
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_1_3",
+"planche": "decor",
+"boite": [
+158,
+773,
+198,
+813
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_1_4",
+"planche": "decor",
+"boite": [
+204,
+773,
+244,
+813
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_1_5",
+"planche": "decor",
+"boite": [
+250,
+773,
+290,
+813
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_1_6",
+"planche": "decor",
+"boite": [
+296,
+773,
+335,
+813
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_1_7",
+"planche": "decor",
+"boite": [
+341,
+773,
+381,
+813
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_2_0",
+"planche": "decor",
+"boite": [
+21,
+819,
+61,
+858
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_2_1",
+"planche": "decor",
+"boite": [
+67,
+819,
+106,
+858
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_2_2",
+"planche": "decor",
+"boite": [
+112,
+819,
+152,
+858
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_2_3",
+"planche": "decor",
+"boite": [
+158,
+819,
+198,
+858
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_2_4",
+"planche": "decor",
+"boite": [
+204,
+819,
+244,
+858
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_2_5",
+"planche": "decor",
+"boite": [
+250,
+819,
+290,
+858
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_2_6",
+"planche": "decor",
+"boite": [
+296,
+819,
+335,
+858
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_2_7",
+"planche": "decor",
+"boite": [
+341,
+819,
+381,
+858
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_3_0",
+"planche": "decor",
+"boite": [
+21,
+864,
+61,
+904
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_3_1",
+"planche": "decor",
+"boite": [
+67,
+864,
+106,
+904
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_3_2",
+"planche": "decor",
+"boite": [
+112,
+864,
+152,
+904
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_3_3",
+"planche": "decor",
+"boite": [
+158,
+864,
+198,
+904
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_3_4",
+"planche": "decor",
+"boite": [
+204,
+864,
+244,
+904
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_3_5",
+"planche": "decor",
+"boite": [
+250,
+864,
+290,
+904
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_3_6",
+"planche": "decor",
+"boite": [
+296,
+864,
+335,
+904
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_3_7",
+"planche": "decor",
+"boite": [
+341,
+864,
+381,
+904
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_4_0",
+"planche": "decor",
+"boite": [
+21,
+910,
+61,
+950
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_4_1",
+"planche": "decor",
+"boite": [
+67,
+910,
+106,
+950
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_4_2",
+"planche": "decor",
+"boite": [
+112,
+910,
+152,
+950
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_4_3",
+"planche": "decor",
+"boite": [
+158,
+910,
+198,
+950
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_4_4",
+"planche": "decor",
+"boite": [
+204,
+910,
+244,
+950
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_4_5",
+"planche": "decor",
+"boite": [
+250,
+910,
+290,
+950
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_4_6",
+"planche": "decor",
+"boite": [
+296,
+910,
+335,
+950
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "sol_4_7",
+"planche": "decor",
+"boite": [
+341,
+910,
+381,
+950
+],
+"w": 16,
+"h": 16,
+"plein": true,
+"couleurs": 24
+}
+]

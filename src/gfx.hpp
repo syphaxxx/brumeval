@@ -22,6 +22,15 @@ struct Pt {
   float x, y;
 };
 
+// Sprites dessinés d'après les planches de l'utilisateur : data/sprites.png (atlas) et data/sprites.json
+// (nom -> [x, y, largeur, hauteur]), fabriqués par outils/sprites/decoupe.py. Ce qui n'a pas de sprite garde son
+// dessin en code (sprites.cpp).
+struct SpriteRect {
+  int x, y, w, h;
+};
+const SpriteRect* findSprite(const std::string& id);  // nullptr si ce sprite n'existe pas
+bool loadPng(const std::string& path, int& w, int& h, std::vector<uint8_t>& rgba);  // image.cpp
+
 class Gfx {
  public:
   explicit Gfx(SDL_Renderer* r) : r_(r) {}
@@ -44,6 +53,15 @@ class Gfx {
   void tri(float x1, float y1, float x2, float y2, float x3, float y3, Color c);
   void line(float x1, float y1, float x2, float y2, float w, Color c);
   void gradV(float x, float y, float w, float h, Color top, Color bottom);
+
+  // Sprite de l'atlas, coin haut-gauche en (x, y) ; flip : retourné gauche-droite ; tint : couleur multipliée
+  // (blanc = couleurs d'origine) ; flash : 0 à 1, éclaircit (coup reçu)
+  void sprite(const SpriteRect& s, float x, float y, bool flip = false, float scale = 1, Color tint = {255, 255, 255, 255},
+              float flash = 0);
+  // Même chose par le nom ; faux (rien dessiné) si le sprite n'existe pas
+  bool sprite(const std::string& id, float x, float y, bool flip = false, float scale = 1, Color tint = {255, 255, 255, 255},
+              float flash = 0);
+  void resetTextures();  // carte graphique réinitialisée : l'atlas sera recréé
 
   // Texte (police pixel intégrée, accents français compris)
   void text(float x, float y, const std::string& s, Color c, int align = 0, bool shadow = true);  // align : 0 gauche, 1 centre, 2 droite
@@ -72,6 +90,7 @@ class Gfx {
   void set(Color c);
   void span(int y, int x0, int x1);
   SDL_Renderer* r_;
+  SDL_Texture* atlas_ = nullptr;
   struct Box {
     int x, y, w, h;
     bool hidden = false;  // entièrement recouverte par une fenêtre dessinée ensuite

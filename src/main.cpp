@@ -292,7 +292,10 @@ int main(int argc, char* argv[]) {
       SDL_Event e;
       while (SDL_PollEvent(&e)) {
         if (e.type == SDL_QUIT) game.quit = true;
-        if (e.type == SDL_RENDER_DEVICE_RESET) screen.reset();
+        if (e.type == SDL_RENDER_DEVICE_RESET) {
+          screen.reset();
+          game.g.resetTextures();
+        }
         if (e.type == SDL_TEXTINPUT) {
           game.onText(e.text.text);
           continue;

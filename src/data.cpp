@@ -397,6 +397,7 @@ void rebuildData() {
     l.hat = nameIndex(HATS, jget<std::string>(o, "coiffe", "aucune"), "Coiffe");
     l.weapon = nameIndex(WEAPONS, jget<std::string>(o, "arme", "aucune"), "Arme");
     for (auto& a : jget(o, "aussi", std::vector<std::string>{})) l.aliases.push_back(tr(a));
+    l.sprite = jget<std::string>(o, "sprite", "");
     return l;
   });
 
@@ -440,6 +441,7 @@ void rebuildData() {
       s.evolveLvl = o["evolution"].at("niveau").get<int>();
     }
     s.size = jget(o, "taille", 1.f);
+    s.sprite = jget<std::string>(o, "sprite", "");
     s.shield = jget(o, "bouclier", 0);
     s.talent = jget<std::string>(o, "talent", "");
     s.combatRole = jget<std::string>(o, "role_combat", "");
