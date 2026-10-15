@@ -354,6 +354,16 @@ code) ; `docs/GUIDE.md` les range par domaine.
   voyageuse, paysan et animaux. Nouvelles créatures (monstres restants des planches) : Tisseline (Grotte), Osselet
   (Ruines, Tour), Gobelard et Brutor (Sylve-Noire), Draconnet (volcan, rare), Coffrelin (coffre piégé des Ruines,
   « boss » de carte, événement `coffrelin`).
+- Améliorations (branche `ameliorations`, carte blanche du 2026-10-16) : petits détails du sol en sprites (touffes,
+  fleurettes, cailloux selon `hsh`, dans `drawTile` '.'), hautes herbes `,`/`g` en touffes de la planche
+  (`tallGrass` ; `front` : le bas des touffes redessiné sur les pieds du joueur), montagnes `m` en éboulis de rochers.
+  Courir : Maj ou X de la manette maintenu (`Input::run`, `Game::running_`, pas à 13/s au lieu de 7,5, images
+  `lior_course_k`). Intérieurs : `e` = une bibliothèque pour deux cases, `t` = table (sprite « banc »), `j` = chaise
+  (tournée vers la table), script `outils/villes/interieurs.py`. Expédition : une créature générée sans sprite prend
+  celui d'une créature de l'histoire de même forme (`borrowedSprite`, d'après son identifiant, teinte de `c1`), un
+  personnage `lk_…` celui de la planche selon son arme (teinte de `top`) : dessin seul, le monde généré ne change pas.
+  Poses de combat (`drawFighterPose`, Lior) : `lancer_k` pendant une capture (la lanterne vole vers la cible),
+  `victoire` pendant la fenêtre des gains (à droite, du côté des ennemis vaincus), `ko` à terre.
 - Graphismes des cartes (2.0, sprites.cpp) : maisons (`drawBuilding` : ombre, soubassement, pierres, tuiles en rangées,
   faîtage, cheminée, fenêtres à volets et jardinières), arbres `T` en trois variantes selon `hsh` (rond, petit, fruitier
   ou large en forêt), chemins `=` aux bords adoucis contre la nature (liseré, touffes, coins), herbe de la vallée variée.

@@ -19,6 +19,7 @@ Windows et de macOS, normaux pour un jeu non signé).
 | Touche | Action |
 |---|---|
 | Flèches ou ZQSD | Se déplacer, naviguer dans les menus |
+| Maj (maintenue) | Courir |
 | Entrée ou Espace | Parler, valider, faire défiler les dialogues |
 | Échap | Annuler, ouvrir le menu (équipe, tactiques, objets, magie, sauvegarde) |
 | Tab (en combat) | Mode auto : les tactiques jouent à votre place, ou vous reprenez la main |

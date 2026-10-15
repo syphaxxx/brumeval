@@ -33,6 +33,7 @@ COMMANDES
 ---------
 
   Flèches ou ZQSD     se déplacer, choisir dans les menus
+  Maj (maintenue)     courir (manette : X)
   Entrée ou Espace    parler, valider
   Échap               annuler, menu (équipe, tactiques, objets, sauvegarde)
   Tab (en combat)     mode auto : les tactiques jouent à votre place

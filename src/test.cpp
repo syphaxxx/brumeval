@@ -730,6 +730,24 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   in.confirm = true;
   frame();
   snap("10_combat_cible");
+  if (battle_ && battle_->boardPicking()) {  // 3.2 : la cible se choisit sur le damier (menu caché, souris ou flèches)
+    Battle& B = *battle_;
+    int before = menus.top().sel, other = -1;
+    for (size_t i = 0; i < B.pick_.cells.size() && i < menus.top().items.size(); i++)
+      if ((int)i != before && menus.top().items[i].enabled) other = (int)i;
+    bool mouseOk = true;
+    if (other >= 0) {  // la souris sur la case d'un autre ennemi : il devient la cible
+      Pt c = B.cellPos(B.pick_.allySide, B.pick_.cells[(size_t)other]);
+      in.mouseOn = in.moved = true;
+      in.mx = (int)c.x, in.my = (int)c.y + 4;
+      frame();
+      mouseOk = menus.top().sel == other && B.cursor && B.cellOf(B.cursor) == B.pick_.cells[(size_t)other];
+      in.mouseOn = false;
+      menus.top().sel = before;  // la suite du test vise comme avant
+      if (menus.top().items[(size_t)before].hover) menus.top().items[(size_t)before].hover();
+    }
+    check(menus.top().hidden && mouseOk, "combat : la cible se choisit sur le damier (menu caché, la souris désigne la case d'un ennemi)");
+  } else check(false, "combat : la cible se choisit sur le damier (pas de choix sur le damier)");
   in.confirm = true;
   frame();
   run(.45f);
@@ -756,6 +774,21 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
 
   // --- Cartes ---
   changeMap(mi("cendrelune"), 12, 34, DOWN);
+  {  // 3.3 : Maj maintenue, on court (pas plus rapide, images de course)
+    in.shift = true;
+    in.hold[RIGHT] = true;
+    frame();
+    frame();
+    bool fast = moving && running_;
+    float t0 = moveT;
+    frame();
+    fast = fast && moveT - t0 > 13.f / 60 * .9f;
+    in.hold[RIGHT] = false;
+    in.shift = false;
+    run(.3f);
+    check(fast, "courir : Maj maintenue, le pas va presque deux fois plus vite");
+    changeMap(mi("cendrelune"), 12, 34, DOWN);
+  }
   run(.4f);
   snap("12_forgeroc");
   changeMap(mi("cendrelune"), 46, 12, UP);

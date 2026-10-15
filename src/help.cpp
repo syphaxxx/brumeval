@@ -203,6 +203,8 @@ static std::vector<HelpPage> helpPages() {
                {::T("Se déplacer, choisir : flèches ou ") + keyName(K[K_UP]) + keyName(K[K_LEFT]) + keyName(K[K_DOWN]) + keyName(K[K_RIGHT]) + ".",
                 ::T("Valider, parler : Entrée ou ") + keyName(K[K_OK]) + ::T(". Retour, menu : Échap ou ") + keyName(K[K_BACK]) + ".",
                 ::T("Mode auto en combat : ") + keyName(K[K_AUTO]) + ".",
+                ::T("Courir : Maj maintenue (manette : X)."),
+                ::T("En combat, la cible et la case se choisissent sur le damier : flèches ou souris."),
                 ::T("F1 : cette aide. F2 : vitesse du jeu ×1, ×2 ou ×3. F11 : plein écran."),
                 ::T("Les touches se changent dans Options > Touches. Une manette branchée marche toute seule.")}});
   return p;
