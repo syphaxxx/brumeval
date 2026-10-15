@@ -1283,6 +1283,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     startBattle(setup, nullptr);
     Battle& B = *battle_;
     B.sc.clear();
+    for (auto& side : B.terrain_) side.fill(-1);  // pas de case tirée au hasard sous l'ennemi (soin ou brûlure)
+    B.weather_ = -1;
     auto foe = B.foes[0];
     foe->status = Status::Poison;
     B.allies[1]->status = Status::Paralysis;
