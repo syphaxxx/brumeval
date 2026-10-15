@@ -1,5 +1,7 @@
 #include "pilot.hpp"
 
+#include "i18n.hpp"
+
 #include <algorithm>
 #include <climits>
 #include <cmath>
@@ -795,11 +797,11 @@ int Pilot::pickItem(const std::string& label) {
 void Pilot::menuStep() {
   Menu& t = G.menus.top();
   if (!G.askText_.empty()) {  // question Oui/Non : toujours Oui (les combats ne sont lancés que quand l'équipe est prête)
-    if (!pickItem("Oui")) G.in.confirm = true;
+    if (!pickItem(T("Oui"))) G.in.confirm = true;
     return;
   }
-  if (t.title.rfind("Boutique", 0) == 0) return shopping();
-  if (t.title.rfind("Forge", 0) == 0) return forging();
+  if (t.title.rfind(T("Boutique"), 0) == 0) return shopping();
+  if (t.title.rfind(T("Forge"), 0) == 0) return forging();
   status = "menu : " + t.title;
   if (t.cancelable) G.in.cancel = true;
   else G.in.confirm = true;
@@ -816,7 +818,7 @@ void Pilot::battleStep() {
   }
   if (!G.menus.active() || !B.actor || !B.isAlly(B.actor)) return;
   Menu& t = G.menus.top();
-  if (G.menus.depth() == 1 && !t.items.empty() && t.items[0].label == "Attaquer") {
+  if (G.menus.depth() == 1 && !t.items.empty() && t.items[0].label == T("Attaquer")) {
     // Capturer une créature quand il en manque pour accompagner les héros ; sinon, l'ordinateur choisit
     capture_.clear();
     const ItemDef* lantern = nullptr;
@@ -829,19 +831,19 @@ void Pilot::battleStep() {
     }
     if (!capture_.empty()) {
       lantern_ = lantern->name;
-      pickItem("Objet");
+      pickItem(T("Objet"));
       return;
     }
     if (shouldFlee()) {
-      if (pickItem("Fuir") == 2) flights++;
+      if (pickItem(T("Fuir")) == 2) flights++;
       return;
     }
     G.menus.clear();
     B.autoCommand(B.actor);
     return;
   }
-  if (t.title == "Objets" && !capture_.empty() && pickItem(lantern_)) return;
-  if (t.title == "Capturer" && !capture_.empty() && pickItem(capture_)) return;
+  if (t.title == T("Objets") && !capture_.empty() && pickItem(lantern_)) return;
+  if (t.title == T("Capturer") && !capture_.empty() && pickItem(capture_)) return;
   G.menus.clear();  // menu inattendu : l'ordinateur joue ce tour
   B.autoCommand(B.actor);
 }
@@ -954,7 +956,7 @@ void Pilot::shopping() {
     }
     return;
   }
-  if (pickItem("Quitter") != 1) {
+  if (pickItem(T("Quitter")) != 1) {
     shopPlanned_ = false;
     equipBest();
   }

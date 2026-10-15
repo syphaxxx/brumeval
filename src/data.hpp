@@ -16,6 +16,7 @@
 using Type = int;
 struct TypeDef {
   std::string id, name;
+  std::string nameFr;  // nom français (procgen : le monde généré est le même dans toutes les langues)
   uint32_t color;
   std::vector<std::string> immune;  // états auxquels ce type est insensible
 };

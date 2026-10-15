@@ -8,6 +8,7 @@
 #include <unordered_set>
 
 #include "data.hpp"
+#include "i18n.hpp"
 
 bool tileWalkable(char c) {
   if (c == 'O' || c == 'P' || c == 'D') return true;  // rochers, plaques et grilles de l'énigme : gérés par Game::blockedOn
@@ -148,7 +149,7 @@ int mapIndex(const std::string& id) {
 MapDef mapFromJson(const Json& j) {
   MapDef m;
   m.id = j.at("id").get<std::string>();
-  m.name = j.at("nom").get<std::string>();
+  m.name = tr(j.at("nom").get<std::string>());
   m.theme = themeOf(j.at("theme").get<std::string>());
   m.encounterRate = jget(j, "taux_rencontre", 0.f);
   if (j.contains("ambiance")) {
@@ -160,7 +161,7 @@ MapDef mapFromJson(const Json& j) {
     if (r.size() != m.rows[0].size()) throw std::runtime_error("toutes les lignes de « tuiles » doivent avoir la même longueur");
   for (auto& o : j.value("batiments", Json::array())) {
     Building b{o.at("x").get<int>(), o.at("y").get<int>(), o.at("l").get<int>(), o.at("h").get<int>(),
-               o.at("genre").get<std::string>(), jget<std::string>(o, "nom", ""), parseColor(o.value("toit", Json("#7a8a4a")))};
+               o.at("genre").get<std::string>(), tr(jget<std::string>(o, "nom", "")), parseColor(o.value("toit", Json("#7a8a4a")))};
     b.event = jget<std::string>(o, "evenement", b.kind);
     b.interior = jget<std::string>(o, "interieur", "");
     m.buildings.push_back(b);
@@ -174,7 +175,7 @@ MapDef mapFromJson(const Json& j) {
     if (n.look < 0) throw std::runtime_error("apparence inconnue : " + lk);
     n.dir = dirOf(jget<std::string>(o, "direction", "bas"));
     n.event = jget<std::string>(o, "evenement", "");
-    n.lines = jget(o, "dialogue", std::vector<std::string>{});
+    for (auto& l : jget(o, "dialogue", std::vector<std::string>{})) n.lines.push_back(tr(l));
     n.hideIf = jget<std::string>(o, "cache_si", "");
     n.sight = jget(o, "vue", 0);
     n.sightUntil = jget<std::string>(o, "vue_jusqua", "");
@@ -185,11 +186,11 @@ MapDef mapFromJson(const Json& j) {
     c.qty = c.item.empty() ? jget(o, "or", 0) : jget(o, "quantite", 1);
     m.chests.push_back(c);
   }
-  for (auto& o : j.value("panneaux", Json::array())) m.signs.push_back({o.at("x").get<int>(), o.at("y").get<int>(), o.at("texte").get<std::string>()});
+  for (auto& o : j.value("panneaux", Json::array())) m.signs.push_back({o.at("x").get<int>(), o.at("y").get<int>(), tr(o.at("texte").get<std::string>())});
   for (auto& o : j.value("passages", Json::array()))
     m.warps.push_back({o.at("x").get<int>(), o.at("y").get<int>(), o.at("vers").get<std::string>(), o.at("tx").get<int>(),
                        o.at("ty").get<int>(), dirOf(jget<std::string>(o, "direction", "bas")), o.value("condition", Json()),
-                       jget<std::string>(o, "message", "")});
+                       tr(jget<std::string>(o, "message", ""))});
   for (auto& o : j.value("declencheurs", Json::array()))
     m.triggers.push_back({o.at("x").get<int>(), o.at("y").get<int>(), jget(o, "l", 1), jget(o, "h", 1), o.at("evenement").get<std::string>(),
                           jget<std::string>(o, "jusqua", "")});
@@ -199,7 +200,7 @@ MapDef mapFromJson(const Json& j) {
   if (j.contains("enigme")) {
     const Json& e = j["enigme"];
     m.puzzleFlag = jget<std::string>(e, "drapeau", "");
-    m.puzzleMsg = jget<std::string>(e, "message", "");
+    m.puzzleMsg = tr(jget<std::string>(e, "message", ""));
     m.puzzleX = jget(e, "x", -1), m.puzzleY = jget(e, "y", -1);
     if (e.contains("zone")) {
       const Json& z = e["zone"];

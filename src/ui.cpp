@@ -212,6 +212,7 @@ void MenuStack::update(Input& in) {
   }
   if (in.confirm) {
     in.confirm = false;
+    m.sel = std::clamp(m.sel, 0, std::max(0, n - 1));  // un curseur placé hors de la liste (par le code) ne fait rien de grave
     if (n > 0 && m.items[m.sel].enabled && m.items[m.sel].act) {
       auto act = m.items[m.sel].act;  // copie : le menu peut être détruit pendant l'action
       audio::play("valider");

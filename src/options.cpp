@@ -1,5 +1,7 @@
 #include "options.hpp"
 
+#include "i18n.hpp"
+
 #include <algorithm>
 #include <fstream>
 #include <sstream>
@@ -21,23 +23,23 @@ Options& options() {
 
 static const char* KEY_IDS[N_KEYS] = {"haut", "bas", "gauche", "droite", "valider", "retour", "auto"};
 static const char* KEY_NAMES[N_KEYS] = {"Haut", "Bas", "Gauche", "Droite", "Valider", "Retour, menu", "Mode auto (combat)"};
-const char* keyActionName(int a) { return KEY_NAMES[std::clamp(a, 0, N_KEYS - 1)]; }
+const char* keyActionName(int a) { return T(KEY_NAMES[std::clamp(a, 0, N_KEYS - 1)]); }
 
 std::string keyName(SDL_Scancode k) {
   switch (k) {
-    case SDL_SCANCODE_SPACE: return "Espace";
-    case SDL_SCANCODE_BACKSPACE: return "Retour arrière";
-    case SDL_SCANCODE_RETURN: return "Entrée";
-    case SDL_SCANCODE_ESCAPE: return "Échap";
-    case SDL_SCANCODE_TAB: return "Tab";
-    case SDL_SCANCODE_LSHIFT: return "Maj gauche";
-    case SDL_SCANCODE_RSHIFT: return "Maj droite";
-    case SDL_SCANCODE_LCTRL: return "Ctrl gauche";
-    case SDL_SCANCODE_RCTRL: return "Ctrl droit";
-    case SDL_SCANCODE_UP: return "Flèche haut";
-    case SDL_SCANCODE_DOWN: return "Flèche bas";
-    case SDL_SCANCODE_LEFT: return "Flèche gauche";
-    case SDL_SCANCODE_RIGHT: return "Flèche droite";
+    case SDL_SCANCODE_SPACE: return T("Espace");
+    case SDL_SCANCODE_BACKSPACE: return T("Retour arrière");
+    case SDL_SCANCODE_RETURN: return T("Entrée");
+    case SDL_SCANCODE_ESCAPE: return T("Échap");
+    case SDL_SCANCODE_TAB: return T("Tab");
+    case SDL_SCANCODE_LSHIFT: return T("Maj gauche");
+    case SDL_SCANCODE_RSHIFT: return T("Maj droite");
+    case SDL_SCANCODE_LCTRL: return T("Ctrl gauche");
+    case SDL_SCANCODE_RCTRL: return T("Ctrl droit");
+    case SDL_SCANCODE_UP: return T("Flèche haut");
+    case SDL_SCANCODE_DOWN: return T("Flèche bas");
+    case SDL_SCANCODE_LEFT: return T("Flèche gauche");
+    case SDL_SCANCODE_RIGHT: return T("Flèche droite");
     default: break;
   }
   const char* n = SDL_GetKeyName(SDL_GetKeyFromScancode(k));
@@ -51,6 +53,12 @@ void loadOptions() {
   Options& o = options();
   o = Options{};
   std::ifstream f(path());
+  if (!f) {  // premier lancement : la langue de l'ordinateur (français, sinon anglais)
+    if (SDL_Locale* loc = SDL_GetPreferredLocales()) {
+      if (loc[0].language) o.english = std::string(loc[0].language) != "fr";
+      SDL_free(loc);
+    }
+  }
   std::string line;
   while (std::getline(f, line)) {
     std::istringstream s(line);
@@ -62,6 +70,7 @@ void loadOptions() {
     else if (k == "effets") o.effects = std::clamp(v, 0, 10);
     else if (k == "vitesse") o.speed = std::clamp(v, 1, 3);
     else if (k == "astuces") o.tips = v != 0;
+    else if (k == "anglais") o.english = v != 0;
     else
       for (int a = 0; a < N_KEYS; a++)
         if (k == std::string("touche_") + KEY_IDS[a] && v > 0 && v < SDL_NUM_SCANCODES) o.keys[a] = SDL_Scancode(v);
@@ -72,7 +81,7 @@ void loadOptions() {
 void saveOptions() {
   const Options& o = options();
   std::ostringstream f;
-  f << "plein_ecran " << (o.fullscreen ? 1 : 0) << "\nmusique " << o.music << "\neffets " << o.effects << "\nvitesse " << o.speed << "\nastuces " << (o.tips ? 1 : 0) << '\n';
+  f << "plein_ecran " << (o.fullscreen ? 1 : 0) << "\nmusique " << o.music << "\neffets " << o.effects << "\nvitesse " << o.speed << "\nastuces " << (o.tips ? 1 : 0) << "\nanglais " << (o.english ? 1 : 0) << '\n';
   for (int a = 0; a < N_KEYS; a++) f << "touche_" << KEY_IDS[a] << ' ' << (int)o.keys[a] << '\n';
   writeUserFile(optionsFile, f.str());
 }

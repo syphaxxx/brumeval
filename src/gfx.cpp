@@ -263,8 +263,25 @@ static std::vector<uint32_t> decode(const std::string& s) {
 }
 int Gfx::textW(const std::string& s) { return int(decode(s).size()) * 6; }
 
+// Un texte qui a l'air français : un accent hors des noms propres connus, ou un petit mot courant
+static bool looksFrench(const std::string& s) {
+  static const char* NAMES[] = {"Maëlle", "Sélène", "Brumeval", "Givreval", "Forgeroc", "Cendrelune", "Français", "Ignarok"};
+  std::string t = s;
+  for (const char* n : NAMES)
+    for (size_t p; (p = t.find(n)) != std::string::npos;) t.erase(p, std::string(n).size());
+  static const char* ACC[] = {"é", "è", "ê", "à", "ç", "ù", "û", "ô", "î", "œ", "«", "É", "È", "À"};
+  for (const char* a : ACC)
+    if (t.find(a) != std::string::npos) return true;
+  static const char* WORDS[] = {" de ", " la ", " le ", " les ", " et ", " des ", " un ", " une ", " pour ", "(rien)", "(vide)", "(personne)", " du ", " au "};
+  std::string sp = " " + t + " ";
+  for (const char* w : WORDS)
+    if (sp.find(w) != std::string::npos) return true;
+  return false;
+}
+
 void Gfx::text(float x, float y, const std::string& s, Color c, int align, bool shadow) {
   if (!sane(x) || !sane(y)) return;
+  if (spotFrench && frenchSeen.size() < 400 && looksFrench(s)) frenchSeen.insert(s);
   auto cps = decode(s);
   int w = int(cps.size()) * 6;
   int X = (int)std::lround(x - (align == 1 ? w / 2 : align == 2 ? w : 0)), Y = (int)std::lround(y);

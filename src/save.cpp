@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 
+#include "i18n.hpp"
 #include "expedition.hpp"
 #include "game.hpp"
 #include "tactics.hpp"

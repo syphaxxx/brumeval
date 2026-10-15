@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "i18n.hpp"
 #include "battle.hpp"
 #include "events.hpp"
 #include "expedition.hpp"
@@ -28,19 +29,19 @@ void Online::expeditionMenu(int sel) {
   uint64_t seed = 0;
   int saved = X.savedRegion(true, &seed);
   Menu m;
-  m.title = "Expédition à plusieurs";
+  m.title = T("Expédition à plusieurs");
   m.x = 20, m.y = 56, m.w = 176, m.rows = 4, m.sel = sel;
-  m.items.push_back({"Continuer", saved ? "région " + std::to_string(saved) : "",
-                     "Reprendre votre expédition à plusieurs : chacun reprend la sienne, ou part de votre région.", saved > 0,
+  m.items.push_back({T("Continuer"), saved ? T("région ") + std::to_string(saved) : "",
+                     T("Reprendre votre expédition à plusieurs : chacun reprend la sienne, ou part de votre région."), saved > 0,
                      [this, seed] { launch(seed, "", false); }});
-  m.items.push_back({"Nouvelle", "", "Un monde neuf, tiré au hasard, pour tout le groupe.", true,
+  m.items.push_back({T("Nouvelle"), "", T("Un monde neuf, tiré au hasard, pour tout le groupe."), true,
                      [this] { confirmLaunch(procgen::randomSeed(), ""); }});
-  m.items.push_back({"Graine…", "", "Écrire une graine (un nombre ou un mot) : la même graine redonne le même monde.", true, [this] {
-                       G.editText("Graine : un nombre ou un mot", "", 20, [this](const std::string& s) {
+  m.items.push_back({T("Graine…"), "", T("Écrire une graine (un nombre ou un mot) : la même graine redonne le même monde."), true, [this] {
+                       G.editText(T("Graine : un nombre ou un mot"), "", 20, [this](const std::string& s) {
                          if (!s.empty()) confirmLaunch(procgen::seedFromText(s), s);
                        });
                      }});
-  m.items.push_back({"Retour", "", "", true, [this] { G.menus.pop(); }});
+  m.items.push_back({T("Retour"), "", "", true, [this] { G.menus.pop(); }});
   if (!saved && sel == 0) m.sel = 1;
   G.menus.push(m);
 }
@@ -49,11 +50,11 @@ void Online::expeditionMenu(int sel) {
 void Online::confirmLaunch(uint64_t seed, const std::string& text) {
   if (expedition().savedRegion(true) <= 0) return launch(seed, text, true);
   Menu m;
-  m.title = "Expédition en cours";
+  m.title = T("Expédition en cours");
   m.x = 20, m.y = 92, m.w = 200, m.rows = 2;
-  m.items.push_back({"L'abandonner", "", "Votre expédition à plusieurs sauvegardée sera perdue (sans éclats).", true,
+  m.items.push_back({T("L'abandonner"), "", T("Votre expédition à plusieurs sauvegardée sera perdue (sans éclats)."), true,
                      [this, seed, text] { launch(seed, text, true); }});
-  m.items.push_back({"Garder", "", "", true, [this] { G.menus.pop(); }});
+  m.items.push_back({T("Garder"), "", "", true, [this] { G.menus.pop(); }});
   m.onCancel = m.items.back().act;
   G.menus.push(m);
 }
@@ -70,7 +71,7 @@ void Online::launch(uint64_t seed, const std::string& text, bool fresh) {
 
 void Online::startRun(uint64_t seed, const std::string& text, int region, const std::string& world) {
   if (!world.empty() && Expedition::worldHash(seed, 1) != world) {
-    status_ = "Le monde généré n'est pas le même que chez l'hôte (versions différentes du jeu ?).";
+    status_ = T("Le monde généré n'est pas le même que chez l'hôte (versions différentes du jeu ?).");
     return salon();
   }
   state_ = State::Expedition;
@@ -195,32 +196,32 @@ std::vector<Online::Avatar> Online::avatars() const {
 void Online::groupMenu() {
   G.panelMode_ = 0;  // le résumé de l'équipe laisse la place
   Menu m;
-  m.title = "Groupe";
+  m.title = T("Groupe");
   m.x = 112, m.y = 8, m.w = 200, m.rows = (int)players_.size() + 2;
   auto where = [this](int id) {
     const Player* p = player(id);
     if (!p) return std::string("parti");
-    if (!p->run) return std::string("au salon");
-    if (p->hero.empty()) return std::string("choisit son héros");
-    if (p->fighting) return "en combat (région " + std::to_string(p->region) + ")";
-    return "région " + std::to_string(p->region);
+    if (!p->run) return std::string(T("au salon"));
+    if (p->hero.empty()) return std::string(T("choisit son héros"));
+    if (p->fighting) return T("en combat (région ") + std::to_string(p->region) + ")";
+    return T("région ") + std::to_string(p->region);
   };
-  MenuItem me{me_, "région " + std::to_string(expedition().region()), "Vous.", false, nullptr};
+  MenuItem me{me_, T("région ") + std::to_string(expedition().region()), T("Vous."), false, nullptr};
   me.shrink = true;
   m.items.push_back(me);
   for (auto& p : players_) {
     int id = p.id;
-    MenuItem it{p.name, "", "Le gardien de chaque région se combat avec tous ceux qui ne l'ont pas encore battu.", false, nullptr};
+    MenuItem it{p.name, "", T("Le gardien de chaque région se combat avec tous ceux qui ne l'ont pas encore battu."), false, nullptr};
     it.rightFn = [where, id] { return where(id); };
     it.shrink = true;
     m.items.push_back(it);
   }
   bool any = false;
   for (auto& p : players_) any = any || partnerOk(p);
-  m.items.push_back({"Échanger une créature", "", any ? "Donner une créature à un autre joueur, en échange d'une des siennes ou en cadeau."
-                                                     : "Personne ne peut échanger pour le moment (en combat, ou pas encore en route).",
+  m.items.push_back({T("Échanger une créature"), "", any ? T("Donner une créature à un autre joueur, en échange d'une des siennes ou en cadeau.")
+                                                     : T("Personne ne peut échanger pour le moment (en combat, ou pas encore en route)."),
                      any, [this] { tradeMenu(); }});
-  m.items.push_back({"Retour", "", "", true, [this] { G.menus.pop(); }});
+  m.items.push_back({T("Retour"), "", "", true, [this] { G.menus.pop(); }});
   m.rows = (int)m.items.size();
   m.sel = (int)m.items.size() - 1;
   G.menus.push(m);
@@ -240,8 +241,8 @@ void Online::guardian(const std::string& event) {
   Expedition& X = expedition();
   int k = X.region();
   if (missing(k).empty()) return G.runEvent(event);  // personne d'autre à attendre : combat comme en solo
-  G.sc.say(X.current().bossName + ", gardien de la région, vous barre la route !");
-  G.sc.say("Il ne s'affronte qu'à plusieurs : attendez ici le reste du groupe.");
+  G.sc.say(X.current().bossName + T(", gardien de la région, vous barre la route !"));
+  G.sc.say(T("Il ne s'affronte qu'à plusieurs : attendez ici le reste du groupe."));
   G.sc.call([this, k] { waitGuardian(k); });
 }
 
@@ -254,13 +255,13 @@ void Online::waitGuardian(int k) {
 std::string Online::waitText(int id) const {
   const Player* p = player(id);
   if (!p) return "parti";
-  if (!p->run) return "au salon";
-  if (ready_ && p->ready == ready_) return "prêt";
-  if (p->hero.empty()) return "choisit son héros";
-  if (p->region < ready_) return "région " + std::to_string(p->region);
-  if (p->region > ready_ || p->beaten) return "plus loin";
-  if (p->fighting) return "en combat";
-  return "en route";
+  if (!p->run) return T("au salon");
+  if (ready_ && p->ready == ready_) return T("prêt");
+  if (p->hero.empty()) return T("choisit son héros");
+  if (p->region < ready_) return T("région ") + std::to_string(p->region);
+  if (p->region > ready_ || p->beaten) return T("plus loin");
+  if (p->fighting) return T("en combat");
+  return T("en route");
 }
 
 // Menu d'attente devant le gardien : qui est prêt, qui est en route
@@ -268,10 +269,10 @@ void Online::guardianWait() {
   if (!ready_ || G.mode != Mode::Map) return;
   G.menus.clear();
   Menu m;
-  m.title = "Gardien : le groupe";
+  m.title = T("Gardien : le groupe");
   m.x = 8, m.y = 8, m.w = 214, m.rows = (int)players_.size() + 2;
-  const std::string help = "Le combat commence quand tous ceux qui n'ont pas battu ce gardien sont là.";
-  MenuItem me{me_, "prêt", help, false, nullptr};
+  const std::string help = T("Le combat commence quand tous ceux qui n'ont pas battu ce gardien sont là.");
+  MenuItem me{me_, T("prêt"), help, false, nullptr};
   me.shrink = true;
   m.items.push_back(me);
   for (auto& p : players_) {
@@ -285,7 +286,7 @@ void Online::guardianWait() {
     ready_ = 0;
     G.menus.clear();
   };
-  m.items.push_back({"Ne plus attendre", "", "Repartir explorer : revenez devant le gardien quand vous voulez.", true, stop});
+  m.items.push_back({T("Ne plus attendre"), "", T("Repartir explorer : revenez devant le gardien quand vous voulez."), true, stop});
   m.onCancel = stop;
   m.sel = (int)m.items.size() - 1;
   G.menus.push(m);

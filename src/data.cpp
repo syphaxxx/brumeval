@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <unordered_map>
 
+#include "i18n.hpp"
 #include "tactics.hpp"
 
 // ---------------------------------------------------------------------------
@@ -54,18 +55,18 @@ int dirOf(const std::string& s) { return nameIndex(DIRS, s, "Direction"); }
 const char* dirName(int d) { return DIRS[d & 3]; }
 Status statusOf(const std::string& s) { return Status(nameIndex(STATUSES, s, "État")); }
 const char* statusId(Status s) { return STATUSES[(int)s]; }
-const char* statusName(Status s) { return STATUS_NAMES[(int)s]; }
-const char* statusTag(Status s) { return STATUS_TAGS[(int)s]; }
+const char* statusName(Status s) { return T(STATUS_NAMES[(int)s]); }
+const char* statusTag(Status s) { return T(STATUS_TAGS[(int)s]); }
 uint32_t statusColor(Status s) { return STATUS_COLORS[(int)s]; }
 int stageOf(const std::string& s) { return nameIndex(STAGES, s, "Statistique"); }
-const char* stageName(int st) { return STAGE_NAMES[st]; }
+const char* stageName(int st) { return T(STAGE_NAMES[st]); }
 const char* zoneId(Area z) { return ZONES[(int)z]; }
-const char* zoneName(Area z) { return ZONE_NAMES[(int)z]; }
+const char* zoneName(Area z) { return T(ZONE_NAMES[(int)z]); }
 std::string cellName(int c) {
   static const char* COLS[GRID] = {"Avant", "Milieu avant", "Milieu arrière", "Arrière"};
   static const char* ROWS[GRID] = {"haut", "centre haut", "centre bas", "bas"};
   if (c < 0 || c >= N_CELLS) return "?";
-  return std::string(COLS[cellCol(c)]) + " · " + ROWS[cellRow(c)];
+  return std::string(T(COLS[cellCol(c)])) + " · " + T(ROWS[cellRow(c)]);
 }
 bool inZone(Area z, int center, int cell) {
   int dc = std::abs(cellCol(center) - cellCol(cell)), dr = std::abs(cellRow(center) - cellRow(cell));
@@ -79,7 +80,7 @@ bool inZone(Area z, int center, int cell) {
   return false;
 }
 const char* paceId(Pace p) { return PACES[(int)p]; }
-const char* paceName(Pace p) { return PACE_NAMES[(int)p]; }
+const char* paceName(Pace p) { return T(PACE_NAMES[(int)p]); }
 
 // ---------------------------------------------------------------------------
 // Types
@@ -268,8 +269,8 @@ static void loadRules(const Json& j) {
       r.typeDrops.push_back({b.at("type").get<std::string>(), b.at("objet").get<std::string>(), b.at("chance").get<double>()});
   for (auto& w : j.value("meteo", Json::array())) {
     Rules::Weather x;
-    x.id = w.at("id").get<std::string>(), x.name = w.at("nom").get<std::string>();
-    x.desc = jget<std::string>(w, "description", ""), x.fx = jget<std::string>(w, "effet", "");
+    x.id = w.at("id").get<std::string>(), x.name = tr(w.at("nom").get<std::string>());
+    x.desc = tr(jget<std::string>(w, "description", "")), x.fx = jget<std::string>(w, "effet", "");
     x.themes = jget(w, "decors", std::vector<std::string>{});
     x.chance = jget(w, "chance", 0.0), x.acc = jget(w, "precision", 0);
     Json tm = w.value("types", Json::object());
@@ -278,8 +279,8 @@ static void loadRules(const Json& j) {
   }
   for (auto& t : j.value("terrains", Json::array())) {
     Rules::Terrain x;
-    x.id = t.at("id").get<std::string>(), x.name = t.at("nom").get<std::string>();
-    x.desc = jget<std::string>(t, "description", ""), x.kind = t.at("effet").get<std::string>();
+    x.id = t.at("id").get<std::string>(), x.name = tr(t.at("nom").get<std::string>());
+    x.desc = tr(jget<std::string>(t, "description", "")), x.kind = t.at("effet").get<std::string>();
     x.value = jget(t, "valeur", 0.0);
     x.immune = jget(t, "insensibles", std::vector<std::string>{});
     x.themes = jget(t, "decors", std::vector<std::string>{});
@@ -292,12 +293,12 @@ static void loadRules(const Json& j) {
       r.duos.push_back({jget(d, "membres", std::vector<std::string>{}), d.at("technique").get<std::string>()});
   }
   for (auto& a : j.value("conseils", Json::array()))
-    r.advice.push_back({a.at("drapeau").get<std::string>(), a.at("boss").get<std::string>(), jget<std::string>(a, "lieu", ""),
-                        jget<std::string>(a, "gemme", ""), jget<std::string>(a, "texte", "")});
+    r.advice.push_back({a.at("drapeau").get<std::string>(), a.at("boss").get<std::string>(), tr(jget<std::string>(a, "lieu", "")),
+                        jget<std::string>(a, "gemme", ""), tr(jget<std::string>(a, "texte", ""))});
   for (auto& t : j.value("astuces", Json::array()))
-    r.tips.push_back({t.at("id").get<std::string>(), jget<std::string>(t, "aide", ""), t.at("texte").get<std::string>()});
+    r.tips.push_back({t.at("id").get<std::string>(), tr(jget<std::string>(t, "aide", "")), tr(t.at("texte").get<std::string>())});
   for (auto& t : j.value("talents", Json::array()))
-    r.talents.push_back({t.at("id").get<std::string>(), t.at("nom").get<std::string>(), jget<std::string>(t, "description", ""),
+    r.talents.push_back({t.at("id").get<std::string>(), tr(t.at("nom").get<std::string>()), tr(jget<std::string>(t, "description", "")),
                          t.at("effet").get<std::string>(), jget(t, "valeur", 0.0)});
   for (auto& l : j.value("forge", Json::array())) {
     Rules::ForgeLevel f;
@@ -354,7 +355,7 @@ void rebuildData() {
   const Json& t = DOCS[DF_TYPES];
   TYPES.clear();
   for (auto& o : t.at("types"))
-    TYPES.push_back({o.at("id").get<std::string>(), o.at("nom").get<std::string>(), parseColor(o.value("couleur", Json("#c8c8c8"))),
+    TYPES.push_back({o.at("id").get<std::string>(), tr(o.at("nom").get<std::string>()), o.at("nom").get<std::string>(), parseColor(o.value("couleur", Json("#c8c8c8"))),
                      jget(o, "immunites", std::vector<std::string>{})});
   CHART.assign(TYPES.size(), std::vector<float>(TYPES.size(), 1.f));
   Json chart = t.value("efficacite", Json::object());  // variable : la boucle doit la garder en vie
@@ -364,13 +365,13 @@ void rebuildData() {
   loadList(DF_MOVES, MOVES, [](const Json& o) {
     Move m;
     m.id = o.at("id").get<std::string>();
-    m.name = o.at("nom").get<std::string>();
+    m.name = tr(o.at("nom").get<std::string>());
     m.type = typeOf(o.at("type").get<std::string>());
     m.kind = Kind(nameIndex(KINDS, o.at("genre").get<std::string>(), "Genre"));
     m.target = Target(nameIndex(TARGETS, o.at("cible").get<std::string>(), "Cible"));
     m.power = o.at("puissance").get<int>();
     m.cost = jget(o, "cout", 0);
-    m.desc = jget<std::string>(o, "description", "");
+    m.desc = tr(jget<std::string>(o, "description", ""));
     m.acc = jget(o, "precision", 100);
     m.critBonus = jget(o, "critique", 0);
     m.pace = Pace(nameIndex(PACES, jget<std::string>(o, "rythme", "normale"), "Rythme"));
@@ -388,21 +389,21 @@ void rebuildData() {
   loadList(DF_LOOKS, LOOKS, [](const Json& o) {
     Look l;
     l.id = o.at("id").get<std::string>();
-    l.name = jget<std::string>(o, "nom", l.id);
+    l.name = tr(jget<std::string>(o, "nom", l.id));
     l.hair = parseColor(o.at("cheveux"));
     l.skin = parseColor(o.at("peau"));
     l.top = parseColor(o.at("haut"));
     l.bottom = parseColor(o.at("bas"));
     l.hat = nameIndex(HATS, jget<std::string>(o, "coiffe", "aucune"), "Coiffe");
     l.weapon = nameIndex(WEAPONS, jget<std::string>(o, "arme", "aucune"), "Arme");
-    l.aliases = jget(o, "aussi", std::vector<std::string>{});
+    for (auto& a : jget(o, "aussi", std::vector<std::string>{})) l.aliases.push_back(tr(a));
     return l;
   });
 
   loadList(DF_SPECIES, SPECIES, [](const Json& o) {
     Species s;
     s.id = o.at("id").get<std::string>();
-    s.name = o.at("nom").get<std::string>();
+    s.name = tr(o.at("nom").get<std::string>());
     if (o.contains("types")) {
       auto ts = o["types"].get<std::vector<std::string>>();
       if (ts.empty() || ts.size() > 2) throw std::runtime_error("« types » doit contenir 1 ou 2 types");
@@ -431,7 +432,7 @@ void rebuildData() {
       s.c1 = parseColor(c.at(0));
       s.c2 = parseColor(c.at(1));
     }
-    s.role = jget<std::string>(o, "role", "");
+    s.role = tr(jget<std::string>(o, "role", ""));
     for (auto& l : o.at("apprend")) s.learn.push_back({l.at(0).get<int>(), l.at(1).get<std::string>()});
     s.limit = jget<std::string>(o, "limite", "");  // vide : pas de Limite
     if (o.contains("evolution")) {
@@ -449,8 +450,8 @@ void rebuildData() {
   loadList(DF_ITEMS, ITEMS, [](const Json& o) {
     ItemDef d;
     d.id = o.at("id").get<std::string>();
-    d.name = o.at("nom").get<std::string>();
-    d.desc = jget<std::string>(o, "description", "");
+    d.name = tr(o.at("nom").get<std::string>());
+    d.desc = tr(jget<std::string>(o, "description", ""));
     d.price = jget(o, "prix", 0);
     d.battle = jget(o, "combat", false);
     d.field = jget(o, "menu", false);
@@ -703,8 +704,8 @@ void Fighter::recalc() {
 
 static const char* GEAR_SLOTS[N_GEAR] = {"Arme", "Armure", "Accessoire"};
 static const char* GEAR_STATS[N_GEAR_STATS] = {"PV", "PM", "Attaque", "Défense", "Magie", "Résistance", "Vitesse", "Précision", "Esquive", "Critique"};
-const char* gearSlotName(int s) { return GEAR_SLOTS[std::clamp(s, 0, N_GEAR - 1)]; }
-const char* gearStatName(int s) { return GEAR_STATS[std::clamp(s, 0, N_GEAR_STATS - 1)]; }
+const char* gearSlotName(int s) { return T(GEAR_SLOTS[std::clamp(s, 0, N_GEAR - 1)]); }
+const char* gearStatName(int s) { return T(GEAR_STATS[std::clamp(s, 0, N_GEAR_STATS - 1)]); }
 std::string ItemDef::bonusText() const {
   std::string t;
   for (int i = 0; i < N_GEAR_STATS; i++)

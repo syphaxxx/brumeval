@@ -1,3 +1,4 @@
+#include "i18n.hpp"
 #include "net.hpp"
 
 #include <cstring>
@@ -89,7 +90,7 @@ std::unique_ptr<Conn> Conn::connect(const std::string& address, int port, std::s
   hints.ai_family = AF_UNSPEC;
   hints.ai_socktype = SOCK_STREAM;
   if (getaddrinfo(address.c_str(), std::to_string(port).c_str(), &hints, &res) != 0 || !res) {
-    err = "Adresse introuvable : « " + address + " ».";
+    err = T("Adresse introuvable : « ") + address + " ».";
     return nullptr;
   }
   // IPv4 d'abord (Tailscale, Radmin VPN, réseau local)
@@ -102,7 +103,7 @@ std::unique_ptr<Conn> Conn::connect(const std::string& address, int port, std::s
   socket_t s = socket(pick->ai_family, pick->ai_socktype, pick->ai_protocol);
   if (s == (socket_t)NONE) {
     freeaddrinfo(res);
-    err = "Impossible de créer la connexion.";
+    err = T("Impossible de créer la connexion.");
     return nullptr;
   }
   tune(s);
@@ -110,7 +111,7 @@ std::unique_ptr<Conn> Conn::connect(const std::string& address, int port, std::s
   freeaddrinfo(res);
   if (r != 0 && !wouldBlock(lastError())) {
     closeSocket(s);
-    err = "Connexion refusée par " + address + ".";
+    err = T("Connexion refusée par ") + address + ".";
     return nullptr;
   }
   return std::unique_ptr<Conn>(new Conn((std::uintptr_t)s, r == 0 ? Connected : Connecting));
@@ -131,7 +132,7 @@ void Conn::flush() {
     int n = ::send(S(sock_), out_.data(), (int)std::min<size_t>(out_.size(), 1 << 16), SEND_FLAGS);
     if (n > 0) out_.erase(0, (size_t)n);
     else {
-      if (!wouldBlock(lastError())) fail("La connexion avec l'autre joueur est coupée.");
+      if (!wouldBlock(lastError())) fail(T("La connexion avec l'autre joueur est coupée."));
       return;
     }
   }
@@ -154,7 +155,7 @@ std::vector<Json> Conn::poll() {
       if (so != 0 || FD_ISSET(S(sock_), &e)) fail("Personne ne répond à cette adresse (l'hôte attend-il ? le pare-feu l'autorise-t-il ?).");
       else state_ = Connected;
     } else if (std::chrono::steady_clock::now() - started_ > std::chrono::seconds(8))
-      fail("Délai dépassé : personne ne répond à cette adresse.");
+      fail(T("Délai dépassé : personne ne répond à cette adresse."));
     if (state_ != Connected) return got;
   }
   if (state_ != Connected) return got;
@@ -164,10 +165,10 @@ std::vector<Json> Conn::poll() {
     int n = ::recv(S(sock_), buf, (int)sizeof buf, 0);
     if (n > 0) in_.append(buf, (size_t)n);
     else if (n == 0) {
-      fail("L'autre joueur s'est déconnecté.");
+      fail(T("L'autre joueur s'est déconnecté."));
       break;
     } else {
-      if (!wouldBlock(lastError())) fail("La connexion avec l'autre joueur est coupée.");
+      if (!wouldBlock(lastError())) fail(T("La connexion avec l'autre joueur est coupée."));
       break;
     }
   }
@@ -176,7 +177,7 @@ std::vector<Json> Conn::poll() {
     uint32_t n = uint32_t((unsigned char)in_[0]) << 24 | uint32_t((unsigned char)in_[1]) << 16 | uint32_t((unsigned char)in_[2]) << 8 |
                  uint32_t((unsigned char)in_[3]);
     if (n > (1u << 22)) {
-      fail("Message reçu invalide.");
+      fail(T("Message reçu invalide."));
       break;
     }
     if (in_.size() < 4 + (size_t)n) break;
@@ -222,7 +223,7 @@ bool Server::listen(int port, std::string& err, bool loopback) {
   if (s == (socket_t)NONE) {
     s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (s == (socket_t)NONE) {
-      err = "Impossible d'ouvrir le réseau.";
+      err = T("Impossible d'ouvrir le réseau.");
       return false;
     }
 #ifndef _WIN32
@@ -234,14 +235,14 @@ bool Server::listen(int port, std::string& err, bool loopback) {
     a.sin_port = htons((unsigned short)port);
     if (bind(s, (sockaddr*)&a, sizeof a) != 0) {
       closeSocket(s);
-      err = "Le port " + std::to_string(port) + " est déjà utilisé (une autre partie est-elle ouverte ?).";
+      err = T("Le port ") + std::to_string(port) + T(" est déjà utilisé (une autre partie est-elle ouverte ?).");
       return false;
     }
   }
   (void)one;
   if (::listen(s, 4) != 0) {
     closeSocket(s);
-    err = "Impossible d'attendre des joueurs sur le port " + std::to_string(port) + ".";
+    err = T("Impossible d'attendre des joueurs sur le port ") + std::to_string(port) + ".";
     return false;
   }
   setNonBlocking(s);

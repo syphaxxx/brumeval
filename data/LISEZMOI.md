@@ -225,6 +225,16 @@ Une action qui vise un ennemi demande une condition « ennemi », un soin ou un
 objet de soin une condition « allié » ou « soi », et une réanimation la
 condition `allie_ko`. Le mode test signale les règles qui ne vont pas ensemble.
 
+## Les langues (`langues/*.json`)
+
+Le jeu est écrit en français. `langues/en.json` donne la traduction anglaise de
+chaque phrase : `"Équipe": "Team"`. Une phrase absente ou vide reste en français.
+Après avoir ajouté du texte (un dialogue, un objet…), lancer
+`python outils/textes.py` : il ajoute les nouvelles phrases avec une traduction
+vide, à remplir. Le jeu traduit les noms, descriptions, dialogues, panneaux,
+messages et quêtes au moment de les afficher : les fichiers de `data/` restent en
+français (c'est pourquoi les éditeurs ne s'ouvrent qu'en français).
+
 ## Les cartes (`cartes/*.json`)
 
 Chaque ligne de `tuiles` est une rangée de cases, toutes de même longueur :

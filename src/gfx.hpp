@@ -4,6 +4,7 @@
 #include <SDL.h>
 
 #include <cstdint>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -59,6 +60,9 @@ class Gfx {
   // fenêtre ou se chevauchent, fenêtres posées de travers l'une sur l'autre.
   // Les problèmes trouvés depuis clear() sont ajoutés à layoutIssues.
   bool checkLayout = false;
+  // Mode test en anglais (3.1) : les textes affichés qui ont l'air encore français (accents, mots courants)
+  bool spotFrench = false;
+  std::set<std::string> frenchSeen;
   std::string layoutScene;  // préfixe des messages (dernière capture du mode test)
   std::vector<std::string> layoutIssues;
   void newLayer();          // ce qui suit passe au premier plan (fenêtre modale sur fond assombri)

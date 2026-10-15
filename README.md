@@ -185,6 +185,18 @@ armes, armures et gemmes, auberge, passeur pour rentrer).
 - Quête **Les perles du phare** (quatre perles d'écume) ; la Gemme du maître et
   la Gemme d'orage se trouvent en chemin.
 
+## Langue : français ou anglais (3.1)
+
+Options > **Langue** : le jeu passe aussitôt en anglais (ou en français). Au premier
+lancement, il choisit la langue de l'ordinateur. Les éditeurs (Réglages, cartes,
+histoire) restent en français. Le monde généré de l'Expédition garde des noms
+français.
+
+Pour les curieux : toutes les phrases sont dans `data/langues/en.json` (phrase
+française → traduction). `python outils/textes.py` y ajoute les nouvelles phrases
+après un changement (avec une traduction vide : le jeu affiche alors le français),
+et `python outils/textes.py en --manque` liste celles qui restent à traduire.
+
 ## Techniques rapides et lourdes
 
 Chaque technique a un rythme, indiqué dans l'aide en bas de l'écran :

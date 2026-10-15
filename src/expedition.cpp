@@ -1,3 +1,4 @@
+#include "i18n.hpp"
 #include "expedition.hpp"
 
 #include <SDL.h>
@@ -22,13 +23,13 @@ struct UpgradeDef {
   int max, cost;
 };
 static const UpgradeDef UPGRADES[N_UPGRADES] = {
-    {"Héros proposés", "Un héros de plus au choix au départ (3 à 6).", 3, 30},
-    {"Créatures proposées", "Une créature de plus au choix au départ (3 à 5).", 2, 25},
-    {"Bourse", "+60 pièces d'or au départ.", 5, 15},
-    {"Sac de voyage", "+2 Potions et +1 Lanterne au départ.", 3, 20},
-    {"Entraînement", "L'équipe de départ commence un niveau plus haut.", 3, 40},
-    {"Lanternes bénies", "Les captures réussissent un peu plus souvent.", 3, 25},
-    {"Sagesse", "+15 % d'expérience à chaque combat.", 3, 35},
+    {T("Héros proposés"), T("Un héros de plus au choix au départ (3 à 6)."), 3, 30},
+    {T("Créatures proposées"), T("Une créature de plus au choix au départ (3 à 5)."), 2, 25},
+    {T("Bourse"), T("+60 pièces d'or au départ."), 5, 15},
+    {T("Sac de voyage"), T("+2 Potions et +1 Lanterne au départ."), 3, 20},
+    {T("Entraînement"), T("L'équipe de départ commence un niveau plus haut."), 3, 40},
+    {T("Lanternes bénies"), T("Les captures réussissent un peu plus souvent."), 3, 25},
+    {T("Sagesse"), T("+15 % d'expérience à chaque combat."), 3, 35},
 };
 static const char* UPGRADE_IDS[N_UPGRADES] = {"heros", "creatures", "bourse", "sac", "entrainement", "lanternes", "sagesse"};
 
@@ -176,7 +177,7 @@ void Expedition::leave() {
   preview_.clear();
 }
 
-std::string Expedition::status() const { return "Région " + std::to_string(region_) + " · graine " + seedText_; }
+std::string Expedition::status() const { return T("Région ") + std::to_string(region_) + T(" · graine ") + seedText_; }
 
 // ---------------------------------------------------------------------------
 // Menus de l'écran titre
@@ -188,20 +189,20 @@ void Expedition::menu(int sel) {
   G.mode = Mode::Title;
   G.menus.clear();
   Menu m;
-  m.title = "Expédition";
+  m.title = T("Expédition");
   m.x = 8, m.y = 40, m.w = 150, m.rows = 6, m.sel = sel;
   int saved = savedRegion();
-  m.items.push_back({"Continuer", saved ? "région " + std::to_string(saved) : "", "Reprendre l'expédition sauvegardée.", saved > 0, [this] { resume(); }});
-  m.items.push_back({"Nouvelle", "", "Une expédition dans un monde neuf, tiré au hasard.", true,
+  m.items.push_back({T("Continuer"), saved ? T("région ") + std::to_string(saved) : "", T("Reprendre l'expédition sauvegardée."), saved > 0, [this] { resume(); }});
+  m.items.push_back({T("Nouvelle"), "", T("Une expédition dans un monde neuf, tiré au hasard."), true,
                      [this] { confirmNew(procgen::randomSeed(), ""); }});
-  m.items.push_back({"Graine…", "", "Écrire une graine (un nombre ou un mot) : la même graine redonne le même monde.", true, [this] {
-                       G.editText("Graine : un nombre ou un mot", "", 20, [this](const std::string& s) {
+  m.items.push_back({T("Graine…"), "", T("Écrire une graine (un nombre ou un mot) : la même graine redonne le même monde."), true, [this] {
+                       G.editText(T("Graine : un nombre ou un mot"), "", 20, [this](const std::string& s) {
                          if (!s.empty()) confirmNew(procgen::seedFromText(s), s);
                        });
                      }});
-  m.items.push_back({"Camp", std::to_string(progress.shards) + " éclats", "Dépenser les éclats de brume en améliorations gardées pour toujours.",
+  m.items.push_back({T("Camp"), std::to_string(progress.shards) + T(" éclats"), T("Dépenser les éclats de brume en améliorations gardées pour toujours."),
                      true, [this] { camp(); }});
-  m.items.push_back({"Retour", "", "", true, [this] {
+  m.items.push_back({T("Retour"), "", "", true, [this] {
                        screen_ = false;
                        G.titleMenu();
                      }});
@@ -213,13 +214,13 @@ void Expedition::menu(int sel) {
 void Expedition::confirmNew(uint64_t seed, const std::string& text) {
   if (!saveExists()) return start(seed, text);
   Menu m;
-  m.title = "Expédition en cours";
+  m.title = T("Expédition en cours");
   m.x = 20, m.y = 92, m.w = 200, m.rows = 2;
-  m.items.push_back({"L'abandonner", "", "L'expédition sauvegardée sera perdue (sans éclats).", true, [this, seed, text] {
+  m.items.push_back({T("L'abandonner"), "", T("L'expédition sauvegardée sera perdue (sans éclats)."), true, [this, seed, text] {
                        removeSave();
                        start(seed, text);
                      }});
-  m.items.push_back({"Garder", "", "", true, [this] { G.menus.pop(); }});
+  m.items.push_back({T("Garder"), "", "", true, [this] { G.menus.pop(); }});
   m.onCancel = m.items.back().act;
   G.menus.push(m);
 }
@@ -242,14 +243,14 @@ void Expedition::chooseHero(int sel) {
   G.menus.clear();
   int n = std::min((int)content_.heroes.size(), 3 + progress.up[U_HEROES]);
   Menu m;
-  m.title = "Votre héros";
+  m.title = T("Votre héros");
   m.x = 4, m.y = 30, m.w = 152, m.rows = 6, m.sel = sel;
   for (int i = 0; i < n; i++) {
     std::string id = content_.heroes[i];
     const Species& s = species(id);
     std::string cls = s.role.substr(0, s.role.find(','));
-    std::string lim = s.limit.empty() ? "aucune" : moveInfo(s.limit).name;
-    m.items.push_back({s.name, cls, s.role + ". Limite : " + lim + ".", true, [this, id] { chooseStarter(id); },
+    std::string lim = s.limit.empty() ? std::string(T("aucune")) : moveInfo(s.limit).name;
+    m.items.push_back({s.name, cls, s.role + T(". Limite : ") + lim + ".", true, [this, id] { chooseStarter(id); },
                        [this, id] { preview_ = id; }});
   }
   m.onCancel = [this] { cancelSetup(); };
@@ -262,13 +263,13 @@ void Expedition::chooseStarter(const std::string& hero, int sel) {
   G.menus.clear();
   int n = std::min((int)content_.starters.size(), 3 + progress.up[U_STARTERS]);
   Menu m;
-  m.title = "Votre créature";
+  m.title = T("Votre créature");
   m.x = 4, m.y = 30, m.w = 152, m.rows = 6, m.sel = sel;
   for (int i = 0; i < n; i++) {
     std::string id = content_.starters[i];
     const Species& s = species(id);
-    std::string lim = s.limit.empty() ? "aucune" : moveInfo(s.limit).name;
-    m.items.push_back({s.name, typesName(s), "Type " + typesName(s) + ". Limite : " + lim + ".", true, [this, hero, id] { begin(hero, id); },
+    std::string lim = s.limit.empty() ? std::string(T("aucune")) : moveInfo(s.limit).name;
+    m.items.push_back({s.name, typesName(s), T("Type ") + typesName(s) + T(". Limite : ") + lim + ".", true, [this, hero, id] { begin(hero, id); },
                        [this, id] { preview_ = id; }});
   }
   m.onCancel = [this, hero] {
@@ -297,11 +298,11 @@ void Expedition::begin(const std::string& hero, const std::string& starter) {
   saveProgress();
   enterRegion();
   if (group_) {
-    G.sc.say("Expédition à plusieurs — graine " + seedText_ + ". Chacun explore, combat et capture de son côté.");
-    G.sc.say("Le gardien de chaque région ne s'affronte qu'ensemble : retrouvez-vous devant lui !");
+    G.sc.say(T("Expédition à plusieurs — graine ") + seedText_ + T(". Chacun explore, combat et capture de son côté."));
+    G.sc.say(T("Le gardien de chaque région ne s'affronte qu'ensemble : retrouvez-vous devant lui !"));
   } else {
-    G.sc.say("Expédition — graine " + seedText_ + ". Allez le plus loin possible, de région en région !");
-    G.sc.say("Une défaite y met fin, mais les éclats gagnés restent : dépensez-les au Camp.");
+    G.sc.say(T("Expédition — graine ") + seedText_ + T(". Allez le plus loin possible, de région en région !"));
+    G.sc.say(T("Une défaite y met fin, mais les éclats gagnés restent : dépensez-les au Camp."));
   }
   G.sc.call([this] { G.saveGame(); });
 }
@@ -312,7 +313,7 @@ void Expedition::enterRegion() {
   G.mapId = -1;
   G.changeMap(0, current_.startX, current_.startY, RIGHT);
   G.respawnMap = 0, G.respawnX = current_.startX, G.respawnY = current_.startY;
-  G.bannerText = "Région " + std::to_string(region_) + " : " + current_.name;
+  G.bannerText = T("Région ") + std::to_string(region_) + " : " + tr(current_.name);
   G.banner = 3.f;
   if (region_ > progress.record) {
     progress.record = region_;
@@ -325,13 +326,13 @@ void Expedition::resume() {
   if (!G.loadGame()) {
     leave();
     menu();
-    G.notice("Impossible de reprendre l'expédition.");
+    G.notice(T("Impossible de reprendre l'expédition."));
     return;
   }
   screen_ = false;
   G.menus.clear();
   G.mode = Mode::Map;
-  G.bannerText = "Région " + std::to_string(region_) + " : " + current_.name;
+  G.bannerText = T("Région ") + std::to_string(region_) + " : " + tr(current_.name);
   G.banner = 3.f;
 }
 
@@ -349,7 +350,7 @@ void Expedition::startGroup(uint64_t seed, const std::string& text, int region) 
       screen_ = false;
       G.menus.clear();
       G.mode = Mode::Map;
-      G.bannerText = "Région " + std::to_string(region_) + " : " + current_.name;
+      G.bannerText = T("Région ") + std::to_string(region_) + " : " + tr(current_.name);
       G.banner = 3.f;
       return;
     }
@@ -370,9 +371,9 @@ void Expedition::knockedOut() {
   G.gold -= lost;
   G.healAll();
   G.changeMap(0, current_.startX, current_.startY, RIGHT);
-  G.sc.say("Toute l'équipe est à terre… Vous vous réveillez au village, soignés.");
-  if (lost > 0) G.sc.say("Dans la fuite, vous avez perdu " + std::to_string(lost) + " pièces d'or.");
-  G.sc.say("À plusieurs, seule une défaite contre le gardien met fin à l'expédition.");
+  G.sc.say(T("Toute l'équipe est à terre… Vous vous réveillez au village, soignés."));
+  if (lost > 0) G.sc.say(T("Dans la fuite, vous avez perdu ") + std::to_string(lost) + T(" pièces d'or."));
+  G.sc.say(T("À plusieurs, seule une défaite contre le gardien met fin à l'expédition."));
 }
 
 bool Expedition::beaten() const { return active_ && G.has(current_.bossFlag); }
@@ -399,13 +400,13 @@ void Expedition::quickStart(uint64_t seed, int hero, int starter) {
 void Expedition::camp(int sel) {
   G.menus.clear();
   Menu m;
-  m.title = "Camp : " + std::to_string(progress.shards) + " éclats de brume";
+  m.title = T("Camp : ") + std::to_string(progress.shards) + T(" éclats de brume");
   m.x = 8, m.y = 40, m.w = 230, m.rows = 7, m.sel = sel;
   for (int u = 0; u < N_UPGRADES; u++) {
     int lv = progress.up[u], cost = upgradeCost(u);
     bool max = lv >= UPGRADES[u].max;
-    std::string help = std::string(UPGRADES[u].help) + " Niveau " + std::to_string(lv) + " sur " + std::to_string(UPGRADES[u].max) + ".";
-    m.items.push_back({UPGRADES[u].name, max ? "au maximum" : std::to_string(cost) + " éclats", help, !max && progress.shards >= cost, [this, u] {
+    std::string help = tr(UPGRADES[u].help) + T(" Niveau ") + std::to_string(lv) + T(" sur ") + std::to_string(UPGRADES[u].max) + ".";
+    m.items.push_back({tr(UPGRADES[u].name), max ? T("au maximum") : std::to_string(cost) + T(" éclats"), help, !max && progress.shards >= cost, [this, u] {
                          int c = upgradeCost(u);
                          if (progress.up[u] >= UPGRADES[u].max || progress.shards < c) return;
                          progress.shards -= c;
@@ -431,7 +432,7 @@ void Expedition::nextRegion() {
   install();
   enterRegion();
   G.saveGame();
-  G.notice("Expédition sauvegardée.");
+  G.notice(T("Expédition sauvegardée."));
 }
 
 void Expedition::onDefeat(bool gaveUp) {
@@ -447,12 +448,12 @@ void Expedition::onDefeat(bool gaveUp) {
   G.menus.clear();
   G.healAll();
   // À plusieurs, seule la défaite contre le gardien (ou l'abandon) arrête l'expédition de ce joueur
-  std::string where = " en région " + std::to_string(region_) + ".";
-  G.sc.say(gaveUp   ? "Vous rebroussez chemin… L'expédition s'arrête" + where
-           : group_ ? current_.bossName + " a vaincu le groupe… L'expédition s'achève" + where
-                    : "Toute l'équipe est à terre… L'expédition s'achève" + where);
-  G.sc.say("Région atteinte : " + std::to_string(region_) + (newRecord ? " (record !)" : ". Record : région " + std::to_string(progress.record) + "."));
-  G.sc.say("Vous gagnez " + std::to_string(gain) + " éclats de brume (" + std::to_string(progress.shards) + " à dépenser au Camp).");
+  std::string where = T(" en région ") + std::to_string(region_) + ".";
+  G.sc.say(gaveUp   ? T("Vous rebroussez chemin… L'expédition s'arrête") + where
+           : group_ ? current_.bossName + T(" a vaincu le groupe… L'expédition s'achève") + where
+                    : T("Toute l'équipe est à terre… L'expédition s'achève") + where);
+  G.sc.say(T("Région atteinte : ") + std::to_string(region_) + (newRecord ? T(" (record !)") : T(". Record : région ") + std::to_string(progress.record) + "."));
+  G.sc.say(T("Vous gagnez ") + std::to_string(gain) + T(" éclats de brume (") + std::to_string(progress.shards) + T(" à dépenser au Camp)."));
   G.sc.call([this] {
     bool group = group_;
     leave();
@@ -498,13 +499,13 @@ void Expedition::draw(Gfx& g) {
   bool choosing = active_ && !preview_.empty() && hasSpecies(preview_);
   if (choosing) drawFighterCard(g, *makeFighter(preview_, 5 + progress.up[U_LEVEL]), 160, 18, 156, 180, G.time);
   else {
-    g.text(160, 10, "EXPÉDITION", GOLD, 1);
+    g.text(160, 10, T("EXPÉDITION"), GOLD, 1);
     if (G.menus.maxRight() <= 158) {
       g.window(164, 40, 150, 70);
-      g.text(172, 46, "Record : région " + std::to_string(progress.record), WHITE);
-      g.text(172, 59, "Expéditions : " + std::to_string(progress.runs), WHITE);
-      g.text(172, 72, "Éclats : " + std::to_string(progress.shards), GOLD);
-      g.text(172, 85, "Gagnés en tout : " + std::to_string(progress.total), MUTED);
+      g.text(172, 46, T("Record : région ") + std::to_string(progress.record), WHITE);
+      g.text(172, 59, T("Expéditions : ") + std::to_string(progress.runs), WHITE);
+      g.text(172, 72, T("Éclats : ") + std::to_string(progress.shards), GOLD);
+      g.text(172, 85, T("Gagnés en tout : ") + std::to_string(progress.total), MUTED);
     }
   }
   G.menus.draw(g, G.time);

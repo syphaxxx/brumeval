@@ -1,5 +1,6 @@
 ## Nouveautés
 
+- **English!** Options > Langue / Language : tout le jeu passe en anglais (au premier lancement, il prend la langue de l'ordinateur).
 - **Acte 2 : l'archipel d'Écume** ! Une fois la Mère des Brumes apaisée, le bateau du pêcheur traverse le lac vers **Port d'Écume**, le **Récif d'Écume**, les **Ruines englouties** et la **Tour de l'Orage**. Trois nouveaux boss (Kraken des récifs, Griffon tempête, Seigneur des Orages, en trois phases) et un vrai final.
 - **Énigmes** : poussez des rochers sur des dalles pour ouvrir les grilles. Coincé ? Échap > Recommencer l'énigme.
 - 8 nouvelles créatures (dont 2 évolutions), une quête (les perles du phare), de nouvelles armes et armures, la Gemme du maître et la Gemme d'orage.

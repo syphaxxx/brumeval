@@ -94,7 +94,8 @@ COMMANDES
   En boutique, « Vendre… » rachète vos objets à moitié prix.
 
   Options (écran titre, ou Échap > Options) : volume de la musique et des
-  effets, plein écran, vitesse du jeu, touches du clavier.
+  effets, plein écran, vitesse du jeu, langue (français ou anglais), astuces,
+  touches du clavier.
 
   Échap > Aide (ou F1) : ce que font les statistiques, le calcul des
   dégâts, la Brisure, les talents, le damier et les zones, les états, et le tableau des types (qui

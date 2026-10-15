@@ -647,7 +647,7 @@ static std::string genPerson(Content& c, Rng& r, const std::string& id, const He
   o["critique"] = k.crit;
   o["humain"] = true;
   o["apparence"] = "lk_" + id;
-  o["role"] = cls + ", type " + typeName(typeOf(t));
+  o["role"] = cls + ", type " + types()[typeOf(t)].nameFr;
   // Techniques selon la classe
   const Pool& P = c.pools.at(t);
   const Pool& N = c.pools.at("normal");
@@ -831,7 +831,7 @@ static std::string weakness(const std::string& t1, const std::string& t2) {
   std::string w;
   for (auto& a : types()) {
     float e = typeEff(typeOf(a.id), typeOf(t1)) * (t2.empty() ? 1.f : typeEff(typeOf(a.id), typeOf(t2)));
-    if (e > best) best = e, w = a.name;
+    if (e > best) best = e, w = a.nameFr;
   }
   return w;
 }

@@ -1,3 +1,4 @@
+#include "i18n.hpp"
 #include "game.hpp"
 
 #include <algorithm>
@@ -202,7 +203,7 @@ void Game::drawTextEdit() {
   if (wl.empty()) wl.push_back("");
   for (size_t i = 0; i < wl.size(); i++) g.text(18, y + top + i * 11, wl[i], WHITE);
   if (int(time * 3) % 2 == 0) g.rect(18 + Gfx::textW(wl.back()), y + top + (wl.size() - 1) * 11 + 1, 5, 9, rgb(0xffd34d));
-  g.text(160, y + h - 13, "Entrée : valider · Échap : annuler · " + std::to_string(utf8Len(textValue_)) + "/" + std::to_string(textMax_),
+  g.text(160, y + h - 13, T("Entrée : valider · Échap : annuler · ") + std::to_string(utf8Len(textValue_)) + "/" + std::to_string(textMax_),
          MUTED, 1);
 }
 
@@ -215,7 +216,7 @@ int Game::speed() const {
 }
 
 void Game::cycleSpeed() {
-  if (online_ && online_->connected()) return notice("Vitesse normale en multijoueur.");
+  if (online_ && online_->connected()) return notice(T("Vitesse normale en multijoueur."));
   options().speed = options().speed % 3 + 1;
   saveOptions();
   speedT_ = 1.2f;
@@ -255,7 +256,7 @@ void Game::update(float dt) {
     case Mode::Ending:
       if (in.confirm) {
         mode = Mode::Map;
-        notice("Merci d'avoir joué ! Vous pouvez continuer l'exploration.");
+        notice(T("Merci d'avoir joué ! Vous pouvez continuer l'exploration."));
       }
       break;
     case Mode::Arena:
@@ -379,8 +380,8 @@ void Game::recruit(const std::string& id, int minLvl) {
   team.push_back(f);  // à la suite : il ne prend la place de personne
   auto fr = front();
   bool fights = std::find(fr.begin(), fr.end(), f) != fr.end();
-  sc.say(f->name() + (fights ? " rejoint l'équipe et combat à vos côtés !" : " rejoint l'équipe !"));
-  sc.say(std::string(fights ? "(" : "(Il attend son tour : ") + "Échap > Équipe pour choisir qui combat. " + f->S().role + ".)");
+  sc.say(f->name() + (fights ? T(" rejoint l'équipe et combat à vos côtés !") : T(" rejoint l'équipe !")));
+  sc.say(std::string(fights ? "(" : T("(Il attend son tour : ")) + T("Échap > Équipe pour choisir qui combat. ") + f->S().role + ".)");
 }
 
 void Game::startBattle(BattleSetup setup, std::function<void(BattleResult)> after) {
@@ -411,7 +412,7 @@ void Game::defeat() {
   defeats_++;
   healAll();
   changeMap(respawnMap, respawnX, respawnY, DOWN);
-  sc.say("Vous reprenez connaissance chez la guérisseuse. Toute l'équipe est soignée.");
+  sc.say(T("Vous reprenez connaissance chez la guérisseuse. Toute l'équipe est soignée."));
 }
 
 // ---------------------------------------------------------------------------
@@ -466,7 +467,7 @@ void Game::pushBoulder(int x, int y, int dx, int dy) {
   if (all) {
     flags.insert(m.puzzleFlag);
     audio::play("bonus");
-    sc.say(m.puzzleMsg.empty() ? "Un grondement sourd : quelque part, une grille s'ouvre !" : fillText(m.puzzleMsg));
+    sc.say(m.puzzleMsg.empty() ? T("Un grondement sourd : quelque part, une grille s'ouvre !") : fillText(m.puzzleMsg));
   }
 }
 
@@ -487,7 +488,7 @@ void Game::tryMove(int d) {
       if (bossAlive(b) && nx >= b.x && nx <= b.x + 1 && ny >= b.y && ny <= b.y + 1) return bossTouched(b);
     for (auto& w : M().warps)
       if (w.x == nx && w.y == ny && !w.condition.is_null() && !checkCond(w.condition))
-        return sc.say(w.message.empty() ? "Le passage est fermé." : fillText(w.message));
+        return sc.say(w.message.empty() ? T("Le passage est fermé.") : fillText(w.message));
     return;
   }
   fromX = px, fromY = py;
@@ -638,17 +639,17 @@ std::string Game::chestFlag(int i) const {
 
 void Game::openChest(int i) {
   std::string key = chestFlag(i);
-  if (has(key)) return sc.say("Le coffre est vide.");
+  if (has(key)) return sc.say(T("Le coffre est vide."));
   flags.insert(key);
   audio::play("coffre");
   const Chest& c = M().chests[i];
   if (c.item.empty()) {
     gold += c.qty;
-    sc.say("Vous trouvez " + std::to_string(c.qty) + " pièces d'or !");
+    sc.say(T("Vous trouvez ") + std::to_string(c.qty) + T(" pièces d'or !"));
   } else {
     items[c.item] += c.qty;
-    sc.say("Vous trouvez : " + item(c.item).name + (c.qty > 1 ? " ×" + std::to_string(c.qty) : "") + " !");
-    if (c.item == "herbe") sc.say("Elle luit d'une douce lumière. Maëlle, à la chapelle, en avait besoin.");
+    sc.say(T("Vous trouvez : ") + item(c.item).name + (c.qty > 1 ? T(" ×") + std::to_string(c.qty) : "") + " !");
+    if (c.item == "herbe") sc.say(T("Elle luit d'une douce lumière. Maëlle, à la chapelle, en avait besoin."));
   }
 }
 
@@ -671,11 +672,11 @@ void Game::ask(const std::string& q, std::function<void()> yes, std::function<vo
     sc.resume();
   };
   // La réponse passe avant les étapes déjà en attente dans la file
-  m.items.push_back({"Oui", "", "", true, [this, close, yes] {
+  m.items.push_back({T("Oui"), "", "", true, [this, close, yes] {
                        close();
                        sc.runNow(yes);
                      }});
-  m.items.push_back({"Non", "", "", true, [this, close, no] {
+  m.items.push_back({T("Non"), "", "", true, [this, close, no] {
                        close();
                        sc.runNow(no);
                      }});
@@ -697,69 +698,69 @@ void Game::titleMenu() {
   menus.clear();
   Menu m;
   m.x = 102, m.y = 110, m.w = 116, m.rows = 8, m.cancelable = false;
-  m.items.push_back({"Nouvelle partie", "", "", true, [this] { starterMenu(); }});
+  m.items.push_back({T("Nouvelle partie"), "", "", true, [this] { starterMenu(); }});
   bool can = saveExists();
-  m.items.push_back({"Continuer", "", "", can, [this] {
+  m.items.push_back({T("Continuer"), "", "", can, [this] {
                        if (loadGame()) {
                          menus.clear();
                          mode = Mode::Map;
                          showRegionBanner();
                        }
                      }});
-  m.items.push_back({"Expédition", "", "Des régions générées sans fin, façon roguelite.", true, [this] {
+  m.items.push_back({T("Expédition"), "", T("Des régions générées sans fin, façon roguelite."), true, [this] {
                        if (!expedition_) expedition_ = std::make_unique<Expedition>(*this);
                        expedition_->menu();
                      }});
-  m.items.push_back({"Multijoueur", "", "Avec des amis : duel, expédition, échanges.", true, [this] {
+  m.items.push_back({T("Multijoueur"), "", T("Avec des amis : duel, expédition, échanges."), true, [this] {
                        if (!online_) online_ = std::make_unique<Online>(*this);
                        online_->menu();
                      }});
-  m.items.push_back({"Outils", "", "Arène, réglages et éditeurs.", true, [this] { toolsMenu(); }});
-  m.items.push_back({"Options", "", "Volumes, plein écran, vitesse du jeu et touches.", true, [this] { optionsMenu(); }});
-  m.items.push_back({"Aide", "", "Statistiques, dégâts, damier, zones, états, tableau des types, touches (F1).", true, [this] { helpMenu(); }});
-  m.items.push_back({"Quitter", "", "", true, [this] { quit = true; }});
+  m.items.push_back({T("Outils"), "", T("Arène, réglages et éditeurs."), true, [this] { toolsMenu(); }});
+  m.items.push_back({T("Options"), "", T("Volumes, plein écran, vitesse du jeu et touches."), true, [this] { optionsMenu(); }});
+  m.items.push_back({T("Aide"), "", T("Statistiques, dégâts, damier, zones, états, tableau des types, touches (F1)."), true, [this] { helpMenu(); }});
+  m.items.push_back({T("Quitter"), "", "", true, [this] { quit = true; }});
   if (can) m.sel = 1;
   menus.push(m);
 }
 
 void Game::toolsMenu() {
   Menu m;
-  m.title = "Outils";
+  m.title = T("Outils");
   m.x = 92, m.y = 92, m.w = 136, m.rows = 6;
-  m.items.push_back({"Arène de combat", "", "Composer deux équipes, combattre ou simuler des combats.", true, [this] {
+  m.items.push_back({T("Arène de combat"), "", T("Composer deux équipes, combattre ou simuler des combats."), true, [this] {
                        if (!arena_) arena_ = std::make_unique<Arena>(*this);
                        mode = Mode::Arena;
                        arena_->open();
                      }});
-  m.items.push_back({"Réglages", "", "Modifier les règles, espèces, techniques, types et objets.", true, [this] {
+  m.items.push_back({T("Réglages"), "", translating() ? T("Les éditeurs sont en français : Options > Langue > Français.") : T("Modifier les règles, espèces, techniques, types et objets."), !translating(), [this] {
                        if (!settings_) settings_ = std::make_unique<Settings>(*this);
                        mode = Mode::Settings;
                        settings_->open();
                      }});
-  m.items.push_back({"Éditeur de cartes", "", "Peindre les cartes, placer habitants, coffres, passages, zones… et tester.", true, [this] {
+  m.items.push_back({T("Éditeur de cartes"), "", translating() ? T("Les éditeurs sont en français : Options > Langue > Français.") : T("Peindre les cartes, placer habitants, coffres, passages, zones… et tester."), !translating(), [this] {
                        if (!editor_) editor_ = std::make_unique<MapEditor>(*this);
                        mode = Mode::Editor;
                        editor_->open();
                      }});
-  m.items.push_back({"Éditeur d'histoire", "", "Dialogues et événements : conditions, questions, combats, récompenses… et les jouer.", true, [this] {
+  m.items.push_back({T("Éditeur d'histoire"), "", translating() ? T("Les éditeurs sont en français : Options > Langue > Français.") : T("Dialogues et événements : conditions, questions, combats, récompenses… et les jouer."), !translating(), [this] {
                        if (!story_) story_ = std::make_unique<StoryEditor>(*this);
                        mode = Mode::Story;
                        story_->open();
                      }});
-  m.items.push_back({"Démo", "", "Le jeu joue tout seul une nouvelle partie. Une touche pour reprendre la main.", true,
+  m.items.push_back({T("Démo"), "", T("Le jeu joue tout seul une nouvelle partie. Espace : pause, Échap : quitter."), true,
                      [this] { startPilot(true); }});
-  m.items.push_back({"Retour", "", "", true, [this] { menus.pop(); }});
+  m.items.push_back({T("Retour"), "", "", true, [this] { menus.pop(); }});
   menus.push(m);
 }
 
 void Game::starterMenu() {
   Menu m;
-  m.title = "Premier compagnon";
+  m.title = T("Premier compagnon");
   m.x = 90, m.y = 132, m.w = 140, m.rows = 3;
   for (const std::string& id : rules().starters) {
     const Species& s = species(id);
     std::string lim = s.limit.empty() ? "aucune" : moveInfo(s.limit).name;
-    m.items.push_back({s.name, typesName(s), "Type " + typesName(s) + " · Limite : " + lim, true,
+    m.items.push_back({s.name, typesName(s), T("Type ") + typesName(s) + T(" · Limite : ") + lim, true,
                        [this, id] { newGame(id); }});
   }
   menus.push(m);
@@ -811,11 +812,11 @@ void Game::draw() {
   if (textOn_) drawTextEdit();
   if (bindKey_ >= 0) drawKeyPrompt();
   if (int v = speed(); v > 1 || speedT_ > 0) {  // vitesse : en grand juste après F2, puis discrète dans le coin
-    std::string s = "×" + std::to_string(v);
+    std::string s = T("×") + std::to_string(v);
     if (speedT_ > 0) {
       g.newLayer();  // par-dessus les menus éventuels
       g.window(160 - 46, 30, 92, 26);
-      g.text(160, 36, "Vitesse " + s, GOLD, 1);
+      g.text(160, 36, T("Vitesse ") + s, GOLD, 1);
     } else {
       int y = pilot_ && pilot_->demo() ? 12 : 1;  // sous le bandeau de la démo
       g.rect(g.right() - 20, y, 18, 10, rgb(0x000010, 140));
@@ -823,7 +824,7 @@ void Game::draw() {
     }
   }
   if (pilot_ && pilot_->demo()) {  // bandeau de la démo, en haut de l'écran ; en pause, les commandes
-    std::string s = "DÉMO · " + pilot_->status;
+    std::string s = T("DÉMO · ") + pilot_->status;
     if (s.size() > 60) s = utf8Prefix(s, 44) + "…";
     g.rect(g.left(), 0, g.fullW, 11, rgb(0x000010, 170));
     g.text(160, 2, s, rgb(0xffd34d), 1);
@@ -831,9 +832,9 @@ void Game::draw() {
       g.rect(g.left(), 11, g.fullW, SCREEN_H - 11, rgb(0x000010, 110));
       g.newLayer();
       g.window(70, 96, 180, 50);
-      g.text(160, 102, "Démo en pause", GOLD, 1);
-      g.text(160, 116, "Espace : reprendre", WHITE, 1);
-      g.text(160, 128, "Échap : quitter · F2 : vitesse", MUTED, 1);
+      g.text(160, 102, T("Démo en pause"), GOLD, 1);
+      g.text(160, 116, T("Espace : reprendre"), WHITE, 1);
+      g.text(160, 128, T("Échap : quitter · F2 : vitesse"), MUTED, 1);
     }
   }
 }
@@ -863,7 +864,7 @@ void Game::drawTitle() {
     float x = L + std::fmod(i * 61.f + std::sin(time * .7f + i) * 20 + 40, W), y = 150 + std::fmod(i * 23.f + std::cos(time * .5f + i * 2) * 10, 60.f);
     g.ellipse(x, y, 1.5f, 1.5f, rgb(0xe8ff9a, uint8_t(90 + 80 * std::sin(time * 3 + i))));
   }
-  g.textBig(160, 26, "BRUMEVAL", GOLD, 4, 1);
+  g.textBig(160, 26, T("BRUMEVAL"), GOLD, 4, 1);
   {  // reflet qui passe sur le titre
     float k = std::fmod(time, 4.f) / 1.2f;
     if (k < 1) {
@@ -871,7 +872,7 @@ void Game::drawTitle() {
       g.poly({{x, 22}, {x + 6, 22}, {x - 4, 58}, {x - 10, 58}}, rgb(0xffffff, uint8_t(110 * std::sin(k * 3.14159f))));
     }
   }
-  g.text(160, 76, "Les gardiens de la vallée", rgb(0xc9cbe0), 1);
+  g.text(160, 76, T("Les gardiens de la vallée"), rgb(0xc9cbe0), 1);
   drawHuman(g, look(0), 144, 92, 2, DOWN, 0, false);
   drawCreature(g, "braisenard", 92, 124, 1, true, time);
   drawCreature(g, "gouttelin", 232, 124, 1, false, time + .5f);
@@ -885,7 +886,7 @@ void Game::drawTitle() {
     }
   }
   if (!menus.active() || menus.help().empty()) {
-    g.text(g.left() + 4, 227, "F1 : aide · F2 : vitesse · F11 : plein écran", rgb(0x8a92b8), 0, false);
+    g.text(g.left() + 4, 227, T("F1 : aide · F2 : vitesse · F11 : plein écran"), rgb(0x8a92b8), 0, false);
     g.text(g.right() - 4, 227, "v" BRUMEVAL_VERSION, rgb(0x8a92b8), 2, false);
   }
 }
@@ -1080,6 +1081,10 @@ void Game::drawMap() {
   int noticeY = 190;
   if (menus.active() && askText_.empty() && !menus.help().empty()) {
     auto lines = Gfx::wrap(menus.help(), 300);
+    if (lines.size() > 3) {  // trois lignes au plus : la fenêtre ne monte pas sur les panneaux (textes anglais plus longs)
+      lines.resize(3);
+      lines.back() = utf8Prefix(lines.back(), 49) + "…";
+    }
     int h = 10 + 11 * (int)lines.size();
     g.window(4, 236 - h, 312, h);
     for (size_t i = 0; i < lines.size(); i++) g.text(10, 236 - h + 4 + i * 11, lines[i], MUTED);
@@ -1097,9 +1102,10 @@ void Game::drawMap() {
 // Portrait de celui qui parle (2.7) : « Maëlle : … » ; son apparence par son nom, ses autres noms
 // (« aussi » dans apparences.json) ou le début de son nom (« Kael (ligoté) »). nullptr : pas de portrait
 static const Look* speakerLook(const std::string& text) {
-  auto c = text.find(" : ");
+  auto c = text.find(": ");  // « Maëlle : … » en français, « Maëlle: … » en anglais
   if (c == std::string::npos || c > 40) return nullptr;
   std::string who = text.substr(0, c);
+  while (!who.empty() && who.back() == ' ') who.pop_back();
   for (auto& l : allLooks()) {
     if (l.name == who) return &l;
     for (auto& a : l.aliases)
@@ -1146,9 +1152,9 @@ void Game::drawEnding() {
   g.gradV(L, 0, W, SCREEN_H, rgb(0x0e1550), rgb(0x3a6fb0));
   g.ellipse(272, 36, 18, 18, rgb(0xfff4c0));  // au-dessus du texte
   g.poly({{L, 200}, {L, 170}, {0, 200}, {80, 150}, {150, 190}, {230, 140}, {320, 190}, {L + W, 160}, {L + W, 240}, {L, 240}}, rgb(0x2e6b3a));
-  g.textBig(160, 30, "FIN", GOLD, 3, 1);
-  auto lines = Gfx::wrap(endingText_.empty() ? "La brume se lève enfin sur Brumeval." : endingText_, 280);
-  for (const char* l : {"", "Un jeu créé avec Claude", "C++ et SDL2", "", "Appuyez sur Entrée pour continuer"}) lines.push_back(l);
+  g.textBig(160, 30, T("FIN"), GOLD, 3, 1);
+  auto lines = Gfx::wrap(endingText_.empty() ? T("La brume se lève enfin sur Brumeval.") : endingText_, 280);
+  for (const char* l : {"", T("Un jeu créé avec Claude"), T("C++ et SDL2"), "", T("Appuyez sur Entrée pour continuer")}) lines.push_back(l);
   for (size_t i = 0; i < lines.size(); i++) g.text(160, 74 + i * 13, lines[i], WHITE, 1);
   auto team = front();  // jusqu'à six combattants (héros et compagnons) : l'écart s'adapte
   float gap = team.size() > 1 ? std::min(100.f, 260.f / (team.size() - 1)) : 0, x = 160 - gap * (team.size() - 1) / 2;

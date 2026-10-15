@@ -9,6 +9,7 @@
 #include <sstream>
 #include <cctype>
 
+#include "i18n.hpp"
 #include "arena.hpp"
 #include "audio.hpp"
 #include "battle.hpp"
@@ -32,6 +33,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   g.checkLayout = true;                // chaque image dessinée vérifie la mise en page (gfx.cpp)
   offerEvolve_ = false;                // les évolutions ne sont proposées que dans leur propre test
   tipsOff_ = true;                     // les astuces aussi (2.8)
+  g.spotFrench = translating();        // en anglais : repérer ce qui reste en français (3.1)
   int fails = 0;
   auto check = [&](bool ok, const std::string& what) {
     std::printf("%s %s\n", ok ? "[ok]    " : "[ÉCHEC] ", what.c_str());
@@ -128,7 +130,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     frame();
     snap("86_options");
     bool louder = options().music == std::min(10, vol + 1);
-    menus.top().sel = 5;  // Touches (après Astuces)
+    menus.top().sel = 6;  // Touches (après Langue et Astuces)
     in.confirm = true;
     frame();
     snap("87_touches");
@@ -1796,7 +1798,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     auto selectLabel = [&](const std::string& start) {
       auto& it = menus.top().items;
       for (size_t k = 0; k < it.size(); k++)
-        if (!it[k].header && it[k].label.rfind(start, 0) == 0) {
+        if (!it[k].header && (it[k].label.rfind(start, 0) == 0 || it[k].label.rfind(tr(start), 0) == 0)) {
           menus.top().sel = (int)k;
           return true;
         }
@@ -3098,6 +3100,13 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   }
 
   std::remove(savePath().c_str());
+  if (translating()) {  // BRUMEVAL_LANGUE=en : ce qui reste en français (outils/textes.py, puis traduire)
+    auto miss = missingTranslations();
+    std::printf("\nPhrases demandées sans traduction (%s) : %d\n", language().c_str(), (int)miss.size());
+    for (size_t i = 0; i < miss.size() && i < 80; i++) std::printf("  « %s »\n", miss[i].c_str());
+    std::printf("\nTextes affichés qui ont l'air français : %d\n", (int)g.frenchSeen.size());
+    for (auto& s : g.frenchSeen) std::printf("  « %s »\n", s.c_str());
+  }
   std::printf("\n%s (%d échec%s)\n", fails ? "TESTS EN ÉCHEC" : "TOUS LES TESTS PASSENT", fails, fails > 1 ? "s" : "");
   return fails ? 1 : 0;
 }
