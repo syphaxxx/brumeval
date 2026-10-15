@@ -4,6 +4,7 @@
 // (« forge »). Méthodes de Game (game.hpp) ; ouverte par l'action d'événement « forge ».
 #include <algorithm>
 
+#include "i18n.hpp"
 #include "audio.hpp"
 #include "battle.hpp"
 #include "game.hpp"
@@ -19,13 +20,13 @@ int Game::forgeStock(const std::string& id) const {
   return n;
 }
 
-static std::string matName(const std::string& id) { return id == "trophee" ? "Trophée de boss" : item(id).name; }
+static std::string matName(const std::string& id) { return id == "trophee" ? T("Trophée de boss") : item(id).name; }
 
 // Ce qu'il faut pour forger le niveau suivant, et ce qui manque (vide : tout est là)
 std::string Game::forgeCost(const ItemDef& d, std::string* missing) const {
   const auto& L = rules().forge[(size_t)d.forged];
-  std::string s = std::to_string(L.gold) + " or", miss;
-  if (gold < L.gold) miss = std::to_string(L.gold - gold) + " or";
+  std::string s = std::to_string(L.gold) + T(" or"), miss;
+  if (gold < L.gold) miss = std::to_string(L.gold - gold) + T(" or");
   for (auto& [id, n] : L.items) {
     int have = forgeStock(id);
     s += ", " + std::to_string(n) + " " + matName(id) + " (" + std::to_string(have) + ")";
@@ -49,21 +50,21 @@ void Game::forgeMenu(int sel) {
   for (auto& d : allItems())
     if ((d.slot == G_WEAPON || d.slot == G_ARMOR) && items.count(d.id) && items.at(d.id) > 0) list.push_back({nullptr, d.id});
   Menu m;
-  m.title = "Forge  ·  " + std::to_string(gold) + " or";
+  m.title = T("Forge  ·  ") + std::to_string(gold) + T(" or");
   m.x = 40, m.y = 20, m.w = 240, m.rows = 9, m.sel = sel;
   for (size_t i = 0; i < list.size(); i++) {
     const ItemDef& d = item(list[i].id);
     FighterP owner = list[i].owner;
     std::string id = d.id, who = owner ? utf8Prefix(owner->name(), 7) : "sac";
     if (!forgeable(d)) {
-      m.items.push_back({d.name, who, d.bonusText() + ". Déjà au maximum (+" + std::to_string(d.forged) + ").", false, nullptr});
+      m.items.push_back({d.name, who, d.bonusText() + T(". Déjà au maximum (+") + std::to_string(d.forged) + ").", false, nullptr});
       continue;
     }
     const ItemDef& next = item(forgedId(d.forged ? d.base : d.id, d.forged + 1));
     std::string missing, cost = forgeCost(d, &missing);
-    std::string help = "En +" + std::to_string(next.forged) + " : " + next.bonusText() + " (au lieu de " +
-                       (d.bonusText().empty() ? "rien" : d.bonusText()) + "). Coût : " + cost + "." +
-                       (missing.empty() ? " Entrée : forger." : " Il manque : " + missing + ".");
+    std::string help = T("En +") + std::to_string(next.forged) + " : " + next.bonusText() + T(" (au lieu de ") +
+                       (d.bonusText().empty() ? "rien" : d.bonusText()) + T("). Coût : ") + cost + "." +
+                       (missing.empty() ? T(" Entrée : forger.") : T(" Il manque : ") + missing + ".");
     int at = (int)i;
     // Entrée : forge tout de suite (comme un achat en boutique ; le coût est dans l'aide en bas)
     MenuItem it{d.name, who, help, missing.empty(), [this, owner, id, at] {
@@ -74,7 +75,7 @@ void Game::forgeMenu(int sel) {
     it.shrink = true;
     m.items.push_back(it);
   }
-  if (m.items.empty()) m.items.push_back({"(rien à forger)", "", "Achetez une arme ou une armure : Brann pourra la renforcer.", false, nullptr});
+  if (m.items.empty()) m.items.push_back({T("(rien à forger)"), "", T("Achetez une arme ou une armure : Brann pourra la renforcer."), false, nullptr});
   m.sel = std::clamp(sel, 0, (int)m.items.size() - 1);
   menus.push(m);
 }
@@ -105,6 +106,6 @@ bool Game::forge(const FighterP& owner, const std::string& id) {
     items[next]++;
   }
   audio::play("coup_lourd");
-  notice("Brann forge : " + item(next).name + " !");
+  notice(T("Brann forge : ") + item(next).name + " !");
   return true;
 }

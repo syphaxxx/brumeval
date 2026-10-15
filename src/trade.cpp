@@ -7,6 +7,7 @@
 // créature donnée en retour) ou « accepte » (le cadeau), « fait », « refus » (raison).
 #include <algorithm>
 
+#include "i18n.hpp"
 #include "expedition.hpp"
 #include "game.hpp"
 #include "online.hpp"
@@ -66,7 +67,7 @@ static FighterP creatureFrom(const Json& j) {
   return f;
 }
 
-static std::string label(const Fighter& f) { return f.name() + " N." + std::to_string(f.lvl); }
+static std::string label(const Fighter& f) { return f.name() + T(" N.") + std::to_string(f.lvl); }
 static std::string label(const Json& j) {
   FighterP f = creatureFrom(j);
   return f ? label(*f) : "?";
@@ -74,7 +75,7 @@ static std::string label(const Json& j) {
 
 // Texte d'aide : types, PV et techniques
 static std::string describe(const Fighter& f) {
-  std::string s = typesName(f.S()) + ", " + std::to_string(f.mhp) + " PV. Techniques :";
+  std::string s = typesName(f.S()) + ", " + std::to_string(f.mhp) + T(" PV. Techniques :");
   std::vector<std::string> moves = f.techs(), spells = f.spells();
   moves.insert(moves.end(), spells.begin(), spells.end());
   for (size_t i = 0; i < moves.size(); i++) s += (i ? ", " : " ") + moveInfo(moves[i]).name;
@@ -93,11 +94,11 @@ bool Online::canTrade(std::string* why) const {
     if (why) *why = s;
     return false;
   };
-  if (state_ == State::Salon) return G.inExpedition() ? no("Échange impossible pour le moment.") : true;
+  if (state_ == State::Salon) return G.inExpedition() ? no(T("Échange impossible pour le moment.")) : true;
   const Expedition* X = G.expedition_.get();
-  if (state_ != State::Expedition || !X || !X->active() || X->onScreen()) return no("Échange impossible pour le moment.");
-  if (G.battle_ || G.mode != Mode::Map) return no("Pas pendant un combat.");
-  if (ready_) return no("Pas en attendant devant le gardien.");
+  if (state_ != State::Expedition || !X || !X->active() || X->onScreen()) return no(T("Échange impossible pour le moment."));
+  if (G.battle_ || G.mode != Mode::Map) return no(T("Pas pendant un combat."));
+  if (ready_) return no(T("Pas en attendant devant le gardien."));
   return true;
 }
 
@@ -110,7 +111,7 @@ bool Online::partnerOk(const Player& p) const {
 bool Online::loadMine(std::string& why) {
   if (state_ == State::Expedition) return true;  // l'équipe de l'expédition est déjà là
   if (G.inExpedition() || !G.loadGame()) {
-    why = "Il faut une partie sauvegardée (écran titre > Nouvelle partie).";
+    why = T("Il faut une partie sauvegardée (écran titre > Nouvelle partie).");
     return false;
   }
   return true;
@@ -158,19 +159,19 @@ void Online::tradeMenu() {
   std::vector<int> ok;
   for (auto& p : players_)
     if (partnerOk(p)) ok.push_back(p.id);
-  if (ok.empty()) return tradeNote(state_ == State::Salon ? "Personne n'est au salon pour échanger." : "Personne ne peut échanger pour le moment.");
+  if (ok.empty()) return tradeNote(state_ == State::Salon ? T("Personne n'est au salon pour échanger.") : T("Personne ne peut échanger pour le moment."));
   if (ok.size() == 1) return pickCreature(ok[0]);
   Menu m;
-  m.title = "Échanger avec…";
+  m.title = T("Échanger avec…");
   place(m, state_ == State::Expedition, 0);
   m.rows = (int)players_.size() + 1;
   for (auto& p : players_) {
     int id = p.id;
-    MenuItem it{p.name, "", partnerOk(p) ? "" : "En combat ou ailleurs : il faudra attendre.", partnerOk(p), [this, id] { pickCreature(id); }};
+    MenuItem it{p.name, "", partnerOk(p) ? "" : T("En combat ou ailleurs : il faudra attendre."), partnerOk(p), [this, id] { pickCreature(id); }};
     it.shrink = true;
     m.items.push_back(it);
   }
-  m.items.push_back({"Retour", "", "", true, [this] { G.menus.pop(); }});
+  m.items.push_back({T("Retour"), "", "", true, [this] { G.menus.pop(); }});
   G.menus.push(m);
 }
 
@@ -180,31 +181,31 @@ void Online::pickCreature(int with) {
   if (!loadMine(why)) return tradeNote(why);
   bool run = state_ == State::Expedition;
   Menu m;
-  m.title = "Donner à " + utf8Prefix(nameOf(with), 12);
+  m.title = T("Donner à ") + utf8Prefix(nameOf(with), 12);
   place(m, run, 1);
   m.rows = 8;
   for (size_t i = 0; i < G.team.size(); i++) {
     const Fighter& f = *G.team[i];
     if (f.S().human) continue;
     int slot = (int)i;
-    MenuItem it{f.name(), "N." + std::to_string(f.lvl), describe(f), true, [this, with, slot, run] {
+    MenuItem it{f.name(), T("N.") + std::to_string(f.lvl), describe(f), true, [this, with, slot, run] {
                   std::string name = utf8Prefix(nameOf(with), 12);
                   Menu h;
-                  h.title = "Comment ?";
+                  h.title = T("Comment ?");
                   place(h, run, 2);
                   h.rows = 3;
-                  h.items.push_back({"Échange", "", "Une contre une : " + name + " choisit la créature qu'il ou elle donne, puis vous acceptez ou non.",
+                  h.items.push_back({T("Échange"), "", T("Une contre une : ") + name + T(" choisit la créature qu'il ou elle donne, puis vous acceptez ou non."),
                                      true, [this, with, slot] { offerTrade(with, slot, false); }});
-                  h.items.push_back({"Cadeau", "", name + " la reçoit sans rien donner en retour.", true,
+                  h.items.push_back({T("Cadeau"), "", name + T(" la reçoit sans rien donner en retour."), true,
                                      [this, with, slot] { offerTrade(with, slot, true); }});
-                  h.items.push_back({"Retour", "", "", true, [this] { G.menus.pop(); }});
+                  h.items.push_back({T("Retour"), "", "", true, [this] { G.menus.pop(); }});
                   G.menus.push(h);
                 }};
     it.shrink = true;
     m.items.push_back(it);
   }
-  if (m.items.empty()) return tradeNote("Vous n'avez aucune créature à donner (les héros ne s'échangent pas).");
-  m.items.push_back({"Retour", "", "", true, [this] { G.menus.pop(); }});
+  if (m.items.empty()) return tradeNote(T("Vous n'avez aucune créature à donner (les héros ne s'échangent pas)."));
+  m.items.push_back({T("Retour"), "", "", true, [this] { G.menus.pop(); }});
   G.menus.push(m);
 }
 
@@ -213,7 +214,7 @@ void Online::offerTrade(int with, int slot, bool gift) {
   const Player* p = player(with);
   if (trade_.step != Trade::Step::None || !p || !partnerOk(*p) || !canTrade(&why) || !loadMine(why) || slot < 0 || slot >= (int)G.team.size() ||
       G.team[(size_t)slot]->S().human)
-    return tradeNote(why.empty() ? "Échange impossible pour le moment." : why);
+    return tradeNote(why.empty() ? T("Échange impossible pour le moment.") : why);
   trade_ = Trade{};
   trade_.step = Trade::Step::Offered;
   trade_.asked = true;
@@ -233,7 +234,7 @@ void Online::offerTrade(int with, int slot, bool gift) {
 void Online::answerTrade(int slot) {
   if (trade_.step != Trade::Step::Answering) return;
   std::string why;
-  if (!loadMine(why)) return endTrade(why, me_ + " ne peut pas échanger.");
+  if (!loadMine(why)) return endTrade(why, me_ + T(" ne peut pas échanger."));
   if (trade_.gift) {
     sendTo(trade_.with, Json{{"t", "echange"}, {"e", "accepte"}});
   } else {
@@ -253,7 +254,7 @@ void Online::endTrade(const std::string& note, const std::string& tell) {
   tradeNote(note);
   // Ferme le menu de l'échange (pas un autre : un dialogue en cours peut attendre une réponse)
   if (state_ == State::Salon && screen_) salon();
-  else if (G.menus.active() && G.menus.top().title.rfind("Échange :", 0) == 0) G.menus.clear();
+  else if (G.menus.active() && G.menus.top().title.rfind(T("Échange :"), 0) == 0) G.menus.clear();
 }
 
 void Online::onTrade(int from, const Json& m) {
@@ -266,12 +267,12 @@ void Online::onTrade(int from, const Json& m) {
     bool gift = jget(m, "cadeau", false);
     Json c = m.value("creature", Json());
     if (trade_.step != Trade::Step::None || !p || jget(m, "run", false) != (state_ == State::Expedition) || !canTrade())
-      return refuse(me_ + " ne peut pas échanger pour le moment : réessayez plus tard.");
-    if (!creatureFrom(c)) return refuse(me_ + " n'a pas encore atteint la région de cette créature.");
-    if (!loadMine(why)) return refuse(me_ + " n'a pas de partie sauvegardée.");
+      return refuse(me_ + T(" ne peut pas échanger pour le moment : réessayez plus tard."));
+    if (!creatureFrom(c)) return refuse(me_ + T(" n'a pas encore atteint la région de cette créature."));
+    if (!loadMine(why)) return refuse(me_ + T(" n'a pas de partie sauvegardée."));
     bool any = false;
     for (auto& f : G.team) any = any || !f->S().human;
-    if (!gift && !any) return refuse(me_ + " n'a aucune créature à donner en retour.");
+    if (!gift && !any) return refuse(me_ + T(" n'a aucune créature à donner en retour."));
     trade_ = Trade{};
     trade_.step = Trade::Step::Answering;
     trade_.with = from;
@@ -283,7 +284,7 @@ void Online::onTrade(int from, const Json& m) {
   if (trade_.step == Trade::Step::None || from != trade_.with) return;  // échange déjà fini (annulé de ce côté)
   if (e == "refus") {
     trade_.with = -1;  // pas de réponse au refus
-    return endTrade(jget<std::string>(m, "raison", name + " refuse l'échange."));
+    return endTrade(jget<std::string>(m, "raison", name + T(" refuse l'échange.")));
   }
   // Celui qui reçoit la proposition fait l'échange chez lui en premier (« go »), puis prévient
   // (« fait ») : si la connexion coupe entre les deux, la créature est en double, jamais perdue.
@@ -292,18 +293,18 @@ void Online::onTrade(int from, const Json& m) {
     trade_.step = Trade::Step::Waiting;
   } else if (e == "go" && trade_.step == Trade::Step::Waiting && !trade_.asked) {
     std::string got = label(trade_.theirs), gave = trade_.gift ? "" : label(trade_.mine);
-    if (!commitTrade()) return endTrade("L'échange n'a pas pu être enregistré.", "L'échange n'a pas pu être fait chez " + me_ + ".");
+    if (!commitTrade()) return endTrade(T("L'échange n'a pas pu être enregistré."), T("L'échange n'a pas pu être fait chez ") + me_ + ".");
     sendTo(from, Json{{"t", "echange"}, {"e", "fait"}});
-    if (trade_.gift) endTrade("Cadeau reçu : " + got + ", de la part de " + name + ".");
-    else endTrade("Échange fait : " + gave + " contre " + got + ".");
+    if (trade_.gift) endTrade(T("Cadeau reçu : ") + got + T(", de la part de ") + name + ".");
+    else endTrade(T("Échange fait : ") + gave + T(" contre ") + got + ".");
   } else if (e == "fait" && trade_.step == Trade::Step::Waiting && trade_.asked) {
     std::string gave = label(trade_.mine), got = trade_.gift ? "" : label(trade_.theirs);
-    if (!commitTrade()) endTrade("L'échange n'a pas pu être enregistré chez vous.");
-    else if (trade_.gift) endTrade("Cadeau envoyé : " + gave + " part chez " + name + ".");
-    else endTrade("Échange fait : " + gave + " contre " + got + ".");
+    if (!commitTrade()) endTrade(T("L'échange n'a pas pu être enregistré chez vous."));
+    else if (trade_.gift) endTrade(T("Cadeau envoyé : ") + gave + T(" part chez ") + name + ".");
+    else endTrade(T("Échange fait : ") + gave + T(" contre ") + got + ".");
   } else if (e == "contre" && trade_.step == Trade::Step::Offered && !trade_.gift) {
     Json c = m.value("creature", Json());
-    if (!creatureFrom(c)) return endTrade("Vous n'avez pas encore atteint la région de la créature proposée.", me_ + " n'a pas encore atteint la région de cette créature.");
+    if (!creatureFrom(c)) return endTrade(T("Vous n'avez pas encore atteint la région de la créature proposée."), me_ + T(" n'a pas encore atteint la région de cette créature."));
     trade_.theirs = c;
     trade_.step = Trade::Step::Countered;
   }
@@ -317,12 +318,12 @@ void Online::updateTrade() {
   bool run = state_ == State::Expedition;
   if (!p || (state_ != State::Salon && !run) || run != trade_.run || p->run != trade_.run) {
     if (!p) trade_.with = -1;
-    return endTrade(p ? "Échange annulé." : "L'autre joueur est parti : échange annulé.", p ? me_ + " a quitté l'échange." : "");
+    return endTrade(p ? T("Échange annulé.") : T("L'autre joueur est parti : échange annulé."), p ? me_ + T(" a quitté l'échange.") : "");
   }
   const Expedition* X = G.expedition_.get();
   bool free = run ? G.mode == Mode::Map && !G.battle_ && !G.sc.busy() && !G.moving && X && X->active() && !X->onScreen()
                   : screen_;
-  bool open = G.menus.active() && G.menus.top().title.rfind("Échange :", 0) == 0;
+  bool open = G.menus.active() && G.menus.top().title.rfind(T("Échange :"), 0) == 0;
   if (free && !G.editingText() && (!open || trade_.shown != trade_.step)) showTrade();
 }
 
@@ -340,58 +341,58 @@ void Online::showTrade() {
     it.shrink = true;
     m.items.push_back(it);
   };
-  auto refuse = [this] { endTrade("Vous avez refusé l'échange.", me_ + " refuse l'échange."); };
+  auto refuse = [this] { endTrade(T("Vous avez refusé l'échange."), me_ + T(" refuse l'échange.")); };
   switch (trade_.step) {
     case Trade::Step::None: return;
     case Trade::Step::Offered:
-      m.title = "Échange : en attente";
-      info("Vous donnez", label(trade_.mine), describe(trade_.mine));
-      info(trade_.gift ? "En cadeau à" : "Contre une de", name, "");
-      m.items.push_back({"Annuler", "", "En attente de la réponse de " + name + ".", true,
-                         [this] { endTrade("Échange annulé.", me_ + " a annulé l'échange."); }});
+      m.title = T("Échange : en attente");
+      info(T("Vous donnez"), label(trade_.mine), describe(trade_.mine));
+      info(trade_.gift ? T("En cadeau à") : T("Contre une de"), name, "");
+      m.items.push_back({T("Annuler"), "", T("En attente de la réponse de ") + name + ".", true,
+                         [this] { endTrade(T("Échange annulé."), me_ + T(" a annulé l'échange.")); }});
       m.onCancel = m.items.back().act;
       break;
     case Trade::Step::Answering:
       if (trade_.gift) {
-        m.title = "Échange : cadeau de " + name;
-        info(name + " offre", label(trade_.theirs), describe(trade_.theirs));
-        m.items.push_back({"Accepter", "", "Recevoir " + label(trade_.theirs) + " sans rien donner.", true, [this] { answerTrade(-1); }});
+        m.title = T("Échange : cadeau de ") + name;
+        info(name + T(" offre"), label(trade_.theirs), describe(trade_.theirs));
+        m.items.push_back({T("Accepter"), "", T("Recevoir ") + label(trade_.theirs) + T(" sans rien donner."), true, [this] { answerTrade(-1); }});
       } else {
         std::string why;
-        m.title = "Échange : avec " + name;
-        info(name + " donne", label(trade_.theirs), describe(trade_.theirs));
-        m.items.push_back(menuHeader("Votre créature en retour"));
+        m.title = T("Échange : avec ") + name;
+        info(name + T(" donne"), label(trade_.theirs), describe(trade_.theirs));
+        m.items.push_back(menuHeader(T("Votre créature en retour")));
         if (loadMine(why))
           for (size_t i = 0; i < G.team.size(); i++) {
             const Fighter& f = *G.team[i];
             if (f.S().human) continue;
             int slot = (int)i;
-            MenuItem it{f.name(), "N." + std::to_string(f.lvl), describe(f), true, [this, slot] { answerTrade(slot); }};
+            MenuItem it{f.name(), T("N.") + std::to_string(f.lvl), describe(f), true, [this, slot] { answerTrade(slot); }};
             it.shrink = true;
             m.items.push_back(it);
           }
       }
-      m.items.push_back({"Refuser", "", "", true, refuse});
+      m.items.push_back({T("Refuser"), "", "", true, refuse});
       m.onCancel = refuse;
       m.sel = 1;
       while (m.sel < (int)m.items.size() - 1 && m.items[(size_t)m.sel].header) m.sel++;
       break;
     case Trade::Step::Countered:
-      m.title = "Échange : avec " + name;
-      info("Vous donnez", label(trade_.mine), describe(trade_.mine));
-      info("Vous recevez", label(trade_.theirs), describe(trade_.theirs));
-      m.items.push_back({"Accepter", "", "Faire l'échange.", true, [this] {
+      m.title = T("Échange : avec ") + name;
+      info(T("Vous donnez"), label(trade_.mine), describe(trade_.mine));
+      info(T("Vous recevez"), label(trade_.theirs), describe(trade_.theirs));
+      m.items.push_back({T("Accepter"), "", T("Faire l'échange."), true, [this] {
                            sendTo(trade_.with, Json{{"t", "echange"}, {"e", "go"}});  // l'autre le fait d'abord (voir onTrade)
                            trade_.step = Trade::Step::Waiting;
                            showTrade();
                          }});
-      m.items.push_back({"Refuser", "", "", true, refuse});
+      m.items.push_back({T("Refuser"), "", "", true, refuse});
       m.onCancel = refuse;
       m.sel = 2;
       break;
     case Trade::Step::Waiting:
-      m.title = "Échange : un instant…";
-      info(trade_.gift ? "Vous recevez" : "Vous donnez", label(trade_.gift ? trade_.theirs : trade_.mine), "");
+      m.title = T("Échange : un instant…");
+      info(trade_.gift ? T("Vous recevez") : T("Vous donnez"), label(trade_.gift ? trade_.theirs : trade_.mine), "");
       m.cancelable = false;
       break;
   }

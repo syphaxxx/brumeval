@@ -152,6 +152,51 @@ temps :
 - **Portraits** dans les dialogues, **écran titre** animé (étoiles, étoile filante,
   lucioles, reflet sur le titre).
 
+## Astuces et conseils (2.8)
+
+- **Astuces** : la première fois qu'on rencontre une règle (bouclier, faiblesse,
+  rôle, météo, terrain, duo, phase d'un boss, gemme…), une courte explication
+  s'affiche ; **F1** ouvre aussitôt la page d'Aide qui va avec. Options >
+  Astuces les coupe.
+- **Conseils** : les aubergistes, et le Journal (Échap > Journal), parlent du
+  prochain gardien : où il est, ses faiblesses déjà découvertes, quoi viser et
+  quelle gemme apporter.
+- **Menus** : le sac est rangé par catégories (soins, capture, gemmes,
+  équipement, matériaux, objets importants) ; en choisissant un équipement, on
+  voit ce qu'il change par rapport à l'actuel et ses chatons ; le menu Duo
+  affiche le coût en PM.
+
+## Acte 2 : l'archipel d'Écume (3.0)
+
+Une fois la Mère des Brumes apaisée, le **pêcheur** de la vallée peut enfin
+traverser : son bateau mène à **Port d'Écume** (soins, boutique avec de nouvelles
+armes, armures et gemmes, auberge, passeur pour rentrer).
+
+- **Récif d'Écume** : nouvelles créatures (Écumet, Coquillon et son évolution
+  Bastillon, Voltanguille et Fulgoray, Nuageon, Orageline, Noyelin), deux
+  dresseurs, des perles d'écume pour la quête du phare.
+- **Ruines englouties** : une **énigme** (rochers à pousser sur des dalles pour
+  ouvrir une grille), puis le **Kraken des récifs**.
+- **Tour de l'Orage** : le **Griffon tempête**, une seconde énigme à trois
+  rochers, et au sommet le **Seigneur des Orages**, en trois phases : le vrai
+  final.
+- **Énigmes** : marchez dans un rocher pour le pousser. Coincé ? Échap >
+  **Recommencer l'énigme**.
+- Quête **Les perles du phare** (quatre perles d'écume) ; la Gemme du maître et
+  la Gemme d'orage se trouvent en chemin.
+
+## Langue : français ou anglais (3.1)
+
+Options > **Langue** : le jeu passe aussitôt en anglais (ou en français). Au premier
+lancement, il choisit la langue de l'ordinateur. Les éditeurs (Réglages, cartes,
+histoire) restent en français. Le monde généré de l'Expédition garde des noms
+français.
+
+Pour les curieux : toutes les phrases sont dans `data/langues/en.json` (phrase
+française → traduction). `python outils/textes.py` y ajoute les nouvelles phrases
+après un changement (avec une traduction vide : le jeu affiche alors le français),
+et `python outils/textes.py en --manque` liste celles qui restent à traduire.
+
 ## Techniques rapides et lourdes
 
 Chaque technique a un rythme, indiqué dans l'aide en bas de l'écran :
@@ -267,6 +312,15 @@ graine redonne exactement le même monde : on peut la noter et la partager.
 4. Au **Camp**, les éclats achètent des améliorations permanentes : plus de héros
    et de créatures proposés au départ, or et objets de départ, niveau de
    départ, captures plus faciles, plus d'expérience.
+
+Depuis la 2.9, l'Expédition profite aussi des nouveautés des versions 2.5 à 2.7 :
+les créatures générées ont un **talent** (selon leur type) et parfois un **rôle**
+(protecteur, soigneur, chef), les héros un talent selon leur classe ; chaque
+**gardien a des phases** (il se déchaîne à mi-vie, change le temps dès la région 2,
+appelle à l'aide dès la région 4) ; il laisse une **gemme**, et les boutiques en
+vendent de plus en plus. Les duos d'un héros et de sa créature marchent aussi.
+(Les mondes des graines déjà jouées gagnent ces nouveautés ; le reste ne change
+pas.)
 
 L'expédition se sauvegarde (Échap > Sauvegarder, et à chaque nouvelle région)
 dans un fichier à part, `expedition.txt` : la partie principale n'est jamais

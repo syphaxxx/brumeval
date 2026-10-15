@@ -114,7 +114,15 @@ class Game {
   std::string bannerText;
 
   bool blocked(int x, int y) const;
-  bool blockedOn(const MapDef& m, int x, int y) const;  // case occupée sur cette carte
+  bool blockedOn(const MapDef& m, int x, int y) const;
+  // Énigme de la carte (3.0) : rochers à pousser sur les plaques. boulders_ : leurs cases sur la carte affichée
+  // (remis au départ en entrant sur la carte, sauf si l'énigme est résolue : ils restent sur les plaques)
+  std::vector<std::pair<int, int>> boulders_;
+  int bouldersMap_ = -1;  // carte dont boulders_ décrit les rochers
+  void resetBoulders();
+  bool boulderAt(int x, int y) const;
+  bool puzzleSolved(const MapDef& m) const { return m.puzzleFlag.empty() || has(m.puzzleFlag); }
+  void pushBoulder(int x, int y, int dx, int dy);  // le joueur pousse le rocher de (x, y)  // case occupée sur cette carte
   bool npcVisible(const Npc& n) const;
   bool bossAlive(const BossSpot& b) const;
   void tryMove(int d);
@@ -152,7 +160,13 @@ class Game {
   void drawEvolution();
   std::string evoFrom_, evoTo_;              // effet en cours (espèces avant et après), vide : aucun
   float evoT_ = 0;                           // début de l'effet (Game::time)
-  bool offerEvolve_ = true;                  // le mode test les coupe (personne ne répondrait), sauf pour les tester
+  bool offerEvolve_ = true;
+  // Astuces (2.8) : celles déjà montrées (lignes « astuce » de la sauvegarde) ; le mode test les coupe sauf dans
+  // leur test ; tip() la montre dans ce script si elle est nouvelle (F1 ouvre alors sa page d'Aide)
+  std::set<std::string> tipsSeen;
+  bool tipsOff_ = false;
+  bool tip(const std::string& id, Script& s);
+  std::string adviceText() const;  // conseil pour le prochain boss (2.8) ; vide : tous battus                  // le mode test les coupe (personne ne répondrait), sauf pour les tester
   // Forge de Forgeroc (forge.cpp) : renforcer une arme ou une armure contre de l'or et des matériaux
   void forgeMenu(int sel = 0);
   bool forge(const FighterP& owner, const std::string& id);  // owner nul : l'objet est dans le sac

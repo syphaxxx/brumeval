@@ -107,6 +107,16 @@
   "pecheur": {
     "pages": [
       {
+        "si": {"drapeau": "boss4"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Pêcheur : La brume est partie ! Mon bateau peut enfin traverser jusqu'à l'archipel d'Écume. Mais là-bas, on dit qu'un orage gronde…"
+          },
+          {"action": "dire", "texte": "Pêcheur : Mon bateau vous attend au bord du lac, juste là, à droite. Il vous mènera à Port d'Écume."}
+        ]
+      },
+      {
         "si": {"sans_drapeau": "pecheur"},
         "actions": [
           {"action": "drapeau", "nom": "pecheur"},
@@ -369,6 +379,7 @@
         "action": "dire",
         "texte": "Aubergiste : Une nuit ici coûte 20 pièces d'or. Le repos rend tous les PV et PM."
       },
+      {"action": "conseil"},
       {
         "action": "question",
         "texte": "Passer la nuit (20 or) ?",
@@ -1353,6 +1364,322 @@
               {
                 "action": "dire",
                 "texte": "Les Tisonnels s'enfuient vers le volcan !"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "passeur": {
+    "actions": [{"action": "dire", "texte": "Passeur : Le bateau pour la vallée est au bout du ponton. Bon vent !"}]
+  },
+  "port_soin": {
+    "actions": [
+      {"action": "soigner"},
+      {
+        "action": "dire",
+        "texte": "Guérisseuse : L'air marin fait du bien. Votre équipe est en pleine forme !"
+      }
+    ]
+  },
+  "boutique_port": {
+    "actions": [
+      {
+        "action": "boutique",
+        "objets": [
+          "potion",
+          "superpotion",
+          "ether",
+          "elixir",
+          "plume",
+          "remede",
+          "lanterne_or",
+          "lame_ecume",
+          "baton_orage",
+          "armure_ecaille",
+          "robe_orage",
+          "amulette_maree",
+          "gemme_vol",
+          "gemme_contre",
+          "gemme_briseur"
+        ]
+      }
+    ]
+  },
+  "port_maison": {
+    "actions": [
+      {"action": "dire", "texte": "Une maison propre qui sent le sel. Des cartes marines couvrent les murs."}
+    ]
+  },
+  "gardienne_phare": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:perles:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gardienne : Regardez comme il brille ! Les bateaux rentrent sans crainte, grâce à vous."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:perles", "objet_min": {"perle": 4}},
+        "actions": [
+          {"action": "retirer", "objet": "perle"},
+          {
+            "action": "dire",
+            "texte": "Gardienne : Quatre perles ! Le phare va pouvoir se rallumer. Prenez ceci, c'était à mon père."
+          },
+          {"action": "donner", "objet": "gemme_briseur"},
+          {"action": "or", "quantite": 1500},
+          {"action": "quete", "id": "perles", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:perles"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gardienne : Il me faut quatre perles d'écume. Cherchez dans les coffres du Récif… et des Ruines."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gardienne : Mon phare s'est éteint quand l'orage est revenu. Sans lui, les bateaux se perdent."
+          },
+          {
+            "action": "dire",
+            "texte": "Gardienne : Il se rallume avec quatre perles d'écume. Vous voulez bien m'aider ?"
+          },
+          {"action": "quete", "id": "perles"}
+        ]
+      }
+    ]
+  },
+  "dresseur_recif1": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "recif_dresseur1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Chasseur de perles : Ce récif est à moi ! Mes créatures vont vous renvoyer à la nage !"
+          },
+          {
+            "action": "combat",
+            "nom": "Le chasseur de perles",
+            "ennemis": [{"espece": "voltanguille", "niveau": 44}, {"espece": "coquillon", "niveau": 44}],
+            "renforts": [{"espece": "ecumet", "niveau": 45}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "recif_dresseur1"},
+              {"action": "dire", "texte": "Chasseur de perles : Bon, bon… Le récif est à tout le monde."},
+              {"action": "or", "quantite": 700}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Chasseur de perles : Il paraît que le Kraken dort sur un tas de perles. Moi, je n'y vais pas !"
+          }
+        ]
+      }
+    ]
+  },
+  "dresseur_recif2": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "recif_dresseur2"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Chevalier errant : Seuls les plus forts passent vers les ruines. Montrez-moi !"
+          },
+          {
+            "action": "combat",
+            "nom": "Le chevalier errant",
+            "ennemis": [{"espece": "chevalier", "niveau": 46}, {"espece": "orageline", "niveau": 45}],
+            "renforts": [{"espece": "noyelin", "niveau": 45}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "recif_dresseur2"},
+              {"action": "dire", "texte": "Chevalier errant : Vous êtes dignes. Prenez ceci pour la route."},
+              {"action": "donner", "objet": "elixir"},
+              {"action": "or", "quantite": 800}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Chevalier errant : Dans les ruines, réfléchissez avant de pousser les rochers."
+          }
+        ]
+      }
+    ]
+  },
+  "kraken": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "L'eau bouillonne. D'immenses tentacules s'enroulent autour des colonnes : le Kraken des récifs se dresse !"
+      },
+      {
+        "action": "question",
+        "texte": "Affronter le Kraken des récifs ?",
+        "oui": [
+          {
+            "action": "combat",
+            "ennemis": [
+              {"espece": "coquillon", "niveau": 46},
+              {
+                "espece": "kraken",
+                "niveau": 53,
+                "pv": 17,
+                "bouclier": 12,
+                "boss": true,
+                "phases": [
+                  {"pv": 0.6, "message": "Le Kraken plonge et revient, couvert de corail !", "bouclier": 14},
+                  {
+                    "pv": 0.3,
+                    "message": "Le Kraken déchaîne la marée !",
+                    "meteo": "pluie",
+                    "bonus": {"magie": 1}
+                  }
+                ]
+              },
+              {"espece": "voltanguille", "niveau": 46}
+            ],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "kraken"},
+              {"action": "donner", "objet": "ecaille_kraken"},
+              {"action": "donner", "objet": "gemme_orage"},
+              {
+                "action": "dire",
+                "texte": "Le Kraken s'enfonce dans les profondeurs. Au nord, un escalier mène vers la Tour de l'Orage."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "griffon": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Un cri perçant déchire le vent. Le Griffon tempête déploie ses ailes et barre l'escalier !"
+      },
+      {
+        "action": "question",
+        "texte": "Affronter le Griffon tempête ?",
+        "oui": [
+          {
+            "action": "combat",
+            "ennemis": [
+              {"espece": "orageline", "niveau": 49},
+              {
+                "espece": "griffon",
+                "niveau": 55,
+                "pv": 15,
+                "boss": true,
+                "phases": [
+                  {
+                    "pv": 0.5,
+                    "message": "Le Griffon s'élève dans l'orage !",
+                    "meteo": "orage",
+                    "bonus": {"vitesse": 1}
+                  }
+                ]
+              }
+            ],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "griffon"},
+              {"action": "donner", "objet": "plume_griffon"},
+              {
+                "action": "dire",
+                "texte": "Le Griffon s'envole vers le large. L'escalier est libre… mais une grille ferme encore le sommet."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "seigneur_orage": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Au sommet, la tempête prend forme : deux yeux d'éclair s'ouvrent dans les nuages."
+      },
+      {
+        "action": "dire",
+        "texte": "Seigneur des Orages : La brume me retenait. Vous l'avez dissipée… Merci. Maintenant, je vais recouvrir le monde !"
+      },
+      {
+        "action": "question",
+        "texte": "Affronter le Seigneur des Orages ?",
+        "oui": [
+          {
+            "action": "combat",
+            "ennemis": [
+              {
+                "espece": "seigneur_orage",
+                "niveau": 56,
+                "pv": 7.5,
+                "bouclier": 14,
+                "boss": true,
+                "phases": [
+                  {
+                    "pv": 0.7,
+                    "message": "L'orage gronde : le Seigneur appelle la foudre !",
+                    "meteo": "orage",
+                    "bonus": {"magie": 1}
+                  },
+                  {
+                    "pv": 0.4,
+                    "message": "Le Seigneur des Orages se divise en éclairs !",
+                    "bouclier": 16,
+                    "renforts": [{"espece": "nuageon", "niveau": 50}]
+                  },
+                  {"pv": 0.15, "message": "Dernier souffle de la tempête !", "bonus": {"vitesse": 1}}
+                ]
+              }
+            ],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "boss5"},
+              {"action": "donner", "objet": "coeur_orage"},
+              {
+                "action": "dire",
+                "texte": "Le Seigneur des Orages se dissout en une pluie tiède. Le ciel se dégage, d'un bleu que personne n'avait vu depuis mille ans."
+              },
+              {
+                "action": "dire",
+                "texte": "Sur l'archipel, les phares s'allument un à un. Brumeval et les îles d'Écume sont enfin en paix."
+              },
+              {
+                "action": "fin",
+                "texte": "La brume et l'orage sont apaisés. Vous avez sauvé Brumeval et l'archipel d'Écume. Merci d'avoir joué jusqu'au bout !"
               }
             ]
           }

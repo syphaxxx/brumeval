@@ -75,6 +75,7 @@ jobs:
             if [ "$RUNNER_OS" = "macOS" ]; then
               lldb --batch -o run -k "thread backtrace" -k quit -- "$EXE" --test captures2 2>&1 | tail -60
             elif [ "$RUNNER_OS" = "Linux" ]; then
+              command -v gdb >/dev/null || sudo apt-get install -y -qq gdb >/dev/null
               gdb -batch -ex run -ex bt --args "$EXE" --test captures2 2>&1 | tail -60
             fi
             echo "::endgroup::"

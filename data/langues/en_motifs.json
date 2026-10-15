@@ -1,0 +1,21 @@
+[
+  ["^Bienvenue à (.+) ! Les voyageurs se font rares par ici\\.$", "Welcome to {=1}! Travellers are rare around here."],
+  ["^(.+) garde la route vers (.+)\\. Personne ne sait ce qu'il craint…$", "{=1} guards the road to {2}. Nobody knows what it fears…"],
+  ["^(.+) garde la route vers (.+)\\. Il paraît qu'il craint le type (.+)\\.$", "{=1} guards the road to {2}. They say it fears the {3} type."],
+  ["^Dans les hautes herbes, on croise des (.+) et des (.+)\\.$", "In the tall grass, you run into {=1} and {=2}."],
+  ["^(.+)\\. À l'est : (.+), gardien de la route\\.$", "{=1}. To the east: {=2}, guardian of the road."],
+  ["^Ici veille (.+)\\. Au-delà : (.+)\\.$", "Here watches {=1}. Beyond: {2}."],
+  ["^Habitante : Vous partez vers (.+) \\? Prenez ceci\\.$", "Resident: You're heading for {=1}? Take this."],
+  ["^(.+) se déchaîne !$", "{=1} goes berserk!"],
+  ["^(.+) appelle à l'aide !$", "{=1} calls for help!"],
+  ["^(.+) s'efface dans un dernier grondement\\. La route vers (.+) est libre !$", "{=1} fades with a last rumble. The road to {2} is open!"],
+  ["^(.+), gardien de la région, vous barre la route !$", "{=1}, guardian of the region, blocks your way!"],
+  ["^Affronter (.+) \\?$", "Face {=1}?"],
+  ["^(.+) est bien plus fort que moi\\. Prudence !$", "{=1} is much stronger than me. Careful!"],
+  ["^(.+) \\((.+)\\) : Je voudrais aller plus loin, moi aussi\\.$", "{=1} ({2}): I'd like to go further too."],
+  ["^Proposer à (.+) de vous suivre \\?$", "Ask {=1} to come with you?"],
+  ["^(Plaines|Vallon|Collines|Landes|Prairies|Forêt|Bois|Sylve|Futaie|Monts|Cratère|Caldeira|Volcan|Pics|Glacier|Toundra|Cols) (?:de |d')(.+)$", "{1} of {=2}"],
+  ["^(Le|La) (bretteur|bretteuse|pillard|pillarde|lancier|lancière|brigand|brigande|chasseur|chasseuse|sorcier|sorcière|druide|druidesse) (.+)$", "{2} {=3}"],
+  ["^(.+), type (.+)$", "{1}, {2} type"],
+  ["^([^:]{1,24}) : (.+)$", "{=1}: {2}"]
+]

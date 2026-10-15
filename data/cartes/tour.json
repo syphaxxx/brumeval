@@ -1,0 +1,82 @@
+{
+  "id": "tour",
+  "nom": "Tour de l'Orage",
+  "theme": "neige",
+  "ambiance": {"effet": "neige"},
+  "tuiles": [
+    "##############################",
+    "#########............#########",
+    "#########.x........x.#########",
+    "#########............#########",
+    "#########............#########",
+    "#########............#########",
+    "#########............#########",
+    "#########............#########",
+    "#########............#########",
+    "#########.x........x.#########",
+    "#########............#########",
+    "##############DD##############",
+    "########..............########",
+    "########.P.....P....P.########",
+    "########..............########",
+    "########...O......O...########",
+    "########..............########",
+    "########......O.......########",
+    "########..............########",
+    "########..............########",
+    "##############..##############",
+    "##############..##############",
+    "############......############",
+    "############......############",
+    "############......############",
+    "############......############",
+    "####nnnnnnnnnn..nnnnnnnnnn####",
+    "####nnnnnnnnnnnnnnnnnnnnnn####",
+    "####nnnnnnnnnnnnnnnnnnnnnn####",
+    "####nnnnnnnnnnnnnnnnnnnnnn####",
+    "####nnnnnnnnnnnnnnnnnnnnnn####",
+    "####nnnnnnnnnnnnnnnnnnnnnn####",
+    "####nnnnnnnnnnnnnnnnnnnnnn####",
+    "####nnnnnnnnnnnnnnnnnnnnnn####",
+    "####nnnnnnnnnnnnnnnnnnnnnn####",
+    "####nnnnnnnnnnnnnnnnnnnnnn####",
+    "####nnnnnnnnnnnnnnnnnnnnnn####",
+    "####nnnnnnnnnn..nnnnnnnnnn####",
+    "####nnnnnnnnnn..nnnnnnnnnn####",
+    "##############..##############"
+  ],
+  "batiments": [],
+  "habitants": [],
+  "coffres": [
+    {"x": 5, "y": 27, "objet": "elixir", "quantite": 2},
+    {"x": 24, "y": 27, "objet": "gemme_orage", "quantite": 1}
+  ],
+  "panneaux": [],
+  "passages": [
+    {"x": 14, "y": 39, "vers": "ruines", "tx": 17, "ty": 1, "direction": "bas"},
+    {"x": 15, "y": 39, "vers": "ruines", "tx": 18, "ty": 1, "direction": "bas"}
+  ],
+  "enigme": {
+    "drapeau": "tour_grille",
+    "x": 14,
+    "y": 19,
+    "message": "Trois dalles, trois pierres : l'escalier du sommet s'ouvre dans un grondement de tonnerre !",
+    "zone": {"x": 8, "y": 12, "l": 14, "h": 8}
+  },
+  "zones": [
+    {
+      "x": 0,
+      "y": 26,
+      "l": 30,
+      "h": 14,
+      "niveau_min": 48,
+      "niveau_max": 52,
+      "max_ennemis": 4,
+      "creatures": ["orageline", "fulgoray", "noyelin", "bastillon", "nuageon"]
+    }
+  ],
+  "boss": [
+    {"x": 14, "y": 22, "espece": "griffon", "drapeau": "griffon", "evenement": "griffon"},
+    {"x": 14, "y": 3, "espece": "seigneur_orage", "drapeau": "boss5", "evenement": "seigneur_orage"}
+  ]
+}

@@ -1,3 +1,4 @@
+#include "i18n.hpp"
 #include "upnp.hpp"
 
 #include "net.hpp"
@@ -29,7 +30,7 @@ static void search(int port) {
   UPNPDev* devs = upnpDiscover(2000, nullptr, nullptr, UPNP_LOCAL_PORT_ANY, 0, 2, &err);
   if (!devs) {
     r.done = true;
-    r.error = "Aucune box trouvée qui accepte l'ouverture automatique (UPnP désactivé ?).";
+    r.error = T("Aucune box trouvée qui accepte l'ouverture automatique (UPnP désactivé ?).");
     return set(r);
   }
   UPNPUrls urls;
@@ -41,7 +42,7 @@ static void search(int port) {
   if (igd == UPNP_NO_IGD || igd == UPNP_UNKNOWN_DEVICE) {
     if (igd != UPNP_NO_IGD) FreeUPNPUrls(&urls);
     r.done = true;
-    r.error = "La box ne propose pas l'ouverture automatique des ports (UPnP).";
+    r.error = T("La box ne propose pas l'ouverture automatique des ports (UPnP).");
     return set(r);
   }
   char ext[64] = "";
@@ -53,7 +54,7 @@ static void search(int port) {
     add = UPNP_AddPortMapping(urls.controlURL, data.first.servicetype, p.c_str(), p.c_str(), lan, "Brumeval", "TCP", nullptr, "7200");
   r.done = true;
   if (add != UPNPCOMMAND_SUCCESS) {
-    r.error = std::string("La box a refusé d'ouvrir le port ") + p + " (" + strupnperror(add) + ").";
+    r.error = std::string(T("La box a refusé d'ouvrir le port ")) + p + " (" + strupnperror(add) + ").";
   } else {
     {
       std::lock_guard<std::mutex> l(mu);
@@ -62,8 +63,8 @@ static void search(int port) {
       serviceType = data.first.servicetype;
     }
     if (igd == UPNP_PRIVATEIP_IGD || !net::isPublicIPv4(r.external))
-      r.error = "Port ouvert, mais la box n'a pas d'adresse Internet à elle (" + (r.external.empty() ? std::string("inconnue") : r.external) +
-                ") : votre fournisseur la partage entre plusieurs abonnés.";
+      r.error = T("Port ouvert, mais la box n'a pas d'adresse Internet à elle (") + (r.external.empty() ? std::string("inconnue") : r.external) +
+                T(") : votre fournisseur la partage entre plusieurs abonnés.");
     else
       r.ok = true;
   }

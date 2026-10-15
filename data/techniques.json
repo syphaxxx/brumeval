@@ -1537,5 +1537,39 @@
     "cout": 6,
     "effet": {"statut": "paralysie", "chance": 30},
     "description": "La foudre court dans l'eau sur toute une colonne."
+  },
+  {
+    "id": "trombe",
+    "nom": "Trombe",
+    "type": "eau",
+    "genre": "magique",
+    "cible": "ennemi",
+    "puissance": 66,
+    "cout": 10,
+    "zone": "colonne",
+    "deplace": "pousse",
+    "description": "Une colonne d'eau qui repousse sa cible."
+  },
+  {
+    "id": "foudre_noire",
+    "nom": "Foudre noire",
+    "type": "foudre",
+    "genre": "magique",
+    "cible": "ennemi",
+    "puissance": 70,
+    "cout": 14,
+    "zone": "croix",
+    "rythme": "lourde",
+    "description": "Un éclair sombre qui frappe en croix."
+  },
+  {
+    "id": "ouragan",
+    "nom": "Ouragan",
+    "type": "vent",
+    "genre": "magique",
+    "cible": "tous_ennemis",
+    "puissance": 58,
+    "cout": 12,
+    "description": "Un vent furieux qui balaie tout le camp adverse."
   }
 ]

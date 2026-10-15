@@ -14,7 +14,9 @@ pièges) et `docs/PLANNING.md` (la suite du projet).
 - Il travaille sous **Windows avec Visual Studio Code** (extensions CMake Tools et
   C/C++). Le code a été écrit sous Linux avec GCC, puis compilé et testé sous
   Windows avec MSVC (Build Tools 2022) : tous les tests passent.
-- Tous les textes visibles par le joueur sont en français, avec accents.
+- Tous les textes visibles par le joueur sont écrits en français, avec accents, et traduits en anglais
+  (`data/langues/en.json`, voir Langue plus bas) : tout nouveau texte passe par `T("…")` dans le code, puis
+  `python outils/textes.py` et sa traduction.
 
 ## Compiler et lancer
 
@@ -355,6 +357,35 @@ code) ; `docs/GUIDE.md` les range par domaine.
   Phases : `makeFoe` (data.cpp, partagé par events, pilote et tests) garde `phases` ; `Battle::checkPhase` après
   chaque technique (bouclier, bonus, techniques, météo, renforts ajoutés à `foes`) ; jamais en ligne. Portraits :
   `speakerLook` (game.cpp) ; titre animé dans `drawTitle`.
+- Confort 2.8 : astuces `Rules::tips` / `Game::tip(id, script)` (help.cpp : une fois, `tipsSeen` = lignes `astuce`,
+  `lastHelp_` = page de l'astuce pour F1 ; coupées par `options().tips`, `tipsOff_` du mode test et le joueur
+  automatique). En combat `Battle::tip` / `startTips` (une seule au début, dans `update`) ; déclencheurs dans
+  `applyHit` (faiblesse), `breakFoe`, `checkPhase`, `shove`, `command` (duo) ; la gemme dans `Game::update` (carte).
+  Conseils `Rules::advice`, `Game::adviceText` (action `conseil`, tête du Journal). Sac par catégories
+  (`itemMenuAt`), comparaison dans `gearPick`, coût des duos. Pas de niveaux de difficulté (refusé par l'utilisateur).
+- Expédition 2.9 (procgen.cpp) : talent par type (`typeTalent`) ou par classe, `role_combat` selon le profil, talent
+  des gardiens, phases des gardiens, gemme en récompense, gemmes en boutique (`shopStock`). Les nouveaux tirages viennent
+  d'un générateur à part semé par l'identifiant (`idHash`, `stream(…, 29)`) : le reste d'un monde ne change pas, mais
+  l'empreinte de la graine 2026 a changé (28da4b9e14a4ce4d). Les conseils de l'histoire sont vidés en Expédition.
+- Acte 2 (3.0) : cartes `port`, `recif`, `ruines`, `tour` (générées par un script, puis réglées à la main), le bateau
+  du pêcheur (page `boss4` de l'événement `pecheur`) et le `passeur`. Énigmes : tuiles `O`/`P`/`D`, `MapDef::puzzle*`
+  (champ `enigme`), `solvePuzzle` (world.cpp, recherche en largeur, aussi dans `checkMaps`), `Game::boulders_`
+  (`bouldersMap_` : la carte qu'ils décrivent ; remis en place en changeant de carte, sauf énigme résolue),
+  `pushBoulder` dans `tryMove`, « Recommencer l'énigme » (menu Échap), dessin dans `drawMap`. Joueur automatique :
+  objectif `enigme:<carte>` puis `puzzleMoves_`. Condition `objet_min`. Final : `boss5` (Seigneur des Orages).
+- Langue (3.1) : `i18n.hpp` : `T("…")` (const char*) et `tr(std::string)` traduisent une phrase française avec
+  `data/langues/<langue>.json` (absente : le français reste). `setLanguage` au démarrage (`options().english`, ligne
+  `anglais` d'`options.txt` ; premier lancement : langue du système) et dans Options > Langue, puis `rebuildData()` et
+  `loadMaps()` : noms et descriptions des données sont traduits à la construction des structures (`tr` dans data.cpp,
+  world.cpp), les textes des événements et des quêtes à l'affichage (events.cpp, journal). Les documents de data/ restent
+  en français ; les éditeurs (Réglages, cartes, histoire) sont désactivés en anglais. Le code affiche ses phrases avec
+  `T("…")` (fragments pour les phrases composées) ; jamais pour un mot-clé de fichier ou de réseau (sauvegarde,
+  `options.txt`, `en_ligne.txt`, messages) ni une étiquette comparée ailleurs sans `T` (le joueur automatique compare
+  `T("Fuir")`…). procgen.cpp reste en français (le monde doit être identique chez tous). `python outils/textes.py`
+  rassemble les phrases (T du code, tableaux de noms, textes des données) ; `BRUMEVAL_LANGUE=en brumeval --test …`
+  liste à la fin les phrases affichées sans traduction et vérifie la mise en page en anglais. Dans tactics.cpp et
+  help.cpp, écrire `::T(` (un membre s'appelle `T`). Jamais `T(` dans un tableau global (rempli au chargement du
+  programme, avant le choix de la langue : plantage sur Linux et Mac) : `N_("…")`, puis `tr()` à l'affichage.
 - Données en mémoire : `dataDoc(DF_…)` garde chaque fichier de data/ sous forme
   de JSON ; `rebuildData()` reconstruit les structures du jeu à partir de ces
   documents, `saveDataDoc` les écrit. Les Réglages ne touchent qu'aux documents,

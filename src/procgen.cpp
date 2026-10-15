@@ -498,6 +498,23 @@ static Json creatureJson(const std::string& id, const std::string& name, const s
   return o;
 }
 
+// 2.9 : talents, rôles, phases et gemmes de l'Expédition. Leurs tirages viennent d'un générateur à part,
+// semé par l'identifiant : le reste du monde d'une graine ne change pas.
+static uint64_t idHash(const std::string& s) {
+  uint64_t h = 1469598103934665603ull;
+  for (unsigned char ch : s) h = (h ^ ch) * 1099511628211ull;
+  return h;
+}
+static const char* typeTalent(const std::string& t) {
+  static const std::vector<std::pair<const char*, const char*>> M = {
+      {"feu", "rage"},       {"eau", "regeneration"}, {"plante", "piquant"}, {"roche", "carapace"}, {"metal", "carapace"},
+      {"ombre", "furtif"},   {"esprit", "furtif"},    {"vent", "vif"},       {"foudre", "vif"},      {"glace", "ecorce"},
+      {"poison", "piquant"}, {"lumiere", "ecorce"},   {"normal", "vif"}};
+  for (auto& [k, v] : M)
+    if (t == k) return v;
+  return "vif";
+}
+
 // Créature sauvage (ou de départ)
 static std::string genCreature(Content& c, Rng& r, const std::string& id, const std::string& t1, std::string t2) {
   if (t2 == t1) t2.clear();
@@ -533,6 +550,13 @@ static std::string genCreature(Content& c, Rng& r, const std::string& id, const 
   l.push_back({r.range(33, 37), mg ? P.s4 : (r.chance(.5f) ? Q.p4 : P.area)});
   o["apprend"] = learnJson(l);
   o["limite"] = genLimit(c, r, id, t1, mg ? "magique" : "physique", r.range(55, 60));
+  // 2.9 : talent selon le type ; rôle selon le profil (tirage à part)
+  Rng extra(stream(idHash(id), 29));
+  o["talent"] = typeTalent(t1);
+  std::string prof = pr.name;
+  if (prof == "costaud" && extra.chance(.45f)) o["role_combat"] = "protecteur";
+  else if ((prof == "mage" || prof == "ruse") && extra.chance(.3f)) o["role_combat"] = "soigneur";
+  else if (prof == "brute" && extra.chance(.2f)) o["role_combat"] = "chef";
   c.species.push_back(o);
   return id;
 }
@@ -558,6 +582,7 @@ static std::string genBoss(Content& c, Rng& r, const std::string& id, const std:
   auto sup = typeSupport(c, t2.empty() ? t1 : t2);
   if (!sup.empty() && r.chance(.6f)) l.push_back({1, r.pick(sup)});
   o["apprend"] = learnJson(l);
+  o["talent"] = Rng(stream(idHash(id), 29)).chance(.5f) ? "cuirasse" : "rage";  // 2.9
   c.species.push_back(o);
   return id;
 }
@@ -622,7 +647,7 @@ static std::string genPerson(Content& c, Rng& r, const std::string& id, const He
   o["critique"] = k.crit;
   o["humain"] = true;
   o["apparence"] = "lk_" + id;
-  o["role"] = cls + ", type " + typeName(typeOf(t));
+  o["role"] = cls + ", type " + types()[typeOf(t)].nameFr;
   // Techniques selon la classe
   const Pool& P = c.pools.at(t);
   const Pool& N = c.pools.at("normal");
@@ -652,6 +677,13 @@ static std::string genPerson(Content& c, Rng& r, const std::string& id, const He
   }
   o["apprend"] = learnJson(l);
   if (!trainer) o["limite"] = genLimit(c, r, id, t, limGenre, limPower);
+  {  // talent selon la classe (2.9)
+    static const std::vector<std::pair<const char*, const char*>> T = {{"epeiste", "briseur"}, {"guerrier", "intimidation"}, {"chevalier", "carapace"},
+                                                                        {"voleur", "furtif"},   {"archer", "oeil"},          {"mage_noir", "meditation"},
+                                                                        {"mage_blanc", "soigneur"}};
+    for (auto& [cid, tal] : T)
+      if (std::string(k.id) == cid) o["talent"] = tal;
+  }
   c.species.push_back(o);
   return id;
 }
@@ -778,6 +810,14 @@ static Json shopStock(int k) {
       {"lame_givre", "sceptre_aurore", "armure_givre", "plume_ange", "pendentif_brume"}};
   for (const char* id : GEAR[k >= 6 ? 2 : k >= 3 ? 1 : 0])
     if (hasItem(id)) s.push_back(id);
+  // Gemmes (2.9), de plus en plus de choix
+  static const std::vector<std::vector<const char*>> GEMS = {
+      {"gemme_vie", "gemme_soin"},
+      {"gemme_feu", "gemme_givre", "gemme_foudre", "gemme_force", "gemme_esprit"},
+      {"gemme_eveil", "gemme_rempart", "gemme_contre", "gemme_vol", "gemme_pyro"}};
+  for (int t = 0; t <= (k >= 6 ? 2 : k >= 3 ? 1 : 0); t++)
+    for (const char* id : GEMS[(size_t)t])
+      if (hasItem(id)) s.push_back(id);
   return s;
 }
 
@@ -791,7 +831,7 @@ static std::string weakness(const std::string& t1, const std::string& t2) {
   std::string w;
   for (auto& a : types()) {
     float e = typeEff(typeOf(a.id), typeOf(t1)) * (t2.empty() ? 1.f : typeEff(typeOf(a.id), typeOf(t2)));
-    if (e > best) best = e, w = a.name;
+    if (e > best) best = e, w = a.nameFr;
   }
   return w;
 }
@@ -1169,8 +1209,21 @@ Region generateRegion(uint64_t seed, int k, Content& c) {
   // Gardien : un acolyte dans les deux premières régions, deux ensuite, des renforts à partir de la région 5
   int bossLvl = L + 2;
   float hpMult = std::min(3.2f, 2.f + .08f * k);
+  // Phases (2.9) : il se déchaîne à mi-vie (bouclier rechargé, plus vif), change le temps dès la région 2, et
+  // appelle un renfort à un quart de ses PV dès la région 4
+  Json phases = Json::array();
+  {
+    Json p1 = Json{{"pv", .5}, {"message", R.bossName + " se déchaîne !"}, {"bouclier", 10}, {"bonus", Json{{"vitesse", 1}}}};
+    static const std::vector<std::pair<const char*, const char*>> WEATHER = {{"vallee", "pluie"}, {"foret", "brume"}, {"cendres", "canicule"}, {"neige", "blizzard"}};
+    if (k >= 2)
+      for (auto& [th, w] : WEATHER)
+        if (theme == th) p1["meteo"] = w;
+    phases.push_back(p1);
+    if (k >= 4)
+      phases.push_back(Json{{"pv", .25}, {"message", R.bossName + " appelle à l'aide !"}, {"renforts", Json::array({Json{{"espece", R.wild[1]}, {"niveau", L - 1}}})}});
+  }
   Json foes = Json::array({Json{{"espece", R.wild[0]}, {"niveau", L - 1}},
-                           Json{{"espece", boss}, {"niveau", bossLvl}, {"pv", std::round(hpMult * 10) / 10}, {"boss", true}}});
+                           Json{{"espece", boss}, {"niveau", bossLvl}, {"pv", std::round(hpMult * 10) / 10}, {"boss", true}, {"phases", phases}}});
   if (k >= 3) foes.push_back(Json{{"espece", R.wild[(size_t)nWild - 1]}, {"niveau", L - 1}});
   Json fight = Json{{"action", "combat"}, {"ennemis", foes}};
   if (k >= 5) fight["renforts"] = Json::array({Json{{"espece", R.wild[2]}, {"niveau", L}}});
@@ -1180,6 +1233,12 @@ Region generateRegion(uint64_t seed, int k, Content& c) {
   fight["victoire"] = Json::array({Json{{"action", "drapeau"}, {"nom", R.bossFlag}},
                                    say(R.bossName + " s'efface dans un dernier grondement. La route vers " + R.nextName + " est libre !"),
                                    Json{{"action", "or"}, {"quantite", 40 + 20 * k}}});
+  {  // une gemme en récompense (2.9)
+    static const std::vector<const char*> REWARD = {"gemme_vie", "gemme_force", "gemme_eveil", "gemme_esprit", "gemme_vol",
+                                                    "gemme_contre", "gemme_briseur", "gemme_pyro", "gemme_rempart"};
+    const char* g = REWARD[(size_t)(k - 1) % REWARD.size()];
+    if (hasItem(g)) fight["victoire"].push_back(Json{{"action", "donner"}, {"objet", g}});
+  }
   E[px + "_gardien"] = Json{{"actions", Json::array({say(R.bossName + ", gardien de la région, vous barre la route !"),
                                                       Json{{"action", "question"}, {"texte", "Affronter " + R.bossName + " ?"}, {"oui", Json::array({fight})}}})}};
   // Dresseurs

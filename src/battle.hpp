@@ -219,6 +219,10 @@ class Battle {
   int applyHit(const FighterP& a, const FighterP& d, const Move& m, float mult = 1);  // -1 si raté ; mult : autour de la cible d'une zone
   void applyEffect(const FighterP& t, const Effect& e);
   void breakFoe(const FighterP& d);  // Brisure : bouclier à zéro
+  // Astuces (2.8) : seulement dans le combat affiché, joué par le joueur ; startTips : au début du combat
+  void tip(const char* id);
+  void startTips();
+  bool startTips_ = false;
   void initFoe(const FighterP& e);   // bouclier de Brisure d'un ennemi qui entre (début, renfort)
   // Phases d'un boss (2.7) : sous un seuil de PV, message, bouclier rechargé, bonus, techniques,
   // météo, renforts (jamais en ligne)

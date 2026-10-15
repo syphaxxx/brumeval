@@ -15,6 +15,13 @@ Méthode :
 
 ## Historique des mesures
 
+- **Acte 2** (3.0, 2026-10-15) : le Seigneur des Orages battait toutes les équipes (journal : Foudre noire en croix à
+  55-90 % des PV de trois alliés par tour, ~3000 PV) ; Magie 80 → 68, PV de base 110 → 100, Foudre noire 82 → 70,
+  ×10 → ×7,5, renfort réduit au seul Nuageon soigneur. Kraken N.53 ×17, Griffon N.55 ×15. Mesuré
+  (BRUMEVAL_SIMULATIONS=2, avant le dernier renfort du Kraken et du Griffon ; IA / boutiques / forgé) : Kraken 91 / 100
+  / 100 %, Griffon 90 / 100 / 100 %, Seigneur 60 / 91 / 90 %. Joueur automatique : histoire (actes 1 et 2) finie en
+  1 h 25, 2 défaites, niveau 61.
+
 - **Rôles, phases, gemmes** (2.7, 2026-10-14) : les simulations « équipées » sertissent aussi les gemmes des
   boutiques de la région (`equipParty`). Premier essai trop dur (Ignarok 2 / 8 / 8 %, Mère des Brumes 3 / 5 / 6 %) :
   la canicule de la phase d'Ignarok annulait l'avantage de l'Eau (remplacée par une carapace reformée, bouclier 10),

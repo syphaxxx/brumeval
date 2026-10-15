@@ -104,3 +104,9 @@ quitte les cases qui blessent.
 défaite, niveau 50 à 63 (le jeu est plus dur : il s'entraîne plus longtemps). Il sertit les gemmes reçues
 (`Pilot::socketGems`, à chaque `plan`), vise d'abord soigneurs, chefs et protecteurs (`attackScore`), et ses
 répétitions de boss jouent leurs phases (`makeFoe`). Il n'achète pas encore de gemmes en boutique (piste).
+
+**Version 3.0** (acte 2) : le bateau était d'abord une téléportation d'événement (`teleporter`) : le joueur automatique
+n'en connaît pas le chemin (son graphe ne suit que les `passages` des cartes), il arrivait au port, repartait par le
+passeur et ne revenait jamais. Le bateau est donc un vrai passage, fermé par la condition `boss4`. Leçon : tout
+chemin nécessaire à l'histoire doit être un passage de carte, pas une téléportation. Énigmes : objectif
+`enigme:<carte>` (case de départ de l'énigme), puis `solvePuzzle` (27 et 41 pas). Partie complète : 1 h 25, 2 défaites.

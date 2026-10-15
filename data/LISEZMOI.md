@@ -173,6 +173,21 @@ liste de `{"pv": 0.5, "message": …, "bouclier": 14, "bonus": {"attaque": 1},
 **Portraits** : un dialogue « Nom : … » montre le portrait de l'apparence de ce nom
 (`apparences.json`, ou un de ses autres noms dans `"aussi"`).
 
+**Astuces** (2.8, `regles.json`, `astuces`) : `id` (le moment où elle apparaît,
+choisi par le code : `bouclier`, `faiblesse`, `brisure`, `ordre`, `role`, `meteo`,
+`terrain`, `pousser`, `duo`, `phase`, `gemme`, `talent`), `aide` (titre de la page
+d'Aide que F1 ouvre ensuite) et `texte`. Chacune n'est montrée qu'une fois (ligne
+`astuce` de la sauvegarde) ; Options > Astuces les coupe.
+
+**Condition `objet_min`** (3.0) : `{"objet_min": {"perle": 4}}` = au moins quatre
+perles dans le sac (pour les quêtes qui demandent plusieurs objets).
+
+**Conseils** (2.8, `regles.json`, `conseils`), dans l'ordre de l'histoire :
+`drapeau` (posé quand le boss est battu), `boss` (espèce), `lieu`, `gemme`
+conseillée, `texte`. Le premier dont le drapeau manque est donné par l'action
+`conseil` (les aubergistes) et en tête du Journal, avec les faiblesses déjà
+découvertes.
+
 **Adversaires** : l'action `combat` accepte `nom` (« Le braconnier vous défie ! »)
 et `renforts`, une liste d'ennemis qui entrent un par un quand un adversaire
 tombe. Un habitant avec `"vue": 3` repère le joueur jusqu'à 3 cases devant lui
@@ -210,6 +225,16 @@ Une action qui vise un ennemi demande une condition « ennemi », un soin ou un
 objet de soin une condition « allié » ou « soi », et une réanimation la
 condition `allie_ko`. Le mode test signale les règles qui ne vont pas ensemble.
 
+## Les langues (`langues/*.json`)
+
+Le jeu est écrit en français. `langues/en.json` donne la traduction anglaise de
+chaque phrase : `"Équipe": "Team"`. Une phrase absente ou vide reste en français.
+Après avoir ajouté du texte (un dialogue, un objet…), lancer
+`python outils/textes.py` : il ajoute les nouvelles phrases avec une traduction
+vide, à remplir. Le jeu traduit les noms, descriptions, dialogues, panneaux,
+messages et quêtes au moment de les afficher : les fichiers de `data/` restent en
+français (c'est pourquoi les éditeurs ne s'ouvrent qu'en français).
+
 ## Les cartes (`cartes/*.json`)
 
 Chaque ligne de `tuiles` est une rangée de cases, toutes de même longueur :
@@ -227,6 +252,8 @@ Chaque ligne de `tuiles` est une rangée de cases, toutes de même longueur :
 | `c` | sol de grotte (rencontres) | `x` | cristal |
 | `d` | arbre mort | `i` | glace |
 | `n` | neige profonde (rencontres) | `z` | marais (rencontres) |
+| `O` | rocher à pousser (énigme) | `P` | dalle de l'énigme |
+| `D` | grille (ouverte par l'énigme) | | |
 
 Meubles des intérieurs (thème `interieur`) : `p` tapis (praticable), `t`
 table, `h` lit, `e` étagère, `o` comptoir, `v` tonneau.
@@ -245,6 +272,11 @@ table, `h` lit, `e` étagère, `o` comptoir, `v` tonneau.
 - `passages` : `condition` (mêmes conditions que `si` dans les événements) et
   `message` pour un passage fermé, par exemple
   `"condition": {"objet": "cle_givre"}`.
+- `enigme` (3.0) : `drapeau` posé quand chaque dalle `P` porte un rocher `O` ; il
+  ouvre les grilles `D` de la carte. `x`, `y` : la case de départ de l'énigme
+  (« Recommencer l'énigme » y ramène ; le joueur automatique y résout l'énigme).
+  Le mode test vérifie qu'il y a autant de rochers que de dalles et qu'une
+  solution existe.
 - `declencheurs` : une zone (`x`, `y`, `l`, `h`) qui lance un `evenement` quand
   on y entre, tant que le drapeau `jusqua` n'est pas posé.
 - `habitants` : `dialogue` (phrases simples) ou `evenement`, `cache_si` (disparaît

@@ -25,6 +25,7 @@
 #include "audio.hpp"
 #include "events.hpp"
 #include "game.hpp"
+#include "i18n.hpp"
 #include "net.hpp"
 #include "options.hpp"
 #include "upnp.hpp"
@@ -183,6 +184,11 @@ static int runTests(const char* outDir, bool partie = false) {
     std::printf("[ÉCHEC]  chargement de data/ : %s\n", err.c_str());
     return 1;
   }
+  if (const char* lg = SDL_getenv("BRUMEVAL_LANGUE")) {  // BRUMEVAL_LANGUE=en : le mode test en anglais
+    setLanguage(lg);
+    rebuildData();
+    loadMaps();
+  }
   // BRUMEVAL_LARGEUR=384 : captures au format d'un écran large (16:10), pour vérifier les décors élargis
   const char* wEnv = SDL_getenv("BRUMEVAL_LARGEUR");
   int w = std::clamp(wEnv ? std::atoi(wEnv) : SCREEN_W, SCREEN_W, Screen::MAX_W);
@@ -258,7 +264,12 @@ int main(int argc, char* argv[]) {
   fitWindow(win);
   SDL_SetWindowMinimumSize(win, SCREEN_W, SCREEN_H);
   SDL_ShowWindow(win);
-  loadOptions();  // volumes, plein écran, touches (options.hpp)
+  loadOptions();  // volumes, plein écran, touches, langue (options.hpp)
+  if (options().english) {
+    setLanguage("en");
+    rebuildData();  // noms et descriptions des données dans la langue choisie
+    loadMaps();
+  }
   bool fullscreen = options().fullscreen;
   if (fullscreen) SDL_SetWindowFullscreen(win, SDL_WINDOW_FULLSCREEN_DESKTOP);
   SDL_Renderer* r = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);

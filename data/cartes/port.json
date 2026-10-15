@@ -1,0 +1,124 @@
+{
+  "id": "port",
+  "nom": "Port d'Écume",
+  "theme": "vallee",
+  "tuiles": [
+    "TT#################==###########..~~~~~~",
+    "TT.................==.............~~~~~~",
+    "TT.................==.............~~~~~~",
+    "TT.F...............==........F...R~~~~~~",
+    "TT.................==.............~~~~~~",
+    "TT.................==.............~~~~~~",
+    "TT.................==............R~~~~~~",
+    "TT.................==.............~~~~~~",
+    "TTT................==.............~~~~~~",
+    "TT.................==.........T..R~~~~~~",
+    "TT.................==.............~~~~~~",
+    "TT.................==.............~~~~~~",
+    "TT.==============================R~~~~~~",
+    "TT.==============================.~~~~~~",
+    "TT........==.......==.............~~~~~~",
+    "TTT.......==.......==............R~~~~~~",
+    "TT........==.......==.............~~~~~~",
+    "TT..F.....==.......==.............~~~~~~",
+    "TT........==.......==............R~~~~~~",
+    "TT........==..F....==.............~~~~~~",
+    "TT.....F..==.......==....F........~~~~~~",
+    "TT........==.....................R~~~~~~",
+    "TT........==......................~~~~~~",
+    "~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+    "~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+    "~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+    "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+    "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+  ],
+  "batiments": [
+    {
+      "x": 4,
+      "y": 7,
+      "l": 5,
+      "h": 4,
+      "genre": "soin",
+      "nom": "Maison de soin",
+      "toit": "#b8483e",
+      "evenement": "port_soin"
+    },
+    {
+      "x": 12,
+      "y": 7,
+      "l": 5,
+      "h": 4,
+      "genre": "boutique2",
+      "nom": "Boutique du port",
+      "toit": "#3f6fb0",
+      "evenement": "boutique_port"
+    },
+    {
+      "x": 23,
+      "y": 7,
+      "l": 6,
+      "h": 4,
+      "genre": "auberge",
+      "nom": "Auberge de l'Écume",
+      "toit": "#9a5a2a",
+      "evenement": "auberge"
+    },
+    {
+      "x": 23,
+      "y": 15,
+      "l": 5,
+      "h": 4,
+      "genre": "maison",
+      "nom": "Maison de la gardienne du phare",
+      "toit": "#5a6a9a",
+      "evenement": "port_maison"
+    }
+  ],
+  "habitants": [
+    {"x": 12, "y": 22, "apparence": "pecheur", "direction": "gauche", "evenement": "passeur"},
+    {"x": 29, "y": 17, "apparence": "villageoise", "direction": "gauche", "evenement": "gardienne_phare"},
+    {
+      "x": 15,
+      "y": 15,
+      "apparence": "villageois",
+      "direction": "bas",
+      "dialogue": [
+        "Depuis que la brume s'est levée, on voit l'orage qui gronde au-dessus de la tour, au nord.",
+        "Les vieux disent que le Seigneur des Orages dort là-haut depuis mille ans."
+      ]
+    },
+    {
+      "x": 7,
+      "y": 15,
+      "apparence": "enfant",
+      "direction": "droite",
+      "dialogue": [
+        "Dans les ruines, il y a des rochers qu'on peut pousser ! Mais attention à ne pas les coincer contre un mur…",
+        "Si on se trompe, Échap > Recommencer l'énigme."
+      ]
+    },
+    {
+      "x": 31,
+      "y": 12,
+      "apparence": "montagnard",
+      "direction": "gauche",
+      "dialogue": ["Le Kraken garde les ruines englouties. Il ne craint pas l'eau, ça c'est sûr."]
+    }
+  ],
+  "coffres": [{"x": 3, "y": 21, "objet": "superpotion", "quantite": 3}],
+  "panneaux": [
+    {
+      "x": 18,
+      "y": 3,
+      "texte": "Nord : Récif d'Écume, puis les Ruines englouties. Sud : le ponton du passeur."
+    }
+  ],
+  "passages": [
+    {"x": 19, "y": 0, "vers": "recif", "tx": 23, "ty": 34, "direction": "haut"},
+    {"x": 20, "y": 0, "vers": "recif", "tx": 24, "ty": 34, "direction": "haut"},
+    {"x": 10, "y": 25, "vers": "vallee", "tx": 24, "ty": 38, "direction": "gauche"},
+    {"x": 11, "y": 25, "vers": "vallee", "tx": 24, "ty": 38, "direction": "gauche"}
+  ],
+  "zones": [],
+  "boss": []
+}

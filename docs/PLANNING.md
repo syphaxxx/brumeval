@@ -95,6 +95,9 @@ l'utilisateur, en deux versions.
     nuit sur les cartes, fumée, feuilles, papillons.
   - **2.7** : gemmes à sertir (matéria de FF7), rôles des ennemis et phases des
     boss ; portraits dans les dialogues, écran titre animé.
+  - **2.8 → 3.0** (validé le 2026-10-14, sans niveaux de difficulté) : 2.8 astuces en situation, conseils avant les
+    boss, menus ; 2.9 Expédition à jour (talents, rôles, phases, gemmes) ; 3.0 deuxième acte (archipel d'Écume,
+    énigmes de rochers, Kraken, Griffon, Seigneur des Orages). Ensuite : page itch.io et traduction anglaise.
   - À chaque version : graphismes (cartes vivantes, jour et nuit, portraits,
     icônes de type, titre animé), le joueur automatique apprend la mécanique,
     équilibrage mesuré, une page d'Aide par règle.

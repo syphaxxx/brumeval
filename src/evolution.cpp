@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "i18n.hpp"
 #include "audio.hpp"
 #include "game.hpp"
 #include "sprites.hpp"
@@ -13,12 +14,12 @@ void Game::offerEvolutions() {
   for (auto& f : team)
     if (canEvolve(*f) && !f->evolveLater) {
       FighterP who = f;
-      ask(f->name() + " peut évoluer en " + species(f->S().evolveTo).name + ". Évoluer ?", [this, who] {
+      ask(f->name() + T(" peut évoluer en ") + species(f->S().evolveTo).name + T(". Évoluer ?"), [this, who] {
         evolveMember(who);
         sc.call([this] { offerEvolutions(); });  // la suivante
       }, [this, who] {
         who->evolveLater = true;
-        sc.say(who->name() + " n'évolue pas. Échap > Évolution pour changer d'avis.");
+        sc.say(who->name() + T(" n'évolue pas. Échap > Évolution pour changer d'avis."));
         sc.call([this] { offerEvolutions(); });
       });
       return;
@@ -40,19 +41,19 @@ void Game::evolveMember(const FighterP& f) {
     seen.insert(f->sp), caught.insert(f->sp);
     audio::play("niveau");
   });
-  sc.say("Félicitations ! " + before + " a évolué en " + species(f->S().evolveTo).name + " !");
+  sc.say(T("Félicitations ! ") + before + T(" a évolué en ") + species(f->S().evolveTo).name + " !");
   sc.call([this] { evoFrom_.clear(), evoTo_.clear(); });
 }
 
 void Game::evolutionMenu() {
   panelMode_ = 0;
   Menu m;
-  m.title = "Évolution";
+  m.title = T("Évolution");
   m.x = 60, m.y = 40, m.w = 200, m.rows = 6;
   for (auto& f : team)
     if (canEvolve(*f) && f->evolveLater) {
       FighterP who = f;
-      m.items.push_back({f->name(), "N." + std::to_string(f->lvl), "Entrée : évoluer en " + species(f->S().evolveTo).name + ".", true,
+      m.items.push_back({f->name(), T("N.") + std::to_string(f->lvl), T("Entrée : évoluer en ") + species(f->S().evolveTo).name + ".", true,
                          [this, who] {
                            menus.clear();
                            evolveMember(who);

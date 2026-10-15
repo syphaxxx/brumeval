@@ -1,12 +1,14 @@
 ## Nouveautés
 
-- **Gemmes** (comme les matérias de Final Fantasy VII) : sertissez-les dans les chatons de vos armes, armures et accessoires (Échap > Équipement > Gemmes). Elles donnent un sort (Feu, Soin, Brasier…), un bonus ou un soutien (vampire, riposte, éveil, brise-garde). En boutique, et chaque grand boss en laisse une.
-- **Rôles des ennemis** : protecteur (protège ses voisins), soigneur, chef (accélère ses alliés). Abattez-les d'abord !
-- **Boss en plusieurs phases** : sous un seuil de PV, ils changent de forme (bouclier rechargé, nouvelles attaques, météo, renforts).
-- **Graphismes** : portraits dans les dialogues, écran titre animé.
+- **English!** Options > Langue / Language : tout le jeu passe en anglais (au premier lancement, il prend la langue de l'ordinateur).
+- **Acte 2 : l'archipel d'Écume** ! Une fois la Mère des Brumes apaisée, le bateau du pêcheur traverse le lac vers **Port d'Écume**, le **Récif d'Écume**, les **Ruines englouties** et la **Tour de l'Orage**. Trois nouveaux boss (Kraken des récifs, Griffon tempête, Seigneur des Orages, en trois phases) et un vrai final.
+- **Énigmes** : poussez des rochers sur des dalles pour ouvrir les grilles. Coincé ? Échap > Recommencer l'énigme.
+- 8 nouvelles créatures (dont 2 évolutions), une quête (les perles du phare), de nouvelles armes et armures, la Gemme du maître et la Gemme d'orage.
+- **Astuces** : chaque nouvelle règle est expliquée la première fois (F1 : la page d'Aide qui va avec). **Conseils** des aubergistes et du Journal pour le prochain boss.
+- **Menus** : sac rangé par catégories, comparaison d'équipement, coût des duos.
+- **Expédition** : talents, rôles, gardiens en phases et gemmes.
 
-Dans la 2.6 : pousser et tirer sur le damier, météo et terrain, techniques en duo, jour et nuit.
-Dans la 2.5 : Brisure (boucliers et faiblesses), ordre des tours, talents des espèces.
+Dans la 2.7 : gemmes, rôles des ennemis, boss en phases. Dans la 2.6 : pousser / tirer, météo, terrain, duos, jour et nuit. Dans la 2.5 : Brisure, ordre des tours, talents.
 
 ## Télécharger
 

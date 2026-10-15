@@ -9,6 +9,7 @@
 #include <sstream>
 #include <cctype>
 
+#include "i18n.hpp"
 #include "arena.hpp"
 #include "audio.hpp"
 #include "battle.hpp"
@@ -31,6 +32,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   tacticsAuto = false;                 // les combats des tests passent par les menus (les tactiques ont leurs tests)
   g.checkLayout = true;                // chaque image dessinée vérifie la mise en page (gfx.cpp)
   offerEvolve_ = false;                // les évolutions ne sont proposées que dans leur propre test
+  tipsOff_ = true;                     // les astuces aussi (2.8)
+  g.spotFrench = translating();        // en anglais : repérer ce qui reste en français (3.1)
   int fails = 0;
   auto check = [&](bool ok, const std::string& what) {
     std::printf("%s %s\n", ok ? "[ok]    " : "[ÉCHEC] ", what.c_str());
@@ -127,7 +130,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     frame();
     snap("86_options");
     bool louder = options().music == std::min(10, vol + 1);
-    menus.top().sel = 4;  // Touches
+    menus.top().sel = 6;  // Touches (après Langue et Astuces)
     in.confirm = true;
     frame();
     snap("87_touches");
@@ -154,6 +157,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
           "options : écran titre > Options, volume de la musique, nouvelle touche pour « Haut », vitesse ×3 (F2), relues depuis le fichier");
     std::remove(userFile(optionsFile).c_str());
     optionsFile = realFile;
+    noticeT_ = 0;  // « Haut : I. » ne reste pas affiché sur les captures suivantes
     options() = Options{};
     titleMenu();
     // Manette : croix vers le bas (tenue : elle se répète), A valide, B revient
@@ -541,6 +545,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       boss->boss = true;
       int keepAcc = boss->acc, keepEva = lior->eva;
       boss->acc = 1000, lior->eva = 0;  // un coup raté par hasard ferait échouer le test (vu sur Mac)
+      for (auto& side : B.terrain_) side.fill(-1);  // ni braises ni ronces (une case qui blesse compte comme menacée)
+      B.weather_ = -1;
       B.sc.clear();
       int liorCell = B.cellOf(lior);
       B.warnings_.push_back({boss, "mordant", Area::Single, liorCell});
@@ -675,8 +681,10 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     journalMenu();
     run(.1f);
     snap("93_journal");
-    bool listed = menus.top().title == "Journal" && menus.top().items.at(0).right == "en cours" &&
-                  menus.top().items.at(0).help.find("Bois Murmurant") != std::string::npos;
+    bool listed = false;  // la quête (après le conseil « Prochain gardien »)
+    for (auto& it : menus.top().items)
+      listed = listed || (it.right == "en cours" && it.help.find("Bois Murmurant") != std::string::npos);
+    listed = listed && menus.top().title == "Journal";
     menus.clear();
     panelMode_ = 0;
     int village = mi("vallee"), chest = -1;
@@ -902,6 +910,93 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     battle_.reset();
     sc.clear(), menus.clear();
     mode = Mode::Map;
+  }
+
+  // --- Énigme (3.0) : pousser les rochers sur les dalles ouvre la grille ; recommencer ; solution du joueur automatique ---
+  {
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+    int ru = mi("ruines");
+    const MapDef& R = maps()[ru];
+    flags.erase(R.puzzleFlag);
+    changeMap(ru, R.puzzleX, R.puzzleY, UP);
+    resetBoulders();
+    bool closed = blocked(17, 7);
+    // un rocher poussé contre le mur, puis « Recommencer »
+    auto start = boulders_;
+    auto path = solvePuzzle(R, px, py, boulders_, [this](int x, int y) { return !boulderAt(x, y) && blocked(x, y); });
+    for (size_t i = 0; i < std::min<size_t>(3, path.size()); i++) {
+      in.hold[path[i]] = in.press[path[i]] = true;
+      frame();
+      in.hold[path[i]] = in.press[path[i]] = false;
+      for (int f = 0; f < 20 && moving; f++) frame();
+    }
+    pauseMenu();
+    bool offered = false;
+    for (auto& it : menus.top().items)
+      if (it.label == "Recommencer l'énigme") offered = true, it.act();
+    bool reset = offered && boulders_ == start && px == R.puzzleX && py == R.puzzleY;
+    menus.clear();
+    path = solvePuzzle(R, px, py, boulders_, [this](int x, int y) { return !boulderAt(x, y) && blocked(x, y); });
+    for (int d : path) {
+      in.hold[d] = in.press[d] = true;
+      frame();
+      in.hold[d] = in.press[d] = false;
+      for (int f = 0; f < 20 && moving; f++) frame();
+      for (int f = 0; f < 600 && sc.busy(); f++) in.confirm = true, frame();
+    }
+    snap("enigme");
+    bool solved = has(R.puzzleFlag) && !blocked(17, 7) && !path.empty();
+    changeMap(mi("recif"), 23, 1, DOWN);
+    changeMap(ru, R.puzzleX, R.puzzleY, UP);
+    bool stays = boulderAt(12, 9) && boulderAt(23, 9);  // résolue : les rochers restent sur les dalles
+    check(closed && reset && solved && stays, "énigme : grille fermée, « Recommencer l'énigme », rochers poussés sur les dalles (" +
+                                                  std::to_string(path.size()) + " pas), grille ouverte, rochers restés en place");
+    flags.erase(R.puzzleFlag);
+    sc.clear(), menus.clear();
+  }
+
+  // --- Astuces (2.8) : la première fois seulement, F1 ouvre la bonne page, gardées par la sauvegarde ---
+  {
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+    tipsOff_ = false;
+    tipsSeen.clear();
+    team = {makeFighter("lior", 20)};
+    startBattle({makeFighter("brumelin", 5)}, false, nullptr);
+    battle_->start -= 2;
+    for (int i = 0; i < 300 && !(battle_->sc.showingMessage() && battle_->sc.text().rfind("Astuce", 0) == 0); i++) {
+      in.confirm = battle_->sc.showingMessage() && battle_->sc.text().rfind("Astuce", 0) != 0;  // passer l'annonce du combat
+      frame();
+    }
+    bool shown = battle_->sc.showingMessage() && battle_->sc.text().find("bouclier") != std::string::npos && tipsSeen.count("bouclier");
+    snap("astuce");
+    int before = lastHelp_;
+    onKey(SDL_SCANCODE_F1, true, false);
+    onKey(SDL_SCANCODE_F1, false, false);
+    bool page = helpPage_ >= 0 && helpPage_ == before && before > 0;  // la page de l'astuce (Brisure), pas la première
+    helpPage_ = -1;
+    battle_.reset();
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+    bool saved = saveGame();
+    tipsSeen.clear();
+    bool kept = saved && loadGame() && tipsSeen.count("bouclier");
+    Script dummy;
+    bool once = !tip("bouclier", dummy) && tip("ordre", dummy) && !tip("ordre", dummy);
+    check(shown && page && kept && once, "astuces : montrée au premier bouclier, F1 ouvre sa page, gardée par la sauvegarde, jamais deux fois");
+    // Conseils (2.8) : le prochain boss, puis le suivant une fois battu
+    auto keep = flags;
+    for (auto& a : rules().advice) flags.erase(a.flag);
+    bool first = adviceText().find(species(rules().advice.at(0).boss).name) != std::string::npos;
+    flags.insert(rules().advice.at(0).flag);
+    bool second = adviceText().find(species(rules().advice.at(1).boss).name) != std::string::npos;
+    for (auto& a : rules().advice) flags.insert(a.flag);
+    bool done = adviceText().empty();
+    flags = keep;
+    check(first && second && done, "conseils : le prochain gardien, puis le suivant, plus rien quand tous sont battus");
+    tipsOff_ = true;
+    sc.clear(), menus.clear();
   }
 
   // --- Gemmes (2.7) : sertir par le menu, technique et bonus, chaton en trop rendu, sauvegarde ---
@@ -1703,7 +1798,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     auto selectLabel = [&](const std::string& start) {
       auto& it = menus.top().items;
       for (size_t k = 0; k < it.size(); k++)
-        if (!it[k].header && it[k].label.rfind(start, 0) == 0) {
+        if (!it[k].header && (it[k].label.rfind(start, 0) == 0 || it[k].label.rfind(tr(start), 0) == 0)) {
           menus.top().sel = (int)k;
           return true;
         }
@@ -2114,12 +2209,20 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
             "expédition : la même graine redonne exactement le même monde");
       // À plusieurs, chaque joueur génère le monde chez lui : l'empreinte doit être la même sous Windows, Mac et Linux
       std::string wh = Expedition::worldHash(2026, 3);
-      check(wh == "cfd72e364d1f7167", "expédition : la graine 2026 donne le même monde sur tous les systèmes (empreinte " + wh + ")");
+      check(wh == "28da4b9e14a4ce4d", "expédition : la graine 2026 donne le même monde sur tous les systèmes (empreinte " + wh + ")");
       procgen::Content c1 = procgen::generateBase(7), c6 = c1;
       std::string shop1 = procgen::generateRegion(7, 1, c1).events.dump(), shop6;
       for (int k = 1; k <= 6; k++) shop6 = procgen::generateRegion(7, k, c6).events.dump();
       check(shop1.find("epee_fer") != std::string::npos && shop6.find("lame_givre") != std::string::npos,
             "expédition : les boutiques vendent de l'équipement, plus fort dans les régions lointaines");
+      // 2.9 : talents et rôles des créatures, gardiens en phases (renfort dès la région 4), gemme en récompense et en boutique
+      int talents = 0, roles = 0;
+      for (auto& sp : c6.species) talents += sp.contains("talent"), roles += sp.contains("role_combat");
+      std::string ev4 = procgen::generateRegion(7, 4, c1 = procgen::generateBase(7)).events.dump();
+      check(talents >= 20 && roles >= 2 && shop6.find("\"phases\"") != std::string::npos && ev4.find("appelle à l'aide") != std::string::npos &&
+                shop6.find("gemme_") != std::string::npos,
+            "expédition : talents (" + std::to_string(talents) + ") et rôles (" + std::to_string(roles) +
+                ") des créatures, gardiens en phases, gemmes en récompense et en boutique");
     }
     // Écran titre > Expédition, choix du héros puis de la créature
     titleMenu();
@@ -2844,6 +2947,9 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}, {"braisenard", 30}, {"gouttelin", 30}, {"ronceau", 30}}, bossEvent("givrecorne"), 40);
   simSetup("Gardien de cristal (équipe N.28)", {{"lior", 28}, {"maelle", 28}, {"brann", 28}, {"braisenard", 28}, {"gouttelin", 28}, {"ronceau", 28}}, bossEvent("gardien_cristal"), 30);
   simSetup("Mère des Brumes (équipe N.38)", {{"lior", 38}, {"maelle", 38}, {"selene", 38}, {"braisenard", 38}, {"gouttelin", 38}, {"ronceau", 38}}, bossEvent("mere_brumes"), 30);
+  simSetup("Kraken des récifs (équipe N.46)", {{"lior", 46}, {"maelle", 46}, {"selene", 46}, {"braisenard", 46}, {"gouttelin", 46}, {"ronceau", 46}}, bossEvent("kraken"), 30);
+  simSetup("Griffon tempête (équipe N.50)", {{"lior", 50}, {"maelle", 50}, {"kael", 50}, {"braisenard", 50}, {"gouttelin", 50}, {"ronceau", 50}}, bossEvent("griffon"), 30);
+  simSetup("Seigneur des Orages (équipe N.54)", {{"lior", 54}, {"maelle", 54}, {"isra", 54}, {"braisenard", 54}, {"gouttelin", 54}, {"ronceau", 54}}, bossEvent("seigneur_orage"), 30);
 
   std::printf("\nMêmes combats, alliés guidés par les tactiques de départ :\n");
   sim("Bois (N.8 contre 3 x N.4-7)", {{"lior", 8}, {"maelle", 8}, {"braisenard", 8}},
@@ -2880,6 +2986,9 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}, {"braisenard", 30}, {"gouttelin", 30}, {"ronceau", 30}}, bossEvent("givrecorne"), 40);
   simSetup("Gardien de cristal (équipe N.28)", {{"lior", 28}, {"maelle", 28}, {"brann", 28}, {"braisenard", 28}, {"gouttelin", 28}, {"ronceau", 28}}, bossEvent("gardien_cristal"), 30);
   simSetup("Mère des Brumes (équipe N.38)", {{"lior", 38}, {"maelle", 38}, {"selene", 38}, {"braisenard", 38}, {"gouttelin", 38}, {"ronceau", 38}}, bossEvent("mere_brumes"), 30);
+  simSetup("Kraken des récifs (équipe N.46)", {{"lior", 46}, {"maelle", 46}, {"selene", 46}, {"braisenard", 46}, {"gouttelin", 46}, {"ronceau", 46}}, bossEvent("kraken"), 30);
+  simSetup("Griffon tempête (équipe N.50)", {{"lior", 50}, {"maelle", 50}, {"kael", 50}, {"braisenard", 50}, {"gouttelin", 50}, {"ronceau", 50}}, bossEvent("griffon"), 30);
+  simSetup("Seigneur des Orages (équipe N.54)", {{"lior", 54}, {"maelle", 54}, {"isra", 54}, {"braisenard", 54}, {"gouttelin", 54}, {"ronceau", 54}}, bossEvent("seigneur_orage"), 30);
 
   // Forge (2.1) : le même équipement, forgé au plus haut niveau possible à ce moment de l'histoire
   // (+1 avec le minerai de la vallée, +2 avec les cœurs de braise de Cendrelune, +3 après les Pics)
@@ -2894,6 +3003,9 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   simSetup("Givrecorne (équipe N.30)", {{"lior", 30}, {"maelle", 30}, {"selene", 30}, {"braisenard", 30}, {"gouttelin", 30}, {"ronceau", 30}}, bossEvent("givrecorne"), 40);
   simSetup("Gardien de cristal (équipe N.28)", {{"lior", 28}, {"maelle", 28}, {"brann", 28}, {"braisenard", 28}, {"gouttelin", 28}, {"ronceau", 28}}, bossEvent("gardien_cristal"), 30);
   simSetup("Mère des Brumes (équipe N.38)", {{"lior", 38}, {"maelle", 38}, {"selene", 38}, {"braisenard", 38}, {"gouttelin", 38}, {"ronceau", 38}}, bossEvent("mere_brumes"), 30);
+  simSetup("Kraken des récifs (équipe N.46)", {{"lior", 46}, {"maelle", 46}, {"selene", 46}, {"braisenard", 46}, {"gouttelin", 46}, {"ronceau", 46}}, bossEvent("kraken"), 30);
+  simSetup("Griffon tempête (équipe N.50)", {{"lior", 50}, {"maelle", 50}, {"kael", 50}, {"braisenard", 50}, {"gouttelin", 50}, {"ronceau", 50}}, bossEvent("griffon"), 30);
+  simSetup("Seigneur des Orages (équipe N.54)", {{"lior", 54}, {"maelle", 54}, {"isra", 54}, {"braisenard", 54}, {"gouttelin", 54}, {"ronceau", 54}}, bossEvent("seigneur_orage"), 30);
   simGear = 0, simForge = 0;
 
   // Expédition : gardien de chaque région contre une équipe générée (héros, créature de départ,
@@ -2988,6 +3100,13 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   }
 
   std::remove(savePath().c_str());
+  if (translating()) {  // BRUMEVAL_LANGUE=en : ce qui reste en français (outils/textes.py, puis traduire)
+    auto miss = missingTranslations();
+    std::printf("\nPhrases demandées sans traduction (%s) : %d\n", language().c_str(), (int)miss.size());
+    for (size_t i = 0; i < miss.size() && i < 80; i++) std::printf("  « %s »\n", miss[i].c_str());
+    std::printf("\nTextes affichés qui ont l'air français : %d\n", (int)g.frenchSeen.size());
+    for (auto& s : g.frenchSeen) std::printf("  « %s »\n", s.c_str());
+  }
   std::printf("\n%s (%d échec%s)\n", fails ? "TESTS EN ÉCHEC" : "TOUS LES TESTS PASSENT", fails, fails > 1 ? "s" : "");
   return fails ? 1 : 0;
 }

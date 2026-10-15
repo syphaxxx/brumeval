@@ -81,12 +81,21 @@ COMMANDES
   soigne, un chef (couronne) presse ses alliés : abattez-les d'abord.
   Les boss changent de phase quand leurs PV baissent.
 
+  Acte 2 : après la Mère des Brumes, parlez au pêcheur de la vallée. Dans
+  les ruines et la tour, poussez les rochers sur les dalles pour ouvrir les
+  grilles (Échap > Recommencer l'énigme si un rocher se coince).
+
+  Astuces : chaque nouvelle règle est expliquée la première fois (F1 : la
+  page d'Aide qui va avec ; Options > Astuces pour les couper). Les
+  aubergistes et le Journal conseillent pour le prochain gardien.
+
   Échap > Réserve : les créatures capturées quand l'équipe (8 membres)
   est complète. Échap > Bestiaire : toutes les créatures rencontrées.
   En boutique, « Vendre… » rachète vos objets à moitié prix.
 
   Options (écran titre, ou Échap > Options) : volume de la musique et des
-  effets, plein écran, vitesse du jeu, touches du clavier.
+  effets, plein écran, vitesse du jeu, langue (français ou anglais), astuces,
+  touches du clavier.
 
   Échap > Aide (ou F1) : ce que font les statistiques, le calcul des
   dégâts, la Brisure, les talents, le damier et les zones, les états, et le tableau des types (qui

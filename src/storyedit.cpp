@@ -14,12 +14,12 @@
 static const Color WHITE = rgb(0xffffff), GOLD = rgb(0xffd34d), MUTED = rgb(0xaab3d8), RED = rgb(0xff8a7a), GREEN = rgb(0x7dffa8);
 
 static const char* ACTIONS[] = {"dire",     "donner",   "retirer", "or",     "drapeau",    "recruter", "combat",   "question",
-                                "si",       "soigner",  "boutique", "reveil", "teleporter", "evenement", "attendre", "fin", "quete"};
+                                "si",       "soigner",  "boutique", "reveil", "teleporter", "evenement", "attendre", "fin", "quete", "conseil"};
 static const char* ACTIONS_FR[] = {"Dire un message",       "Donner un objet",    "Retirer un objet", "Gagner ou payer de l'or",
                                    "Poser un drapeau",      "Recruter",           "Combat",           "Question Oui / Non",
                                    "Si (condition)",        "Soigner l'équipe",   "Boutique",         "Point de réveil",
                                    "Aller sur une carte",   "Lancer un événement", "Attendre",        "Écran de fin",
-                                   "Quête (début ou fin)"};
+                                   "Quête (début ou fin)",   "Conseil (prochain boss)"};
 static const char* ACTIONS_HELP[] = {
     "Affiche un message. {heros}, {compagnon} et {or} sont remplacés.", "Ajoute un objet au sac (avec un message).",
     "Enlève un objet du sac.", "Quantité positive : gagner ; négative : payer.", "Retient qu'une chose a eu lieu (pour les conditions).",
@@ -27,7 +27,8 @@ static const char* ACTIONS_HELP[] = {
     "Pose une question avec une suite pour Oui et une pour Non.", "Joue « alors » si la condition est vraie, sinon « sinon ».",
     "Rend les PV et/ou les PM de toute l'équipe.", "Ouvre une boutique.", "Le joueur se réveillera ici après une défaite.",
     "Emmène le joueur sur une carte.", "Joue un autre événement.", "Une courte pause.", "Affiche l'écran de fin.",
-    "Commence une quête de data/quetes.json (elle apparaît dans le journal), ou la termine."};
+    "Commence une quête de data/quetes.json (elle apparaît dans le journal), ou la termine.",
+    "Donne un conseil pour le prochain boss : lieu, faiblesses connues, gemme conseillée (règles « conseils »)."};
 static const std::set<std::string> LIST_KEYS = {"actions", "oui", "non", "alors", "sinon", "victoire", "defaite"};
 
 // ---------------------------------------------------------------------------
