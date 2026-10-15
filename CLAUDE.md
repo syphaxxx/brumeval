@@ -269,11 +269,44 @@ code) ; `docs/GUIDE.md` les range par domaine.
   l'ordinateur (ennemis, et alliés en mode test) ; `Battle::log` garde un journal
   lisible (`BRUMEVAL_JOURNAL=Sylvarque brumeval --test captures` l'affiche pour
   la simulation qui contient ce mot).
-- Écran de combat (1.7) : ATH discret, un bandeau semi-transparent en bas (deux
-  colonnes de trois alliés : nom, PV, PM, traits PV/ATB/Limite) ; les menus du
-  combat s'ouvrent en bas (`dock` dans battle.cpp : commande à gauche,
-  sous-menus et choix de la cible à droite) pour laisser voir les deux damiers.
-  Pas de fenêtre des noms d'ennemis : leur nom est dans le menu de la cible.
+- Écran de combat (1.7, refait en 3.2) : ATH en tableau en bas à droite (`Battle::drawHud` : une ligne par allié, titres
+  PV, PM, ATB, Lim ; barre de PV verte/or/rouge ; compagnon en retrait ; mode Auto/Manuel) ; menu de commande en bas à
+  gauche, sous-menus au-dessus (`dock`). La fenêtre du haut montre l'aide de la ligne survolée, trois lignes au plus :
+  en combat, `moveBrief` (une ligne compacte : genre, type, puissance, coût, portée, zone, effets, rythme) remplace
+  `moveHelp`, et les objets n'ont que `itemDetails`. Météo à gauche de l'ordre des tours.
+- Choix sur le damier (3.2, demandé le 2026-10-15) : la cible (`pickFoe`, `pickAlly`) et la case de « Se déplacer » se
+  choisissent sur le damier (flèches : la case la plus proche dans cette direction ; souris : survol et clic ; Entrée,
+  Échap). Le menu existe toujours mais `Menu::hidden` (pas dessiné ni cliquable : joueur automatique, mode test et aide
+  le pilotent comme avant) ; `Battle::boardMenu` le pousse et retient `pick_` (camp, case de chaque ligne) ;
+  `boardInput` lit flèches et souris avant `menus.update` (sauf joueur automatique). `drawZones` : la case choisie en
+  or, le reste de la zone en orange, les autres choix en contour blanc ; « Se déplacer » montre le combattant en
+  transparence sur la case. En survolant une technique (`previewMove`, `MenuItem::hover`), sa zone s'allume autour
+  de la cible probable (`cursor`), les ennemis hors de portée du corps à corps sont barrés. Par-dessus les combattants :
+  contour de la zone et flèche dorée au-dessus de la cible (`fighterTop`).
+- Sprites (3.2, refonte demandée le 2026-10-15) : planches « pixel art » de l'utilisateur dans `outils/sprites/planches/`,
+  découpées par `python outils/sprites/decoupe.py` (liste `decoupe.json` : planche, boîte, taille ; recolorations
+  `variantes.json`) en un atlas `data/sprites.png` + `data/sprites.json` (nom → x, y, largeur, hauteur ; planche de
+  contrôle `outils/sprites/apercu.png`, non suivie). Le jeu lit l'atlas avec stb_image (`src/ext/stb_image.h`,
+  compilé seul dans image.cpp) ; `findSprite(nom)`, `Gfx::sprite(…)` (miroir, échelle, teinte, éclat). Champs :
+  `sprite` des apparences (préfixe : `<p>_bas_0`, `_haut_k`, `_droite_k` ou `_gauche_k`, `_combat` ; un animal : un seul
+  sprite) et des espèces (regard vers la gauche ; boss : `_grand`), `icone` des objets (dessinée devant le nom dans
+  tout menu, `itemIcon` de ui.cpp). Ce qui n'a pas de sprite garde son dessin en code. Personnages de la carte en
+  16×24, combat en ~36 px ; `crisp` n'agrandit que d'un nombre entier de fois. Lior a ses visages (`lior_visage_0..4`,
+  portrait des dialogues selon la réplique). Effets des sorts (`spriteFx` : une suite d'images par type, soins),
+  invocation au-dessus des cibles d'une Limite (`inv_…` selon le type), textures 32×32 (`texTile` : parquet des
+  intérieurs, lave, neige profonde). La « Poké Ball » de la planche n'est pas découpée (marque de Pokémon).
+- Cartes (3.2) : arbres, rochers, tonneaux et nouveaux objets (`hasProp`/`drawProp`) et bâtiments sont dessinés avec
+  les personnages, triés de haut en bas (on passe derrière un toit ou un arbre). Bâtiments : sprite selon le genre
+  (maison, taverne, boutique, église, entrepôt), la plus grande largeur 96/80/64 qui tient dans l'emprise, posé sur
+  son bas, la porte du sprite alignée sur `doorX` ; variante de toit selon `toit` ; champ `dessin` pour en imposer un ;
+  genre `decor` = sans porte ni événement (moulin, ruines, château). Nouvelles tuiles : `q` pavés (praticable), `H`
+  clôture, `L` réverbère, `Y` puits, `C` caisses, `U` buisson, `Q` banc, `K` charrette, `M` étal, `X` feu de camp,
+  `G` tableau d'annonces, `J` bannière. Villes redessinées par les scripts de `outils/villes/` (`carte.py` écrit au
+  format de `writeJson`) : place pavée, marché et jardins dans la Vallée (+ ferme au moulin), rue pavée et forge à
+  Forgeroc, place de Givreval, port, camp de Sylve-Noire ; habitants marchande, aubergiste, soigneur, forgeron,
+  voyageuse, paysan et animaux. Nouvelles créatures (monstres restants des planches) : Tisseline (Grotte), Osselet
+  (Ruines, Tour), Gobelard et Brutor (Sylve-Noire), Draconnet (volcan, rare), Coffrelin (coffre piégé des Ruines,
+  « boss » de carte, événement `coffrelin`).
 - Graphismes des cartes (2.0, sprites.cpp) : maisons (`drawBuilding` : ombre, soubassement, pierres, tuiles en rangées,
   faîtage, cheminée, fenêtres à volets et jardinières), arbres `T` en trois variantes selon `hsh` (rond, petit, fruitier
   ou large en forêt), chemins `=` aux bords adoucis contre la nature (liseré, touffes, coins), herbe de la vallée variée.
@@ -285,7 +318,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - Damier (1.7, plan validé le 2026-10-10 ; **4x4 depuis la 2.0**, demandé le 2026-10-12) : `N_CELLS` = 16 cases par camp
   (data.hpp : `GRID` 4, `cellCol` 0 avant … `BACK_COL` 3 arrière, `cellRow`, `cellAt(ligne, colonne)` ; ne jamais écrire
   3 ou 9 en dur). Sauvegarde : ligne `case4` ; une ancienne ligne `case` (3x3) est convertie (l'arrière reste l'arrière).
-  À l'écran (`Battle::cellPos`) : colonnes de 30 px, lignes de 26 px à partir de y 58. Mesuré : difficulté inchangée
+  À l'écran (`Battle::cellPos`) : colonnes de 30 px, lignes de 22 px à partir de y 72 (3.2). Mesuré : difficulté inchangée
   par rapport au 3x3 (écarts dans le bruit). `Battle::cells_` garde la
   case de chacun pendant le combat (alliés : `Fighter::cell`, la formation, ligne
   `case4` de la sauvegarde ; ennemis et gardien à plusieurs : `formation()`
@@ -294,7 +327,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
   dans `attackScore` : l'IA et les tactiques en tiennent compte) ; l'arrière donne
   et reçoit `backRow` au corps à corps. `Move::zone` (`Area`, champ `zone`) :
   `zoneTargets` étend la cible à sa zone dans `useMove`, voisins × `zoneSide`.
-  « Se déplacer » (`moveTo`, jauge rapide), menu `Game::formationMenu` (dessin
+  « Se déplacer » (`moveTo`, jauge rapide ; case choisie sur le damier), menu `Game::formationMenu` (dessin
   `drawFormationPanel`, `panelMode_` 4). Réseau : la case est le 7e nombre de
   chaque combattant dans `etat` ; ordre `deplacer`.
 - Attaques annoncées (1.8) : `Battle::bossPlan` ; un boss (pas en duel) annonce

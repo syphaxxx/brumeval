@@ -16,9 +16,10 @@ toutes les références existent et que chaque lieu des cartes est accessible.
 |---|---|
 | `types.json` | Les 13 types (Feu, Eau, Glace, Roche, Vent, Poison, Métal, Esprit…), leur couleur, leurs immunités et la table d'efficacité |
 | `techniques.json` | Techniques, sorts et Limites |
-| `especes.json` | Héros, créatures et boss : statistiques de base, techniques apprises, `evolution` (`espece` et `niveau` : la forme qu'elle peut prendre), `taille` (dessin agrandi, 1.15 pour les formes évoluées), `talent` (identifiant d'un talent de `regles.json`), `bouclier` (bouclier de Brisure en ennemi ; absent : valeur des règles) |
-| `objets.json` | Objets : prix, effets (soin, PM, réanimation, capture), équipement (`equipement` : `arme`, `armure` ou `accessoire`, et `bonus` : `pv`, `pm`, `attaque`, `defense`, `magie`, `resistance`, `vitesse`, `precision`, `esquive`, `critique`) ; `"trophee": true` pour un trophée de boss (forge). Les armes et armures forgées (`epee_fer+1`…) sont créées par le jeu, pas écrites ici |
-| `apparences.json` | Couleurs et accessoires des personnages |
+| `especes.json` | Héros, créatures et boss : statistiques de base, techniques apprises, `evolution` (`espece` et `niveau` : la forme qu'elle peut prendre), `taille` (dessin agrandi, 1.15 pour les formes évoluées), `sprite` (son dessin : un nom de `sprites.json`), `talent` (identifiant d'un talent de `regles.json`), `bouclier` (bouclier de Brisure en ennemi ; absent : valeur des règles) |
+| `objets.json` | Objets : prix, effets (soin, PM, réanimation, capture), équipement (`equipement` : `arme`, `armure` ou `accessoire`, et `bonus` : `pv`, `pm`, `attaque`, `defense`, `magie`, `resistance`, `vitesse`, `precision`, `esquive`, `critique`) ; `"trophee": true` pour un trophée de boss (forge) ; `icone` : son icône dans les menus (un nom de `sprites.json`). Les armes et armures forgées (`epee_fer+1`…) sont créées par le jeu, pas écrites ici |
+| `apparences.json` | Couleurs et accessoires des personnages ; `sprite` : le début du nom de ses sprites (`lior` → `lior_bas_0`…) |
+| `sprites.png`, `sprites.json` | L'atlas des sprites et la place de chacun, fabriqués par `outils/sprites/decoupe.py` (ne pas modifier à la main) |
 | `regles.json` | Départ de la partie, rencontres, formules de combat, récompenses (dont `butin_type` : matériaux selon le type de la créature vaincue), forge, tactiques de départ… |
 | `evenements.json` | Dialogues et événements de l'histoire |
 | `cartes/*.json` | Une carte par fichier : tuiles, bâtiments, habitants, coffres… |
@@ -253,7 +254,13 @@ Chaque ligne de `tuiles` est une rangée de cases, toutes de même longueur :
 | `d` | arbre mort | `i` | glace |
 | `n` | neige profonde (rencontres) | `z` | marais (rencontres) |
 | `O` | rocher à pousser (énigme) | `P` | dalle de l'énigme |
-| `D` | grille (ouverte par l'énigme) | | |
+| `D` | grille (ouverte par l'énigme) | `q` | pavés (places, rues ; praticable) |
+| `H` | clôture | `L` | réverbère |
+| `Y` | puits | `C` | caisses |
+| `U` | buisson | `Q` | banc |
+| `K` | charrette | `M` | étal de marché |
+| `X` | feu de camp | `G` | tableau d'annonces |
+| `J` | bannière | | |
 
 Meubles des intérieurs (thème `interieur`) : `p` tapis (praticable), `t`
 table, `h` lit, `e` étagère, `o` comptoir, `v` tonneau.
@@ -261,7 +268,8 @@ table, `h` lit, `e` étagère, `o` comptoir, `v` tonneau.
 - `theme` : `vallee`, `cendres`, `grotte`, `foret`, `neige` ou `interieur`
   (couleur du sol, arbres, chemins, parois et décor des combats ; `interieur` :
   parquet, murs tapissés et meubles).
-- `batiments` : `genre` (apparence et enseigne), `nom`, `toit`, `evenement`
+- `batiments` : `genre` (apparence et enseigne ; `decor` : un décor sans porte), `dessin` (facultatif : le sprite à
+  la place de celui du genre, ex. `entrepot`, `moulin`, `ruines`, `chateau`), `nom`, `toit`, `evenement`
   (lancé à la porte) ou `interieur` : l'identifiant d'une carte au thème
   `interieur`, où la porte fait entrer. Cette carte a un `passage` vers le
   village, sur la case de sa porte (souvent un tapis `p`) ; on arrive juste

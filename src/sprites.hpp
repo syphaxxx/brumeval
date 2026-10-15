@@ -1,5 +1,5 @@
-// Dessin des personnages, créatures, tuiles et décors (tout est dessiné en code,
-// aucune image externe n'est nécessaire).
+// Dessin des personnages, créatures, tuiles et décors : avec les sprites de l'atlas (data/sprites.png, voir gfx.hpp)
+// quand ils existent, sinon en code (formes, couleurs).
 #pragma once
 #include <string>
 
