@@ -463,7 +463,6 @@ void Pilot::plan() {
   bool ko = false;
   for (auto& f : G.front()) hp += f->hp, mhp += f->mhp, mp += f->mp, mmp += f->mmp, ko = ko || !f->alive();
   float frac = mhp ? float(hp) / mhp : 1, mpFrac = mmp ? float(mp) / mmp : 1;
-  bool danger = std::any_of(gs.begin(), gs.end(), [](const Goal& g) { return g.kind == Danger; });
   need_ = 0;  // niveau à atteindre pour le combat difficile accessible le plus facile
   for (auto& g : gs)
     if (g.kind == Grind && std::any_of(g.spots.begin(), g.spots.end(), [&](const Spot& s) { return dist_[s.node] < INT_MAX; }))

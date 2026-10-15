@@ -23,13 +23,13 @@ struct UpgradeDef {
   int max, cost;
 };
 static const UpgradeDef UPGRADES[N_UPGRADES] = {
-    {T("Héros proposés"), T("Un héros de plus au choix au départ (3 à 6)."), 3, 30},
-    {T("Créatures proposées"), T("Une créature de plus au choix au départ (3 à 5)."), 2, 25},
-    {T("Bourse"), T("+60 pièces d'or au départ."), 5, 15},
-    {T("Sac de voyage"), T("+2 Potions et +1 Lanterne au départ."), 3, 20},
-    {T("Entraînement"), T("L'équipe de départ commence un niveau plus haut."), 3, 40},
-    {T("Lanternes bénies"), T("Les captures réussissent un peu plus souvent."), 3, 25},
-    {T("Sagesse"), T("+15 % d'expérience à chaque combat."), 3, 35},
+    {N_("Héros proposés"), N_("Un héros de plus au choix au départ (3 à 6)."), 3, 30},
+    {N_("Créatures proposées"), N_("Une créature de plus au choix au départ (3 à 5)."), 2, 25},
+    {N_("Bourse"), N_("+60 pièces d'or au départ."), 5, 15},
+    {N_("Sac de voyage"), N_("+2 Potions et +1 Lanterne au départ."), 3, 20},
+    {N_("Entraînement"), N_("L'équipe de départ commence un niveau plus haut."), 3, 40},
+    {N_("Lanternes bénies"), N_("Les captures réussissent un peu plus souvent."), 3, 25},
+    {N_("Sagesse"), N_("+15 % d'expérience à chaque combat."), 3, 35},
 };
 static const char* UPGRADE_IDS[N_UPGRADES] = {"heros", "creatures", "bourse", "sac", "entrainement", "lanternes", "sagesse"};
 

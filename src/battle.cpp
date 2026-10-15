@@ -571,7 +571,6 @@ float Battle::atbRate(const FighterP& f) const {
 }
 
 std::vector<FighterP> Battle::turnOrder(int n) const {
-  const Rules& R = rules();
   std::vector<std::pair<float, FighterP>> ev;
   for (auto* side : {&allies, &foes})
     for (auto& f : *side) {
@@ -648,7 +647,6 @@ void Battle::drawTurnOrder(float y) {
 }
 
 void Battle::tickATB(float dt) {
-  const Rules& R = rules();
   std::vector<FighterP> all = alive(allies);
   for (auto& e : alive(foes)) all.push_back(e);
   for (auto& f : all) {

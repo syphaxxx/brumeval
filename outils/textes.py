@@ -33,7 +33,7 @@ ARRAYS = ['STATUS_NAMES', 'STATUS_TAGS', 'STAGE_NAMES', 'ZONE_NAMES', 'PACE_NAME
 for f in sorted(glob.glob(os.path.join(ROOT, 'src', '*.cpp'))):
     if f.endswith('test.cpp') or f.endswith('procgen.cpp'): continue
     src = open(f, encoding='utf-8').read()
-    for m in re.finditer(r'(?<![A-Za-z_])T\(' + LIT + r'\)', src): add(unescape(m.group(1)))
+    for m in re.finditer(r'(?<![A-Za-z_])(?:T|N_)\(' + LIT + r'\)', src): add(unescape(m.group(1)))
     for name in ARRAYS:
         for m in re.finditer(r'\b' + name + r'\s*\[[^\]]*\]\s*=\s*\{([^}]*)\}', src):
             for s in re.findall(LIT, m.group(1)): add(unescape(s))

@@ -384,7 +384,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   `T("Fuir")`…). procgen.cpp reste en français (le monde doit être identique chez tous). `python outils/textes.py`
   rassemble les phrases (T du code, tableaux de noms, textes des données) ; `BRUMEVAL_LANGUE=en brumeval --test …`
   liste à la fin les phrases affichées sans traduction et vérifie la mise en page en anglais. Dans tactics.cpp et
-  help.cpp, écrire `::T(` (un membre s'appelle `T`).
+  help.cpp, écrire `::T(` (un membre s'appelle `T`). Jamais `T(` dans un tableau global (rempli au chargement du
+  programme, avant le choix de la langue : plantage sur Linux et Mac) : `N_("…")`, puis `tr()` à l'affichage.
 - Données en mémoire : `dataDoc(DF_…)` garde chaque fichier de data/ sous forme
   de JSON ; `rebuildData()` reconstruit les structures du jeu à partir de ces
   documents, `saveDataDoc` les écrit. Les Réglages ne touchent qu'aux documents,

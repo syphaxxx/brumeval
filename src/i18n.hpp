@@ -14,6 +14,9 @@ const std::string& language();
 bool translating();                       // une autre langue que le français est choisie
 // Traduction d'une phrase (le pointeur reste valable tant qu'on ne change pas de langue)
 const char* T(const char* fr);
+// Phrase à traduire plus tard (tableau rempli au chargement du programme, avant le dictionnaire) : N_("…")
+// ne fait rien, mais outils/textes.py la rassemble ; l'affichage la passe ensuite par tr() ou T().
+#define N_(s) s
 std::string tr(const std::string& fr);
 // Phrases demandées mais absentes du dictionnaire (pour compléter la traduction, mode test)
 std::vector<std::string> missingTranslations();
