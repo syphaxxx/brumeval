@@ -202,6 +202,9 @@ class Battle {
   void enemyTurn(FighterP e);
   Plan think(FighterP a);
   float attackScore(const FighterP& a, const Move& m, const FighterP& t) const;  // intérêt d'une attaque (IA et tactiques)
+  // Dégâts prévus (3.3, aide du choix de la cible) : « ≈ 18-24 PV · 95 % » (sans coup critique). Une efficacité de type
+  // pas encore découverte (Brisure) n'est pas comptée : « ? » à la place.
+  std::string damageText(const FighterP& a, const Move& m, const FighterP& d) const;
   // Tactiques (tactics.hpp) : première règle possible de l'allié a, puis son exécution
   bool tacticsActive() const;
   bool tacticPlan(FighterP a, Plan& out);

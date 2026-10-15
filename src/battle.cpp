@@ -1126,7 +1126,12 @@ void Battle::moveTarget(FighterP a, const std::string& id, FighterP duo) {
   switch (m.target) {
     case Target::Enemy:
       aiming_ = &m;
-      pickFoe(T("Cible"), [this, &m](const Fighter& f) { return foeInfo(G, f, &m); }, [go](FighterP t) { go({t}); });
+      pickFoe(T("Cible"), [this, &m, a](const Fighter& f) {
+        FighterP fp;  // le combattant (partagé) qui correspond à cette fiche
+        for (auto& o : foes)
+          if (o.get() == &f) fp = o;
+        return foeInfo(G, f, &m) + damageText(a, m, fp);
+      }, [go](FighterP t) { go({t}); });
       break;
     case Target::AllEnemies: go(alive(foes)); break;
     case Target::Ally: pickAlly(T("Sur qui ?"), false, [go](FighterP t) { go({t}); }); break;
@@ -1322,6 +1327,36 @@ float Battle::attackScore(const FighterP& a, const Move& m, const FighterP& t) c
     }
   }
   return score / paceTime(m);
+}
+
+std::string Battle::damageText(const FighterP& a, const Move& m, const FighterP& d) const {
+  if (!m.damaging() || !a || !d) return "";
+  const Rules& R = rules();
+  bool magic = m.kind == Kind::Magic;
+  float hit = m.acc / 100.f * a->acc / 100.f - (magic ? 0 : d->eva / 100.f);
+  if (!magic && cellCol(std::max(0, cellOf(d))) == BACK_COL) hit -= float(talentValue(d->S(), "esquive_arriere"));
+  if (!magic && weather_ >= 0) hit += R.weathers[(size_t)weather_].acc / 100.f;
+  if (const Rules::Terrain* tr = terrainAt(d); !magic && tr && tr->kind == "esquive") hit -= float(tr->value) / 100.f;
+  float eff = moveEff(m, d->S());
+  bool unknown = eff != 1 && !d->S().human && !G.weakKnown(d->sp, m.type);  // à découvrir en essayant
+  if (eff <= 0 && !unknown) return T(" · aucun effet");
+  if (unknown) eff = 1;
+  float A = magic ? a->eMag() : a->eAtk(), D = magic ? d->eRes() : d->eDef();
+  float stab = hasType(a->S(), m.type) ? float(R.stab) : 1.f, k = 1;
+  if (m.melee) {
+    if (cellCol(std::max(0, cellOf(a))) == BACK_COL) k *= float(R.backRow);
+    if (cellCol(std::max(0, cellOf(d))) == BACK_COL) k *= float(R.backRow);
+  }
+  if (d->broken) k *= float(R.breakDamage);
+  k *= 1 - float(talentValue(d->S(), magic ? "resiste_magie" : "resiste_physique"));
+  if (hasType(a->S(), m.type) && a->hp * 3 < a->mhp) k *= 1 + float(talentValue(a->S(), "rage"));
+  k *= weatherMult(m.type) * guardMult(d);
+  if (const Rules::Terrain* tr = terrainAt(a); magic && tr && tr->kind == "magie") k *= 1 + float(tr->value);
+  float base = ((2 * a->lvl / 5.f + 2) * m.power * A / std::max(1.f, D) / float(R.dmgDivisor) + 2) * stab * eff * k;
+  int lo = std::max(1, int(base * float(R.spreadMin))), hi = std::max(1, int(base));
+  std::string s = T(" · ≈ ") + std::to_string(lo) + (hi > lo ? "-" + std::to_string(hi) : "") + T(" PV");
+  if (unknown) s += " ?";
+  return s + " · " + std::to_string(int(std::lround(std::clamp(hit, 0.f, 1.f) * 100))) + " %";
 }
 
 void Battle::autoCommand(FighterP a) {
