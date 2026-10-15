@@ -403,6 +403,31 @@ void drawHuman(Gfx& g, const Look& lk, float x, float y, float s, int dir, int s
   }
 }
 
+bool drawFighterIcon(Gfx& g, const Fighter& f, float cx, float cy, float w, float h, bool faceRight) {
+  const Species& sp = f.S();
+  Color tint = rgb(0xffffff);
+  if (sp.human) {
+    const Look& lk = look(sp.look);
+    std::string p = lk.sprite;
+    if (p.empty() && lk.id.rfind("lk_", 0) == 0) {  // Expédition : comme humanSprite
+      static const char* BY_WEAPON[] = {"homme", "aventuriere", "mage", "soldat", "aventuriere", "archere", "soldat"};
+      p = BY_WEAPON[std::clamp(lk.weapon, 0, 6)];
+      tint = mix(rgb(lk.top), rgb(0xffffff), .5f);
+    }
+    const SpriteRect* r = p.empty() ? nullptr : findSprite(p + "_bas_0");
+    if (!r) return false;
+    int hh = std::min(r->h, 15);  // tête et épaules : le haut du sprite de la carte, réduit pour tenir
+    float k = std::min(1.f, h / hh);
+    g.sprite(r->sub(0, 0, r->w, hh), std::round(cx - r->w * k / 2), std::round(cy - hh * k / 2), faceRight, k, tint);
+    return true;
+  }
+  const SpriteRect* r = sp.sprite.empty() ? borrowedSprite(sp, tint) : findSprite(sp.sprite);
+  if (!r) return false;
+  float k = std::min({1.f, h / r->h, w / r->w});
+  g.sprite(*r, std::round(cx - r->w * k / 2), std::round(cy - r->h * k / 2), faceRight, k, tint);
+  return true;
+}
+
 bool drawFighterPose(Gfx& g, const Fighter& f, const std::string& pose, float x, float y, bool faceRight) {
   const Species& sp = f.S();
   if (!sp.human) return false;

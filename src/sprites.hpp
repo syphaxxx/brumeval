@@ -16,6 +16,9 @@ void drawHuman(Gfx& g, const Look& lk, float x, float y, float s, int dir, int s
 void drawFighterSprite(Gfx& g, const Fighter& f, float x, float y, float s, bool faceRight, float t);
 // Hauteur du dessin d'un combattant au-dessus de son point (x, y) de drawFighterSprite (barre de PV, repères)
 float fighterTop(const Fighter& f, float s);
+// Petit portrait (3.3, ordre des tours) : la tête d'un humain, la créature entière réduite, centrée dans w x h.
+// Faux s'il n'a pas de sprite.
+bool drawFighterIcon(Gfx& g, const Fighter& f, float cx, float cy, float w, float h, bool faceRight);
 // Pose d'un héros qui en a les sprites (3.3, Lior) : <sprite>_<pose> à la place de son dessin de combat (« lancer_2 »,
 // « victoire », « ko »), au même endroit que drawFighterSprite. Faux s'il n'a pas cette pose.
 bool drawFighterPose(Gfx& g, const Fighter& f, const std::string& pose, float x, float y, bool faceRight);

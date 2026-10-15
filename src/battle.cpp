@@ -750,11 +750,14 @@ void Battle::drawTurnOrder(float y, float minX, float maxX) {
     const FighterP& f = order[i];
     bool ally = isAlly(f), lost = !ally && f->broken && seenOnce[f.get()]++ == 0;
     Color edge = ally ? rgb(0x8fd0ff) : f->boss ? rgb(0xffe066) : rgb(0xff8a7a);
-    g.rect(x, y, 22, 10, rgb(0x0a0f33, 200));
-    g.rect(x, y + 9, 22, 1, edge);
+    g.rect(x, y, 22, 12, rgb(0x0a0f33, 200));
+    g.rect(x, y + 11, 22, 1, edge);
     if (i == 0) g.rect(x, y, 22, 1, edge);  // le prochain à jouer
-    g.text(x + 11, y + 1, utf8Prefix(f->name(), 3), lost ? GREY : ally ? WHITE : edge, 1, false);
-    if (lost) g.rect(x + 2, y + 5, 18, 1, rgb(0xffe066));  // barré : tour perdu (brisé)
+    if (lost) g.alpha = .4f;
+    if (!drawFighterIcon(g, *f, x + 11, y + 6, 20, 10, ally))  // son portrait, sinon le début de son nom
+      g.text(x + 11, y + 1, utf8Prefix(f->name(), 3), lost ? GREY : ally ? WHITE : edge, 1, false);
+    g.alpha = 1;
+    if (lost) g.rect(x + 2, y + 6, 18, 1, rgb(0xffe066));  // barré : tour perdu (brisé)
   }
 }
 
