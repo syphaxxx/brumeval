@@ -178,7 +178,7 @@
       "niveau_min": 10,
       "niveau_max": 13,
       "max_ennemis": 3,
-      "creatures": ["louvet", "serpentin", "chauvenuit", "esprillon", "champichou"]
+      "creatures": ["louvet", "serpentin", "chauvenuit", "esprillon", "champichou", "gobelard"]
     },
     {
       "x": 0,
@@ -196,7 +196,9 @@
         "louvet",
         "chauvenuit",
         "esprillon",
-        "champichou"
+        "champichou",
+        "gobelard",
+        "brutor"
       ]
     }
   ],

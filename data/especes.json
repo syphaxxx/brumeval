@@ -1073,5 +1073,74 @@
     "couleurs": ["#2a2a4a", "#ffe94a"],
     "apprend": [[1, "foudre_noire"], [1, "eclipse"], [1, "orage"], [1, "ouragan"], [1, "hurlement_spectral"]],
     "talent": "esprit_clair"
+  },
+  {
+    "id": "tisseline",
+    "nom": "Tisseline",
+    "sprite": "araignee",
+    "types": ["poison", "ombre"],
+    "base": {"pv": 50, "pm": 18, "attaque": 56, "defense": 44, "magie": 44, "resistance": 42, "vitesse": 62},
+    "esquive": 5,
+    "forme": "insecte",
+    "couleurs": ["#4a3a4a", "#e05a3a"],
+    "apprend": [[1, "venin"], [1, "coup_bas"], [14, "acide"]],
+    "talent": "piquant"
+  },
+  {
+    "id": "osselet",
+    "nom": "Osselet",
+    "sprite": "squelette",
+    "types": ["ombre", "esprit"],
+    "base": {"pv": 46, "pm": 28, "attaque": 54, "defense": 40, "magie": 60, "resistance": 52, "vitesse": 60},
+    "forme": "fantome",
+    "couleurs": ["#e8e0d0", "#8a7a6a"],
+    "apprend": [[1, "coup_bas"], [1, "onde"], [44, "cauchemar"]],
+    "talent": "furtif"
+  },
+  {
+    "id": "gobelard",
+    "nom": "Gobelard",
+    "sprite": "gobelin",
+    "type": "normal",
+    "base": {"pv": 50, "pm": 10, "attaque": 60, "defense": 42, "magie": 24, "resistance": 34, "vitesse": 64},
+    "critique": 10,
+    "forme": "souris",
+    "couleurs": ["#5a8a3a", "#c8b07a"],
+    "apprend": [[1, "ruee"], [1, "coup_bas"], [12, "hurlement"]],
+    "talent": "vif"
+  },
+  {
+    "id": "brutor",
+    "nom": "Brutor",
+    "sprite": "orc",
+    "types": ["normal", "roche"],
+    "base": {"pv": 70, "pm": 8, "attaque": 72, "defense": 58, "magie": 20, "resistance": 38, "vitesse": 34},
+    "forme": "golem",
+    "couleurs": ["#4a7a3a", "#8a6a4a"],
+    "apprend": [[1, "ruee"], [1, "hurlement"], [14, "seisme"]],
+    "talent": "rage",
+    "role_combat": "protecteur"
+  },
+  {
+    "id": "draconnet",
+    "nom": "Draconnet",
+    "sprite": "dragonnet",
+    "types": ["feu", "vent"],
+    "base": {"pv": 52, "pm": 22, "attaque": 56, "defense": 46, "magie": 52, "resistance": 44, "vitesse": 58},
+    "forme": "lezard",
+    "couleurs": ["#c83a2a", "#ffb050"],
+    "apprend": [[1, "flam"], [1, "crocs"], [14, "brasier"]],
+    "talent": "vif"
+  },
+  {
+    "id": "coffrelin",
+    "nom": "Coffrelin",
+    "sprite": "mimique",
+    "type": "metal",
+    "base": {"pv": 80, "pm": 10, "attaque": 78, "defense": 80, "magie": 30, "resistance": 60, "vitesse": 40},
+    "forme": "rocher",
+    "couleurs": ["#8a5a2a", "#ffd34d"],
+    "apprend": [[1, "crocs"], [1, "coup_acier"], [1, "blindage"], [40, "eclats_acier"]],
+    "talent": "carapace"
   }
 ]

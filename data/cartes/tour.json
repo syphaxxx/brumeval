@@ -74,7 +74,7 @@
       "niveau_min": 48,
       "niveau_max": 52,
       "max_ennemis": 4,
-      "creatures": ["orageline", "fulgoray", "noyelin", "bastillon", "nuageon"]
+      "creatures": ["orageline", "fulgoray", "noyelin", "bastillon", "nuageon", "osselet"]
     }
   ],
   "boss": [

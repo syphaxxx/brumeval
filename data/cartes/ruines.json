@@ -109,8 +109,11 @@
       "niveau_min": 44,
       "niveau_max": 48,
       "max_ennemis": 4,
-      "creatures": ["noyelin", "coquillon", "voltanguille", "bastillon"]
+      "creatures": ["noyelin", "coquillon", "voltanguille", "bastillon", "osselet"]
     }
   ],
-  "boss": [{"x": 17, "y": 3, "espece": "kraken", "drapeau": "kraken", "evenement": "kraken"}]
+  "boss": [
+    {"x": 17, "y": 3, "espece": "kraken", "drapeau": "kraken", "evenement": "kraken"},
+    {"x": 30, "y": 18, "espece": "coffrelin", "drapeau": "coffrelin_ruines", "evenement": "coffrelin"}
+  ]
 }

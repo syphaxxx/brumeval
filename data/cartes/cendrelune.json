@@ -254,7 +254,7 @@
       "niveau_min": 15,
       "niveau_max": 19,
       "max_ennemis": 3,
-      "creatures": ["tisonnel", "galetor", "voltigeon", "glaconnet", "fumerole"]
+      "creatures": ["tisonnel", "galetor", "voltigeon", "glaconnet", "fumerole", "draconnet"]
     },
     {
       "x": 0,
@@ -264,7 +264,7 @@
       "niveau_min": 15,
       "niveau_max": 19,
       "max_ennemis": 3,
-      "creatures": ["tisonnel", "galetor", "voltigeon", "glaconnet", "fumerole"]
+      "creatures": ["tisonnel", "galetor", "voltigeon", "glaconnet", "fumerole", "draconnet"]
     }
   ],
   "boss": [
