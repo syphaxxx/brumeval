@@ -282,7 +282,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
   or, le reste de la zone en orange, les autres choix en contour blanc ; « Se déplacer » montre le combattant en
   transparence sur la case. En survolant une technique (`previewMove`, `MenuItem::hover`), sa zone s'allume autour
   de la cible probable (`cursor`), les ennemis hors de portée du corps à corps sont barrés. Par-dessus les combattants :
-  contour de la zone et flèche dorée au-dessus de la cible (`fighterTop`).
+  contour de la zone et flèche dorée au-dessus de la cible (`fighterTop`) ; le reste du camp visé est estompé (alpha 0,45).
 - Sprites (3.2, refonte demandée le 2026-10-15) : planches « pixel art » de l'utilisateur dans `outils/sprites/planches/`,
   découpées par `python outils/sprites/decoupe.py` (liste `decoupe.json` : planche, boîte, taille ; recolorations
   `variantes.json`) en un atlas `data/sprites.png` + `data/sprites.json` (nom → x, y, largeur, hauteur ; planche de

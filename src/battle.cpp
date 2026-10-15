@@ -2512,11 +2512,34 @@ void Battle::draw() {
     if (f->alive()) shown.push_back(f);
   for (auto& a : allies) shown.push_back(a);
   std::stable_sort(shown.begin(), shown.end(), [&](const FighterP& a, const FighterP& b) { return pos(a).y < pos(b).y; });
+  // Zone en cours (choix sur le damier, ou aperçu de la technique survolée) : les combattants du camp visé hors de
+  // la zone sont estompés, pour que la cible ressorte même quand ils se chevauchent
+  int zSide = -1, zCenter = -1;
+  std::set<int> zCells;
+  {
+    const Move* zm = nullptr;
+    bool side = false;
+    if (boardPicking()) {
+      Menu& m = G.menus.top();
+      if (!pick_.move && m.sel >= 0 && m.sel < (int)pick_.cells.size()) zCenter = pick_.cells[(size_t)m.sel], side = pick_.allySide, zm = aiming_;
+    } else if (!preview_.empty() && previewDepth_ == G.menus.depth() && G.menus.active() && cursor && cursor->alive() && !isAlly(cursor) &&
+               moveInfo(preview_).target == Target::Enemy) {
+      zm = &moveInfo(preview_);
+      zCenter = cellOf(cursor);
+    }
+    if (zCenter >= 0) {
+      zSide = side;
+      for (int c = 0; c < N_CELLS; c++)
+        if (c == zCenter || (zm && (zm->zone == Area::All || inZone(zm->zone, zCenter, c)))) zCells.insert(c);
+    }
+  }
   for (auto& f : shown) {
     Pt p = pos(f);
     Pt o = offset(f);
+    bool dim = zSide >= 0 && isAlly(f) == (zSide == 1) && !zCells.count(cellOf(f));
     if (!isAlly(f)) {  // ennemi : barre de PV au-dessus, nom sous le curseur
       float s = f->boss ? 1.45f : f->sp == "brumelin" ? .85f : 1.f;
+      if (dim) g.alpha = .45f;
       if (!(blinking && blink == f)) drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, s, true, t + p.x * .01f);
       float bw = f->boss ? 24 : 15, by = std::max(46.f, p.y - fighterTop(*f, s) - 6);
       g.rect(p.x - bw - 1, by - 1, bw * 2 + 2, 4, rgb(0x0a0f33));
@@ -2551,9 +2574,11 @@ void Battle::draw() {
           nw++;
         }
       drawStatusTag(*f, p.x, by - 10);
+      g.alpha = 1;
       continue;
     }
     if (!f->alive()) g.alpha = .35f;
+    else if (dim) g.alpha = .45f;
     if (!(blinking && blink == f)) drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, 1, false, t + p.x * .01f);
     g.alpha = 1;
     drawStatusTag(*f, p.x - 26, p.y - 18);
@@ -2561,27 +2586,15 @@ void Battle::draw() {
     if (cursor == f) g.cursor(p.x - 24, p.y - 4);
   }
   // Par-dessus les combattants : contour de la zone et flèche au-dessus de la cible (le sprite cache sa case)
-  if (const Move* zm = boardPicking() ? aiming_ : nullptr; boardPicking()) {
-    Menu& m = G.menus.top();
-    if (m.sel >= 0 && m.sel < (int)pick_.cells.size()) {
-      int center = pick_.cells[(size_t)m.sel];
-      bool side = pick_.allySide;
-      for (int c = 0; c < N_CELLS; c++)
-        if (c == center || (zm && (zm->zone == Area::All || inZone(zm->zone, center, c))))
-          tile(g, cellPos(side, c), rgb(c == center ? 0xfff2a0 : 0xffb050, 200), true);
-      for (auto& f : side ? allies : foes)
-        if (cellOf(f) == center && (f->alive() || side)) {
-          Pt p = cellPos(side, center);
-          float y = std::max(48.f, p.y - fighterTop(*f, 1) - 16) + std::sin(t * 8) * 1.5f;
-          g.tri(p.x - 5, y, p.x + 5, y, p.x, y + 6, rgb(0xffe066));
-          g.tri(p.x - 3, y + 1, p.x + 3, y + 1, p.x, y + 4, rgb(0xfff8d0));
-        }
-    }
-  } else if (!preview_.empty() && previewDepth_ == G.menus.depth() && G.menus.active() && cursor && cursor->alive() && !isAlly(cursor)) {
-    const Move& zm2 = moveInfo(preview_);
-    if (zm2.target == Target::Enemy)
-      for (int c = 0; c < N_CELLS; c++)
-        if (zm2.zone == Area::All || inZone(zm2.zone, cellOf(cursor), c)) tile(g, cellPos(false, c), rgb(0xffd34d, 150), true);
+  if (zSide >= 0) {
+    for (int c : zCells) tile(g, cellPos(zSide == 1, c), rgb(c == zCenter ? 0xfff2a0 : 0xffb050, 210), true);
+    for (auto& f : zSide == 1 ? allies : foes)
+      if (cellOf(f) == zCenter) {
+        Pt p = cellPos(zSide == 1, zCenter);
+        float y = std::max(48.f, p.y - fighterTop(*f, 1) - 16) + std::sin(t * 8) * 1.5f;
+        g.tri(p.x - 5, y, p.x + 5, y, p.x, y + 6, rgb(0xffe066));
+        g.tri(p.x - 3, y + 1, p.x + 3, y + 1, p.x, y + 4, rgb(0xfff8d0));
+      }
   }
   drawAnim();
   // Nombres flottants
