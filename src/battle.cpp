@@ -2478,6 +2478,25 @@ void Battle::draw() {
       g.tri(x - 4, HZ - 1, x, HZ - 16, x + 4, HZ - 1, rgb(0x7fd6ff));
     }
   }
+  {  // Décor de l'horizon (3.3) : arbres, sapins ou rochers de la planche, en rang au fond et quelques-uns plus près
+    std::vector<const char*> back, near;
+    if (bg == Theme::Vallee && !boss) back = {"arbre", "arbre_petit", "arbre", "buisson", "arbre_automne"}, near = {"touffe_1", "fleurette_1", "touffe_3"};
+    else if (bg == Theme::Foret) back = {"sapin", "arbre", "sapin_petit", "sapin"}, near = {"touffe_2", "touffe_4", "fleurette_2"};
+    else if (bg == Theme::Neige && !boss) back = {"sapin_neige", "sapin_neige_petit"}, near = {};
+    else if (bg == Theme::Cendres) back = {"rochers", "rocher"}, near = {"caillou", "cailloux"};
+    for (int i = 0; !back.empty() && L - 30 + i * 34.f < R + 30; i++) {  // au fond, posés sur l'horizon
+      const SpriteRect* r = findSprite(back[(size_t)(i * 7 + 3) % back.size()]);
+      if (!r) break;
+      float x = L - 30 + i * 34.f + (i * 13) % 11;
+      g.sprite(*r, std::round(x - r->w / 2.f), std::round(HZ + 4 - r->h + (i % 3)), i % 2, 1, rgb(0xb8c4d8));  // plus pâles : la distance
+    }
+    for (int i = 0; !near.empty() && i < 9 * more / 100; i++) {  // touffes et cailloux devant, entre les deux damiers
+      const SpriteRect* r = findSprite(near[(size_t)i % near.size()]);
+      if (!r) break;
+      float x = L + std::fmod(i * 97.f + 23, W), y = HZ + 20 + std::fmod(i * 41.f, 110.f);
+      g.sprite(*r, std::round(x), std::round(y), i % 2);
+    }
+  }
   if (float night = shown() ? G.nightAmount() : 0.f; night > 0)  // jour et nuit (2.6), comme sur la carte
     g.rect(L, 0, W, SCREEN_H, rgb(0x0a1440, uint8_t(80 * night)));
   bool blinking = blink && t - blinkT < .42f && int((t - blinkT) / .07f) % 2 == 0;
