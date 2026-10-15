@@ -16,6 +16,9 @@ void drawHuman(Gfx& g, const Look& lk, float x, float y, float s, int dir, int s
 void drawFighterSprite(Gfx& g, const Fighter& f, float x, float y, float s, bool faceRight, float t);
 // Hauteur du dessin d'un combattant au-dessus de son point (x, y) de drawFighterSprite (barre de PV, repères)
 float fighterTop(const Fighter& f, float s);
+// Pose d'un héros qui en a les sprites (3.3, Lior) : <sprite>_<pose> à la place de son dessin de combat (« lancer_2 »,
+// « victoire », « ko »), au même endroit que drawFighterSprite. Faux s'il n'a pas cette pose.
+bool drawFighterPose(Gfx& g, const Fighter& f, const std::string& pose, float x, float y, bool faceRight);
 
 void drawTile(Gfx& g, const MapDef& m, int tx, int ty, int sx, int sy, float t);
 // Objet haut posé sur une case (arbre, réverbère, puits, étal…) : dessiné avec les personnages, triés de haut en

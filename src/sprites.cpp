@@ -403,6 +403,17 @@ void drawHuman(Gfx& g, const Look& lk, float x, float y, float s, int dir, int s
   }
 }
 
+bool drawFighterPose(Gfx& g, const Fighter& f, const std::string& pose, float x, float y, bool faceRight) {
+  const Species& sp = f.S();
+  if (!sp.human) return false;
+  const Look& lk = look(sp.look);
+  const SpriteRect* r = lk.sprite.empty() ? nullptr : findSprite(lk.sprite + "_" + pose);
+  if (!r) return false;
+  g.ellipse(x, y + 11, r->w * .36f, 2, rgb(0, 50));
+  g.sprite(*r, std::round(x - r->w / 2.f), std::round(y + 12 - r->h), faceRight);  // regard vers la gauche dans l'atlas
+  return true;
+}
+
 float fighterTop(const Fighter& f, float s) {
   const Species& sp = f.S();
   if (sp.human) {

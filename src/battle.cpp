@@ -578,6 +578,12 @@ void Battle::drawAnim() {
       case Fx::Heal:
       case Fx::Capture:
         if (anim_.fx == Fx::Heal && spriteFx(g, "", p, k, true)) break;
+        if (anim_.fx == Fx::Capture && anim_.actor && k < .45f)
+          if (const SpriteRect* lan = findSprite("ic_lanterne")) {  // la lanterne vole vers la créature
+            Pt a = pos(anim_.actor);
+            float u = k / .45f;
+            g.sprite(*lan, std::round(a.x + (p.x - a.x) * u - lan->w / 2.f), std::round(a.y - 14 + (p.y - a.y) * u - std::sin(u * 3.14159f) * 26));
+          }
         for (int i = 0; i < 7; i++) {  // étincelles qui montent
           float x = std::sin(i * 2.4f) * 13, y = 12 - std::fmod(k * 40 + i * 6, 40.f);
           g.ellipse(p.x + x, p.y + y, 1.6f, 1.6f, fade(i % 2 ? white : c, 1 - k * .8f));
@@ -2588,7 +2594,15 @@ void Battle::draw() {
     }
     if (!f->alive()) g.alpha = .35f;
     else if (dim) g.alpha = .45f;
-    if (!(blinking && blink == f)) drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, 1, true, t + p.x * .01f);  // regarde à droite
+    // Poses (3.3) : lancer de la lanterne pendant une capture, à terre une fois K.O., victoire à la fin du combat
+    std::string pose;
+    float ce = t - anim_.t0;
+    if (anim_.actor == f && anim_.fx == Fx::Capture && ce >= 0 && ce < .5f) pose = "lancer_" + std::to_string(std::min(4, int(ce / .09f)));
+    else if (!f->alive()) pose = "ko";
+    else if (summaryOn_) pose = "victoire";
+    if (!pose.empty() && !f->alive()) g.alpha = 1;
+    if (!(blinking && blink == f) && !(!pose.empty() && drawFighterPose(g, *f, pose, p.x + o.x, p.y + o.y, true)))
+      drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, 1, true, t + p.x * .01f);  // regarde à droite
     g.alpha = 1;
     drawStatusTag(*f, p.x - 24, p.y - 16);
     if (actor == f) {  // celui qui choisit son action : une flèche au-dessus de sa tête
@@ -2652,11 +2666,15 @@ void Battle::draw() {
   if (G.menus.shownDepth() <= 1) drawHud(t);  // un sous-menu ouvert prend sa place
   drawWeather();
   if (summaryOn_) {  // fenêtre des gains de la victoire
-    int h = 36 + 11 * (int)summary_.size(), y = std::max(26, 92 - h / 2);
-    g.window(30, y, 260, h);
-    g.text(160, y + 5, T("Victoire !"), GOLD, 1);
-    for (size_t i = 0; i < summary_.size(); i++) g.text(38, y + 19 + i * 11, summary_[i], WHITE);
-    g.text(160, y + h - 12, T("Entrée : continuer"), rgb(0xaab3d8), 1);
+    // à droite, du côté des ennemis vaincus : l'équipe reste visible (pose de victoire)
+    int w = Gfx::textW(T("Entrée : continuer"));
+    for (auto& l : summary_) w = std::max(w, Gfx::textW(l));
+    w = std::min(312, w + 18);
+    int x = std::max(4, 316 - w), h = 36 + 11 * (int)summary_.size(), y = std::max(26, 92 - h / 2);
+    g.window(x, y, w, h);
+    g.text(x + w / 2, y + 5, T("Victoire !"), GOLD, 1);
+    for (size_t i = 0; i < summary_.size(); i++) g.text(x + 8, y + 19 + i * 11, summary_[i], WHITE);
+    g.text(x + w / 2, y + h - 12, T("Entrée : continuer"), rgb(0xaab3d8), 1);
   }
   G.menus.draw(g, t);
   // Entrée en combat : bandes sombres qui s'écartent en alternance, après un éclair blanc ;
