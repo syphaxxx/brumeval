@@ -876,9 +876,11 @@ void Game::drawTitle() {
     }
   }
   g.text(160, 76, T("Les gardiens de la vallée"), rgb(0xc9cbe0), 1);
-  drawHuman(g, look(0), 144, 92, 2, DOWN, 0, false);
-  drawCreature(g, "braisenard", 92, 124, 1, true, time);
-  drawCreature(g, "gouttelin", 232, 124, 1, false, time + .5f);
+  // de part et d'autre du menu (3.3) : Lior et Braisenard à gauche, Maëlle et Gouttelin à droite, face à face
+  drawHuman(g, look(0), 40, 118, 2, RIGHT, 0, false);
+  drawCreature(g, "braisenard", 76, 150, 1, true, time);
+  drawHuman(g, look(std::min(1, (int)allLooks().size() - 1)), 248, 118, 2, LEFT, 0, false);
+  drawCreature(g, "gouttelin", 248, 152, 1, false, time + .5f);
   if (menus.active()) {
     menus.draw(g, time);
     auto lines = Gfx::wrap(menus.help(), 284);
