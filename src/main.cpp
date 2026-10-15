@@ -87,18 +87,23 @@ class Screen {
     w = std::min(w + (w & 1), MAX_W);  // largeur paire : la zone du milieu tombe sur un pixel entier
     // Agrandissement de l'image dessinée : un nombre entier, au moins 2 (sprites deux fois plus fins), au plus 6
     int k = std::clamp((int)std::ceil(scale_ - 1e-3f), 2, 6);
-    if (w != w_ || k != k_) {
+    if (w != w_ || k != want_) {
       reset();
       w_ = w;
-      k_ = k;
+      want_ = k;
     }
     int dw = (int)std::lround(w_ * scale_), dh = (int)std::lround(SCREEN_H * scale_);
     dst_ = {(ow - dw) / 2, (oh - dh) / 2, dw, dh};
-    if (!scene_) {
-      scene_ = SDL_CreateTexture(r_, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, w_ * k_, SCREEN_H * k_);
-      if (!scene_) {  // carte graphique trop limitée : image à deux fois sa taille
-        k_ = 2;
+    if (!scene_) {  // carte graphique trop limitée pour la taille voulue : une image plus petite
+      for (k_ = want_; k_ >= 1 && !scene_; k_--)
         scene_ = SDL_CreateTexture(r_, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, w_ * k_, SCREEN_H * k_);
+      k_++;  // la boucle a compté un cran de trop
+      if (!scene_) {  // aucune image possible : on dessine directement dans la fenêtre (comme sans agrandissement)
+        k_ = 1;
+        g.fullW = w_;
+        g.ox = (w_ - SCREEN_W) / 2;
+        SDL_RenderSetScale(r_, scale_, scale_);
+        return;
       }
       SDL_SetTextureScaleMode(scene_, SDL_ScaleModeLinear);  // ajustement final en douceur
       SDL_SetTextureBlendMode(scene_, SDL_BLENDMODE_NONE);
@@ -110,6 +115,11 @@ class Screen {
   }
   // Affiche l'image dessinée, agrandie à la taille de la fenêtre
   void present() {
+    if (!scene_) {  // dessiné directement dans la fenêtre (voir begin)
+      SDL_RenderSetScale(r_, 1, 1);
+      SDL_RenderPresent(r_);
+      return;
+    }
     SDL_SetRenderTarget(r_, nullptr);
     SDL_SetRenderDrawColor(r_, 0, 0, 0, 255);
     SDL_RenderClear(r_);
@@ -130,7 +140,7 @@ class Screen {
  private:
   SDL_Renderer* r_;
   SDL_Texture* scene_ = nullptr;
-  int w_ = 0, k_ = 0;
+  int w_ = 0, k_ = 0, want_ = 0;  // agrandissement obtenu et voulu
   float scale_ = 1;
   SDL_Rect dst_{0, 0, SCREEN_W, SCREEN_H};
 };

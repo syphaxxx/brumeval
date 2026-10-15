@@ -96,6 +96,7 @@ class Gfx {
   void span(int y, int x0, int x1);
   SDL_Renderer* r_;
   SDL_Texture* atlas_ = nullptr;
+  SDL_Texture* atlasFlip_ = nullptr;  // le même atlas retourné gauche-droite (sprites tournés vers la droite)
   struct Box {
     int x, y, w, h;
     bool hidden = false;  // entièrement recouverte par une fenêtre dessinée ensuite

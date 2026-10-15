@@ -120,9 +120,13 @@ code) ; `docs/GUIDE.md` les range par domaine.
   l'écran va de `g.left()` (négatif) à `g.right()` ; la carte, les combats,
   l'écran titre, la fin et les outils le font. Tout nouveau décor plein écran
   doit utiliser `g.left()`/`g.fullW` au lieu de 0/`SCREEN_W`.
-- `Screen` (main.cpp) choisit cette largeur selon la fenêtre, puis agrandit
-  l'image pour la remplir sans bandes noires (agrandissement entier puis
-  ajustement linéaire : pixels nets à toute taille). La souris est ramenée en
+- `Screen` (main.cpp) choisit cette largeur selon la fenêtre. Depuis la 3.2.1,
+  l'image est dessinée directement k fois plus grande (k entier, de 2 à 6, juste
+  au-dessus de la taille de l'écran ; `SDL_RenderSetScale`), puis ajustée en
+  douceur à la fenêtre : le code dessine toujours en pixels de 320x240 (pixels
+  carrés et nets), les sprites, deux fois plus fins, gardent leurs détails. Si la
+  carte graphique refuse la grande image, k descend (jusqu'à dessiner dans la
+  fenêtre). Le mode test dessine en 640x480 (captures deux fois plus grandes). La souris est ramenée en
   coordonnées de la zone du milieu par `Screen::toGame` (négatives à gauche).
   Le jeu tient compte du zoom de Windows (`SDL_HINT_WINDOWS_DPI_AWARENESS`) ; la
   fenêtre de départ a la forme de l'écran (`fitWindow`). Lancé par un
@@ -308,9 +312,11 @@ code) ; `docs/GUIDE.md` les range par domaine.
   l'ordinateur (ennemis, et alliés en mode test) ; `Battle::log` garde un journal
   lisible (`BRUMEVAL_JOURNAL=Sylvarque brumeval --test captures` l'affiche pour
   la simulation qui contient ce mot).
-- Écran de combat (1.7, refait en 3.2) : ATH en tableau en bas à droite (`Battle::drawHud` : une ligne par allié, titres
-  PV, PM, ATB, Lim ; barre de PV verte/or/rouge ; compagnon en retrait ; mode Auto/Manuel) ; menu de commande en bas à
-  gauche, sous-menus au-dessus (`dock`). La fenêtre du haut montre l'aide de la ligne survolée, trois lignes au plus :
+- Écran de combat (1.7, refait en 3.2 et 3.2.1) : rien n'est écrit sur le damier. Panneau du bas (`PANEL_Y`, `dock`) :
+  menu de commande à gauche (5 lignes, il défile), à droite l'ATH en tableau (`Battle::drawHud` : une ligne par allié,
+  titres PV, PM, ATB, Lim ; barre de PV verte/or/rouge ; compagnon en retrait ; mode Auto/Manuel), remplacé par le
+  sous-menu ouvert (`MenuStack::shownDepth`). En haut, l'aide de la ligne survolée en deux lignes au plus (un message
+  du combat : trois), puis la ligne de la météo, de l'ordre des tours et des renforts :
   en combat, `moveBrief` (une ligne compacte : genre, type, puissance, coût, portée, zone, effets, rythme) remplace
   `moveHelp`, et les objets n'ont que `itemDetails`. Météo à gauche de l'ordre des tours.
 - Choix sur le damier (3.2, demandé le 2026-10-15) : la cible (`pickFoe`, `pickAlly`) et la case de « Se déplacer » se
@@ -324,7 +330,9 @@ code) ; `docs/GUIDE.md` les range par domaine.
   contour de la zone et flèche dorée au-dessus de la cible (`fighterTop`) ; le reste du camp visé est estompé (alpha 0,45).
 - Sprites (3.2, refonte demandée le 2026-10-15) : planches « pixel art » de l'utilisateur dans `outils/sprites/planches/`,
   découpées par `python outils/sprites/decoupe.py` (liste `decoupe.json` : planche, boîte, taille ; recolorations
-  `variantes.json`) en un atlas `data/sprites.png` + `data/sprites.json` (nom → x, y, largeur, hauteur ; planche de
+  `variantes.json`) en un atlas `data/sprites.png` + `data/sprites.json` (deux fois plus fin, `_echelle` 2 ; nom → x, y,
+  largeur, hauteur dans l'atlas ; `SpriteRect` : `w`, `h` dans le jeu, `sx`… dans l'atlas, `sub` pour un morceau ; un
+  atlas retourné d'avance sert aux sprites tournés vers la droite ; planche de
   contrôle `outils/sprites/apercu.png`, non suivie). Le jeu lit l'atlas avec stb_image (`src/ext/stb_image.h`,
   compilé seul dans image.cpp) ; `findSprite(nom)`, `Gfx::sprite(…)` (miroir, échelle, teinte, éclat). Champs :
   `sprite` des apparences (préfixe : `<p>_bas_0`, `_haut_k`, `_droite_k` ou `_gauche_k`, `_combat` ; un animal : un seul
@@ -357,7 +365,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - Damier (1.7, plan validé le 2026-10-10 ; **4x4 depuis la 2.0**, demandé le 2026-10-12) : `N_CELLS` = 16 cases par camp
   (data.hpp : `GRID` 4, `cellCol` 0 avant … `BACK_COL` 3 arrière, `cellRow`, `cellAt(ligne, colonne)` ; ne jamais écrire
   3 ou 9 en dur). Sauvegarde : ligne `case4` ; une ancienne ligne `case` (3x3) est convertie (l'arrière reste l'arrière).
-  À l'écran (`Battle::cellPos`) : colonnes de 30 px, lignes de 22 px à partir de y 72 (3.2). Mesuré : difficulté inchangée
+  À l'écran (`Battle::cellPos`) : alliés à gauche (tournés vers la droite), ennemis à droite (vers la gauche) depuis la
+  3.2.1, colonnes de 30 px, lignes de 22 px à partir de y 72. Mesuré : difficulté inchangée
   par rapport au 3x3 (écarts dans le bruit). `Battle::cells_` garde la
   case de chacun pendant le combat (alliés : `Fighter::cell`, la formation, ligne
   `case4` de la sauvegarde ; ennemis et gardien à plusieurs : `formation()`

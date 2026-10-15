@@ -123,7 +123,8 @@ Retours sur la 3.2 : sprites trop flous, l'équipe doit être à gauche en comba
 des textes cachent encore le terrain. Puis carte blanche pour améliorer le jeu à tous les niveaux, sans questions, et
 sans fusionner les branches (rien n'est publié avant son retour). Plan, dans l'ordre :
 
-**Branche `combat-hd` (3.2.1 : ses demandes)**
+**Branche `combat-hd` (3.2.1 : ses demandes) — fait le 2026-10-16** (revue Codex : 3 remarques justes corrigées ;
+joueur automatique : histoire terminée, 0 à 1 défaite sur deux parties)
 1. Sprites en double définition : l'image du jeu est rendue en 640×480 (les dessins en code restent identiques,
    agrandis deux fois), les sprites sont découpés deux fois plus fins et dessinés à leur pleine finesse.
 2. Combat : l'équipe à gauche, les ennemis à droite, chacun tourné vers l'adversaire.

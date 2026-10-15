@@ -194,7 +194,7 @@ class Battle {
   // Ordre des tours (2.5, inspiré de Final Fantasy X) : les n prochains tours prévus d'après les
   // jauges et les vitesses actuelles (sans le hasard de la paralysie)
   std::vector<FighterP> turnOrder(int n) const;
-  void drawTurnOrder(float y, float minX = 0);
+  void drawTurnOrder(float y, float minX = 0, float maxX = 320);
   bool skipTurn(FighterP f);  // sommeil ou paralysie : le tour est perdu
   void command(FighterP a);
   void autoCommand(FighterP a);

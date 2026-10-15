@@ -733,11 +733,12 @@ void Battle::drawWeather() {
   }
 }
 
-void Battle::drawTurnOrder(float y, float minX) {
+void Battle::drawTurnOrder(float y, float minX, float maxX) {
   Gfx& g = G.g;
   auto order = turnOrder(8);
+  while (!order.empty() && minX + order.size() * 24.f > maxX) order.pop_back();  // place réservée à gauche et à droite
   if (order.empty()) return;
-  float x = std::max(minX, 160 - order.size() * 12.f);
+  float x = std::clamp(160 - order.size() * 12.f, minX, maxX - order.size() * 24.f);
   std::map<const Fighter*, int> seenOnce;  // un ennemi brisé : seul son prochain tour est perdu
   for (size_t i = 0; i < order.size(); i++, x += 24) {
     const FighterP& f = order[i];
@@ -2641,11 +2642,13 @@ void Battle::draw() {
     g.text(6, orderY, wn, rgb(0xe8ecff));
     orderX += Gfx::textW(wn) + 6;
   }
+  float orderMax = 316;
   if (!reserve.empty() && !ending_ && !summaryOn_) {  // renforts ennemis : à droite de la même ligne
     std::string rs = T("Renforts : ") + std::to_string(reserve.size());
     g.text(314, orderY, rs, GREY, 2);
+    orderMax = 314 - Gfx::textW(rs) - 4;
   }
-  if (!ending_ && !summaryOn_ && !follower()) drawTurnOrder(orderY, orderX);  // ordre des prochains tours, sous le message
+  if (!ending_ && !summaryOn_ && !follower()) drawTurnOrder(orderY, orderX, orderMax);  // ordre des prochains tours, sous le message
   if (G.menus.shownDepth() <= 1) drawHud(t);  // un sous-menu ouvert prend sa place
   drawWeather();
   if (summaryOn_) {  // fenêtre des gains de la victoire
