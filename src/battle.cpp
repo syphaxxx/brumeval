@@ -1937,6 +1937,7 @@ void Battle::knockOut(const FighterP& f) {
   f->clearBattle();
   f->atb = 0;
   if (!isAlly(f) && std::find(defeated.begin(), defeated.end(), f) == defeated.end()) defeated.push_back(f);
+  koT_[f.get()] = G.time;  // dessin : l'ennemi s'efface (3.3)
 }
 
 void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> targets, bool isLimit, float boost) {
@@ -2543,7 +2544,7 @@ void Battle::draw() {
   // Combattants, du haut du damier vers le bas : ceux de devant passent par-dessus
   std::vector<FighterP> shown;
   for (auto& f : foes)
-    if (f->alive()) shown.push_back(f);
+    if (f->alive() || (koT_.count(f.get()) && t - koT_[f.get()] < .6f)) shown.push_back(f);  // vaincu : il s'efface
   for (auto& a : allies) shown.push_back(a);
   std::stable_sort(shown.begin(), shown.end(), [&](const FighterP& a, const FighterP& b) { return pos(a).y < pos(b).y; });
   // Zone en cours (choix sur le damier, ou aperçu de la technique survolée) : les combattants du camp visé hors de
@@ -2574,6 +2575,15 @@ void Battle::draw() {
     if (!isAlly(f)) {  // ennemi : barre de PV au-dessus, nom sous le curseur
       float s = f->boss ? 1.45f : f->sp == "brumelin" ? .85f : 1.f;
       if (dim) g.alpha = .45f;
+      if (!f->alive()) {  // vaincu : il pâlit et s'efface en s'enfonçant un peu
+        float k = std::clamp((t - koT_[f.get()]) / .6f, 0.f, 1.f);
+        g.alpha = 1 - k;
+        drawFighterSprite(g, *f, p.x, p.y + k * 4, s, false, t);
+        g.alpha = (1 - k) * .8f;
+        g.ellipse(p.x, p.y - 4, 10 + k * 14, 8 + k * 10, rgb(0xffffff, 120));
+        g.alpha = 1;
+        continue;
+      }
       if (!(blinking && blink == f)) drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, s, false, t + p.x * .01f);  // regarde à gauche
       float bw = f->boss ? 24 : 15, by = std::max(46.f, p.y - fighterTop(*f, s) - 6);
       g.rect(p.x - bw - 1, by - 1, bw * 2 + 2, 4, rgb(0x0a0f33));

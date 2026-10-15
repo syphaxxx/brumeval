@@ -134,6 +134,7 @@ class Battle {
   // Damier (data.hpp) : la case de chaque combattant pendant ce combat ; au départ, la formation
   // de l'équipe (Fighter::cell) pour les alliés, un placement automatique pour les ennemis
   std::map<const Fighter*, int> cells_;
+  std::map<const Fighter*, float> koT_;  // moment du K.O. (un ennemi vaincu s'efface en 0,6 s avec un éclat)
   int cellOf(const FighterP& f) const;  // -1 : pas sur le damier
   void place(const std::vector<FighterP>& v, bool keep);
   const std::vector<FighterP>& sideOf(const FighterP& f) const { return isAlly(f) ? allies : foes; }
