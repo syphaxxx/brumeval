@@ -425,6 +425,27 @@ static void ground(Gfx& g, Theme th, int sx, int sy, int h, int x, int y) {
   }
 }
 
+// Hautes herbes (3.3) : deux touffes de la planche par case, qui ondulent un peu. front : seulement le bas des touffes,
+// redessiné par-dessus celui qui marche dedans (ses pieds disparaissent dans l'herbe)
+bool tallGrass(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t, bool front) {
+  char c = m.rows[y][x];
+  if (c != ',' && c != 'g') return false;
+  const char* kind = c == 'g' ? "grande_herbe_seche_" : m.theme == Theme::Foret ? "grande_herbe_sombre_" : "grande_herbe_";
+  int h = hsh(x, y);
+  for (int i = 0; i < 2; i++) {
+    const SpriteRect* r = findSprite(std::string(kind) + std::to_string(1 + ((h >> i) & 1)));
+    if (!r) return false;
+    int sway = (int)std::lround(std::sin(t * 2.2f + x * .7f + y * .3f + i * 1.7f) * .6f);
+    int px = sx - 2 + i * 8 + sway, py = sy + 16 - r->h + i;
+    if (!front) g.sprite(*r, px, py, (h >> (i + 4)) & 1);
+    else {
+      int cut = 6;  // le bas de la touffe
+      g.sprite(r->sub(0, r->h - cut, r->w, cut), px, py + r->h - cut, false);
+    }
+  }
+  return true;
+}
+
 // Sprite de l'objet haut d'une case (nullptr : aucun, ou dessin en code)
 static const SpriteRect* propSprite(const MapDef& m, int x, int y) {
   char c = m.rows[y][x];
@@ -480,7 +501,18 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
   }
   auto at = [&](int xx, int yy) { return (xx < 0 || yy < 0 || xx >= m.w() || yy >= m.h()) ? ' ' : m.rows[yy][xx]; };
   switch (c) {
-    case '.': ground(g, th, sx, sy, h, x, y); break;
+    case '.': {
+      ground(g, th, sx, sy, h, x, y);
+      // Petits détails du sol (3.3, non bloquants) : touffes et fleurettes dans l'herbe, cailloux sur la cendre
+      int d = (h >> 6) % 29;
+      const char* deco = nullptr;
+      if (th == Theme::Vallee) deco = d < 3 ? "touffe_1" : d < 5 ? "touffe_3" : d == 5 ? "fleurette_1" : d == 6 ? "fleurette_3" : nullptr;
+      else if (th == Theme::Foret) deco = d < 3 ? "touffe_2" : d < 5 ? "touffe_4" : d == 5 ? "fleurette_2" : nullptr;
+      else if (th == Theme::Cendres) deco = d < 2 ? "caillou" : d == 2 ? "cailloux" : nullptr;
+      if (const SpriteRect* r = deco ? findSprite(deco) : nullptr)
+        g.sprite(*r, sx + 2 + (h >> 11) % (15 - std::min(13, r->w)), sy + 15 - r->h - (h >> 15) % 4, (h >> 13) % 2);
+      break;
+    }
     case 'q': {  // pavés (places et rues des villes)
       if (!g.sprite(th == Theme::Neige ? "sol_1_3" : th == Theme::Cendres ? "sol_0_5" : "sol_0_3", sx, sy)) {
         g.rect(sx, sy, 16, 16, rgb(0xa8a49c));
@@ -516,6 +548,11 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
     case ',':
     case 'g': {
       bool dry = c == 'g', dark = th == Theme::Foret;
+      if (findSprite("grande_herbe_1")) {  // le sol du lieu, puis les touffes
+        ground(g, th, sx, sy, h, x, y);
+        tallGrass(g, m, x, y, sx, sy, t, false);
+        break;
+      }
       g.rect(sx, sy, 16, 16, rgb(dry ? 0x7a6a50 : dark ? 0x2f6236 : 0x4a9446));
       for (int i = 0; i < 5; i++) {
         int bx = sx + 1 + i * 3 + ((h >> i) & 1);
@@ -730,6 +767,13 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
     }
     case 'm':
       ground(g, th, sx, sy, h, x, y);
+      if (const SpriteRect* a = findSprite((h >> 3) % 2 ? "rochers" : "pierres_moussues")) {  // éboulis de rochers (3.3)
+        const SpriteRect* b = findSprite((h >> 5) % 2 ? "rocher" : "rochers");
+        Color tint = th == Theme::Neige ? rgb(0xdce6f2) : th == Theme::Cendres ? rgb(0xb8aaa0) : rgb(0xffffff);
+        g.sprite(*a, sx + 8 - a->w / 2 + (h >> 7) % 3 - 1, sy + 9 - a->h, (h >> 9) & 1, 1, tint);
+        if (b) g.sprite(*b, sx + 8 - b->w / 2 + (h >> 11) % 5 - 2, sy + 16 - b->h, (h >> 13) & 1, 1, tint);
+        break;
+      }
       g.tri(sx - 1, sy + 16, sx + 8, sy - 1, sx + 17, sy + 16, rgb(0x5a4a44));
       g.tri(sx + 8, sy - 1, sx + 17, sy + 16, sx + 10, sy + 16, rgb(0x4a3c37));
       g.tri(sx + 5, sy + 5, sx + 8, sy - 1, sx + 10, sy + 4, rgb(0x8a7a72));

@@ -991,7 +991,10 @@ void Game::drawMap() {
         playerLook = f->S().look;
         break;
       }
-  actors.push_back({ppy, [&] { drawHuman(g, look(playerLook), ppx - camX, ppy - camY - 2, 1, dir, step, false); }});
+  actors.push_back({ppy, [&] {
+                       drawHuman(g, look(playerLook), ppx - camX, ppy - camY - 2, 1, dir, step, false);
+                       if (!moving) tallGrass(g, m, px, py, px * 16 - camX, py * 16 - camY, time, true);  // pieds dans l'herbe
+                     }});
   std::sort(actors.begin(), actors.end(), [](const Actor& a, const Actor& b) { return a.y < b.y; });
   for (auto& a : actors) a.draw();
   // Jour et nuit : la carte s'assombrit (crépuscule orangé), les fenêtres s'allument, le héros porte une lanterne

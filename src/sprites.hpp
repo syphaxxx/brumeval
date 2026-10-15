@@ -21,6 +21,8 @@ void drawTile(Gfx& g, const MapDef& m, int tx, int ty, int sx, int sy, float t);
 // Objet haut posé sur une case (arbre, réverbère, puits, étal…) : dessiné avec les personnages, triés de haut en
 // bas, pour passer devant ou derrière eux. Faux si la case n'en a pas (drawTile dessine alors tout).
 bool hasProp(const MapDef& m, int tx, int ty);
+// Hautes herbes : dessinées (faux s'il n'y en a pas) ; front : le bas des touffes, par-dessus un personnage
+bool tallGrass(Gfx& g, const MapDef& m, int tx, int ty, int sx, int sy, float t, bool front);
 void drawProp(Gfx& g, const MapDef& m, int tx, int ty, int sx, int sy, float t);
 void drawBuilding(Gfx& g, const Building& b, int sx, int sy);
 // Par-dessus la nuit (2.6) : fenêtres allumées et lueur de la porte (night : 0 jour, 1 nuit) ; fumée de la cheminée

@@ -5159,5 +5159,137 @@
 ],
 "h": 48,
 "fragments": true
+},
+{
+"id": "touffe_1",
+"planche": "decor",
+"boite": [
+469,
+434,
+506,
+467
+],
+"h": 7
+},
+{
+"id": "touffe_2",
+"planche": "decor",
+"boite": [
+509,
+433,
+540,
+466
+],
+"h": 7
+},
+{
+"id": "touffe_3",
+"planche": "decor",
+"boite": [
+467,
+473,
+517,
+512
+],
+"h": 7
+},
+{
+"id": "touffe_4",
+"planche": "decor",
+"boite": [
+467,
+518,
+514,
+558
+],
+"h": 7
+},
+{
+"id": "fleurette_1",
+"planche": "decor",
+"boite": [
+602,
+438,
+625,
+465
+],
+"h": 6
+},
+{
+"id": "fleurette_2",
+"planche": "decor",
+"boite": [
+602,
+474,
+624,
+506
+],
+"h": 6
+},
+{
+"id": "fleurette_3",
+"planche": "decor",
+"boite": [
+602,
+524,
+625,
+557
+],
+"h": 6
+},
+{
+"id": "fleurette_4",
+"planche": "decor",
+"boite": [
+604,
+570,
+624,
+598
+],
+"h": 6
+},
+{
+"id": "caillou",
+"planche": "decor",
+"boite": [
+18,
+1160,
+46,
+1190
+],
+"h": 5
+},
+{
+"id": "cailloux",
+"planche": "decor",
+"boite": [
+55,
+1161,
+106,
+1193
+],
+"h": 5
+},
+{
+"id": "grande_herbe_1",
+"planche": "decor",
+"boite": [
+469,
+434,
+506,
+467
+],
+"h": 12
+},
+{
+"id": "grande_herbe_2",
+"planche": "decor",
+"boite": [
+509,
+433,
+540,
+466
+],
+"h": 12
 }
 ]
