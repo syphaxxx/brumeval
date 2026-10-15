@@ -961,7 +961,21 @@ void Game::drawMap() {
     for (int x = std::max(0, tx0 - 1); x <= tx1 + 1 && x < m.w(); x++)
       if (hasProp(m, x, y)) actors.push_back({float(y * 16 + 1), [&, x, y] { drawProp(g, m, x, y, x * 16 - camX, y * 16 - camY, time); }});
   for (auto& n : m.npcs)
-    if (npcVisible(n)) actors.push_back({float(n.y * 16), [&, n] { drawHuman(g, look(n.look), n.x * 16 - camX, n.y * 16 - camY - 2, 1, n.dir, 0, false); }});
+    if (npcVisible(n))
+      actors.push_back({float(n.y * 16), [&, n] {
+                          // Habitants vivants (3.3, dessin seul) : de temps en temps, ils regardent ailleurs un instant (pas les
+                          // dresseurs : leur regard compte) ; les animaux sautillent et changent de côté
+                          int d = n.dir, h = n.x * 7 + n.y * 13;
+                          float bob = 0;
+                          const Look& lk = look(n.look);
+                          bool animal = !lk.sprite.empty() && findSprite(lk.sprite) && !findSprite(lk.sprite + "_bas_0");
+                          if (n.sight == 0) {
+                            float period = 5.f + h % 4, ph = std::fmod(time + h * .37f, period);
+                            if (ph > period - 1.4f) d = animal ? (d == LEFT ? RIGHT : LEFT) : (h % 3 == 0 ? LEFT : h % 3 == 1 ? RIGHT : DOWN);
+                          }
+                          if (animal) bob = -std::fabs(std::sin(time * 3 + h)) * 1.5f;
+                          drawHuman(g, lk, n.x * 16 - camX, n.y * 16 - camY - 2 + std::round(bob), 1, d, 0, false);
+                        }});
   for (auto& b : m.bosses)
     if (bossAlive(b))
       actors.push_back({float(b.y * 16 + 16), [&, b] { drawCreature(g, b.id, (b.x + 1) * 16 - camX, (b.y + 1) * 16 - camY - 2, .6f, false, time); }});
