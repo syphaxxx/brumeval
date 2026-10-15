@@ -153,6 +153,7 @@ const char* gearStatName(int s);  // « Attaque »…
 
 struct ItemDef {
   std::string id, name, desc;
+  std::string icon;  // icône dans les menus (sprite de l'atlas, champ « icone » ; vide : aucune)
   int price;
   bool battle;  // utilisable en combat
   bool field;   // utilisable depuis le menu

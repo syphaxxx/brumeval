@@ -419,7 +419,7 @@ std::vector<std::string> checkMaps() {
       return R.count({x + 1, y}) || R.count({x - 1, y}) || R.count({x, y + 1}) || R.count({x, y - 1});
     };
     for (auto& b : m.buildings)
-      if (!r0.count({b.doorX(), b.doorY() + 1})) E("porte inaccessible : " + b.name + " " + at(b.doorX(), b.doorY()));
+      if (!b.decor() && !r0.count({b.doorX(), b.doorY() + 1})) E("porte inaccessible : " + b.name + " " + at(b.doorX(), b.doorY()));
     for (auto& n : m.npcs)
       if (!adj(n.x, n.y, r1)) E("habitant inaccessible " + at(n.x, n.y));
     for (auto& c : m.chests)

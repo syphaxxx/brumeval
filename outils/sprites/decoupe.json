@@ -280,17 +280,6 @@
 "h": 30
 },
 {
-"id": "balle",
-"planche": "heros",
-"boite": [
-515,
-889,
-540,
-916
-],
-"h": 7
-},
-{
 "id": "aventuriere_bas_0",
 "planche": "decor",
 "boite": [
@@ -3850,5 +3839,1325 @@
 459
 ],
 "h": 46
+},
+{
+"id": "inv_loup",
+"planche": "monstres",
+"boite": [
+593,
+1132,
+660,
+1214
+],
+"h": 48,
+"fragments": true
+},
+{
+"id": "inv_dragon",
+"planche": "monstres",
+"boite": [
+670,
+1118,
+735,
+1213
+],
+"h": 48,
+"fragments": true
+},
+{
+"id": "inv_esprit",
+"planche": "monstres",
+"boite": [
+741,
+1120,
+812,
+1222
+],
+"h": 48,
+"fragments": true
+},
+{
+"id": "inv_orc",
+"planche": "monstres",
+"boite": [
+819,
+1107,
+898,
+1222
+],
+"h": 48,
+"fragments": true
+},
+{
+"id": "ic_epee_1",
+"planche": "monstres",
+"boite": [
+20,
+609,
+51,
+683
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_epee_2",
+"planche": "monstres",
+"boite": [
+48,
+612,
+86,
+683
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_epee_3",
+"planche": "monstres",
+"boite": [
+75,
+613,
+108,
+686
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_epee_4",
+"planche": "monstres",
+"boite": [
+101,
+611,
+133,
+687
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_epee_5",
+"planche": "monstres",
+"boite": [
+127,
+615,
+157,
+686
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_hache_1",
+"planche": "monstres",
+"boite": [
+179,
+611,
+218,
+684
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_hache_2",
+"planche": "monstres",
+"boite": [
+217,
+611,
+252,
+686
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_hache_3",
+"planche": "monstres",
+"boite": [
+249,
+610,
+288,
+684
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_hache_4",
+"planche": "monstres",
+"boite": [
+286,
+606,
+330,
+685
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_lance_1",
+"planche": "monstres",
+"boite": [
+355,
+615,
+367,
+683
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_lance_2",
+"planche": "monstres",
+"boite": [
+383,
+608,
+399,
+683
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_lance_3",
+"planche": "monstres",
+"boite": [
+414,
+608,
+429,
+684
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_lance_4",
+"planche": "monstres",
+"boite": [
+448,
+607,
+467,
+685
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_baton_1",
+"planche": "monstres",
+"boite": [
+498,
+613,
+516,
+687
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_baton_2",
+"planche": "monstres",
+"boite": [
+527,
+611,
+547,
+687
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_baton_3",
+"planche": "monstres",
+"boite": [
+559,
+611,
+584,
+687
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_baton_4",
+"planche": "monstres",
+"boite": [
+595,
+609,
+619,
+687
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_baton_5",
+"planche": "monstres",
+"boite": [
+625,
+611,
+652,
+686
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_arc_1",
+"planche": "monstres",
+"boite": [
+19,
+742,
+58,
+827
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_arc_2",
+"planche": "monstres",
+"boite": [
+65,
+740,
+90,
+823
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_arc_3",
+"planche": "monstres",
+"boite": [
+95,
+750,
+125,
+813
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_arc_4",
+"planche": "monstres",
+"boite": [
+129,
+756,
+167,
+812
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_dague_1",
+"planche": "monstres",
+"boite": [
+188,
+749,
+212,
+809
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_dague_2",
+"planche": "monstres",
+"boite": [
+226,
+751,
+248,
+809
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_dague_3",
+"planche": "monstres",
+"boite": [
+262,
+749,
+288,
+809
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_dague_4",
+"planche": "monstres",
+"boite": [
+297,
+749,
+321,
+807
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_marteau_1",
+"planche": "monstres",
+"boite": [
+355,
+744,
+391,
+811
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_marteau_2",
+"planche": "monstres",
+"boite": [
+402,
+746,
+433,
+811
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_marteau_3",
+"planche": "monstres",
+"boite": [
+441,
+746,
+473,
+811
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_sceptre_1",
+"planche": "monstres",
+"boite": [
+494,
+738,
+524,
+828
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_sceptre_2",
+"planche": "monstres",
+"boite": [
+532,
+737,
+568,
+828
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_sceptre_3",
+"planche": "monstres",
+"boite": [
+574,
+736,
+611,
+828
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_sceptre_4",
+"planche": "monstres",
+"boite": [
+608,
+730,
+655,
+828
+],
+"cadre": [
+13,
+13
+],
+"seul": true,
+"rot": -45
+},
+{
+"id": "ic_casque_1",
+"planche": "monstres",
+"boite": [
+684,
+609,
+716,
+646
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_casque_2",
+"planche": "monstres",
+"boite": [
+724,
+610,
+757,
+646
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_casque_3",
+"planche": "monstres",
+"boite": [
+767,
+610,
+794,
+647
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_casque_4",
+"planche": "monstres",
+"boite": [
+802,
+610,
+830,
+646
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_armure_1",
+"planche": "monstres",
+"boite": [
+850,
+613,
+894,
+663
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_armure_2",
+"planche": "monstres",
+"boite": [
+897,
+613,
+940,
+662
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_armure_3",
+"planche": "monstres",
+"boite": [
+943,
+612,
+988,
+662
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_armure_4",
+"planche": "monstres",
+"boite": [
+996,
+613,
+1034,
+663
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_armure_5",
+"planche": "monstres",
+"boite": [
+852,
+673,
+891,
+725
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_armure_6",
+"planche": "monstres",
+"boite": [
+897,
+673,
+938,
+725
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_armure_7",
+"planche": "monstres",
+"boite": [
+944,
+673,
+988,
+725
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_armure_8",
+"planche": "monstres",
+"boite": [
+996,
+674,
+1035,
+725
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_bouclier_1",
+"planche": "monstres",
+"boite": [
+1061,
+609,
+1096,
+657
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_bouclier_2",
+"planche": "monstres",
+"boite": [
+1108,
+609,
+1143,
+657
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_bouclier_3",
+"planche": "monstres",
+"boite": [
+1153,
+611,
+1190,
+656
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_bouclier_4",
+"planche": "monstres",
+"boite": [
+1198,
+609,
+1233,
+656
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_acc_1",
+"planche": "monstres",
+"boite": [
+1063,
+745,
+1089,
+775
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_acc_2",
+"planche": "monstres",
+"boite": [
+1109,
+744,
+1140,
+778
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_acc_3",
+"planche": "monstres",
+"boite": [
+1155,
+739,
+1179,
+774
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_acc_4",
+"planche": "monstres",
+"boite": [
+1195,
+741,
+1224,
+777
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_acc_5",
+"planche": "monstres",
+"boite": [
+1064,
+782,
+1098,
+819
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_acc_6",
+"planche": "monstres",
+"boite": [
+1114,
+786,
+1142,
+818
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_acc_7",
+"planche": "monstres",
+"boite": [
+1156,
+782,
+1182,
+820
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_acc_8",
+"planche": "monstres",
+"boite": [
+1200,
+786,
+1231,
+821
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_bottes_1",
+"planche": "monstres",
+"boite": [
+859,
+755,
+891,
+804
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_bottes_2",
+"planche": "monstres",
+"boite": [
+896,
+752,
+936,
+807
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_bottes_3",
+"planche": "monstres",
+"boite": [
+941,
+752,
+985,
+804
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_bottes_4",
+"planche": "monstres",
+"boite": [
+987,
+755,
+1032,
+807
+],
+"cadre": [
+12,
+11
+],
+"seul": true
+},
+{
+"id": "ic_flacon",
+"planche": "decor",
+"boite": [
+1022,
+430,
+1039,
+462
+],
+"h": 10
+},
+{
+"id": "ic_bouteille",
+"planche": "decor",
+"boite": [
+993,
+477,
+1010,
+511
+],
+"h": 10
+},
+{
+"id": "ic_fiole",
+"planche": "decor",
+"boite": [
+1159,
+529,
+1175,
+560
+],
+"h": 10
+},
+{
+"id": "ic_livre",
+"planche": "decor",
+"boite": [
+1067,
+524,
+1092,
+555
+],
+"h": 10
+},
+{
+"id": "ic_lanterne",
+"planche": "decor",
+"boite": [
+1051,
+423,
+1078,
+464
+],
+"h": 10
+},
+{
+"id": "ic_sac",
+"planche": "decor",
+"boite": [
+974,
+423,
+1009,
+462
+],
+"h": 10
+},
+{
+"id": "ic_herbe",
+"planche": "decor",
+"boite": [
+469,
+434,
+506,
+467
+],
+"h": 10
+},
+{
+"id": "ic_minerai",
+"planche": "decor",
+"boite": [
+18,
+1160,
+46,
+1190
+],
+"h": 9
+},
+{
+"id": "inv_loup",
+"planche": "monstres",
+"boite": [
+593,
+1132,
+660,
+1214
+],
+"h": 48,
+"fragments": true
+},
+{
+"id": "inv_dragon",
+"planche": "monstres",
+"boite": [
+670,
+1118,
+735,
+1213
+],
+"h": 48,
+"fragments": true
+},
+{
+"id": "inv_esprit",
+"planche": "monstres",
+"boite": [
+741,
+1120,
+812,
+1222
+],
+"h": 48,
+"fragments": true
+},
+{
+"id": "inv_orc",
+"planche": "monstres",
+"boite": [
+819,
+1107,
+898,
+1222
+],
+"h": 48,
+"fragments": true
+},
+{
+"id": "tex_eau",
+"planche": "decor",
+"boite": [
+544,
+1174,
+592,
+1226
+],
+"w": 32,
+"h": 32,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "tex_lave",
+"planche": "decor",
+"boite": [
+616,
+1174,
+664,
+1226
+],
+"w": 32,
+"h": 32,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "tex_neige",
+"planche": "decor",
+"boite": [
+685,
+1174,
+733,
+1226
+],
+"w": 32,
+"h": 32,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "tex_sable",
+"planche": "decor",
+"boite": [
+757,
+1174,
+805,
+1226
+],
+"w": 32,
+"h": 32,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "tex_bois",
+"planche": "decor",
+"boite": [
+825,
+1174,
+873,
+1226
+],
+"w": 32,
+"h": 32,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "tex_metal",
+"planche": "decor",
+"boite": [
+903,
+1174,
+951,
+1226
+],
+"w": 32,
+"h": 32,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "tex_ardoise",
+"planche": "decor",
+"boite": [
+969,
+1174,
+1017,
+1226
+],
+"w": 32,
+"h": 32,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "tex_tuiles",
+"planche": "decor",
+"boite": [
+1041,
+1174,
+1089,
+1226
+],
+"w": 32,
+"h": 32,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "tex_brique",
+"planche": "decor",
+"boite": [
+1114,
+1174,
+1162,
+1226
+],
+"w": 32,
+"h": 32,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "tex_pierre",
+"planche": "decor",
+"boite": [
+1184,
+1174,
+1232,
+1226
+],
+"w": 32,
+"h": 32,
+"plein": true,
+"couleurs": 24
+},
+{
+"id": "inv_loup",
+"planche": "monstres",
+"boite": [
+593,
+1132,
+660,
+1214
+],
+"h": 48,
+"fragments": true
+},
+{
+"id": "inv_dragon",
+"planche": "monstres",
+"boite": [
+670,
+1118,
+735,
+1213
+],
+"h": 48,
+"fragments": true
+},
+{
+"id": "inv_esprit",
+"planche": "monstres",
+"boite": [
+741,
+1120,
+812,
+1222
+],
+"h": 48,
+"fragments": true
+},
+{
+"id": "inv_orc",
+"planche": "monstres",
+"boite": [
+819,
+1107,
+898,
+1222
+],
+"h": 48,
+"fragments": true
 }
 ]

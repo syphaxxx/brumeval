@@ -38,15 +38,15 @@
     "TTTT=T.TT..TT..T.TT=T~~~~~~~~~~~~~......,,T,,.=T.T...TT..T#####T",
     "T..T===========T...=TT~~~~~~~~~~~......F....FT==================",
     "TTTT.,,,..T..T=,,,,=TT.~~~~~~~~~......TT.....T=...T...T..T======",
-    "TTTT,,,,,TFTT,=,,,,=TT...~~~~~.....,,T,,.....T=..T...T,,.T#####T",
-    "TT..,,,,,TT.T,=,,,,=.T.....~~....,,T,,,,,,...T=T..TT,,,T,T#####T",
-    "TT..,,,,,TTTT,=,,,,=TT.....~~.T..,T,,,,,,,....=TT..,,,,,T,#####T",
-    "T.FTT,,,TT.TT.=,,,,======..~~....,,,,,,,,T....=....TTT,,T,#####T",
-    "TTT.TTT...TTTT=TT..TT...=..~~T.....,,,,,.....T=.,,T,,,T,,######T",
-    "TTTTTTT.=======TT.T....F=..~~........T........=,TTT,T,,,T######T",
-    "T.TT.T..T...F.TTT.......===BB==================,,TT,,,,TT######T",
-    "T..TTTTT.....TT..TT.T......~~......T...........,.,,,T,...######T",
-    "TTTT.T..TTT....TTT.T.T....T~~........F..T.......,TT,TTT..######T",
+    "TTTT,,,,,TFTT,=,,,,=TT...~~~~~.....,,T,,.....T=.....C...T.#####T",
+    "TT..,,,,,TT.T,=,,,,=.T.....~~....,,T,,,,,,...T=======.....#####T",
+    "TT..,,,,,TTTT,=,,,,=TT.....~~.T..,T,,,,,,,....=..........v#####T",
+    "T.FTT,,,TT.TT.=,,,,======..~~....,,,,,,,,T....=HHH.HHH....#####T",
+    "TTT.TTT...TTTT=TT..TT...=..~~T.....,,,,,.....T=.FFFFFH....#####T",
+    "TTTTTTT.=======TT.T....F=..~~........T........=.FFFFFH....#####T",
+    "T.TT.T..T...F.TTT.......===BB==================.FFFFFH....#####T",
+    "T..TTTTT.....TT..TT.T......~~......T....................T.#####T",
+    "TTTT.T..TTT....TTT.T.T....T~~........F..T......T.........T#####T",
     "TTTTTTTTTTTT...TTTTTTTTTTTT~~...TTTTTTTTTTTTT...TTTTTTTTTTTTTTTT",
     "T.........TTT=R....,.,,,,,,~~.=..,,,,,,,R.....=.TTT,,,,,,,.....T",
     "T.,.......,TR=RRR,,,,,,,,,,~~,=,,,,,,,,,,.....=..,,,,,,,,,.....T",
@@ -106,7 +106,17 @@
       "toit": "#7a8a4a",
       "interieur": "vallee_ancien"
     },
-    {"x": 9, "y": 3, "l": 4, "h": 3, "genre": "maison", "nom": "Maison", "toit": "#3f6fb0"}
+    {"x": 9, "y": 3, "l": 4, "h": 3, "genre": "maison", "nom": "Maison", "toit": "#3f6fb0"},
+    {
+      "x": 53,
+      "y": 34,
+      "l": 3,
+      "h": 2,
+      "genre": "decor",
+      "nom": "Moulin",
+      "toit": "#7a8a4a",
+      "dessin": "moulin"
+    }
   ],
   "habitants": [
     {
@@ -196,6 +206,24 @@
       "dialogue": [
         "Des pommes du verger, des œufs frais ! Le jour du marché, tout le village passe par la place."
       ]
+    },
+    {
+      "x": 51,
+      "y": 36,
+      "apparence": "paysan",
+      "direction": "bas",
+      "dialogue": [
+        "Le moulin tourne depuis trois générations.",
+        "Sans la brume, la récolte serait deux fois plus belle !"
+      ]
+    },
+    {"x": 55, "y": 39, "apparence": "vache", "direction": "gauche", "dialogue": ["Meuh…"]},
+    {
+      "x": 56,
+      "y": 37,
+      "apparence": "cheval",
+      "direction": "gauche",
+      "dialogue": ["Le cheval de la ferme hennit doucement."]
     }
   ],
   "coffres": [

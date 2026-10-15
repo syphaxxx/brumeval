@@ -454,6 +454,7 @@ void rebuildData() {
     d.id = o.at("id").get<std::string>();
     d.name = tr(o.at("nom").get<std::string>());
     d.desc = tr(jget<std::string>(o, "description", ""));
+    d.icon = jget<std::string>(o, "icone", "");
     d.price = jget(o, "prix", 0);
     d.battle = jget(o, "combat", false);
     d.field = jget(o, "menu", false);

@@ -9,7 +9,7 @@ outils/sprites/decoupe.json donne sa planche, sa boîte (en pixels de la planche
   2. réduit le sprite : chaque pixel du jeu prend la couleur dominante de son bloc (les contours sombres et les yeux
      comptent plus, sinon ils disparaissent) ;
   3. range tous les sprites dans une seule image (atlas).
-Options d'un sprite : seul (garde seulement le plus gros morceau), fragments (garde toutes les particules : effets),
+Options d'un sprite : rot (pivoté de n degrés), cadre ([largeur, hauteur] maximales), seul (garde seulement le plus gros morceau), fragments (garde toutes les particules : effets),
 plein (pas de fond à retirer : textures), couleurs (taille de la palette), miroir (retourné gauche-droite).
 Les variantes (outils/sprites/variantes.json) recolorent un sprite déjà découpé : {"id", "de", "teintes": [[teinte
 min, teinte max, nouvelle teinte, saturation x, luminosité x, saturation minimale], ...]} (teintes en degrés ;
@@ -117,12 +117,23 @@ def reduire_plein(s, W, H, couleurs):
 
 def sprite(e):
     s, masque = decouper(e)
+    if e.get('rot'):  # pivoté (armes longues en diagonale : icônes carrées)
+        im = Image.fromarray(np.dstack([s.astype(np.uint8), (masque * 255).astype(np.uint8)]), 'RGBA')
+        im = im.rotate(e['rot'], resample=Image.NEAREST, expand=True)
+        a = np.asarray(im)
+        masque = a[..., 3] > 127
+        ys, xs = np.nonzero(masque)
+        s = a[ys.min():ys.max() + 1, xs.min():xs.max() + 1, :3].astype(int)
+        masque = masque[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
     if e.get('vif'):  # petits sprites flous : couleurs et contraste relevés
         im = Image.fromarray(s.astype(np.uint8), 'RGB')
         im = ImageEnhance.Contrast(ImageEnhance.Color(im).enhance(1.35)).enhance(1.25)
         s = np.asarray(im).astype(int)
     h, w = masque.shape
-    if 'w' in e and 'h' in e:
+    if 'cadre' in e:  # tient dans un cadre (largeur, hauteur) en gardant ses proportions
+        k = min(e['cadre'][0] / w, e['cadre'][1] / h)
+        W, H = max(1, round(w * k)), max(1, round(h * k))
+    elif 'w' in e and 'h' in e:
         W, H = e['w'], e['h']
     elif 'w' in e:
         W, H = e['w'], max(1, round(h * e['w'] / w))

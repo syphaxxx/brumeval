@@ -522,6 +522,21 @@ void Battle::drawAnim() {
     c.a = uint8_t(std::clamp(a, 0.f, 1.f) * 255);
     return c;
   };
+  // Limite : une invocation (planche des sorts) se dresse au-dessus des cibles, selon le type de la technique
+  if (anim_.limit && !anim_.targets.empty()) {
+    std::string ty = anim_.type >= 0 ? types()[anim_.type].id : "";
+    const char* who = ty == "feu" || ty == "foudre" ? "inv_dragon"
+                      : ty == "eau" || ty == "glace" || ty == "esprit" || ty == "lumiere" ? "inv_esprit"
+                      : ty == "plante" || ty == "roche" || ty == "metal" || ty == "poison" ? "inv_orc" : "inv_loup";
+    if (const SpriteRect* r = findSprite(who)) {
+      Pt c{0, 0};
+      for (auto& f : anim_.targets) c.x += pos(f).x, c.y += pos(f).y;
+      c.x /= anim_.targets.size(), c.y /= anim_.targets.size();
+      float a = std::min({1.f, k * 4, (1 - k) * 3});
+      g.sprite(*r, std::round(c.x - r->w / 2.f), std::round(c.y - 14 - r->h + (1 - std::min(1.f, k * 3)) * 10), false, 1,
+               Color{255, 255, 255, uint8_t(230 * a)});
+    }
+  }
   for (auto& f : anim_.targets) {
     Pt p = pos(f);
     p.y -= 4;

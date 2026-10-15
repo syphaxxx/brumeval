@@ -1,8 +1,10 @@
 #include "ui.hpp"
 
 #include <algorithm>
+#include <map>
 
 #include "audio.hpp"
+#include "data.hpp"
 
 std::string utf8Prefix(const std::string& s, int n) {
   size_t i = 0;
@@ -131,6 +133,24 @@ std::string MenuStack::help() const {
 }
 
 // Élément du menu sous la souris (-1 si aucun)
+// Icône d'un objet d'après son nom affiché (sac, boutiques, équipement, forge, combat) ; nullptr : pas un objet,
+// ou un objet sans icône
+static const SpriteRect* itemIcon(const std::string& label) {
+  static std::map<std::string, std::string> names;
+  static size_t count = 0;
+  static std::string first;
+  const auto& all = allItems();
+  if (all.size() != count || (count && all[0].name != first)) {  // données rechargées (Réglages, langue)
+    names.clear();
+    for (auto& d : all)
+      if (!d.icon.empty()) names[d.name] = d.icon;
+    count = all.size();
+    first = count ? all[0].name : "";
+  }
+  auto it = names.find(label);
+  return it == names.end() ? nullptr : findSprite(it->second);
+}
+
 static int itemAt(const Menu& m, int mx, int my) {
   if (m.hidden) return -1;
   int th = m.title.empty() ? 0 : 13;
@@ -290,7 +310,12 @@ void MenuStack::draw(Gfx& g, float t) const {
       Color c = !it.enabled ? rgb(0x8a92b8) : it.color ? rgb(it.color) : rgb(0xffffff);
       std::string right = it.rightFn ? it.rightFn() : it.right;
       int rw = right.empty() ? 0 : Gfx::textW(right) + 6;
-      g.text(m.x + 13, y, fit(g, it.label, m.w - 19 - rw, it.shrink), c);
+      int ix = 0;  // un objet du jeu : son icône avant le nom
+      if (const SpriteRect* ic = itemIcon(it.label)) {
+        g.sprite(*ic, m.x + 13 + (11 - ic->w) / 2, y + 1 + (11 - ic->h) / 2, false, 1, it.enabled ? rgb(0xffffff) : rgb(0x8a8a9a));
+        ix = 13;
+      }
+      g.text(m.x + 13 + ix, y, fit(g, it.label, m.w - 19 - rw - ix, it.shrink), c);
       if (!right.empty()) g.text(m.x + m.w - 6, y, right, it.enabled ? (it.adjust ? rgb(0xffe066) : rgb(0xd8def2)) : rgb(0x8a92b8), 2);
       if (idx == m.sel) {
         if (top) g.cursor(m.x + 4 + (int(t * 4) % 2), y + 1);

@@ -625,6 +625,7 @@ void Game::interact() {
 
 // Porte d'un bâtiment (Entrée devant elle ou marcher dedans) : on entre s'il a un intérieur, sinon son événement
 void Game::enterDoor(const Building& b) {
+  if (b.decor()) return;  // décor : pas de porte
   audio::play("porte");
   int in = mapIndex(b.interior), ex, ey;
   if (in >= 0 && interiorEntry(maps()[in], M().id, ex, ey)) return changeMap(in, ex, ey, UP);
@@ -1134,7 +1135,14 @@ void Game::drawDialogue() {
   if (const Look* lk = askText_.empty() && mode != Mode::Battle ? speakerLook(sc.text()) : nullptr) {  // portrait au-dessus de la fenêtre
     g.window(4, y - 50, 44, 48);
     g.rect(8, y - 46, 36, 40, rgb(0x1a2058));
-    drawHuman(g, *lk, 10, y - 44, 2, DOWN, 0, false);
+    if (const SpriteRect* face = lk->sprite.empty() ? nullptr : findSprite(lk->sprite + "_visage_0")) {
+      // Visage dessiné (Lior) : l'expression suit la réplique (joie, surprise, gêne)
+      const std::string& s = sc.text();
+      auto has = [&](const char* w) { return s.find(w) != std::string::npos; };
+      int e = has("…") || has("...") ? 4 : has("?!") || has("Quoi") || has("What") ? 2 : has("Merci") || has("Thank") || has("Génial") || has("Super") ? 1 : 0;
+      if (const SpriteRect* f = findSprite(lk->sprite + "_visage_" + std::to_string(e))) face = f;
+      g.sprite(*face, 26 - face->w / 2, y - 6 - face->h);
+    } else drawHuman(g, *lk, 10, y - 44, 2, DOWN, 0, false);
   }
   g.window(4, y, 312, 66);
   auto full = Gfx::wrap(askText_.empty() ? sc.text() : askText_, 296);
