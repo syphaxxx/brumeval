@@ -14,12 +14,10 @@
     "#####p#####"
   ],
   "batiments": [],
-  "habitants": [
-    {"x": 7, "y": 4, "apparence": "enfant", "evenement": "quete_medaillon", "direction": "bas"}
-  ],
+  "habitants": [{"x": 7, "y": 4, "apparence": "enfant", "evenement": "quete_medaillon", "direction": "bas"}],
   "coffres": [{"x": 1, "y": 7, "objet": "potion", "quantite": 2}],
   "panneaux": [],
-  "passages": [{"x": 5, "y": 8, "vers": "vallee", "tx": 19, "ty": 15, "direction": "bas"}],
+  "passages": [{"x": 5, "y": 8, "vers": "vallee", "tx": 20, "ty": 16, "direction": "bas"}],
   "zones": [],
   "boss": []
 }

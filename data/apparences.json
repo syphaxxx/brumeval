@@ -211,5 +211,126 @@
     "bas": "#3a3a44",
     "coiffe": "casque",
     "arme": "aucune"
+  },
+  {
+    "id": "marchande",
+    "nom": "Marchande",
+    "sprite": "marchande",
+    "cheveux": "#3a2a1e",
+    "peau": "#f2d0b0",
+    "haut": "#c83a3a",
+    "bas": "#5a3a4a",
+    "coiffe": "foulard",
+    "arme": "aucune"
+  },
+  {
+    "id": "barman",
+    "nom": "Aubergiste",
+    "sprite": "barman",
+    "cheveux": "#4a2e1e",
+    "peau": "#e0b898",
+    "haut": "#f2f0ea",
+    "bas": "#3a3a44",
+    "coiffe": "aucune",
+    "arme": "aucune"
+  },
+  {
+    "id": "docteur",
+    "nom": "Soigneur",
+    "sprite": "docteur",
+    "cheveux": "#2a2a2a",
+    "peau": "#e0b898",
+    "haut": "#f2f0ea",
+    "bas": "#3a4a6a",
+    "coiffe": "aucune",
+    "arme": "aucune"
+  },
+  {
+    "id": "forgeron",
+    "nom": "Forgeron",
+    "sprite": "forgeron",
+    "cheveux": "#3a2a1e",
+    "peau": "#c99a74",
+    "haut": "#5a4a3a",
+    "bas": "#3a3a44",
+    "coiffe": "aucune",
+    "arme": "aucune"
+  },
+  {
+    "id": "voyageuse",
+    "nom": "Voyageuse",
+    "sprite": "voyageuse",
+    "cheveux": "#5a3a22",
+    "peau": "#f2c9a0",
+    "haut": "#8a3a2a",
+    "bas": "#3a3a44",
+    "coiffe": "aucune",
+    "arme": "aucune"
+  },
+  {
+    "id": "paysan",
+    "nom": "Paysan",
+    "sprite": "paysan",
+    "cheveux": "#6a4a2f",
+    "peau": "#f2c9a0",
+    "haut": "#5a7a4a",
+    "bas": "#5a4a3a",
+    "coiffe": "chapeau",
+    "arme": "aucune"
+  },
+  {
+    "id": "chien",
+    "nom": "Chien",
+    "sprite": "chien",
+    "cheveux": "#c88a4a",
+    "peau": "#c88a4a",
+    "haut": "#c88a4a",
+    "bas": "#c88a4a",
+    "coiffe": "aucune",
+    "arme": "aucune"
+  },
+  {
+    "id": "chat",
+    "nom": "Chat",
+    "sprite": "chat",
+    "cheveux": "#5a5a62",
+    "peau": "#5a5a62",
+    "haut": "#5a5a62",
+    "bas": "#5a5a62",
+    "coiffe": "aucune",
+    "arme": "aucune"
+  },
+  {
+    "id": "poule",
+    "nom": "Poule",
+    "sprite": "poule",
+    "cheveux": "#f2f0ea",
+    "peau": "#f2f0ea",
+    "haut": "#f2f0ea",
+    "bas": "#d2493f",
+    "coiffe": "aucune",
+    "arme": "aucune"
+  },
+  {
+    "id": "vache",
+    "nom": "Vache",
+    "sprite": "vache",
+    "cheveux": "#f2f0ea",
+    "peau": "#2a2a2a",
+    "haut": "#f2f0ea",
+    "bas": "#2a2a2a",
+    "coiffe": "aucune",
+    "arme": "aucune"
+  },
+  {
+    "id": "cheval",
+    "nom": "Cheval",
+    "sprite": "cheval",
+    "cheveux": "#6a4a2f",
+    "peau": "#8a5a32",
+    "haut": "#8a5a32",
+    "bas": "#6a4a2f",
+    "coiffe": "aucune",
+    "arme": "aucune"
   }
 ]

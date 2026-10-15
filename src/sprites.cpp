@@ -263,6 +263,7 @@ static bool humanSprite(Gfx& g, const Look& lk, float x, float y, float s, int d
     flip = r != nullptr;
   }
   if (!r) r = frame("bas");
+  if (!r && (r = findSprite(p))) flip = dir == 3;  // animal : un seul sprite, tourné vers la gauche
   if (!r) return false;
   g.ellipse(x + 8 * s, y + 15 * s, 6 * s, 2 * s, rgb(0, 50));
   g.sprite(*r, std::round(x + (16 * s - r->w * s) / 2), std::round(y + 16 * s - r->h * s), flip, s);
@@ -652,7 +653,8 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
       g.ellipse(sx + 7, sy + 8, 4, 3, rgb(0xa9a9b3));
       break;
     case 'W': {
-      g.rect(sx, sy, 16, 16, rgb(0xd9c08a));
+      bool paved = at(x - 1, y) == 'q' || at(x + 1, y) == 'q' || at(x, y - 1) == 'q' || at(x, y + 1) == 'q';
+      if (!(paved && g.sprite("sol_0_3", sx, sy))) g.rect(sx, sy, 16, 16, rgb(0xd9c08a));  // sur une place : les pavés autour
       int l = at(x - 1, y) == 'W' ? 0 : 2, r = at(x + 1, y) == 'W' ? 16 : 14;
       int tp = at(x, y - 1) == 'W' ? 0 : 2, bt = at(x, y + 1) == 'W' ? 16 : 14;
       g.rect(sx + l, sy + tp, r - l, bt - tp, rgb(0xa8a8b4));

@@ -162,7 +162,7 @@ std::string itemDetails(const ItemDef& d) {
   if (d.cure) v.push_back(T("Guérit poison, brûlure, paralysie et sommeil"));
   if (d.capture > 0) {
     double lo = std::min(R.capMax, R.capBase * d.capture), hi = std::min(R.capMax, (R.capBase + R.capHp) * d.capture);
-    v.push_back(T("Capture : ") + pct(lo) + T(" de chance sur une créature en pleine forme, jusqu'à ") + pct(hi) + T(" presque K.O."));
+    v.push_back(T("Capture : ") + pct(lo) + T(" (pleine forme) à ") + pct(hi) + T(" (presque K.O.)"));
   }
   for (size_t L = 0; L < R.forge.size(); L++)  // matériau de la forge
     for (auto& [id, n] : R.forge[L].items)
@@ -179,7 +179,7 @@ std::string itemDetails(const ItemDef& d) {
   if (d.key && d.trophy) v.push_back(T("Trophée"));
   else if (d.key) v.push_back(T("Objet important"));
   else if (d.slot < 0 && (d.battle || d.field))
-    v.push_back(d.battle && d.field ? T("En combat et dans le menu") : d.battle ? T("En combat seulement") : T("Dans le menu seulement"));
+    v.push_back(d.battle && d.field ? T("Combat et menu") : d.battle ? T("Combat seulement") : T("Menu seulement"));
   std::string s;
   for (auto& x : v) s += (s.empty() ? "" : ". ") + x;
   return s.empty() ? s : s + ".";
@@ -421,9 +421,37 @@ Pt Battle::offset(const FighterP& f) const {
 }
 
 // Particules propres au type : k va de 0 (début) à 1 (fin) ; p est le centre de la cible
+// Effets dessinés d'après la planche des sorts (3.2) : une suite d'images par type, jouée sur la cible pendant
+// l'effet (k de 0 à 1). Faux si ce type n'en a pas (les particules en code restent).
+static bool spriteFx(Gfx& g, const std::string& type, const Pt& p, float k, bool heal) {
+  static const std::map<std::string, std::vector<const char*>> FX = {
+      {"feu", {"fx_feu_1", "fx_feu_2", "fx_feu_3"}},
+      {"glace", {"fx_glace_1", "fx_glace_2", "fx_glace_cristal"}},
+      {"foudre", {"fx_eclair_2", "fx_eclair_1", "fx_eclair_pilier"}},
+      {"vent", {"fx_vent_1", "fx_vent_2", "fx_vent_tornade"}},
+      {"eau", {"fx_eau_1", "fx_eau_2", "fx_eau_3"}},
+      {"poison", {"fx_poison_2", "fx_poison_4", "fx_poison_5", "fx_poison_nuage"}},
+      {"plante", {"fx_soin_1", "fx_regen"}},
+      {"roche", {"fx_terre_1", "fx_terre_2", "fx_terre_pics"}},
+      {"ombre", {"fx_ombre_1", "fx_ombre_3", "fx_ombre_4", "fx_ombre_5"}},
+      {"esprit", {"fx_ombre_2", "fx_teleport"}},
+      {"lumiere", {"fx_revelation"}},
+      {"soin", {"fx_soin_1", "fx_soin_2", "fx_soin_3", "fx_soin_4"}},
+  };
+  auto it = FX.find(heal ? "soin" : type);
+  if (it == FX.end()) return false;
+  const auto& v = it->second;
+  const SpriteRect* r = findSprite(v[std::min(v.size() - 1, size_t(k * v.size()))]);
+  if (!r) return false;
+  Color c{255, 255, 255, uint8_t(255 * std::clamp((1 - k) * 2.5f, 0.f, 1.f))};
+  g.sprite(*r, std::round(p.x - r->w / 2.f), std::round(p.y + 12 - r->h), false, 1, c);
+  return true;
+}
+
 void Battle::drawTypeFx(const Pt& p, float k) {
   Gfx& g = G.g;
   const std::string& t = types()[anim_.type].id;
+  if (spriteFx(g, t, p, k, false)) return;
   auto col = [&](uint32_t c, float a) {
     Color x = rgb(c);
     x.a = uint8_t(std::clamp(a, 0.f, 1.f) * 255);
@@ -526,6 +554,7 @@ void Battle::drawAnim() {
         break;
       case Fx::Heal:
       case Fx::Capture:
+        if (anim_.fx == Fx::Heal && spriteFx(g, "", p, k, true)) break;
         for (int i = 0; i < 7; i++) {  // étincelles qui montent
           float x = std::sin(i * 2.4f) * 13, y = 12 - std::fmod(k * 40 + i * 6, 40.f);
           g.ellipse(p.x + x, p.y + y, 1.6f, 1.6f, fade(i % 2 ? white : c, 1 - k * .8f));
@@ -541,7 +570,10 @@ void Battle::drawAnim() {
         break;
     }
     if (anim_.type >= 0 && (anim_.fx == Fx::Hit || anim_.fx == Fx::Magic)) drawTypeFx(p, k);
-    if (anim_.limit)  // Limite : grande étoile dorée
+    if (anim_.limit)  // Limite : explosion, puis grande étoile dorée
+      if (const SpriteRect* r = findSprite(k < .5f ? "fx_explosion" : "fx_impact"))
+        g.sprite(*r, std::round(p.x - r->w / 2.f), std::round(p.y + 14 - r->h), false, 1, Color{255, 255, 255, uint8_t(255 * std::min(1.f, (1 - k) * 2))});
+    if (anim_.limit)
       for (int i = 0; i < 12; i++) {
         float ang = i * .5236f, r = 6 + k * 30;
         g.line(p.x, p.y, p.x + std::cos(ang) * r, p.y + std::sin(ang) * r, 1.5f, fade(rgb(0xffd34d), 1 - k));
@@ -830,7 +862,7 @@ void Battle::command(FighterP a) {
                          std::string id = d.id;
                          bool ok = true;
                          bool lantern = d.capture > 0;
-                         std::string help = itemHelp(d);
+                         std::string help = itemDetails(d);  // en combat : sans la phrase d'ambiance
                          if (lantern) {
                            ok = canCapture && creature;
                            if (!canCapture) help = T("Impossible de capturer ici.");

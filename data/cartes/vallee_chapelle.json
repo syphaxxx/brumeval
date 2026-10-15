@@ -14,12 +14,10 @@
     "#####p#####"
   ],
   "batiments": [],
-  "habitants": [
-    {"x": 5, "y": 3, "apparence": "ancien", "evenement": "chapelle", "direction": "bas"}
-  ],
+  "habitants": [{"x": 5, "y": 3, "apparence": "ancien", "evenement": "chapelle", "direction": "bas"}],
   "coffres": [],
   "panneaux": [],
-  "passages": [{"x": 5, "y": 8, "vers": "vallee", "tx": 6, "ty": 15, "direction": "bas"}],
+  "passages": [{"x": 5, "y": 8, "vers": "vallee", "tx": 4, "ty": 16, "direction": "bas"}],
   "zones": [],
   "boss": []
 }

@@ -5,24 +5,24 @@
   "ambiance": {"effet": "brume", "jusqua": "boss1"},
   "tuiles": [
     "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT~~TTTTTTTTTTTTTTTTTTTTTTTTTTT",
-    "T......F....................F......~~......F...................T",
-    "T..........F.=..............,T,,,..~~..,,,,,......,,,T,,,R.....T",
-    "T...........F=............,,,,,,,,,~~,,,,,,,,,T.,,,,,,T,,,,....T",
-    "T............=............,R,,,,,,,~~,RR,,,,,,R,,,,,,,,,,,,T..TT",
-    "T............=............,,,RR,,,,~~,T,,,,,,,,,,,,,,T,,,,,,...T",
-    "T............=.WW...........,,,,,..~~,,R,,,,,,,,,,,,,T,,,,,,...T",
-    "T......=.....=.WW...=..............~~,,,,,,,,T..,,,,,TT,,,,....T",
-    "T......=.....=......=.....TT.......~~..,,,,,...T..,,,,,,,T.....T",
-    "===================================BB==========....T...........T",
-    "T............=................T..R.~~.........=..........,T,...T",
-    "T............=............TT.......~~.......FT=.........,,TR,..T",
-    "T.F..........=............R,,,,T...~~......T,,=T,,,....,,,,,,,.T",
-    "T............=............R,,,,,,..~~TR...,,,,=,,,,,,..,,,,,,,.T",
-    "T............=............,,,,,R,..~~,,,,,,,,,=,,,,,,.T,,,,,,,.T",
-    "T.....=......=.....=......,,,,,,,..~~,,,,,,,,,=,,,,,,...,,,,,.TT",
-    "T..F..==================...,,,,,...~~,,,,,,,,,=,,,,T.....,,,...T",
-    "T............=.....=...........R...~~,,,,,,,..=.....T..........T",
-    "T.........====.....=..,,,,,.......T~~,,,,,....=...F.F.....#####T",
+    "T...........................F......~~......F...................T",
+    "TU......U......U......U.U...,T,,,..~~..,,,,,......,,,T,,,R.....T",
+    "T.........................,,,,,,,,,~~,,,,,,,,,T.,,,,,,T,,,,....T",
+    "TU...................CY...,R,,,,,,,~~,RR,,,,,,R,,,,,,,,,,,,T..TT",
+    "T.......F.....F......v....,,,RR,,,,~~,T,,,,,,,,,,,,,,T,,,,,,...T",
+    "T.=====================.....,,,,,..~~,,R,,,,,,,,,,,,,T,,,,,,...T",
+    "T.F....LqqqqqqqqqqL...F=...........~~,,,,,,,,T..,,,,,TT,,,,....T",
+    "T..L....qqqqWWqqqq.....=..TT.......~~..,,,,,...T..,,,,,,,T.....T",
+    "========qqqqqqqqqq=================BB==========....T...........T",
+    "T.......qqqqqqqqqq...L.=......T..R.~~.........=..........,T,...T",
+    "T.F....LqqqqqqqqqqL....=..TT.......~~.......FT=.........,,TR,..T",
+    "TU......qMCqqqQMqq.....=..R,,,,T...~~......T,,=T,,,....,,,,,,,.T",
+    "T.......HHHH=HHHH......=U.R,,,,,,..~~TR...,,,,=,,,,,,..,,,,,,,.T",
+    "TU......HFFF=FFFH......=..,,,,,R,..~~,,,,,,,,,=,,,,,,.T,,,,,,,.T",
+    "T.......HHHH=HHHH......=..,,,,,,,..~~,,,,,,,,,=,,,,,,...,,,,,.TT",
+    "T=======================...,,,,,...~~,,,,,,,,,=,,,,T.....,,,...T",
+    "T.HHH.HHF.=..F.....=...........R...~~,,,,,,,..=.....T..........T",
+    "T.H....H..=...U.T..=.T.T.,,.......T~~,,,,,....=...F.F.....#####T",
     "TTT.TTTTTT=TTT.TT..=T,,,,,,,....TT.~~........T=...T...T.T.#####T",
     "TT.TTTT.T.=TT,,,,,T=TT,,,,,,.......~~......F..=....TT.T.T.#####T",
     "TF.T.T..T.=T,,,,,,,=T,,,,,,,.......~~....T....=....T..T...#####T",
@@ -67,8 +67,8 @@
   ],
   "batiments": [
     {
-      "x": 5,
-      "y": 3,
+      "x": 3,
+      "y": 2,
       "l": 5,
       "h": 4,
       "genre": "soin",
@@ -77,8 +77,8 @@
       "interieur": "vallee_soin"
     },
     {
-      "x": 18,
-      "y": 3,
+      "x": 16,
+      "y": 2,
       "l": 5,
       "h": 4,
       "genre": "boutique1",
@@ -87,8 +87,8 @@
       "interieur": "vallee_boutique"
     },
     {
-      "x": 4,
-      "y": 11,
+      "x": 2,
+      "y": 12,
       "l": 5,
       "h": 4,
       "genre": "chapelle",
@@ -97,20 +97,21 @@
       "interieur": "vallee_chapelle"
     },
     {
-      "x": 17,
-      "y": 11,
+      "x": 18,
+      "y": 12,
       "l": 5,
       "h": 4,
       "genre": "maison",
       "nom": "Maison de l'ancien",
       "toit": "#7a8a4a",
       "interieur": "vallee_ancien"
-    }
+    },
+    {"x": 9, "y": 3, "l": 4, "h": 3, "genre": "maison", "nom": "Maison", "toit": "#3f6fb0"}
   ],
   "habitants": [
     {
-      "x": 11,
-      "y": 8,
+      "x": 10,
+      "y": 10,
       "apparence": "villageois",
       "direction": "bas",
       "dialogue": [
@@ -119,8 +120,8 @@
       ]
     },
     {
-      "x": 17,
-      "y": 10,
+      "x": 16,
+      "y": 8,
       "apparence": "villageoise",
       "direction": "bas",
       "dialogue": [
@@ -128,7 +129,7 @@
         "La boutique, juste à côté, vend potions, éthers et lanternes."
       ]
     },
-    {"x": 21, "y": 15, "apparence": "ancien", "direction": "bas", "evenement": "ancien"},
+    {"x": 17, "y": 15, "apparence": "ancien", "direction": "bas", "evenement": "ancien"},
     {"x": 7, "y": 15, "apparence": "maelle", "direction": "bas", "evenement": "maelle", "cache_si": "maelle"},
     {
       "x": 25,
@@ -170,6 +171,31 @@
       "evenement": "braconnier",
       "vue": 2,
       "vue_jusqua": "braconnier"
+    },
+    {"x": 4, "y": 18, "apparence": "poule", "direction": "gauche", "dialogue": ["Cot cot !"]},
+    {"x": 6, "y": 18, "apparence": "poule", "direction": "droite", "dialogue": ["Cot cot cot…"]},
+    {
+      "x": 22,
+      "y": 17,
+      "apparence": "chien",
+      "direction": "gauche",
+      "dialogue": ["Ouaf ! Le chien de l'ancien remue la queue."]
+    },
+    {
+      "x": 14,
+      "y": 10,
+      "apparence": "chat",
+      "direction": "bas",
+      "dialogue": ["Le chat ronronne au bord de la fontaine."]
+    },
+    {
+      "x": 8,
+      "y": 12,
+      "apparence": "marchande",
+      "direction": "droite",
+      "dialogue": [
+        "Des pommes du verger, des œufs frais ! Le jour du marché, tout le village passe par la place."
+      ]
     }
   ],
   "coffres": [
@@ -181,13 +207,13 @@
     {"x": 48, "y": 41, "objet": "lanterne", "quantite": 3},
     {"x": 3, "y": 24, "or": 80},
     {"x": 31, "y": 41, "objet": "minerai", "quantite": 2},
-    {"x": 2, "y": 2, "objet": "lanterne", "quantite": 2},
+    {"x": 2, "y": 3, "objet": "lanterne", "quantite": 2},
     {"x": 55, "y": 53, "objet": "lanterne_argent", "quantite": 2},
     {"x": 21, "y": 55, "objet": "superpotion", "quantite": 2},
     {"x": 29, "y": 46, "or": 600}
   ],
   "panneaux": [
-    {"x": 12, "y": 10, "texte": "Village de Brumeval. Maison de soin au nord-ouest, boutique au nord-est."},
+    {"x": 6, "y": 10, "texte": "Village de Brumeval. Maison de soin au nord-ouest, boutique au nord-est."},
     {"x": 11, "y": 19, "texte": "Bois Murmurant. On dit qu'une herbe lunaire pousse tout au fond des bois."},
     {"x": 55, "y": 33, "texte": "Col de la Brume. Au-delà s'étendent les Monts Cendrelune."},
     {"x": 34, "y": 10, "texte": "Pont du Ru-Clair."},

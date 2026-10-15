@@ -34,5 +34,8 @@
   {"id": "maison_vert_96", "de": "maison_96", "teintes": [[330, 40, 105, 0.7, 0.85]]},
   {"id": "maison_ardoise_96", "de": "maison_96", "teintes": [[330, 40, 225, 0.35, 0.75]]},
   {"id": "sapin_neige", "de": "sapin", "teintes": [[60, 200, 200, 0.35, 1.55]]},
-  {"id": "sapin_neige_petit", "de": "sapin_petit", "teintes": [[60, 200, 200, 0.35, 1.55]]}
+  {"id": "sapin_neige_petit", "de": "sapin_petit", "teintes": [[60, 200, 200, 0.35, 1.55]]},
+  {"id": "fx_eau_1", "de": "fx_vent_1", "teintes": [[-1, 0, 212, 1.0, 0.95, 0.55]]},
+  {"id": "fx_eau_2", "de": "fx_vent_2", "teintes": [[-1, 0, 212, 1.0, 0.95, 0.55]]},
+  {"id": "fx_eau_3", "de": "fx_vent_tornade", "teintes": [[-1, 0, 212, 1.0, 0.95, 0.55]]}
 ]
