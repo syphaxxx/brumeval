@@ -106,6 +106,7 @@ class MenuStack {
   void clear() { st_.clear(); }
   bool active() const { return !st_.empty(); }
   size_t depth() const { return st_.size(); }
+  size_t shownDepth() const;  // menus dessinés (sans les menus cachés, Menu::hidden)
   Menu& top() { return st_.back(); }
   int maxRight() const;  // bord droit le plus à droite des menus ouverts (0 si aucun)
   void update(Input& in);

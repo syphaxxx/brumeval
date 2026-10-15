@@ -383,7 +383,7 @@ static int hsh(int x, int y) { return int((unsigned(x) * 73856093u ^ unsigned(y)
 static bool texTile(Gfx& g, const char* id, int x, int y, int sx, int sy) {
   const SpriteRect* r = findSprite(id);
   if (!r) return false;
-  g.sprite(SpriteRect{r->x + (x & 1) * 16, r->y + (y & 1) * 16, 16, 16}, sx, sy);
+  g.sprite(r->sub((x & 1) * 16, (y & 1) * 16, 16, 16), sx, sy);
   return true;
 }
 
