@@ -117,6 +117,30 @@ choisies directement sur le damier, et des villes plus réalistes.
   Coffrelin).
 - Publiée en 3.2 (2026-10-15). Ensuite : les retours de l'utilisateur après son essai.
 
+## Étape 2 quater — Carte blanche (demandée le 2026-10-16, l'utilisateur absent 2 à 3 jours)
+
+Retours sur la 3.2 : sprites trop flous, l'équipe doit être à gauche en combat et chacun tourné vers le camp adverse,
+des textes cachent encore le terrain. Puis carte blanche pour améliorer le jeu à tous les niveaux, sans questions, et
+sans fusionner les branches (rien n'est publié avant son retour). Plan, dans l'ordre :
+
+**Branche `combat-hd` (3.2.1 : ses demandes)**
+1. Sprites en double définition : l'image du jeu est rendue en 640×480 (les dessins en code restent identiques,
+   agrandis deux fois), les sprites sont découpés deux fois plus fins et dessinés à leur pleine finesse.
+2. Combat : l'équipe à gauche, les ennemis à droite, chacun tourné vers l'adversaire.
+3. Combat : plus aucun texte sur le terrain : une bande compacte en haut (aide, ordre des tours, météo), menus et ATH
+   dans un panneau en bas.
+4. Revue par Codex, mode test, joueur automatique, captures.
+
+**Branche `ameliorations` (à partir de `combat-hd`)**
+5. Cartes plus vivantes : touffes d'herbe, fleurs et cailloux en sprites, eau et falaises plus belles.
+6. Intérieurs meublés avec les sprites (étagères, tables, chaises, tonneaux, lits).
+7. Personnages : courir (touche maintenue, sprites de course de Lior), animaux et promeneurs qui bougent.
+8. Expédition : créatures et héros générés dessinés avec les sprites (selon leur forme, recoloriés).
+9. Combat : animations (lancer de Lior à la capture, éclat au coup reçu, K.O.).
+10. Menus : fiche des créatures avec le grand sprite, écran titre avec les sprites.
+11. Équilibrage des nouveautés (Coffrelin, nouvelles créatures), mesuré.
+12. Tests du choix sur le damier et des nouvelles tuiles ; documentation et traduction anglaise à jour.
+
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
 - Fait en 1.6 : **réserve de créatures** (au-delà de 8 membres) et
