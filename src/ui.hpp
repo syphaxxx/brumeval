@@ -21,6 +21,8 @@ struct Input {
   bool moved = false;
   int wheel = 0;           // molette : +1 vers le haut, -1 vers le bas
   bool ctrl = false, shift = false;
+  bool runPad = false;  // bouton X de la manette maintenu (courir, 3.3) ; au clavier : Maj
+  bool run() const { return shift || runPad; }
   // Raccourcis des éditeurs
   bool tab = false, undo = false, redo = false, saveKey = false, prev = false, next = false, del = false;
   void endFrame() {

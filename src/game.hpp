@@ -238,6 +238,7 @@ class Game {
   bool storyTest_ = false;              // événement joué depuis l'éditeur d'histoire
   std::unique_ptr<Expedition> expedition_;  // mode Expédition (écran titre), voir expedition.hpp
   std::unique_ptr<Online> online_;          // multijoueur (écran titre), voir online.hpp
+  bool running_ = false;  // le joueur court (Maj ou X maintenu) pendant ce pas
   std::unique_ptr<Pilot> pilot_;            // joueur automatique (démo, partie rapide), voir pilot.hpp
   std::string saveBeforePilot_;             // fichier de sauvegarde d'avant la démo (rendu par l'écran titre)
   bool duelBattle_ = false;                 // le combat en cours est un duel en ligne

@@ -56,6 +56,7 @@ void Game::onPad(int button, bool down) {
     case SDL_CONTROLLER_BUTTON_DPAD_DOWN: return padDirection(DOWN, down);
     case SDL_CONTROLLER_BUTTON_DPAD_LEFT: return padDirection(LEFT, down);
     case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: return padDirection(RIGHT, down);
+    case SDL_CONTROLLER_BUTTON_X: in.runPad = down; return;  // maintenu : courir
     default: break;
   }
   if (!down) return;
@@ -322,7 +323,8 @@ void Game::update(float dt) {
         for (auto& [id, n] : items)
           if (n > 0 && hasItem(id) && item(id).gem && tip("gemme", sc)) break;
       if (moving) {
-        moveT += dt * 7.5f;
+        running_ = in.run();
+        moveT += dt * (running_ ? 13.f : 7.5f);  // Maj ou X maintenu : on court
         if (moveT >= 1) {
           moving = false;
           arrive();
@@ -983,6 +985,7 @@ void Game::drawMap() {
                       }});
   }
   int step = moving ? (moveT < .5f ? 1 : 2) : 0;
+  bool run = moving && running_;
   // Le joueur a l'apparence de Lior ; en Expédition, celle du premier personnage de l'équipe (le héros choisi)
   int playerLook = 0;
   if (inExpedition())
@@ -992,7 +995,7 @@ void Game::drawMap() {
         break;
       }
   actors.push_back({ppy, [&] {
-                       drawHuman(g, look(playerLook), ppx - camX, ppy - camY - 2, 1, dir, step, false);
+                       drawHuman(g, look(playerLook), ppx - camX, ppy - camY - 2, 1, dir, step, false, run);
                        if (!moving) tallGrass(g, m, px, py, px * 16 - camX, py * 16 - camY, time, true);  // pieds dans l'herbe
                      }});
   std::sort(actors.begin(), actors.end(), [](const Actor& a, const Actor& b) { return a.y < b.y; });

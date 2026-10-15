@@ -232,7 +232,7 @@ void drawCreature(Gfx& g, const std::string& id, float x, float y, float s, bool
 // Sprite d'un personnage : (x, y) = coin haut-gauche de sa case de 16x16 agrandie s fois. Sur la carte (s < 1,5) :
 // <sprite>_<direction>_<image> (gauche = droite retournée et inversement ; direction absente : de face) ; en plus
 // grand (combat, menus) : <sprite>_combat, tourné vers la gauche.
-static bool humanSprite(Gfx& g, const Look& lk, float x, float y, float s, int dir, int step) {
+static bool humanSprite(Gfx& g, const Look& lk, float x, float y, float s, int dir, int step, bool run) {
   if (lk.sprite.empty()) return false;
   const std::string& p = lk.sprite;
   if (s >= 1.5f) {
@@ -257,7 +257,12 @@ static bool humanSprite(Gfx& g, const Look& lk, float x, float y, float s, int d
     return r ? r : findSprite(p + "_" + d + "_0");
   };
   bool flip = false;
-  const SpriteRect* r = frame(NAMES[dir & 3]);
+  const SpriteRect* r = nullptr;
+  if (run && (dir == 2 || dir == 3) && step) {  // course de profil : <sprite>_course_k (regard vers la gauche)
+    r = findSprite(p + "_course_" + std::to_string(SDL_GetTicks() / 70 % 4));  // quatre images, vite
+    flip = dir == 3;
+  }
+  if (!r) r = frame(NAMES[dir & 3]);
   if (!r && (dir == 2 || dir == 3)) {
     r = frame(NAMES[dir == 2 ? 3 : 2]);
     flip = r != nullptr;
@@ -270,8 +275,8 @@ static bool humanSprite(Gfx& g, const Look& lk, float x, float y, float s, int d
   return true;
 }
 
-void drawHuman(Gfx& g, const Look& lk, float x, float y, float s, int dir, int step, bool weapon) {
-  if (humanSprite(g, lk, x, y, s, dir, step)) return;
+void drawHuman(Gfx& g, const Look& lk, float x, float y, float s, int dir, int step, bool weapon, bool run) {
+  if (humanSprite(g, lk, x, y, s, dir, step, run)) return;
   bool flip = dir == 3;
   int pose = flip ? 2 : dir;
   Xf X{g, flip ? x + 16 * s : x, y, s, flip};

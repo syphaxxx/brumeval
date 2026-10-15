@@ -11,7 +11,7 @@
 void drawCreature(Gfx& g, const std::string& sp, float x, float y, float s, bool flip, float t);
 // Humain : (x, y) = coin haut-gauche d'une case de 16x16, mise à l'échelle par s.
 // dir : 0 haut, 1 bas, 2 gauche, 3 droite. step : 0, 1 ou 2 (pas de marche).
-void drawHuman(Gfx& g, const Look& lk, float x, float y, float s, int dir, int step, bool weapon);
+void drawHuman(Gfx& g, const Look& lk, float x, float y, float s, int dir, int step, bool weapon, bool run = false);
 // Combattant en combat (humain ou créature), centré sur (x, y)
 void drawFighterSprite(Gfx& g, const Fighter& f, float x, float y, float s, bool faceRight, float t);
 // Hauteur du dessin d'un combattant au-dessus de son point (x, y) de drawFighterSprite (barre de PV, repères)
