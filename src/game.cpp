@@ -1072,6 +1072,17 @@ void Game::drawMap() {
     float dusk = night * (1 - night) * 4;
     if (dusk > 0) g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0xff8a3a, uint8_t(30 * dusk)));
     for (auto& b : m.buildings) drawBuildingLights(g, b, b.x * 16 - camX, b.y * 16 - camY, night);
+    // Réverbères et feux de camp allumés (3.3) : un halo chaud qui vacille un peu
+    for (int y = ty0; y <= ty0 + SCREEN_H / 16 + 2 && y < m.h(); y++)
+      for (int x = std::max(0, tx0 - 1); x <= tx1 + 1 && x < m.w(); x++) {
+        char c = m.rows[y][x];
+        if (c != 'L' && c != 'X') continue;
+        float fl = .85f + .15f * std::sin(time * (c == 'X' ? 11.f : 3.f) + x * 1.7f);
+        float lx = x * 16 - camX + 8, ly = y * 16 - camY + (c == 'L' ? -10 : 8);
+        g.ellipse(lx, ly, 26 * fl, 18 * fl, rgb(0xffc86a, uint8_t(26 * night)));
+        g.ellipse(lx, ly, 12 * fl, 9 * fl, rgb(0xffd890, uint8_t(60 * night)));
+        if (c == 'L') g.ellipse(lx, ly, 3, 3, rgb(0xfff2c0, uint8_t(220 * night)));
+      }
     float lx = ppx - camX + 8, ly = ppy - camY + 6;
     g.ellipse(lx, ly, 46, 34, rgb(0xffe8b0, uint8_t(14 * night)));
     g.ellipse(lx, ly, 26, 20, rgb(0xffe8b0, uint8_t(22 * night)));

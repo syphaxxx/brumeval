@@ -376,7 +376,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   au changement de carte ; pas en expédition à plusieurs). Éditeur de cartes : objets hauts dessinés (`drawProp`,
   `drawPropIcon` dans la palette). Carte du monde (Échap > Carte, `worldMapOn_`, `drawWorldMap` dans menus.cpp) : les
   lieux ayant `carte_monde` atteignables d'ici par des passages ouverts (`checkCond`), sans rien enregistrer ; pas en
-  Expédition.
+  Expédition. Changement de carte : fondu depuis le noir (`mapFadeT_`, 0,3 s). La nuit, réverbères `L` et feux `X`
+  allumés (halo dans `drawMap`).
 - Graphismes des cartes (2.0, sprites.cpp) : maisons (`drawBuilding` : ombre, soubassement, pierres, tuiles en rangées,
   faîtage, cheminée, fenêtres à volets et jardinières), arbres `T` en trois variantes selon `hsh` (rond, petit, fruitier
   ou large en forêt), chemins `=` aux bords adoucis contre la nature (liseré, touffes, coins), herbe de la vallée variée.
