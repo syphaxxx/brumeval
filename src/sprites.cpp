@@ -439,6 +439,15 @@ bool drawFighterPose(Gfx& g, const Fighter& f, const std::string& pose, float x,
   return true;
 }
 
+float creatureFit(const std::string& id, float maxH) {
+  const Species& sp = species(id);
+  Color tint;
+  const SpriteRect* r = sp.sprite.empty() ? borrowedSprite(sp, tint) : findSprite(sp.sprite);
+  if (!r) return 1.2f;  // dessin en code : comme avant
+  float h = r->h * sp.size;
+  return h * 2 <= maxH ? 2.f / sp.size : std::min(1.f, maxH / h) / sp.size;
+}
+
 float fighterTop(const Fighter& f, float s) {
   const Species& sp = f.S();
   if (sp.human) {

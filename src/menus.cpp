@@ -387,7 +387,8 @@ void Game::drawBestiaryPanel(int x, int y) {
   }
   g.text(x + 8, y + 6, s.name, GOLD);
   g.text(x + 8, y + 18, typesName(s), MUTED);
-  drawCreature(g, s.id, x + w / 2, y + 74, 1.2f, false, time);
+  float k = creatureFit(s.id, 60);  // les petites créatures deux fois plus grandes
+  drawCreature(g, s.id, x + w / 2, y + 90 - 16 * k * s.size, k, false, time);
   int ly = y + 96;
   if (c) {  // statistiques de base, seulement pour une créature obtenue
     const char* names[] = {"PV", "PM", "Att", "Déf", "Mag", "Rés", "Vit"};

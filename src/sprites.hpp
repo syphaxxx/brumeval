@@ -16,6 +16,9 @@ void drawHuman(Gfx& g, const Look& lk, float x, float y, float s, int dir, int s
 void drawFighterSprite(Gfx& g, const Fighter& f, float x, float y, float s, bool faceRight, float t);
 // Hauteur du dessin d'un combattant au-dessus de son point (x, y) de drawFighterSprite (barre de PV, repères)
 float fighterTop(const Fighter& f, float s);
+// Échelle pour qu'une créature tienne dans maxH pixels de haut : 2 si son sprite y tient deux fois plus grand, sinon 1
+// ou moins (fiches du Bestiaire et de l'équipe)
+float creatureFit(const std::string& id, float maxH);
 // Petit portrait (3.3, ordre des tours) : la tête d'un humain, la créature entière réduite, centrée dans w x h.
 // Faux s'il n'a pas de sprite.
 bool drawFighterIcon(Gfx& g, const Fighter& f, float cx, float cy, float w, float h, bool faceRight);

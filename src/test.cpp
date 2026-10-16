@@ -2043,7 +2043,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     caught = {"golem"};
     bestiaryMenu(0);
     show("bestiaire");
-    for (int k = 0; k < 40 && bestiarySel_ != "golem"; k++) {
+    for (int k = 0; k < 100 && bestiarySel_ != "golem"; k++) {  // 74 espèces depuis la 3.3
       in.press[DOWN] = true;
       frame();
     }
