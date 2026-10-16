@@ -13,6 +13,7 @@
 //   z  marais (rencontres)
 // Villes (sprites) : q  pavés (praticable)   H  clôture   L  réverbère   Y  puits   C  caisses   U  buisson
 //   Q  banc   K  charrette   M  étal de marché   X  feu de camp   G  tableau d'annonces   J  bannière
+// Intérieurs : j  chaise
 // Intérieurs (thème « interieur ») :
 //   p  tapis (praticable)   t  table   h  lit   e  étagère   o  comptoir   v  tonneau
 // Le dessin de certaines tuiles dépend du thème de la carte (arbres, chemins, parois).
@@ -51,6 +52,7 @@ struct Npc {
   std::string hideIf;              // caché quand ce drapeau est posé
   int sight = 0;                   // dresseur : repère le joueur à cette distance devant lui
   std::string sightUntil;          // … tant que ce drapeau n'est pas posé
+  int roam = 0;                    // promeneur (3.3) : marche jusqu'à cette distance de sa place (0 : reste sur place)
 };
 
 struct Chest {
@@ -111,7 +113,9 @@ struct MapDef {
   // les grilles 'D'. puzzleX/Y : la case d'où l'on commence (recommencer, joueur automatique)
   std::string puzzleFlag, puzzleMsg;
   int puzzleX = -1, puzzleY = -1;
-  int puzzleZone[4] = {0, 0, 0, 0};  // salle de l'énigme (x, y, largeur, hauteur ; 0 : toute la carte) : la recherche y reste
+  int puzzleZone[4] = {0, 0, 0, 0};
+  // Carte du monde (3.3, champ « carte_monde ») : position du lieu, de 0 à 100 (-1 : absent de la carte du monde)
+  float worldX = -1, worldY = -1;  // salle de l'énigme (x, y, largeur, hauteur ; 0 : toute la carte) : la recherche y reste
   int w() const { return rows.empty() ? 0 : (int)rows[0].size(); }
   int h() const { return (int)rows.size(); }
 };

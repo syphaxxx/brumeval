@@ -2,7 +2,7 @@
   "depart": {
     "carte": "vallee",
     "x": 12,
-    "y": 9,
+    "y": 10,
     "direction": "bas",
     "heros": "lior",
     "compagnons": ["braisenard", "gouttelin", "ronceau"],

@@ -119,6 +119,7 @@ class Battle {
   float blinkT = 0, flashT = -1;
   Color flashCol;
   std::vector<Pop> pops;
+  float popTop_ = 54;  // un texte flottant ne commence pas plus haut (sous l'ordre des tours, d'après le dernier dessin)
   std::vector<FighterP> defeated;
   bool finished_ = false, ending_ = false;
   // Fin d'un combat gagné : tous les gains dans une fenêtre, fermée par Entrée
@@ -134,6 +135,7 @@ class Battle {
   // Damier (data.hpp) : la case de chaque combattant pendant ce combat ; au départ, la formation
   // de l'équipe (Fighter::cell) pour les alliés, un placement automatique pour les ennemis
   std::map<const Fighter*, int> cells_;
+  std::map<const Fighter*, float> koT_;  // moment du K.O. (un ennemi vaincu s'efface en 0,6 s avec un éclat)
   int cellOf(const FighterP& f) const;  // -1 : pas sur le damier
   void place(const std::vector<FighterP>& v, bool keep);
   const std::vector<FighterP>& sideOf(const FighterP& f) const { return isAlly(f) ? allies : foes; }
@@ -194,13 +196,16 @@ class Battle {
   // Ordre des tours (2.5, inspiré de Final Fantasy X) : les n prochains tours prévus d'après les
   // jauges et les vitesses actuelles (sans le hasard de la paralysie)
   std::vector<FighterP> turnOrder(int n) const;
-  void drawTurnOrder(float y, float minX = 0);
+  void drawTurnOrder(float y, float minX = 0, float maxX = 320);
   bool skipTurn(FighterP f);  // sommeil ou paralysie : le tour est perdu
   void command(FighterP a);
   void autoCommand(FighterP a);
   void enemyTurn(FighterP e);
   Plan think(FighterP a);
   float attackScore(const FighterP& a, const Move& m, const FighterP& t) const;  // intérêt d'une attaque (IA et tactiques)
+  // Dégâts prévus (3.3, aide du choix de la cible) : « ≈ 18-24 PV · 95 % » (sans coup critique). L'efficacité d'un type
+  // n'est comptée qu'une fois découverte (Brisure) : sinon neutre, pour ne rien dévoiler.
+  std::string damageText(const FighterP& a, const Move& m, const FighterP& d) const;
   // Tactiques (tactics.hpp) : première règle possible de l'allié a, puis son exécution
   bool tacticsActive() const;
   bool tacticPlan(FighterP a, Plan& out);

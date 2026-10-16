@@ -227,6 +227,40 @@ void Game::runEvent(const std::string& id) {
     }
 }
 
+// Bulle au-dessus d'un habitant (3.3) : la page de son événement qui jouerait maintenant propose une quête (1, « ! »)
+// ou la termine (2, « ? »). Rien n'est enregistré : tout se lit dans les pages et les drapeaux.
+int Game::questMark(const std::string& id) const {
+  const Json* ev = id.empty() ? nullptr : findEvent(id);
+  if (!ev) return 0;
+  const Json* acts = nullptr;
+  if (ev->contains("pages")) {
+    for (auto& page : (*ev)["pages"])
+      if (!page.contains("si") || checkCond(page["si"])) {
+        if (page.contains("actions")) acts = &page["actions"];
+        break;
+      }
+  } else if (ev->contains("actions")) acts = &(*ev)["actions"];
+  if (!acts) return 0;
+  int mark = 0;
+  std::function<void(const Json&)> scan = [&](const Json& j) {  // aussi dans les réponses d'une question (« oui »)
+    if (j.is_array())
+      for (auto& x : j) scan(x);
+    else if (j.is_object()) {
+      std::string k = jget<std::string>(j, "action", "");
+      if (k == "si") return scan(j.contains("condition") && checkCond(j["condition"]) ? j.value("alors", Json::array()) : j.value("sinon", Json::array()));
+      if (k == "combat") return;  // ce qui suit une victoire n'est pas disponible tout de suite
+      if (k == "quete" && j.contains("id") && j["id"].is_string()) {
+        bool fin = jget(j, "fin", false);
+        if (!has(questFlag(j["id"].get<std::string>(), fin))) mark = std::max(mark, fin ? 2 : 1);
+      }
+      for (auto& [k, v] : j.items())
+        if (v.is_structured()) scan(v);
+    }
+  };
+  scan(*acts);
+  return mark;
+}
+
 void Game::runActions(const Json& list) {
   for (auto& a : list) {
     std::string k = jget<std::string>(a, "action", "");

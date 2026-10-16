@@ -17,8 +17,7 @@ G.rect(0, 0, 0, 18, 'T')
 G.rect(0, 9, W - 1, 9, '=')
 # place pavée au croisement, fontaine au milieu
 G.rect(8, 7, 17, 11, 'q')
-G.rect(12, 8, 13, 9, 'W')
-G.rect(8, 9, 17, 9, 'q')
+G.rect(12, 8, 13, 9, 'W')  # la fontaine (2x2) : la grand-route pavée passe autour
 # ruelle devant les bâtiments du nord (rangée 6) et rue du sud (rangée 16), reliées à la place
 G.rect(2, 6, 22, 6, '=')
 G.rect(1, 16, 23, 16, '=')

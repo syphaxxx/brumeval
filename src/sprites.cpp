@@ -4,6 +4,12 @@
 #include <cmath>
 
 static const Color INK = rgb(0x1a1a24);
+// Petit hasard stable tiré d'un identifiant (choix d'un sprite pour l'Expédition)
+static unsigned idHash(const std::string& s) {
+  unsigned h = 2166136261u;
+  for (unsigned char c : s) h = (h ^ c) * 16777619u;
+  return h;
+}
 static void eyes(const Xf& x, float x1, float x2, float y, float r = 2) {
   for (float e : {x1, x2}) {
     x.ell(e, y, r, r + .6f, INK);
@@ -18,15 +24,49 @@ static void eyes(const Xf& x, float x1, float x2, float y, float r = 2) {
 // réduction
 static float crisp(float k) { return k >= .8f ? std::max(1.f, std::round(k)) : k; }
 
+// Expédition (3.3) : une créature générée n'a pas de sprite à elle ; elle prend celui d'une créature de l'histoire de
+// la même forme (choisi d'après son identifiant), teinté de sa couleur. Le monde généré ne change pas (dessin seul).
+static const SpriteRect* borrowedSprite(const Species& sp, Color& tint) {
+  static const std::vector<std::vector<const char*>> BY_SHAPE = {
+      {"braisenard", "givrelin", "flammenard", "givrenard"},              // renard
+      {"slime", "slime_b", "glaconnet", "ecumet", "elem_eau"},            // goutte
+      {"ronceau", "ronceflore"},                                          // bourgeon
+      {"piafouine", "voltigeon", "zephyrin", "orageon", "orageline"},     // oiseau
+      {"mulotin", "rongecrin"},                                           // souris
+      {"lucioline", "etincelot", "lucifee", "fulgurin", "araignee"},      // insecte
+      {"grenouillon", "crapoison"},                                       // grenouille
+      {"champichou", "champignard"},                                      // champignon
+      {"elem_terre", "golem_pierre", "ferrolin"},                         // rocher
+      {"brumelin", "fumerole", "nuageon"},                                // feu follet
+      {"troll_grand", "demon", "golem_grand"},                            // boss
+      {"tisonnel", "lezard", "dragonnet", "lezard_b"},                    // lézard
+      {"golem_pierre", "golem_feu", "troll"},                             // golem
+      {"serpentin", "voltanguille", "fulgoray", "serpentox"},             // serpent
+      {"chauve_souris", "noctaile"},                                      // chauve-souris
+      {"loup", "loup_b", "loup_garou"},                                   // loup
+      {"carapierre", "carapic", "coquillon", "bastillon"},                // tortue
+      {"fantome", "fantome_b", "nebulis", "noyelin", "squelette"},        // fantôme
+      {"cristallin", "prismalin", "orbrume"},                             // cristal
+      {"golem_feu_grand"},                                                // magma
+  };
+  size_t k = (size_t)sp.shape;
+  if (k >= BY_SHAPE.size() || BY_SHAPE[k].empty()) return nullptr;
+  const auto& v = BY_SHAPE[k];
+  tint = mix(rgb(sp.c1), rgb(0xffffff), .55f);
+  return findSprite(v[idHash(sp.id) % v.size()]);
+}
+
 void drawCreature(Gfx& g, const std::string& id, float x, float y, float s, bool flip, float t) {
   const Species& sp = species(id);
   s *= sp.size;
-  if (const SpriteRect* r = sp.sprite.empty() ? nullptr : findSprite(sp.sprite)) {
+  Color tint = rgb(0xffffff);
+  const SpriteRect* own = sp.sprite.empty() ? borrowedSprite(sp, tint) : findSprite(sp.sprite);
+  if (const SpriteRect* r = own) {
     // Sprite (regard vers la gauche) : centré en x, posé sur l'ombre (y + 15)
     float k = crisp(s);
     float bob = std::round(std::sin(t * 3.1f));
     g.ellipse(x, y + 15 * s, std::max(6.f, r->w * k * .38f), 3 * s, rgb(0, 46));
-    g.sprite(*r, std::round(x - r->w * k / 2), std::round(y + 16 * s - r->h * k + bob), flip, k);
+    g.sprite(*r, std::round(x - r->w * k / 2), std::round(y + 16 * s - r->h * k + bob), flip, k, tint);
     return;
   }
   Color C = rgb(sp.c1), L = rgb(sp.c2), D = shade(C, .3f);
@@ -232,9 +272,18 @@ void drawCreature(Gfx& g, const std::string& id, float x, float y, float s, bool
 // Sprite d'un personnage : (x, y) = coin haut-gauche de sa case de 16x16 agrandie s fois. Sur la carte (s < 1,5) :
 // <sprite>_<direction>_<image> (gauche = droite retournée et inversement ; direction absente : de face) ; en plus
 // grand (combat, menus) : <sprite>_combat, tourné vers la gauche.
-static bool humanSprite(Gfx& g, const Look& lk, float x, float y, float s, int dir, int step) {
-  if (lk.sprite.empty()) return false;
-  const std::string& p = lk.sprite;
+static bool humanSprite(Gfx& g, const Look& lk, float x, float y, float s, int dir, int step, bool run) {
+  // Expédition (3.3) : un personnage généré (lk_…) prend le dessin d'un personnage de la planche selon son arme
+  static const char* BY_WEAPON[] = {"homme", "aventuriere", "mage", "soldat", "aventuriere", "archere", "soldat"};
+  std::string borrowed;
+  Color tint = rgb(0xffffff);
+  if (lk.sprite.empty() && lk.id.rfind("lk_", 0) == 0) {
+    borrowed = BY_WEAPON[std::clamp(lk.weapon, 0, 6)];
+    if (lk.weapon == 0 && idHash(lk.id) % 2) borrowed = "femme";
+    tint = mix(rgb(lk.top), rgb(0xffffff), .5f);
+  }
+  if (lk.sprite.empty() && borrowed.empty()) return false;
+  const std::string& p = lk.sprite.empty() ? borrowed : lk.sprite;
   if (s >= 1.5f) {
     const SpriteRect* r = findSprite(p + "_combat");
     float k = std::max(1.f, std::round(s / 2));
@@ -245,7 +294,7 @@ static bool humanSprite(Gfx& g, const Look& lk, float x, float y, float s, int d
     if (!r) return false;
     float cx = x + 8 * s, bottom = y + 16 * s;
     g.ellipse(cx, bottom - 1, r->w * k * .36f, 2 * k, rgb(0, 50));
-    g.sprite(*r, std::round(cx - r->w * k / 2), std::round(bottom - r->h * k), dir == 3, k);
+    g.sprite(*r, std::round(cx - r->w * k / 2), std::round(bottom - r->h * k), dir == 3, k, tint);
     return true;
   }
   static const char* NAMES[] = {"haut", "bas", "gauche", "droite"};
@@ -257,7 +306,12 @@ static bool humanSprite(Gfx& g, const Look& lk, float x, float y, float s, int d
     return r ? r : findSprite(p + "_" + d + "_0");
   };
   bool flip = false;
-  const SpriteRect* r = frame(NAMES[dir & 3]);
+  const SpriteRect* r = nullptr;
+  if (run && (dir == 2 || dir == 3) && step) {  // course de profil : <sprite>_course_k (regard vers la gauche)
+    r = findSprite(p + "_course_" + std::to_string(SDL_GetTicks() / 70 % 4));  // quatre images, vite
+    flip = dir == 3;
+  }
+  if (!r) r = frame(NAMES[dir & 3]);
   if (!r && (dir == 2 || dir == 3)) {
     r = frame(NAMES[dir == 2 ? 3 : 2]);
     flip = r != nullptr;
@@ -266,12 +320,12 @@ static bool humanSprite(Gfx& g, const Look& lk, float x, float y, float s, int d
   if (!r && (r = findSprite(p))) flip = dir == 3;  // animal : un seul sprite, tourné vers la gauche
   if (!r) return false;
   g.ellipse(x + 8 * s, y + 15 * s, 6 * s, 2 * s, rgb(0, 50));
-  g.sprite(*r, std::round(x + (16 * s - r->w * s) / 2), std::round(y + 16 * s - r->h * s), flip, s);
+  g.sprite(*r, std::round(x + (16 * s - r->w * s) / 2), std::round(y + 16 * s - r->h * s), flip, s, tint);
   return true;
 }
 
-void drawHuman(Gfx& g, const Look& lk, float x, float y, float s, int dir, int step, bool weapon) {
-  if (humanSprite(g, lk, x, y, s, dir, step)) return;
+void drawHuman(Gfx& g, const Look& lk, float x, float y, float s, int dir, int step, bool weapon, bool run) {
+  if (humanSprite(g, lk, x, y, s, dir, step, run)) return;
   bool flip = dir == 3;
   int pose = flip ? 2 : dir;
   Xf X{g, flip ? x + 16 * s : x, y, s, flip};
@@ -349,6 +403,52 @@ void drawHuman(Gfx& g, const Look& lk, float x, float y, float s, int dir, int s
   }
 }
 
+bool drawFighterIcon(Gfx& g, const Fighter& f, float cx, float cy, float w, float h, bool faceRight) {
+  const Species& sp = f.S();
+  Color tint = rgb(0xffffff);
+  if (sp.human) {
+    const Look& lk = look(sp.look);
+    std::string p = lk.sprite;
+    if (p.empty() && lk.id.rfind("lk_", 0) == 0) {  // Expédition : comme humanSprite
+      static const char* BY_WEAPON[] = {"homme", "aventuriere", "mage", "soldat", "aventuriere", "archere", "soldat"};
+      p = BY_WEAPON[std::clamp(lk.weapon, 0, 6)];
+      tint = mix(rgb(lk.top), rgb(0xffffff), .5f);
+    }
+    const SpriteRect* r = p.empty() ? nullptr : findSprite(p + "_bas_0");
+    if (!r) return false;
+    int hh = std::min(r->h, 15);  // tête et épaules : le haut du sprite de la carte, réduit pour tenir
+    float k = std::min(1.f, h / hh);
+    g.sprite(r->sub(0, 0, r->w, hh), std::round(cx - r->w * k / 2), std::round(cy - hh * k / 2), faceRight, k, tint);
+    return true;
+  }
+  const SpriteRect* r = sp.sprite.empty() ? borrowedSprite(sp, tint) : findSprite(sp.sprite);
+  if (!r) return false;
+  float k = std::min({1.f, h / r->h, w / r->w});
+  g.sprite(*r, std::round(cx - r->w * k / 2), std::round(cy - r->h * k / 2), faceRight, k, tint);
+  return true;
+}
+
+bool drawFighterPose(Gfx& g, const Fighter& f, const std::string& pose, float x, float y, bool faceRight) {
+  const Species& sp = f.S();
+  if (!sp.human) return false;
+  const Look& lk = look(sp.look);
+  const SpriteRect* r = lk.sprite.empty() ? nullptr : findSprite(lk.sprite + "_" + pose);
+  if (!r) return false;
+  g.ellipse(x, y + 11, r->w * .36f, 2, rgb(0, 50));
+  g.sprite(*r, std::round(x - r->w / 2.f), std::round(y + 12 - r->h), faceRight);  // regard vers la gauche dans l'atlas
+  return true;
+}
+
+float creatureFit(const std::string& id, float maxH, float maxW) {
+  const Species& sp = species(id);
+  Color tint;
+  const SpriteRect* r = sp.sprite.empty() ? borrowedSprite(sp, tint) : findSprite(sp.sprite);
+  if (!r) return 1.2f;  // dessin en code : comme avant
+  float h = r->h * sp.size, k = h * 2 <= maxH ? 2.f / sp.size : std::min(1.f, maxH / h) / sp.size;
+  if (maxW > 0 && r->w * sp.size * k > maxW) k = maxW / (r->w * sp.size);  // et pas plus large que la place
+  return k;
+}
+
 float fighterTop(const Fighter& f, float s) {
   const Species& sp = f.S();
   if (sp.human) {
@@ -356,7 +456,8 @@ float fighterTop(const Fighter& f, float s) {
     if (const SpriteRect* r = lk.sprite.empty() ? nullptr : findSprite(lk.sprite + "_combat")) return r->h * std::max(1.f, std::round(s)) - 12 * s;
     return 22 * s;
   }
-  if (const SpriteRect* r = sp.sprite.empty() ? nullptr : findSprite(sp.sprite)) return r->h * crisp(s * sp.size) - 16 * s;
+  Color tint;
+  if (const SpriteRect* r = sp.sprite.empty() ? borrowedSprite(sp, tint) : findSprite(sp.sprite)) return r->h * crisp(s * sp.size) - 16 * s;
   return 18 * s * sp.size;
 }
 
@@ -380,15 +481,15 @@ void drawFighterSprite(Gfx& g, const Fighter& f, float x, float y, float s, bool
 static int hsh(int x, int y) { return int((unsigned(x) * 73856093u ^ unsigned(y) * 19349663u) & 0x7fffffffu); }
 
 // Texture de 32x32 de l'atlas (tex_…) : chaque case en prend un quart selon sa position (moins de répétition)
-static bool texTile(Gfx& g, const char* id, int x, int y, int sx, int sy) {
+static bool texTile(Gfx& g, const char* id, int x, int y, int sx, int sy, Color tint = {255, 255, 255, 255}) {
   const SpriteRect* r = findSprite(id);
   if (!r) return false;
-  g.sprite(SpriteRect{r->x + (x & 1) * 16, r->y + (y & 1) * 16, 16, 16}, sx, sy);
+  if (r->w >= 32) g.sprite(r->sub((x & 1) * 16, (y & 1) * 16, 16, 16), sx, sy, false, 1, tint);  // 32x32 : un quart par case
+  else g.sprite(*r, sx, sy, false, 1, tint);
   return true;
 }
 
 static void ground(Gfx& g, Theme th, int sx, int sy, int h, int x, int y) {
-  if (th == Theme::Interieur && texTile(g, "tex_bois", x, y, sx, sy)) return;  // parquet
   if (th == Theme::Vallee) {
     g.rect(sx, sy, 16, 16, rgb(0x67b35d));
     g.rect(sx + h % 13, sy + (h >> 4) % 13, 2, 1, rgb(0x57a04f));
@@ -408,9 +509,27 @@ static void ground(Gfx& g, Theme th, int sx, int sy, int h, int x, int y) {
     g.rect(sx + (h >> 8) % 12 + 2, sy + (h >> 12) % 12 + 2, 1, 2, rgb(0x34693a));
     if (h % 7 == 0) g.rect(sx + (h >> 3) % 12 + 2, sy + (h >> 7) % 12 + 2, 2, 1, rgb(0x8a6a3a));  // feuille morte
   } else if (th == Theme::Neige) {
+    // Neige (3.3) : des rides de vent, des congères avec leur ombre, des brins secs qui dépassent et des cristaux
     g.rect(sx, sy, 16, 16, rgb(0xe8eef6));
     g.rect(sx + h % 13, sy + (h >> 4) % 13, 2, 1, rgb(0xcdd8e8));
     g.rect(sx + (h >> 8) % 12 + 2, sy + (h >> 12) % 12 + 2, 1, 1, rgb(0xffffff));
+    int k = (h >> 5) % 13;
+    if (k < 3) {  // rides de vent : deux petites vagues
+      int rx = sx + 2 + (h >> 9) % 7, ry = sy + 4 + (h >> 13) % 8;
+      g.rect(rx, ry, 4, 1, rgb(0xd2dcea)), g.rect(rx + 4, ry - 1, 3, 1, rgb(0xd2dcea));
+      g.rect(rx + 2, ry + 3, 3, 1, rgb(0xd8e1ee)), g.rect(rx + 5, ry + 2, 2, 1, rgb(0xd8e1ee));
+    } else if (k == 3) {  // congère : une bosse blanche et son ombre bleutée
+      float cx = sx + 5 + (h >> 9) % 6, cy = sy + 8 + (h >> 12) % 4;
+      g.ellipse(cx + 1, cy + 2, 5, 2.5f, rgb(0xbccbe0));
+      g.ellipse(cx, cy, 5, 2.5f, rgb(0xf8fbff));
+    } else if (k == 4) {  // brins secs
+      int bx = sx + 4 + (h >> 9) % 8, by = sy + 6 + (h >> 12) % 6;
+      g.rect(bx, by, 1, 3, rgb(0x7a7660)), g.rect(bx + 2, by + 1, 1, 2, rgb(0x8a8468)), g.rect(bx - 1, by + 1, 1, 2, rgb(0x6a6650));
+      g.rect(bx - 2, by + 3, 6, 1, rgb(0xd0dae8));
+    } else if (k == 5) {  // cristal qui brille
+      int gx = sx + 3 + (h >> 9) % 10, gy = sy + 3 + (h >> 12) % 10;
+      g.rect(gx, gy, 1, 1, rgb(0xffffff)), g.rect(gx - 1, gy, 3, 1, rgb(0xc4e4ff, 170)), g.rect(gx, gy - 1, 1, 3, rgb(0xc4e4ff, 170));
+    }
   } else if (th == Theme::Interieur) {  // parquet : quatre lames par case, joints décalés
     g.rect(sx, sy, 16, 16, rgb(0xb07a48));
     for (int i = 0; i < 4; i++) {
@@ -419,10 +538,32 @@ static void ground(Gfx& g, Theme th, int sx, int sy, int h, int x, int y) {
     }
     g.rect(sx + h % 12 + 2, sy + 1 + (h >> 5) % 2 * 8, 2, 1, rgb(0xc48c58));
   } else {
+    if (texTile(g, (h >> 3) % 3 ? "sol_3_5" : "sol_2_5", x, y, sx, sy, rgb(0x8a84a0))) return;  // grotte (3.3) : dalles sombres
     g.rect(sx, sy, 16, 16, rgb(0x4a4252));
     g.rect(sx + h % 13, sy + (h >> 4) % 13, 2, 1, rgb(0x3f3847));
     g.rect(sx + (h >> 8) % 12 + 2, sy + (h >> 12) % 12 + 2, 1, 1, rgb(0x5a5164));
   }
+}
+
+// Hautes herbes (3.3) : deux touffes de la planche par case, qui ondulent un peu. front : seulement le bas des touffes,
+// redessiné par-dessus celui qui marche dedans (ses pieds disparaissent dans l'herbe)
+bool tallGrass(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t, bool front) {
+  char c = m.rows[y][x];
+  if (c != ',' && c != 'g') return false;
+  const char* kind = c == 'g' ? "grande_herbe_seche_" : m.theme == Theme::Foret ? "grande_herbe_sombre_" : "grande_herbe_";
+  int h = hsh(x, y);
+  for (int i = 0; i < 2; i++) {
+    const SpriteRect* r = findSprite(std::string(kind) + std::to_string(1 + ((h >> i) & 1)));
+    if (!r) return false;
+    int sway = (int)std::lround(std::sin(t * 2.2f + x * .7f + y * .3f + i * 1.7f) * .6f);
+    int px = sx - 2 + i * 8 + sway, py = sy + 16 - r->h + i;
+    if (!front) g.sprite(*r, px, py, (h >> (i + 4)) & 1);
+    else {
+      int cut = 6;  // le bas de la touffe
+      g.sprite(r->sub(0, r->h - cut, r->w, cut), px, py + r->h - cut, false);
+    }
+  }
+  return true;
 }
 
 // Sprite de l'objet haut d'une case (nullptr : aucun, ou dessin en code)
@@ -442,6 +583,16 @@ static const SpriteRect* propSprite(const MapDef& m, int x, int y) {
     }
     case 'R': id = th == Theme::Grotte ? nullptr : (h >> 2) % 3 == 0 ? "rochers" : (h >> 2) % 3 == 1 ? "pierres_moussues" : "rocher"; break;
     case 'v': id = (h >> 2) % 2 ? "tonneau" : "tonneau_2"; break;
+    // Meubles des intérieurs (3.3) : une bibliothèque pour deux cases d'étagère, des tables et des chaises
+    case 'e': {
+      int run = 0;  // place dans la rangée d'étagères
+      while (x - run - 1 >= 0 && m.rows[y][x - run - 1] == 'e') run++;
+      id = run % 2 == 0 ? "bibliotheque" : nullptr;
+      if (!id) return nullptr;
+      break;
+    }
+    case 't': id = "banc"; break;
+    case 'j': id = "chaise"; break;
     case 'L': id = th == Theme::Vallee ? "reverbere" : "lampadaire"; break;
     case 'Y': id = "puits"; break;
     case 'C': id = (h >> 2) % 3 == 0 ? "caisse" : (h >> 2) % 3 == 1 ? "caisse_2" : "sac"; break;
@@ -460,27 +611,68 @@ static const SpriteRect* propSprite(const MapDef& m, int x, int y) {
   return id ? findSprite(id) : nullptr;
 }
 bool hasProp(const MapDef& m, int x, int y) { return propSprite(m, x, y) != nullptr; }
+void drawPropIcon(Gfx& g, const MapDef& m, int x, int y, int sx, int sy) {
+  const SpriteRect* r = propSprite(m, x, y);
+  if (!r) return;
+  float k = std::min(1.f, 16.f / std::max(r->w, r->h));
+  g.sprite(*r, std::round(sx + 8 - r->w * k / 2), std::round(sy + 16 - r->h * k), false, k);
+}
 void drawProp(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
   const SpriteRect* r = propSprite(m, x, y);
   if (!r) return;
   int h = hsh(x, y);
   char c = m.rows[y][x];
   int jx = c == 'T' ? (h >> 7) % 5 - 2 : 0;  // arbres un peu décalés : une forêt moins alignée
+  if (c == 'e' && x + 1 < m.w() && m.rows[y][x + 1] == 'e') jx = 8;  // bibliothèque à cheval sur deux étagères
+  if (c == 'j') jx = x > 0 && m.rows[y][x - 1] == 't' ? -2 : 2;  // la chaise contre sa table
   if (c != 'C' && c != 'U') g.ellipse(sx + 8 + jx, sy + 14, std::min(8.f, r->w * .4f), 2.5f, rgb(0, 45));
-  g.sprite(*r, sx + 8 + jx - r->w / 2, sy + 16 - r->h + (c == 'T' ? 1 : 0), c == 'T' && (h >> 11) % 2);
+  bool flip = (c == 'T' && (h >> 11) % 2) || (c == 'j' && x > 0 && m.rows[y][x - 1] == 't');  // chaise tournée vers la table
+  g.sprite(*r, sx + 8 + jx - r->w / 2, sy + 16 - r->h + (c == 'T' ? 1 : 0), flip);
 }
 
+// Fenêtre d'un mur d'intérieur (3.3) : la face d'un mur sur deux ou trois, sauf là où pend un cadre
+static bool interiorWindow(int x, int y) { return (x * 7 + y) % 9 != 0 && (x * 5 + y * 3) % 4 == 1; }
+
+static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t);
 void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
+  drawTileBase(g, m, x, y, sx, sy, t);
+  if (m.theme != Theme::Interieur || m.rows[y][x] == '#' || m.rows[y][x] == ' ') return;
+  // Intérieurs (3.3) : l'ombre des murs sur le sol, et la lumière qui tombe d'une fenêtre
+  auto wall = [&](int xx, int yy) { return xx < 0 || yy < 0 || xx >= m.w() || yy >= m.h() || m.rows[yy][xx] == '#'; };
+  if (wall(x, y - 1)) {
+    if (interiorWindow(x, y - 1))
+      g.poly({{sx + 4.f, sy + 0.f}, {sx + 12.f, sy + 0.f}, {sx + 15.f, sy + 14.f}, {sx + 3.f, sy + 14.f}}, rgb(0xfff2c0, 34));
+    g.rect(sx, sy, 16, 3, rgb(0x1a0e06, 70)), g.rect(sx, sy + 3, 16, 2, rgb(0x1a0e06, 30));
+  }
+  if (wall(x - 1, y)) g.rect(sx, sy, 3, 16, rgb(0x1a0e06, 55));
+  if (wall(x + 1, y)) g.rect(sx + 14, sy, 2, 16, rgb(0x1a0e06, 40));
+}
+
+static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
   char c = m.rows[y][x];
   int h = hsh(x, y);
   Theme th = m.theme;
-  if (propSprite(m, x, y)) {  // l'objet est dessiné avec les personnages (drawProp) : ici le sol seul
-    ground(g, th, sx, sy, h, x, y);
+  if (propSprite(m, x, y) || (c == 'e' && x > 0 && m.rows[y][x - 1] == 'e' && findSprite("bibliotheque"))) {
+    // l'objet est dessiné avec les personnages (drawProp) : ici le sol seul, pavé s'il est posé sur une place
+    auto at2 = [&](int xx, int yy) { return (xx < 0 || yy < 0 || xx >= m.w() || yy >= m.h()) ? ' ' : m.rows[yy][xx]; };
+    int paved = (at2(x - 1, y) == 'q') + (at2(x + 1, y) == 'q') + (at2(x, y - 1) == 'q') + (at2(x, y + 1) == 'q');
+    if (!(paved >= 2 && g.sprite(th == Theme::Neige ? "sol_1_3" : th == Theme::Cendres ? "sol_0_5" : "sol_0_3", sx, sy))) ground(g, th, sx, sy, h, x, y);
     return;
   }
   auto at = [&](int xx, int yy) { return (xx < 0 || yy < 0 || xx >= m.w() || yy >= m.h()) ? ' ' : m.rows[yy][xx]; };
   switch (c) {
-    case '.': ground(g, th, sx, sy, h, x, y); break;
+    case '.': {
+      ground(g, th, sx, sy, h, x, y);
+      // Petits détails du sol (3.3, non bloquants) : touffes et fleurettes dans l'herbe, cailloux sur la cendre
+      int d = (h >> 6) % 29;
+      const char* deco = nullptr;
+      if (th == Theme::Vallee) deco = d < 3 ? "touffe_1" : d < 5 ? "touffe_3" : d == 5 ? "fleurette_1" : d == 6 ? "fleurette_3" : nullptr;
+      else if (th == Theme::Foret) deco = d < 3 ? "touffe_2" : d < 5 ? "touffe_4" : d == 5 ? "fleurette_2" : nullptr;
+      else if (th == Theme::Cendres) deco = d < 2 ? "caillou" : d == 2 ? "cailloux" : nullptr;
+      if (const SpriteRect* r = deco ? findSprite(deco) : nullptr)
+        g.sprite(*r, sx + 2 + (h >> 11) % (15 - std::min(13, r->w)), sy + 15 - r->h - (h >> 15) % 4, (h >> 13) % 2);
+      break;
+    }
     case 'q': {  // pavés (places et rues des villes)
       if (!g.sprite(th == Theme::Neige ? "sol_1_3" : th == Theme::Cendres ? "sol_0_5" : "sol_0_3", sx, sy)) {
         g.rect(sx, sy, 16, 16, rgb(0xa8a49c));
@@ -516,6 +708,11 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
     case ',':
     case 'g': {
       bool dry = c == 'g', dark = th == Theme::Foret;
+      if (findSprite("grande_herbe_1")) {  // le sol du lieu, puis les touffes
+        ground(g, th, sx, sy, h, x, y);
+        tallGrass(g, m, x, y, sx, sy, t, false);
+        break;
+      }
       g.rect(sx, sy, 16, 16, rgb(dry ? 0x7a6a50 : dark ? 0x2f6236 : 0x4a9446));
       for (int i = 0; i < 5; i++) {
         int bx = sx + 1 + i * 3 + ((h >> i) & 1);
@@ -581,17 +778,47 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
       break;
     case '~':
     case 'B': {
-      g.rect(sx, sy, 16, 16, rgb(0x3b7fc4));
-      int o = int(t * 4 + x + y) % 10;
-      g.rect(sx + o, sy + 4, 4, 1, rgb(0x6aa8e0));
-      g.rect(sx + (o + 5) % 12, sy + 11, 4, 1, rgb(0x6aa8e0));
-      if (c == '~') {  // écume le long des berges, qui ondule doucement
+      g.rect(sx, sy, 16, 16, rgb(0x3576bd));
+      if (c == '~') {
+        // Eau (3.3) : plus claire près des berges (peu profonde), ombre de la berge en haut, écume en tirets qui
+        // ondule, vaguelettes qui dérivent et reflets qui scintillent
         auto water = [&](char n) { return n == '~' || n == 'B' || n == ' '; };
-        uint8_t a = uint8_t(150 + 60 * std::sin(t * 2 + x * .8f + y * .6f));
-        if (!water(at(x, y - 1))) g.rect(sx, sy, 16, 2, rgb(0xd8efff, a));
-        if (!water(at(x, y + 1))) g.rect(sx, sy + 14, 16, 2, rgb(0xd8efff, a));
-        if (!water(at(x - 1, y))) g.rect(sx, sy, 2, 16, rgb(0xd8efff, a));
-        if (!water(at(x + 1, y))) g.rect(sx + 14, sy, 2, 16, rgb(0xd8efff, a));
+        bool up = !water(at(x, y - 1)), dn = !water(at(x, y + 1)), lf = !water(at(x - 1, y)), rt = !water(at(x + 1, y));
+        Color sh = rgb(0x6fb2e6, 120), sh2 = rgb(0x6fb2e6, 60);
+        if (up) g.rect(sx, sy, 16, 4, sh), g.rect(sx, sy + 4, 16, 2, sh2);
+        if (dn) g.rect(sx, sy + 12, 16, 4, sh), g.rect(sx, sy + 10, 16, 2, sh2);
+        if (lf) g.rect(sx, sy, 4, 16, sh), g.rect(sx + 4, sy, 2, 16, sh2);
+        if (rt) g.rect(sx + 12, sy, 4, 16, sh), g.rect(sx + 10, sy, 2, 16, sh2);
+        // coins : une berge en diagonale seulement
+        if (!up && !lf && !water(at(x - 1, y - 1))) g.rect(sx, sy, 4, 4, sh);
+        if (!up && !rt && !water(at(x + 1, y - 1))) g.rect(sx + 12, sy, 4, 4, sh);
+        if (!dn && !lf && !water(at(x - 1, y + 1))) g.rect(sx, sy + 12, 4, 4, sh);
+        if (!dn && !rt && !water(at(x + 1, y + 1))) g.rect(sx + 12, sy + 12, 4, 4, sh);
+        if (up) g.rect(sx, sy, 16, 1, rgb(0x1d4a7a, 170));  // la berge du haut fait de l'ombre
+        // vaguelettes : deux petits arcs par case, qui dérivent lentement
+        for (int k = 0; k < 2; k++) {
+          int wy = 4 + k * 6 + int(h >> (4 + k * 3)) % 3;
+          int wx = int(t * 3 + (h >> (k * 5)) % 16 + k * 7) % 14;
+          if (wx > 11) continue;  // l'arc passe dans la case voisine : il réapparaît de l'autre côté
+          g.rect(sx + wx + 1, sy + wy, 3, 1, rgb(0x8cc4ee, 190));
+          g.rect(sx + wx, sy + wy + 1, 1, 1, rgb(0x8cc4ee, 120)), g.rect(sx + wx + 4, sy + wy + 1, 1, 1, rgb(0x8cc4ee, 120));
+        }
+        // reflet qui scintille de temps en temps
+        if (std::sin(t * 1.7f + h % 97) > .93f) {
+          int gx = sx + 3 + (h >> 7) % 10, gy = sy + 3 + (h >> 11) % 10;
+          g.rect(gx, gy, 1, 1, rgb(0xffffff)), g.rect(gx - 1, gy, 3, 1, rgb(0xe8f6ff, 150)), g.rect(gx, gy - 1, 1, 3, rgb(0xe8f6ff, 150));
+        }
+        // écume en tirets le long des berges, qui avance doucement
+        int ph = int(t * 2 + x * 3 + y * 5);
+        uint8_t a = uint8_t(160 + 60 * std::sin(t * 2 + x * .8f + y * .6f));
+        for (int i = 0; i < 16; i += 2) {
+          bool on = (i / 2 + ph) % 4 != 0;
+          if (!on) continue;
+          if (up) g.rect(sx + i, sy + 1, 2, 1, rgb(0xe4f4ff, a));
+          if (dn) g.rect(sx + i, sy + 14, 2, 1, rgb(0xe4f4ff, a));
+          if (lf) g.rect(sx + 1, sy + i, 1, 2, rgb(0xe4f4ff, a));
+          if (rt) g.rect(sx + 14, sy + i, 1, 2, rgb(0xe4f4ff, a));
+        }
       }
       if (c == 'B') {
         bool horiz = at(x - 1, y) == '=' || at(x + 1, y) == '=' || at(x - 1, y) == 'B' || at(x + 1, y) == 'B';
@@ -611,10 +838,27 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
       break;
     }
     case '=':
-      if (th == Theme::Neige) {
-        g.rect(sx, sy, 16, 16, rgb(0xc4cedc));
-        g.rect(sx + h % 14, sy + (h >> 5) % 14, 2, 1, rgb(0xaab6c8));
-        g.rect(sx + (h >> 9) % 14, sy + (h >> 13) % 14, 1, 1, rgb(0xdfe6f0));
+      if (th == Theme::Neige) {  // neige tassée (3.3) : des traces de pas, des bords adoucis contre la neige fraîche
+        g.rect(sx, sy, 16, 16, rgb(0xd0d9e6));
+        g.rect(sx + h % 14, sy + (h >> 5) % 14, 2, 1, rgb(0xb8c4d6));
+        g.rect(sx + (h >> 9) % 14, sy + (h >> 13) % 14, 1, 1, rgb(0xe4eaf3));
+        bool horiz = at(x - 1, y) == '=' || at(x + 1, y) == '=';
+        for (int i = 0; i < 2; i++) {  // deux empreintes décalées dans le sens du chemin
+          int a = 3 + i * 7 + (h >> (3 + i)) % 2, b = i ? 9 : 5;
+          if (horiz) g.rect(sx + a, sy + b, 2, 1, rgb(0xb4c0d2)), g.rect(sx + a, sy + b + 1, 2, 1, rgb(0xc4cedd));
+          else g.rect(sx + b, sy + a, 1, 2, rgb(0xb4c0d2)), g.rect(sx + b + 1, sy + a, 1, 2, rgb(0xc4cedd));
+        }
+        auto soft = [&](char n) { return n == '.' || n == ',' || n == 'T' || n == 'F'; };
+        bool up = soft(at(x, y - 1)), dn = soft(at(x, y + 1)), lf = soft(at(x - 1, y)), rt = soft(at(x + 1, y));
+        Color snow = rgb(0xeaf0f8);
+        for (int i = 0; i < 3; i++) {  // la neige fraîche déborde un peu sur le chemin
+          int k = 1 + ((h >> (i * 4)) % 13), d = 1 + (h >> (i * 3 + 7)) % 2;
+          if (up) g.rect(sx + k, sy, 3, d, snow);
+          if (dn) g.rect(sx + k, sy + 16 - d, 3, d, snow);
+          if (lf) g.rect(sx, sy + k, d, 3, snow);
+          if (rt) g.rect(sx + 16 - d, sy + k, d, 3, snow);
+        }
+        if (up) g.rect(sx, sy + 1, 16, 1, rgb(0xbac6d8, 140));  // petite ombre sous le bord de neige
       } else if (th == Theme::Vallee || th == Theme::Foret) {
         g.rect(sx, sy, 16, 16, rgb(0xd9c08a));
         g.rect(sx + h % 14, sy + (h >> 5) % 14, 2, 1, rgb(0xc4a873));
@@ -664,14 +908,25 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
     case 'W': {
       bool paved = at(x - 1, y) == 'q' || at(x + 1, y) == 'q' || at(x, y - 1) == 'q' || at(x, y + 1) == 'q';
       if (!(paved && g.sprite("sol_0_3", sx, sy))) g.rect(sx, sy, 16, 16, rgb(0xd9c08a));  // sur une place : les pavés autour
-      int l = at(x - 1, y) == 'W' ? 0 : 2, r = at(x + 1, y) == 'W' ? 16 : 14;
-      int tp = at(x, y - 1) == 'W' ? 0 : 2, bt = at(x, y + 1) == 'W' ? 16 : 14;
-      g.rect(sx + l, sy + tp, r - l, bt - tp, rgb(0xa8a8b4));
-      g.rect(sx + l + (l ? 2 : 0), sy + tp + (tp ? 2 : 0), r - l - (l ? 2 : 0) - (r < 16 ? 2 : 0),
-             bt - tp - (tp ? 2 : 0) - (bt < 16 ? 2 : 0), rgb(0x5ea0dc));
-      if (l == 0 && tp == 0) {
-        g.rect(sx - 1, sy - 6 + std::sin(t * 6) * 1, 2, 7, rgb(0xcfeaff, 200));
-        g.rect(sx - 3, sy - 2, 6, 1, rgb(0xcfeaff, 160));
+      // la fontaine est dessinée une fois, depuis son coin bas-droit (les autres cases du bloc sont déjà dessinées)
+      if (at(x + 1, y) == 'W' || at(x, y + 1) == 'W') break;
+      int bw = 16, bh = 16;  // taille du bloc de fontaine (1x1 ou 2x2…)
+      while (at(x - bw / 16, y) == 'W') bw += 16;
+      while (at(x, y - bh / 16) == 'W') bh += 16;
+      float ox0 = sx + 16 - bw, oy0 = sy + 16 - bh;
+      float cx = ox0 + bw / 2.f, cy = oy0 + bh / 2.f + 1, rx = bw / 2.f - 1, ry = bh / 2.f - 2;
+      g.ellipse(cx, cy + 2, rx, ry, rgb(0x000000, 50));                 // ombre
+      g.ellipse(cx, cy, rx, ry, rgb(0x8a8a96));                          // margelle de pierre
+      g.ellipse(cx, cy - 1, rx - 1, ry - 1, rgb(0xb4b4c0));
+      g.ellipse(cx, cy, rx - 3, ry - 3, rgb(0x3f7fc0));                  // l'eau
+      g.ellipse(cx - 2, cy - 1, rx - 6, ry - 5, rgb(0x5ea0dc));
+      float ring = std::fmod(t * .8f, 1.f);                              // ronds dans l'eau
+      g.ellipse(cx, cy, 3 + ring * (rx - 6), 1.5f + ring * (ry - 5), rgb(0xcfeaff, uint8_t(120 * (1 - ring))));
+      g.rect(cx - 2, cy - 6, 4, 6, rgb(0x9a9aa6));                       // colonne centrale
+      g.rect(cx - 1, cy - 12 + std::sin(t * 6), 2, 7, rgb(0xcfeaff, 210));  // le jet
+      for (int i = 0; i < 4; i++) {                                      // gouttes qui retombent
+        float k = std::fmod(t * 1.6f + i * .25f, 1.f), dx = (i % 2 ? 1 : -1) * (2 + k * 6);
+        g.rect(cx + dx, cy - 11 + k * k * 12, 1, 1, rgb(0xe6f6ff, uint8_t(220 * (1 - k))));
       }
       break;
     }
@@ -689,8 +944,18 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
             g.rect(sx + 4, sy + 2, 8, 7, rgb(0x7a5230));
             g.rect(sx + 5, sy + 3, 6, 5, rgb(0x7fb0d8));
             g.rect(sx + 5, sy + 6, 6, 2, rgb(0x5f9a52));
+          } else if (interiorWindow(x, y)) {  // une fenêtre (3.3) : ciel, croisillon, rebord ; la lumière tombe au sol
+            g.rect(sx + 3, sy + 1, 10, 10, rgb(0x6b4a2f));
+            g.gradV(sx + 4, sy + 2, 8, 8, rgb(0xbfe4ff), rgb(0x86c0ea));
+            g.rect(sx + 7, sy + 2, 2, 8, rgb(0x6b4a2f)), g.rect(sx + 4, sy + 5, 8, 1, rgb(0x6b4a2f));
+            g.rect(sx + 5, sy + 3, 1, 2, rgb(0xffffff, 200));  // reflet
+            g.rect(sx + 2, sy + 10, 12, 1, rgb(0xa8743f));      // rebord
           }
         }
+      } else if (th == Theme::Neige && texTile(g, "tex_pierre", x, y, sx, sy, rgb(0xb4cdec))) {  // (3.3) pierre glacée
+        if (at(x, y - 1) != '#') g.rect(sx, sy, 16, 3, rgb(0xf2f6fb));  // neige sur le haut du mur
+      } else if (th == Theme::Grotte && texTile(g, "tex_pierre", x, y, sx, sy, rgb(0x46405a))) {  // (3.3) roche sombre
+        if (at(x, y + 1) != '#' && at(x, y + 1) != ' ') g.rect(sx, sy + 14, 16, 2, rgb(0x16121c, 160));  // pied du mur dans l'ombre
       } else if (th == Theme::Neige) {
         g.rect(sx, sy, 16, 16, rgb(0x7fa8c8));
         g.rect(sx, sy + 5, 16, 1, rgb(0x6a92b4));
@@ -702,6 +967,8 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
         g.rect(sx, sy, 16, 16, rgb(0x241e2e));
         g.ellipse(sx + 4 + h % 8, sy + 4 + (h >> 4) % 8, 4, 3, rgb(0x322a3e));
         g.rect(sx + (h >> 8) % 14, sy + (h >> 12) % 14, 2, 2, rgb(0x1a1522));
+      } else if (texTile(g, "tex_pierre", x, y, sx, sy, th == Theme::Cendres ? rgb(0x8a7a70) : rgb(0xc0aa8c))) {  // (3.3) falaise
+        if (at(x, y - 1) != '#' && th != Theme::Cendres) g.rect(sx, sy, 16, 2, rgb(0x5f9a52));  // l'herbe du dessus
       } else {
         g.rect(sx, sy, 16, 16, rgb(0x8a7a66));
         g.rect(sx, sy + 5, 16, 1, rgb(0x6e604f));
@@ -730,6 +997,13 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
     }
     case 'm':
       ground(g, th, sx, sy, h, x, y);
+      if (const SpriteRect* a = findSprite((h >> 3) % 2 ? "rochers" : "pierres_moussues")) {  // éboulis de rochers (3.3)
+        const SpriteRect* b = findSprite((h >> 5) % 2 ? "rocher" : "rochers");
+        Color tint = th == Theme::Neige ? rgb(0xdce6f2) : th == Theme::Cendres ? rgb(0xb8aaa0) : rgb(0xffffff);
+        g.sprite(*a, sx + 8 - a->w / 2 + (h >> 7) % 3 - 1, sy + 9 - a->h, (h >> 9) & 1, 1, tint);
+        if (b) g.sprite(*b, sx + 8 - b->w / 2 + (h >> 11) % 5 - 2, sy + 16 - b->h, (h >> 13) & 1, 1, tint);
+        break;
+      }
       g.tri(sx - 1, sy + 16, sx + 8, sy - 1, sx + 17, sy + 16, rgb(0x5a4a44));
       g.tri(sx + 8, sy - 1, sx + 17, sy + 16, sx + 10, sy + 16, rgb(0x4a3c37));
       g.tri(sx + 5, sy + 5, sx + 8, sy - 1, sx + 10, sy + 4, rgb(0x8a7a72));
@@ -740,7 +1014,18 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
       g.ellipse(sx + 8, sy + 13, 5, 7, rgb(0x120e18));
       g.rect(sx + 3, sy + 13, 10, 3, rgb(0x120e18));
       break;
-    case 'c': ground(g, th, sx, sy, h, x, y); break;
+    case 'c':
+      if (th == Theme::Neige) {  // dalles de glace (3.3, Temple) : joints, reflet en biais, fêlures
+        g.rect(sx, sy, 16, 16, rgb((x + y) % 2 ? 0xd8e6f4 : 0xdfeaf6));
+        g.rect(sx, sy + 15, 16, 1, rgb(0xb4c8de)), g.rect(sx + 15, sy, 1, 16, rgb(0xb4c8de));
+        g.rect(sx, sy, 16, 1, rgb(0xf2f7fc)), g.rect(sx, sy, 1, 16, rgb(0xf2f7fc));
+        for (int i = 0; i < 4; i++) g.rect(sx + 3 + i, sy + 9 - i * 2, 1, 2, rgb(0xffffff, 150));  // reflet
+        if (h % 5 == 0) {  // fêlure
+          int fx = sx + 4 + (h >> 4) % 6, fy = sy + 4 + (h >> 7) % 6;
+          g.rect(fx, fy, 2, 1, rgb(0xa8bed6)), g.rect(fx + 2, fy + 1, 2, 1, rgb(0xa8bed6)), g.rect(fx + 3, fy + 2, 1, 2, rgb(0xa8bed6));
+        }
+      } else ground(g, th, sx, sy, h, x, y);
+      break;
     case 'x': {
       ground(g, th, sx, sy, h, x, y);
       Color glow = rgb(0x7fd6ff, uint8_t(60 + 40 * std::sin(t * 2 + x)));

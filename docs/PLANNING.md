@@ -117,6 +117,50 @@ choisies directement sur le damier, et des villes plus réalistes.
   Coffrelin).
 - Publiée en 3.2 (2026-10-15). Ensuite : les retours de l'utilisateur après son essai.
 
+## Étape 2 quater — Carte blanche (demandée le 2026-10-16, l'utilisateur absent 2 à 3 jours)
+
+Retours sur la 3.2 : sprites trop flous, l'équipe doit être à gauche en combat et chacun tourné vers le camp adverse,
+des textes cachent encore le terrain. Puis carte blanche pour améliorer le jeu à tous les niveaux, sans questions, et
+sans fusionner les branches (rien n'est publié avant son retour). Plan, dans l'ordre :
+
+**Branche `combat-hd` (3.2.1 : ses demandes) — fait le 2026-10-16** (revue Codex : 3 remarques justes corrigées ;
+joueur automatique : histoire terminée, 0 à 1 défaite sur deux parties)
+1. Sprites en double définition : l'image du jeu est rendue en 640×480 (les dessins en code restent identiques,
+   agrandis deux fois), les sprites sont découpés deux fois plus fins et dessinés à leur pleine finesse.
+2. Combat : l'équipe à gauche, les ennemis à droite, chacun tourné vers l'adversaire.
+3. Combat : plus aucun texte sur le terrain : une bande compacte en haut (aide, ordre des tours, météo), menus et ATH
+   dans un panneau en bas.
+4. Revue par Codex, mode test, joueur automatique, captures.
+
+**Branche `ameliorations` (à partir de `combat-hd`)** — fait le 2026-10-16 : 5 (détails du sol, hautes herbes,
+éboulis), 6 (bibliothèques, tables, chaises), 7 (courir ; promeneurs pas encore), 8, 9 (lancer, victoire, K.O.),
+11 (Coffrelin N.54, bouclier 6), 12 (tests du choix sur le damier et de la course). En plus : décors de combat en
+sprites, ennemis vaincus qui s'effacent, dégâts prévus sur la cible (« ≈ 8-10 PV · 92 % »), portraits dans l'ordre des
+tours, habitants qui regardent ailleurs, écran titre. Correction aussi sur `combat-hd` : l'éditeur de cartes ne
+dessinait plus les arbres et objets hauts depuis la 3.2. Revues Codex : 3 + 2 remarques justes, corrigées.
+Compilation Windows / Mac / Linux vérifiée par une demande de fusion en brouillon (#28, à ne pas fusionner).
+Ensuite : compagnon qui suit le joueur, objets hauts transparents devant le joueur, murs de pierre (grotte, glace,
+falaises), fontaine ronde de la Vallée (départ déplacé en 12, 10), carte du monde (Échap > Carte). Page de bilan pour
+le retour de l'utilisateur : https://claude.ai/artifact/5xTAs74tkfYvtVvfycHCye
+Puis : fondu au changement de carte, réverbères allumés la nuit, Bestiaire (petites créatures en grand), mode test sans
+aucun échec en anglais aussi (il en avait 32 : les tests comparaient des libellés français), test de l'attaque annoncée
+fiabilisé (il échouait parfois au hasard). Puis : promeneurs (enfants et animaux des villes marchent autour de leur
+place, champ `promenade`), et chaque habitant se tourne vers le joueur qui lui parle. Fiche d'équipe : la créature à la
+taille de la place (`creatureFit`), une Limite au nom long passe à la ligne (elle dépassait de la fenêtre). Eau plus belle (bords peu profonds,
+écume en tirets, vaguelettes, reflets). Neige plus vivante (rides de vent, congères, brins secs), chemins de neige
+tassée, dalles de glace au Temple. Intérieurs : fenêtres, lumière au sol, ombre des murs. Combat : météo et
+renforts sur une étiquette lisible, étiquette d'état de l'allié du bord gauche dans l'écran. Quêtes : bulle « ! »
+au-dessus de qui en propose une, « ? » dorée quand on peut la rendre. Aide : page « Exploration » (courir, carte du
+monde, bulles, Journal). Empreintes de pas dans la neige, qui s'effacent. Police : guillemets anglais “ ” ‘ (47 phrases anglaises les affichaient en « ? »).
+5. Cartes plus vivantes : touffes d'herbe, fleurs et cailloux en sprites, eau et falaises plus belles.
+6. Intérieurs meublés avec les sprites (étagères, tables, chaises, tonneaux, lits).
+7. Personnages : courir (touche maintenue, sprites de course de Lior), animaux et promeneurs qui bougent.
+8. Expédition : créatures et héros générés dessinés avec les sprites (selon leur forme, recoloriés).
+9. Combat : animations (lancer de Lior à la capture, éclat au coup reçu, K.O.).
+10. Menus : fiche des créatures avec le grand sprite, écran titre avec les sprites.
+11. Équilibrage des nouveautés (Coffrelin, nouvelles créatures), mesuré.
+12. Tests du choix sur le damier et des nouvelles tuiles ; documentation et traduction anglaise à jour.
+
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
 - Fait en 1.6 : **réserve de créatures** (au-delà de 8 membres) et

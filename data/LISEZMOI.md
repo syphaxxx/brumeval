@@ -263,8 +263,10 @@ Chaque ligne de `tuiles` est une rangée de cases, toutes de même longueur :
 | `J` | bannière | | |
 
 Meubles des intérieurs (thème `interieur`) : `p` tapis (praticable), `t`
-table, `h` lit, `e` étagère, `o` comptoir, `v` tonneau.
+table, `h` lit, `e` étagère (une bibliothèque pour deux cases), `o` comptoir, `v` tonneau, `j` chaise.
 
+- `carte_monde` : `[x, y]` de 0 à 100, la place du lieu sur la carte du monde (Échap > Carte) ; absent : le lieu n'y
+  figure pas (intérieurs).
 - `theme` : `vallee`, `cendres`, `grotte`, `foret`, `neige` ou `interieur`
   (couleur du sol, arbres, chemins, parois et décor des combats ; `interieur` :
   parquet, murs tapissés et meubles).
@@ -288,7 +290,9 @@ table, `h` lit, `e` étagère, `o` comptoir, `v` tonneau.
 - `declencheurs` : une zone (`x`, `y`, `l`, `h`) qui lance un `evenement` quand
   on y entre, tant que le drapeau `jusqua` n'est pas posé.
 - `habitants` : `dialogue` (phrases simples) ou `evenement`, `cache_si` (disparaît
-  quand le drapeau est posé), `vue` et `vue_jusqua` pour les dresseurs.
+  quand le drapeau est posé), `vue` et `vue_jusqua` pour les dresseurs,
+  `promenade` (un promeneur marche jusqu'à cette distance de sa place ; jamais
+  un dresseur).
 
 ## Rappels sur le format JSON
 

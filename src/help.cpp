@@ -198,11 +198,20 @@ static std::vector<HelpPage> helpPages() {
     fl.push_back(::T("Chaque boss vaincu laisse un trophée. Un objet forgé se revend plus cher."));
     p.push_back({::T("Forge"), ::T("Renforcer armes et armures à Forgeroc."), fl});
   }
+  p.push_back({::T("Exploration"), ::T("Courir, carte du monde, quêtes, Journal."),
+               {::T("Courir : Maj maintenue (manette : X). Le compagnon suit une case derrière."),
+                ::T("Carte du monde (Échap > Carte du monde) : les lieux où vous pouvez aller, et où vous êtes."),
+                ::T("Une bulle « ! » au-dessus d'un habitant : il propose une quête. Une bulle « ? » dorée : vous pouvez la lui rendre."),
+                ::T("Journal (Échap > Journal) : les quêtes en cours et terminées, et un conseil pour la suite."),
+                ::T("Hautes herbes, forêts et grottes cachent des créatures sauvages : plus on s'éloigne des villes, plus elles sont nombreuses."),
+                ::T("Coffres, panneaux et habitants : Entrée devant eux.")}});
   const auto& K = options().keys;
   p.push_back({::T("Touches"), ::T("Clavier, raccourcis F1, F2, F11."),
                {::T("Se déplacer, choisir : flèches ou ") + keyName(K[K_UP]) + keyName(K[K_LEFT]) + keyName(K[K_DOWN]) + keyName(K[K_RIGHT]) + ".",
                 ::T("Valider, parler : Entrée ou ") + keyName(K[K_OK]) + ::T(". Retour, menu : Échap ou ") + keyName(K[K_BACK]) + ".",
                 ::T("Mode auto en combat : ") + keyName(K[K_AUTO]) + ".",
+                ::T("Courir : Maj maintenue (manette : X)."),
+                ::T("En combat, la cible et la case se choisissent sur le damier : flèches ou souris."),
                 ::T("F1 : cette aide. F2 : vitesse du jeu ×1, ×2 ou ×3. F11 : plein écran."),
                 ::T("Les touches se changent dans Options > Touches. Une manette branchée marche toute seule.")}});
   return p;

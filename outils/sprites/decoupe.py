@@ -29,6 +29,9 @@ from scipy import ndimage as nd
 ICI = os.path.dirname(os.path.abspath(__file__))
 RACINE = os.path.dirname(os.path.dirname(ICI))
 FOND = np.array([217, 222, 228])
+# Double définition (3.2.1) : les tailles de decoupe.json sont en pixels du jeu (320x240) ; chaque sprite est fabriqué
+# ECHELLE fois plus fin, et le jeu le dessine à sa taille mais à pleine finesse (image rendue à la taille de l'écran)
+ECHELLE = 2
 _planches = {}
 
 
@@ -139,42 +142,48 @@ def sprite(e):
         W, H = e['w'], max(1, round(h * e['w'] / w))
     else:
         W, H = max(1, round(w * e['h'] / h)), e['h']
+    W, H = W * ECHELLE, H * ECHELLE
     if e.get('plein'):
         out = reduire_plein(s, W, H, e.get('couleurs', 24))
     else:
-        out = reduire(s, masque, W, H, e.get('couleurs', 20), e.get('fragments', False))
+        out = reduire(s, masque, W, H, e.get('couleurs', 28), e.get('fragments', False))
     if e.get('miroir'):
         out = out[:, ::-1].copy()
     return out
 
 
 def recolorer(px, teintes):
+    """Chaque couleur du sprite (palette réduite : peu de couleurs) n'est convertie qu'une fois."""
     out = px.copy()
-    for y in range(px.shape[0]):
-        for x in range(px.shape[1]):
-            r, g, b, a = px[y, x]
-            if not a:
-                continue
-            hh, ss, vv = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
-            deg = hh * 360
-            for t in teintes:
-                t0, t1, nh, ks, kv = t[:5]
-                if t0 < 0 or (t0 <= deg <= t1 if t0 <= t1 else (deg >= t0 or deg <= t1)):
-                    if ss < 0.12 and t0 >= 0:
-                        continue  # gris, blancs et noirs gardent leur couleur
-                    if nh >= 0:
-                        hh = nh / 360
-                    ss = min(1, ss * ks)
-                    if len(t) > 5 and vv > 0.12:
-                        ss = max(ss, t[5])  # teinte donnée aussi aux gris
-                    vv = min(1, vv * kv)
-                    break
-            r2, g2, b2 = colorsys.hsv_to_rgb(hh, ss, vv)
-            out[y, x, :3] = [round(r2 * 255), round(g2 * 255), round(b2 * 255)]
+    vis = px[..., 3] > 0
+    if not vis.any():
+        return out
+    for r, g, b in np.unique(px[vis][:, :3], axis=0):
+        m = vis & (px[..., 0] == r) & (px[..., 1] == g) & (px[..., 2] == b)
+        out[m, :3] = recolorer_couleur(int(r), int(g), int(b), teintes)
     return out
 
 
-def ranger(sprites, largeur=1024):
+def recolorer_couleur(r, g, b, teintes):
+    hh, ss, vv = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+    deg = hh * 360
+    for t in teintes:
+        t0, t1, nh, ks, kv = t[:5]
+        if t0 < 0 or (t0 <= deg <= t1 if t0 <= t1 else (deg >= t0 or deg <= t1)):
+            if ss < 0.12 and t0 >= 0:
+                continue  # gris, blancs et noirs gardent leur couleur
+            if nh >= 0:
+                hh = nh / 360
+            ss = min(1, ss * ks)
+            if len(t) > 5 and vv > 0.12:
+                ss = max(ss, t[5])  # teinte donnée aussi aux gris
+            vv = min(1, vv * kv)
+            break
+    r2, g2, b2 = colorsys.hsv_to_rgb(hh, ss, vv)
+    return [round(r2 * 255), round(g2 * 255), round(b2 * 255)]
+
+
+def ranger(sprites, largeur=2048):
     """Rangement en étagères (du plus haut au plus bas) ; 1 px d'écart entre les sprites."""
     ordre = sorted(sprites, key=lambda k: -sprites[k].shape[0])
     x = y = haut = 0
@@ -195,7 +204,7 @@ def ranger(sprites, largeur=1024):
 
 def apercu(sprites, chemin):
     """Planche de contrôle : chaque sprite agrandi x3 avec son nom."""
-    k, col, lh = 3, 8, 0
+    k, col, lh = 2, 8, 0
     cases = list(sprites.items())
     largeur = 8 * 150
     im = Image.new('RGB', (largeur, 100), (110, 150, 90))
@@ -243,7 +252,7 @@ def main():
     atlas, place = ranger(sprites)
     Image.fromarray(atlas, 'RGBA').save(os.path.join(RACINE, 'data', 'sprites.png'), optimize=True)
     with open(os.path.join(RACINE, 'data', 'sprites.json'), 'w', encoding='utf-8') as f:
-        f.write('{\n' + ',\n'.join(f'  "{k}": [{x}, {y}, {w}, {h}]' for k, (x, y, w, h) in sorted(place.items()))
+        f.write('{\n' + f'  "_echelle": {ECHELLE},\n' + ',\n'.join(f'  "{k}": [{x}, {y}, {w}, {h}]' for k, (x, y, w, h) in sorted(place.items()))
                 + '\n}\n')
     print(len(sprites), 'sprites, atlas', atlas.shape[1], 'x', atlas.shape[0])
 

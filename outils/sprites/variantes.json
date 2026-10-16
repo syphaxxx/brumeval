@@ -63,5 +63,9 @@
   {"id": "ic_gemme_orage", "de": "ic_acc_8", "teintes": [[-1, 0, 250, 1, 1.1, 0.4]]},
   {"id": "ic_gemme_perle", "de": "ic_acc_8", "teintes": [[-1, 0, 200, 1, 1.1, 0.4]]},
   {"id": "ic_gemme_coeur", "de": "ic_acc_8", "teintes": [[-1, 0, 10, 1, 1.1, 0.4]]},
-  {"id": "ic_gemme_cristal", "de": "ic_acc_8", "teintes": [[-1, 0, 190, 1, 1.1, 0.4]]}
+  {"id": "ic_gemme_cristal", "de": "ic_acc_8", "teintes": [[-1, 0, 190, 1, 1.1, 0.4]]},
+  {"id": "grande_herbe_seche_1", "de": "grande_herbe_1", "teintes": [[-1, 0, 42, 0.75, 1.1]]},
+  {"id": "grande_herbe_sombre_1", "de": "grande_herbe_1", "teintes": [[-1, 0, 130, 0.9, 0.7]]},
+  {"id": "grande_herbe_seche_2", "de": "grande_herbe_2", "teintes": [[-1, 0, 42, 0.75, 1.1]]},
+  {"id": "grande_herbe_sombre_2", "de": "grande_herbe_2", "teintes": [[-1, 0, 130, 0.9, 0.7]]}
 ]

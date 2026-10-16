@@ -322,13 +322,13 @@ std::vector<FighterP> Battle::alive(const std::vector<FighterP>& v) const {
   return o;
 }
 
-// Damier à l'écran : les alliés à droite, les ennemis à gauche ; l'avant de chaque camp est du
-// côté du milieu de l'écran. Les lignes du bas sont un peu plus près (léger effet de profondeur).
+// Damier à l'écran (3.2.1) : les alliés à gauche, les ennemis à droite ; l'avant de chaque camp est du
+// côté du milieu de l'écran. Les lignes du bas sont un peu décalées (léger effet de profondeur).
 Pt Battle::cellPos(bool allySide, int c) const {
   if (c < 0 || c >= N_CELLS) c = cellAt(1, 1);
   float col = (float)cellCol(c), row = (float)cellRow(c);
   float x = 196 + col * 30 + row * 4;  // 4 colonnes de 30 px, chaque ligne un peu décalée (perspective)
-  return {allySide ? x : 320 - x, 72 + row * 22};
+  return {allySide ? 320 - x : x, 72 + row * 22};
 }
 Pt Battle::pos(const FighterP& f) const { return cellPos(isAlly(f), cellOf(f)); }
 
@@ -362,12 +362,25 @@ float Battle::zoneScore(const FighterP& a, const Move& m, const FighterP& center
   return s;
 }
 // Nombre ou texte flottant au-dessus d'un combattant ; ils s'empilent s'ils apparaissent ensemble
+// (3.3 : sans chevaucher ceux des voisins, et jamais sur la ligne de l'ordre des tours)
 void Battle::pop(const FighterP& f, const std::string& t, Color c) {
   Pt p = pos(f);
-  int stack = 0;
-  for (auto& q : pops)
-    if (q.x == p.x && G.time - q.t < .3f) stack++;
-  pops.push_back({p.x, p.y - 22 - 11.f * stack, t, c, G.time});
+  float w = Gfx::textW(t) + 4, x = std::clamp(p.x, w / 2 + 2, 318 - w / 2), y0 = std::max(popTop_, p.y - 22);
+  // Chaque texte monte de 8 px pendant son premier tiers de seconde : un texte plus ancien est déjà monté d'autant
+  // (k), le nouveau le suivra. Ils se gênent si, sur ce trajet, ils passent à moins de 10 px l'un de l'autre.
+  auto clash = [&](float yy) {
+    for (auto& q : pops) {
+      float age = G.time - q.t, k = std::min(1.f, age * 3) * 8, d = yy - q.y;
+      if (age < 1 && std::fabs(q.x - x) < (w + Gfx::textW(q.text) + 4) / 2 && d < 10 && d + k > -10) return true;
+    }
+    return false;
+  };
+  float y = y0;
+  for (int k = 1; clash(y) && k <= 12; k++) {  // la première place libre : au-dessus, sinon en dessous
+    float up = y0 - 11 * ((k + 1) / 2), down = y0 + 11 * (k / 2);
+    y = k % 2 && up >= popTop_ ? up : down;
+  }
+  pops.push_back({x, y, t, c, G.time});
   if (net_ == Net::Host || net_ == Net::Lead) send_(-1, Json{{"t", "pop"}, {"f", mine(f)}, {"txt", t}, {"c", Json::array({c.r, c.g, c.b})}});
 }
 
@@ -378,11 +391,19 @@ bool Battle::shown() const { return G.battle_.get() == this; }
 // Le bas de l'écran est partagé : le menu de commande à gauche, l'ATH (les alliés) à droite.
 // Les autres menus s'ouvrent juste au-dessus : à droite (techniques, cible ennemie : le damier
 // ennemi reste visible) ou à gauche (cible alliée, se déplacer : le damier allié reste visible).
+// Panneau du bas (3.2.1) : rien ne s'ouvre au-dessus du damier. Le menu de commande à gauche (5 lignes, il défile),
+// les sous-menus (techniques, objets, remplaçants…) à droite, à la place de l'ATH le temps du choix.
 enum class Dock { Command, Above, AboveLeft };
+static const int PANEL_Y = 168;  // haut du panneau du bas
 static void dock(Menu& t, Dock d = Dock::Above) {
-  int th = t.title.empty() ? 0 : 13, h = std::min(t.rows, (int)t.items.size()) * 12 + 8 + th;
-  if (d == Dock::Command) t.x = 4, t.w = 96, t.y = 238 - h;
-  else t.x = d == Dock::Above ? 102 : 4, t.w = 214, t.y = 184 - h;
+  if (d == Dock::Command) {
+    t.rows = std::min(t.rows, 5);
+    t.x = 4, t.w = 96, t.y = 238 - (std::min(t.rows, (int)t.items.size()) * 12 + 8);
+    return;
+  }
+  int th = t.title.empty() ? 0 : 13;
+  t.rows = std::min(t.rows, (238 - PANEL_Y - 8 - th) / 12);
+  t.x = 102, t.w = 214, t.y = 238 - (std::min(t.rows, (int)t.items.size()) * 12 + 8 + th);
 }
 
 static Battle::Fx fxOf(const Move& m) {
@@ -412,7 +433,7 @@ Pt Battle::offset(const FighterP& f) const {
   float e = G.time - anim_.t0;
   if (anim_.actor == f && e >= 0 && e < .4f) {
     float k = std::sin(3.14159f * e / .4f);
-    if (anim_.fx == Fx::Hit) o.x = (isAlly(f) ? -16.f : 16.f) * k;
+    if (anim_.fx == Fx::Hit) o.x = (isAlly(f) ? 16.f : -16.f) * k;  // vers le camp adverse
     else o.y = -6 * k;
   }
   if (blink == f && G.time - blinkT < .3f) o.x += std::sin((G.time - blinkT) * 70) * 2.5f;
@@ -570,6 +591,12 @@ void Battle::drawAnim() {
       case Fx::Heal:
       case Fx::Capture:
         if (anim_.fx == Fx::Heal && spriteFx(g, "", p, k, true)) break;
+        if (anim_.fx == Fx::Capture && anim_.actor && k < .45f)
+          if (const SpriteRect* lan = findSprite("ic_lanterne")) {  // la lanterne vole vers la créature
+            Pt a = pos(anim_.actor);
+            float u = k / .45f;
+            g.sprite(*lan, std::round(a.x + (p.x - a.x) * u - lan->w / 2.f), std::round(a.y - 14 + (p.y - a.y) * u - std::sin(u * 3.14159f) * 26));
+          }
         for (int i = 0; i < 7; i++) {  // étincelles qui montent
           float x = std::sin(i * 2.4f) * 13, y = 12 - std::fmod(k * 40 + i * 6, 40.f);
           g.ellipse(p.x + x, p.y + y, 1.6f, 1.6f, fade(i % 2 ? white : c, 1 - k * .8f));
@@ -725,21 +752,25 @@ void Battle::drawWeather() {
   }
 }
 
-void Battle::drawTurnOrder(float y, float minX) {
+void Battle::drawTurnOrder(float y, float minX, float maxX) {
   Gfx& g = G.g;
   auto order = turnOrder(8);
+  while (!order.empty() && minX + order.size() * 24.f > maxX) order.pop_back();  // place réservée à gauche et à droite
   if (order.empty()) return;
-  float x = std::max(minX, 160 - order.size() * 12.f);
+  float x = std::clamp(160 - order.size() * 12.f, minX, maxX - order.size() * 24.f);
   std::map<const Fighter*, int> seenOnce;  // un ennemi brisé : seul son prochain tour est perdu
   for (size_t i = 0; i < order.size(); i++, x += 24) {
     const FighterP& f = order[i];
     bool ally = isAlly(f), lost = !ally && f->broken && seenOnce[f.get()]++ == 0;
     Color edge = ally ? rgb(0x8fd0ff) : f->boss ? rgb(0xffe066) : rgb(0xff8a7a);
-    g.rect(x, y, 22, 10, rgb(0x0a0f33, 200));
-    g.rect(x, y + 9, 22, 1, edge);
+    g.rect(x, y, 22, 12, rgb(0x0a0f33, 200));
+    g.rect(x, y + 11, 22, 1, edge);
     if (i == 0) g.rect(x, y, 22, 1, edge);  // le prochain à jouer
-    g.text(x + 11, y + 1, utf8Prefix(f->name(), 3), lost ? GREY : ally ? WHITE : edge, 1, false);
-    if (lost) g.rect(x + 2, y + 5, 18, 1, rgb(0xffe066));  // barré : tour perdu (brisé)
+    if (lost) g.alpha = .4f;
+    if (!drawFighterIcon(g, *f, x + 11, y + 6, 20, 10, ally))  // son portrait, sinon le début de son nom
+      g.text(x + 11, y + 1, utf8Prefix(f->name(), 3), lost ? GREY : ally ? WHITE : edge, 1, false);
+    g.alpha = 1;
+    if (lost) g.rect(x + 2, y + 6, 18, 1, rgb(0xffe066));  // barré : tour perdu (brisé)
   }
 }
 
@@ -1111,7 +1142,12 @@ void Battle::moveTarget(FighterP a, const std::string& id, FighterP duo) {
   switch (m.target) {
     case Target::Enemy:
       aiming_ = &m;
-      pickFoe(T("Cible"), [this, &m](const Fighter& f) { return foeInfo(G, f, &m); }, [go](FighterP t) { go({t}); });
+      pickFoe(T("Cible"), [this, &m, a](const Fighter& f) {
+        FighterP fp;  // le combattant (partagé) qui correspond à cette fiche
+        for (auto& o : foes)
+          if (o.get() == &f) fp = o;
+        return foeInfo(G, f, &m) + damageText(a, m, fp);
+      }, [go](FighterP t) { go({t}); });
       break;
     case Target::AllEnemies: go(alive(foes)); break;
     case Target::Ally: pickAlly(T("Sur qui ?"), false, [go](FighterP t) { go({t}); }); break;
@@ -1307,6 +1343,35 @@ float Battle::attackScore(const FighterP& a, const Move& m, const FighterP& t) c
     }
   }
   return score / paceTime(m);
+}
+
+std::string Battle::damageText(const FighterP& a, const Move& m, const FighterP& d) const {
+  if (!m.damaging() || !a || !d) return "";
+  const Rules& R = rules();
+  bool magic = m.kind == Kind::Magic;
+  float hit = m.acc / 100.f * a->acc / 100.f - (magic ? 0 : d->eva / 100.f);
+  if (!magic && cellCol(std::max(0, cellOf(d))) == BACK_COL) hit -= float(talentValue(d->S(), "esquive_arriere"));
+  if (!magic && weather_ >= 0) hit += R.weathers[(size_t)weather_].acc / 100.f;
+  if (const Rules::Terrain* tr = terrainAt(d); !magic && tr && tr->kind == "esquive") hit -= float(tr->value) / 100.f;
+  // Brisure : l'efficacité d'un type n'est comptée qu'une fois découverte (sinon neutre, quelle qu'elle soit : rien ne
+  // se devine sans attaquer ; la fiche de la cible montre déjà « ? »)
+  float eff = G.weakKnown(d->sp, m.type) ? moveEff(m, d->S()) : 1.f;
+  if (eff <= 0) return T(" · aucun effet");
+  float A = magic ? a->eMag() : a->eAtk(), D = magic ? d->eRes() : d->eDef();
+  float stab = hasType(a->S(), m.type) ? float(R.stab) : 1.f, k = 1;
+  if (m.melee) {
+    if (cellCol(std::max(0, cellOf(a))) == BACK_COL) k *= float(R.backRow);
+    if (cellCol(std::max(0, cellOf(d))) == BACK_COL) k *= float(R.backRow);
+  }
+  if (d->broken) k *= float(R.breakDamage);
+  k *= 1 - float(talentValue(d->S(), magic ? "resiste_magie" : "resiste_physique"));
+  if (hasType(a->S(), m.type) && a->hp * 3 < a->mhp) k *= 1 + float(talentValue(a->S(), "rage"));
+  k *= weatherMult(m.type) * guardMult(d);
+  if (const Rules::Terrain* tr = terrainAt(a); magic && tr && tr->kind == "magie") k *= 1 + float(tr->value);
+  float base = ((2 * a->lvl / 5.f + 2) * m.power * A / std::max(1.f, D) / float(R.dmgDivisor) + 2) * stab * eff * k;
+  int lo = std::max(1, int(base * float(R.spreadMin))), hi = std::max(1, int(base));
+  std::string s = T(" · ≈ ") + std::to_string(lo) + (hi > lo ? "-" + std::to_string(hi) : "") + T(" PV");
+  return s + " · " + std::to_string(int(std::lround(std::clamp(hit, 0.f, 1.f) * 100))) + " %";
 }
 
 void Battle::autoCommand(FighterP a) {
@@ -1922,6 +1987,7 @@ void Battle::knockOut(const FighterP& f) {
   f->clearBattle();
   f->atb = 0;
   if (!isAlly(f) && std::find(defeated.begin(), defeated.end(), f) == defeated.end()) defeated.push_back(f);
+  koT_[f.get()] = G.time;  // dessin : l'ennemi s'efface (3.3)
 }
 
 void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> targets, bool isLimit, float boost) {
@@ -2306,7 +2372,7 @@ void Battle::drawZones(float t) {
     if (pick_.move && center >= 0 && actor) {  // le combattant en transparence sur la case choisie
       Pt p = cellPos(true, center);
       g.alpha = .45f;
-      drawFighterSprite(g, *actor, p.x, p.y, 1, false, t);
+      drawFighterSprite(g, *actor, p.x, p.y, 1, true, t);
       g.alpha = 1;
     }
   } else if (!preview_.empty() && previewDepth_ == G.menus.depth() && G.menus.active() && actor) {
@@ -2385,13 +2451,14 @@ void Battle::drawHud(float t) {
     g.rect(lx, y + 2, lw, 4, rgb(0x1a2050));
     g.rect(lx, y + 2, lw * lr, 4, lr >= 1 && int(t * 5) % 2 ? WHITE : rgb(0xff6fb0));
   }
-  if (!reserve.empty()) g.text(6, 148, T("Renforts : ") + std::to_string(reserve.size()), GREY);
+
 }
 
 void Battle::drawStatusTag(const Fighter& f, float x, float y) {
   if (f.status == Status::None || !f.alive()) return;
   Gfx& g = G.g;
   Color c = rgb(statusColor(f.status));
+  x = std::clamp(x, 13.f, 307.f);  // l'allié du fond, tout à gauche : l'étiquette reste dans l'écran
   g.rect(x - 11, y - 1, 22, 9, rgb(0x0a0f33, 220));
   g.frame(x - 11, y - 1, 22, 9, c);
   g.text(x, y - 2, statusTag(f.status), c, 1, false);
@@ -2463,6 +2530,25 @@ void Battle::draw() {
       g.tri(x - 4, HZ - 1, x, HZ - 16, x + 4, HZ - 1, rgb(0x7fd6ff));
     }
   }
+  {  // Décor de l'horizon (3.3) : arbres, sapins ou rochers de la planche, en rang au fond et quelques-uns plus près
+    std::vector<const char*> back, near;
+    if (bg == Theme::Vallee && !boss) back = {"arbre", "arbre_petit", "arbre", "buisson", "arbre_automne"}, near = {"touffe_1", "fleurette_1", "touffe_3"};
+    else if (bg == Theme::Foret) back = {"sapin", "arbre", "sapin_petit", "sapin"}, near = {"touffe_2", "touffe_4", "fleurette_2"};
+    else if (bg == Theme::Neige && !boss) back = {"sapin_neige", "sapin_neige_petit"}, near = {};
+    else if (bg == Theme::Cendres) back = {"rochers", "rocher"}, near = {"caillou", "cailloux"};
+    for (int i = 0; !back.empty() && L - 30 + i * 34.f < R + 30; i++) {  // au fond, posés sur l'horizon
+      const SpriteRect* r = findSprite(back[(size_t)(i * 7 + 3) % back.size()]);
+      if (!r) break;
+      float x = L - 30 + i * 34.f + (i * 13) % 11;
+      g.sprite(*r, std::round(x - r->w / 2.f), std::round(HZ + 4 - r->h + (i % 3)), i % 2, 1, rgb(0xb8c4d8));  // plus pâles : la distance
+    }
+    for (int i = 0; !near.empty() && i < 9 * more / 100; i++) {  // touffes et cailloux devant, entre les deux damiers
+      const SpriteRect* r = findSprite(near[(size_t)i % near.size()]);
+      if (!r) break;
+      float x = L + std::fmod(i * 97.f + 23, W), y = HZ + 20 + std::fmod(i * 41.f, 110.f);
+      g.sprite(*r, std::round(x), std::round(y), i % 2);
+    }
+  }
   if (float night = shown() ? G.nightAmount() : 0.f; night > 0)  // jour et nuit (2.6), comme sur la carte
     g.rect(L, 0, W, SCREEN_H, rgb(0x0a1440, uint8_t(80 * night)));
   bool blinking = blink && t - blinkT < .42f && int((t - blinkT) / .07f) % 2 == 0;
@@ -2509,7 +2595,7 @@ void Battle::draw() {
   // Combattants, du haut du damier vers le bas : ceux de devant passent par-dessus
   std::vector<FighterP> shown;
   for (auto& f : foes)
-    if (f->alive()) shown.push_back(f);
+    if (f->alive() || (koT_.count(f.get()) && t - koT_[f.get()] < .6f)) shown.push_back(f);  // vaincu : il s'efface
   for (auto& a : allies) shown.push_back(a);
   std::stable_sort(shown.begin(), shown.end(), [&](const FighterP& a, const FighterP& b) { return pos(a).y < pos(b).y; });
   // Zone en cours (choix sur le damier, ou aperçu de la technique survolée) : les combattants du camp visé hors de
@@ -2540,7 +2626,16 @@ void Battle::draw() {
     if (!isAlly(f)) {  // ennemi : barre de PV au-dessus, nom sous le curseur
       float s = f->boss ? 1.45f : f->sp == "brumelin" ? .85f : 1.f;
       if (dim) g.alpha = .45f;
-      if (!(blinking && blink == f)) drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, s, true, t + p.x * .01f);
+      if (!f->alive()) {  // vaincu : il pâlit et s'efface en s'enfonçant un peu
+        float k = std::clamp((t - koT_[f.get()]) / .6f, 0.f, 1.f);
+        g.alpha = 1 - k;
+        drawFighterSprite(g, *f, p.x, p.y + k * 4, s, false, t);
+        g.alpha = (1 - k) * .8f;
+        g.ellipse(p.x, p.y - 4, 10 + k * 14, 8 + k * 10, rgb(0xffffff, 120));
+        g.alpha = 1;
+        continue;
+      }
+      if (!(blinking && blink == f)) drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, s, false, t + p.x * .01f);  // regarde à gauche
       float bw = f->boss ? 24 : 15, by = std::max(46.f, p.y - fighterTop(*f, s) - 6);
       g.rect(p.x - bw - 1, by - 1, bw * 2 + 2, 4, rgb(0x0a0f33));
       g.rect(p.x - bw, by, bw * 2 * f->hp / f->mhp, 2, rgb(f->broken ? 0xffe066 : 0xff8a7a));
@@ -2579,10 +2674,21 @@ void Battle::draw() {
     }
     if (!f->alive()) g.alpha = .35f;
     else if (dim) g.alpha = .45f;
-    if (!(blinking && blink == f)) drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, 1, false, t + p.x * .01f);
+    // Poses (3.3) : lancer de la lanterne pendant une capture, à terre une fois K.O., victoire à la fin du combat
+    std::string pose;
+    float ce = t - anim_.t0;
+    if (anim_.actor == f && anim_.fx == Fx::Capture && ce >= 0 && ce < .5f) pose = "lancer_" + std::to_string(std::min(4, int(ce / .09f)));
+    else if (!f->alive()) pose = "ko";
+    else if (summaryOn_) pose = "victoire";
+    if (!pose.empty() && !f->alive()) g.alpha = 1;
+    if (!(blinking && blink == f) && !(!pose.empty() && drawFighterPose(g, *f, pose, p.x + o.x, p.y + o.y, true)))
+      drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, 1, true, t + p.x * .01f);  // regarde à droite
     g.alpha = 1;
-    drawStatusTag(*f, p.x - 26, p.y - 18);
-    if (actor == f) g.tri(p.x - 4, p.y - 34, p.x + 4, p.y - 34, p.x, p.y - 28, rgb(0xffd34d));
+    drawStatusTag(*f, p.x - 24, p.y - 16);
+    if (actor == f) {  // celui qui choisit son action : une flèche au-dessus de sa tête
+      float ty = std::max(44.f, p.y - fighterTop(*f, 1) - 10);
+      g.tri(p.x - 4, ty, p.x + 4, ty, p.x, ty + 6, rgb(0xffd34d));
+    }
     if (cursor == f) g.cursor(p.x - 24, p.y - 4);
   }
   // Par-dessus les combattants : contour de la zone et flèche au-dessus de la cible (le sprite cache sa case)
@@ -2612,29 +2718,50 @@ void Battle::draw() {
   else if (follower() && !netMsg_.empty()) top = utf8Prefix(netMsg_, int((t - netMsgT_) * 60));
   else if (!choosing().empty()) top = choosing() + T(" choisit…");
   float orderY = 3;
-  if (boardPicking() && !top.empty()) top += T(" · Flèches/souris, Entrée, Échap");
   if (!top.empty()) {
     auto lines = Gfx::wrap(top, 300);
-    if (lines.size() > 3) lines.resize(3);
+    size_t most = G.menus.active() ? 2 : 3;  // aide : deux lignes ; message du combat : trois au plus
+    if (lines.size() > most) {
+      lines.resize(most);
+      lines.back() = utf8Prefix(lines.back(), 47) + "…";
+    }
+    if (boardPicking() && lines.size() == 1) lines.push_back(T("Flèches ou souris pour choisir · Entrée · Échap"));
     g.window(4, 2, 312, 7 + 11 * (int)lines.size());
     for (size_t i = 0; i < lines.size(); i++) g.text(160, 5 + i * 11, lines[i], WHITE, 1);
     orderY = 2 + 7 + 11 * (int)lines.size() + 2;
   }
+  popTop_ = orderY + 22;  // sous les portraits (12 px), en comptant la montée du texte (8 px)
   float orderX = 6;
   if (weather_ >= 0 && !ending_ && !summaryOn_) {  // météo, puis l'ordre des tours sur la même ligne
     const std::string& wn = rules().weathers[(size_t)weather_].name;
-    g.text(6, orderY, wn, rgb(0xe8ecff));
-    orderX += Gfx::textW(wn) + 6;
+    int ww = Gfx::textW(wn) + 6;  // sur une étiquette sombre comme les portraits : lisible sur le décor
+    g.rect(4, orderY, ww, 12, rgb(0x0a0f33, 200));
+    g.rect(4, orderY + 11, ww, 1, rgb(0x8fd0ff));
+    g.text(7, orderY + 1, wn, rgb(0xe8ecff));
+    orderX = 4 + ww + 3;
   }
-  if (!ending_ && !summaryOn_ && !follower()) drawTurnOrder(orderY, orderX);  // ordre des prochains tours, sous le message
-  drawHud(t);
+  float orderMax = 316;
+  if (!reserve.empty() && !ending_ && !summaryOn_) {  // renforts ennemis : à droite de la même ligne
+    std::string rs = T("Renforts : ") + std::to_string(reserve.size());
+    int rw = Gfx::textW(rs) + 6;
+    g.rect(316 - rw, orderY, rw, 12, rgb(0x0a0f33, 200));
+    g.rect(316 - rw, orderY + 11, rw, 1, rgb(0xff8a7a));
+    g.text(313, orderY + 1, rs, rgb(0xd8dcef), 2);
+    orderMax = 316 - rw - 3;
+  }
+  if (!ending_ && !summaryOn_ && !follower()) drawTurnOrder(orderY, orderX, orderMax);  // ordre des prochains tours, sous le message
+  if (G.menus.shownDepth() <= 1) drawHud(t);  // un sous-menu ouvert prend sa place
   drawWeather();
   if (summaryOn_) {  // fenêtre des gains de la victoire
-    int h = 36 + 11 * (int)summary_.size(), y = std::max(26, 92 - h / 2);
-    g.window(30, y, 260, h);
-    g.text(160, y + 5, T("Victoire !"), GOLD, 1);
-    for (size_t i = 0; i < summary_.size(); i++) g.text(38, y + 19 + i * 11, summary_[i], WHITE);
-    g.text(160, y + h - 12, T("Entrée : continuer"), rgb(0xaab3d8), 1);
+    // à droite, du côté des ennemis vaincus : l'équipe reste visible (pose de victoire)
+    int w = Gfx::textW(T("Entrée : continuer"));
+    for (auto& l : summary_) w = std::max(w, Gfx::textW(l));
+    w = std::min(312, w + 18);
+    int x = std::max(4, 316 - w), h = 36 + 11 * (int)summary_.size(), y = std::max(26, 92 - h / 2);
+    g.window(x, y, w, h);
+    g.text(x + w / 2, y + 5, T("Victoire !"), GOLD, 1);
+    for (size_t i = 0; i < summary_.size(); i++) g.text(x + 8, y + 19 + i * 11, summary_[i], WHITE);
+    g.text(x + w / 2, y + h - 12, T("Entrée : continuer"), rgb(0xaab3d8), 1);
   }
   G.menus.draw(g, t);
   // Entrée en combat : bandes sombres qui s'écartent en alternance, après un éclair blanc ;

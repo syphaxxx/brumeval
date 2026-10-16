@@ -66,7 +66,7 @@ void Gfx::rect(float x, float y, float w, float h, Color c) {
 // ---------------------------------------------------------------------------
 struct Atlas {
   std::unordered_map<std::string, SpriteRect> rects;
-  int w = 0, h = 0;
+  int w = 0, h = 0, scale = 1;
   std::vector<uint8_t> px;
 };
 static Atlas& atlas() {
@@ -74,7 +74,12 @@ static Atlas& atlas() {
     Atlas r;
     try {
       Json j = readJson("sprites.json");
-      for (auto& [k, v] : j.items()) r.rects[k] = {v[0].get<int>(), v[1].get<int>(), v[2].get<int>(), v[3].get<int>()};
+      r.scale = std::max(1, jget(j, "_echelle", 1));
+      for (auto& [k, v] : j.items()) {
+        if (!v.is_array()) continue;
+        int x = v[0].get<int>(), y = v[1].get<int>(), w = v[2].get<int>(), h = v[3].get<int>();
+        r.rects[k] = {std::max(1, w / r.scale), std::max(1, h / r.scale), x, y, w, h};
+      }
       if (!loadPng(dataDir() + "/sprites.png", r.w, r.h, r.px)) r.rects.clear();
     } catch (const std::exception&) {
       r.rects.clear();  // pas d'atlas : tout est dessiné en code
@@ -83,6 +88,10 @@ static Atlas& atlas() {
   }();
   return a;
 }
+SpriteRect SpriteRect::sub(int x, int y, int w2, int h2) const {
+  int k = atlas().scale;
+  return {w2, h2, sx + x * k, sy + y * k, w2 * k, h2 * k};
+}
 const SpriteRect* findSprite(const std::string& id) {
   auto& a = atlas();
   auto it = a.rects.find(id);
@@ -90,34 +99,47 @@ const SpriteRect* findSprite(const std::string& id) {
 }
 void Gfx::resetTextures() {
   if (atlas_) SDL_DestroyTexture(atlas_);
-  atlas_ = nullptr;
+  if (atlasFlip_) SDL_DestroyTexture(atlasFlip_);
+  atlas_ = atlasFlip_ = nullptr;
 }
 void Gfx::sprite(const SpriteRect& s, float x, float y, bool flip, float scale, Color tint, float flash) {
   if (!sane(x) || !sane(y) || scale <= 0) return;
+  auto& a = atlas();
   if (!atlas_) {
-    auto& a = atlas();
     if (a.px.empty()) return;
-    SDL_Surface* surf = SDL_CreateRGBSurfaceWithFormatFrom(a.px.data(), a.w, a.h, 32, a.w * 4, SDL_PIXELFORMAT_RGBA32);
-    if (!surf) return;
-    atlas_ = SDL_CreateTextureFromSurface(r_, surf);
-    SDL_FreeSurface(surf);
+    auto make = [&](const std::vector<uint8_t>& px) -> SDL_Texture* {
+      SDL_Surface* surf = SDL_CreateRGBSurfaceWithFormatFrom(const_cast<uint8_t*>(px.data()), a.w, a.h, 32, a.w * 4, SDL_PIXELFORMAT_RGBA32);
+      if (!surf) return nullptr;
+      SDL_Texture* t = SDL_CreateTextureFromSurface(r_, surf);
+      SDL_FreeSurface(surf);
+      if (t) SDL_SetTextureScaleMode(t, SDL_ScaleModeNearest);
+      return t;
+    };
+    atlas_ = make(a.px);
     if (!atlas_) return;
-    SDL_SetTextureBlendMode(atlas_, SDL_BLENDMODE_BLEND);
-    SDL_SetTextureScaleMode(atlas_, SDL_ScaleModeNearest);
+    std::vector<uint8_t> mirrored(a.px.size());  // chaque ligne à l'envers
+    for (int y = 0; y < a.h; y++)
+      for (int x = 0; x < a.w; x++)
+        std::copy_n(&a.px[(size_t(y) * a.w + x) * 4], 4, &mirrored[(size_t(y) * a.w + (a.w - 1 - x)) * 4]);
+    atlasFlip_ = make(mirrored);
   }
-  SDL_Rect src{s.x, s.y, s.w, s.h};
-  SDL_Rect dst{(int)std::lround(x) + ox, (int)std::lround(y), (int)std::lround(s.w * scale), (int)std::lround(s.h * scale)};
-  SDL_RendererFlip fl = flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
-  SDL_SetTextureBlendMode(atlas_, SDL_BLENDMODE_BLEND);
-  SDL_SetTextureColorMod(atlas_, tint.r, tint.g, tint.b);
-  SDL_SetTextureAlphaMod(atlas_, uint8_t(tint.a * std::clamp(alpha, 0.f, 1.f)));
-  SDL_RenderCopyEx(r_, atlas_, &src, &dst, 0, nullptr, fl);
+  // Retourné : le morceau symétrique de l'atlas retourné, dessiné sans retournement (pas de perte de détails, même
+  // en rendu logiciel)
+  SDL_Texture* tex = flip && atlasFlip_ ? atlasFlip_ : atlas_;
+  SDL_Rect src{tex == atlasFlip_ ? a.w - s.sx - s.sw : s.sx, s.sy, s.sw, s.sh};
+  // position entière dans le jeu (comme les dessins en code), taille exacte : à pleine finesse dans l'image agrandie
+  SDL_FRect dst{float(std::lround(x) + ox), float(std::lround(y)), s.w * scale, s.h * scale};
+  SDL_RendererFlip fl = flip && tex == atlas_ ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+  SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
+  SDL_SetTextureColorMod(tex, tint.r, tint.g, tint.b);
+  SDL_SetTextureAlphaMod(tex, uint8_t(tint.a * std::clamp(alpha, 0.f, 1.f)));
+  SDL_RenderCopyExF(r_, tex, &src, &dst, 0, nullptr, fl);
   if (flash > 0) {  // éclat blanc : le sprite rajouté en mode additif
-    SDL_SetTextureBlendMode(atlas_, SDL_BLENDMODE_ADD);
-    SDL_SetTextureColorMod(atlas_, 255, 255, 255);
-    SDL_SetTextureAlphaMod(atlas_, uint8_t(255 * std::clamp(flash, 0.f, 1.f) * std::clamp(alpha, 0.f, 1.f)));
-    SDL_RenderCopyEx(r_, atlas_, &src, &dst, 0, nullptr, fl);
-    SDL_SetTextureBlendMode(atlas_, SDL_BLENDMODE_BLEND);
+    SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_ADD);
+    SDL_SetTextureColorMod(tex, 255, 255, 255);
+    SDL_SetTextureAlphaMod(tex, uint8_t(255 * std::clamp(flash, 0.f, 1.f) * std::clamp(alpha, 0.f, 1.f)));
+    SDL_RenderCopyExF(r_, tex, &src, &dst, 0, nullptr, fl);
+    SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
   }
 }
 bool Gfx::sprite(const std::string& id, float x, float y, bool flip, float scale, Color tint, float flash) {
@@ -247,6 +269,7 @@ static std::unordered_map<uint32_t, Glyph> buildFont() {
       {'.', 8, "..#.."}, {',', 8, "..#../..#../.#..."}, {'!', 2, "..#../..#../..#../..#../..#../...../..#.."},
       {'?', 2, ".###./#...#/....#/..##./..#../...../..#.."}, {':', 4, "..#../...../...../...../..#.."},
       {';', 4, "..#../...../...../...../..#../.#..."}, {'\'', 2, "..#../..#../.#..."}, {0x2019, 2, "..#../..#../.#..."},
+      {0x2018, 2, ".#.../..#../..#.."}, {0x201C, 2, ".#.#./.#.#./..#.#"}, {0x201D, 2, "..#.#/..#.#/.#.#."},  // guillemets anglais
       {'-', 5, ".###."}, {'_', 9, "#####"}, {0x2013, 5, "#####"}, {0x2014, 5, "#####"}, {'+', 4, "..#../..#../#####/..#../..#.."},
       {'/', 2, "....#/...#./...#./..#../.#.../.#.../#...."}, {'(', 2, "...#./..#../.#.../.#.../.#.../..#../...#."},
       {')', 2, ".#.../..#../...#./...#./...#./..#../.#..."}, {'%', 2, "##..#/##..#/...#./..#../.#.../#..##/#..##"},
