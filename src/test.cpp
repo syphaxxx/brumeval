@@ -212,6 +212,9 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   in.confirm = true;
   frame();
   snap("05_equipe");
+  in.press[DOWN] = true;  // la fiche d'une créature : son sprite à la taille de la place
+  frame();
+  snap("05_equipe_creature");
   menus.clear();
   panelMode_ = 0;
 

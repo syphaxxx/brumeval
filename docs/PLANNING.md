@@ -145,7 +145,8 @@ le retour de l'utilisateur : https://claude.ai/artifact/5xTAs74tkfYvtVvfycHCye
 Puis : fondu au changement de carte, réverbères allumés la nuit, Bestiaire (petites créatures en grand), mode test sans
 aucun échec en anglais aussi (il en avait 32 : les tests comparaient des libellés français), test de l'attaque annoncée
 fiabilisé (il échouait parfois au hasard). Puis : promeneurs (enfants et animaux des villes marchent autour de leur
-place, champ `promenade`), et chaque habitant se tourne vers le joueur qui lui parle.
+place, champ `promenade`), et chaque habitant se tourne vers le joueur qui lui parle. Fiche d'équipe : la créature à la
+taille de la place (`creatureFit`), une Limite au nom long passe à la ligne (elle dépassait de la fenêtre).
 5. Cartes plus vivantes : touffes d'herbe, fleurs et cailloux en sprites, eau et falaises plus belles.
 6. Intérieurs meublés avec les sprites (étagères, tables, chaises, tonneaux, lits).
 7. Personnages : courir (touche maintenue, sprites de course de Lior), animaux et promeneurs qui bougent.

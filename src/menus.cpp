@@ -996,14 +996,18 @@ void Game::drawTeamPanel(int x, int y, int sel) {
       v->resize(2);
       v->back() = utf8Prefix(v->back(), std::max(0, (w - 16) / 6 - 1)) + "…";
     }
-  int lines = (int)techLines.size() + (int)magicLines.size() + (f.S().limit.empty() ? 0 : 1);
+  auto limitLines = f.S().limit.empty() ? std::vector<std::string>{} : Gfx::wrap(T("Limite : ") + moveInfo(f.S().limit).name, w - 16);
+  int lines = (int)techLines.size() + (int)magicLines.size() + (int)limitLines.size();
   g.window(x, y, w, std::min(SCREEN_H - y - 2, 34 + 4 * 11 + 3 + 4 * 11 + 3 + lines * 11 + 6));
   g.text(x + 8, y + 6, f.name(), GOLD);
   g.text(x + w - 8, y + 6, T("Niveau ") + std::to_string(f.lvl), WHITE, 2);
   if (const Rules::Talent* tl = talentOf(f.S())) g.text(x + 8, y + 19, T("Talent : ") + tl->name, rgb(0xffd34d));  // (Aide > Talents)
   else g.text(x + 8, y + 19, f.S().human ? utf8Prefix(f.S().role, 24) : typeName(f.S().type), MUTED);
   if (f.S().human) drawHuman(g, look(f.S().look), x + w - 40, y + 32, 2, DOWN, 0, false);  // sous la ligne du rôle
-  else drawCreature(g, f.sp, x + w - 26, y + 48, .9f, false, time);
+  else {  // à la taille de la place à droite des premières lignes (les petites créatures deux fois plus grandes)
+    float k = creatureFit(f.sp, 44, 56);
+    drawCreature(g, f.sp, x + w - 34, y + 74 - 16 * k * f.S().size, k, false, time);
+  }
   int ly = y + 34;
   auto row = [&](const std::string& a, const std::string& b) {
     g.text(x + 8, ly, a, MUTED);
@@ -1030,7 +1034,7 @@ void Game::drawTeamPanel(int x, int y, int sel) {
   ly += 3;
   for (auto& l : techLines) g.text(x + 8, ly, l, WHITE), ly += 11;
   for (auto& l : magicLines) g.text(x + 8, ly, l, rgb(0x9fd8ff)), ly += 11;
-  if (!f.S().limit.empty()) g.text(x + 8, ly, T("Limite : ") + moveInfo(f.S().limit).name, rgb(0xff9ad0));
+  for (auto& l : limitLines) g.text(x + 8, ly, l, rgb(0xff9ad0)), ly += 11;  // un nom long passe à la ligne
 }
 
 // ---------------------------------------------------------------------------
