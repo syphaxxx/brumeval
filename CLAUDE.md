@@ -365,8 +365,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   Poses de combat (`drawFighterPose`, Lior) : `lancer_k` pendant une capture (la lanterne vole vers la cible),
   `victoire` pendant la fenêtre des gains (à droite, du côté des ennemis vaincus), `ko` à terre.
   Dégâts prévus sur la cible visée (`Battle::damageText`, même formule que `applyHit` sans hasard ni critique :
-  fourchette de `ecart_min` à 1, chance de toucher) ; une efficacité de type pas encore découverte n'est pas comptée
-  (« ? »), pour garder la Brisure. Ennemi vaincu : il s'efface en 0,6 s (`koT_`). Décor de l'horizon en sprites
+  fourchette de `ecart_min` à 1, chance de toucher) ; l'efficacité d'un type n'est comptée qu'une fois découverte
+  (`weakKnown`), sinon neutre : rien ne se devine sans attaquer (Brisure). Ennemi vaincu : il s'efface en 0,6 s (`koT_`). Décor de l'horizon en sprites
   (arbres, sapins, rochers). Écran titre : les personnages de part et d'autre du menu. Habitants : regards et
   sautillements (dessin seul).
 - Graphismes des cartes (2.0, sprites.cpp) : maisons (`drawBuilding` : ombre, soubassement, pierres, tuiles en rangées,

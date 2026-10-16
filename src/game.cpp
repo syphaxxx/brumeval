@@ -46,6 +46,7 @@ void Game::onWheel(int dy) {
 // Manette : croix ou stick pour se déplacer, A valider, B annuler, Start menu, Select mode auto (Tab),
 // gâchettes hautes page précédente / suivante (éditeurs)
 void Game::onPad(int button, bool down) {
+  if (button == SDL_CONTROLLER_BUTTON_X) in.runPad = down;  // courir : suivi même pendant une saisie (relâché = arrêté)
   if (pilot_ && pilot_->demo()) {  // démo : Start met en pause ou reprend
     if (down && button == SDL_CONTROLLER_BUTTON_START) demoPaused_ = !demoPaused_;
     return;
@@ -56,7 +57,7 @@ void Game::onPad(int button, bool down) {
     case SDL_CONTROLLER_BUTTON_DPAD_DOWN: return padDirection(DOWN, down);
     case SDL_CONTROLLER_BUTTON_DPAD_LEFT: return padDirection(LEFT, down);
     case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: return padDirection(RIGHT, down);
-    case SDL_CONTROLLER_BUTTON_X: in.runPad = down; return;  // maintenu : courir
+    case SDL_CONTROLLER_BUTTON_X: return;  // maintenu : courir (plus haut)
     default: break;
   }
   if (!down) return;

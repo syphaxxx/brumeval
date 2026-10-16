@@ -1340,10 +1340,10 @@ std::string Battle::damageText(const FighterP& a, const Move& m, const FighterP&
   if (!magic && cellCol(std::max(0, cellOf(d))) == BACK_COL) hit -= float(talentValue(d->S(), "esquive_arriere"));
   if (!magic && weather_ >= 0) hit += R.weathers[(size_t)weather_].acc / 100.f;
   if (const Rules::Terrain* tr = terrainAt(d); !magic && tr && tr->kind == "esquive") hit -= float(tr->value) / 100.f;
-  float eff = moveEff(m, d->S());
-  bool unknown = eff != 1 && !d->S().human && !G.weakKnown(d->sp, m.type);  // à découvrir en essayant
-  if (eff <= 0 && !unknown) return T(" · aucun effet");
-  if (unknown) eff = 1;
+  // Brisure : l'efficacité d'un type n'est comptée qu'une fois découverte (sinon neutre, quelle qu'elle soit : rien ne
+  // se devine sans attaquer ; la fiche de la cible montre déjà « ? »)
+  float eff = G.weakKnown(d->sp, m.type) ? moveEff(m, d->S()) : 1.f;
+  if (eff <= 0) return T(" · aucun effet");
   float A = magic ? a->eMag() : a->eAtk(), D = magic ? d->eRes() : d->eDef();
   float stab = hasType(a->S(), m.type) ? float(R.stab) : 1.f, k = 1;
   if (m.melee) {
@@ -1358,7 +1358,6 @@ std::string Battle::damageText(const FighterP& a, const Move& m, const FighterP&
   float base = ((2 * a->lvl / 5.f + 2) * m.power * A / std::max(1.f, D) / float(R.dmgDivisor) + 2) * stab * eff * k;
   int lo = std::max(1, int(base * float(R.spreadMin))), hi = std::max(1, int(base));
   std::string s = T(" · ≈ ") + std::to_string(lo) + (hi > lo ? "-" + std::to_string(hi) : "") + T(" PV");
-  if (unknown) s += " ?";
   return s + " · " + std::to_string(int(std::lround(std::clamp(hit, 0.f, 1.f) * 100))) + " %";
 }
 

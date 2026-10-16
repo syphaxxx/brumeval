@@ -327,6 +327,7 @@ int main(int argc, char* argv[]) {
           continue;
         }
         if (e.type == SDL_CONTROLLERDEVICEREMOVED) {
+          game.in.runPad = false;  // manette débranchée pendant la course
           for (auto it = pads.begin(); it != pads.end(); ++it)
             if (SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(*it)) == e.cdevice.which) {
               SDL_GameControllerClose(*it);
