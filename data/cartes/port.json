@@ -141,5 +141,6 @@
     {"x": 11, "y": 25, "vers": "vallee", "tx": 24, "ty": 38, "direction": "gauche"}
   ],
   "zones": [],
-  "boss": []
+  "boss": [],
+  "carte_monde": [34, 78]
 }

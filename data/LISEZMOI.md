@@ -265,6 +265,8 @@ Chaque ligne de `tuiles` est une rangée de cases, toutes de même longueur :
 Meubles des intérieurs (thème `interieur`) : `p` tapis (praticable), `t`
 table, `h` lit, `e` étagère (une bibliothèque pour deux cases), `o` comptoir, `v` tonneau, `j` chaise.
 
+- `carte_monde` : `[x, y]` de 0 à 100, la place du lieu sur la carte du monde (Échap > Carte) ; absent : le lieu n'y
+  figure pas (intérieurs).
 - `theme` : `vallee`, `cendres`, `grotte`, `foret`, `neige` ou `interieur`
   (couleur du sol, arbres, chemins, parois et décor des combats ; `interieur` :
   parquet, murs tapissés et meubles).

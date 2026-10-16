@@ -224,5 +224,6 @@
     }
   ],
   "boss": [],
-  "declencheurs": [{"x": 29, "y": 40, "l": 2, "h": 2, "evenement": "pics_entree", "jusqua": "pics_vu"}]
+  "declencheurs": [{"x": 29, "y": 40, "l": 2, "h": 2, "evenement": "pics_entree", "jusqua": "pics_vu"}],
+  "carte_monde": [80, 30]
 }

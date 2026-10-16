@@ -193,6 +193,8 @@ class Game {
   void openHelp(int page);
   void updateHelp();
   void drawHelp();
+  bool worldMapOn_ = false;  // carte du monde ouverte (3.3, menu pause) : le reste du jeu attend
+  void drawWorldMap();
   int helpPage_ = -1, helpScroll_ = 0, lastHelp_ = 0;  // page affichée (-1 : aucune), défilement, dernière vue (F1)
   void keysMenu(int sel = 0);
   bool padDir_[4] = {}, stickDir_[4] = {};  // directions tenues à la manette (croix, stick)

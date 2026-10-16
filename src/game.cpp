@@ -246,6 +246,12 @@ void Game::update(float dt) {
   banner -= dt;
   noticeT_ -= dt;
   speedT_ -= dt / speed();  // même durée à l'écran quelle que soit la vitesse
+  if (worldMapOn_) {  // carte du monde : Entrée, Échap ou un clic la ferme
+    if (in.confirm || in.cancel || in.menu || in.mclick[0] || in.mclick[2]) worldMapOn_ = false, audio::play("annuler");
+    updateMusic();
+    in.endFrame();
+    return;
+  }
   if (helpPage_ >= 0) {  // aide ouverte : le reste du jeu attend
     lastHelp_ = helpPage_;
     updateHelp();
@@ -815,6 +821,7 @@ void Game::draw() {
       break;
   }
   if (!evoTo_.empty()) drawEvolution();
+  if (worldMapOn_) drawWorldMap();
   if (helpPage_ >= 0) drawHelp();
   if (textOn_) drawTextEdit();
   if (bindKey_ >= 0) drawKeyPrompt();

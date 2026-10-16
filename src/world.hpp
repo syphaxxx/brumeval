@@ -112,7 +112,9 @@ struct MapDef {
   // les grilles 'D'. puzzleX/Y : la case d'où l'on commence (recommencer, joueur automatique)
   std::string puzzleFlag, puzzleMsg;
   int puzzleX = -1, puzzleY = -1;
-  int puzzleZone[4] = {0, 0, 0, 0};  // salle de l'énigme (x, y, largeur, hauteur ; 0 : toute la carte) : la recherche y reste
+  int puzzleZone[4] = {0, 0, 0, 0};
+  // Carte du monde (3.3, champ « carte_monde ») : position du lieu, de 0 à 100 (-1 : absent de la carte du monde)
+  float worldX = -1, worldY = -1;  // salle de l'énigme (x, y, largeur, hauteur ; 0 : toute la carte) : la recherche y reste
   int w() const { return rows.empty() ? 0 : (int)rows[0].size(); }
   int h() const { return (int)rows.size(); }
 };

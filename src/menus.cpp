@@ -174,6 +174,11 @@ void Game::pauseMenu() {
   m.items.push_back({T("Tactiques"), "", T("Ce que chaque membre fait tout seul en combat (mode auto : touche Tab)."), true, [this] { tacticsMenu(); }});
   m.items.push_back({T("Équipement"), "", T("Armes, armures et accessoires."), true, [this] { gearMenu(); }});
   m.items.push_back({T("Journal"), "", T("Les quêtes en cours et terminées."), true, [this] { journalMenu(); }});
+  if (!inExpedition())
+    m.items.push_back({T("Carte"), "", T("La carte du monde : les lieux où vous pouvez aller, et où vous êtes."), true, [this] {
+                         worldMapOn_ = true;
+                         audio::play("valider");
+                       }});
   m.items.push_back({T("Objets"), "", T("Utiliser un objet."), true, [this] { itemMenu(); }});
   m.items.push_back({T("Magie"), "", T("Lancer un sort de soin."), true, [this] { magicMenu(); }});
   if (inExpedition()) {
@@ -1025,4 +1030,72 @@ void Game::drawTeamPanel(int x, int y, int sel) {
   for (auto& l : techLines) g.text(x + 8, ly, l, WHITE), ly += 11;
   for (auto& l : magicLines) g.text(x + 8, ly, l, rgb(0x9fd8ff)), ly += 11;
   if (!f.S().limit.empty()) g.text(x + 8, ly, T("Limite : ") + moveInfo(f.S().limit).name, rgb(0xff9ad0));
+}
+
+// ---------------------------------------------------------------------------
+// Carte du monde (3.3) : les lieux extérieurs (champ « carte_monde » des cartes) qu'on peut atteindre d'ici par des
+// passages ouverts ; l'acte 2 reste caché tant que le bateau ne traverse pas. Rien n'est enregistré : tout se déduit
+// des passages et des drapeaux.
+// ---------------------------------------------------------------------------
+void Game::drawWorldMap() {
+  // Le lieu de départ : la carte où l'on est, ou celle où mène la sortie d'un intérieur
+  int here = mapId;
+  if (M().theme == Theme::Interieur)
+    for (auto& w : M().warps)
+      if (int t = mapIndex(w.map); t >= 0 && maps()[t].worldX >= 0) here = t;
+  std::vector<bool> open(maps().size(), false);
+  std::vector<int> todo;
+  if (here >= 0 && maps()[here].worldX >= 0) open[here] = true, todo.push_back(here);
+  while (!todo.empty()) {
+    int c = todo.back();
+    todo.pop_back();
+    for (auto& w : maps()[c].warps) {
+      int t = mapIndex(w.map);
+      if (t < 0 || open[t] || maps()[t].worldX < 0) continue;
+      if (!w.condition.is_null() && !checkCond(w.condition)) continue;  // passage fermé : on ne le voit pas encore
+      open[t] = true;
+      todo.push_back(t);
+    }
+  }
+  const float X0 = 18, Y0 = 34, WW = 284, HH = 176;
+  auto P = [&](const MapDef& m) { return Pt{X0 + m.worldX / 100 * WW, Y0 + m.worldY / 100 * HH}; };
+  g.newLayer();
+  g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0x050816, 200));
+  g.rect(8, 8, 304, 224, rgb(0x3a2a1a));
+  g.gradV(10, 10, 300, 220, rgb(0xeee0bc), rgb(0xd8c28e));  // parchemin
+  g.text(160, 13, T("Carte du monde"), rgb(0x4a321c), 1, false);
+  g.ellipse(X0 + .40f * WW, Y0 + .66f * HH, 46, 11, rgb(0x7fb0d8, 160));  // le lac, entre la vallée et l'archipel
+  for (int i = 0; i < 4; i++)                                             // les montagnes du nord-est
+    g.tri(X0 + (.70f + i * .07f) * WW - 9, Y0 + .24f * HH, X0 + (.70f + i * .07f) * WW, Y0 + .14f * HH, X0 + (.70f + i * .07f) * WW + 9,
+          Y0 + .24f * HH, rgb(0xa89878, 150));
+  // Chemins entre les lieux ouverts : des pointillés
+  for (size_t i = 0; i < maps().size(); i++) {
+    if (!open[i]) continue;
+    for (auto& w : maps()[i].warps) {
+      int t = mapIndex(w.map);
+      if (t <= (int)i || !open[(size_t)t]) continue;
+      Pt a = P(maps()[i]), b = P(maps()[(size_t)t]);
+      float d = std::hypot(b.x - a.x, b.y - a.y);
+      for (float k = 0; k < d; k += 5) g.rect(a.x + (b.x - a.x) * k / d - .5f, a.y + (b.y - a.y) * k / d - .5f, 2, 2, rgb(0x8a6a44));
+    }
+  }
+  for (size_t i = 0; i < maps().size(); i++) {
+    if (!open[i]) continue;
+    const MapDef& m = maps()[i];
+    Pt p = P(m);
+    uint32_t col = m.theme == Theme::Foret ? 0x2f6a3a : m.theme == Theme::Cendres ? 0xc0502a : m.theme == Theme::Neige ? 0x8ab8e0
+                   : m.theme == Theme::Grotte ? 0x6a5a8a : 0x5fa84f;
+    g.ellipse(p.x, p.y + 1, 6, 5, rgb(0x000000, 60));
+    g.ellipse(p.x, p.y, 6, 5, rgb(0x3a2a1a));
+    g.ellipse(p.x, p.y, 4.5f, 3.5f, rgb(col));
+    if ((int)i == here) {  // vous êtes ici : un anneau doré qui pulse, et Lior au-dessus
+      float k = .5f + .5f * std::sin(time * 5);
+      g.ellipse(p.x, p.y, 8 + k * 2, 7 + k * 2, rgb(0xffd34d, uint8_t(90 + 80 * k)));
+      g.ellipse(p.x, p.y, 4.5f, 3.5f, rgb(col));
+      if (const SpriteRect* r = findSprite("lior_bas_0")) g.sprite(*r, std::round(p.x - 10 - r->w * .7f), std::round(p.y + 3 - r->h * .7f), false, .7f);  // à gauche du point
+    }
+    std::string name = m.name;
+    g.text(p.x, p.y + 6, name, (int)i == here ? rgb(0x8a2a10) : rgb(0x4a321c), 1, false);
+  }
+  g.text(160, 218, T("Entrée ou Échap : fermer"), rgb(0x6a4a2a), 1, false);
 }

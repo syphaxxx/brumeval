@@ -99,5 +99,6 @@
       "creatures": ["voltanguille", "orageline", "noyelin", "coquillon", "ecumet"]
     }
   ],
-  "boss": []
+  "boss": [],
+  "carte_monde": [54, 84]
 }

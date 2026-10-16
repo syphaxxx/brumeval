@@ -270,5 +270,6 @@
   "boss": [
     {"x": 20, "y": 6, "espece": "tisonnel", "drapeau": "tisonnels_chasses", "evenement": "tisonnels"},
     {"x": 48, "y": 2, "espece": "ignarok", "drapeau": "boss2", "evenement": "ignarok"}
-  ]
+  ],
+  "carte_monde": [58, 44]
 }

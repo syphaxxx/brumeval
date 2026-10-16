@@ -374,7 +374,9 @@ code) ; `docs/GUIDE.md` les range par domaine.
   depuis le coin bas-droit de son bloc (ronde, jet d'eau) ; départ de la partie en (12, 10). Compagnon qui suit
   (`trail_`, `followDir_` : la première créature de l'équipe marche une case derrière le joueur, dessin seul, vidé
   au changement de carte ; pas en expédition à plusieurs). Éditeur de cartes : objets hauts dessinés (`drawProp`,
-  `drawPropIcon` dans la palette).
+  `drawPropIcon` dans la palette). Carte du monde (Échap > Carte, `worldMapOn_`, `drawWorldMap` dans menus.cpp) : les
+  lieux ayant `carte_monde` atteignables d'ici par des passages ouverts (`checkCond`), sans rien enregistrer ; pas en
+  Expédition.
 - Graphismes des cartes (2.0, sprites.cpp) : maisons (`drawBuilding` : ombre, soubassement, pierres, tuiles en rangées,
   faîtage, cheminée, fenêtres à volets et jardinières), arbres `T` en trois variantes selon `hsh` (rond, petit, fruitier
   ou large en forêt), chemins `=` aux bords adoucis contre la nature (liseré, touffes, coins), herbe de la vallée variée.

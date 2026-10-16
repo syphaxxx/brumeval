@@ -788,6 +788,12 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     run(.3f);
     check(fast, "courir : Maj maintenue, le pas va presque deux fois plus vite");
     snap("courir_compagnon");  // le compagnon suit une case derrière
+    worldMapOn_ = true;  // carte du monde (3.3) : ouverte depuis Forgeroc, fermée par Échap
+    frame();
+    snap("carte_monde");
+    in.cancel = true;
+    frame();
+    check(!worldMapOn_ && mode == Mode::Map, "carte du monde : elle s'ouvre et se ferme (Échap)");
     check(!trail_.empty() && trail_.back() == std::make_pair(12, 34), "compagnon : il suit le joueur, une case derrière lui");
     changeMap(mi("cendrelune"), 12, 34, DOWN);
   }
