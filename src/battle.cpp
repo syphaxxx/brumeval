@@ -2719,14 +2719,20 @@ void Battle::draw() {
   float orderX = 6;
   if (weather_ >= 0 && !ending_ && !summaryOn_) {  // météo, puis l'ordre des tours sur la même ligne
     const std::string& wn = rules().weathers[(size_t)weather_].name;
-    g.text(6, orderY, wn, rgb(0xe8ecff));
-    orderX += Gfx::textW(wn) + 6;
+    int ww = Gfx::textW(wn) + 6;  // sur une étiquette sombre comme les portraits : lisible sur le décor
+    g.rect(4, orderY, ww, 12, rgb(0x0a0f33, 200));
+    g.rect(4, orderY + 11, ww, 1, rgb(0x8fd0ff));
+    g.text(7, orderY + 1, wn, rgb(0xe8ecff));
+    orderX = 4 + ww + 3;
   }
   float orderMax = 316;
   if (!reserve.empty() && !ending_ && !summaryOn_) {  // renforts ennemis : à droite de la même ligne
     std::string rs = T("Renforts : ") + std::to_string(reserve.size());
-    g.text(314, orderY, rs, GREY, 2);
-    orderMax = 314 - Gfx::textW(rs) - 4;
+    int rw = Gfx::textW(rs) + 6;
+    g.rect(316 - rw, orderY, rw, 12, rgb(0x0a0f33, 200));
+    g.rect(316 - rw, orderY + 11, rw, 1, rgb(0xff8a7a));
+    g.text(313, orderY + 1, rs, rgb(0xd8dcef), 2);
+    orderMax = 316 - rw - 3;
   }
   if (!ending_ && !summaryOn_ && !follower()) drawTurnOrder(orderY, orderX, orderMax);  // ordre des prochains tours, sous le message
   if (G.menus.shownDepth() <= 1) drawHud(t);  // un sous-menu ouvert prend sa place
