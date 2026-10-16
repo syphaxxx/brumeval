@@ -150,7 +150,8 @@ taille de la place (`creatureFit`), une Limite au nom long passe à la ligne (el
 écume en tirets, vaguelettes, reflets). Neige plus vivante (rides de vent, congères, brins secs), chemins de neige
 tassée, dalles de glace au Temple. Intérieurs : fenêtres, lumière au sol, ombre des murs. Combat : météo et
 renforts sur une étiquette lisible, étiquette d'état de l'allié du bord gauche dans l'écran. Quêtes : bulle « ! »
-au-dessus de qui en propose une, « ? » dorée quand on peut la rendre.
+au-dessus de qui en propose une, « ? » dorée quand on peut la rendre. Aide : page « Exploration » (courir, carte du
+monde, bulles, Journal). Police : guillemets anglais “ ” ‘ (47 phrases anglaises les affichaient en « ? »).
 5. Cartes plus vivantes : touffes d'herbe, fleurs et cailloux en sprites, eau et falaises plus belles.
 6. Intérieurs meublés avec les sprites (étagères, tables, chaises, tonneaux, lits).
 7. Personnages : courir (touche maintenue, sprites de course de Lior), animaux et promeneurs qui bougent.
