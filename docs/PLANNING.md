@@ -148,7 +148,8 @@ fiabilisé (il échouait parfois au hasard). Puis : promeneurs (enfants et anima
 place, champ `promenade`), et chaque habitant se tourne vers le joueur qui lui parle. Fiche d'équipe : la créature à la
 taille de la place (`creatureFit`), une Limite au nom long passe à la ligne (elle dépassait de la fenêtre). Eau plus belle (bords peu profonds,
 écume en tirets, vaguelettes, reflets). Neige plus vivante (rides de vent, congères, brins secs), chemins de neige
-tassée, dalles de glace au Temple.
+tassée, dalles de glace au Temple. Intérieurs : fenêtres, lumière au sol, ombre des murs. Combat : météo et
+renforts sur une étiquette lisible, étiquette d'état de l'allié du bord gauche dans l'écran.
 5. Cartes plus vivantes : touffes d'herbe, fleurs et cailloux en sprites, eau et falaises plus belles.
 6. Intérieurs meublés avec les sprites (étagères, tables, chaises, tonneaux, lits).
 7. Personnages : courir (touche maintenue, sprites de course de Lior), animaux et promeneurs qui bougent.

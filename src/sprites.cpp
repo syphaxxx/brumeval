@@ -630,7 +630,25 @@ void drawProp(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
   g.sprite(*r, sx + 8 + jx - r->w / 2, sy + 16 - r->h + (c == 'T' ? 1 : 0), flip);
 }
 
+// Fenêtre d'un mur d'intérieur (3.3) : la face d'un mur sur deux ou trois, sauf là où pend un cadre
+static bool interiorWindow(int x, int y) { return (x * 7 + y) % 9 != 0 && (x * 5 + y * 3) % 4 == 1; }
+
+static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t);
 void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
+  drawTileBase(g, m, x, y, sx, sy, t);
+  if (m.theme != Theme::Interieur || m.rows[y][x] == '#' || m.rows[y][x] == ' ') return;
+  // Intérieurs (3.3) : l'ombre des murs sur le sol, et la lumière qui tombe d'une fenêtre
+  auto wall = [&](int xx, int yy) { return xx < 0 || yy < 0 || xx >= m.w() || yy >= m.h() || m.rows[yy][xx] == '#'; };
+  if (wall(x, y - 1)) {
+    if (interiorWindow(x, y - 1))
+      g.poly({{sx + 4.f, sy + 0.f}, {sx + 12.f, sy + 0.f}, {sx + 15.f, sy + 14.f}, {sx + 3.f, sy + 14.f}}, rgb(0xfff2c0, 34));
+    g.rect(sx, sy, 16, 3, rgb(0x1a0e06, 70)), g.rect(sx, sy + 3, 16, 2, rgb(0x1a0e06, 30));
+  }
+  if (wall(x - 1, y)) g.rect(sx, sy, 3, 16, rgb(0x1a0e06, 55));
+  if (wall(x + 1, y)) g.rect(sx + 14, sy, 2, 16, rgb(0x1a0e06, 40));
+}
+
+static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
   char c = m.rows[y][x];
   int h = hsh(x, y);
   Theme th = m.theme;
@@ -926,6 +944,12 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
             g.rect(sx + 4, sy + 2, 8, 7, rgb(0x7a5230));
             g.rect(sx + 5, sy + 3, 6, 5, rgb(0x7fb0d8));
             g.rect(sx + 5, sy + 6, 6, 2, rgb(0x5f9a52));
+          } else if (interiorWindow(x, y)) {  // une fenêtre (3.3) : ciel, croisillon, rebord ; la lumière tombe au sol
+            g.rect(sx + 3, sy + 1, 10, 10, rgb(0x6b4a2f));
+            g.gradV(sx + 4, sy + 2, 8, 8, rgb(0xbfe4ff), rgb(0x86c0ea));
+            g.rect(sx + 7, sy + 2, 2, 8, rgb(0x6b4a2f)), g.rect(sx + 4, sy + 5, 8, 1, rgb(0x6b4a2f));
+            g.rect(sx + 5, sy + 3, 1, 2, rgb(0xffffff, 200));  // reflet
+            g.rect(sx + 2, sy + 10, 12, 1, rgb(0xa8743f));      // rebord
           }
         }
       } else if (th == Theme::Neige && texTile(g, "tex_pierre", x, y, sx, sy, rgb(0xb4cdec))) {  // (3.3) pierre glacée

@@ -382,7 +382,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   Expédition. Eau `~` dessinée en code (la texture `tex_eau` de la planche n'est pas utilisable) : bords peu
   profonds plus clairs, ombre de la berge, écume en tirets, vaguelettes, reflets. Neige (`ground`) : rides de vent,
   congères, brins secs, cristaux ; chemins `=` de neige tassée (empreintes, bords de neige fraîche) ; case `c` d'une
-  carte de neige = dalles de glace (Temple). Changement de carte : fondu depuis le noir (`mapFadeT_`, 0,3 s). La nuit, réverbères `L` et feux `X`
+  carte de neige = dalles de glace (Temple). Intérieurs : fenêtres aux murs (`interiorWindow`), lumière au sol sous
+  elles et ombre des murs (`drawTile` ajoute tout cela par-dessus `drawTileBase`). Changement de carte : fondu depuis le noir (`mapFadeT_`, 0,3 s). La nuit, réverbères `L` et feux `X`
   allumés (halo dans `drawMap`).
 - Graphismes des cartes (2.0, sprites.cpp) : maisons (`drawBuilding` : ombre, soubassement, pierres, tuiles en rangées,
   faîtage, cheminée, fenêtres à volets et jardinières), arbres `T` en trois variantes selon `hsh` (rond, petit, fruitier
