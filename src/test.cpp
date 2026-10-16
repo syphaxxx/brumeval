@@ -124,7 +124,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     menus.top().sel = 5;  // Options
     in.confirm = true;
     frame();
-    bool opened = menus.top().title == "Options";
+    bool opened = menus.top().title == T("Options");
     int vol = options().music;
     in.press[RIGHT] = true;  // Musique : plus fort
     frame();
@@ -172,7 +172,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     menus.top().sel = 4;  // Outils
     onPad(SDL_CONTROLLER_BUTTON_A, true);
     frame();
-    bool tools = menus.top().title == "Outils";
+    bool tools = menus.top().title == T("Outils");
     onPad(SDL_CONTROLLER_BUTTON_B, true);
     frame();
     onStick(SDL_CONTROLLER_AXIS_LEFTY, -30000);  // stick vers le haut
@@ -461,11 +461,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     frame();
     in.confirm = true;  // vendre une potion
     frame();
-    check(gold == item("potion").price / 2 && items["potion"] == 1 && menus.top().title.rfind("Vendre", 0) == 0,
+    check(gold == item("potion").price / 2 && items["potion"] == 1 && menus.top().title.rfind(T("Vendre  ·  "), 0) == 0,
           "boutique : vendre un objet rapporte la moitié de son prix");
     in.cancel = true;  // retour à la boutique
     frame();
-    check(menus.active() && menus.top().title.rfind("Boutique", 0) == 0, "boutique : Échap dans « Vendre » revient à la boutique");
+    check(menus.active() && menus.top().title.rfind(T("Boutique  ·  "), 0) == 0, "boutique : Échap dans « Vendre » revient à la boutique");
     menus.clear();
     team = keepTeam;
     reserve.clear();
@@ -684,7 +684,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     bool listed = false;  // la quête (après le conseil « Prochain gardien »)
     for (auto& it : menus.top().items)
       listed = listed || (it.right == "en cours" && it.help.find("Bois Murmurant") != std::string::npos);
-    listed = listed && menus.top().title == "Journal";
+    listed = listed && menus.top().title == T("Journal");
     menus.clear();
     panelMode_ = 0;
     int village = mi("vallee"), chest = -1;
@@ -975,7 +975,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     pauseMenu();
     bool offered = false;
     for (auto& it : menus.top().items)
-      if (it.label == "Recommencer l'énigme") offered = true, it.act();
+      if (it.label == T("Recommencer l'énigme")) offered = true, it.act();
     bool reset = offered && boulders_ == start && px == R.puzzleX && py == R.puzzleY;
     menus.clear();
     path = solvePuzzle(R, px, py, boulders_, [this](int x, int y) { return !boulderAt(x, y) && blocked(x, y); });
@@ -1056,7 +1056,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     frame();
     auto& slots = menus.top().items;
     for (size_t i = 0; i < slots.size(); i++)
-      if (slots[i].label == "Gemmes") menus.top().sel = (int)i;
+      if (slots[i].label == T("Gemmes")) menus.top().sel = (int)i;
     in.confirm = true;  // Gemmes
     frame();
     in.confirm = true;  // chaton de l'arme
@@ -1161,7 +1161,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     lior->atb = 100;
     B.command(lior);
     bool menu = false;
-    for (auto& it : menus.top().items) menu = menu || (it.label == "Duo" && it.enabled);
+    for (auto& it : menus.top().items) menu = menu || (it.label == T("Duo") && it.enabled);
     snap("duo_menu");
     menus.clear();
     int mp0 = maelle->mp;
@@ -1201,7 +1201,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     flags.insert("brann");
     runEvent("forge");
     skipScript();
-    check(menus.active() && menus.top().title.rfind("Forge", 0) == 0, "forge : l'enclume de Forgeroc ouvre la forge une fois Brann dans l'équipe");
+    check(menus.active() && menus.top().title.rfind(T("Forge  ·  "), 0) == 0, "forge : l'enclume de Forgeroc ouvre la forge une fois Brann dans l'équipe");
     snap("forge");
     menus.clear();
     sc.clear();
@@ -1247,7 +1247,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     // Échap > Évolution : la créature qui avait refusé
     pauseMenu();
     bool listed = false;
-    for (auto& it : menus.top().items) listed = listed || it.label == "Évolution";
+    for (auto& it : menus.top().items) listed = listed || it.label == T("Évolution");
     menus.clear();
     evolutionMenu();
     in.confirm = true;
@@ -2274,7 +2274,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     frame();
     run(.2f);
     snap("61_expedition_menu");
-    bool onMenu = X.onScreen() && menus.active() && menus.top().title == "Expédition";
+    bool onMenu = X.onScreen() && menus.active() && menus.top().title == T("Expédition");
     X.start(424242, "");
     run(.2f);
     snap("62_expedition_heros");
@@ -2411,7 +2411,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     frame();
     run(.1f);
     snap("69_multijoueur");
-    bool menuOk = H.onScreen() && menus.top().title == "Multijoueur";
+    bool menuOk = H.onScreen() && menus.top().title == T("Multijoueur");
     in.confirm = true;  // Héberger une partie
     frame();
     run(.1f);
@@ -2482,11 +2482,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       // Une contre une : l'hôte propose a, l'invité donne c en retour, l'hôte accepte
       H.offerTrade(1, 1, false);
       both(10);
-      bool asked = guest.menus.active() && guest.menus.top().title == "Échange : avec Hôte" && V.trade_.step == Online::Trade::Step::Answering;
+      bool asked = guest.menus.active() && guest.menus.top().title == T("Échange : avec ") + std::string("Hôte") && V.trade_.step == Online::Trade::Step::Answering;
       snapGuest("83_echange_invite");
       V.answerTrade(1);
       both(10);
-      bool countered = menus.active() && menus.top().title == "Échange : avec Invité" && H.trade_.step == Online::Trade::Step::Countered;
+      bool countered = menus.active() && menus.top().title == T("Échange : avec ") + std::string("Invité") && H.trade_.step == Online::Trade::Step::Countered;
       snap("84_echange_hote");
       in.confirm = true;  // Accepter
       frame();
@@ -2498,7 +2498,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       // Cadeau : l'invité offre sa créature, l'hôte l'accepte ; l'invité n'a plus que son héros
       V.offerTrade(0, 1, true);
       both(10);
-      bool giftAsked = menus.active() && menus.top().title == "Échange : cadeau de Invité";
+      bool giftAsked = menus.active() && menus.top().title == T("Échange : cadeau de ") + std::string("Invité");
       in.confirm = true;  // Accepter
       frame();
       both(10);
@@ -2586,7 +2586,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     frame();
     run(.1f);
     snap("75_groupe_menu");
-    bool groupMenuOk = menus.top().title == "Expédition à plusieurs" && menus.top().items.size() == 4;
+    bool groupMenuOk = menus.top().title == T("Expédition à plusieurs") && menus.top().items.size() == 4;
     uint64_t seed = procgen::seedFromText("groupe");
     menus.clear();
     // Les deux jeux partagent ici les mêmes données en mémoire : l'invité met de côté les vraies données
@@ -2620,11 +2620,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     // Menu de pause > Groupe : où en sont les autres
     pauseMenu();
     bool hasGroup = false;
-    for (auto& it : menus.top().items) hasGroup = hasGroup || it.label == "Groupe";
+    for (auto& it : menus.top().items) hasGroup = hasGroup || it.label == T("Groupe");
     H.groupMenu();
     run(.1f);
     snap("78_groupe_pause");
-    check(hasGroup && menus.top().title == "Groupe" && menus.top().items.size() == 4, "expédition à plusieurs : menu de pause > Groupe");
+    check(hasGroup && menus.top().title == T("Groupe") && menus.top().items.size() == 4, "expédition à plusieurs : menu de pause > Groupe");
     menus.clear();
     // Gardien : l'hôte attend devant lui, l'invité arrive, le combat commence chez les deux (deux combattants chacun)
     for (Game* p : {this, &guest})
@@ -2643,7 +2643,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     skipScript();
     both(10);
     snap("79_groupe_attente_gardien");
-    bool waiting = H.ready_ == 1 && menus.active() && menus.top().title == "Gardien : le groupe" && mode == Mode::Map && !H.missing(1).empty() &&
+    bool waiting = H.ready_ == 1 && menus.active() && menus.top().title == T("Gardien : le groupe") && mode == Mode::Map && !H.missing(1).empty() &&
                    V.players_.at(0).ready == 1;
     toGuardian(guest);
     guest.interact();
@@ -2726,7 +2726,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       both(10);
       H.offerTrade(1, slot, true);
       both(10);
-      bool asked = guest.menus.active() && guest.menus.top().title == "Échange : cadeau de Hôte";
+      bool asked = guest.menus.active() && guest.menus.top().title == T("Échange : cadeau de ") + std::string("Hôte");
       snapGuest("85_groupe_cadeau_invite");
       guest.in.confirm = true;  // Accepter
       both(1);
