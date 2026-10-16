@@ -559,6 +559,10 @@ void Game::tryMove(int d) {
   fromX = px, fromY = py;
   trail_.push_back({px, py});  // le compagnon suivra par ici
   if (trail_.size() > 3) trail_.erase(trail_.begin());
+  if (M().theme == Theme::Neige && (M().rows[py][px] == '.' || M().rows[py][px] == '=')) {  // une empreinte dans la neige
+    footprints_.push_back({px, py, d, time});
+    if (footprints_.size() > 40) footprints_.erase(footprints_.begin());
+  }
   px = nx, py = ny;
   moving = true;
   moveT = 0;
@@ -661,6 +665,7 @@ void Game::bossTouched(const BossSpot& b) {
 
 void Game::changeMap(int m, int x, int y, int d) {
   trail_.clear();  // le compagnon réapparaît au premier pas
+  footprints_.clear();
   talkNpc_ = -1;
   mapFadeT_ = time;  // fondu depuis le noir
   bool changed = m != mapId;
@@ -1001,6 +1006,16 @@ void Game::drawMap() {
   int tx0 = std::max(0, (int)std::floor((camX + g.left()) / 16)), tx1 = (int)((camX + g.right()) / 16), ty0 = std::max(0, camY / 16);
   for (int y = ty0; y <= ty0 + SCREEN_H / 16 && y < m.h(); y++)
     for (int x = tx0; x <= tx1 && x < m.w(); x++) drawTile(g, m, x, y, x * 16 - camX, y * 16 - camY, time);
+  for (auto& f : footprints_) {  // empreintes dans la neige : deux pas par case, qui s'effacent en 30 s
+    float a = 1 - (time - f.t) / 30;
+    if (a <= 0) continue;
+    float sx = f.x * 16 - camX, sy = f.y * 16 - camY;
+    bool vert = f.dir == UP || f.dir == DOWN;
+    for (int k = 0; k < 2; k++) {
+      float ox = vert ? 5 + k * 5 : 3 + k * 8, oy = vert ? 3 + k * 7 : 8 + (k ? 2 : -1);
+      g.ellipse(sx + ox, sy + oy, vert ? 1.5f : 2, vert ? 2 : 1.5f, rgb(0x9fb2cc, uint8_t(150 * a)));
+    }
+  }
   // Énigme (3.0) : grilles (fermées : barreaux), plaques allumées, rochers
   if (!m.puzzleFlag.empty()) {
     bool open = puzzleSolved(m);

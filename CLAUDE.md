@@ -381,7 +381,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   lieux ayant `carte_monde` atteignables d'ici par des passages ouverts (`checkCond`), sans rien enregistrer ; pas en
   Expédition. Eau `~` dessinée en code (la texture `tex_eau` de la planche n'est pas utilisable) : bords peu
   profonds plus clairs, ombre de la berge, écume en tirets, vaguelettes, reflets. Neige (`ground`) : rides de vent,
-  congères, brins secs, cristaux ; chemins `=` de neige tassée (empreintes, bords de neige fraîche) ; case `c` d'une
+  congères, brins secs, cristaux ; chemins `=` de neige tassée (empreintes, bords de neige fraîche), et les pas du
+  joueur y restent 30 s (`footprints_`, dessin seul, vidé au changement de carte) ; case `c` d'une
   carte de neige = dalles de glace (Temple). Intérieurs : fenêtres aux murs (`interiorWindow`), lumière au sol sous
   elles et ombre des murs (`drawTile` ajoute tout cela par-dessus `drawTileBase`). Quêtes : bulle « ! » (à prendre)
   ou « ? » dorée (à rendre) au-dessus d'un habitant, `Game::questMark` (events.cpp) lit l'action `quete` de la page

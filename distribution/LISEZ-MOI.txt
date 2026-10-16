@@ -42,6 +42,10 @@ COMMANDES
   F11                 plein écran ou fenêtre
   La souris marche aussi dans les menus.
 
+  Échap > Carte du monde : les lieux où aller, et où vous êtes. Une bulle
+  « ! » au-dessus d'un habitant : il propose une quête ; « ? » dorée : vous
+  pouvez la lui rendre (Échap > Journal).
+
   Échap > Équipement : arme, armure et accessoire de chaque membre (en
   vente dans les boutiques). Équipez-vous avant chaque boss !
 

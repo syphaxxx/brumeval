@@ -260,6 +260,12 @@ class Game {
   // Compagnon qui suit (3.3, dessin seul) : les dernières cases quittées par le joueur ; la créature marche une case
   // derrière lui. Vidé à chaque changement de carte (elle réapparaît au premier pas).
   std::vector<std::pair<int, int>> trail_;
+  // Empreintes dans la neige (3.3, dessin seul) : les dernières cases quittées sur une carte de neige, qui s'effacent
+  struct Footprint {
+    int x, y, dir;
+    float t;
+  };
+  std::vector<Footprint> footprints_;
   int followDir_ = DOWN;
   float mapFadeT_ = -10;  // moment du dernier changement de carte (fondu depuis le noir, 0,3 s)
   std::unique_ptr<Pilot> pilot_;            // joueur automatique (démo, partie rapide), voir pilot.hpp

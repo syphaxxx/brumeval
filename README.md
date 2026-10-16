@@ -20,11 +20,11 @@ Windows et de macOS, normaux pour un jeu non signé).
 |---|---|
 | Flèches ou ZQSD | Se déplacer, naviguer dans les menus |
 | Maj (maintenue) | Courir |
-| Échap > Carte | Carte du monde |
+| Échap > Carte du monde | Les lieux où aller, et où vous êtes |
 | Entrée ou Espace | Parler, valider, faire défiler les dialogues |
 | Échap | Annuler, ouvrir le menu (équipe, tactiques, objets, magie, sauvegarde) |
 | Tab (en combat) | Mode auto : les tactiques jouent à votre place, ou vous reprenez la main |
-| F1 | Aide : statistiques, dégâts, damier et zones, états, tableau des types, touches |
+| F1 | Aide : statistiques, dégâts, damier et zones, états, tableau des types, exploration, touches |
 | F2 | Vitesse du jeu ×1, ×2 ou ×3 (marche, combats, textes ; gardée pour la prochaine fois) |
 | F11 ou Alt+Entrée | Plein écran ou fenêtre (le choix est gardé pour la prochaine fois). L'image s'adapte à la forme de l'écran ou de la fenêtre, sans bandes noires |
 

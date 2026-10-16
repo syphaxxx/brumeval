@@ -1495,6 +1495,15 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     view("sylvenoire", 40, 20, LEFT, "25_sylvenoire");
     view("pics", 30, 35, UP, "26_givreval");
     view("pics", 30, 12, UP, "27_pics");
+    {  // 3.3 : des empreintes dans la neige derrière le joueur (elles s'effacent en 30 s)
+      changeMap(mi("pics"), 30, 12, DOWN);
+      in.hold[DOWN] = true;
+      for (int i = 0; i < 60 * 3 && py < 15; i++) frame();
+      in.hold[DOWN] = false;
+      run(.3f);
+      snap("neige_empreintes");
+      check(footprints_.size() >= 2 && footprints_[0].x == 30 && footprints_[0].y == 12, "neige : des empreintes restent derrière le joueur");
+    }
     view("temple", 20, 27, UP, "28_temple");
     view("sanctuaire", 10, 12, UP, "29_sanctuaire");
     auto fight = [&](const char* map, std::vector<FighterP> foes, const char* name) {
