@@ -567,12 +567,14 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         frame();
       }
       bool moved = B.cellOf(lior) != liorCell && !B.threatened(lior);
-      B.bossPlan(boss);
+      size_t logBefore = B.log.size();  // le journal dit si l'attaque annoncée a trouvé quelqu'un (les autres ennemis
+      B.bossPlan(boss);                 // peuvent frapper Lior pendant ce temps : ses PV ne prouvent rien)
       for (int i = 0; i < 300 && B.sc.busy(); i++) {
         in.confirm = true;
         frame();
       }
-      bool dodged = lior->hp == lior->mhp;
+      bool dodged = false;
+      for (size_t i = logBefore; i < B.log.size(); i++) dodged = dodged || B.log[i].find(T(" (annoncée), personne dans la zone")) != std::string::npos;
       // Tactique : « Soi : zone annoncée » > « Se mettre à l'abri »
       B.warnings_.push_back({boss, "mordant", Area::Single, B.cellOf(lior)});
       lior->tactics = {Tactic{true, "soi_menace", 0, Tactic::Act::Auto, "esquiver"}};
@@ -683,7 +685,9 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     snap("93_journal");
     bool listed = false;  // la quête (après le conseil « Prochain gardien »)
     for (auto& it : menus.top().items)
-      listed = listed || (it.right == T("en cours") && it.help.find(tr("Bois Murmurant")) != std::string::npos);
+      listed = listed || (it.right == T("en cours") &&
+                          it.help.find(tr("Le petit-fils de l'ancien cherche le médaillon de son grand-père, perdu dans le Bois "
+                                          "Murmurant, au sud-ouest du village.")) != std::string::npos);
     listed = listed && menus.top().title == T("Journal");
     menus.clear();
     panelMode_ = 0;
@@ -1501,7 +1505,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     check(mode == Mode::Arena && arena_ != nullptr, "écran titre > Outils > Arène de combat");
     if (arena_) {
       Arena& A = *arena_;
-      check(A.presetCount() >= 15 && A.findPreset("Givrecorne") >= 0 && A.findPreset("Le braconnier") >= 0,
+      check(A.presetCount() >= 15 && A.findPreset(species("givrecorne").name) >= 0 && A.findPreset(tr("Le braconnier")) >= 0,
             "arène : modèles repris des événements et des zones (" + std::to_string(A.presetCount()) + ")");
       run(.3f);
       snap("34_arene");
@@ -1847,10 +1851,12 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
 
   // --- Tactiques (règles de combat automatiques) ---
   {
-    auto selectLabel = [&](const std::string& start) {
+    auto selectLabel = [&](const std::string& start) {  // « Soi : PV < {n} % » : le début, jusqu'au nombre
       auto& it = menus.top().items;
+      std::string fr = start.substr(0, start.find(" <")), en = tr(start);
+      en = en.substr(0, std::min(en.find('{'), en.find(" <")));
       for (size_t k = 0; k < it.size(); k++)
-        if (!it[k].header && (it[k].label.rfind(start, 0) == 0 || it[k].label.rfind(tr(start), 0) == 0)) {
+        if (!it[k].header && (it[k].label.rfind(fr, 0) == 0 || it[k].label.rfind(en, 0) == 0)) {
           menus.top().sel = (int)k;
           return true;
         }
@@ -1928,7 +1934,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     menus.top().sel = 2 + (int)n0;  // première ligne libre
     in.confirm = true;
     frame();
-    bool found = selectLabel("Soi : PV");
+    bool found = selectLabel("Soi : PV < {n} %");
     run(.1f);
     snap("57_tactiques_condition");
     in.confirm = true;

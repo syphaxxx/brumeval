@@ -488,7 +488,9 @@ code) ; `docs/GUIDE.md` les range par domaine.
   `options.txt`, `en_ligne.txt`, messages) ni une étiquette comparée ailleurs sans `T` (le joueur automatique compare
   `T("Fuir")`…). procgen.cpp reste en français (le monde doit être identique chez tous). `python outils/textes.py`
   rassemble les phrases (T du code, tableaux de noms, textes des données) ; `BRUMEVAL_LANGUE=en brumeval --test …`
-  liste à la fin les phrases affichées sans traduction et vérifie la mise en page en anglais. Dans tactics.cpp et
+  liste à la fin les phrases affichées sans traduction et vérifie la mise en page en anglais ; depuis la 3.3 il doit
+  aussi finir par « TOUS LES TESTS PASSENT » : les tests comparent les libellés à leur traduction (`T("…")` avec le
+  morceau exact du code, `tr()` pour les données, `species(id).name`), et attendent les éditeurs fermés en anglais. Dans tactics.cpp et
   help.cpp, écrire `::T(` (un membre s'appelle `T`). Jamais `T(` dans un tableau global (rempli au chargement du
   programme, avant le choix de la langue : plantage sur Linux et Mac) : `N_("…")`, puis `tr()` à l'affichage.
 - Données en mémoire : `dataDoc(DF_…)` garde chaque fichier de data/ sous forme
