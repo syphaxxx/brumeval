@@ -960,9 +960,26 @@ void Game::drawMap() {
                         drawBuilding(g, b, b.x * 16 - camX, b.y * 16 - camY);
                         if (m.theme != Theme::Interieur) drawChimneySmoke(g, b, b.x * 16 - camX, b.y * 16 - camY, time);
                       }});
+  std::set<std::pair<int, int>> behind;  // cases qu'un objet haut plus bas ne doit pas cacher
+  for (auto& c : m.chests) behind.insert({c.x, c.y});
+  for (auto& sg : m.signs) behind.insert({sg.x, sg.y});
+  for (auto& n : m.npcs)
+    if (npcVisible(n)) behind.insert({n.x, n.y});
+  behind.insert({px, py});
+  if (moving) behind.insert({fromX, fromY});
   for (int y = ty0; y <= ty0 + SCREEN_H / 16 + 3 && y < m.h(); y++)  // + 3 : un arbre plus bas dépasse vers le haut
     for (int x = std::max(0, tx0 - 1); x <= tx1 + 1 && x < m.w(); x++)
-      if (hasProp(m, x, y)) actors.push_back({float(y * 16 + 1), [&, x, y] { drawProp(g, m, x, y, x * 16 - camX, y * 16 - camY, time); }});
+      if (hasProp(m, x, y)) {
+        // Un arbre (ou un objet haut) devant le joueur, un coffre, un panneau ou un habitant : à demi transparent (3.3)
+        bool see = false;
+        for (int dy = 1; dy <= 2 && !see; dy++)
+          see = behind.count({x, y - dy}) > 0;
+        actors.push_back({float(y * 16 + 1), [&, x, y, see] {
+                            if (see) g.alpha = .5f;
+                            drawProp(g, m, x, y, x * 16 - camX, y * 16 - camY, time);
+                            g.alpha = 1;
+                          }});
+      }
   for (auto& n : m.npcs)
     if (npcVisible(n))
       actors.push_back({float(n.y * 16), [&, n] {
