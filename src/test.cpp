@@ -567,12 +567,14 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         frame();
       }
       bool moved = B.cellOf(lior) != liorCell && !B.threatened(lior);
-      B.bossPlan(boss);
+      size_t logBefore = B.log.size();  // le journal dit si l'attaque annoncée a trouvé quelqu'un (les autres ennemis
+      B.bossPlan(boss);                 // peuvent frapper Lior pendant ce temps : ses PV ne prouvent rien)
       for (int i = 0; i < 300 && B.sc.busy(); i++) {
         in.confirm = true;
         frame();
       }
-      bool dodged = lior->hp == lior->mhp;
+      bool dodged = false;
+      for (size_t i = logBefore; i < B.log.size(); i++) dodged = dodged || B.log[i].find(T(" (annoncée), personne dans la zone")) != std::string::npos;
       // Tactique : « Soi : zone annoncée » > « Se mettre à l'abri »
       B.warnings_.push_back({boss, "mordant", Area::Single, B.cellOf(lior)});
       lior->tactics = {Tactic{true, "soi_menace", 0, Tactic::Act::Auto, "esquiver"}};
