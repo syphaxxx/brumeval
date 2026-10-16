@@ -495,6 +495,8 @@ void Game::tryMove(int d) {
     return;
   }
   fromX = px, fromY = py;
+  trail_.push_back({px, py});  // le compagnon suivra par ici
+  if (trail_.size() > 3) trail_.erase(trail_.begin());
   px = nx, py = ny;
   moving = true;
   moveT = 0;
@@ -596,6 +598,7 @@ void Game::bossTouched(const BossSpot& b) {
 }
 
 void Game::changeMap(int m, int x, int y, int d) {
+  trail_.clear();  // le compagnon réapparaît au premier pas
   bool changed = m != mapId;
   mapId = m;
   if (changed) resetBoulders();
@@ -1028,6 +1031,26 @@ void Game::drawMap() {
         playerLook = f->S().look;
         break;
       }
+  // Le compagnon suit le joueur (la première créature de l'équipe), une case derrière lui
+  const Fighter* buddy = nullptr;  // la première créature en forme, sinon la première tout court
+  for (auto& f : team)
+    if (!f->S().human && (f->alive() || !buddy)) {
+      buddy = f.get();
+      if (f->alive()) break;
+    }
+  if (buddy && !trail_.empty() && !(online_ && online_->inGroup())) {
+    std::pair<int, int> to = trail_.back(), from = trail_.size() >= 2 && moving ? trail_[trail_.size() - 2] : to;
+    float k2 = moving ? moveT : 1;
+    float bx = (from.first + (to.first - from.first) * k2) * 16, by = (from.second + (to.second - from.second) * k2) * 16;
+    if (to.first != from.first) followDir_ = to.first > from.first ? RIGHT : LEFT;
+    if (!(bx == ppx && by == ppy)) {  // pas sur le joueur (premier pas après un changement de carte)
+      std::string sp = buddy->sp;
+      bool right = followDir_ == RIGHT;
+      actors.push_back({by - .5f, [&, bx, by, sp, right] {
+                          drawCreature(g, sp, bx - camX + 8, by - camY + 4, .62f, right, time);
+                        }});
+    }
+  }
   actors.push_back({ppy, [&] {
                        drawHuman(g, look(playerLook), ppx - camX, ppy - camY - 2, 1, dir, step, false, run);
                        if (!moving) tallGrass(g, m, px, py, px * 16 - camX, py * 16 - camY, time, true);  // pieds dans l'herbe

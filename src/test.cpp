@@ -787,6 +787,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     in.shift = false;
     run(.3f);
     check(fast, "courir : Maj maintenue, le pas va presque deux fois plus vite");
+    snap("courir_compagnon");  // le compagnon suit une case derrière
+    check(!trail_.empty() && trail_.back() == std::make_pair(12, 34), "compagnon : il suit le joueur, une case derrière lui");
     changeMap(mi("cendrelune"), 12, 34, DOWN);
   }
   run(.4f);

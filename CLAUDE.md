@@ -368,7 +368,13 @@ code) ; `docs/GUIDE.md` les range par domaine.
   fourchette de `ecart_min` à 1, chance de toucher) ; l'efficacité d'un type n'est comptée qu'une fois découverte
   (`weakKnown`), sinon neutre : rien ne se devine sans attaquer (Brisure). Ennemi vaincu : il s'efface en 0,6 s (`koT_`). Décor de l'horizon en sprites
   (arbres, sapins, rochers). Écran titre : les personnages de part et d'autre du menu. Habitants : regards et
-  sautillements (dessin seul).
+  sautillements (dessin seul). Ordre des tours : portraits (`drawFighterIcon`). Un objet haut juste devant le joueur,
+  un coffre, un panneau ou un habitant devient transparent (`behind` dans `drawMap`). Murs de grotte, de glace et
+  falaises en `tex_pierre` teintée, dalles au sol des grottes (`texTile` avec teinte). Fontaine `W` dessinée une fois
+  depuis le coin bas-droit de son bloc (ronde, jet d'eau) ; départ de la partie en (12, 10). Compagnon qui suit
+  (`trail_`, `followDir_` : la première créature de l'équipe marche une case derrière le joueur, dessin seul, vidé
+  au changement de carte ; pas en expédition à plusieurs). Éditeur de cartes : objets hauts dessinés (`drawProp`,
+  `drawPropIcon` dans la palette).
 - Graphismes des cartes (2.0, sprites.cpp) : maisons (`drawBuilding` : ombre, soubassement, pierres, tuiles en rangées,
   faîtage, cheminée, fenêtres à volets et jardinières), arbres `T` en trois variantes selon `hsh` (rond, petit, fruitier
   ou large en forêt), chemins `=` aux bords adoucis contre la nature (liseré, touffes, coins), herbe de la vallée variée.
