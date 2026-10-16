@@ -480,6 +480,8 @@ void Game::syncWalkers() {
 }
 void Game::updateWalkers(float dt) {
   syncWalkers();
+  if (talkNpc_ >= 0 && talkNpc_ < (int)walk_.size()) walk_[talkNpc_].faceUntil = time + 1.5f;  // la conversation est finie
+  talkNpc_ = -1;
   const MapDef& m = M();
   auto rnd = [this](int k) {
     walkSeed_ = walkSeed_ * 1664525u + 1013904223u;
@@ -488,7 +490,7 @@ void Game::updateWalkers(float dt) {
   for (size_t i = 0; i < m.npcs.size(); i++) {
     const Npc& n = m.npcs[i];
     NpcWalk& w = walk_[i];
-    if (n.roam <= 0 || !npcVisible(n)) continue;
+    if (n.roam <= 0 || n.sight > 0 || !npcVisible(n)) continue;  // un dresseur garde sa place (son regard compte)
     if (w.t < 1) {  // un pas lent : un tiers de seconde par case
       w.t = std::min(1.f, w.t + dt * 3);
       continue;
@@ -659,6 +661,7 @@ void Game::bossTouched(const BossSpot& b) {
 
 void Game::changeMap(int m, int x, int y, int d) {
   trail_.clear();  // le compagnon réapparaît au premier pas
+  talkNpc_ = -1;
   mapFadeT_ = time;  // fondu depuis le noir
   bool changed = m != mapId;
   mapId = m;
@@ -685,6 +688,7 @@ void Game::interact() {
         walk_[i].dir = dir == UP ? DOWN : dir == DOWN ? UP : dir == LEFT ? RIGHT : LEFT;
         if (dir == LEFT || dir == RIGHT) walk_[i].side = walk_[i].dir;
         walk_[i].faceUntil = time + 2.5f;
+        talkNpc_ = (int)i;
       }
       return talk(m.npcs[i]);
     }
@@ -855,6 +859,7 @@ void Game::newGame(const std::string& starter) {
   flags.clear();
   respawnMap = std::max(0, mapIndex(r.respawnMap)), respawnX = r.respawnX, respawnY = r.respawnY;
   mapId = -1;
+  walkMap_ = -1;  // les habitants repartent de leur place
   changeMap(std::max(0, mapIndex(r.startMap)), r.startX, r.startY, r.startDir);
   mode = Mode::Map;
   if (!r.startEvent.empty()) runEvent(r.startEvent);
@@ -1059,11 +1064,11 @@ void Game::drawMap() {
       if (walkMap_ == mapId && i < walk_.size() && walk_[i].hx == n.x && walk_[i].hy == n.y) w = walk_[i];
       else w.x = w.fx = n.x, w.y = w.fy = n.y, w.dir = n.dir, w.side = n.dir == RIGHT ? RIGHT : LEFT;
       float nx = (w.fx + (w.x - w.fx) * w.t) * 16, ny = (w.fy + (w.y - w.fy) * w.t) * 16;
-      actors.push_back({ny, [&, n, w, nx, ny] {
+      actors.push_back({ny, [&, i, n, w, nx, ny] {
                           // Habitants vivants (3.3, dessin seul) : de temps en temps, ils regardent ailleurs un instant (pas les
                           // dresseurs : leur regard compte) ; les animaux sautillent et changent de côté ; les promeneurs
                           // marchent, et chacun se tourne vers le joueur qui lui parle
-                          bool facing = time < w.faceUntil;
+                          bool facing = time < w.faceUntil || (int)i == talkNpc_;
                           int d = n.roam > 0 || facing ? w.dir : n.dir, h = n.x * 7 + n.y * 13;
                           float bob = 0;
                           const Look& lk = look(n.look);

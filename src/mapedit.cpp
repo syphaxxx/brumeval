@@ -509,7 +509,7 @@ void MapEditor::editNpc(int i, int sel) {
                             [N] { return (double)N().roam; },
                             [this, N](double v) {
                               begin();
-                              N().roam = N().sight > 0 ? 0 : (int)v;
+                              N().roam = (int)v;  // sans effet sur un dresseur (vue) : il garde sa place
                             },
                             1, 0, 4));
   m.items.push_back({"Déplacer", "", "", true, [this, N] {

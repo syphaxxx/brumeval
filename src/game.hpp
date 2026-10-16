@@ -145,6 +145,7 @@ class Game {
   std::vector<NpcWalk> walk_;
   int walkMap_ = -1;
   uint32_t walkSeed_ = 7;  // hasard à part : les promeneurs ne changent pas les combats
+  int talkNpc_ = -1;       // l'habitant à qui l'on parle : il regarde le joueur jusqu'à la fin de la conversation
   void syncWalkers();
   void updateWalkers(float dt);
   std::pair<int, int> npcCell(const MapDef& m, size_t i) const;  // case actuelle d'un habitant
