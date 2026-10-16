@@ -2401,6 +2401,7 @@ void Battle::drawStatusTag(const Fighter& f, float x, float y) {
   if (f.status == Status::None || !f.alive()) return;
   Gfx& g = G.g;
   Color c = rgb(statusColor(f.status));
+  x = std::clamp(x, 13.f, 307.f);  // l'allié du fond, tout à gauche : l'étiquette reste dans l'écran
   g.rect(x - 11, y - 1, 22, 9, rgb(0x0a0f33, 220));
   g.frame(x - 11, y - 1, 22, 9, c);
   g.text(x, y - 2, statusTag(f.status), c, 1, false);
