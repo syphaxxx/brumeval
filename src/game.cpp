@@ -605,6 +605,7 @@ void Game::bossTouched(const BossSpot& b) {
 
 void Game::changeMap(int m, int x, int y, int d) {
   trail_.clear();  // le compagnon réapparaît au premier pas
+  mapFadeT_ = time;  // fondu depuis le noir
   bool changed = m != mapId;
   mapId = m;
   if (changed) resetBoulders();
@@ -1141,6 +1142,8 @@ void Game::drawMap() {
     }
   }
   // Bandeau du nom de la région
+  if (float k = (time - mapFadeT_) / .3f; k >= 0 && k < 1)  // changement de carte (3.3) : on sort du noir
+    g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0x000000, uint8_t(255 * (1 - k) * (1 - k))));
   if (banner > 0 && !menus.active()) {  // le nom de la région s'efface quand un menu s'ouvre
     float a = std::min(1.f, banner / .5f);
     g.alpha = a;

@@ -245,6 +245,7 @@ class Game {
   // derrière lui. Vidé à chaque changement de carte (elle réapparaît au premier pas).
   std::vector<std::pair<int, int>> trail_;
   int followDir_ = DOWN;
+  float mapFadeT_ = -10;  // moment du dernier changement de carte (fondu depuis le noir, 0,3 s)
   std::unique_ptr<Pilot> pilot_;            // joueur automatique (démo, partie rapide), voir pilot.hpp
   std::string saveBeforePilot_;             // fichier de sauvegarde d'avant la démo (rendu par l'écran titre)
   bool duelBattle_ = false;                 // le combat en cours est un duel en ligne
