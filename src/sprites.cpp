@@ -854,6 +854,8 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
         g.rect(sx, sy, 16, 16, rgb(0x241e2e));
         g.ellipse(sx + 4 + h % 8, sy + 4 + (h >> 4) % 8, 4, 3, rgb(0x322a3e));
         g.rect(sx + (h >> 8) % 14, sy + (h >> 12) % 14, 2, 2, rgb(0x1a1522));
+      } else if (texTile(g, "tex_pierre", x, y, sx, sy, th == Theme::Cendres ? rgb(0x8a7a70) : rgb(0xc0aa8c))) {  // (3.3) falaise
+        if (at(x, y - 1) != '#' && th != Theme::Cendres) g.rect(sx, sy, 16, 2, rgb(0x5f9a52));  // l'herbe du dessus
       } else {
         g.rect(sx, sy, 16, 16, rgb(0x8a7a66));
         g.rect(sx, sy + 5, 16, 1, rgb(0x6e604f));
