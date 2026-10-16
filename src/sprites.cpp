@@ -607,7 +607,10 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
   int h = hsh(x, y);
   Theme th = m.theme;
   if (propSprite(m, x, y) || (c == 'e' && x > 0 && m.rows[y][x - 1] == 'e' && findSprite("bibliotheque"))) {
-    ground(g, th, sx, sy, h, x, y);  // l'objet est dessiné avec les personnages (drawProp) : ici le sol seul
+    // l'objet est dessiné avec les personnages (drawProp) : ici le sol seul, pavé s'il est posé sur une place
+    auto at2 = [&](int xx, int yy) { return (xx < 0 || yy < 0 || xx >= m.w() || yy >= m.h()) ? ' ' : m.rows[yy][xx]; };
+    int paved = (at2(x - 1, y) == 'q') + (at2(x + 1, y) == 'q') + (at2(x, y - 1) == 'q') + (at2(x, y + 1) == 'q');
+    if (!(paved >= 2 && g.sprite(th == Theme::Neige ? "sol_1_3" : th == Theme::Cendres ? "sol_0_5" : "sol_0_3", sx, sy))) ground(g, th, sx, sy, h, x, y);
     return;
   }
   auto at = [&](int xx, int yy) { return (xx < 0 || yy < 0 || xx >= m.w() || yy >= m.h()) ? ' ' : m.rows[yy][xx]; };
@@ -812,14 +815,25 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
     case 'W': {
       bool paved = at(x - 1, y) == 'q' || at(x + 1, y) == 'q' || at(x, y - 1) == 'q' || at(x, y + 1) == 'q';
       if (!(paved && g.sprite("sol_0_3", sx, sy))) g.rect(sx, sy, 16, 16, rgb(0xd9c08a));  // sur une place : les pavés autour
-      int l = at(x - 1, y) == 'W' ? 0 : 2, r = at(x + 1, y) == 'W' ? 16 : 14;
-      int tp = at(x, y - 1) == 'W' ? 0 : 2, bt = at(x, y + 1) == 'W' ? 16 : 14;
-      g.rect(sx + l, sy + tp, r - l, bt - tp, rgb(0xa8a8b4));
-      g.rect(sx + l + (l ? 2 : 0), sy + tp + (tp ? 2 : 0), r - l - (l ? 2 : 0) - (r < 16 ? 2 : 0),
-             bt - tp - (tp ? 2 : 0) - (bt < 16 ? 2 : 0), rgb(0x5ea0dc));
-      if (l == 0 && tp == 0) {
-        g.rect(sx - 1, sy - 6 + std::sin(t * 6) * 1, 2, 7, rgb(0xcfeaff, 200));
-        g.rect(sx - 3, sy - 2, 6, 1, rgb(0xcfeaff, 160));
+      // la fontaine est dessinée une fois, depuis son coin bas-droit (les autres cases du bloc sont déjà dessinées)
+      if (at(x + 1, y) == 'W' || at(x, y + 1) == 'W') break;
+      int bw = 16, bh = 16;  // taille du bloc de fontaine (1x1 ou 2x2…)
+      while (at(x - bw / 16, y) == 'W') bw += 16;
+      while (at(x, y - bh / 16) == 'W') bh += 16;
+      float ox0 = sx + 16 - bw, oy0 = sy + 16 - bh;
+      float cx = ox0 + bw / 2.f, cy = oy0 + bh / 2.f + 1, rx = bw / 2.f - 1, ry = bh / 2.f - 2;
+      g.ellipse(cx, cy + 2, rx, ry, rgb(0x000000, 50));                 // ombre
+      g.ellipse(cx, cy, rx, ry, rgb(0x8a8a96));                          // margelle de pierre
+      g.ellipse(cx, cy - 1, rx - 1, ry - 1, rgb(0xb4b4c0));
+      g.ellipse(cx, cy, rx - 3, ry - 3, rgb(0x3f7fc0));                  // l'eau
+      g.ellipse(cx - 2, cy - 1, rx - 6, ry - 5, rgb(0x5ea0dc));
+      float ring = std::fmod(t * .8f, 1.f);                              // ronds dans l'eau
+      g.ellipse(cx, cy, 3 + ring * (rx - 6), 1.5f + ring * (ry - 5), rgb(0xcfeaff, uint8_t(120 * (1 - ring))));
+      g.rect(cx - 2, cy - 6, 4, 6, rgb(0x9a9aa6));                       // colonne centrale
+      g.rect(cx - 1, cy - 12 + std::sin(t * 6), 2, 7, rgb(0xcfeaff, 210));  // le jet
+      for (int i = 0; i < 4; i++) {                                      // gouttes qui retombent
+        float k = std::fmod(t * 1.6f + i * .25f, 1.f), dx = (i % 2 ? 1 : -1) * (2 + k * 6);
+        g.rect(cx + dx, cy - 11 + k * k * 12, 1, 1, rgb(0xe6f6ff, uint8_t(220 * (1 - k))));
       }
       break;
     }

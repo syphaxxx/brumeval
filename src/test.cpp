@@ -1691,9 +1691,9 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       run(.1f);
       snap("48_editeur_vue_eloignee");
       // Tester ici, puis revenir à l'éditeur
-      E.setCursor(12, 9);
+      E.setCursor(11, 9);  // une case pavée de la place (la fontaine est en 12-13, 8-9)
       E.testHere();
-      bool playing = mode == Mode::Map && M().id == "vallee" && px == 12 && py == 9;
+      bool playing = mode == Mode::Map && M().id == "vallee" && px == 11 && py == 9;
       in.menu = true;
       frame();
       in.confirm = true;  // « Fin du test »
