@@ -742,17 +742,47 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
       break;
     case '~':
     case 'B': {
-      g.rect(sx, sy, 16, 16, rgb(0x3b7fc4));
-      int o = int(t * 4 + x + y) % 10;
-      g.rect(sx + o, sy + 4, 4, 1, rgb(0x6aa8e0));
-      g.rect(sx + (o + 5) % 12, sy + 11, 4, 1, rgb(0x6aa8e0));
-      if (c == '~') {  // écume le long des berges, qui ondule doucement
+      g.rect(sx, sy, 16, 16, rgb(0x3576bd));
+      if (c == '~') {
+        // Eau (3.3) : plus claire près des berges (peu profonde), ombre de la berge en haut, écume en tirets qui
+        // ondule, vaguelettes qui dérivent et reflets qui scintillent
         auto water = [&](char n) { return n == '~' || n == 'B' || n == ' '; };
-        uint8_t a = uint8_t(150 + 60 * std::sin(t * 2 + x * .8f + y * .6f));
-        if (!water(at(x, y - 1))) g.rect(sx, sy, 16, 2, rgb(0xd8efff, a));
-        if (!water(at(x, y + 1))) g.rect(sx, sy + 14, 16, 2, rgb(0xd8efff, a));
-        if (!water(at(x - 1, y))) g.rect(sx, sy, 2, 16, rgb(0xd8efff, a));
-        if (!water(at(x + 1, y))) g.rect(sx + 14, sy, 2, 16, rgb(0xd8efff, a));
+        bool up = !water(at(x, y - 1)), dn = !water(at(x, y + 1)), lf = !water(at(x - 1, y)), rt = !water(at(x + 1, y));
+        Color sh = rgb(0x6fb2e6, 120), sh2 = rgb(0x6fb2e6, 60);
+        if (up) g.rect(sx, sy, 16, 4, sh), g.rect(sx, sy + 4, 16, 2, sh2);
+        if (dn) g.rect(sx, sy + 12, 16, 4, sh), g.rect(sx, sy + 10, 16, 2, sh2);
+        if (lf) g.rect(sx, sy, 4, 16, sh), g.rect(sx + 4, sy, 2, 16, sh2);
+        if (rt) g.rect(sx + 12, sy, 4, 16, sh), g.rect(sx + 10, sy, 2, 16, sh2);
+        // coins : une berge en diagonale seulement
+        if (!up && !lf && !water(at(x - 1, y - 1))) g.rect(sx, sy, 4, 4, sh);
+        if (!up && !rt && !water(at(x + 1, y - 1))) g.rect(sx + 12, sy, 4, 4, sh);
+        if (!dn && !lf && !water(at(x - 1, y + 1))) g.rect(sx, sy + 12, 4, 4, sh);
+        if (!dn && !rt && !water(at(x + 1, y + 1))) g.rect(sx + 12, sy + 12, 4, 4, sh);
+        if (up) g.rect(sx, sy, 16, 1, rgb(0x1d4a7a, 170));  // la berge du haut fait de l'ombre
+        // vaguelettes : deux petits arcs par case, qui dérivent lentement
+        for (int k = 0; k < 2; k++) {
+          int wy = 4 + k * 6 + int(h >> (4 + k * 3)) % 3;
+          int wx = int(t * 3 + (h >> (k * 5)) % 16 + k * 7) % 14;
+          if (wx > 11) continue;  // l'arc passe dans la case voisine : il réapparaît de l'autre côté
+          g.rect(sx + wx + 1, sy + wy, 3, 1, rgb(0x8cc4ee, 190));
+          g.rect(sx + wx, sy + wy + 1, 1, 1, rgb(0x8cc4ee, 120)), g.rect(sx + wx + 4, sy + wy + 1, 1, 1, rgb(0x8cc4ee, 120));
+        }
+        // reflet qui scintille de temps en temps
+        if (std::sin(t * 1.7f + h % 97) > .93f) {
+          int gx = sx + 3 + (h >> 7) % 10, gy = sy + 3 + (h >> 11) % 10;
+          g.rect(gx, gy, 1, 1, rgb(0xffffff)), g.rect(gx - 1, gy, 3, 1, rgb(0xe8f6ff, 150)), g.rect(gx, gy - 1, 1, 3, rgb(0xe8f6ff, 150));
+        }
+        // écume en tirets le long des berges, qui avance doucement
+        int ph = int(t * 2 + x * 3 + y * 5);
+        uint8_t a = uint8_t(160 + 60 * std::sin(t * 2 + x * .8f + y * .6f));
+        for (int i = 0; i < 16; i += 2) {
+          bool on = (i / 2 + ph) % 4 != 0;
+          if (!on) continue;
+          if (up) g.rect(sx + i, sy + 1, 2, 1, rgb(0xe4f4ff, a));
+          if (dn) g.rect(sx + i, sy + 14, 2, 1, rgb(0xe4f4ff, a));
+          if (lf) g.rect(sx + 1, sy + i, 1, 2, rgb(0xe4f4ff, a));
+          if (rt) g.rect(sx + 14, sy + i, 1, 2, rgb(0xe4f4ff, a));
+        }
       }
       if (c == 'B') {
         bool horiz = at(x - 1, y) == '=' || at(x + 1, y) == '=' || at(x - 1, y) == 'B' || at(x + 1, y) == 'B';
