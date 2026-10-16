@@ -362,12 +362,20 @@ float Battle::zoneScore(const FighterP& a, const Move& m, const FighterP& center
   return s;
 }
 // Nombre ou texte flottant au-dessus d'un combattant ; ils s'empilent s'ils apparaissent ensemble
+// (3.3 : sans chevaucher ceux des voisins, et jamais sur la ligne de l'ordre des tours)
 void Battle::pop(const FighterP& f, const std::string& t, Color c) {
   Pt p = pos(f);
-  int stack = 0;
-  for (auto& q : pops)
-    if (q.x == p.x && G.time - q.t < .3f) stack++;
-  pops.push_back({p.x, p.y - 22 - 11.f * stack, t, c, G.time});
+  float w = Gfx::textW(t) + 4, x = std::clamp(p.x, w / 2 + 2, 318 - w / 2), y = p.y - 22;
+  auto clash = [&](float yy) {
+    for (auto& q : pops)
+      if (G.time - q.t < .8f && std::fabs(q.x - x) < (w + Gfx::textW(q.text) + 4) / 2 && std::fabs(q.y - yy) < 10) return true;
+    return false;
+  };
+  const float top = 54;  // le texte monte encore de 8 : il reste sous la ligne de l'ordre des tours
+  for (int k = 0; k < 6 && clash(y); k++) y -= 11;
+  if (y < top)
+    for (y = top; clash(y) && y < 150;) y += 11;  // plus de place au-dessus : en dessous
+  pops.push_back({x, y, t, c, G.time});
   if (net_ == Net::Host || net_ == Net::Lead) send_(-1, Json{{"t", "pop"}, {"f", mine(f)}, {"txt", t}, {"c", Json::array({c.r, c.g, c.b})}});
 }
 
