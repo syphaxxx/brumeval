@@ -509,9 +509,27 @@ static void ground(Gfx& g, Theme th, int sx, int sy, int h, int x, int y) {
     g.rect(sx + (h >> 8) % 12 + 2, sy + (h >> 12) % 12 + 2, 1, 2, rgb(0x34693a));
     if (h % 7 == 0) g.rect(sx + (h >> 3) % 12 + 2, sy + (h >> 7) % 12 + 2, 2, 1, rgb(0x8a6a3a));  // feuille morte
   } else if (th == Theme::Neige) {
+    // Neige (3.3) : des rides de vent, des congères avec leur ombre, des brins secs qui dépassent et des cristaux
     g.rect(sx, sy, 16, 16, rgb(0xe8eef6));
     g.rect(sx + h % 13, sy + (h >> 4) % 13, 2, 1, rgb(0xcdd8e8));
     g.rect(sx + (h >> 8) % 12 + 2, sy + (h >> 12) % 12 + 2, 1, 1, rgb(0xffffff));
+    int k = (h >> 5) % 13;
+    if (k < 3) {  // rides de vent : deux petites vagues
+      int rx = sx + 2 + (h >> 9) % 7, ry = sy + 4 + (h >> 13) % 8;
+      g.rect(rx, ry, 4, 1, rgb(0xd2dcea)), g.rect(rx + 4, ry - 1, 3, 1, rgb(0xd2dcea));
+      g.rect(rx + 2, ry + 3, 3, 1, rgb(0xd8e1ee)), g.rect(rx + 5, ry + 2, 2, 1, rgb(0xd8e1ee));
+    } else if (k == 3) {  // congère : une bosse blanche et son ombre bleutée
+      float cx = sx + 5 + (h >> 9) % 6, cy = sy + 8 + (h >> 12) % 4;
+      g.ellipse(cx + 1, cy + 2, 5, 2.5f, rgb(0xbccbe0));
+      g.ellipse(cx, cy, 5, 2.5f, rgb(0xf8fbff));
+    } else if (k == 4) {  // brins secs
+      int bx = sx + 4 + (h >> 9) % 8, by = sy + 6 + (h >> 12) % 6;
+      g.rect(bx, by, 1, 3, rgb(0x7a7660)), g.rect(bx + 2, by + 1, 1, 2, rgb(0x8a8468)), g.rect(bx - 1, by + 1, 1, 2, rgb(0x6a6650));
+      g.rect(bx - 2, by + 3, 6, 1, rgb(0xd0dae8));
+    } else if (k == 5) {  // cristal qui brille
+      int gx = sx + 3 + (h >> 9) % 10, gy = sy + 3 + (h >> 12) % 10;
+      g.rect(gx, gy, 1, 1, rgb(0xffffff)), g.rect(gx - 1, gy, 3, 1, rgb(0xc4e4ff, 170)), g.rect(gx, gy - 1, 1, 3, rgb(0xc4e4ff, 170));
+    }
   } else if (th == Theme::Interieur) {  // parquet : quatre lames par case, joints décalés
     g.rect(sx, sy, 16, 16, rgb(0xb07a48));
     for (int i = 0; i < 4; i++) {
@@ -802,10 +820,27 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
       break;
     }
     case '=':
-      if (th == Theme::Neige) {
-        g.rect(sx, sy, 16, 16, rgb(0xc4cedc));
-        g.rect(sx + h % 14, sy + (h >> 5) % 14, 2, 1, rgb(0xaab6c8));
-        g.rect(sx + (h >> 9) % 14, sy + (h >> 13) % 14, 1, 1, rgb(0xdfe6f0));
+      if (th == Theme::Neige) {  // neige tassée (3.3) : des traces de pas, des bords adoucis contre la neige fraîche
+        g.rect(sx, sy, 16, 16, rgb(0xd0d9e6));
+        g.rect(sx + h % 14, sy + (h >> 5) % 14, 2, 1, rgb(0xb8c4d6));
+        g.rect(sx + (h >> 9) % 14, sy + (h >> 13) % 14, 1, 1, rgb(0xe4eaf3));
+        bool horiz = at(x - 1, y) == '=' || at(x + 1, y) == '=';
+        for (int i = 0; i < 2; i++) {  // deux empreintes décalées dans le sens du chemin
+          int a = 3 + i * 7 + (h >> (3 + i)) % 2, b = i ? 9 : 5;
+          if (horiz) g.rect(sx + a, sy + b, 2, 1, rgb(0xb4c0d2)), g.rect(sx + a, sy + b + 1, 2, 1, rgb(0xc4cedd));
+          else g.rect(sx + b, sy + a, 1, 2, rgb(0xb4c0d2)), g.rect(sx + b + 1, sy + a, 1, 2, rgb(0xc4cedd));
+        }
+        auto soft = [&](char n) { return n == '.' || n == ',' || n == 'T' || n == 'F'; };
+        bool up = soft(at(x, y - 1)), dn = soft(at(x, y + 1)), lf = soft(at(x - 1, y)), rt = soft(at(x + 1, y));
+        Color snow = rgb(0xeaf0f8);
+        for (int i = 0; i < 3; i++) {  // la neige fraîche déborde un peu sur le chemin
+          int k = 1 + ((h >> (i * 4)) % 13), d = 1 + (h >> (i * 3 + 7)) % 2;
+          if (up) g.rect(sx + k, sy, 3, d, snow);
+          if (dn) g.rect(sx + k, sy + 16 - d, 3, d, snow);
+          if (lf) g.rect(sx, sy + k, d, 3, snow);
+          if (rt) g.rect(sx + 16 - d, sy + k, d, 3, snow);
+        }
+        if (up) g.rect(sx, sy + 1, 16, 1, rgb(0xbac6d8, 140));  // petite ombre sous le bord de neige
       } else if (th == Theme::Vallee || th == Theme::Foret) {
         g.rect(sx, sy, 16, 16, rgb(0xd9c08a));
         g.rect(sx + h % 14, sy + (h >> 5) % 14, 2, 1, rgb(0xc4a873));
@@ -955,7 +990,18 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
       g.ellipse(sx + 8, sy + 13, 5, 7, rgb(0x120e18));
       g.rect(sx + 3, sy + 13, 10, 3, rgb(0x120e18));
       break;
-    case 'c': ground(g, th, sx, sy, h, x, y); break;
+    case 'c':
+      if (th == Theme::Neige) {  // dalles de glace (3.3, Temple) : joints, reflet en biais, fêlures
+        g.rect(sx, sy, 16, 16, rgb((x + y) % 2 ? 0xd8e6f4 : 0xdfeaf6));
+        g.rect(sx, sy + 15, 16, 1, rgb(0xb4c8de)), g.rect(sx + 15, sy, 1, 16, rgb(0xb4c8de));
+        g.rect(sx, sy, 16, 1, rgb(0xf2f7fc)), g.rect(sx, sy, 1, 16, rgb(0xf2f7fc));
+        for (int i = 0; i < 4; i++) g.rect(sx + 3 + i, sy + 9 - i * 2, 1, 2, rgb(0xffffff, 150));  // reflet
+        if (h % 5 == 0) {  // fêlure
+          int fx = sx + 4 + (h >> 4) % 6, fy = sy + 4 + (h >> 7) % 6;
+          g.rect(fx, fy, 2, 1, rgb(0xa8bed6)), g.rect(fx + 2, fy + 1, 2, 1, rgb(0xa8bed6)), g.rect(fx + 3, fy + 2, 1, 2, rgb(0xa8bed6));
+        }
+      } else ground(g, th, sx, sy, h, x, y);
+      break;
     case 'x': {
       ground(g, th, sx, sy, h, x, y);
       Color glow = rgb(0x7fd6ff, uint8_t(60 + 40 * std::sin(t * 2 + x)));
