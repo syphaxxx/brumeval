@@ -139,6 +139,9 @@ sprites, ennemis vaincus qui s'effacent, dégâts prévus sur la cible (« ≈ 8
 tours, habitants qui regardent ailleurs, écran titre. Correction aussi sur `combat-hd` : l'éditeur de cartes ne
 dessinait plus les arbres et objets hauts depuis la 3.2. Revues Codex : 3 + 2 remarques justes, corrigées.
 Compilation Windows / Mac / Linux vérifiée par une demande de fusion en brouillon (#28, à ne pas fusionner).
+Ensuite : compagnon qui suit le joueur, objets hauts transparents devant le joueur, murs de pierre (grotte, glace,
+falaises), fontaine ronde de la Vallée (départ déplacé en 12, 10), carte du monde (Échap > Carte). Page de bilan pour
+le retour de l'utilisateur : https://claude.ai/artifact/5xTAs74tkfYvtVvfycHCye
 5. Cartes plus vivantes : touffes d'herbe, fleurs et cailloux en sprites, eau et falaises plus belles.
 6. Intérieurs meublés avec les sprites (étagères, tables, chaises, tonneaux, lits).
 7. Personnages : courir (touche maintenue, sprites de course de Lior), animaux et promeneurs qui bougent.
