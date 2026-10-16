@@ -1378,6 +1378,12 @@ void MapEditor::drawMap() {
       if (z == 16) drawTile(g, m, x, y, SX(x), SY(y), G.time);
       else g.rect(SX(x), SY(y), z, z, rgb(tileColor(m.rows[y][x], m.theme)));
     }
+  // Objets hauts (arbres, rochers, réverbères…) : dessinés à part depuis la 3.2, de haut en bas (+ 3 rangées : un arbre
+  // plus bas dépasse vers le haut)
+  if (z == 16)
+    for (int y = ty0; y <= ty0 + VIEW_H / z + 4 && y < m.h(); y++)
+      for (int x = std::max(0, tx0 - 1); x <= tx1 + 1 && x < m.w(); x++)
+        if (hasProp(m, x, y)) drawProp(g, m, x, y, SX(x), SY(y), G.time);
   // Objets
   for (auto& b : m.buildings) {
     if (z == 16) drawBuilding(g, b, SX(b.x), SY(b.y));
@@ -1493,6 +1499,7 @@ void MapEditor::drawBars() {
     for (int k = first; k < (int)p.size() && k < first + 17; k++) {
       int x = 4 + (k - first) * 18;
       drawTile(g, pal, k, 0, x, BOTTOM + 2, G.time);
+      drawPropIcon(g, pal, k, 0, x, BOTTOM + 2);  // arbre, réverbère… réduit dans sa case
       if (k == ti) g.frame(x - 1, BOTTOM + 1, 18, 18, GOLD);
     }
   } else {

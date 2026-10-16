@@ -460,6 +460,12 @@ static const SpriteRect* propSprite(const MapDef& m, int x, int y) {
   return id ? findSprite(id) : nullptr;
 }
 bool hasProp(const MapDef& m, int x, int y) { return propSprite(m, x, y) != nullptr; }
+void drawPropIcon(Gfx& g, const MapDef& m, int x, int y, int sx, int sy) {
+  const SpriteRect* r = propSprite(m, x, y);
+  if (!r) return;
+  float k = std::min(1.f, 16.f / std::max(r->w, r->h));
+  g.sprite(*r, std::round(sx + 8 - r->w * k / 2), std::round(sy + 16 - r->h * k), false, k);
+}
 void drawProp(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
   const SpriteRect* r = propSprite(m, x, y);
   if (!r) return;

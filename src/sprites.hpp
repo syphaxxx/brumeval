@@ -22,6 +22,8 @@ void drawTile(Gfx& g, const MapDef& m, int tx, int ty, int sx, int sy, float t);
 // bas, pour passer devant ou derrière eux. Faux si la case n'en a pas (drawTile dessine alors tout).
 bool hasProp(const MapDef& m, int tx, int ty);
 void drawProp(Gfx& g, const MapDef& m, int tx, int ty, int sx, int sy, float t);
+// Le même objet réduit pour tenir dans une case (palette de l'éditeur de cartes)
+void drawPropIcon(Gfx& g, const MapDef& m, int tx, int ty, int sx, int sy);
 void drawBuilding(Gfx& g, const Building& b, int sx, int sy);
 // Par-dessus la nuit (2.6) : fenêtres allumées et lueur de la porte (night : 0 jour, 1 nuit) ; fumée de la cheminée
 void drawBuildingLights(Gfx& g, const Building& b, int sx, int sy, float night);
