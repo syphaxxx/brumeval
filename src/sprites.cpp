@@ -471,10 +471,11 @@ void drawFighterSprite(Gfx& g, const Fighter& f, float x, float y, float s, bool
 static int hsh(int x, int y) { return int((unsigned(x) * 73856093u ^ unsigned(y) * 19349663u) & 0x7fffffffu); }
 
 // Texture de 32x32 de l'atlas (tex_…) : chaque case en prend un quart selon sa position (moins de répétition)
-static bool texTile(Gfx& g, const char* id, int x, int y, int sx, int sy) {
+static bool texTile(Gfx& g, const char* id, int x, int y, int sx, int sy, Color tint = {255, 255, 255, 255}) {
   const SpriteRect* r = findSprite(id);
   if (!r) return false;
-  g.sprite(r->sub((x & 1) * 16, (y & 1) * 16, 16, 16), sx, sy);
+  if (r->w >= 32) g.sprite(r->sub((x & 1) * 16, (y & 1) * 16, 16, 16), sx, sy, false, 1, tint);  // 32x32 : un quart par case
+  else g.sprite(*r, sx, sy, false, 1, tint);
   return true;
 }
 
@@ -509,6 +510,7 @@ static void ground(Gfx& g, Theme th, int sx, int sy, int h, int x, int y) {
     }
     g.rect(sx + h % 12 + 2, sy + 1 + (h >> 5) % 2 * 8, 2, 1, rgb(0xc48c58));
   } else {
+    if (texTile(g, (h >> 3) % 3 ? "sol_3_5" : "sol_2_5", x, y, sx, sy, rgb(0x8a84a0))) return;  // grotte (3.3) : dalles sombres
     g.rect(sx, sy, 16, 16, rgb(0x4a4252));
     g.rect(sx + h % 13, sy + (h >> 4) % 13, 2, 1, rgb(0x3f3847));
     g.rect(sx + (h >> 8) % 12 + 2, sy + (h >> 12) % 12 + 2, 1, 1, rgb(0x5a5164));
@@ -837,6 +839,10 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
             g.rect(sx + 5, sy + 6, 6, 2, rgb(0x5f9a52));
           }
         }
+      } else if (th == Theme::Neige && texTile(g, "tex_pierre", x, y, sx, sy, rgb(0xb4cdec))) {  // (3.3) pierre glacée
+        if (at(x, y - 1) != '#') g.rect(sx, sy, 16, 3, rgb(0xf2f6fb));  // neige sur le haut du mur
+      } else if (th == Theme::Grotte && texTile(g, "tex_pierre", x, y, sx, sy, rgb(0x46405a))) {  // (3.3) roche sombre
+        if (at(x, y + 1) != '#' && at(x, y + 1) != ' ') g.rect(sx, sy + 14, 16, 2, rgb(0x16121c, 160));  // pied du mur dans l'ombre
       } else if (th == Theme::Neige) {
         g.rect(sx, sy, 16, 16, rgb(0x7fa8c8));
         g.rect(sx, sy + 5, 16, 1, rgb(0x6a92b4));
