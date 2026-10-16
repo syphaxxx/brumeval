@@ -119,6 +119,7 @@ class Battle {
   float blinkT = 0, flashT = -1;
   Color flashCol;
   std::vector<Pop> pops;
+  float popTop_ = 54;  // un texte flottant ne commence pas plus haut (sous l'ordre des tours, d'après le dernier dessin)
   std::vector<FighterP> defeated;
   bool finished_ = false, ending_ = false;
   // Fin d'un combat gagné : tous les gains dans une fenêtre, fermée par Entrée

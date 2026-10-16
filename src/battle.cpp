@@ -365,16 +365,21 @@ float Battle::zoneScore(const FighterP& a, const Move& m, const FighterP& center
 // (3.3 : sans chevaucher ceux des voisins, et jamais sur la ligne de l'ordre des tours)
 void Battle::pop(const FighterP& f, const std::string& t, Color c) {
   Pt p = pos(f);
-  float w = Gfx::textW(t) + 4, x = std::clamp(p.x, w / 2 + 2, 318 - w / 2), y = p.y - 22;
+  float w = Gfx::textW(t) + 4, x = std::clamp(p.x, w / 2 + 2, 318 - w / 2), y0 = std::max(popTop_, p.y - 22);
+  // Chaque texte monte de 8 px pendant son premier tiers de seconde : un texte plus ancien est déjà monté d'autant
+  // (k), le nouveau le suivra. Ils se gênent si, sur ce trajet, ils passent à moins de 10 px l'un de l'autre.
   auto clash = [&](float yy) {
-    for (auto& q : pops)
-      if (G.time - q.t < .8f && std::fabs(q.x - x) < (w + Gfx::textW(q.text) + 4) / 2 && std::fabs(q.y - yy) < 10) return true;
+    for (auto& q : pops) {
+      float age = G.time - q.t, k = std::min(1.f, age * 3) * 8, d = yy - q.y;
+      if (age < 1 && std::fabs(q.x - x) < (w + Gfx::textW(q.text) + 4) / 2 && d < 10 && d + k > -10) return true;
+    }
     return false;
   };
-  const float top = 54;  // le texte monte encore de 8 : il reste sous la ligne de l'ordre des tours
-  for (int k = 0; k < 6 && clash(y); k++) y -= 11;
-  if (y < top)
-    for (y = top; clash(y) && y < 150;) y += 11;  // plus de place au-dessus : en dessous
+  float y = y0;
+  for (int k = 1; clash(y) && k <= 12; k++) {  // la première place libre : au-dessus, sinon en dessous
+    float up = y0 - 11 * ((k + 1) / 2), down = y0 + 11 * (k / 2);
+    y = k % 2 && up >= popTop_ ? up : down;
+  }
   pops.push_back({x, y, t, c, G.time});
   if (net_ == Net::Host || net_ == Net::Lead) send_(-1, Json{{"t", "pop"}, {"f", mine(f)}, {"txt", t}, {"c", Json::array({c.r, c.g, c.b})}});
 }
@@ -2645,6 +2650,7 @@ void Battle::draw() {
     for (size_t i = 0; i < lines.size(); i++) g.text(160, 5 + i * 11, lines[i], WHITE, 1);
     orderY = 2 + 7 + 11 * (int)lines.size() + 2;
   }
+  popTop_ = orderY + 22;  // sous les portraits (12 px), en comptant la montée du texte (8 px)
   float orderX = 6;
   if (weather_ >= 0 && !ending_ && !summaryOn_) {  // météo, puis l'ordre des tours sur la même ligne
     const std::string& wn = rules().weathers[(size_t)weather_].name;
