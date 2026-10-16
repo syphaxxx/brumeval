@@ -978,7 +978,7 @@ void Game::drawTeamPanel(int x, int y, int sel) {
       }
       g.text(x + 8, ry, f->name(), f->alive() ? WHITE : rgb(0xff7b6b));
       g.text(x + 86, ry, T("N.") + std::to_string(f->lvl), MUTED);
-      g.text(320 - 16, ry, isFront ? "front" : "repos", isFront ? GOLD : MUTED, 2);
+      g.text(320 - 16, ry, isFront ? T("Front") : T("Rés."), isFront ? GOLD : MUTED, 2);
       g.text(x + 8, ry + 10, T("PV ") + std::to_string(f->hp) + "/" + std::to_string(f->mhp), WHITE);
       g.text(x + 86, ry + 10, T("PM ") + std::to_string(f->mp) + "/" + std::to_string(f->mmp), WHITE);
     }
