@@ -134,7 +134,11 @@ joueur automatique : histoire terminée, 0 à 1 défaite sur deux parties)
 
 **Branche `ameliorations` (à partir de `combat-hd`)** — fait le 2026-10-16 : 5 (détails du sol, hautes herbes,
 éboulis), 6 (bibliothèques, tables, chaises), 7 (courir ; promeneurs pas encore), 8, 9 (lancer, victoire, K.O.),
-11 (Coffrelin N.54, bouclier 6), 12 (tests du choix sur le damier et de la course).
+11 (Coffrelin N.54, bouclier 6), 12 (tests du choix sur le damier et de la course). En plus : décors de combat en
+sprites, ennemis vaincus qui s'effacent, dégâts prévus sur la cible (« ≈ 8-10 PV · 92 % »), portraits dans l'ordre des
+tours, habitants qui regardent ailleurs, écran titre. Correction aussi sur `combat-hd` : l'éditeur de cartes ne
+dessinait plus les arbres et objets hauts depuis la 3.2. Revues Codex : 3 + 2 remarques justes, corrigées.
+Compilation Windows / Mac / Linux vérifiée par une demande de fusion en brouillon (#28, à ne pas fusionner).
 5. Cartes plus vivantes : touffes d'herbe, fleurs et cailloux en sprites, eau et falaises plus belles.
 6. Intérieurs meublés avec les sprites (étagères, tables, chaises, tonneaux, lits).
 7. Personnages : courir (touche maintenue, sprites de course de Lior), animaux et promeneurs qui bougent.
