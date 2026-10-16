@@ -247,7 +247,7 @@ void Game::update(float dt) {
   noticeT_ -= dt;
   speedT_ -= dt / speed();  // même durée à l'écran quelle que soit la vitesse
   if (worldMapOn_) {  // carte du monde : Entrée, Échap ou un clic la ferme
-    if (in.confirm || in.cancel || in.menu || in.mclick[0] || in.mclick[2]) worldMapOn_ = false, audio::play("annuler");
+    if (in.confirm || in.cancel || in.menu || in.mclick[0] || in.mclick[2]) worldMapOn_ = false, audio::play("retour");
     updateMusic();
     in.endFrame();
     return;
