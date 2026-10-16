@@ -95,7 +95,8 @@
       "dialogue": [
         "Dans les ruines, il y a des rochers qu'on peut pousser ! Mais attention à ne pas les coincer contre un mur…",
         "Si on se trompe, Échap > Recommencer l'énigme."
-      ]
+      ],
+      "promenade": 2
     },
     {
       "x": 31,
@@ -123,7 +124,8 @@
       "y": 18,
       "apparence": "chat",
       "direction": "droite",
-      "dialogue": ["Le chat du port guette les barques."]
+      "dialogue": ["Le chat du port guette les barques."],
+      "promenade": 1
     }
   ],
   "coffres": [{"x": 3, "y": 21, "objet": "superpotion", "quantite": 3}],

@@ -290,7 +290,9 @@ table, `h` lit, `e` étagère (une bibliothèque pour deux cases), `o` comptoir,
 - `declencheurs` : une zone (`x`, `y`, `l`, `h`) qui lance un `evenement` quand
   on y entre, tant que le drapeau `jusqua` n'est pas posé.
 - `habitants` : `dialogue` (phrases simples) ou `evenement`, `cache_si` (disparaît
-  quand le drapeau est posé), `vue` et `vue_jusqua` pour les dresseurs.
+  quand le drapeau est posé), `vue` et `vue_jusqua` pour les dresseurs,
+  `promenade` (un promeneur marche jusqu'à cette distance de sa place ; jamais
+  un dresseur).
 
 ## Rappels sur le format JSON
 

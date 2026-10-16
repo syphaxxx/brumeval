@@ -136,7 +136,8 @@
       "y": 30,
       "apparence": "enfant",
       "direction": "bas",
-      "dialogue": ["Sélène est la meilleure chevalière du village. Elle s'entraîne tous les jours !"]
+      "dialogue": ["Sélène est la meilleure chevalière du village. Elle s'entraîne tous les jours !"],
+      "promenade": 2
     },
     {
       "x": 21,
@@ -168,7 +169,8 @@
       "y": 39,
       "apparence": "chien",
       "direction": "gauche",
-      "dialogue": ["Le chien a de la neige plein les moustaches."]
+      "dialogue": ["Le chien a de la neige plein les moustaches."],
+      "promenade": 2
     }
   ],
   "coffres": [

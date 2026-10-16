@@ -373,7 +373,10 @@ code) ; `docs/GUIDE.md` les range par domaine.
   falaises en `tex_pierre` teintée, dalles au sol des grottes (`texTile` avec teinte). Fontaine `W` dessinée une fois
   depuis le coin bas-droit de son bloc (ronde, jet d'eau) ; départ de la partie en (12, 10). Compagnon qui suit
   (`trail_`, `followDir_` : la première créature de l'équipe marche une case derrière le joueur, dessin seul, vidé
-  au changement de carte ; pas en expédition à plusieurs). Éditeur de cartes : objets hauts dessinés (`drawProp`,
+  au changement de carte ; pas en expédition à plusieurs). Promeneurs : champ `promenade` des habitants (distance
+  autour de leur place ; jamais un dresseur), `walk_` (case actuelle et regard des habitants de la carte affichée,
+  hasard à part `walkSeed_`, rien d'enregistré), `npcCell` pour toute position d'habitant (collision, parole,
+  dessin) ; chaque habitant se tourne vers le joueur qui lui parle (sauf un dresseur). Éditeur de cartes : objets hauts dessinés (`drawProp`,
   `drawPropIcon` dans la palette). Carte du monde (Échap > Carte, `worldMapOn_`, `drawWorldMap` dans menus.cpp) : les
   lieux ayant `carte_monde` atteignables d'ici par des passages ouverts (`checkCond`), sans rien enregistrer ; pas en
   Expédition. Changement de carte : fondu depuis le noir (`mapFadeT_`, 0,3 s). La nuit, réverbères `L` et feux `X`

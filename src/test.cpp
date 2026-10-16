@@ -801,6 +801,35 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     check(!trail_.empty() && trail_.back() == std::make_pair(12, 34), "compagnon : il suit le joueur, une case derrière lui");
     changeMap(mi("cendrelune"), 12, 34, DOWN);
   }
+  {  // 3.3 : un promeneur (l'enfant de Forgeroc, « promenade » 2) marche sans s'éloigner, et se tourne quand on lui parle
+    int k = -1;
+    for (size_t i = 0; i < M().npcs.size(); i++)
+      if (M().npcs[i].roam > 0 && k < 0) k = (int)i;
+    bool moved = false, near = k >= 0;
+    for (int f = 0; f < 60 * 12 && k >= 0; f++) {
+      frame();
+      auto [x, y] = npcCell(M(), (size_t)k);
+      moved = moved || x != M().npcs[k].x || y != M().npcs[k].y;
+      near = near && std::abs(x - M().npcs[k].x) <= M().npcs[k].roam && std::abs(y - M().npcs[k].y) <= M().npcs[k].roam;
+    }
+    bool faced = false;
+    if (k >= 0) {
+      for (int f = 0; f < 60 && walk_[k].t < 1; f++) frame();
+      auto [x, y] = npcCell(M(), (size_t)k);
+      for (int d : {LEFT, RIGHT, UP, DOWN}) {  // le joueur se place à côté de lui, tourné vers lui
+        int sx = x + (d == LEFT ? 1 : d == RIGHT ? -1 : 0), sy = y + (d == UP ? 1 : d == DOWN ? -1 : 0);
+        if (faced || blocked(sx, sy)) continue;
+        px = sx, py = sy, dir = d;
+        walk_[k].wait = 99;  // il ne repart pas pendant ce temps
+        in.confirm = true;
+        frame();
+        faced = sc.busy() && time < walk_[k].faceUntil && walk_[k].dir == (d == LEFT ? RIGHT : d == RIGHT ? LEFT : d == UP ? DOWN : UP);
+      }
+      skipScript();
+    }
+    check(k >= 0 && moved && near && faced, "promeneurs : ils marchent autour de leur place, et se tournent vers le joueur qui leur parle");
+    changeMap(mi("cendrelune"), 12, 34, DOWN);
+  }
   run(.4f);
   snap("12_forgeroc");
   changeMap(mi("cendrelune"), 46, 12, UP);

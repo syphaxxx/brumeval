@@ -182,6 +182,7 @@ MapDef mapFromJson(const Json& j) {
     n.hideIf = jget<std::string>(o, "cache_si", "");
     n.sight = jget(o, "vue", 0);
     n.sightUntil = jget<std::string>(o, "vue_jusqua", "");
+    n.roam = n.sight > 0 ? 0 : jget(o, "promenade", 0);  // un dresseur garde sa place : son regard compte
     m.npcs.push_back(n);
   }
   for (auto& o : j.value("coffres", Json::array())) {
@@ -243,6 +244,7 @@ Json mapToJson(const MapDef& m) {
     if (!x.hideIf.empty()) p["cache_si"] = x.hideIf;
     if (x.sight > 0) p["vue"] = x.sight;
     if (!x.sightUntil.empty()) p["vue_jusqua"] = x.sightUntil;
+    if (x.roam > 0) p["promenade"] = x.roam;
     if (!x.lines.empty()) p["dialogue"] = x.lines;
     n.push_back(p);
   }

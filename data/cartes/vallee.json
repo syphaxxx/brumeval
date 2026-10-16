@@ -149,7 +149,8 @@
       "dialogue": [
         "Les créatures affaiblies se capturent beaucoup plus facilement avec une lanterne !",
         "Moi, j'attends qu'il leur reste presque plus de PV."
-      ]
+      ],
+      "promenade": 2
     },
     {"x": 25, "y": 38, "apparence": "pecheur", "direction": "droite", "evenement": "pecheur"},
     {"x": 55, "y": 31, "apparence": "garde", "direction": "bas", "evenement": "garde_col"},
@@ -182,14 +183,22 @@
       "vue": 2,
       "vue_jusqua": "braconnier"
     },
-    {"x": 4, "y": 18, "apparence": "poule", "direction": "gauche", "dialogue": ["Cot cot !"]},
-    {"x": 6, "y": 18, "apparence": "poule", "direction": "droite", "dialogue": ["Cot cot cot…"]},
+    {"x": 4, "y": 18, "apparence": "poule", "direction": "gauche", "dialogue": ["Cot cot !"], "promenade": 1},
+    {
+      "x": 6,
+      "y": 18,
+      "apparence": "poule",
+      "direction": "droite",
+      "dialogue": ["Cot cot cot…"],
+      "promenade": 1
+    },
     {
       "x": 22,
       "y": 17,
       "apparence": "chien",
       "direction": "gauche",
-      "dialogue": ["Ouaf ! Le chien de l'ancien remue la queue."]
+      "dialogue": ["Ouaf ! Le chien de l'ancien remue la queue."],
+      "promenade": 2
     },
     {
       "x": 14,
@@ -217,13 +226,14 @@
         "Sans la brume, la récolte serait deux fois plus belle !"
       ]
     },
-    {"x": 55, "y": 39, "apparence": "vache", "direction": "gauche", "dialogue": ["Meuh…"]},
+    {"x": 55, "y": 39, "apparence": "vache", "direction": "gauche", "dialogue": ["Meuh…"], "promenade": 1},
     {
       "x": 56,
       "y": 37,
       "apparence": "cheval",
       "direction": "gauche",
-      "dialogue": ["Le cheval de la ferme hennit doucement."]
+      "dialogue": ["Le cheval de la ferme hennit doucement."],
+      "promenade": 1
     }
   ],
   "coffres": [

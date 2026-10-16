@@ -52,6 +52,7 @@ struct Npc {
   std::string hideIf;              // caché quand ce drapeau est posé
   int sight = 0;                   // dresseur : repère le joueur à cette distance devant lui
   std::string sightUntil;          // … tant que ce drapeau n'est pas posé
+  int roam = 0;                    // promeneur (3.3) : marche jusqu'à cette distance de sa place (0 : reste sur place)
 };
 
 struct Chest {

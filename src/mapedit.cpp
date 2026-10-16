@@ -505,6 +505,13 @@ void MapEditor::editNpc(int i, int sel) {
                             1, 0, 10));
   m.items.push_back(textField("Vue jusqu'à", "Drapeau qui arrête la vue (ex. quand il est battu)", [N]() -> std::string& { return N().sightUntil; },
                               30, 6));
+  m.items.push_back(numItem("Promenade", "Il marche jusqu'à cette distance de sa place (0 : il reste ; jamais pour un dresseur).",
+                            [N] { return (double)N().roam; },
+                            [this, N](double v) {
+                              begin();
+                              N().roam = N().sight > 0 ? 0 : (int)v;
+                            },
+                            1, 0, 4));
   m.items.push_back({"Déplacer", "", "", true, [this, N] {
                        askPosition("Nouvelle place de l'habitant : Entrée ou clic", [this, N](int x, int y) {
                          begin();

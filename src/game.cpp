@@ -325,6 +325,7 @@ void Game::update(float dt) {
         sc.update(dt, in);
         break;
       }
+      updateWalkers(dt);
       if (!moving && !M().puzzleFlag.empty() && !puzzleSolved(M()) && tip("enigme", sc)) break;  // énigme (3.0)
       if (!tipsSeen.count("gemme") && !moving)  // astuce : la première gemme reçue (boss, coffre, boutique)
         for (auto& [id, n] : items)
@@ -440,8 +441,11 @@ bool Game::blockedOn(const MapDef& m, int x, int y) const {
     return true;  // rocher (sur la carte affichée : sa place actuelle)
   for (auto& b : m.buildings)
     if (x >= b.x && x < b.x + b.w && y >= b.y && y < b.y + b.h) return true;
-  for (auto& n : m.npcs)
-    if (n.x == x && n.y == y && npcVisible(n)) return true;
+  for (size_t i = 0; i < m.npcs.size(); i++) {
+    if (!npcVisible(m.npcs[i])) continue;
+    if (npcCell(m, i) == std::make_pair(x, y)) return true;
+    if (&m == &M() && walkMap_ == mapId && i < walk_.size() && walk_[i].t < 1 && walk_[i].fx == x && walk_[i].fy == y) return true;
+  }
   for (auto& c : m.chests)
     if (c.x == x && c.y == y) return true;
   for (auto& s : m.signs)
@@ -451,6 +455,56 @@ bool Game::blockedOn(const MapDef& m, int x, int y) const {
   for (auto& w : m.warps)  // passage fermé : on ne peut pas y marcher
     if (w.x == x && w.y == y && !w.condition.is_null() && !checkCond(w.condition)) return true;
   return false;
+}
+
+// ---------------------------------------------------------------------------
+// Promeneurs (3.3) : les habitants avec « promenade » font un pas de temps en temps, sans s'éloigner de leur place
+// ---------------------------------------------------------------------------
+std::pair<int, int> Game::npcCell(const MapDef& m, size_t i) const {
+  if (&m == &M() && walkMap_ == mapId && i < walk_.size() && walk_[i].hx == m.npcs[i].x && walk_[i].hy == m.npcs[i].y)
+    return {walk_[i].x, walk_[i].y};
+  return {m.npcs[i].x, m.npcs[i].y};
+}
+void Game::syncWalkers() {
+  const MapDef& m = M();
+  if (walkMap_ != mapId || walk_.size() != m.npcs.size()) walk_.assign(m.npcs.size(), NpcWalk{}), walkMap_ = mapId;
+  for (size_t i = 0; i < m.npcs.size(); i++) {
+    NpcWalk& w = walk_[i];
+    const Npc& n = m.npcs[i];
+    if (w.hx == n.x && w.hy == n.y) continue;
+    w = NpcWalk{};
+    w.hx = w.x = w.fx = n.x, w.hy = w.y = w.fy = n.y, w.dir = n.dir;
+    w.side = n.dir == LEFT || n.dir == RIGHT ? n.dir : (n.x + n.y) % 2 ? LEFT : RIGHT;
+    w.wait = 1 + float((n.x * 7 + n.y * 13) % 30) / 10;
+  }
+}
+void Game::updateWalkers(float dt) {
+  syncWalkers();
+  const MapDef& m = M();
+  auto rnd = [this](int k) {
+    walkSeed_ = walkSeed_ * 1664525u + 1013904223u;
+    return int((walkSeed_ >> 8) % (uint32_t)k);
+  };
+  for (size_t i = 0; i < m.npcs.size(); i++) {
+    const Npc& n = m.npcs[i];
+    NpcWalk& w = walk_[i];
+    if (n.roam <= 0 || !npcVisible(n)) continue;
+    if (w.t < 1) {  // un pas lent : un tiers de seconde par case
+      w.t = std::min(1.f, w.t + dt * 3);
+      continue;
+    }
+    if (time < w.faceUntil || (w.wait -= dt) > 0) continue;  // on lui parle, ou il se repose
+    w.wait = 1.2f + rnd(25) / 10.f;
+    int d = rnd(4), nx = w.x + (d == LEFT ? -1 : d == RIGHT ? 1 : 0), ny = w.y + (d == UP ? -1 : d == DOWN ? 1 : 0);
+    w.dir = d;
+    if (d == LEFT || d == RIGHT) w.side = d;
+    if (std::abs(nx - n.x) > n.roam || std::abs(ny - n.y) > n.roam) continue;  // trop loin de sa place : il regarde seulement
+    bool bad = blocked(nx, ny) || (nx == px && ny == py) || (moving && nx == fromX && ny == fromY);
+    for (auto& wp : m.warps) bad = bad || (wp.x == nx && wp.y == ny);
+    for (auto& b : m.buildings) bad = bad || (nx == b.doorX() && ny == b.doorY() + 1);  // pas devant une porte
+    if (bad) continue;
+    w.fx = w.x, w.fy = w.y, w.x = nx, w.y = ny, w.t = 0;
+  }
 }
 
 void Game::resetBoulders() {
@@ -624,8 +678,16 @@ void Game::interact() {
   int dx = dir == LEFT ? -1 : dir == RIGHT ? 1 : 0, dy = dir == UP ? -1 : dir == DOWN ? 1 : 0;
   int fx = px + dx, fy = py + dy;
   const MapDef& m = M();
-  for (auto& n : m.npcs)
-    if (n.x == fx && n.y == fy && npcVisible(n)) return talk(n);
+  syncWalkers();
+  for (size_t i = 0; i < m.npcs.size(); i++)
+    if (npcCell(m, i) == std::make_pair(fx, fy) && npcVisible(m.npcs[i])) {
+      if (m.npcs[i].sight == 0) {  // il se tourne vers le joueur (un dresseur garde son regard)
+        walk_[i].dir = dir == UP ? DOWN : dir == DOWN ? UP : dir == LEFT ? RIGHT : LEFT;
+        if (dir == LEFT || dir == RIGHT) walk_[i].side = walk_[i].dir;
+        walk_[i].faceUntil = time + 2.5f;
+      }
+      return talk(m.npcs[i]);
+    }
   for (auto& s : m.signs)
     if (s.x == fx && s.y == fy) return sc.say(s.text);
   for (size_t i = 0; i < m.chests.size(); i++)
@@ -974,8 +1036,8 @@ void Game::drawMap() {
   std::set<std::pair<int, int>> behind;  // cases qu'un objet haut plus bas ne doit pas cacher
   for (auto& c : m.chests) behind.insert({c.x, c.y});
   for (auto& sg : m.signs) behind.insert({sg.x, sg.y});
-  for (auto& n : m.npcs)
-    if (npcVisible(n)) behind.insert({n.x, n.y});
+  for (size_t i = 0; i < m.npcs.size(); i++)
+    if (npcVisible(m.npcs[i])) behind.insert(npcCell(m, i));
   behind.insert({px, py});
   if (moving) behind.insert({fromX, fromY});
   for (int y = ty0; y <= ty0 + SCREEN_H / 16 + 3 && y < m.h(); y++)  // + 3 : un arbre plus bas dépasse vers le haut
@@ -991,22 +1053,31 @@ void Game::drawMap() {
                             g.alpha = 1;
                           }});
       }
-  for (auto& n : m.npcs)
-    if (npcVisible(n))
-      actors.push_back({float(n.y * 16), [&, n] {
+  for (size_t i = 0; i < m.npcs.size(); i++)
+    if (const Npc& n = m.npcs[i]; npcVisible(n)) {
+      NpcWalk w;  // l'habitant à sa place, sauf si la carte affichée suit déjà ses pas
+      if (walkMap_ == mapId && i < walk_.size() && walk_[i].hx == n.x && walk_[i].hy == n.y) w = walk_[i];
+      else w.x = w.fx = n.x, w.y = w.fy = n.y, w.dir = n.dir, w.side = n.dir == RIGHT ? RIGHT : LEFT;
+      float nx = (w.fx + (w.x - w.fx) * w.t) * 16, ny = (w.fy + (w.y - w.fy) * w.t) * 16;
+      actors.push_back({ny, [&, n, w, nx, ny] {
                           // Habitants vivants (3.3, dessin seul) : de temps en temps, ils regardent ailleurs un instant (pas les
-                          // dresseurs : leur regard compte) ; les animaux sautillent et changent de côté
-                          int d = n.dir, h = n.x * 7 + n.y * 13;
+                          // dresseurs : leur regard compte) ; les animaux sautillent et changent de côté ; les promeneurs
+                          // marchent, et chacun se tourne vers le joueur qui lui parle
+                          bool facing = time < w.faceUntil;
+                          int d = n.roam > 0 || facing ? w.dir : n.dir, h = n.x * 7 + n.y * 13;
                           float bob = 0;
                           const Look& lk = look(n.look);
                           bool animal = !lk.sprite.empty() && findSprite(lk.sprite) && !findSprite(lk.sprite + "_bas_0");
-                          if (n.sight == 0) {
+                          if (animal && (n.roam > 0 || facing)) d = w.side;  // un animal se voit de profil
+                          if (n.sight == 0 && n.roam == 0 && !facing) {
                             float period = 5.f + h % 4, ph = std::fmod(time + h * .37f, period);
                             if (ph > period - 1.4f) d = animal ? (d == LEFT ? RIGHT : LEFT) : (h % 3 == 0 ? LEFT : h % 3 == 1 ? RIGHT : DOWN);
                           }
-                          if (animal) bob = -std::fabs(std::sin(time * 3 + h)) * 1.5f;
-                          drawHuman(g, lk, n.x * 16 - camX, n.y * 16 - camY - 2 + std::round(bob), 1, d, 0, false);
+                          int step = w.t < 1 ? (w.t < .5f ? 1 : 2) : 0;
+                          if (animal) bob = -std::fabs(std::sin(time * (w.t < 1 ? 9 : 3) + h)) * 1.5f;
+                          drawHuman(g, lk, nx - camX, ny - camY - 2 + std::round(bob), 1, d, step, false);
                         }});
+    }
   for (auto& b : m.bosses)
     if (bossAlive(b))
       actors.push_back({float(b.y * 16 + 16), [&, b] { drawCreature(g, b.id, (b.x + 1) * 16 - camX, (b.y + 1) * 16 - camY - 2, .6f, false, time); }});
@@ -1021,8 +1092,8 @@ void Game::drawMap() {
                           g.text(x + 8, y - 22, a.name, a.ready ? GOLD : a.busy ? rgb(0xff8a7a) : WHITE, 1);
                         }});
   if (exclaimNpc_ >= 0 && exclaimNpc_ < (int)m.npcs.size() && time - exclaimT_ < 1.2f) {
-    const Npc& n = m.npcs[exclaimNpc_];
-    float bx = n.x * 16 - camX + 4, by = n.y * 16 - camY - 16;
+    auto [ex, ey] = npcCell(m, (size_t)exclaimNpc_);
+    float bx = ex * 16 - camX + 4, by = ey * 16 - camY - 16;
     actors.push_back({1e9f, [&, bx, by] {
                         g.rect(bx, by, 9, 11, rgb(0xffffff));
                         g.frame(bx, by, 9, 11, rgb(0x1a1a24));

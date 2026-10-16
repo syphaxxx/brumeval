@@ -134,6 +134,20 @@ class Game {
   std::string chestFlag(int idx) const;
   bool checkSight();       // un dresseur repère le joueur ?
   int exclaimNpc_ = -1;    // habitant qui affiche « ! »
+  // Habitants de la carte affichée (3.3) : leur case actuelle (les promeneurs marchent autour de leur place) et leur
+  // regard (ils se tournent vers le joueur qui leur parle). Rien n'est enregistré : tout revient en place en changeant
+  // de carte.
+  struct NpcWalk {
+    int hx = -1, hy = -1;  // place d'origine (si l'éditeur la change, on repart de là)
+    int x = 0, y = 0, fx = 0, fy = 0, dir = 1, side = 2;
+    float t = 1, wait = 0, faceUntil = 0;
+  };
+  std::vector<NpcWalk> walk_;
+  int walkMap_ = -1;
+  uint32_t walkSeed_ = 7;  // hasard à part : les promeneurs ne changent pas les combats
+  void syncWalkers();
+  void updateWalkers(float dt);
+  std::pair<int, int> npcCell(const MapDef& m, size_t i) const;  // case actuelle d'un habitant
   float exclaimT_ = 0;
   void changeMap(int m, int x, int y, int d);
   void encounter();
