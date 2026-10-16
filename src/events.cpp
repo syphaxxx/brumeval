@@ -246,7 +246,10 @@ int Game::questMark(const std::string& id) const {
     if (j.is_array())
       for (auto& x : j) scan(x);
     else if (j.is_object()) {
-      if (jget<std::string>(j, "action", "") == "quete" && j.contains("id") && j["id"].is_string()) {
+      std::string k = jget<std::string>(j, "action", "");
+      if (k == "si") return scan(j.contains("condition") && checkCond(j["condition"]) ? j.value("alors", Json::array()) : j.value("sinon", Json::array()));
+      if (k == "combat") return;  // ce qui suit une victoire n'est pas disponible tout de suite
+      if (k == "quete" && j.contains("id") && j["id"].is_string()) {
         bool fin = jget(j, "fin", false);
         if (!has(questFlag(j["id"].get<std::string>(), fin))) mark = std::max(mark, fin ? 2 : 1);
       }
