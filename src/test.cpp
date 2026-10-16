@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
+#include <random>
 #include <sstream>
 #include <cctype>
 
@@ -502,6 +503,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     auto hitOn = [&](const FighterP& d, int cell) {
       B.cells_[d.get()] = cell;
       d->hp = d->mhp;
+      seedRandom(2026);  // la même suite de tirages devant et derrière : seule la case change
       long long total = 0;
       for (int k = 0; k < 200; k++) {
         int before = d->hp = d->mhp;
@@ -510,6 +512,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       return total;
     };
     long long front = hitOn(extra, cellAt(0, 1)), back = hitOn(extra, cellAt(0, BACK_COL));
+    seedRandom(std::random_device{}());  // la suite du mode test retrouve son hasard
     check(back > 0 && back < front * 0.85, "damier : à l'arrière, les coups au corps à corps font moins mal (" + std::to_string(front) + " contre " +
                                                std::to_string(back) + " sur 200 coups)");
     // Zone en croix : la cible et ses voisines

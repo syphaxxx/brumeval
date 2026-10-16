@@ -406,6 +406,7 @@ struct Fighter {
 using FighterP = std::shared_ptr<Fighter>;
 // Hasard
 float frand();              // nombre entre 0 et 1
+void seedRandom(unsigned s);  // mode test : rejouer la même suite de tirages
 int irand(int lo, int hi);  // entier entre lo et hi inclus
 
 FighterP makeFighter(const std::string& id, int lvl);
