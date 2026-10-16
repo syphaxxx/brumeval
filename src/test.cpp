@@ -679,9 +679,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       }
     };
     int gold0 = gold;
+    int markGive = questMark("quete_medaillon");  // bulle « ! » avant, rien pendant la recherche, « ? » avec le médaillon
     runEvent("quete_medaillon");
     answer();
     bool started = has(questFlag("medaillon")) && !has(questFlag("medaillon", true));
+    int markWait = questMark("quete_medaillon");
     pauseMenu();
     journalMenu();
     run(.1f);
@@ -700,9 +702,16 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       if (M().chests[i].item == "medaillon") chest = (int)i;
     if (chest >= 0) openChest(chest);
     answer();
+    int markReturn = questMark("quete_medaillon");
+    changeMap(mi("vallee_ancien"), 6, 6, UP);
+    run(.2f);
+    snap("quete_bulle");  // la bulle « ? » au-dessus du petit-fils
+    changeMap(village, 12, 25, UP);
     runEvent("quete_medaillon");
     answer();
     bool done = has(questFlag("medaillon", true)) && items["medaillon"] == 0 && items["amulette_vie"] == 1 && gold == gold0 + 200;
+    check(markGive == 1 && markWait == 0 && markReturn == 2 && questMark("quete_medaillon") == 0,
+          "quête annexe : bulle « ! » chez celui qui la donne, « ? » quand on peut la rendre, plus rien ensuite");
     check(started && listed && chest >= 0 && done,
           "quête annexe : le médaillon (acceptée, inscrite au journal, trouvée dans un coffre, rendue contre une récompense)");
     items.erase("amulette_vie");

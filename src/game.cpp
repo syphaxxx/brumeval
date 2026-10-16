@@ -1082,6 +1082,17 @@ void Game::drawMap() {
                           if (animal) bob = -std::fabs(std::sin(time * (w.t < 1 ? 9 : 3) + h)) * 1.5f;
                           drawHuman(g, lk, nx - camX, ny - camY - 2 + std::round(bob), 1, d, step, false);
                         }});
+      // Quête (3.3) : une bulle « ! » (à prendre) ou « ? » dorée (à rendre) au-dessus de l'habitant, par-dessus tout
+      if (int mk = n.event.empty() || (int)i == exclaimNpc_ ? 0 : questMark(n.event)) {
+        float bx = nx - camX + 4, by = ny - camY - 19 + std::round(std::sin(time * 4 + (float)i) * 1.5f);
+        actors.push_back({1e9f, [&, bx, by, mk] {
+                            Color c = mk == 2 ? rgb(0xffd34d) : rgb(0xffffff);
+                            g.rect(bx, by, 9, 11, c);
+                            g.frame(bx, by, 9, 11, rgb(0x1a1a24));
+                            g.rect(bx + 3, by + 11, 3, 1, rgb(0x1a1a24)), g.rect(bx + 4, by + 12, 1, 1, rgb(0x1a1a24));  // pointe
+                            g.text(bx + 2, by - 1, mk == 2 ? "?" : "!", mk == 2 ? rgb(0x7a4a00) : rgb(0xd2493f), 0, false);
+                          }});
+      }
     }
   for (auto& b : m.bosses)
     if (bossAlive(b))
