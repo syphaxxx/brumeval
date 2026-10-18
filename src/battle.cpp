@@ -322,7 +322,7 @@ std::vector<FighterP> Battle::alive(const std::vector<FighterP>& v) const {
   return o;
 }
 
-// Damier à l'écran (3.2.1) : les alliés à gauche, les ennemis à droite ; l'avant de chaque camp est du
+// Damier à l'écran (3.3) : les alliés à gauche, les ennemis à droite ; l'avant de chaque camp est du
 // côté du milieu de l'écran. Les lignes du bas sont un peu décalées (léger effet de profondeur).
 Pt Battle::cellPos(bool allySide, int c) const {
   if (c < 0 || c >= N_CELLS) c = cellAt(1, 1);
@@ -391,7 +391,7 @@ bool Battle::shown() const { return G.battle_.get() == this; }
 // Le bas de l'écran est partagé : le menu de commande à gauche, l'ATH (les alliés) à droite.
 // Les autres menus s'ouvrent juste au-dessus : à droite (techniques, cible ennemie : le damier
 // ennemi reste visible) ou à gauche (cible alliée, se déplacer : le damier allié reste visible).
-// Panneau du bas (3.2.1) : rien ne s'ouvre au-dessus du damier. Le menu de commande à gauche (5 lignes, il défile),
+// Panneau du bas (3.3) : rien ne s'ouvre au-dessus du damier. Le menu de commande à gauche (5 lignes, il défile),
 // les sous-menus (techniques, objets, remplaçants…) à droite, à la place de l'ATH le temps du choix.
 enum class Dock { Command, Above, AboveLeft };
 static const int PANEL_Y = 168;  // haut du panneau du bas

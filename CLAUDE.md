@@ -120,7 +120,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
   l'écran va de `g.left()` (négatif) à `g.right()` ; la carte, les combats,
   l'écran titre, la fin et les outils le font. Tout nouveau décor plein écran
   doit utiliser `g.left()`/`g.fullW` au lieu de 0/`SCREEN_W`.
-- `Screen` (main.cpp) choisit cette largeur selon la fenêtre. Depuis la 3.2.1,
+- `Screen` (main.cpp) choisit cette largeur selon la fenêtre. Depuis la 3.3,
   l'image est dessinée directement k fois plus grande (k entier, de 2 à 6, juste
   au-dessus de la taille de l'écran ; `SDL_RenderSetScale`), puis ajustée en
   douceur à la fenêtre : le code dessine toujours en pixels de 320x240 (pixels
@@ -312,7 +312,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
   l'ordinateur (ennemis, et alliés en mode test) ; `Battle::log` garde un journal
   lisible (`BRUMEVAL_JOURNAL=Sylvarque brumeval --test captures` l'affiche pour
   la simulation qui contient ce mot).
-- Écran de combat (1.7, refait en 3.2 et 3.2.1) : rien n'est écrit sur le damier. Panneau du bas (`PANEL_Y`, `dock`) :
+- Écran de combat (1.7, refait en 3.2 et 3.3) : rien n'est écrit sur le damier. Panneau du bas (`PANEL_Y`, `dock`) :
   menu de commande à gauche (5 lignes, il défile), à droite l'ATH en tableau (`Battle::drawHud` : une ligne par allié,
   titres PV, PM, ATB, Lim ; barre de PV verte/or/rouge ; compagnon en retrait ; mode Auto/Manuel), remplacé par le
   sous-menu ouvert (`MenuStack::shownDepth`). En haut, l'aide de la ligne survolée en deux lignes au plus (un message
@@ -400,7 +400,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
   (data.hpp : `GRID` 4, `cellCol` 0 avant … `BACK_COL` 3 arrière, `cellRow`, `cellAt(ligne, colonne)` ; ne jamais écrire
   3 ou 9 en dur). Sauvegarde : ligne `case4` ; une ancienne ligne `case` (3x3) est convertie (l'arrière reste l'arrière).
   À l'écran (`Battle::cellPos`) : alliés à gauche (tournés vers la droite), ennemis à droite (vers la gauche) depuis la
-  3.2.1, colonnes de 30 px, lignes de 22 px à partir de y 72. Mesuré : difficulté inchangée
+  3.3, colonnes de 30 px, lignes de 22 px à partir de y 72. Mesuré : difficulté inchangée
   par rapport au 3x3 (écarts dans le bruit). `Battle::cells_` garde la
   case de chacun pendant le combat (alliés : `Fighter::cell`, la formation, ligne
   `case4` de la sauvegarde ; ennemis et gardien à plusieurs : `formation()`

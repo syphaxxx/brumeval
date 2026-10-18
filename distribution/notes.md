@@ -1,12 +1,13 @@
 ## Nouveautés
 
-- **Nouveaux graphismes** : personnages, habitants, animaux et les 62 créatures de l'histoire en sprites dessinés, boss en grand format, effets de sorts, invocations pendant les Limites, icônes d'objets dans les menus, visages de Lior dans les dialogues.
-- **Combat plus lisible** : un ATH en tableau (PV, PM, ATB, Limite pour chaque combattant), des descriptions courtes et chiffrées, et la **zone d'une attaque visible dès qu'on la survole**.
-- **Tout se choisit sur le damier** : la cible d'une attaque et la case de « Se déplacer » se choisissent directement sur le damier, aux flèches ou à la souris.
-- **Villes redessinées** : place pavée, marché et jardins dans la Vallée, ferme au moulin, rue pavée et forge à Forgeroc, Givreval, le port et le camp des bandits ; on passe derrière les toits et les arbres. Marchande, aubergiste, soigneur, forgeron, voyageuse et animaux.
-- **6 nouvelles créatures** : Tisseline (Grotte), Osselet (Ruines et Tour), Gobelard et Brutor (Sylve-Noire), Draconnet (rare, au volcan) et un coffre des Ruines qui a des dents…
+- **Des sprites deux fois plus nets** : l'image est dessinée à la taille de votre écran, les personnages et les créatures gardent tous leurs détails.
+- **Combat plus clair** : votre équipe à gauche, les ennemis à droite, chacun tourné vers l'adversaire ; plus aucun texte sur le terrain (menus et ATH dans le panneau du bas) ; les dégâts prévus s'affichent sur la cible ; visages dans l'ordre des tours ; Lior lance sa lanterne, fête la victoire et tombe K.O. ; les ennemis vaincus s'effacent.
+- **Des cartes vivantes** : le compagnon vous suit, on peut **courir** (Maj, ou X à la manette), des enfants et des animaux se promènent, les habitants réagissent quand vous leur parlez. Eau, neige (avec vos empreintes), glace, hautes herbes, fleurs, intérieurs meublés et éclairés, fontaine, réverbères allumés la nuit.
+- **Carte du monde** (Échap > Carte du monde) et **bulles de quête** : « ! » au-dessus de qui propose une quête, « ? » dorée quand vous pouvez la rendre. Nouvelle page d'aide « Exploration » (F1).
+- **L'Expédition** est dessinée avec les sprites, et l'écran titre est refait.
+- Corrections : l'éditeur de cartes dessine de nouveau les arbres, quelques créatures regardaient du mauvais côté, les guillemets s'affichent en anglais.
 
-Dans la 3.1 : le jeu en anglais. Dans la 3.0 : l'acte 2 (archipel d'Écume), les énigmes, les astuces.
+Dans la 3.2 : la refonte graphique. Dans la 3.1 : le jeu en anglais. Dans la 3.0 : l'acte 2 (archipel d'Écume), les énigmes, les astuces.
 
 ## Télécharger
 

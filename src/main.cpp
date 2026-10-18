@@ -55,7 +55,7 @@ static std::vector<std::string> problems() {
 // large que la forme de la fenêtre le demande (320 pixels au moins ; les menus
 // restent dans la zone de 320 pixels du milieu, voir Gfx::ox), puis agrandie
 // pour remplir toute la fenêtre ou tout l'écran, sans bandes noires. Depuis la
-// 3.2.1, l'image est dessinée directement à un nombre entier de fois sa taille
+// 3.3, l'image est dessinée directement à un nombre entier de fois sa taille
 // (k, juste au-dessus de la taille de l'écran ; SDL_RenderSetScale) : les
 // dessins en code ont des pixels carrés et réguliers, et les sprites, deux fois
 // plus fins (gfx.hpp), gardent tous leurs détails. Elle est ensuite ajustée en
