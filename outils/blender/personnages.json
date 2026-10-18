@@ -1,0 +1,10 @@
+[
+  {"id": "homme", "peau": "#eab38a", "cheveux": "#5a3a2e", "haut": "#6f7d6f", "bas": "#4f5a52", "chaussures": "#4e3328", "ceinture": "#5a3a2a", "moustache": "#5a3a2e", "hauteur": 48},
+  {"id": "enfant", "peau": "#f0c09a", "cheveux": "#7a4c3a", "haut": "#ded6c2", "bas": "#3e5c6f", "salopette": true, "chaussures": "#452b25", "taille": 0.88, "hauteur": 44},
+  {"id": "femme", "peau": "#f2c6a4", "cheveux": "#3a363c", "coiffure": "longue", "haut": "#b36d64", "bas": "#f2c6a4", "jupe": "#8a4a46", "tablier": "#e6ddd2", "chaussures": "#2c2529", "hauteur": 48},
+  {"id": "pecheur", "peau": "#e8ad7c", "haut": "#3a3533", "bas": "#3d5772", "salopette": true, "chaussures": "#513328", "moustache": "#6a4a32", "chapeau": {"type": "paille", "couleur": "#e2ad66", "ruban": "#3d5772"}, "hauteur": 48},
+  {"id": "barman", "peau": "#f6c39c", "cheveux": "#553931", "haut": "#ecebe6", "gilet": "#2f2d2c", "bas": "#414548", "chaussures": "#865d4b", "moustache": "#553931", "hauteur": 48},
+  {"id": "docteur", "peau": "#ddbfa7", "haut": "#f3f5f3", "bas": "#3e444c", "chaussures": "#382f30", "moustache": "#6a6a6a", "chapeau": {"type": "toque", "couleur": "#f7f8f7"}, "hauteur": 48},
+  {"id": "forgeron", "peau": "#d9a07a", "haut": "#4e5662", "bas": "#37383e", "salopette": true, "manches": "#5a372b", "chaussures": "#5a372b", "barbe": "#3e251f", "chapeau": {"type": "casquette", "couleur": "#47332c"}, "hauteur": 48},
+  {"id": "paysan", "peau": "#f2b46f", "haut": "#9a947a", "bas": "#606155", "ceinture": "#7a5a3a", "chaussures": "#352721", "moustache": "#8a5a32", "chapeau": {"type": "paille", "couleur": "#d59150"}, "hauteur": 48}
+]

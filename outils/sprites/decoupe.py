@@ -15,6 +15,8 @@ Les variantes (outils/sprites/variantes.json) recolorent un sprite déjà décou
 min, teinte max, nouvelle teinte, saturation x, luminosité x, saturation minimale], ...]} (teintes en degrés ;
 teinte min -1 = toutes les couleurs ; nouvelle teinte -1 = garder ; la saturation minimale colore aussi les gris).
 (« miroir » : true la retourne aussi). {"prefixe", "de", "teintes"} recolore tous les sprites d'un personnage (mage_bas_0 -> maelle_bas_0…).
+Les images de outils/sprites/rendus/ (déjà à la finesse de l'atlas : rendus de Blender, outils/blender/) sont ajoutées
+telles quelles, sous le nom de leur fichier.
 Nécessite Pillow, numpy et scipy (pip install pillow numpy scipy).
 """
 import colorsys
@@ -234,6 +236,12 @@ def main():
     sprites = {}
     for e in spec:
         sprites[e['id']] = sprite(e)
+    # Sprites déjà prêts (outils/sprites/rendus/*.png, à la finesse de l'atlas) : rendus de Blender (pixeliser.py)
+    rdir = os.path.join(ICI, 'rendus')
+    if os.path.isdir(rdir):
+        for f in sorted(os.listdir(rdir)):
+            if f.endswith('.png'):
+                sprites[f[:-4]] = np.asarray(Image.open(os.path.join(rdir, f)).convert('RGBA')).copy()
     vpath = os.path.join(ICI, 'variantes.json')
     if os.path.exists(vpath):
         for v in json.load(open(vpath, encoding='utf-8')):

@@ -882,6 +882,13 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       skipScript();
     }
     check(k >= 0 && moved && near && faced, "promeneurs : ils marchent autour de leur place, et se tournent vers le joueur qui leur parle");
+    // 3.4 : les habitants de face, de dos et de profil (poses rendues avec Blender, outils/blender/)
+    changeMap(mi("vallee"), 12, 10, DOWN);
+    frame();
+    for (size_t i = 0; i < walk_.size(); i++) walk_[i].wait = 99, walk_[i].dir = (int)(i % 4), walk_[i].faceUntil = time + 99;
+    run(.3f);
+    snap("habitants_poses");
+    changeMap(mi("cendrelune"), 12, 34, DOWN);
     changeMap(mi("cendrelune"), 12, 34, DOWN);
   }
   run(.4f);
