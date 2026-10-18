@@ -13,3 +13,9 @@ graphify-out/
 # Outil des sprites : fichiers fabriqués
 outils/sprites/__pycache__/
 outils/sprites/apercu.png
+
+# Outil des voxels : fichiers fabriqués (python outils/voxels/voxelise.py)
+outils/voxels/__pycache__/
+outils/voxels/apercu.png
+outils/voxels/essai_godot/modeles/
+outils/voxels/essai_godot/.godot/

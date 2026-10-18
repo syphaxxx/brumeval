@@ -1,0 +1,17 @@
+; Projet Godot d'essai des modèles en voxels (outils/voxels/voxelise.py). Ouvrir avec Godot 4.
+config_version=5
+
+[application]
+
+config/name="Brumeval - essai des voxels"
+run/main_scene="res://galerie.tscn"
+config/features=PackedStringArray("4.5")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
