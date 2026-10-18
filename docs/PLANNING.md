@@ -1,6 +1,6 @@
 # Planning de la suite de Brumeval
 
-État au 13 octobre 2026 : version **2.4** publiée (joueur automatique plus malin, commandes de la démo) ; avant elle 2.3 (code de partie) et **2.2** (les 1.7 à 2.2 en une fois : damier 4x4, zones, vitesse, Aide,
+État au 19 octobre 2026 : version **3.3** publiée ; la **3.4** (échiquier, personnages rendus avec Blender, effets faits avec Godot) est prête sur la branche `echiquier`, pas encore publiée. Historique : 2.4 (joueur automatique plus malin, commandes de la démo), 2.3 (code de partie), **2.2** (les 1.7 à 2.2 en une fois : damier 4x4, zones, vitesse, Aide,
 forge, évolution, graphismes). Avant elle : 1.6 (réserve, bestiaire, Source des Brumes), 1.5 (boss renforcés, compagnons).
 Avant elle : 1.3 (son, options, manette, animations d'attaque, Ignarok
 redessiné, intérieurs, équipement, quêtes annexes), 1.3.1 (musique) et 1.4
@@ -170,6 +170,31 @@ profil et de dos. Police : guillemets anglais “ ” ‘ (47 phrases anglaises 
 10. Menus : fiche des créatures avec le grand sprite, écran titre avec les sprites.
 11. Équilibrage des nouveautés (Coffrelin, nouvelles créatures), mesuré.
 12. Tests du choix sur le damier et des nouvelles tuiles ; documentation et traduction anglaise à jour.
+
+## Étape 2 quinquies — Échiquier, Blender et Godot (demandé le 2026-10-18)
+
+Demande : « améliorer encore le jeu à tous les niveaux ; que le combat marche comme un échiquier, que les combattants
+puissent passer du côté adverse et que les déplacements deviennent importants pour tous ; apprendre à utiliser
+Blender et Godot pour créer des sprites et des animations ». Ordre laissé à Claude (« dans l'ordre le plus rentable »).
+Branche `echiquier` (version 3.4), pas encore publiée.
+
+1. **Échiquier** (fait) : un seul plateau de 8 × 4 cases pour les deux camps ; « Se déplacer » (2 cases, une fois par
+   tour) ne finit plus le tour ; « Attendre » ; corps à corps au contact (on s'approche d'abord si on peut) ; coup
+   dans le dos ×1,3 ; encerclé +10 % par adversaire en plus ; distance au contact ×0,75 ; Percée au bord adverse
+   (+1 Attaque, Magie, Vitesse) ; poussée dans l'axe du lanceur ; Vent et Esprit volent, Vent et Foudre vont plus
+   loin. IA (ennemis, alliés en auto, joueur automatique) qui choisit sa case avant d'agir. Duel en ligne en miroir.
+   Aide, astuces (échiquier, dans le dos, Percée), traduction anglaise, tests.
+2. **Équilibrage** (fait, mesuré) : les boss étaient trop faciles (encerclés par toute l'équipe) ; ils ne sont plus
+   encerclés ni gênés au contact, encerclement 15 → 10 %, trois boss +1 niveau. Joueur automatique : histoire
+   finie (actes 1 et 2, 1 h 32, 1 défaite).
+3. **Blender** (fait) : personnages chibi en 3D rendus en pixel art ; les 8 habitants qui n'avaient qu'une pose de
+   face (homme, enfant, femme, pêcheur, barman, docteur, forgeron, paysan) ont maintenant dos et profil, en 4 images
+   de marche : ils se tournent et marchent.
+4. **Godot** (fait) : effets en particules rendus image par image : types Métal et Normal, éclats de la Percée et de
+   la Brisure.
+5. Pistes suivantes : poses de combat rendues avec Blender (attaque, garde) pour les héros qui n'en ont pas ; plus
+   d'effets Godot si l'utilisateur veut remplacer ou compléter ceux de sa planche ; obstacles sur l'échiquier
+   (rochers, arbres) ; techniques qui font bondir ou échanger de case.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 

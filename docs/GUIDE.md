@@ -61,7 +61,7 @@ importantes ont un commentaire d'une ligne au-dessus.
 | Options | `options.hpp/.cpp` | Volumes, plein écran, vitesse du jeu, touches (`options.txt`) |
 | Évolution | `evolution.cpp` | Question « Évoluer ? » après un combat, effet de lumière, menu Échap > Évolution |
 | Forge | `forge.cpp` | Forge de Forgeroc : menu, coûts, forger (objets forgés générés dans `data.cpp`) |
-| Aide | `help.cpp` | Pages d'aide (Échap > Aide, F1) : statistiques, dégâts, damier, zones, rythme, états, tableau des types, touches |
+| Aide | `help.cpp` | Pages d'aide (Échap > Aide, F1) : statistiques, dégâts, échiquier, zones, rythme, états, tableau des types, touches |
 | Expédition | `expedition.hpp/.cpp`, `procgen.hpp/.cpp` | Monde généré à partir d'une graine, Camp, sauvegarde à part |
 | Multijoueur | `net.hpp/.cpp`, `upnp.hpp/.cpp` (box, code de partie), `online.hpp/.cpp`, `coop.cpp`, `trade.cpp` | Connexions, salon, duel, expédition à plusieurs, échanges |
 | Outils | `arena`, `settings`, `mapedit`, `storyedit` | Arène, réglages, éditeur de cartes, éditeur d'histoire |
@@ -96,8 +96,9 @@ les coffres ouverts et les quêtes sont des **drapeaux** (`Game::flags`).
 
 **Qui combat** : `frontOf` (data.cpp) — les 3 premiers héros valides, chacun
 suivi de sa créature compagnon. Le joueur commande héros et compagnons ; la
-jauge des compagnons avance moins vite. Chacun a sa case sur le damier
-(`formation`, `Battle::cells_`).
+jauge des compagnons avance moins vite. Chacun a sa case sur l'échiquier
+(`formation` pour la case de départ dans sa moitié, `Battle::cells_` pendant le combat : un seul plateau de
+`BOARD_W` × `GRID` cases pour les deux camps, voir CLAUDE.md).
 
 ## 4. Recettes
 
@@ -109,7 +110,11 @@ concernées dans `captures/`.
 `forme`, `couleurs`, `apprend`, et `sprite` : un nom de `data/sprites.json`), puis l'ajouter à une zone de
 rencontres d'une carte (`zones`, champ `pool`). **Un nouveau sprite** : sa boîte dans
 `outils/sprites/decoupe.json` (ou une recoloration dans `variantes.json`), puis `python outils/sprites/decoupe.py`
-et regarder `outils/sprites/apercu.png`. Une nouvelle *forme* (dessin) : ajouter une
+et regarder `outils/sprites/apercu.png`. **Un personnage en 3D** (poses de dos, de profil, marche) : sa fiche dans
+`outils/blender/personnages.json`, puis Blender (`outils/blender/personnages.py`), `python outils/blender/pixeliser.py`
+et `decoupe.py`. **Un effet animé** : une gerbe de particules dans `outils/godot/effets/rendu.gd`, puis Godot,
+`python outils/godot/pixeliser_effets.py <type>` et `decoupe.py` (marche à suivre : compétence `sprites-blender-godot`).
+Une nouvelle *forme* (dessin) : ajouter une
 valeur à `Shape` (data.hpp) **avant** `Human`, son nom dans `SHAPES`
 (data.cpp), et son dessin dans `drawCreature` (sprites.cpp).
 

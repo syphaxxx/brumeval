@@ -37,7 +37,7 @@ COMMANDES
   Entrée ou Espace    parler, valider
   Échap               annuler, menu (équipe, tactiques, objets, sauvegarde)
   Tab (en combat)     mode auto : les tactiques jouent à votre place
-  F1                  aide (statistiques, damier, zones, états, types)
+  F1                  aide (statistiques, échiquier, zones, états, types)
   F2                  vitesse du jeu ×1, ×2 ou ×3
   F11                 plein écran ou fenêtre
   La souris marche aussi dans les menus.
@@ -60,11 +60,14 @@ COMMANDES
   Vous la commandez en combat, comme les héros (Tab : leurs tactiques).
   Loin des villes, les créatures arrivent en meutes (jusqu'à six).
 
-  Échap > Formation : la place de chacun sur le damier de combat (16 cases,
-  de l'avant à l'arrière). Au corps à corps, on ne touche que l'avant ennemi ;
-  l'arrière est protégé. En combat, « Se déplacer » change de case. La case et la
-  cible se choisissent sur le damier (flèches ou souris) ; en survolant une
-  technique, sa zone s'allume.
+  Échiquier (3.4) : les deux camps partagent un plateau de 8 x 4 cases et chacun
+  peut passer de l'autre côté. « Se déplacer » (2 cases) ne finit pas le tour :
+  on avance, puis on agit. Au corps à corps, on frappe un ennemi au contact (on
+  s'approche d'abord s'il le faut) ; frapper dans le dos fait plus mal ; tirer
+  ou lancer un sort au contact d'un ennemi est moins fort. Atteindre le bord du
+  camp adverse donne une Percée (bonus pour tout le combat).
+  Échap > Formation : la case de chacun au début du combat. La case et la cible
+  se choisissent sur le plateau (flèches ou souris).
   Zone rouge : un boss prépare une grosse attaque, écartez-vous !
 
   Brisure : chaque ennemi a un bouclier (le chiffre dans l'écu bleu).
@@ -105,7 +108,7 @@ COMMANDES
   touches du clavier.
 
   Échap > Aide (ou F1) : ce que font les statistiques, le calcul des
-  dégâts, la Brisure, les talents, le damier et les zones, les états, et le tableau des types (qui
+  dégâts, la Brisure, les talents, l'échiquier et les zones, les états, et le tableau des types (qui
   est efficace contre qui). Chaque technique et chaque objet détaille son
   effet en bas de l'écran quand on le choisit ; le Bestiaire donne les
   faiblesses de chaque créature capturée (celles des autres se découvrent).

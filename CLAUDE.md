@@ -354,6 +354,12 @@ code) ; `docs/GUIDE.md` les range par domaine.
   voyageuse, paysan et animaux. Nouvelles créatures (monstres restants des planches) : Tisseline (Grotte), Osselet
   (Ruines, Tour), Gobelard et Brutor (Sylve-Noire), Draconnet (volcan, rare), Coffrelin (coffre piégé des Ruines,
   « boss » de carte, événement `coffrelin`).
+- Blender et Godot (3.4, demandé le 2026-10-18) : `outils/blender/personnages.py` construit des personnages chibi en 3D
+  (fiches `personnages.json`, couleurs de leur sprite), les rend de dos et de profil en 4 images de marche ;
+  `pixeliser.py` les réduit en pixel art (contour d'un pixel) dans `outils/sprites/rendus/`, que `decoupe.py` range
+  dans l'atlas. `outils/godot/effets/rendu.gd` rend des effets en particules image par image (`gfx_<type>_k` : Métal,
+  Normal dans `spriteFx`, Percée et Brisure dans `Battle::bursts_`). Marche à suivre et pièges : compétence
+  `sprites-blender-godot`.
 - Améliorations (branche `ameliorations`, carte blanche du 2026-10-16) : petits détails du sol en sprites (touffes,
   fleurettes, cailloux selon `hsh`, dans `drawTile` '.'), hautes herbes `,`/`g` en touffes de la planche
   (`tallGrass` ; `front` : le bas des touffes redessiné sur les pieds du joueur), montagnes `m` en éboulis de rochers.
@@ -396,31 +402,38 @@ code) ; `docs/GUIDE.md` les range par domaine.
   passage ; plus on s'enfonce (jusqu'à `meute_distance` cases), plus les
   rencontres sont fréquentes (+`nature_dense`) et les groupes grands (jusqu'à
   `meute_max`, 6). Règles, rencontres.
-- Damier (1.7, plan validé le 2026-10-10 ; **4x4 depuis la 2.0**, demandé le 2026-10-12) : `N_CELLS` = 16 cases par camp
-  (data.hpp : `GRID` 4, `cellCol` 0 avant … `BACK_COL` 3 arrière, `cellRow`, `cellAt(ligne, colonne)` ; ne jamais écrire
-  3 ou 9 en dur). Sauvegarde : ligne `case4` ; une ancienne ligne `case` (3x3) est convertie (l'arrière reste l'arrière).
-  À l'écran (`Battle::cellPos`) : alliés à gauche (tournés vers la droite), ennemis à droite (vers la gauche) depuis la
-  3.3, colonnes de 30 px, lignes de 22 px à partir de y 72. Mesuré : difficulté inchangée
-  par rapport au 3x3 (écarts dans le bruit). `Battle::cells_` garde la
-  case de chacun pendant le combat (alliés : `Fighter::cell`, la formation, ligne
-  `case4` de la sauvegarde ; ennemis et gardien à plusieurs : `formation()`
-  automatique, physiques devant). `Move::melee` (champ `portee`) : le corps à
-  corps ne vise que la colonne la plus avancée encore debout (`reachable`, aussi
-  dans `attackScore` : l'IA et les tactiques en tiennent compte) ; l'arrière donne
-  et reçoit `backRow` au corps à corps. `Move::zone` (`Area`, champ `zone`) :
-  `zoneTargets` étend la cible à sa zone dans `useMove`, voisins × `zoneSide`.
-  « Se déplacer » (`moveTo`, jauge rapide ; case choisie sur le damier), menu `Game::formationMenu` (dessin
-  `drawFormationPanel`, `panelMode_` 4). Réseau : la case est le 7e nombre de
-  chaque combattant dans `etat` ; ordre `deplacer`.
+- Échiquier (3.4, demandé le 2026-10-18 : « que ça marche comme un échiquier, que les combattants puissent passer du
+  côté adverse ») : en combat, un seul plateau de `BOARD_W` × `GRID` (8 × 4) cases pour les deux camps (data.hpp :
+  `boardX`, `boardY`, `boardAt`, `inHalf`, `boardDist` (diagonales comprises), `boardSteps`, `inBoardZone`,
+  `boardName`). Alliés à gauche (colonnes 0 à 3, avant en 3), ennemis à droite (4 à 7, avant en 4). `Battle::cells_` =
+  case du plateau ; la formation (`Fighter::cell`, ligne `case4` de la sauvegarde, 0 à 15 dans sa moitié, `GRID` 4,
+  `cellCol` 0 avant … `BACK_COL` arrière) est placée par `toBoard` au début. Règles (`damier` de regles.json) :
+  « Se déplacer » une fois par tour **sans finir le tour** (`moved_`, `walkable` : `mouvement` cases sans diagonale,
+  +1 pour les types `rapides` ; on traverse ses alliés, pas les adversaires, arrêt au contact ; les types `vol`
+  passent par-dessus), puis `resumeTurn` rouvre le menu (ou l'ordinateur agit) ; « Attendre » (`waitTurn`, jauge
+  rapide). Corps à corps (`reachable`) : adversaire à `reach` (1, boss `allonge_boss`), sinon rejoignable ce tour
+  (`approachCell`, le pas est fait au début de `useMove`). `posMult` (dans `applyHit`, `attackScore`, `damageText`) :
+  dans le dos (`behind` : depuis le côté du camp de la cible, × `dos`), encerclé (`encercle` par adversaire au contact
+  au-delà du premier, pas un boss), distance ou magie au contact d'un adversaire (× `contact`, pas un boss). Percée :
+  atteindre le bord adverse donne +`percee` en Attaque, Magie et Vitesse une fois (`breakthrough_`). Poussée dans
+  l'axe du lanceur (`shoveDest(a, t, m)`), choc contre tout combattant. Terrain : `terrain_[case du plateau]`.
+  Ordinateur : `planMove`/`posValue` (meilleure attaque possible de la case, danger, distance, protecteur, terrain,
+  zone annoncée, Percée) avant `think` dans `enemyTurn` et `autoCommand` ; `think` renvoie `Plan::wait` si rien
+  n'est à portée ; tactiques : sans attaque à portée, il s'approche puis rejoue (`tacticTurn`). Menus : une
+  technique sans cible atteignable est « hors d'atteinte ». Dessin : `cellPos(case)` (colonnes de 32 px), cases
+  alternées, moitiés teintées, ligne de front, glissement (`slide_`), regard vers l'adversaire le plus proche
+  (`facesRight`). Réseau : cases du plateau dans `etat`, vues **en miroir** chez l'invité du duel (`netCell`) ;
+  `tour` porte `bouge` (déjà déplacé), ordres `deplacer` et `attendre`. Mesuré (BRUMEVAL_SIMULATIONS=2) : sans
+  réglage, boss bien plus faciles (encerclés par 6 alliés : +60 %) ; après (boss ni encerclés ni gênés au contact,
+  encerclement 10 %, Ignarok N.25, Ronce-Mère N.22, Mère des Brumes N.41), difficulté proche de la 3.3.
 - Attaques annoncées (1.8) : `Battle::bossPlan` ; un boss (pas en duel) annonce
   parfois (`boss_annonce`, 0,35) sa plus forte attaque sur la colonne, croix ou
   ligne qui couvre le plus d'alliés (`warnings_`, zone rouge, 8e champ `w` de
   `etat` pour l'invité) ; l'annonce ne lui coûte pas son tour. À son tour
   suivant, elle frappe ceux restés dans la zone × `boss_annonce_puissance`
   (1,6) ; si tous se sont écartés, il attaque normalement. Les alliés joués par
-  l'ordinateur (`autoCommand`) se mettent à l'abri (`threatened`, `safeCell`).
-  `enemyMove` : un lanceur de sorts ennemi à l'avant recule, un combattant à
-  l'arrière avance. Tactiques : conditions `soi_menace`, `ennemis_groupes`
+  l'ordinateur (`autoCommand`) se mettent à l'abri (`threatened`, `safeCell` : une
+  case où il peut aller ce tour). Tactiques : conditions `soi_menace`, `ennemis_groupes`
   (taille de la zone), `allie_avant_pv_moins` ; action `esquiver`
   (`Plan::cell`).
 - Rythme (`Move::pace`, champ `rythme`) : après une technique rapide, la jauge ATB
@@ -455,7 +468,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
   (`goOnline`) ; envoyés au gardien à plusieurs (`meteo`, `terrain` de `etat`). Effets : `weatherMult` et précision
   dans `applyHit`/`attackScore`, `atbRate` (verglas, aussi `turnOrder`), `terrainTurn` (fin du tour dans
   `afterAction`, et à l'arrivée d'une poussée), herbes et cristaux dans `applyHit`. `threatened` inclut une case
-  qui blesse (`terrainHurts`) : l'IA et la tactique « Se mettre à l'abri » la quittent ; `enemyMove` aussi.
+  qui blesse (`terrainHurts`) : l'IA et la tactique « Se mettre à l'abri » la quittent ; l'ordinateur l'évite (`posValue`).
   Duos : `Rules::duos`, `duoMember` (espèce, `humain`, `type:x`), `Battle::duoOptions` (partenaire vivant, jauge ≥
   `duo.jauge`, PM des deux ; jamais en ligne), `duoMove` (le partenaire paie et sa jauge tombe à 0, puis `useMove`
   avec `duoPartner_` pour le message). IA : `think` les compte × (1 - 0,45 × jauge du partenaire) ; tactiques : action
