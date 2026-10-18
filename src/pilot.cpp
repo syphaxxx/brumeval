@@ -406,7 +406,8 @@ std::vector<Pilot::Goal> Pilot::goals() {
       Goal g;
       g.key = "pnj:" + M.id + ":" + std::to_string(i);
       g.what = (n.event.empty() ? "parler à un habitant" : "parler : " + n.event) + " (" + M.name + ")";
-      around(g, n.x, n.y, 1, 1);
+      auto [nx, ny] = G.npcCell(M, i);  // un promeneur : là où il est maintenant
+      around(g, nx, ny, 1, 1);
       if (!n.event.empty()) byEvent(g, n.event);  // un simple dialogue (n.lines) n'a aucun effet : il n'y va pas
     }
     for (auto& c : M.chests) {

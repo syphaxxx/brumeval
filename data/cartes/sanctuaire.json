@@ -39,5 +39,6 @@
     }
   ],
   "zones": [],
-  "boss": [{"x": 9, "y": 4, "espece": "givrecorne", "drapeau": "boss3", "evenement": "givrecorne"}]
+  "boss": [{"x": 9, "y": 4, "espece": "givrecorne", "drapeau": "boss3", "evenement": "givrecorne"}],
+  "carte_monde": [76, 9]
 }

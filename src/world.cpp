@@ -159,6 +159,8 @@ MapDef mapFromJson(const Json& j) {
   m.rows = j.at("tuiles").get<std::vector<std::string>>();
   for (auto& r : m.rows)
     if (r.size() != m.rows[0].size()) throw std::runtime_error("toutes les lignes de « tuiles » doivent avoir la même longueur");
+  if (j.contains("carte_monde") && j["carte_monde"].is_array() && j["carte_monde"].size() == 2)
+    m.worldX = j["carte_monde"][0].get<float>(), m.worldY = j["carte_monde"][1].get<float>();
   for (auto& o : j.value("batiments", Json::array())) {
     Building b{o.at("x").get<int>(), o.at("y").get<int>(), o.at("l").get<int>(), o.at("h").get<int>(),
                o.at("genre").get<std::string>(), tr(jget<std::string>(o, "nom", "")), parseColor(o.value("toit", Json("#7a8a4a")))};
@@ -180,6 +182,7 @@ MapDef mapFromJson(const Json& j) {
     n.hideIf = jget<std::string>(o, "cache_si", "");
     n.sight = jget(o, "vue", 0);
     n.sightUntil = jget<std::string>(o, "vue_jusqua", "");
+    n.roam = n.sight > 0 ? 0 : jget(o, "promenade", 0);  // un dresseur garde sa place : son regard compte
     m.npcs.push_back(n);
   }
   for (auto& o : j.value("coffres", Json::array())) {
@@ -233,6 +236,7 @@ Json mapToJson(const MapDef& m) {
     b.push_back(p);
   }
   o["batiments"] = b;
+  if (m.worldX >= 0) o["carte_monde"] = Json::array({(int)std::lround(m.worldX), (int)std::lround(m.worldY)});
   Json n = Json::array();
   for (auto& x : m.npcs) {
     Json p = {{"x", x.x}, {"y", x.y}, {"apparence", look(x.look).id}, {"direction", dirName(x.dir)}};
@@ -240,6 +244,7 @@ Json mapToJson(const MapDef& m) {
     if (!x.hideIf.empty()) p["cache_si"] = x.hideIf;
     if (x.sight > 0) p["vue"] = x.sight;
     if (!x.sightUntil.empty()) p["vue_jusqua"] = x.sightUntil;
+    if (x.roam > 0) p["promenade"] = x.roam;
     if (!x.lines.empty()) p["dialogue"] = x.lines;
     n.push_back(p);
   }

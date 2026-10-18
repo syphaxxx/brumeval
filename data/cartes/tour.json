@@ -80,5 +80,6 @@
   "boss": [
     {"x": 14, "y": 22, "espece": "griffon", "drapeau": "griffon", "evenement": "griffon"},
     {"x": 14, "y": 3, "espece": "seigneur_orage", "drapeau": "boss5", "evenement": "seigneur_orage"}
-  ]
+  ],
+  "carte_monde": [88, 64]
 }

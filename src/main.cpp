@@ -54,10 +54,12 @@ static std::vector<std::string> problems() {
 // Affichage : le jeu est dessiné dans une image de 240 pixels de haut, aussi
 // large que la forme de la fenêtre le demande (320 pixels au moins ; les menus
 // restent dans la zone de 320 pixels du milieu, voir Gfx::ox), puis agrandie
-// pour remplir toute la fenêtre ou tout l'écran, sans bandes noires. Pour des
-// pixels nets et réguliers à n'importe quelle taille, l'image est d'abord
-// agrandie d'un nombre entier de fois (pixels carrés), puis ajustée en douceur
-// à la taille finale.
+// pour remplir toute la fenêtre ou tout l'écran, sans bandes noires. Depuis la
+// 3.3, l'image est dessinée directement à un nombre entier de fois sa taille
+// (k, juste au-dessus de la taille de l'écran ; SDL_RenderSetScale) : les
+// dessins en code ont des pixels carrés et réguliers, et les sprites, deux fois
+// plus fins (gfx.hpp), gardent tous leurs détails. Elle est ensuite ajustée en
+// douceur à la taille finale.
 // ---------------------------------------------------------------------------
 class Screen {
  public:
@@ -68,9 +70,8 @@ class Screen {
   // Textures perdues (changement de carte graphique, mise en veille…) : elles seront recréées
   void reset() {
     if (scene_) SDL_DestroyTexture(scene_);
-    if (big_) SDL_DestroyTexture(big_);
-    scene_ = big_ = nullptr;
-    bigK_ = 0;
+    scene_ = nullptr;
+    k_ = 0;
   }
   // À appeler avant de dessiner une image du jeu : choisit sa largeur selon la fenêtre
   void begin(Gfx& g) {
@@ -84,44 +85,46 @@ class Screen {
       scale_ = std::max(.25f, ow / float(SCREEN_W));
     }
     w = std::min(w + (w & 1), MAX_W);  // largeur paire : la zone du milieu tombe sur un pixel entier
-    if (w != w_) {
+    // Agrandissement de l'image dessinée : un nombre entier, au moins 2 (sprites deux fois plus fins), au plus 6
+    int k = std::clamp((int)std::ceil(scale_ - 1e-3f), 2, 6);
+    if (w != w_ || k != want_) {
       reset();
       w_ = w;
+      want_ = k;
     }
     int dw = (int)std::lround(w_ * scale_), dh = (int)std::lround(SCREEN_H * scale_);
     dst_ = {(ow - dw) / 2, (oh - dh) / 2, dw, dh};
-    if (!scene_) {
-      scene_ = SDL_CreateTexture(r_, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, w_, SCREEN_H);
-      SDL_SetTextureScaleMode(scene_, SDL_ScaleModeNearest);
+    if (!scene_) {  // carte graphique trop limitée pour la taille voulue : une image plus petite
+      for (k_ = want_; k_ >= 1 && !scene_; k_--)
+        scene_ = SDL_CreateTexture(r_, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, w_ * k_, SCREEN_H * k_);
+      k_++;  // la boucle a compté un cran de trop
+      if (!scene_) {  // aucune image possible : on dessine directement dans la fenêtre (comme sans agrandissement)
+        k_ = 1;
+        g.fullW = w_;
+        g.ox = (w_ - SCREEN_W) / 2;
+        SDL_RenderSetScale(r_, scale_, scale_);
+        return;
+      }
+      SDL_SetTextureScaleMode(scene_, SDL_ScaleModeLinear);  // ajustement final en douceur
       SDL_SetTextureBlendMode(scene_, SDL_BLENDMODE_NONE);
     }
     g.fullW = w_;
     g.ox = (w_ - SCREEN_W) / 2;
     SDL_SetRenderTarget(r_, scene_);
+    SDL_RenderSetScale(r_, float(k_), float(k_));  // le jeu dessine toujours en pixels de l'image de 320x240
   }
   // Affiche l'image dessinée, agrandie à la taille de la fenêtre
   void present() {
+    if (!scene_) {  // dessiné directement dans la fenêtre (voir begin)
+      SDL_RenderSetScale(r_, 1, 1);
+      SDL_RenderPresent(r_);
+      return;
+    }
     SDL_SetRenderTarget(r_, nullptr);
     SDL_SetRenderDrawColor(r_, 0, 0, 0, 255);
     SDL_RenderClear(r_);
-    SDL_Texture* src = scene_;
-    if (std::fabs(scale_ - std::round(scale_)) > 1e-3f) {  // taille non entière : passer par une image agrandie
-      int k = std::max(2, (int)std::ceil(scale_));
-      if (bigK_ != k) {
-        if (big_) SDL_DestroyTexture(big_);
-        big_ = SDL_CreateTexture(r_, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, w_ * k, SCREEN_H * k);
-        SDL_SetTextureScaleMode(big_, SDL_ScaleModeLinear);
-        SDL_SetTextureBlendMode(big_, SDL_BLENDMODE_NONE);
-        bigK_ = k;
-      }
-      if (big_) {
-        SDL_SetRenderTarget(r_, big_);
-        SDL_RenderCopy(r_, scene_, nullptr, nullptr);
-        SDL_SetRenderTarget(r_, nullptr);
-        src = big_;
-      }
-    }
-    SDL_RenderCopy(r_, src, nullptr, &dst_);
+    SDL_RenderSetScale(r_, 1, 1);
+    SDL_RenderCopy(r_, scene_, nullptr, &dst_);
     SDL_RenderPresent(r_);
   }
   // Position dans la fenêtre -> position dans le jeu (la zone de 320x240 du milieu commence à 0)
@@ -136,8 +139,8 @@ class Screen {
 
  private:
   SDL_Renderer* r_;
-  SDL_Texture *scene_ = nullptr, *big_ = nullptr;
-  int w_ = 0, bigK_ = 0;
+  SDL_Texture* scene_ = nullptr;
+  int w_ = 0, k_ = 0, want_ = 0;  // agrandissement obtenu et voulu
   float scale_ = 1;
   SDL_Rect dst_{0, 0, SCREEN_W, SCREEN_H};
 };
@@ -193,8 +196,10 @@ static int runTests(const char* outDir, bool partie = false) {
   const char* wEnv = SDL_getenv("BRUMEVAL_LARGEUR");
   int w = std::clamp(wEnv ? std::atoi(wEnv) : SCREEN_W, SCREEN_W, Screen::MAX_W);
   w += w & 1;
-  SDL_Surface* surf = SDL_CreateRGBSurfaceWithFormat(0, w, SCREEN_H, 32, SDL_PIXELFORMAT_ARGB8888);
+  // Image deux fois plus grande (captures en 640x480 : les sprites y ont tous leurs détails)
+  SDL_Surface* surf = SDL_CreateRGBSurfaceWithFormat(0, w * 2, SCREEN_H * 2, 32, SDL_PIXELFORMAT_ARGB8888);
   SDL_Renderer* r = SDL_CreateSoftwareRenderer(surf);
+  SDL_RenderSetScale(r, 2, 2);
   int code = 1;
   {
     Game game(r);
@@ -322,6 +327,7 @@ int main(int argc, char* argv[]) {
           continue;
         }
         if (e.type == SDL_CONTROLLERDEVICEREMOVED) {
+          game.in.runPad = false;  // manette débranchée pendant la course
           for (auto it = pads.begin(); it != pads.end(); ++it)
             if (SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(*it)) == e.cdevice.which) {
               SDL_GameControllerClose(*it);

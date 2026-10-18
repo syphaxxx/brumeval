@@ -54,5 +54,6 @@
       "creatures": ["galetor", "fumerole", "glaconnet", "tisonnel", "tisseline"]
     }
   ],
-  "boss": [{"x": 24, "y": 3, "espece": "golem", "drapeau": "golem", "evenement": "golem"}]
+  "boss": [{"x": 24, "y": 3, "espece": "golem", "drapeau": "golem", "evenement": "golem"}],
+  "carte_monde": [64, 27]
 }

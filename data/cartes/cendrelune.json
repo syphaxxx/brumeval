@@ -130,7 +130,8 @@
       "y": 35,
       "apparence": "enfant",
       "direction": "gauche",
-      "dialogue": ["Brann, c'est le plus fort de Forgeroc !", "Il ne suit que ceux qui le battent en duel."]
+      "dialogue": ["Brann, c'est le plus fort de Forgeroc !", "Il ne suit que ceux qui le battent en duel."],
+      "promenade": 2
     },
     {"x": 11, "y": 40, "apparence": "brann", "direction": "gauche", "evenement": "brann", "cache_si": "brann"},
     {"x": 47, "y": 10, "apparence": "garde", "direction": "bas", "evenement": "garde_volcan"},
@@ -142,7 +143,8 @@
       "dialogue": [
         "Ici, les créatures sont bien plus fortes que dans la vallée.",
         "Pensez à faire tourner votre équipe pour que tout le monde progresse."
-      ]
+      ],
+      "promenade": 1
     },
     {
       "x": 26,
@@ -169,7 +171,8 @@
       "y": 31,
       "apparence": "chat",
       "direction": "gauche",
-      "dialogue": ["Le chat de l'auberge se chauffe sur les pavés tièdes."]
+      "dialogue": ["Le chat de l'auberge se chauffe sur les pavés tièdes."],
+      "promenade": 1
     }
   ],
   "coffres": [
@@ -270,5 +273,6 @@
   "boss": [
     {"x": 20, "y": 6, "espece": "tisonnel", "drapeau": "tisonnels_chasses", "evenement": "tisonnels"},
     {"x": 48, "y": 2, "espece": "ignarok", "drapeau": "boss2", "evenement": "ignarok"}
-  ]
+  ],
+  "carte_monde": [58, 44]
 }

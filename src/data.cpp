@@ -944,4 +944,5 @@ static std::mt19937& rng() {
   return r;
 }
 float frand() { return std::uniform_real_distribution<float>(0.f, 1.f)(rng()); }
+void seedRandom(unsigned s) { rng().seed(s); }
 int irand(int lo, int hi) { return std::uniform_int_distribution<int>(lo, hi)(rng()); }

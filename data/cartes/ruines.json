@@ -115,5 +115,6 @@
   "boss": [
     {"x": 17, "y": 3, "espece": "kraken", "drapeau": "kraken", "evenement": "kraken"},
     {"x": 30, "y": 18, "espece": "coffrelin", "drapeau": "coffrelin_ruines", "evenement": "coffrelin"}
-  ]
+  ],
+  "carte_monde": [72, 76]
 }

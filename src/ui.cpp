@@ -151,6 +151,12 @@ static const SpriteRect* itemIcon(const std::string& label) {
   return it == names.end() ? nullptr : findSprite(it->second);
 }
 
+size_t MenuStack::shownDepth() const {
+  size_t n = 0;
+  for (auto& m : st_) n += !m.hidden;
+  return n;
+}
+
 static int itemAt(const Menu& m, int mx, int my) {
   if (m.hidden) return -1;
   int th = m.title.empty() ? 0 : 13;

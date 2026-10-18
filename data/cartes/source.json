@@ -97,5 +97,6 @@
     }
   ],
   "boss": [{"x": 19, "y": 2, "espece": "mere_brumes", "drapeau": "boss4", "evenement": "mere_brumes"}],
-  "declencheurs": [{"x": 19, "y": 27, "l": 2, "h": 1, "evenement": "source_entree", "jusqua": "source_vue"}]
+  "declencheurs": [{"x": 19, "y": 27, "l": 2, "h": 1, "evenement": "source_entree", "jusqua": "source_vue"}],
+  "carte_monde": [60, 8]
 }

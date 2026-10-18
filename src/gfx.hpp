@@ -25,8 +25,13 @@ struct Pt {
 // Sprites dessinés d'après les planches de l'utilisateur : data/sprites.png (atlas) et data/sprites.json
 // (nom -> [x, y, largeur, hauteur]), fabriqués par outils/sprites/decoupe.py. Ce qui n'a pas de sprite garde son
 // dessin en code (sprites.cpp).
+// Double définition (3.3) : l'atlas est ECHELLE fois plus fin (« _echelle » de sprites.json) ; w et h sont la taille
+// dans le jeu, sx, sy, sw, sh le rectangle dans l'atlas. L'image du jeu est rendue à la taille de l'écran (main.cpp,
+// SDL_RenderSetScale) : un sprite y garde tous ses pixels, les dessins en code sont simplement agrandis.
 struct SpriteRect {
-  int x, y, w, h;
+  int w, h;           // taille dans le jeu (pixels de l'image de 320x240)
+  int sx, sy, sw, sh;  // rectangle dans l'atlas
+  SpriteRect sub(int x, int y, int sw2, int sh2) const;  // morceau (coordonnées et taille dans le jeu)
 };
 const SpriteRect* findSprite(const std::string& id);  // nullptr si ce sprite n'existe pas
 bool loadPng(const std::string& path, int& w, int& h, std::vector<uint8_t>& rgba);  // image.cpp
@@ -91,6 +96,7 @@ class Gfx {
   void span(int y, int x0, int x1);
   SDL_Renderer* r_;
   SDL_Texture* atlas_ = nullptr;
+  SDL_Texture* atlasFlip_ = nullptr;  // le même atlas retourné gauche-droite (sprites tournés vers la droite)
   struct Box {
     int x, y, w, h;
     bool hidden = false;  // entièrement recouverte par une fenêtre dessinée ensuite

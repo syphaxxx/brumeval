@@ -1692,7 +1692,7 @@
       {"action": "dire", "texte": "Un vieux coffre, à moitié enfoui… Il a des dents !"},
       {
         "action": "combat",
-        "ennemis": [{"espece": "coffrelin", "niveau": 48, "boss": true}],
+        "ennemis": [{"espece": "coffrelin", "niveau": 54, "boss": true, "bouclier": 6}],
         "fuite": true,
         "capture": false,
         "victoire": [

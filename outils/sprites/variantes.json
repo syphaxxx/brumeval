@@ -19,7 +19,7 @@
   {"id": "noctaile", "de": "chauve_souris", "teintes": [[-1, 0, 268, 1.3, 0.95]]},
   {"id": "nebulis", "de": "fantome_b", "teintes": [[180, 260, 272, 1, 1]]},
   {"id": "noyelin", "de": "fantome", "teintes": [[180, 260, 165, 1, 0.95]]},
-  {"id": "ferrolin", "de": "elem_terre", "teintes": [[-1, 0, 212, 0.35, 1.1, 0.12]]},
+  {"id": "ferrolin", "de": "elem_terre", "teintes": [[-1, 0, 212, 0.35, 1.1, 0.12]], "miroir": true},
   {"id": "ferrogeant", "de": "golem_pierre", "teintes": [[-1, 0, 212, 1, 1.1, 0.2]]},
   {"id": "golem_suie", "de": "golem_grand", "teintes": [[-1, 0, 265, 0.6, 0.5, 0.1]]},
   {"id": "sylvarque", "de": "elem_terre_grand", "teintes": [[-1, 0, 150, 1.1, 0.6, 0.3]]},
@@ -63,5 +63,9 @@
   {"id": "ic_gemme_orage", "de": "ic_acc_8", "teintes": [[-1, 0, 250, 1, 1.1, 0.4]]},
   {"id": "ic_gemme_perle", "de": "ic_acc_8", "teintes": [[-1, 0, 200, 1, 1.1, 0.4]]},
   {"id": "ic_gemme_coeur", "de": "ic_acc_8", "teintes": [[-1, 0, 10, 1, 1.1, 0.4]]},
-  {"id": "ic_gemme_cristal", "de": "ic_acc_8", "teintes": [[-1, 0, 190, 1, 1.1, 0.4]]}
+  {"id": "ic_gemme_cristal", "de": "ic_acc_8", "teintes": [[-1, 0, 190, 1, 1.1, 0.4]]},
+  {"id": "grande_herbe_seche_1", "de": "grande_herbe_1", "teintes": [[-1, 0, 42, 0.75, 1.1]]},
+  {"id": "grande_herbe_sombre_1", "de": "grande_herbe_1", "teintes": [[-1, 0, 130, 0.9, 0.7]]},
+  {"id": "grande_herbe_seche_2", "de": "grande_herbe_2", "teintes": [[-1, 0, 42, 0.75, 1.1]]},
+  {"id": "grande_herbe_sombre_2", "de": "grande_herbe_2", "teintes": [[-1, 0, 130, 0.9, 0.7]]}
 ]

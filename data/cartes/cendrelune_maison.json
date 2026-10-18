@@ -7,16 +7,14 @@
     "###########",
     "#hh.e..e..#",
     "#.........#",
-    "#..tt.....#",
-    "#..tt.....#",
+    "#.jtt.....#",
+    "#.jtt.....#",
     "#........v#",
     "#.........#",
     "#####p#####"
   ],
   "batiments": [],
-  "habitants": [
-    {"x": 7, "y": 4, "apparence": "montagnard", "evenement": "quete_braises", "direction": "bas"}
-  ],
+  "habitants": [{"x": 7, "y": 4, "apparence": "montagnard", "evenement": "quete_braises", "direction": "bas"}],
   "coffres": [{"x": 1, "y": 7, "objet": "ether", "quantite": 1}],
   "panneaux": [],
   "passages": [{"x": 5, "y": 8, "vers": "cendrelune", "tx": 20, "ty": 39, "direction": "bas"}],

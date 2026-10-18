@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
+#include <random>
 #include <sstream>
 #include <cctype>
 
@@ -124,7 +125,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     menus.top().sel = 5;  // Options
     in.confirm = true;
     frame();
-    bool opened = menus.top().title == "Options";
+    bool opened = menus.top().title == T("Options");
     int vol = options().music;
     in.press[RIGHT] = true;  // Musique : plus fort
     frame();
@@ -172,7 +173,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     menus.top().sel = 4;  // Outils
     onPad(SDL_CONTROLLER_BUTTON_A, true);
     frame();
-    bool tools = menus.top().title == "Outils";
+    bool tools = menus.top().title == T("Outils");
     onPad(SDL_CONTROLLER_BUTTON_B, true);
     frame();
     onStick(SDL_CONTROLLER_AXIS_LEFTY, -30000);  // stick vers le haut
@@ -204,7 +205,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   }
   check(mode == Mode::Map && team.size() == 2, "nouvelle partie : Lior et son compagnon sur la carte");
   check(audio::currentMusic() == audio::musicForPlace("vallee"), "son : la musique de la vallée joue sur la carte (« " + audio::currentMusic() + " »)");
-  check(fillText("Lior part avec {compagnon}.") == "Lior part avec Braisenard.", "les textes remplacent {compagnon} par son nom");
+  check(fillText("Lior part avec {compagnon}.") == "Lior part avec " + species("braisenard").name + ".", "les textes remplacent {compagnon} par son nom");
 
   in.menu = true;
   frame();
@@ -212,6 +213,9 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   in.confirm = true;
   frame();
   snap("05_equipe");
+  in.press[DOWN] = true;  // la fiche d'une créature : son sprite à la taille de la place
+  frame();
+  snap("05_equipe_creature");
   menus.clear();
   panelMode_ = 0;
 
@@ -461,11 +465,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     frame();
     in.confirm = true;  // vendre une potion
     frame();
-    check(gold == item("potion").price / 2 && items["potion"] == 1 && menus.top().title.rfind("Vendre", 0) == 0,
+    check(gold == item("potion").price / 2 && items["potion"] == 1 && menus.top().title.rfind(T("Vendre  ·  "), 0) == 0,
           "boutique : vendre un objet rapporte la moitié de son prix");
     in.cancel = true;  // retour à la boutique
     frame();
-    check(menus.active() && menus.top().title.rfind("Boutique", 0) == 0, "boutique : Échap dans « Vendre » revient à la boutique");
+    check(menus.active() && menus.top().title.rfind(T("Boutique  ·  "), 0) == 0, "boutique : Échap dans « Vendre » revient à la boutique");
     menus.clear();
     team = keepTeam;
     reserve.clear();
@@ -502,6 +506,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     auto hitOn = [&](const FighterP& d, int cell) {
       B.cells_[d.get()] = cell;
       d->hp = d->mhp;
+      seedRandom(2026);  // la même suite de tirages devant et derrière : seule la case change
       long long total = 0;
       for (int k = 0; k < 200; k++) {
         int before = d->hp = d->mhp;
@@ -510,6 +515,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       return total;
     };
     long long front = hitOn(extra, cellAt(0, 1)), back = hitOn(extra, cellAt(0, BACK_COL));
+    seedRandom(std::random_device{}());  // la suite du mode test retrouve son hasard
     check(back > 0 && back < front * 0.85, "damier : à l'arrière, les coups au corps à corps font moins mal (" + std::to_string(front) + " contre " +
                                                std::to_string(back) + " sur 200 coups)");
     // Zone en croix : la cible et ses voisines
@@ -567,12 +573,14 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         frame();
       }
       bool moved = B.cellOf(lior) != liorCell && !B.threatened(lior);
-      B.bossPlan(boss);
+      size_t logBefore = B.log.size();  // le journal dit si l'attaque annoncée a trouvé quelqu'un (les autres ennemis
+      B.bossPlan(boss);                 // peuvent frapper Lior pendant ce temps : ses PV ne prouvent rien)
       for (int i = 0; i < 300 && B.sc.busy(); i++) {
         in.confirm = true;
         frame();
       }
-      bool dodged = lior->hp == lior->mhp;
+      bool dodged = false;
+      for (size_t i = logBefore; i < B.log.size(); i++) dodged = dodged || B.log[i].find(T(" (annoncée), personne dans la zone")) != std::string::npos;
       // Tactique : « Soi : zone annoncée » > « Se mettre à l'abri »
       B.warnings_.push_back({boss, "mordant", Area::Single, B.cellOf(lior)});
       lior->tactics = {Tactic{true, "soi_menace", 0, Tactic::Act::Auto, "esquiver"}};
@@ -674,17 +682,21 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       }
     };
     int gold0 = gold;
+    int markGive = questMark("quete_medaillon");  // bulle « ! » avant, rien pendant la recherche, « ? » avec le médaillon
     runEvent("quete_medaillon");
     answer();
     bool started = has(questFlag("medaillon")) && !has(questFlag("medaillon", true));
+    int markWait = questMark("quete_medaillon");
     pauseMenu();
     journalMenu();
     run(.1f);
     snap("93_journal");
     bool listed = false;  // la quête (après le conseil « Prochain gardien »)
     for (auto& it : menus.top().items)
-      listed = listed || (it.right == "en cours" && it.help.find("Bois Murmurant") != std::string::npos);
-    listed = listed && menus.top().title == "Journal";
+      listed = listed || (it.right == T("en cours") &&
+                          it.help.find(tr("Le petit-fils de l'ancien cherche le médaillon de son grand-père, perdu dans le Bois "
+                                          "Murmurant, au sud-ouest du village.")) != std::string::npos);
+    listed = listed && menus.top().title == T("Journal");
     menus.clear();
     panelMode_ = 0;
     int village = mi("vallee"), chest = -1;
@@ -693,9 +705,16 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       if (M().chests[i].item == "medaillon") chest = (int)i;
     if (chest >= 0) openChest(chest);
     answer();
+    int markReturn = questMark("quete_medaillon");
+    changeMap(mi("vallee_ancien"), 6, 6, UP);
+    run(.2f);
+    snap("quete_bulle");  // la bulle « ? » au-dessus du petit-fils
+    changeMap(village, 12, 25, UP);
     runEvent("quete_medaillon");
     answer();
     bool done = has(questFlag("medaillon", true)) && items["medaillon"] == 0 && items["amulette_vie"] == 1 && gold == gold0 + 200;
+    check(markGive == 1 && markWait == 0 && markReturn == 2 && questMark("quete_medaillon") == 0,
+          "quête annexe : bulle « ! » chez celui qui la donne, « ? » quand on peut la rendre, plus rien ensuite");
     check(started && listed && chest >= 0 && done,
           "quête annexe : le médaillon (acceptée, inscrite au journal, trouvée dans un coffre, rendue contre une récompense)");
     items.erase("amulette_vie");
@@ -730,6 +749,24 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   in.confirm = true;
   frame();
   snap("10_combat_cible");
+  if (battle_ && battle_->boardPicking()) {  // 3.2 : la cible se choisit sur le damier (menu caché, souris ou flèches)
+    Battle& B = *battle_;
+    int before = menus.top().sel, other = -1;
+    for (size_t i = 0; i < B.pick_.cells.size() && i < menus.top().items.size(); i++)
+      if ((int)i != before && menus.top().items[i].enabled) other = (int)i;
+    bool mouseOk = true;
+    if (other >= 0) {  // la souris sur la case d'un autre ennemi : il devient la cible
+      Pt c = B.cellPos(B.pick_.allySide, B.pick_.cells[(size_t)other]);
+      in.mouseOn = in.moved = true;
+      in.mx = (int)c.x, in.my = (int)c.y + 4;
+      frame();
+      mouseOk = menus.top().sel == other && B.cursor && B.cellOf(B.cursor) == B.pick_.cells[(size_t)other];
+      in.mouseOn = false;
+      menus.top().sel = before;  // la suite du test vise comme avant
+      if (menus.top().items[(size_t)before].hover) menus.top().items[(size_t)before].hover();
+    }
+    check(menus.top().hidden && mouseOk, "combat : la cible se choisit sur le damier (menu caché, la souris désigne la case d'un ennemi)");
+  } else check(false, "combat : la cible se choisit sur le damier (pas de choix sur le damier)");
   in.confirm = true;
   frame();
   run(.45f);
@@ -756,6 +793,58 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
 
   // --- Cartes ---
   changeMap(mi("cendrelune"), 12, 34, DOWN);
+  {  // 3.3 : Maj maintenue, on court (pas plus rapide, images de course)
+    in.shift = true;
+    in.hold[RIGHT] = true;
+    frame();
+    frame();
+    bool fast = moving && running_;
+    float t0 = moveT;
+    frame();
+    fast = fast && moveT - t0 > 13.f / 60 * .9f;
+    in.hold[RIGHT] = false;
+    in.shift = false;
+    run(.3f);
+    check(fast, "courir : Maj maintenue, le pas va presque deux fois plus vite");
+    snap("courir_compagnon");  // le compagnon suit une case derrière
+    worldMapOn_ = true;  // carte du monde (3.3) : ouverte depuis Forgeroc, fermée par Échap
+    frame();
+    snap("carte_monde");
+    in.cancel = true;
+    frame();
+    check(!worldMapOn_ && mode == Mode::Map, "carte du monde : elle s'ouvre et se ferme (Échap)");
+    check(!trail_.empty() && trail_.back() == std::make_pair(12, 34), "compagnon : il suit le joueur, une case derrière lui");
+    changeMap(mi("cendrelune"), 12, 34, DOWN);
+  }
+  {  // 3.3 : un promeneur (l'enfant de Forgeroc, « promenade » 2) marche sans s'éloigner, et se tourne quand on lui parle
+    int k = -1;
+    for (size_t i = 0; i < M().npcs.size(); i++)
+      if (M().npcs[i].roam > 0 && k < 0) k = (int)i;
+    bool moved = false, near = k >= 0;
+    for (int f = 0; f < 60 * 12 && k >= 0; f++) {
+      frame();
+      auto [x, y] = npcCell(M(), (size_t)k);
+      moved = moved || x != M().npcs[k].x || y != M().npcs[k].y;
+      near = near && std::abs(x - M().npcs[k].x) <= M().npcs[k].roam && std::abs(y - M().npcs[k].y) <= M().npcs[k].roam;
+    }
+    bool faced = false;
+    if (k >= 0) {
+      for (int f = 0; f < 60 && walk_[k].t < 1; f++) frame();
+      auto [x, y] = npcCell(M(), (size_t)k);
+      for (int d : {LEFT, RIGHT, UP, DOWN}) {  // le joueur se place à côté de lui, tourné vers lui
+        int sx = x + (d == LEFT ? 1 : d == RIGHT ? -1 : 0), sy = y + (d == UP ? 1 : d == DOWN ? -1 : 0);
+        if (faced || blocked(sx, sy)) continue;
+        px = sx, py = sy, dir = d;
+        walk_[k].wait = 99;  // il ne repart pas pendant ce temps
+        in.confirm = true;
+        frame();
+        faced = sc.busy() && time < walk_[k].faceUntil && walk_[k].dir == (d == LEFT ? RIGHT : d == RIGHT ? LEFT : d == UP ? DOWN : UP);
+      }
+      skipScript();
+    }
+    check(k >= 0 && moved && near && faced, "promeneurs : ils marchent autour de leur place, et se tournent vers le joueur qui leur parle");
+    changeMap(mi("cendrelune"), 12, 34, DOWN);
+  }
   run(.4f);
   snap("12_forgeroc");
   changeMap(mi("cendrelune"), 46, 12, UP);
@@ -934,7 +1023,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     pauseMenu();
     bool offered = false;
     for (auto& it : menus.top().items)
-      if (it.label == "Recommencer l'énigme") offered = true, it.act();
+      if (it.label == T("Recommencer l'énigme")) offered = true, it.act();
     bool reset = offered && boulders_ == start && px == R.puzzleX && py == R.puzzleY;
     menus.clear();
     path = solvePuzzle(R, px, py, boulders_, [this](int x, int y) { return !boulderAt(x, y) && blocked(x, y); });
@@ -965,11 +1054,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     team = {makeFighter("lior", 20)};
     startBattle({makeFighter("brumelin", 5)}, false, nullptr);
     battle_->start -= 2;
-    for (int i = 0; i < 300 && !(battle_->sc.showingMessage() && battle_->sc.text().rfind("Astuce", 0) == 0); i++) {
-      in.confirm = battle_->sc.showingMessage() && battle_->sc.text().rfind("Astuce", 0) != 0;  // passer l'annonce du combat
+    for (int i = 0; i < 300 && !(battle_->sc.showingMessage() && battle_->sc.text().rfind(T("Astuce : "), 0) == 0); i++) {
+      in.confirm = battle_->sc.showingMessage() && battle_->sc.text().rfind(T("Astuce : "), 0) != 0;  // passer l'annonce du combat
       frame();
     }
-    bool shown = battle_->sc.showingMessage() && battle_->sc.text().find("bouclier") != std::string::npos && tipsSeen.count("bouclier");
+    bool shown = battle_->sc.showingMessage() && battle_->sc.text().rfind(T("Astuce : "), 0) == 0 && tipsSeen.count("bouclier");
     snap("astuce");
     int before = lastHelp_;
     onKey(SDL_SCANCODE_F1, true, false);
@@ -1015,7 +1104,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     frame();
     auto& slots = menus.top().items;
     for (size_t i = 0; i < slots.size(); i++)
-      if (slots[i].label == "Gemmes") menus.top().sel = (int)i;
+      if (slots[i].label == T("Gemmes")) menus.top().sel = (int)i;
     in.confirm = true;  // Gemmes
     frame();
     in.confirm = true;  // chaton de l'arme
@@ -1120,7 +1209,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     lior->atb = 100;
     B.command(lior);
     bool menu = false;
-    for (auto& it : menus.top().items) menu = menu || (it.label == "Duo" && it.enabled);
+    for (auto& it : menus.top().items) menu = menu || (it.label == T("Duo") && it.enabled);
     snap("duo_menu");
     menus.clear();
     int mp0 = maelle->mp;
@@ -1160,7 +1249,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     flags.insert("brann");
     runEvent("forge");
     skipScript();
-    check(menus.active() && menus.top().title.rfind("Forge", 0) == 0, "forge : l'enclume de Forgeroc ouvre la forge une fois Brann dans l'équipe");
+    check(menus.active() && menus.top().title.rfind(T("Forge  ·  "), 0) == 0, "forge : l'enclume de Forgeroc ouvre la forge une fois Brann dans l'équipe");
     snap("forge");
     menus.clear();
     sc.clear();
@@ -1182,7 +1271,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     size_t nTactics = ronceau->tactics.size();
     offerEvolve_ = true;
     offerEvolutions();  // comme après un combat gagné
-    bool asked = !askText_.empty() && askText_.find("Ronceflore") != std::string::npos;
+    bool asked = !askText_.empty() && askText_.find(species("ronceflore").name) != std::string::npos;
     in.confirm = true;  // Oui
     frame();
     run(1.f);
@@ -1192,7 +1281,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
                    ronceau->tactics.size() == nTactics && lior->companion.lock() == ronceau && ronceau->hp * 2 <= ronceau->mhp + 1 &&
                    caught.count("ronceflore") && evoTo_.empty();
     // La suivante (Rocaillou) : Non
-    bool next = !askText_.empty() && askText_.find("Galetor") != std::string::npos;
+    bool next = !askText_.empty() && askText_.find(species("galetor").name) != std::string::npos;
     menus.top().sel = 1;
     in.confirm = true;
     frame();
@@ -1206,7 +1295,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     // Échap > Évolution : la créature qui avait refusé
     pauseMenu();
     bool listed = false;
-    for (auto& it : menus.top().items) listed = listed || it.label == "Évolution";
+    for (auto& it : menus.top().items) listed = listed || it.label == T("Évolution");
     menus.clear();
     evolutionMenu();
     in.confirm = true;
@@ -1330,7 +1419,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       in.confirm = true;
       frame();
     }
-    bool spotted = mode == Mode::Battle && battle_ && battle_->foeName == "Le braconnier";
+    bool spotted = mode == Mode::Battle && battle_ && battle_->foeName == tr("Le braconnier");
     if (battle_) battle_->autoPlay = true;
     for (int i = 0; i < 2000 && mode == Mode::Battle; i++) {
       in.confirm = i > 60;  // laisse le temps de voir l'adversaire et ses renforts
@@ -1406,6 +1495,15 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     view("sylvenoire", 40, 20, LEFT, "25_sylvenoire");
     view("pics", 30, 35, UP, "26_givreval");
     view("pics", 30, 12, UP, "27_pics");
+    {  // 3.3 : des empreintes dans la neige derrière le joueur (elles s'effacent en 30 s)
+      changeMap(mi("pics"), 30, 12, DOWN);
+      in.hold[DOWN] = true;
+      for (int i = 0; i < 60 * 3 && py < 15; i++) frame();
+      in.hold[DOWN] = false;
+      run(.3f);
+      snap("neige_empreintes");
+      check(footprints_.size() >= 2 && footprints_[0].x == 30 && footprints_[0].y == 12, "neige : des empreintes restent derrière le joueur");
+    }
     view("temple", 20, 27, UP, "28_temple");
     view("sanctuaire", 10, 12, UP, "29_sanctuaire");
     auto fight = [&](const char* map, std::vector<FighterP> foes, const char* name) {
@@ -1460,7 +1558,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     check(mode == Mode::Arena && arena_ != nullptr, "écran titre > Outils > Arène de combat");
     if (arena_) {
       Arena& A = *arena_;
-      check(A.presetCount() >= 15 && A.findPreset("Givrecorne") >= 0 && A.findPreset("Le braconnier") >= 0,
+      check(A.presetCount() >= 15 && A.findPreset(species("givrecorne").name) >= 0 && A.findPreset(tr("Le braconnier")) >= 0,
             "arène : modèles repris des événements et des zones (" + std::to_string(A.presetCount()) + ")");
       run(.3f);
       snap("34_arene");
@@ -1526,7 +1624,10 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     menus.top().sel = 1;  // Réglages
     in.confirm = true;
     frame();
-    check(mode == Mode::Settings && settings_ != nullptr, "écran titre > Outils > Réglages");
+    if (translating())  // en anglais, les éditeurs sont fermés (les données restent en français)
+      check(mode != Mode::Settings, "écran titre > Outils > Réglages : fermé en anglais");
+    else
+      check(mode == Mode::Settings && settings_ != nullptr, "écran titre > Outils > Réglages");
     if (settings_) {
       Settings& S = *settings_;
       run(.2f);
@@ -1592,7 +1693,10 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     menus.top().sel = 2;  // Éditeur de cartes
     in.confirm = true;
     frame();
-    check(mode == Mode::Editor && editor_ != nullptr, "écran titre > Outils > Éditeur de cartes");
+    if (translating())  // en anglais, les éditeurs sont fermés (les données restent en français)
+      check(mode != Mode::Editor, "écran titre > Outils > Éditeur de cartes : fermé en anglais");
+    else
+      check(mode == Mode::Editor && editor_ != nullptr, "écran titre > Outils > Éditeur de cartes");
     if (editor_) {
       MapEditor& E = *editor_;
       int vi = mi("vallee");
@@ -1658,9 +1762,9 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       run(.1f);
       snap("48_editeur_vue_eloignee");
       // Tester ici, puis revenir à l'éditeur
-      E.setCursor(12, 9);
+      E.setCursor(11, 9);  // une case pavée de la place (la fontaine est en 12-13, 8-9)
       E.testHere();
-      bool playing = mode == Mode::Map && M().id == "vallee" && px == 12 && py == 9;
+      bool playing = mode == Mode::Map && M().id == "vallee" && px == 11 && py == 9;
       in.menu = true;
       frame();
       in.confirm = true;  // « Fin du test »
@@ -1686,7 +1790,10 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     menus.top().sel = 3;  // Éditeur d'histoire
     in.confirm = true;
     frame();
-    check(mode == Mode::Story && story_ != nullptr, "écran titre > Outils > Éditeur d'histoire");
+    if (translating())  // en anglais, les éditeurs sont fermés (les données restent en français)
+      check(mode != Mode::Story, "écran titre > Outils > Éditeur d'histoire : fermé en anglais");
+    else
+      check(mode == Mode::Story && story_ != nullptr, "écran titre > Outils > Éditeur d'histoire");
     if (story_) {
       StoryEditor& S = *story_;
       Json before = events();
@@ -1797,10 +1904,12 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
 
   // --- Tactiques (règles de combat automatiques) ---
   {
-    auto selectLabel = [&](const std::string& start) {
+    auto selectLabel = [&](const std::string& start) {  // « Soi : PV < {n} % » : le début, jusqu'au nombre
       auto& it = menus.top().items;
+      std::string fr = start.substr(0, start.find(" <")), en = tr(start);
+      en = en.substr(0, std::min(en.find('{'), en.find(" <")));
       for (size_t k = 0; k < it.size(); k++)
-        if (!it[k].header && (it[k].label.rfind(start, 0) == 0 || it[k].label.rfind(tr(start), 0) == 0)) {
+        if (!it[k].header && (it[k].label.rfind(fr, 0) == 0 || it[k].label.rfind(en, 0) == 0)) {
           menus.top().sel = (int)k;
           return true;
         }
@@ -1878,7 +1987,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     menus.top().sel = 2 + (int)n0;  // première ligne libre
     in.confirm = true;
     frame();
-    bool found = selectLabel("Soi : PV");
+    bool found = selectLabel("Soi : PV < {n} %");
     run(.1f);
     snap("57_tactiques_condition");
     in.confirm = true;
@@ -2002,7 +2111,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     caught = {"golem"};
     bestiaryMenu(0);
     show("bestiaire");
-    for (int k = 0; k < 40 && bestiarySel_ != "golem"; k++) {
+    for (int k = 0; k < 100 && bestiarySel_ != "golem"; k++) {  // 74 espèces depuis la 3.3
       in.press[DOWN] = true;
       frame();
     }
@@ -2233,7 +2342,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     frame();
     run(.2f);
     snap("61_expedition_menu");
-    bool onMenu = X.onScreen() && menus.active() && menus.top().title == "Expédition";
+    bool onMenu = X.onScreen() && menus.active() && menus.top().title == T("Expédition");
     X.start(424242, "");
     run(.2f);
     snap("62_expedition_heros");
@@ -2370,7 +2479,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     frame();
     run(.1f);
     snap("69_multijoueur");
-    bool menuOk = H.onScreen() && menus.top().title == "Multijoueur";
+    bool menuOk = H.onScreen() && menus.top().title == T("Multijoueur");
     in.confirm = true;  // Héberger une partie
     frame();
     run(.1f);
@@ -2411,7 +2520,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       both(1);
     }
     both(10);
-    bool hostWon = H.status_.find("Victoire") != std::string::npos, guestWon = V.status_.find("Victoire") != std::string::npos;
+    bool hostWon = H.status_.find(T("Victoire")) != std::string::npos, guestWon = V.status_.find(T("Victoire")) != std::string::npos;
     check(started && mirrored && guestTurns > 0 && mode == Mode::Title && guest.mode == Mode::Title && H.state_ == Online::State::Salon &&
               V.state_ == Online::State::Salon && hostWon != guestWon,
           "multijoueur : duel complet (niveaux égaux), l'invité voit les mêmes PV et joue ses tours ; " + std::string(hostWon ? "l'hôte" : "l'invité") +
@@ -2441,34 +2550,34 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       // Une contre une : l'hôte propose a, l'invité donne c en retour, l'hôte accepte
       H.offerTrade(1, 1, false);
       both(10);
-      bool asked = guest.menus.active() && guest.menus.top().title == "Échange : avec Hôte" && V.trade_.step == Online::Trade::Step::Answering;
+      bool asked = guest.menus.active() && guest.menus.top().title == T("Échange : avec ") + std::string("Hôte") && V.trade_.step == Online::Trade::Step::Answering;
       snapGuest("83_echange_invite");
       V.answerTrade(1);
       both(10);
-      bool countered = menus.active() && menus.top().title == "Échange : avec Invité" && H.trade_.step == Online::Trade::Step::Countered;
+      bool countered = menus.active() && menus.top().title == T("Échange : avec ") + std::string("Invité") && H.trade_.step == Online::Trade::Step::Countered;
       snap("84_echange_hote");
       in.confirm = true;  // Accepter
       frame();
       both(10);
       std::string h1 = saved(*this), v1 = saved(guest);
       check(asked && countered && h1 == hero + ":10 " + c + ":7 " + b + ":9 " && v1 == hero + ":10 " + a + ":8 " &&
-                H.status_.rfind("Échange fait", 0) == 0 && V.status_.rfind("Échange fait", 0) == 0,
+                H.status_.rfind(T("Échange fait : "), 0) == 0 && V.status_.rfind(T("Échange fait : "), 0) == 0,
             "échange (salon) : une créature contre une, chacun la reçoit dans la sauvegarde de sa partie principale");
       // Cadeau : l'invité offre sa créature, l'hôte l'accepte ; l'invité n'a plus que son héros
       V.offerTrade(0, 1, true);
       both(10);
-      bool giftAsked = menus.active() && menus.top().title == "Échange : cadeau de Invité";
+      bool giftAsked = menus.active() && menus.top().title == T("Échange : cadeau de ") + std::string("Invité");
       in.confirm = true;  // Accepter
       frame();
       both(10);
       std::string h2 = saved(*this), v2 = saved(guest);
-      check(giftAsked && h2 == h1 + a + ":8 " && v2 == hero + ":10 " && H.status_.rfind("Cadeau reçu", 0) == 0 &&
-                V.status_.rfind("Cadeau envoyé", 0) == 0,
+      check(giftAsked && h2 == h1 + a + ":8 " && v2 == hero + ":10 " && H.status_.rfind(T("Cadeau reçu : "), 0) == 0 &&
+                V.status_.rfind(T("Cadeau envoyé : "), 0) == 0,
             "échange (salon) : un cadeau, sans rien en retour");
       // Une contre une avec un joueur qui n'a plus de créature : refusé tout de suite
       H.offerTrade(1, 1, false);
       both(10);
-      check(H.trade_.step == Online::Trade::Step::None && H.status_.find("aucune créature") != std::string::npos && saved(*this) == h2,
+      check(H.trade_.step == Online::Trade::Step::None && H.status_.find(T(" n'a aucune créature à donner en retour.")) != std::string::npos && saved(*this) == h2,
             "échange (salon) : refusé si l'autre n'a aucune créature à donner (« " + H.status_ + " »)");
       // Cadeau reçu avec l'équipe complète : il va dans la réserve, et y reste dans la sauvegarde
       {
@@ -2483,7 +2592,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         both(10);
         std::string team8 = saved(*this);
         bool inReserve = reserve.size() == 1 && reserve[0]->sp == c && reserve[0]->lvl == 7;
-        check(inReserve && (int)team.size() == r.maxTeam && H.status_.rfind("Cadeau reçu", 0) == 0,
+        check(inReserve && (int)team.size() == r.maxTeam && H.status_.rfind(T("Cadeau reçu : "), 0) == 0,
               "échange (salon) : un cadeau reçu avec l'équipe complète va dans la réserve (" + team8 + ")");
       }
       for (Game* p : {this, &guest}) std::remove(H.file(p->saveName_).c_str());
@@ -2493,11 +2602,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     // L'invité s'en va : l'hôte reste dans le salon, prévenu
     V.leave();
     both(30);
-    check(H.state_ == Online::State::Salon && H.players_.empty() && H.peers_.empty() && H.status_.find("parti") != std::string::npos,
+    check(H.state_ == Online::State::Salon && H.players_.empty() && H.peers_.empty() && H.status_.find(T(" est parti.")) != std::string::npos,
           "multijoueur : l'invité quitte, l'hôte le voit et attend d'autres joueurs (« " + H.status_ + " »)");
     // Version différente : refusée
     H.onHello(9, Json{{"t", "bonjour"}, {"version", "0.1"}, {"donnees", H.hash_}, {"pseudo", "Ancien"}});
-    check(H.status_.find("Versions différentes") != std::string::npos, "multijoueur : une autre version du jeu est refusée");
+    check(H.status_.find(T("Versions différentes : vous avez la ")) != std::string::npos, "multijoueur : une autre version du jeu est refusée");
     {
       // Équipement transmis (duel, gardien) : le même chez l'autre joueur ; pas d'arme pour une créature
       auto mine = makeFighter("lior", 10);
@@ -2545,7 +2654,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     frame();
     run(.1f);
     snap("75_groupe_menu");
-    bool groupMenuOk = menus.top().title == "Expédition à plusieurs" && menus.top().items.size() == 4;
+    bool groupMenuOk = menus.top().title == T("Expédition à plusieurs") && menus.top().items.size() == 4;
     uint64_t seed = procgen::seedFromText("groupe");
     menus.clear();
     // Les deux jeux partagent ici les mêmes données en mémoire : l'invité met de côté les vraies données
@@ -2579,11 +2688,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     // Menu de pause > Groupe : où en sont les autres
     pauseMenu();
     bool hasGroup = false;
-    for (auto& it : menus.top().items) hasGroup = hasGroup || it.label == "Groupe";
+    for (auto& it : menus.top().items) hasGroup = hasGroup || it.label == T("Groupe");
     H.groupMenu();
     run(.1f);
     snap("78_groupe_pause");
-    check(hasGroup && menus.top().title == "Groupe" && menus.top().items.size() == 4, "expédition à plusieurs : menu de pause > Groupe");
+    check(hasGroup && menus.top().title == T("Groupe") && menus.top().items.size() == 4, "expédition à plusieurs : menu de pause > Groupe");
     menus.clear();
     // Gardien : l'hôte attend devant lui, l'invité arrive, le combat commence chez les deux (deux combattants chacun)
     for (Game* p : {this, &guest})
@@ -2602,7 +2711,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     skipScript();
     both(10);
     snap("79_groupe_attente_gardien");
-    bool waiting = H.ready_ == 1 && menus.active() && menus.top().title == "Gardien : le groupe" && mode == Mode::Map && !H.missing(1).empty() &&
+    bool waiting = H.ready_ == 1 && menus.active() && menus.top().title == T("Gardien : le groupe") && mode == Mode::Map && !H.missing(1).empty() &&
                    V.players_.at(0).ready == 1;
     toGuardian(guest);
     guest.interact();
@@ -2661,7 +2770,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     for (int i = 0; i < 120 && V.inGroup(); i++) guest.update(1 / 60.f);
     snapGuest("82_groupe_hote_parti");
     bool backToMenu = !V.inGroup() && V.state_ == Online::State::Menu && !XV.active() && XV.savedRegion(true) == 1 &&
-                      V.status_.find("sauvegardée") != std::string::npos && hasSpecies("lior");
+                      V.status_.find(T(" Votre expédition est sauvegardée.")) != std::string::npos && hasSpecies("lior");
     H.menu();
     H.host();
     connect();
@@ -2685,13 +2794,13 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       both(10);
       H.offerTrade(1, slot, true);
       both(10);
-      bool asked = guest.menus.active() && guest.menus.top().title == "Échange : cadeau de Hôte";
+      bool asked = guest.menus.active() && guest.menus.top().title == T("Échange : cadeau de ") + std::string("Hôte");
       snapGuest("85_groupe_cadeau_invite");
       guest.in.confirm = true;  // Accepter
       both(1);
       both(10);
       check(slot >= 0 && asked && team.size() == nH - 1 && guest.team.size() == nV + 1 && guest.team.back()->sp == sp &&
-                guest.team.back()->lvl == lvl && guest.notice_.rfind("Cadeau reçu", 0) == 0 && !guest.menus.active() && guest.mode == Mode::Map,
+                guest.team.back()->lvl == lvl && guest.notice_.rfind(T("Cadeau reçu : "), 0) == 0 && !guest.menus.active() && guest.mode == Mode::Map,
             "échange (expédition) : l'hôte offre une créature à l'invité, qui la reçoit dans son expédition");
     }
     for (auto& s : guest.g.layoutIssues) std::printf("         (invité) %s\n", s.c_str());

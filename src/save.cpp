@@ -159,6 +159,7 @@ bool Game::loadGame() {
   std::vector<std::string> oldChests;
   std::string line;
   mapId = 0;
+  walkMap_ = -1;  // les habitants repartent de leur place
   while (std::getline(f, line)) {
     std::istringstream s(line);
     std::string k, v;

@@ -100,6 +100,7 @@ class Game {
   void runEvent(const std::string& id);
   void runActions(const Json& list);
   bool checkCond(const Json& c) const;
+  int questMark(const std::string& event) const;  // bulle d'un habitant : 1 « ! » (quête à prendre), 2 « ? » (à rendre)
   std::string fillText(std::string s) const;
 
  private:
@@ -134,6 +135,21 @@ class Game {
   std::string chestFlag(int idx) const;
   bool checkSight();       // un dresseur repère le joueur ?
   int exclaimNpc_ = -1;    // habitant qui affiche « ! »
+  // Habitants de la carte affichée (3.3) : leur case actuelle (les promeneurs marchent autour de leur place) et leur
+  // regard (ils se tournent vers le joueur qui leur parle). Rien n'est enregistré : tout revient en place en changeant
+  // de carte.
+  struct NpcWalk {
+    int hx = -1, hy = -1;  // place d'origine (si l'éditeur la change, on repart de là)
+    int x = 0, y = 0, fx = 0, fy = 0, dir = 1, side = 2;
+    float t = 1, wait = 0, faceUntil = 0, talkT = -9;  // talkT : quand on lui a parlé (petit sursaut)
+  };
+  std::vector<NpcWalk> walk_;
+  int walkMap_ = -1;
+  uint32_t walkSeed_ = 7;  // hasard à part : les promeneurs ne changent pas les combats
+  int talkNpc_ = -1;       // l'habitant à qui l'on parle : il regarde le joueur jusqu'à la fin de la conversation
+  void syncWalkers();
+  void updateWalkers(float dt);
+  std::pair<int, int> npcCell(const MapDef& m, size_t i) const;  // case actuelle d'un habitant
   float exclaimT_ = 0;
   void changeMap(int m, int x, int y, int d);
   void encounter();
@@ -193,6 +209,8 @@ class Game {
   void openHelp(int page);
   void updateHelp();
   void drawHelp();
+  bool worldMapOn_ = false;  // carte du monde ouverte (3.3, menu pause) : le reste du jeu attend
+  void drawWorldMap();
   int helpPage_ = -1, helpScroll_ = 0, lastHelp_ = 0;  // page affichée (-1 : aucune), défilement, dernière vue (F1)
   void keysMenu(int sel = 0);
   bool padDir_[4] = {}, stickDir_[4] = {};  // directions tenues à la manette (croix, stick)
@@ -238,6 +256,18 @@ class Game {
   bool storyTest_ = false;              // événement joué depuis l'éditeur d'histoire
   std::unique_ptr<Expedition> expedition_;  // mode Expédition (écran titre), voir expedition.hpp
   std::unique_ptr<Online> online_;          // multijoueur (écran titre), voir online.hpp
+  bool running_ = false;  // le joueur court (Maj ou X maintenu) pendant ce pas
+  // Compagnon qui suit (3.3, dessin seul) : les dernières cases quittées par le joueur ; la créature marche une case
+  // derrière lui. Vidé à chaque changement de carte (elle réapparaît au premier pas).
+  std::vector<std::pair<int, int>> trail_;
+  // Empreintes dans la neige (3.3, dessin seul) : les dernières cases quittées sur une carte de neige, qui s'effacent
+  struct Footprint {
+    int x, y, dir;
+    float t;
+  };
+  std::vector<Footprint> footprints_;
+  int followDir_ = DOWN;
+  float mapFadeT_ = -10;  // moment du dernier changement de carte (fondu depuis le noir, 0,3 s)
   std::unique_ptr<Pilot> pilot_;            // joueur automatique (démo, partie rapide), voir pilot.hpp
   std::string saveBeforePilot_;             // fichier de sauvegarde d'avant la démo (rendu par l'écran titre)
   bool duelBattle_ = false;                 // le combat en cours est un duel en ligne

@@ -66,6 +66,45 @@ brumeval --demo                                  # la même chose dans la fenêt
 Fonctionnement, rapport et mémoire d'une partie à l'autre : compétence `joueur-auto-brumeval`. Un
 nouveau genre d'interaction (objet à utiliser, énigme…) demande d'ajouter un objectif dans `Pilot::goals`.
 
+## Revue par Codex (relecture seule)
+
+Claude reste le développeur principal : lui seul écrit et modifie le code. OpenAI Codex sert de
+relecteur indépendant : il analyse, signale les problèmes et propose des corrections, sans jamais
+modifier de fichier.
+
+**Quand** : de lui-même, sans attendre qu'on le demande, pour une nouvelle fonctionnalité importante,
+une refactorisation, un bug complexe, ou un changement du combat ou de l'équilibrage, du réseau, du
+format de sauvegarde ou de procgen. Pas pour une petite correction, un texte ou des données.
+
+**Combien** : une seule revue par tâche. Une seconde revue seulement si la première a mené à des
+corrections importantes, et jamais plus. Jamais de boucle entre les deux IA : Codex ne relance pas
+Claude, et Claude ne renvoie pas les réponses de Codex à Codex.
+
+**Commande** :
+
+    git diff | codex.cmd exec --sandbox read-only --ephemeral --color never -C <dépôt> -o <scratchpad>/codex_avis.txt "<consigne>"
+
+- Toujours `--sandbox read-only` : jamais `workspace-write`, `--full-auto` ni `--dangerously-…`.
+- La consigne donne à Codex le but du changement, la liste des fichiers concernés et les pièges de
+  CLAUDE.md qui s'y appliquent (par exemple : procgen identique sur tous les ordinateurs, `T("…")`,
+  sauvegarde, `BRUMEVAL_VERSION`). Elle demande une liste de problèmes concrets (fichier:ligne,
+  scénario qui casse, correction proposée), et lui dit de lire les fichiers avec
+  `Get-Content -Encoding UTF8`.
+- Ne jamais envoyer de secret à Codex (webhook Discord, fichiers `.env`).
+- Si Codex échoue (erreur, quota atteint, délai dépassé) : prévenir l'utilisateur, ne pas réessayer
+  en boucle, et continuer la tâche sans revue.
+
+**Après la revue** :
+1. Vérifier chaque remarque dans le code. Corriger celles qui sont justes, écarter les autres.
+2. Lancer les tests (`--test captures`, et le joueur automatique si l'histoire, les cartes ou
+   l'équilibrage ont changé).
+3. Vérifier que `git status` ne montre que les changements de Claude.
+4. Présenter à l'utilisateur un résumé : le travail fait, les remarques de Codex retenues ou écartées
+   (avec la raison), et le résultat des tests.
+
+Demander à l'utilisateur avant toute suppression, toute modification massive ou toute opération
+irréversible, même quand l'idée vient de Codex.
+
 ## Architecture (src/)
 
 Chaque `.hpp` commence par un commentaire qui explique son module (le `.cpp` du même nom contient le
@@ -81,9 +120,13 @@ code) ; `docs/GUIDE.md` les range par domaine.
   l'écran va de `g.left()` (négatif) à `g.right()` ; la carte, les combats,
   l'écran titre, la fin et les outils le font. Tout nouveau décor plein écran
   doit utiliser `g.left()`/`g.fullW` au lieu de 0/`SCREEN_W`.
-- `Screen` (main.cpp) choisit cette largeur selon la fenêtre, puis agrandit
-  l'image pour la remplir sans bandes noires (agrandissement entier puis
-  ajustement linéaire : pixels nets à toute taille). La souris est ramenée en
+- `Screen` (main.cpp) choisit cette largeur selon la fenêtre. Depuis la 3.3,
+  l'image est dessinée directement k fois plus grande (k entier, de 2 à 6, juste
+  au-dessus de la taille de l'écran ; `SDL_RenderSetScale`), puis ajustée en
+  douceur à la fenêtre : le code dessine toujours en pixels de 320x240 (pixels
+  carrés et nets), les sprites, deux fois plus fins, gardent leurs détails. Si la
+  carte graphique refuse la grande image, k descend (jusqu'à dessiner dans la
+  fenêtre). Le mode test dessine en 640x480 (captures deux fois plus grandes). La souris est ramenée en
   coordonnées de la zone du milieu par `Screen::toGame` (négatives à gauche).
   Le jeu tient compte du zoom de Windows (`SDL_HINT_WINDOWS_DPI_AWARENESS`) ; la
   fenêtre de départ a la forme de l'écran (`fitWindow`). Lancé par un
@@ -269,9 +312,11 @@ code) ; `docs/GUIDE.md` les range par domaine.
   l'ordinateur (ennemis, et alliés en mode test) ; `Battle::log` garde un journal
   lisible (`BRUMEVAL_JOURNAL=Sylvarque brumeval --test captures` l'affiche pour
   la simulation qui contient ce mot).
-- Écran de combat (1.7, refait en 3.2) : ATH en tableau en bas à droite (`Battle::drawHud` : une ligne par allié, titres
-  PV, PM, ATB, Lim ; barre de PV verte/or/rouge ; compagnon en retrait ; mode Auto/Manuel) ; menu de commande en bas à
-  gauche, sous-menus au-dessus (`dock`). La fenêtre du haut montre l'aide de la ligne survolée, trois lignes au plus :
+- Écran de combat (1.7, refait en 3.2 et 3.3) : rien n'est écrit sur le damier. Panneau du bas (`PANEL_Y`, `dock`) :
+  menu de commande à gauche (5 lignes, il défile), à droite l'ATH en tableau (`Battle::drawHud` : une ligne par allié,
+  titres PV, PM, ATB, Lim ; barre de PV verte/or/rouge ; compagnon en retrait ; mode Auto/Manuel), remplacé par le
+  sous-menu ouvert (`MenuStack::shownDepth`). En haut, l'aide de la ligne survolée en deux lignes au plus (un message
+  du combat : trois), puis la ligne de la météo, de l'ordre des tours et des renforts :
   en combat, `moveBrief` (une ligne compacte : genre, type, puissance, coût, portée, zone, effets, rythme) remplace
   `moveHelp`, et les objets n'ont que `itemDetails`. Météo à gauche de l'ordre des tours.
 - Choix sur le damier (3.2, demandé le 2026-10-15) : la cible (`pickFoe`, `pickAlly`) et la case de « Se déplacer » se
@@ -285,7 +330,9 @@ code) ; `docs/GUIDE.md` les range par domaine.
   contour de la zone et flèche dorée au-dessus de la cible (`fighterTop`) ; le reste du camp visé est estompé (alpha 0,45).
 - Sprites (3.2, refonte demandée le 2026-10-15) : planches « pixel art » de l'utilisateur dans `outils/sprites/planches/`,
   découpées par `python outils/sprites/decoupe.py` (liste `decoupe.json` : planche, boîte, taille ; recolorations
-  `variantes.json`) en un atlas `data/sprites.png` + `data/sprites.json` (nom → x, y, largeur, hauteur ; planche de
+  `variantes.json`) en un atlas `data/sprites.png` + `data/sprites.json` (deux fois plus fin, `_echelle` 2 ; nom → x, y,
+  largeur, hauteur dans l'atlas ; `SpriteRect` : `w`, `h` dans le jeu, `sx`… dans l'atlas, `sub` pour un morceau ; un
+  atlas retourné d'avance sert aux sprites tournés vers la droite ; planche de
   contrôle `outils/sprites/apercu.png`, non suivie). Le jeu lit l'atlas avec stb_image (`src/ext/stb_image.h`,
   compilé seul dans image.cpp) ; `findSprite(nom)`, `Gfx::sprite(…)` (miroir, échelle, teinte, éclat). Champs :
   `sprite` des apparences (préfixe : `<p>_bas_0`, `_haut_k`, `_droite_k` ou `_gauche_k`, `_combat` ; un animal : un seul
@@ -307,6 +354,40 @@ code) ; `docs/GUIDE.md` les range par domaine.
   voyageuse, paysan et animaux. Nouvelles créatures (monstres restants des planches) : Tisseline (Grotte), Osselet
   (Ruines, Tour), Gobelard et Brutor (Sylve-Noire), Draconnet (volcan, rare), Coffrelin (coffre piégé des Ruines,
   « boss » de carte, événement `coffrelin`).
+- Améliorations (branche `ameliorations`, carte blanche du 2026-10-16) : petits détails du sol en sprites (touffes,
+  fleurettes, cailloux selon `hsh`, dans `drawTile` '.'), hautes herbes `,`/`g` en touffes de la planche
+  (`tallGrass` ; `front` : le bas des touffes redessiné sur les pieds du joueur), montagnes `m` en éboulis de rochers.
+  Courir : Maj ou X de la manette maintenu (`Input::run`, `Game::running_`, pas à 13/s au lieu de 7,5, images
+  `lior_course_k`). Intérieurs : `e` = une bibliothèque pour deux cases, `t` = table (sprite « banc »), `j` = chaise
+  (tournée vers la table), script `outils/villes/interieurs.py`. Expédition : une créature générée sans sprite prend
+  celui d'une créature de l'histoire de même forme (`borrowedSprite`, d'après son identifiant, teinte de `c1`), un
+  personnage `lk_…` celui de la planche selon son arme (teinte de `top`) : dessin seul, le monde généré ne change pas.
+  Poses de combat (`drawFighterPose`, Lior) : `lancer_k` pendant une capture (la lanterne vole vers la cible),
+  `victoire` pendant la fenêtre des gains (à droite, du côté des ennemis vaincus), `ko` à terre.
+  Dégâts prévus sur la cible visée (`Battle::damageText`, même formule que `applyHit` sans hasard ni critique :
+  fourchette de `ecart_min` à 1, chance de toucher) ; l'efficacité d'un type n'est comptée qu'une fois découverte
+  (`weakKnown`), sinon neutre : rien ne se devine sans attaquer (Brisure). Ennemi vaincu : il s'efface en 0,6 s (`koT_`). Décor de l'horizon en sprites
+  (arbres, sapins, rochers). Écran titre : les personnages de part et d'autre du menu. Habitants : regards et
+  sautillements (dessin seul). Ordre des tours : portraits (`drawFighterIcon`). Un objet haut juste devant le joueur,
+  un coffre, un panneau ou un habitant devient transparent (`behind` dans `drawMap`). Murs de grotte, de glace et
+  falaises en `tex_pierre` teintée, dalles au sol des grottes (`texTile` avec teinte). Fontaine `W` dessinée une fois
+  depuis le coin bas-droit de son bloc (ronde, jet d'eau) ; départ de la partie en (12, 10). Compagnon qui suit
+  (`trail_`, `followDir_` : la première créature de l'équipe marche une case derrière le joueur, dessin seul, vidé
+  au changement de carte ; pas en expédition à plusieurs). Promeneurs : champ `promenade` des habitants (distance
+  autour de leur place ; jamais un dresseur), `walk_` (case actuelle et regard des habitants de la carte affichée,
+  hasard à part `walkSeed_`, rien d'enregistré), `npcCell` pour toute position d'habitant (collision, parole,
+  dessin) ; chaque habitant se tourne vers le joueur qui lui parle (sauf un dresseur). Éditeur de cartes : objets hauts dessinés (`drawProp`,
+  `drawPropIcon` dans la palette). Carte du monde (Échap > Carte, `worldMapOn_`, `drawWorldMap` dans menus.cpp) : les
+  lieux ayant `carte_monde` atteignables d'ici par des passages ouverts (`checkCond`), sans rien enregistrer ; pas en
+  Expédition. Eau `~` dessinée en code (la texture `tex_eau` de la planche n'est pas utilisable) : bords peu
+  profonds plus clairs, ombre de la berge, écume en tirets, vaguelettes, reflets. Neige (`ground`) : rides de vent,
+  congères, brins secs, cristaux ; chemins `=` de neige tassée (empreintes, bords de neige fraîche), et les pas du
+  joueur y restent 30 s (`footprints_`, dessin seul, vidé au changement de carte) ; case `c` d'une
+  carte de neige = dalles de glace (Temple). Intérieurs : fenêtres aux murs (`interiorWindow`), lumière au sol sous
+  elles et ombre des murs (`drawTile` ajoute tout cela par-dessus `drawTileBase`). Quêtes : bulle « ! » (à prendre)
+  ou « ? » dorée (à rendre) au-dessus d'un habitant, `Game::questMark` (events.cpp) lit l'action `quete` de la page
+  qui jouerait maintenant (aussi dans les réponses d'une question). Changement de carte : fondu depuis le noir (`mapFadeT_`, 0,3 s). La nuit, réverbères `L` et feux `X`
+  allumés (halo dans `drawMap`).
 - Graphismes des cartes (2.0, sprites.cpp) : maisons (`drawBuilding` : ombre, soubassement, pierres, tuiles en rangées,
   faîtage, cheminée, fenêtres à volets et jardinières), arbres `T` en trois variantes selon `hsh` (rond, petit, fruitier
   ou large en forêt), chemins `=` aux bords adoucis contre la nature (liseré, touffes, coins), herbe de la vallée variée.
@@ -318,7 +399,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - Damier (1.7, plan validé le 2026-10-10 ; **4x4 depuis la 2.0**, demandé le 2026-10-12) : `N_CELLS` = 16 cases par camp
   (data.hpp : `GRID` 4, `cellCol` 0 avant … `BACK_COL` 3 arrière, `cellRow`, `cellAt(ligne, colonne)` ; ne jamais écrire
   3 ou 9 en dur). Sauvegarde : ligne `case4` ; une ancienne ligne `case` (3x3) est convertie (l'arrière reste l'arrière).
-  À l'écran (`Battle::cellPos`) : colonnes de 30 px, lignes de 22 px à partir de y 72 (3.2). Mesuré : difficulté inchangée
+  À l'écran (`Battle::cellPos`) : alliés à gauche (tournés vers la droite), ennemis à droite (vers la gauche) depuis la
+  3.3, colonnes de 30 px, lignes de 22 px à partir de y 72. Mesuré : difficulté inchangée
   par rapport au 3x3 (écarts dans le bruit). `Battle::cells_` garde la
   case de chacun pendant le combat (alliés : `Fighter::cell`, la formation, ligne
   `case4` de la sauvegarde ; ennemis et gardien à plusieurs : `formation()`
@@ -416,7 +498,9 @@ code) ; `docs/GUIDE.md` les range par domaine.
   `options.txt`, `en_ligne.txt`, messages) ni une étiquette comparée ailleurs sans `T` (le joueur automatique compare
   `T("Fuir")`…). procgen.cpp reste en français (le monde doit être identique chez tous). `python outils/textes.py`
   rassemble les phrases (T du code, tableaux de noms, textes des données) ; `BRUMEVAL_LANGUE=en brumeval --test …`
-  liste à la fin les phrases affichées sans traduction et vérifie la mise en page en anglais. Dans tactics.cpp et
+  liste à la fin les phrases affichées sans traduction et vérifie la mise en page en anglais ; depuis la 3.3 il doit
+  aussi finir par « TOUS LES TESTS PASSENT » : les tests comparent les libellés à leur traduction (`T("…")` avec le
+  morceau exact du code, `tr()` pour les données, `species(id).name`), et attendent les éditeurs fermés en anglais. Dans tactics.cpp et
   help.cpp, écrire `::T(` (un membre s'appelle `T`). Jamais `T(` dans un tableau global (rempli au chargement du
   programme, avant le choix de la langue : plantage sur Linux et Mac) : `N_("…")`, puis `tr()` à l'affichage.
 - Données en mémoire : `dataDoc(DF_…)` garde chaque fichier de data/ sous forme

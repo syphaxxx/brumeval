@@ -203,5 +203,6 @@
     }
   ],
   "boss": [{"x": 7, "y": 33, "espece": "ronce_mere", "drapeau": "ronce", "evenement": "ronce_mere"}],
-  "declencheurs": [{"x": 52, "y": 19, "l": 3, "h": 3, "evenement": "foret_entree", "jusqua": "foret_vue"}]
+  "declencheurs": [{"x": 52, "y": 19, "l": 3, "h": 3, "evenement": "foret_entree", "jusqua": "foret_vue"}],
+  "carte_monde": [12, 44]
 }
