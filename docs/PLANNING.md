@@ -154,7 +154,12 @@ au-dessus de qui en propose une, « ? » dorée quand on peut la rendre. Aide : 
 monde, bulles, Journal). Empreintes de pas dans la neige, qui s'effacent.
 Point ouvert : un plantage du mode test sous Windows, une seule fois sur GitHub (16 octobre, juste après le test
 « terrain et météo »), jamais reproduit ici (5 passages complets réussis) : à surveiller dans les prochaines
-compilations. Police : guillemets anglais “ ” ‘ (47 phrases anglaises les affichaient en « ? »).
+compilations.
+Retours de l'utilisateur (2026-10-18) : Braisenard, Fournézard, Piafouine, Voltigeon et Ferrolin étaient rangés à
+l'envers dans l'atlas (ils regardaient du mauvais côté en combat) : `miroir` corrigé ; le compagnon trottine (petits
+bonds) ; un habitant sursaute quand on lui parle. Les habitants des planches qui n'ont qu'une pose de face (enfant,
+femme, homme, aubergiste, paysan, pêcheur, forgeron, soigneur) ne peuvent pas se tourner : il faudrait leurs poses de
+profil et de dos. Police : guillemets anglais “ ” ‘ (47 phrases anglaises les affichaient en « ? »).
 5. Cartes plus vivantes : touffes d'herbe, fleurs et cailloux en sprites, eau et falaises plus belles.
 6. Intérieurs meublés avec les sprites (étagères, tables, chaises, tonneaux, lits).
 7. Personnages : courir (touche maintenue, sprites de course de Lior), animaux et promeneurs qui bougent.

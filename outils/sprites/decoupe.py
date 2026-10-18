@@ -14,7 +14,7 @@ plein (pas de fond à retirer : textures), couleurs (taille de la palette), miro
 Les variantes (outils/sprites/variantes.json) recolorent un sprite déjà découpé : {"id", "de", "teintes": [[teinte
 min, teinte max, nouvelle teinte, saturation x, luminosité x, saturation minimale], ...]} (teintes en degrés ;
 teinte min -1 = toutes les couleurs ; nouvelle teinte -1 = garder ; la saturation minimale colore aussi les gris).
-{"prefixe", "de", "teintes"} recolore tous les sprites d'un personnage (mage_bas_0 -> maelle_bas_0…).
+(« miroir » : true la retourne aussi). {"prefixe", "de", "teintes"} recolore tous les sprites d'un personnage (mage_bas_0 -> maelle_bas_0…).
 Nécessite Pillow, numpy et scipy (pip install pillow numpy scipy).
 """
 import colorsys
@@ -244,6 +244,8 @@ def main():
                         sprites[v['prefixe'] + '_' + suite] = recolorer(sprites[k], v['teintes'])
             elif v['de'] in sprites:
                 sprites[v['id']] = recolorer(sprites[v['de']], v['teintes'])
+                if v.get('miroir'):  # retourné gauche-droite (regard vers la gauche, comme les autres)
+                    sprites[v['id']] = sprites[v['id']][:, ::-1].copy()
     if seuls:  # aperçu des seuls sprites dont le nom commence par un des arguments
         apercu({k: v for k, v in sprites.items() if any(k.startswith(p) for p in seuls)}, os.path.join(ICI, 'apercu.png'))
         print(len(sprites), 'sprites (aperçu seulement)')

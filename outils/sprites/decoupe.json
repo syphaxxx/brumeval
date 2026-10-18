@@ -1325,7 +1325,7 @@
 463
 ],
 "h": 30,
-"miroir": true
+"miroir": false
 },
 {
 "id": "golem_feu",
@@ -3380,7 +3380,7 @@
 165
 ],
 "h": 28,
-"miroir": true
+"miroir": false
 },
 {
 "id": "flammenard",
@@ -3452,7 +3452,7 @@
 164
 ],
 "h": 22,
-"miroir": false
+"miroir": true
 },
 {
 "id": "zephyrin",
@@ -3476,7 +3476,7 @@
 171
 ],
 "h": 26,
-"miroir": true
+"miroir": false
 },
 {
 "id": "orageon",

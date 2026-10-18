@@ -693,6 +693,7 @@ void Game::interact() {
         walk_[i].dir = dir == UP ? DOWN : dir == DOWN ? UP : dir == LEFT ? RIGHT : LEFT;
         if (dir == LEFT || dir == RIGHT) walk_[i].side = walk_[i].dir;
         walk_[i].faceUntil = time + 2.5f;
+        walk_[i].talkT = time;
         talkNpc_ = (int)i;
       }
       return talk(m.npcs[i]);
@@ -1095,6 +1096,8 @@ void Game::drawMap() {
                           }
                           int step = w.t < 1 ? (w.t < .5f ? 1 : 2) : 0;
                           if (animal) bob = -std::fabs(std::sin(time * (w.t < 1 ? 9 : 3) + h)) * 1.5f;
+                          // on lui parle : un petit sursaut (seul signe pour ceux qui n'ont qu'une pose de face)
+                          if (float k = (time - w.talkT) / .3f; k >= 0 && k < 1) bob -= std::sin(k * 3.14159f) * 3;
                           drawHuman(g, lk, nx - camX, ny - camY - 2 + std::round(bob), 1, d, step, false);
                         }});
       // Quête (3.3) : une bulle « ! » (à prendre) ou « ? » dorée (à rendre) au-dessus de l'habitant, par-dessus tout
@@ -1156,8 +1159,10 @@ void Game::drawMap() {
     if (!(bx == ppx && by == ppy)) {  // pas sur le joueur (premier pas après un changement de carte)
       std::string sp = buddy->sp;
       bool right = followDir_ == RIGHT;
-      actors.push_back({by - .5f, [&, bx, by, sp, right] {
-                          drawCreature(g, sp, bx - camX + 8, by - camY + 4, .62f, right, time);
+      // il trottine : un petit bond à chaque pas (deux par case en courant), sinon il respire sur place
+      float hop = moving && from != to ? -std::fabs(std::sin(moveT * 3.14159f * (running_ ? 2 : 1))) * 3.5f : 0;
+      actors.push_back({by - .5f, [&, bx, by, sp, right, hop] {
+                          drawCreature(g, sp, bx - camX + 8, by - camY + 4 + std::round(hop), .62f, right, time);
                         }});
     }
   }

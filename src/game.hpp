@@ -141,7 +141,7 @@ class Game {
   struct NpcWalk {
     int hx = -1, hy = -1;  // place d'origine (si l'éditeur la change, on repart de là)
     int x = 0, y = 0, fx = 0, fy = 0, dir = 1, side = 2;
-    float t = 1, wait = 0, faceUntil = 0;
+    float t = 1, wait = 0, faceUntil = 0, talkT = -9;  // talkT : quand on lui a parlé (petit sursaut)
   };
   std::vector<NpcWalk> walk_;
   int walkMap_ = -1;
