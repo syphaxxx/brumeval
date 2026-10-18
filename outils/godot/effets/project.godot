@@ -1,0 +1,18 @@
+; Effets des sorts de Brumeval, fabriqués avec les particules de Godot 4 (voir LISEZMOI.md).
+config_version=5
+
+[application]
+
+config/name="Brumeval - effets des sorts"
+config/features=PackedStringArray("4.7")
+
+[display]
+
+window/size/viewport_width=320
+window/size/viewport_height=200
+window/size/borderless=true
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+textures/canvas_textures/default_texture_filter=0

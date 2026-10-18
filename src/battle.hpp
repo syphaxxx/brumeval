@@ -160,6 +160,12 @@ class Battle {
   int planMove(const FighterP& a);              // ordinateur : où aller avant d'agir (-1 : rester)
   void step(const FighterP& a, int cell);       // le déplacer (glisse à l'écran ; Percée en atteignant le bord adverse)
   std::set<const Fighter*> breakthrough_;       // ceux qui ont déjà fait leur Percée
+  struct Burst {  // éclat dessiné par-dessus un combattant (Percée, Brisure : images gfx_<fx>_k de Godot)
+    FighterP f;
+    const char* fx;
+    float t0;
+  };
+  std::vector<Burst> bursts_;
   std::map<const Fighter*, std::pair<Pt, float>> slide_;  // dessin : d'où il part et quand
   void resumeTurn(FighterP a);                  // après « Se déplacer » : le même combattant choisit son action
   void waitTurn(FighterP a);                    // « Attendre » : finir son tour sans agir (rejoue plus tôt)

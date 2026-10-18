@@ -504,6 +504,7 @@ void Battle::step(const FighterP& a, int cell) {
   if (bonus > 0 && boardX(cell) == edge && breakthrough_.insert(a.get()).second) {
     for (int st : {S_ATK, S_MAG, S_SPD}) a->stage[(size_t)st] = std::min(3, a->stage[(size_t)st] + bonus);
     pop(a, T("Percée !"), GOLD);
+    bursts_.push_back({a, "percee", G.time});
     sound("bonus");
     log.push_back("  " + a->name() + T(" : Percée"));
     if (isAlly(a)) tip("percee");
@@ -618,6 +619,9 @@ static bool spriteFx(Gfx& g, const std::string& type, const Pt& p, float k, bool
       {"esprit", {"fx_ombre_2", "fx_teleport"}},
       {"lumiere", {"fx_revelation"}},
       {"soin", {"fx_soin_1", "fx_soin_2", "fx_soin_3", "fx_soin_4"}},
+      // 3.4 : effets fabriqués avec les particules de Godot (outils/godot/effets/), pour les types sans dessin
+      {"metal", {"gfx_metal_0", "gfx_metal_1", "gfx_metal_2", "gfx_metal_3", "gfx_metal_4", "gfx_metal_5", "gfx_metal_6", "gfx_metal_7"}},
+      {"normal", {"gfx_normal_0", "gfx_normal_1", "gfx_normal_2", "gfx_normal_3", "gfx_normal_4", "gfx_normal_5", "gfx_normal_6", "gfx_normal_7"}},
   };
   auto it = FX.find(heal ? "soin" : type);
   if (it == FX.end()) return false;
@@ -2192,6 +2196,7 @@ void Battle::breakFoe(const FighterP& d) {
     if (it->who == d) it = warnings_.erase(it);
     else ++it;
   pop(d, T("BRISÉ !"), GOLD);
+  bursts_.push_back({d, "brisure", G.time});
   sound("critique");
   flashT = G.time, flashCol = rgb(0xffe066);
   shakeT_ = G.time;
@@ -2877,8 +2882,9 @@ void Battle::draw() {
       Pt p = cellPos(c);
       bool dark = (boardX(c) + boardY(c)) % 2;
       // une dalle en losange, vue en perspective
-      g.poly({{p.x - 15, p.y + 13}, {p.x, p.y + 7.5f}, {p.x + 15, p.y + 13}, {p.x, p.y + 18.5f}}, rgb(dark ? 0x000000 : 0xffffff, dark ? 34 : 56));
-      g.poly({{p.x - 10, p.y + 13}, {p.x, p.y + 9.5f}, {p.x + 10, p.y + 13}, {p.x, p.y + 16.5f}}, rgb(side ? 0x6fb4ff : 0xff7a6a, 40));
+      g.poly({{p.x - 15, p.y + 13}, {p.x, p.y + 7.5f}, {p.x + 15, p.y + 13}, {p.x, p.y + 18.5f}}, rgb(dark ? 0x000000 : 0xffffff, dark ? 44 : 70));
+      g.poly({{p.x - 10, p.y + 13}, {p.x, p.y + 9.5f}, {p.x + 10, p.y + 13}, {p.x, p.y + 16.5f}}, rgb(side ? 0x6fb4ff : 0xff7a6a, 46));
+      tile(g, Pt{p.x, p.y + .5f}, rgb(0xffffff, 40), true);  // liseré : le quadrillage se lit sur tous les sols
       if (const Rules::Terrain* tr = terrainOf(c)) {  // case de terrain (2.6) : couleur et petit décor animé
         Color col = rgb(tr->color);
         col.a = 120;
@@ -3023,6 +3029,15 @@ void Battle::draw() {
       }
   }
   drawAnim();
+  // Éclats (3.4, dessinés avec Godot) : Percée et Brisure, 8 images en une demi-seconde, posés sur le combattant
+  bursts_.erase(std::remove_if(bursts_.begin(), bursts_.end(), [&](const Burst& b) { return t - b.t0 > .5f; }), bursts_.end());
+  for (auto& b : bursts_) {
+    int k = std::clamp(int((t - b.t0) / .5f * 8), 0, 7);
+    if (const SpriteRect* r = findSprite(std::string("gfx_") + b.fx + "_" + std::to_string(k))) {
+      Pt p = pos(b.f);
+      g.sprite(*r, std::round(p.x - r->w / 2.f), std::round(p.y + 14 - r->h));
+    }
+  }
   // Nombres flottants
   pops.erase(std::remove_if(pops.begin(), pops.end(), [&](const Pop& p) { return t - p.t > 1.f; }), pops.end());
   for (auto& p : pops) g.text(p.x, p.y - std::min(1.f, (t - p.t) * 3) * 8, p.text, p.col, 1);

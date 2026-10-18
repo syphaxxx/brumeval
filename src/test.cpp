@@ -566,6 +566,18 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     B.step(lior, boardAt(1, BOARD_W - 2));
     B.step(lior, boardAt(0, BOARD_W - 1));
     check(rules().breakthrough <= 0 || lior->stage[S_ATK] == std::min(3, atk0 + rules().breakthrough), "échiquier : Percée en atteignant le bord adverse (une fois)");
+    {  // capture : Lior passé derrière les lignes (Percée), un ennemi brisé (éclats dessinés avec Godot)
+      B.cells_[maelle.get()] = boardAt(2, 2), B.cells_[brute.get()] = boardAt(1, 5), B.cells_[mage.get()] = boardAt(0, 6);
+      B.cells_[extra.get()] = boardAt(3, 4);
+      B.cells_[lior.get()] = boardAt(2, BOARD_W - 1);
+      B.pops.clear();
+      B.start = time - 5;  // sans les bandes de l'entrée en combat
+      B.bursts_.push_back({lior, "percee", time});
+      B.breakFoe(mage);
+      run(.28f);
+      snap("echiquier_percee");
+      mage->broken = false, mage->shield = mage->shieldMax;
+    }
     lior->stage.fill(0);
     B.moved_.clear();
     B.cells_[lior.get()] = boardAt(1, 2);

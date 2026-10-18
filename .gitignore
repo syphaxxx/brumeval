@@ -14,3 +14,5 @@ graphify-out/
 outils/sprites/__pycache__/
 outils/sprites/apercu.png
 outils/blender/rendus/
+outils/godot/effets/rendus/
+outils/godot/effets/.godot/
