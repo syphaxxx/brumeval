@@ -486,8 +486,10 @@ bool Battle::facesRight(const FighterP& f) const {
     }
   return right;
 }
+// Les cases voyagent dans les coordonnées de l'hôte : seul l'invité du duel les retourne (à la réception de l'état,
+// à l'envoi d'un déplacement), pour voir son équipe à gauche
 int Battle::netCell(int c) const {
-  if (!duel() || c < 0 || c >= BOARD_CELLS) return c;
+  if (net_ != Net::Guest || c < 0 || c >= BOARD_CELLS) return c;
   return boardAt(boardY(c), BOARD_W - 1 - boardX(c));
 }
 
@@ -1726,7 +1728,10 @@ bool Battle::tacticTurn(FighterP a) {
   if (!tacticPlan(a, p)) {
     // Échiquier : si aucune de ses attaques n'atteint personne, il s'approche (puis ses tactiques rejouent), sinon il
     // attend ; s'il a de quoi frapper, c'est au joueur de choisir (menu), comme avant
-    for (auto& id : a->techs())
+    std::vector<std::string> mine = a->techs();
+    for (auto& id : a->spells())
+      if (a->mp >= moveInfo(id).cost) mine.push_back(id);
+    for (auto& id : mine)
       for (auto& f : alive(foes))
         if (moveInfo(id).damaging() && reachable(a, moveInfo(id), f)) return false;
     actor = a;
@@ -1741,6 +1746,7 @@ bool Battle::tacticTurn(FighterP a) {
   }
   actor = a;
   log.push_back(a->name() + T(" : tactique ") + std::to_string(p.tactic + 1));
+  if (p.cell >= 0 && follower()) return moveTo(a, p.cell), true;  // le chef déplace, puis renvoie « tour » (bouge)
   if (p.cell >= 0) {  // se mettre à l'abri, puis agir (une autre règle, sinon l'ordinateur)
     step(a, p.cell);
     moved_.insert(a.get());
@@ -2022,16 +2028,18 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
 // ---------------------------------------------------------------------------
 // Pousser / tirer, météo et terrain (2.6)
 // ---------------------------------------------------------------------------
-// Pousser éloigne la cible du lanceur dans son axe (vers le bord de son camp s'ils sont dans la même colonne),
-// tirer la rapproche. Le plateau entier compte : on peut pousser un ennemi contre un des siens, ou l'attirer chez soi.
+// Pousser éloigne la cible du lanceur dans l'axe principal qui les sépare (de côté, ou de haut en bas s'il est
+// au-dessus ou en dessous d'elle), tirer la rapproche. Le plateau entier compte : on peut pousser un ennemi contre un
+// des siens, ou l'attirer chez soi.
 int Battle::shoveDest(const FighterP& a, const FighterP& t, const Move& m) const {
   if (t->boss) return -2;
   int c = cellOf(t), ac = cellOf(a);
   if (c < 0 || ac < 0) return -2;
-  int dir = boardX(c) > boardX(ac) ? 1 : boardX(c) < boardX(ac) ? -1 : isAlly(t) ? -1 : 1;
-  int x = boardX(c) + dir * m.shove;
-  if (x < 0 || x >= BOARD_W) return -1;
-  int to = boardAt(boardY(c), x);
+  int dx = boardX(c) - boardX(ac), dy = boardY(c) - boardY(ac), x = boardX(c), y = boardY(c);
+  if (std::abs(dy) > std::abs(dx)) y += (dy > 0 ? 1 : -1) * m.shove;
+  else x += (dx > 0 ? 1 : dx < 0 ? -1 : isAlly(t) ? -1 : 1) * m.shove;  // même case (impossible) : vers son camp
+  if (x < 0 || x >= BOARD_W || y < 0 || y >= GRID) return -1;
+  int to = boardAt(y, x);
   if (to == ac) return -2;  // tiré contre le lanceur : il reste où il est
   return to;
 }

@@ -417,9 +417,8 @@ void Game::swapReserve(FighterP out, FighterP in) {
   if (in) reserve.erase(std::remove(reserve.begin(), reserve.end(), in), reserve.end());
 }
 
-// Formation : la case de chaque combattant sur le damier (data.hpp), gardée dans la sauvegarde.
-// L'avant frappe et reçoit plus fort au corps à corps ; l'arrière est protégé (et seules les
-// attaques à distance l'atteignent tant que l'avant tient).
+// Formation : la case de départ de chaque combattant dans notre moitié de l'échiquier (data.hpp), gardée dans la
+// sauvegarde. Devant, on arrive vite au contact ; derrière, une ligne d'alliés protège des ennemis qui avancent.
 void Game::formationMenu(int sel) {
   panelMode_ = 4;
   auto fr = front();
@@ -464,15 +463,15 @@ void Game::formationMenu(int sel) {
   menus.push(m);
 }
 
-// Dessin du damier de la formation : l'avant à gauche, face aux ennemis (comme en combat)
+// Dessin de notre moitié de l'échiquier : l'avant à droite, face aux ennemis (comme en combat, 3.4)
 void Game::drawFormationPanel(int x, int y) {
   int w = 320 - x - 8, cw = (w - 16) / GRID, ch = 26, h = 34 + GRID * ch + 16;
   g.window(x, y, w, h);
-  g.text(x + 8, y + 5, T("Damier"), GOLD);
-  g.text(x + w - 8, y + 5, T("ennemis à gauche"), MUTED, 2);
+  g.text(x + 8, y + 5, T("Notre camp"), GOLD);
+  g.text(x + w - 8, y + 5, T("avant à droite"), MUTED, 2);
   auto fr = front();
   for (int c = 0; c < N_CELLS; c++) {
-    int rx = x + 8 + cellCol(c) * cw, ry = y + 20 + cellRow(c) * ch;
+    int rx = x + 8 + (BACK_COL - cellCol(c)) * cw, ry = y + 20 + cellRow(c) * ch;
     bool lit = c == formationCell_;
     g.rect(rx + 1, ry + 1, cw - 2, ch - 2, lit ? rgb(0xffd34d, 70) : rgb(0x000010, 60));
     for (auto& f : fr)
@@ -481,7 +480,7 @@ void Game::drawFormationPanel(int x, int y) {
         g.text(rx + cw / 2, ry + 17, T("N.") + std::to_string(f->lvl), MUTED, 1);
       }
   }
-  const char* COLS[GRID] = {T("Avant"), "", "", T("Arrière")};
+  const char* COLS[GRID] = {T("Arrière"), "", "", T("Avant")};
   for (int k = 0; k < GRID; k++) g.text(x + 8 + k * cw + cw / 2, y + 22 + GRID * ch, COLS[k], MUTED, 1);
 }
 

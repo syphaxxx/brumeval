@@ -2575,6 +2575,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       mirrored = battle_->allies.size() == guest.battle_->foes.size() && battle_->foes.size() == guest.battle_->allies.size();
       for (size_t k = 0; mirrored && k < battle_->allies.size(); k++) mirrored = battle_->allies[k]->hp == guest.battle_->foes[k]->hp;
       for (size_t k = 0; mirrored && k < battle_->foes.size(); k++) mirrored = battle_->foes[k]->hp == guest.battle_->allies[k]->hp;
+      // échiquier : l'invité voit le plateau en miroir (son équipe à gauche)
+      for (size_t k = 0; mirrored && k < battle_->foes.size(); k++) {
+        int h = battle_->cellOf(battle_->foes[k]), v = guest.battle_->cellOf(guest.battle_->allies[k]);
+        mirrored = h >= 0 && v == boardAt(boardY(h), BOARD_W - 1 - boardX(h));
+      }
     }
     size_t guestTurns = 0;
     for (int i = 0; i < 60 * 900 && (mode == Mode::Battle || guest.mode == Mode::Battle); i++) {

@@ -157,18 +157,21 @@ def construire(p):
     tete = pivot('tete', (0, 0, tz), corps)
     R = 1.15  # tête de chibi : presque la moitié de la hauteur
     forme('sphere', 'tete', (0, 0, tz + .1), (R, R * .95, R * .97), peau, tete)
-    for x in (-.4, .4):
-        forme('cube', 'oeil', (x, -R * .93, tz - .05), (.26, .14, .46), '#20141a', tete)
-        forme('cube', 'reflet', (x + .04, -R * .95, tz + .04), (.08, .04, .1), '#f4f0e8', tete)
-    forme('cube', 'joues', (0, -R * .86, tz - .3), (.9, .05, .1), p.get('joues', '#e89a86'), tete)
+    for sx in (-1, 1):  # sur l'avant des côtés de la tête, tournés vers l'extérieur : visibles de face et de profil
+        ang = .55 * sx
+        ox, oy = .52 * sx, -R * .8
+        forme('cube', 'oeil', (ox, oy, tz - .3), (.26, .2, .46), '#20141a', tete, rot=(0, 0, ang))
+        forme('cube', 'reflet', (ox + .06 * sx - .02, oy - .1, tz - .2), (.08, .04, .1), '#f4f0e8', tete, rot=(0, 0, ang))
+    forme('sphere', 'nez', (0, -R * .97, tz - .5), (.1, .1, .08), p['peau'], tete, segments=8)  # le profil a un nez
+    forme('cube', 'joues', (0, -R * .8, tz - .58), (.9, .05, .1), p.get('joues', '#e89a86'), tete)
     if p.get('barbe'):
-        forme('sphere', 'barbe', (0, -.62, tz - .6), (.7, .5, .45), p['barbe'], tete)
+        forme('sphere', 'barbe', (0, -.62, tz - .78), (.7, .5, .45), p['barbe'], tete)
     elif p.get('moustache'):
-        forme('cube', 'moustache', (0, -1.0, tz - .42), (.46, .1, .12), p['moustache'], tete)
+        forme('cube', 'moustache', (0, -1.0, tz - .66), (.46, .1, .12), p['moustache'], tete)
     if p.get('cheveux'):
         ch = forme('sphere', 'cheveux', (0, .08, tz + .2), (R * 1.08, R * 1.06, R * 1.06), p['cheveux'], tete)
         frange = .02 if p.get('coiffure') != 'meche' else -.1
-        couper(ch, (0, -1.3, tz - 1.0 + frange), (3, 1.9, 2.0))  # dégage le visage sous la frange
+        couper(ch, (0, -1.15, tz - 1.0 + frange), (3, 2.3, 2.0))  # dégage le visage sous la frange (la moitié avant)
         couper(ch, (0, .2, tz - 1.55), (3, 3, 1.2))              # et le cou
         if p.get('coiffure') == 'longue':  # cheveux longs dans le dos et sur les côtés
             forme('cube', 'cheveux_dos', (0, .55, tz - 1.0), (1.7, .5, 1.6), p['cheveux'], tete)
