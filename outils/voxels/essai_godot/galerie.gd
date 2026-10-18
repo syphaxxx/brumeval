@@ -1,10 +1,11 @@
 # Galerie des modèles en voxels : tous les .glb du dossier modeles/ (fabriqués par outils/voxels/voxelise.py),
-# rangés en grille sur un pré, sous une lumière de fin d'après-midi et un peu de brume.
+# rangés en rangées sur un pré (chacun espacé selon sa largeur), sous une lumière de fin d'après-midi et un peu de
+# brume.
 # Flèches ou ZQSD : se déplacer ; molette ou A/E : zoomer ; clic droit maintenu : tourner autour.
 extends Node3D
 
-const ECART := 3.5  # mètres entre deux modèles
-const COLONNES := 16
+const ECART := 1.5  # mètres entre deux modèles
+const LONGUEUR := 50.0  # longueur d'une rangée, en mètres
 
 var camera := Camera3D.new()
 var cible := Vector3.ZERO  # point regardé
@@ -21,23 +22,32 @@ func _ready() -> void:
 	noms.sort()
 	if noms.is_empty():
 		push_warning("Aucun modèle : lancer d'abord python outils/voxels/voxelise.py")
-	for n in noms.size():
-		var modele: Node3D = load("res://modeles/%s.glb" % noms[n]).instantiate()
-		modele.position = Vector3((n % COLONNES) * ECART, 0, (n / COLONNES) * ECART)
+	var x := 0.0
+	var z := 0.0
+	var profondeur_rangee := 0.0
+	for nom in noms:
+		var modele: Node3D = load("res://modeles/%s.glb" % nom).instantiate()
+		var taille := taille_modele(modele)
+		if x > 0 and x + taille.x > LONGUEUR:  # rangée pleine : on passe à la suivante
+			x = 0.0
+			z += profondeur_rangee + ECART + 1.0
+			profondeur_rangee = 0.0
+		modele.position = Vector3(x + taille.x / 2, 0, z)
 		add_child(modele)
 		var etiquette := Label3D.new()
-		etiquette.text = noms[n]
+		etiquette.text = nom
 		etiquette.font_size = 24
-		etiquette.position = modele.position + Vector3(0, -0.01, 0.9)
+		etiquette.position = Vector3(x + taille.x / 2, 0.01, z + taille.z / 2 + 0.4)
 		etiquette.rotation_degrees.x = -90
 		add_child(etiquette)
-	var lignes := ceili(noms.size() / float(COLONNES))
+		x += taille.x + ECART
+		profondeur_rangee = max(profondeur_rangee, taille.z)
 
 	var sol := MeshInstance3D.new()
 	var plan := PlaneMesh.new()
-	plan.size = Vector2(COLONNES * ECART + 10, lignes * ECART + 10)
+	plan.size = Vector2(LONGUEUR + 20, z + 20)
 	sol.mesh = plan
-	sol.position = Vector3((COLONNES - 1) * ECART / 2, 0, (lignes - 1) * ECART / 2)
+	sol.position = Vector3(LONGUEUR / 2, 0, z / 2)
 	var herbe := StandardMaterial3D.new()
 	herbe.albedo_color = Color(0.36, 0.52, 0.3)
 	sol.material_override = herbe
@@ -96,6 +106,14 @@ func _unhandled_input(event: InputEvent) -> void:
 			tourne = event.pressed
 	elif event is InputEventMouseMotion and tourne:
 		angle -= event.relative.x * 0.3
+
+
+# Largeur, hauteur et profondeur d'un modèle (sa boîte), en mètres.
+func taille_modele(modele: Node3D) -> Vector3:
+	var boite := AABB()
+	for maillage in modele.find_children("*", "MeshInstance3D", true, false):
+		boite = boite.merge(maillage.get_aabb())
+	return boite.size
 
 
 func placer_camera() -> void:

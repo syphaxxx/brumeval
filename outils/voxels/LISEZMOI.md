@@ -2,7 +2,16 @@
 
 Cet outil transforme les sprites du jeu en **modèles 3D**, pour essayer à quoi
 ressemblerait Brumeval en 3D avec Godot. Il ne change rien au jeu actuel : il
-lit seulement `data/sprites.png` et `data/sprites.json`.
+lit seulement les planches d'origine (`outils/sprites/planches/`) et l'atlas
+du jeu (`data/sprites.png`).
+
+Les sprites du jeu sont petits (Lior : 24 pixels de haut) : en 3D, ils donnent
+de gros cubes où l'on ne reconnaît plus le visage. Par défaut, l'outil repart
+donc des **planches d'origine**, bien plus détaillées, et redécoupe chaque
+sprite **trois fois plus grand** (mêmes boîtes et mêmes recolorations que
+`outils/sprites/decoupe.py`). Le modèle garde la même taille dans le monde,
+mais avec des voxels trois fois plus petits : yeux, mèches, flammes et
+feuilles sont visibles.
 
 Chaque pixel devient une colonne de petits cubes (des « voxels ») de sa couleur.
 Les colonnes sont fines sur les bords du dessin et plus épaisses au milieu :
@@ -17,8 +26,9 @@ Il faut Python avec Pillow, numpy et scipy (les mêmes que pour
 
 ```bash
 pip install pillow numpy scipy
-python outils/voxels/voxelise.py                 # tous les sprites (environ 1 minute)
+python outils/voxels/voxelise.py                 # tous les sprites (environ 5 minutes)
 python outils/voxels/voxelise.py lior ronceau    # seulement ceux dont le nom commence par lior ou ronceau
+python outils/voxels/voxelise.py --detail 1      # les petits sprites du jeu : 1 minute, mais moins fin
 ```
 
 Le script écrit :
@@ -37,8 +47,9 @@ dialogues (`lior_visage_…`) sont ignorés, sauf si on les demande par leur nom
 
 | Option | Effet |
 |---|---|
+| `--detail 3` | Finesse : nombre de voxels par pixel du jeu, en largeur comme en hauteur (3 par défaut ; 1 = les sprites du jeu ; 4 n'apporte presque rien de plus et pèse deux fois plus) |
 | `--gonflement 0.6` | Épaisseur gagnée en s'éloignant du bord : plus grand = plus rond et plus épais |
-| `--epaisseur-max 12` | Épaisseur maximale, en voxels |
+| `--epaisseur-max 12` | Épaisseur maximale, en pixels du jeu |
 | `--plat` | Même épaisseur partout (une planche découpée), utile pour un panneau ou une bannière |
 | `--sortie dossier` | Écrire les `.glb` ailleurs (par exemple dans un autre projet Godot) |
 | `--sans-apercu` | Ne pas refaire `apercu.png` (un peu plus rapide) |
@@ -48,7 +59,7 @@ dialogues (`lior_visage_…`) sont ignorés, sauf si on les demande par leur nom
 1. Installer **Godot 4** (version standard, pas .NET) : https://godotengine.org
 2. Lancer `voxelise.py` (ci-dessus).
 3. Dans Godot : **Importer**, choisir `outils/voxels/essai_godot/project.godot`.
-   La première ouverture prend un moment : Godot prépare les 460 modèles.
+   La première ouverture prend une minute ou deux : Godot prépare les 460 modèles.
 4. Appuyer sur **F5** (lancer).
 
 La galerie range tous les modèles sur un pré, sous un peu de brume :
@@ -63,13 +74,18 @@ La galerie range tous les modèles sur un pré, sous un peu de brume :
 
 Copier le `.glb` dans le projet, puis le glisser dans une scène. Repères :
 
-- 1 pixel du sprite = 1/16 de mètre (Lior, 24 pixels de haut, mesure 1,5 m) ;
+- 1 pixel du jeu = 1/16 de mètre (Lior mesure 1,5 m), quelle que soit la finesse ;
 - l'origine est au milieu des pieds : le modèle se pose directement sur le sol ;
 - le modèle regarde vers +Z, c'est-à-dire vers la caméra par défaut de Godot ;
 - les couleurs sont dans le modèle (couleurs de sommets) : pas de texture à copier.
 
 ## Limites de cette première version
 
+- C'est lourd en finesse 3 : environ 16 000 triangles par modèle en moyenne,
+  soit 7 millions de triangles et 500 Mo pour les 460. Pour un vrai jeu, on ne
+  fabriquerait que les modèles utiles. Si la galerie rame sur un petit
+  ordinateur, ne fabriquer qu'une partie des modèles (`voxelise.py lior
+  ronceau…`) ou baisser la finesse (`--detail 2`).
 - Les modèles sont symétriques devant/derrière : le dos d'un personnage montre
   son devant. Pour un vrai dos, il faudrait se servir des sprites `_haut_`
   (vus de dos) : une amélioration possible.

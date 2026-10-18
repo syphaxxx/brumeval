@@ -284,7 +284,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   de la cible probable (`cursor`), les ennemis hors de portée du corps à corps sont barrés. Par-dessus les combattants :
   contour de la zone et flèche dorée au-dessus de la cible (`fighterTop`) ; le reste du camp visé est estompé (alpha 0,45).
 - Voxels (essai 3D demandé le 2026-10-18, rien dans le jeu) : `python outils/voxels/voxelise.py [débuts de noms]`
-  transforme les sprites de l'atlas en modèles 3D `.glb` (voxels, épaisseur selon la distance au bord, faces fusionnées)
+  transforme les sprites en modèles 3D `.glb` (voxels, épaisseur selon la distance au bord, faces fusionnées) ; par
+  défaut redécoupés 3 fois plus grands dans les planches avec les fonctions de `decoupe.py` (`--detail`, 1 = l'atlas)
   dans `outils/voxels/essai_godot/modeles/`, galerie Godot 4 dans `outils/voxels/essai_godot/` ; planche de contrôle
   `outils/voxels/apercu.png`. Fichiers fabriqués non suivis. Mode d'emploi : `outils/voxels/LISEZMOI.md`.
 - Sprites (3.2, refonte demandée le 2026-10-15) : planches « pixel art » de l'utilisateur dans `outils/sprites/planches/`,

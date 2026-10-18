@@ -1,8 +1,14 @@
-"""Transforme les sprites du jeu (data/sprites.png) en modèles 3D en voxels, pour un futur Brumeval en 3D (Godot).
+"""Transforme les sprites du jeu en modèles 3D en voxels, pour un futur Brumeval en 3D (Godot).
 
     python outils/voxels/voxelise.py                  # tous les sprites -> essai_godot/modeles/*.glb + apercu.png
     python outils/voxels/voxelise.py lior ronceau     # seulement les sprites dont le nom commence par lior ou ronceau
+    python outils/voxels/voxelise.py --detail 1       # les petits sprites du jeu : plus rapide, moins fin
     python outils/voxels/voxelise.py --plat arbre     # épaisseur constante au lieu d'un volume arrondi
+
+Les sprites du jeu (data/sprites.png) sont petits (Lior : 24 pixels de haut). Par défaut, l'outil les redécoupe dans
+les planches d'origine (outils/sprites/planches/), trois fois plus grands (--detail 3), avec l'outil de découpe des
+sprites (outils/sprites/decoupe.py : mêmes boîtes, mêmes recolorations) : le modèle garde la même taille, mais ses
+voxels sont trois fois plus petits et on voit les yeux, les mèches, les flammes.
 
 Chaque pixel du sprite devient une colonne de petits cubes (voxels) de la couleur du pixel. L'épaisseur d'une
 colonne dépend de sa distance au bord du sprite : fine sur les contours (épée, oreilles), plus épaisse au milieu
@@ -10,12 +16,12 @@ colonne dépend de sa distance au bord du sprite : fine sur les contours (épée
 
 Les modèles sont écrits au format glTF binaire (.glb), que Godot, Blender et la plupart des logiciels 3D ouvrent
 directement. Ils sont rangés dans le petit projet Godot essai_godot/ : l'ouvrir avec Godot 4 pour se promener
-parmi les modèles (voir LISEZMOI.md). Pour un autre projet, il suffit d'y copier les .glb. Repères : 1 pixel =
-1/16 de mètre (Lior, 24 pixels, mesure 1,5 m) ; l'origine est au milieu des pieds (le bas du sprite) ; le modèle
+parmi les modèles (voir LISEZMOI.md). Pour un autre projet, il suffit d'y copier les .glb. Repères : 1 pixel du
+jeu = 1/16 de mètre (Lior mesure 1,5 m) ; l'origine est au milieu des pieds (le bas du sprite) ; le modèle
 regarde vers +Z (vers la caméra de Godot par défaut). Les couleurs sont des couleurs de sommets : aucune texture.
 
 Les faces cachées (entre deux voxels) sont retirées, puis les faces voisines de même couleur sont fusionnées en
-grands rectangles : un personnage fait environ 2 000 triangles, une maison 15 000.
+grands rectangles : un personnage fait environ 10 000 triangles, une maison 60 000 (5 fois moins avec --detail 1).
 
 apercu.png montre les modèles en vue de trois quarts, avec un éclairage simple, pour vérifier d'un coup d'œil.
 Nécessite Pillow, numpy et scipy (pip install pillow numpy scipy), comme outils/sprites/decoupe.py.
@@ -25,6 +31,7 @@ import json
 import math
 import os
 import struct
+import sys
 
 import numpy as np
 from PIL import Image, ImageDraw
@@ -32,7 +39,7 @@ from scipy import ndimage as nd
 
 ICI = os.path.dirname(os.path.abspath(__file__))
 RACINE = os.path.dirname(os.path.dirname(ICI))
-TAILLE_PIXEL = 1 / 16  # mètres par pixel du jeu
+TAILLE_PIXEL = 1 / 16  # mètres par pixel du jeu (un sprite plus détaillé a des pixels plus petits)
 # Sprites ignorés sans demande explicite : textures de sol et de murs (elles iront sur des surfaces, pas en volume)
 # et portraits des dialogues.
 IGNORES = ('sol_', 'tex_', 'lior_visage_')
@@ -108,6 +115,11 @@ def mailler(grille, cotes):
         bord[axe] = -1 if sens == 1 else 0
         voisin[tuple(bord)] = False  # np.roll fait le tour : au bord de la grille, le voisin est vide
         visible = plein & ~voisin
+        # Les coins doivent tourner dans le sens trigonométrique vus de dehors : cela ne dépend que de la direction.
+        normale = [0, 0, 0]
+        normale[axe] = sens
+        e_u, e_v = np.eye(3)[u], np.eye(3)[v]
+        retourner = np.dot(np.cross(e_u, e_v), normale) < 0
         for k in range(taille[axe]):
             tranche = [slice(None)] * 3
             tranche[axe] = k
@@ -120,10 +132,7 @@ def mailler(grille, cotes):
                     p = [0, 0, 0]
                     p[axe], p[u], p[v] = plan, a, b
                     coins.append(p)
-                # Les coins doivent tourner dans le sens trigonométrique vus de dehors : on retourne sinon.
-                normale = [0, 0, 0]
-                normale[axe] = sens
-                if np.dot(np.cross(np.subtract(coins[1], coins[0]), np.subtract(coins[2], coins[0])), normale) < 0:
+                if retourner:
                     coins.reverse()
                 quads.append((coins, normale, c))
     return quads
@@ -162,7 +171,7 @@ def srgb_vers_lineaire(c):
     return np.where(c <= 0.04045, c / 12.92, ((c + 0.055) / 1.055) ** 2.4)
 
 
-def ecrire_glb(chemin, nom, quads, palette, largeur):
+def ecrire_glb(chemin, nom, quads, palette, largeur, taille_pixel):
     positions, normales, couleurs, indices = [], [], [], []
     lin = srgb_vers_lineaire(palette)
     for coins, normale, c in quads:
@@ -174,13 +183,14 @@ def ecrire_glb(chemin, nom, quads, palette, largeur):
         indices += [base, base + 1, base + 2, base, base + 2, base + 3]
     pos = np.array(positions, np.float32)
     nor = np.array(normales, np.float32)
-    col = np.array(couleurs, np.float32)
+    col = np.round(np.array(couleurs) * 65535).astype(np.uint16)  # 16 bits par canal : fichiers plus légers
     ind = np.array(indices, np.uint32 if len(pos) > 65535 else np.uint16)
     # Recentrer : milieu des pieds à l'origine, avant/arrière centrés.
     pos[:, 0] -= largeur / 2
     pos[:, 2] -= (pos[:, 2].min() + pos[:, 2].max()) / 2
-    pos *= TAILLE_PIXEL
+    pos *= taille_pixel
 
+    col = np.hstack([col, np.full((len(col), 1), 65535, np.uint16)])  # RVBA : chaque sommet sur 8 octets
     blocs = [pos.tobytes(), nor.tobytes(), col.tobytes(), ind.tobytes()]
     binaire = b''
     vues = []
@@ -203,7 +213,7 @@ def ecrire_glb(chemin, nom, quads, palette, largeur):
             {'bufferView': 0, 'componentType': 5126, 'count': len(pos), 'type': 'VEC3',
              'min': pos.min(0).tolist(), 'max': pos.max(0).tolist()},
             {'bufferView': 1, 'componentType': 5126, 'count': len(nor), 'type': 'VEC3'},
-            {'bufferView': 2, 'componentType': 5126, 'count': len(col), 'type': 'VEC3'},
+            {'bufferView': 2, 'componentType': 5123, 'normalized': True, 'count': len(col), 'type': 'VEC4'},
             {'bufferView': 3, 'componentType': 5125 if ind.dtype == np.uint32 else 5123, 'count': len(ind),
              'type': 'SCALAR'},
         ],
@@ -218,36 +228,43 @@ def ecrire_glb(chemin, nom, quads, palette, largeur):
 
 
 # ---------------------------------------------------------------------------------------------------------------
-# Aperçu : vue de trois quarts, voxel par voxel (algorithme du peintre : du plus loin au plus proche)
+# Aperçu : vue de trois quarts. Chaque voxel visible est un petit carré, dessiné du plus loin au plus proche
+# (les plus proches recouvrent les autres).
 
-LUMIERE = {(1, 1): 1.0, (0, 1): 0.82, (2, 1): 0.68}  # dessus, droite, devant
+LUMIERE = {'dessus': 1.0, 'cote': 0.82, 'devant': 0.68}
 
 
 def apercu(grille, cotes, palette, echelle=4):
     w, h, p = grille.shape
-    # Projection : x vers la droite, z (avant) vers le bas-gauche, y vers le haut. On voit donc le devant, le
-    # dessus et le côté droit.
-    def ecran(x, y, z):
-        return ((x - z * 0.5) * echelle + (p * 0.5 + 2) * echelle, (h - y + z * 0.35 + 2) * echelle)
-    image = Image.new('RGBA', (int((w + p * 0.5 + 4) * echelle), int((h + p * 0.35 + 4) * echelle)), (0, 0, 0, 0))
-    dessin = ImageDraw.Draw(image)
     plein = grille >= 0
-    xs, ys, zs = np.nonzero(plein)
-    ordre = np.lexsort((xs, ys, zs))  # z croissant (de l'arrière à l'avant), puis y, puis x
-    for n in ordre:
-        x, y, z = xs[n], ys[n], zs[n]
-        faces = []
-        if y + 1 >= h or not plein[x, y + 1, z]:
-            faces.append(((1, 1), [(x, y + 1, z), (x + 1, y + 1, z), (x + 1, y + 1, z + 1), (x, y + 1, z + 1)]))
-        if x + 1 >= w or not plein[x + 1, y, z]:
-            faces.append(((0, 1), [(x + 1, y, z), (x + 1, y + 1, z), (x + 1, y + 1, z + 1), (x + 1, y, z + 1)]))
-        if z + 1 >= p or not plein[x, y, z + 1]:
-            faces.append(((2, 1), [(x, y, z + 1), (x + 1, y, z + 1), (x + 1, y + 1, z + 1), (x, y + 1, z + 1)]))
-        for cle, coins in faces:
-            c = np.array(palette[(grille if cle[0] == 2 else cotes)[x, y, z]], float)
-            teinte = tuple(int(v) for v in np.clip(c * LUMIERE[cle], 0, 255)) + (255,)
-            dessin.polygon([ecran(*q) for q in coins], fill=teinte)
-    return image
+    def libre(decalage, axe):  # le voisin dans cette direction est vide (ou hors de la grille)
+        v = np.roll(plein, -decalage, axis=axe)
+        bord = [slice(None)] * 3
+        bord[axe] = -1
+        v[tuple(bord)] = False
+        return plein & ~v
+    devant, dessus, cote = libre(1, 2), libre(1, 1), libre(1, 0)
+    montre = devant | dessus | cote
+    xs, ys, zs = np.nonzero(montre)
+    ordre = np.lexsort((xs, ys, zs))  # de l'arrière à l'avant, puis de bas en haut, puis de gauche à droite
+    xs, ys, zs = xs[ordre], ys[ordre], zs[ordre]
+    pal = np.asarray(palette, float)
+    # Couleur du carré : la face de devant si on la voit, sinon le dessus, sinon le côté droit.
+    av = devant[xs, ys, zs]
+    de = dessus[xs, ys, zs] & ~av
+    couleur = np.where(av[:, None], pal[grille[xs, ys, zs]] * LUMIERE['devant'],
+                       np.where(de[:, None], pal[cotes[xs, ys, zs]] * LUMIERE['dessus'],
+                                pal[cotes[xs, ys, zs]] * LUMIERE['cote']))
+    # Projection : x vers la droite, z (avant) vers le bas-gauche, y vers le haut.
+    sx = np.round((xs - zs * 0.5 + p * 0.5 + 2) * echelle).astype(int)
+    sy = np.round((h - 1 - ys + zs * 0.35 + 2) * echelle).astype(int)
+    image = np.zeros((int((h + p * 0.35 + 4) * echelle) + 2, int((w + p * 0.5 + 4) * echelle) + 2, 4), np.uint8)
+    rgba = np.hstack([np.clip(couleur, 0, 255), np.full((len(xs), 1), 255)]).astype(np.uint8)
+    taille = echelle + 1  # un pixel de plus pour ne pas laisser de jours entre les carrés
+    for dy in range(taille):
+        for dx in range(taille):
+            image[sy + dy, sx + dx] = rgba  # les derniers écrits (les plus proches) gagnent
+    return Image.fromarray(image, 'RGBA')
 
 
 def planche_apercus(images, noms, colonnes=12, case=150):
@@ -267,14 +284,56 @@ def planche_apercus(images, noms, colonnes=12, case=150):
 # ---------------------------------------------------------------------------------------------------------------
 
 
+def sprites_detailles(noms, detail):
+    """Redécoupe les sprites demandés dans les planches d'origine (outils/sprites/planches), detail fois plus grands
+    que dans le jeu, avec l'outil de découpe des sprites (mêmes boîtes, mêmes recolorations).
+
+    Rend {nom: pixels RGBA} ; les sprites absents de outils/sprites/decoupe.json ne sont pas dedans."""
+    sys.path.insert(0, os.path.join(RACINE, 'outils', 'sprites'))
+    import decoupe  # outils/sprites/decoupe.py
+    spec = json.load(open(os.path.join(RACINE, 'outils', 'sprites', 'decoupe.json'), encoding='utf-8'))
+    variantes = json.load(open(os.path.join(RACINE, 'outils', 'sprites', 'variantes.json'), encoding='utf-8'))
+    # Les recolorations (maelle_… à partir de mage_…) ont besoin de leur sprite de départ.
+    voulus = set(noms)
+    for v in variantes:
+        if 'prefixe' in v:
+            voulus |= {v['de'] + n[len(v['prefixe']):] for n in noms if n.startswith(v['prefixe'] + '_')}
+        elif v['id'] in voulus:
+            voulus.add(v['de'])
+    resultat = {}
+    for e in spec:
+        if e['id'] not in voulus:
+            continue
+        e = dict(e)
+        for cle in ('w', 'h'):
+            if cle in e:
+                e[cle] *= detail
+        if 'cadre' in e:
+            e['cadre'] = [c * detail for c in e['cadre']]
+        resultat[e['id']] = decoupe.sprite(e)
+    for v in variantes:
+        if 'prefixe' in v:
+            for n in noms:
+                depart = v['de'] + n[len(v['prefixe']):]
+                if n.startswith(v['prefixe'] + '_') and depart in resultat:
+                    resultat[n] = decoupe.recolorer(resultat[depart], v['teintes'])
+        elif v['id'] in voulus and v['de'] in resultat:
+            resultat[v['id']] = decoupe.recolorer(resultat[v['de']], v['teintes'])
+    return resultat
+
+
 def main():
     parser = argparse.ArgumentParser(description='Sprites de Brumeval -> modèles 3D en voxels (.glb)')
     parser.add_argument('noms', nargs='*', help='débuts de noms de sprites (par défaut : tous)')
     parser.add_argument('--sortie', default=os.path.join(ICI, 'essai_godot', 'modeles'),
                         help='dossier des .glb (par défaut : celui du projet Godot d\'essai)')
+    parser.add_argument('--detail', type=int, default=3,
+                        help='finesse : sprites redécoupés dans les planches d\'origine, N fois plus de pixels que dans '
+                             'le jeu (3 par défaut ; 1 = les sprites du jeu, plus rapide)')
     parser.add_argument('--gonflement', type=float, default=0.6,
                         help='épaisseur gagnée par pixel de distance au bord (0.6 par défaut ; plus = plus rond)')
-    parser.add_argument('--epaisseur-max', type=int, default=12, help='épaisseur maximale en voxels (12 par défaut)')
+    parser.add_argument('--epaisseur-max', type=int, default=12,
+                        help='épaisseur maximale, en pixels du jeu (12 par défaut)')
     parser.add_argument('--plat', action='store_true', help='épaisseur constante (--epaisseur-max) partout')
     parser.add_argument('--sans-apercu', action='store_true', help="ne pas fabriquer apercu.png")
     args = parser.parse_args()
@@ -287,18 +346,28 @@ def main():
         choisis = [n for n in sorted(boites) if not n.startswith(IGNORES)]
     if not choisis:
         raise SystemExit('Aucun sprite ne commence par : ' + ', '.join(args.noms))
+    detailles = sprites_detailles(choisis, args.detail) if args.detail > 1 else {}
 
     os.makedirs(args.sortie, exist_ok=True)
-    images, total = [], 0
+    images, total, du_jeu = [], 0, []
     for nom in choisis:
-        x, y, w, h = boites[nom]
-        grille, cotes, palette = voxeliser(atlas[y:y + h, x:x + w], args.gonflement, args.epaisseur_max, args.plat)
+        if nom in detailles:
+            pixels, k = detailles[nom], args.detail
+        else:  # pas dans les planches (ou --detail 1) : le sprite du jeu
+            x, y, w, h = boites[nom]
+            pixels, k = atlas[y:y + h, x:x + w], 1
+            if args.detail > 1:
+                du_jeu.append(nom)
+        grille, cotes, palette = voxeliser(pixels, args.gonflement, args.epaisseur_max * k, args.plat)
         quads = mailler(grille, cotes)
-        total += ecrire_glb(os.path.join(args.sortie, nom + '.glb'), nom, quads, palette, w)
+        total += ecrire_glb(os.path.join(args.sortie, nom + '.glb'), nom, quads, palette, pixels.shape[1],
+                            TAILLE_PIXEL / k)
         if not args.sans_apercu:
-            images.append(apercu(grille, cotes, palette))
+            images.append(apercu(grille, cotes, palette, echelle=max(1, 4 // k)))
     print(f'{len(choisis)} modèles écrits dans {os.path.relpath(args.sortie)} ({total} triangles en tout, '
           f'{total // len(choisis)} en moyenne)')
+    if du_jeu:
+        print(f'{len(du_jeu)} sprites absents des planches, faits avec le sprite du jeu : ' + ', '.join(du_jeu))
     if images:
         chemin = os.path.join(ICI, 'apercu.png')
         planche_apercus(images, choisis).save(chemin)
