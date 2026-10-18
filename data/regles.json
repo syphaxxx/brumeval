@@ -34,7 +34,19 @@
   "brisure": {"bouclier": 2, "bouclier_boss": 8, "degats": 1.5},
   "roles": {"protection": 0.3, "chef": 0.2},
   "gemmes": {"chatons_arme": 1, "chatons_armure": 1, "chatons_accessoire": 1, "forge_chaton": 2},
-  "damier": {"choc": 0.35, "terrain_min": 0, "terrain_max": 2},
+  "damier": {
+    "choc": 0.35,
+    "terrain_min": 0,
+    "terrain_max": 2,
+    "mouvement": 2,
+    "allonge_boss": 2,
+    "dos": 1.3,
+    "encercle": 0.1,
+    "contact": 0.75,
+    "percee": 1,
+    "vol": ["vent", "esprit"],
+    "rapides": ["vent", "foudre"]
+  },
   "meteo": [
     {
       "id": "pluie",
@@ -175,6 +187,11 @@
   },
   "astuces": [
     {
+      "id": "echiquier",
+      "aide": "Échiquier",
+      "texte": "Les deux camps partagent le plateau. « Se déplacer » ne finit pas le tour : avancez, contournez la ligne ennemie et frappez dans le dos, ou protégez vos lanceurs de sorts."
+    },
+    {
       "id": "bouclier",
       "aide": "Brisure",
       "texte": "Le chiffre dans l'écu bleu est le bouclier de l'ennemi. Frappez ses faiblesses pour l'user : à zéro, il est brisé, perd un tour et encaisse 50 % de plus."
@@ -238,6 +255,16 @@
       "id": "enigme",
       "aide": "Énigmes",
       "texte": "Une énigme ! Poussez les rochers sur toutes les dalles en marchant dedans. Un rocher coincé ? Échap > Recommencer l'énigme."
+    },
+    {
+      "id": "dos",
+      "aide": "Échiquier",
+      "texte": "Coup dans le dos ! Frapper un ennemi depuis le côté de son camp fait plus mal. Attention : là-bas, on risque d'être encerclé."
+    },
+    {
+      "id": "percee",
+      "aide": "Échiquier",
+      "texte": "Percée ! Atteindre le bord du camp adverse donne un bonus pour tout le combat. Les ennemis peuvent en faire autant : barrez-leur la route."
     }
   ],
   "conseils": [
@@ -358,7 +385,7 @@
     {
       "id": "furtif",
       "nom": "Furtif",
-      "description": "À l'arrière, esquive 15 % des coups physiques en plus.",
+      "description": "Loin de la mêlée (aucun ennemi au contact), esquive 15 % des coups physiques en plus.",
       "effet": "esquive_arriere",
       "valeur": 0.15
     },

@@ -39,7 +39,7 @@ static const std::vector<TacticCond> CONDS = {
     {"soi_menace", ::T("Soi : zone annoncée"), TSide::Self, 0, 0, 0, 0, ::T("Quand une attaque annoncée (zone rouge) va toucher sa case, ou que sa case le blesse.")},
     {"ennemis_groupes", ::T("Ennemis : {n} dans la zone"), TSide::Foe, 2, 2, 4, 1,
      ::T("Une cible dont la zone de l'action touche au moins ce nombre d'ennemis (gauche/droite : nombre).")},
-    {"allie_avant_pv_moins", ::T("Allié avant : PV < {n} %"), TSide::Ally, 50, 10, 90, 10, ::T("Un allié de la colonne avant, blessé sous ce seuil (gauche/droite).")},
+    {"allie_avant_pv_moins", ::T("Allié au contact : PV < {n} %"), TSide::Ally, 50, 10, 90, 10, ::T("Un allié au contact d'un ennemi, blessé sous ce seuil (gauche/droite).")},
 };
 static const std::vector<TacticAuto> AUTOS = {
     {"attaque", ::T("Meilleure attaque"), TSide::Foe, ::T("La technique, le sort ou le duo qui fait le plus de dégâts (peut dépenser des PM).")},

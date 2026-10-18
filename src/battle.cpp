@@ -57,7 +57,7 @@ std::string moveDetails(const Move& m, const Fighter* user) {
   switch (m.target) {
     case Target::Enemy:
       switch (m.zone) {
-        case Area::Line: s += T(". Un ennemi et toute sa ligne (de l'avant à l'arrière") + side + ")"; break;
+        case Area::Line: s += T(". Un ennemi et toute sa ligne (d'un bord du plateau à l'autre") + side + ")"; break;
         case Area::Column: s += T(". Un ennemi et toute sa colonne (de haut en bas") + side + ")"; break;
         case Area::Cross: s += T(". Un ennemi et ses voisins en croix") + (side.empty() ? "" : " (" + side.substr(2) + ")"); break;
         case Area::All: s += T(". Tous les ennemis"); break;
@@ -69,7 +69,8 @@ std::string moveDetails(const Move& m, const Fighter* user) {
     case Target::AllAllies: s += T(". Toute l'équipe"); break;
     case Target::AllyKO: s += T(". Un allié K.O."); break;
   }
-  if (m.damaging() && m.target == Target::Enemy) s += m.melee ? T(", corps à corps (colonne ennemie la plus avancée)") : T(", à distance (toute case)");
+  if (m.damaging() && m.target == Target::Enemy)
+    s += m.melee ? T(", corps à corps (un ennemi au contact ; s'approche d'abord s'il le faut)") : T(", à distance (toute case ; moins fort au contact d'un ennemi)");
   // Soins
   if (m.kind == Kind::Heal && m.power > 0)
     s += user ? T(". Rend environ ") + std::to_string(int(m.power * user->eMag() / 20) + 2) + T(" PV (Magie ") + std::to_string(int(user->eMag())) + ")"
@@ -79,8 +80,8 @@ std::string moveDetails(const Move& m, const Fighter* user) {
     s += T(". Effet : ");
     for (size_t i = 0; i < m.effects.size(); i++) s += (i ? ", " : "") + effectText(m.effects[i], m);
   }
-  if (m.shove > 0) s += T(". Pousse la cible d'une case vers l'arrière (case prise ou bord : choc pour les deux)");
-  if (m.shove < 0) s += T(". Tire la cible d'une case vers l'avant (case prise : choc pour les deux)");
+  if (m.shove > 0) s += T(". Repousse la cible d'une case, loin du lanceur (case prise ou bord : choc pour les deux)");
+  if (m.shove < 0) s += T(". Attire la cible d'une case vers le lanceur (case prise : choc pour les deux)");
   if (m.pace == Pace::Quick) s += T(". Rapide : rejoue plus tôt (jauge à ") + std::to_string(R.quickGauge) + " %)";
   if (m.pace == Pace::Heavy) s += T(". Lourde : rejoue plus tard (jauge à −") + std::to_string(R.heavyDelay) + " %)";
   return s + ".";
@@ -246,14 +247,14 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
       canCapture(s.canCapture), bg(bg_) {
   allies = s.allies.empty() ? G.front() : std::move(s.allies);
   for (auto& a : allies) hasHero_ = hasHero_ || a->S().human;
-  place(allies, !coop());  // la formation de l'équipe (au gardien à plusieurs : placement automatique)
-  place(foes, false);
+  place(allies, !coop(), true);  // la formation de l'équipe (au gardien à plusieurs : placement automatique)
+  place(foes, false, false);
   // Ennemis : quelques combattants au milieu plutôt qu'à l'avant, pour varier les formations
   for (auto& f : foes) {
-    int c = cells_[f.get()], mid = cellAt(cellRow(c), 1);
+    int c = cells_[f.get()], mid = c + 1;  // une case plus loin dans leur camp
     bool taken = false;
     for (auto& o : foes) taken = taken || cells_[o.get()] == mid;
-    if (cellCol(c) == 0 && !f->boss && !taken && frand() < .35f) cells_[f.get()] = mid;
+    if (boardX(c) == GRID && !f->boss && !taken && frand() < .35f) cells_[f.get()] = mid;
   }
   start = G.time;
   std::map<std::string, int> cnt, seen;
@@ -272,7 +273,7 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
   for (auto* v : {&foes, &reserve})
     for (auto& e : *v) initFoe(e);
   // Météo et terrain (2.6) : tirés selon le décor du combat
-  for (auto& side : terrain_) side.fill(-1);
+  terrain_.fill(-1);
   {
     const Rules& R = rules();
     std::string th = themeName(bg);
@@ -287,9 +288,12 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
     for (size_t i = 0; i < R.terrains.size(); i++)
       if (std::find(R.terrains[i].themes.begin(), R.terrains[i].themes.end(), th) != R.terrains[i].themes.end()) pool.push_back((int)i);
     if (!pool.empty())
-      for (auto& side : terrain_) {
+      for (int side = 0; side < 2; side++) {  // autant de cases dans chaque moitié du plateau
         int n = irand(R.terrainMin, std::max(R.terrainMin, R.terrainMax));
-        for (int k = 0; k < n; k++) side[(size_t)irand(0, N_CELLS - 1)] = pool[(size_t)irand(0, (int)pool.size() - 1)];
+        for (int k = 0; k < n; k++) {
+          int c = toBoard(side == 0, irand(0, N_CELLS - 1));
+          terrain_[(size_t)c] = pool[(size_t)irand(0, (int)pool.size() - 1)];
+        }
       }
   }
   for (auto& a : allies) a->atb = 20 + frand() * 50;
@@ -322,39 +326,188 @@ std::vector<FighterP> Battle::alive(const std::vector<FighterP>& v) const {
   return o;
 }
 
-// Damier à l'écran (3.3) : les alliés à gauche, les ennemis à droite ; l'avant de chaque camp est du
-// côté du milieu de l'écran. Les lignes du bas sont un peu décalées (léger effet de profondeur).
-Pt Battle::cellPos(bool allySide, int c) const {
-  if (c < 0 || c >= N_CELLS) c = cellAt(1, 1);
-  float col = (float)cellCol(c), row = (float)cellRow(c);
-  float x = 196 + col * 30 + row * 4;  // 4 colonnes de 30 px, chaque ligne un peu décalée (perspective)
-  return {allySide ? 320 - x : x, 72 + row * 22};
+// Échiquier à l'écran (3.4) : un plateau de 8 colonnes de 32 px, les alliés partent de la gauche, les ennemis de
+// la droite. Les lignes du bas sont un peu décalées (léger effet de profondeur).
+Pt Battle::cellPos(int c) const {
+  if (c < 0 || c >= BOARD_CELLS) c = boardAt(1, 1);
+  float col = (float)boardX(c), row = (float)boardY(c);
+  return {160 + (col - (BOARD_W - 1) / 2.f) * 32 + (row - 1.5f) * 3, 72 + row * 22};
 }
-Pt Battle::pos(const FighterP& f) const { return cellPos(isAlly(f), cellOf(f)); }
+Pt Battle::pos(const FighterP& f) const {
+  Pt p = cellPos(cellOf(f));
+  auto it = f ? slide_.find(f.get()) : slide_.end();
+  if (it != slide_.end()) {  // il glisse depuis son ancienne case (un quart de seconde)
+    float k = std::clamp((G.time - it->second.second) / .25f, 0.f, 1.f);
+    k = k * k * (3 - 2 * k);
+    p.x = it->second.first.x + (p.x - it->second.first.x) * k;
+    p.y = it->second.first.y + (p.y - it->second.first.y) * k - std::sin(k * 3.14159f) * 3;  // petit bond
+  }
+  return p;
+}
 
 int Battle::cellOf(const FighterP& f) const {
   auto it = f ? cells_.find(f.get()) : cells_.end();
   return it == cells_.end() ? -1 : it->second;
 }
-void Battle::place(const std::vector<FighterP>& v, bool keep) {
+void Battle::place(const std::vector<FighterP>& v, bool keep, bool left) {
   auto cells = formation(v, keep);
-  for (size_t i = 0; i < v.size(); i++) cells_[v[i].get()] = cells[i];
+  for (size_t i = 0; i < v.size(); i++) cells_[v[i].get()] = cells[i] < 0 ? -1 : toBoard(left, cells[i]);
+}
+FighterP Battle::at(int c) const {
+  if (c < 0) return nullptr;
+  for (auto* side : {&allies, &foes})
+    for (auto& f : *side)
+      if (f->alive() && cellOf(f) == c) return f;
+  return nullptr;
+}
+int Battle::freeCellNear(bool left, int near) const {
+  int best = -1, bd = 99;
+  for (int c = 0; c < BOARD_CELLS; c++) {
+    if (!inHalf(left, c) || at(c)) continue;
+    // près de near ; sans near, le plus près de l'avant de ce camp
+    int d = near >= 0 ? boardSteps(c, near) * 2 + std::abs(boardY(c) - boardY(near))
+                      : std::abs(boardX(c) - (left ? GRID - 1 : GRID)) * 4 + std::abs(boardY(c) * 2 - (GRID - 1));
+    if (d < bd) bd = d, best = c;
+  }
+  return best;
+}
+
+// L'espèce a-t-elle un de ces types (identifiants des règles) ?
+static bool hasTypeIn(const Species& s, const std::vector<std::string>& ids) {
+  for (auto& ty : ids)
+    for (size_t k = 0; k < types().size(); k++)
+      if (types()[k].id == ty && hasType(s, (int)k)) return true;
+  return false;
+}
+int Battle::moveRange(const FighterP& f) const { return rules().moveRange + (hasTypeIn(f->S(), rules().fastTypes) ? 1 : 0); }
+bool Battle::flier(const FighterP& f) const { return hasTypeIn(f->S(), rules().flyTypes); }
+std::map<int, int> Battle::walkable(const FighterP& f) const {
+  std::map<int, int> out;
+  int from = cellOf(f), range = moveRange(f);
+  if (from < 0 || range <= 0) return out;
+  bool fly = flier(f);
+  const auto& opp = oppOf(f);
+  auto foeOn = [&](int c) {
+    for (auto& o : opp)
+      if (o->alive() && cellOf(o) == c) return true;
+    return false;
+  };
+  auto contact = [&](int c) {  // arriver au contact d'un adversaire arrête la marche
+    for (auto& o : opp)
+      if (o->alive() && boardDist(cellOf(o), c) <= 1) return true;
+    return false;
+  };
+  // Recherche en largeur : pas d'un côté, sans diagonale
+  std::map<int, int> dist{{from, 0}};
+  std::vector<int> todo{from};
+  for (size_t i = 0; i < todo.size(); i++) {
+    int c = todo[i], d = dist[c];
+    if (d >= range) continue;
+    if (c != from && !fly && contact(c)) continue;  // au contact : on ne va pas plus loin
+    static const int DX[4] = {1, -1, 0, 0}, DY[4] = {0, 0, 1, -1};
+    for (int k = 0; k < 4; k++) {
+      int x = boardX(c) + DX[k], y = boardY(c) + DY[k];
+      if (x < 0 || x >= BOARD_W || y < 0 || y >= GRID) continue;
+      int n = boardAt(y, x);
+      if (dist.count(n) || (!fly && foeOn(n))) continue;
+      dist[n] = d + 1;
+      todo.push_back(n);
+    }
+  }
+  for (auto& [c, d] : dist)
+    if (c != from && !at(c)) out[c] = d;  // on traverse un allié, mais on ne s'arrête pas sur lui
+  return out;
+}
+int Battle::reach(const FighterP& a) const { return a->boss ? rules().bossReach : 1; }
+bool Battle::engaged(const FighterP& f, int cell) const { return foesAround(f, cell) > 0; }
+int Battle::foesAround(const FighterP& d, int cell) const {
+  int n = 0, c = cell >= 0 ? cell : cellOf(d);
+  for (auto& o : oppOf(d))
+    if (o->alive() && boardDist(cellOf(o), c) <= 1) n++;
+  return n;
+}
+bool Battle::behind(const FighterP& a, const FighterP& d, int from) const {
+  int ax = boardX(from >= 0 ? from : cellOf(a)), dx = boardX(cellOf(d));
+  return isAlly(d) ? ax < dx : ax > dx;  // du côté du bord de son camp
+}
+float Battle::posMult(const FighterP& a, const FighterP& d, const Move& m, int from) const {
+  const Rules& R = rules();
+  if (!a || !d || cellOf(a) < 0 || cellOf(d) < 0 || isAlly(a) == isAlly(d)) return 1;
+  float k = 1;
+  if (m.melee && behind(a, d, from)) k *= float(R.backStab);                // dans le dos
+  // Un boss, trop grand pour être encerclé, ne craint pas non plus de lancer ses sorts au contact
+  int n = foesAround(d);
+  if (from >= 0 && boardDist(from, cellOf(d)) <= 1 && boardDist(cellOf(a), cellOf(d)) > 1) n++;  // il arrive au contact
+  if (n >= 2 && !d->boss) k *= 1 + float(R.surround) * (n - 1);              // encerclé
+  if (!m.melee && !a->boss && engaged(a, from)) k *= float(R.contact);       // tirer ou lancer un sort au contact
+  return k;
+}
+int Battle::approachCell(const FighterP& a, const FighterP& t) const {
+  int best = -1;
+  float bs = -1e9f;
+  int tc = cellOf(t), r = reach(a);
+  for (auto& [c, d] : walkable(a)) {
+    if (boardDist(c, tc) > r) continue;
+    float s = -d * 2.f;
+    int ax = boardX(c), dx = boardX(tc);
+    if (isAlly(t) ? ax < dx : ax > dx) s += 6;  // dans son dos
+    for (auto& o : oppOf(a))
+      if (o->alive() && o != t && boardDist(cellOf(o), c) <= 1) s -= 4;  // d'autres adversaires au contact
+    if (terrainHurts(a, c)) s -= 10;
+    for (auto& w : warnings_)
+      if (isAlly(a) && inBoardZone(w.zone, w.center, c)) s -= 20;
+    if (s > bs) bs = s, best = c;
+  }
+  return best;
 }
 bool Battle::reachable(const FighterP& a, const Move& m, const FighterP& t) const {
-  (void)a;
-  if (!m.melee || m.zone == Area::All || !t) return true;
-  int front = BACK_COL;
-  for (auto& f : sideOf(t))
-    if (f->alive()) front = std::min(front, std::max(0, cellCol(std::max(0, cellOf(f)))));
-  return std::max(0, cellCol(std::max(0, cellOf(t)))) <= front;
+  if (!m.melee || m.zone == Area::All || !t || !a) return true;
+  int ac = cellOf(a), tc = cellOf(t);
+  if (ac < 0 || tc < 0) return true;
+  if (boardDist(ac, tc) <= reach(a)) return true;
+  if (moved_.count(a.get())) return false;
+  return approachCell(a, t) >= 0;
 }
 std::vector<FighterP> Battle::zoneTargets(const Move& m, const FighterP& center) const {
   std::vector<FighterP> v{center};
   if (!center || m.zone == Area::Single || m.zone == Area::All) return v;
   int c = cellOf(center);
   for (auto& f : sideOf(center))
-    if (f != center && f->alive() && inZone(m.zone, c, cellOf(f))) v.push_back(f);
+    if (f != center && f->alive() && inBoardZone(m.zone, c, cellOf(f))) v.push_back(f);
   return v;
+}
+bool Battle::facesRight(const FighterP& f) const {
+  int c = cellOf(f), best = 99;
+  bool right = isAlly(f);
+  for (auto& o : oppOf(f))
+    if (o->alive() && cellOf(o) >= 0) {
+      int d = boardSteps(c, cellOf(o));
+      if (d < best || (d == best && boardX(cellOf(o)) != boardX(c))) best = d, right = boardX(cellOf(o)) > boardX(c) || (boardX(cellOf(o)) == boardX(c) && isAlly(f));
+    }
+  return right;
+}
+int Battle::netCell(int c) const {
+  if (!duel() || c < 0 || c >= BOARD_CELLS) return c;
+  return boardAt(boardY(c), BOARD_W - 1 - boardX(c));
+}
+
+// Déplacement d'un combattant : il glisse vers sa case. Percée (3.4) : la première fois qu'il atteint le bord du
+// camp adverse, il gagne +1 en Attaque, Magie et Vitesse (règle damier.percee).
+void Battle::step(const FighterP& a, int cell) {
+  if (cell < 0 || cell == cellOf(a)) return;
+  if (shown()) slide_[a.get()] = {pos(a), G.time};
+  cells_[a.get()] = cell;
+  moved_.insert(a.get());
+  log.push_back(a->name() + T(" va en ") + boardName(cell));
+  int edge = isAlly(a) ? BOARD_W - 1 : 0;
+  int bonus = rules().breakthrough;
+  if (bonus > 0 && boardX(cell) == edge && breakthrough_.insert(a.get()).second) {
+    for (int st : {S_ATK, S_MAG, S_SPD}) a->stage[(size_t)st] = std::min(3, a->stage[(size_t)st] + bonus);
+    pop(a, T("Percée !"), GOLD);
+    sound("bonus");
+    log.push_back("  " + a->name() + T(" : Percée"));
+    if (isAlly(a)) tip("percee");
+  }
 }
 float Battle::zoneScore(const FighterP& a, const Move& m, const FighterP& center) const {
   float s = 0;
@@ -433,7 +586,14 @@ Pt Battle::offset(const FighterP& f) const {
   float e = G.time - anim_.t0;
   if (anim_.actor == f && e >= 0 && e < .4f) {
     float k = std::sin(3.14159f * e / .4f);
-    if (anim_.fx == Fx::Hit) o.x = (isAlly(f) ? 16.f : -16.f) * k;  // vers le camp adverse
+    if (anim_.fx == Fx::Hit) {  // vers sa cible (sur l'échiquier, elle peut être derrière lui)
+      float dir = facesRight(f) ? 1.f : -1.f;
+      if (!anim_.targets.empty() && anim_.targets[0] != f) {
+        float dx = cellPos(cellOf(anim_.targets[0])).x - cellPos(cellOf(f)).x;
+        if (std::abs(dx) > 1) dir = dx > 0 ? 1.f : -1.f;
+      }
+      o.x = dir * 16.f * k;
+    }
     else o.y = -6 * k;
   }
   if (blink == f && G.time - blinkT < .3f) o.x += std::sin((G.time - blinkT) * 70) * 2.5f;
@@ -638,9 +798,8 @@ void Battle::startTips() {
   if (!shown() || autoPlay || net_ != Net::None) return;
   bool shield = false, role = false, terrain = false;
   for (auto& f : foes) shield = shield || f->shieldMax > 0, role = role || !f->S().combatRole.empty();
-  for (auto& side : terrain_)
-    for (int v : side) terrain = terrain || v >= 0;
-  std::pair<const char*, bool> order[] = {{"bouclier", shield}, {"ordre", true}, {"role", role}, {"meteo", weather_ >= 0}, {"terrain", terrain}, {"talent", true}};
+  for (int v : terrain_) terrain = terrain || v >= 0;
+  std::pair<const char*, bool> order[] = {{"echiquier", true}, {"bouclier", shield}, {"ordre", true}, {"role", role}, {"meteo", weather_ >= 0}, {"terrain", terrain}, {"talent", true}};
   for (auto& [id, ok] : order)
     if (ok && G.tip(id, sc)) return;
 }
@@ -840,28 +999,43 @@ void Battle::command(FighterP a) {
   actor = a;
   Menu m;
   m.rows = 6, m.cancelable = false;
-  m.items.push_back({T("Attaquer"), "", T("Utiliser une technique."), true, [this, a] {
+  // Échiquier : une technique contre un ennemi sans personne à portée (corps à corps trop loin) n'est pas proposée
+  auto inReach = [this, a](const Move& mv) {
+    if (mv.target != Target::Enemy) return true;
+    for (auto& f : alive(foes))
+      if (reachable(a, mv, f)) return true;
+    return false;
+  };
+  bool anyTech = false;
+  for (auto& id : a->techs()) anyTech = anyTech || inReach(moveInfo(id));
+  m.items.push_back({T("Attaquer"), "", anyTech ? T("Utiliser une technique.") : T("Aucun ennemi à portée : approchez-vous d'abord."), anyTech,
+                     [this, a, inReach] {
                        Menu t;
                        t.title = T("Techniques");
                        t.rows = 5;
+                       t.sel = -1;
                        for (auto& id : a->techs()) {
                          const Move& mv = moveInfo(id);
-                         t.items.push_back({mv.name, typeName(mv.type), moveBrief(mv, a.get()), true, [this, a, id] { moveTarget(a, id); },
-                                            [this, a, id] { previewMove(a, id); }});
+                         bool ok = inReach(mv);
+                         if (ok && t.sel < 0) t.sel = (int)t.items.size();
+                         t.items.push_back({mv.name, ok ? typeName(mv.type) : T("hors d'atteinte"), moveBrief(mv, a.get()), ok,
+                                            [this, a, id] { moveTarget(a, id); }, [this, a, id] { previewMove(a, id); }});
                        }
+                       t.sel = std::max(0, t.sel);
                        dock(t);
                        G.menus.push(t);
                      }});
   auto sp = a->spells();
   if (!sp.empty())
-    m.items.push_back({T("Magie"), "", T("Lancer un sort (coûte des PM)."), true, [this, a, sp] {
+    m.items.push_back({T("Magie"), "", T("Lancer un sort (coûte des PM)."), true, [this, a, sp, inReach] {
                          Menu t;
                          t.title = T("Magie  ") + std::to_string(a->mp) + "/" + std::to_string(a->mmp) + T(" PM");
                          t.rows = 5;
                          for (auto& id : sp) {
                            const Move& mv = moveInfo(id);
-                           t.items.push_back({mv.name, std::to_string(mv.cost) + T(" PM"), moveBrief(mv, a.get()), a->mp >= mv.cost,
-                                              [this, a, id] { moveTarget(a, id); }, [this, a, id] { previewMove(a, id); }});
+                           bool ok = inReach(mv);
+                           t.items.push_back({mv.name, ok ? std::to_string(mv.cost) + T(" PM") : T("hors d'atteinte"), moveBrief(mv, a.get()),
+                                              ok && a->mp >= mv.cost, [this, a, id] { moveTarget(a, id); }, [this, a, id] { previewMove(a, id); }});
                          }
                          dock(t);
                          G.menus.push(t);
@@ -928,36 +1102,34 @@ void Battle::command(FighterP a) {
                        dock(t);
                        G.menus.push(t);
                      }});
-  // Se déplacer : vers une case libre de son damier (action rapide)
-  std::vector<int> freeCells;
-  for (int c = 0; c < N_CELLS; c++) {
-    bool taken = false;
-    for (auto& f : allies) taken = taken || cellOf(f) == c;
-    if (!taken) freeCells.push_back(c);
+  // Se déplacer (3.4) : une fois par tour, avant d'agir ; le tour continue ensuite
+  if (!moved_.count(a.get())) {
+    std::vector<int> cells;
+    for (auto& [c, d] : walkable(a)) cells.push_back(c);
+    m.items.push_back({T("Se déplacer"), "", cells.empty() ? T("Aucune case libre à portée.")
+                                                            : T("Aller jusqu'à ") + std::to_string(moveRange(a)) + T(" cases plus loin, puis agir."),
+                       !cells.empty(), [this, a, cells] {
+                         Menu t;
+                         t.title = T("Se déplacer");
+                         t.rows = 5;
+                         int edge = BOARD_W - 1;
+                         for (int c : cells) {
+                           const Rules::Terrain* tr = terrainOf(c);
+                           std::string where = boardX(c) == edge && !breakthrough_.count(a.get()) && rules().breakthrough > 0
+                                                   ? T("Bord adverse : Percée ! Attaque, Magie et Vitesse +") + std::to_string(rules().breakthrough) + "."
+                                               : !inHalf(true, c) ? T("Camp adverse : on peut frapper dans le dos, mais gare à l'encerclement.")
+                                                                  : T("Notre camp.");
+                           t.items.push_back({boardName(c), "", boardName(c) + " · " + (tr ? tr->name + " : " + tr->desc : where), true,
+                                              [this, a, c] { moveTo(a, c); }});
+                         }
+                         // la case la plus proche du combattant d'abord
+                         int best = 99;
+                         for (size_t i = 0; i < cells.size(); i++)
+                           if (int d = boardSteps(cells[i], cellOf(a)) * 4 + boardY(cells[i]); d < best) best = d, t.sel = (int)i;
+                         boardMenu(t, cells, true);
+                       }});
   }
-  m.items.push_back({T("Se déplacer"), "", freeCells.empty() ? T("Aucune case libre.") : T("Changer de case sur le damier (action rapide)."), !freeCells.empty(),
-                     [this, a, freeCells] {
-                       Menu t;
-                       t.title = T("Se déplacer");
-                       t.rows = 5;
-                       for (int c : freeCells) {
-                         const Rules::Terrain* tr = terrainOf(true, c);
-                         std::string where = cellCol(c) == 0 ? T("Avant : frappe et reçoit plus fort au corps à corps.")
-                                             : cellCol(c) == BACK_COL ? T("Arrière : moins de dégâts au corps à corps (donnés et reçus).")
-                                                                      : T("Milieu.");
-                         t.items.push_back({cellName(c), "", cellName(c) + " · " + (tr ? tr->name + " : " + tr->desc : where), true,
-                                            [this, a, c] { moveTo(a, c); }});
-                       }
-                       // la case libre la plus proche du combattant d'abord
-                       Pt from = cellPos(true, cellOf(a));
-                       float best = 1e9f;
-                       for (size_t i = 0; i < freeCells.size(); i++) {
-                         Pt p = cellPos(true, freeCells[i]);
-                         float d = std::abs(p.x - from.x) + std::abs(p.y - from.y);
-                         if (d < best) best = d, t.sel = (int)i;
-                       }
-                       boardMenu(t, true, freeCells, true);
-                     }});
+  m.items.push_back({T("Attendre"), "", T("Finir son tour sans agir : rejoue plus tôt."), true, [this, a] { waitTurn(a); }});
   std::vector<FighterP> bench;  // avec des héros : un héros n'est remplacé que par un héros
   for (auto& r : G.team)
     if (r->alive() && !isAlly(r) && (!hasHero_ || r->S().human == a->S().human)) bench.push_back(r);
@@ -980,6 +1152,12 @@ void Battle::command(FighterP a) {
                                  [d](const MenuItem& it) { return (d && it.label == T("Objet")) || it.label == T("Changer"); }),
                   m.items.end());
   }
+  // Le curseur sur la première action possible (rien à portée : « Se déplacer »)
+  for (size_t i = 0; i < m.items.size(); i++)
+    if (m.items[i].enabled && (anyTech || m.items[i].label == T("Se déplacer") || m.items[i].label == T("Attendre"))) {
+      m.sel = (int)i;
+      break;
+    }
   dock(m, Dock::Command);
   G.menus.push(m);
 }
@@ -997,13 +1175,13 @@ void Battle::pickFoe(const std::string& title, std::function<std::string(const F
   std::vector<FighterP> list;
   for (auto& f : alive(foes)) {
     if (creaturesOnly && f->S().human) continue;
-    if (aiming_ && !reachable(actor, *aiming_, f)) continue;  // corps à corps : seulement l'avant
+    if (aiming_ && !reachable(actor, *aiming_, f)) continue;  // corps à corps : au contact, ou qu'on peut rejoindre
     list.push_back(f);
   }
-  // dans l'ordre du damier (de haut en bas, de l'avant à l'arrière) : Haut et Bas suivent l'écran
+  // dans l'ordre du plateau (de haut en bas, de gauche à droite) : Haut et Bas suivent l'écran
   std::stable_sort(list.begin(), list.end(), [&](const FighterP& a, const FighterP& b) {
     int ca = std::max(0, cellOf(a)), cb = std::max(0, cellOf(b));
-    return cellRow(ca) != cellRow(cb) ? cellRow(ca) < cellRow(cb) : cellCol(ca) < cellCol(cb);
+    return boardY(ca) != boardY(cb) ? boardY(ca) < boardY(cb) : boardX(ca) < boardX(cb);
   });
   std::vector<int> cells;
   for (auto& f : list) {
@@ -1012,7 +1190,7 @@ void Battle::pickFoe(const std::string& title, std::function<std::string(const F
                        [done, f] { done(f); }, [this, f] { cursor = f; }});
     cells.push_back(cellOf(f));
   }
-  boardMenu(t, false, cells);
+  boardMenu(t, cells);
 }
 void Battle::pickAlly(const std::string& title, bool ko, std::function<void(FighterP)> done) {
   Menu t;
@@ -1035,26 +1213,26 @@ void Battle::pickAlly(const std::string& title, bool ko, std::function<void(Figh
     cells.push_back(cellOf(f));
   }
   t.sel = std::max(0, first);
-  boardMenu(t, true, cells);
+  boardMenu(t, cells);
 }
 
 // ---------------------------------------------------------------------------
 // Choix sur le damier (3.2)
 // ---------------------------------------------------------------------------
-void Battle::boardMenu(Menu t, bool allySide, std::vector<int> cells, bool move) {
+void Battle::boardMenu(Menu t, std::vector<int> cells, bool move) {
   t.hidden = true;
   dock(t);
-  pick_ = {G.menus.depth() + 1, allySide, std::move(cells), move};
+  pick_ = {G.menus.depth() + 1, std::move(cells), move};
   G.menus.push(t);
 }
 bool Battle::boardPicking() const {
   return pick_.depth && G.menus.depth() == pick_.depth && G.menus.active() && G.menus.top().hidden;
 }
-int Battle::cellUnder(bool allySide, float x, float y, const std::vector<int>& among) const {
+int Battle::cellUnder(float x, float y, const std::vector<int>& among) const {
   int best = -1;
   float bd = 1e9f;
   for (size_t i = 0; i < among.size(); i++) {
-    Pt p = cellPos(allySide, among[i]);
+    Pt p = cellPos(among[i]);
     if (std::abs(x - p.x) > 15 || y < p.y - 26 || y > p.y + 19) continue;  // la dalle et le combattant debout dessus
     float d = std::abs(x - p.x) + std::abs(y - (p.y + 4));
     if (d < bd) bd = d, best = (int)i;
@@ -1077,12 +1255,12 @@ void Battle::boardInput() {
   for (int d = 0; d < 4; d++) {
     if (!in.press[d]) continue;
     in.press[d] = false;
-    Pt from = cellPos(pick_.allySide, pick_.cells[(size_t)std::clamp(m.sel, 0, n - 1)]);
+    Pt from = cellPos(pick_.cells[(size_t)std::clamp(m.sel, 0, n - 1)]);
     int best = -1;
     float bs = 1e9f;
     for (int i = 0; i < n; i++) {
       if (i == m.sel || !m.items[(size_t)i].enabled) continue;
-      Pt p = cellPos(pick_.allySide, pick_.cells[(size_t)i]);
+      Pt p = cellPos(pick_.cells[(size_t)i]);
       float vx = p.x - from.x, vy = p.y - from.y, along = vx * DX[d] + vy * DY[d], across = std::abs(vx * DY[d] - vy * DX[d]);
       if (along < 3) continue;
       if (along + across * 2 < bs) bs = along + across * 2, best = i;
@@ -1090,7 +1268,7 @@ void Battle::boardInput() {
     choose(best);
   }
   if (in.mouseOn) {
-    int at = cellUnder(pick_.allySide, (float)in.mx, (float)in.my, pick_.cells);
+    int at = cellUnder((float)in.mx, (float)in.my, pick_.cells);
     if (at >= n) at = -1;
     if (in.moved) choose(at);
     if (in.mclick[0]) {
@@ -1111,9 +1289,9 @@ void Battle::previewMove(const FighterP& a, const std::string& id) {
   if (m.target != Target::Enemy) return;
   if (cursor && cursor->alive() && !isAlly(cursor) && reachable(a, m, cursor)) return;
   cursor = nullptr;
-  for (auto& f : alive(foes)) {
+  for (auto& f : alive(foes)) {  // le plus proche à portée
     if (!reachable(a, m, f)) continue;
-    if (!cursor || cellCol(std::max(0, cellOf(f))) < cellCol(std::max(0, cellOf(cursor)))) cursor = f;
+    if (!cursor || boardSteps(cellOf(f), cellOf(a)) < boardSteps(cellOf(cursor), cellOf(a))) cursor = f;
   }
 }
 
@@ -1296,10 +1474,79 @@ Battle::Plan Battle::think(FighterP a) {
     std::vector<FighterP> ok;
     for (auto& t : theirs)
       if (reachable(a, m0, t)) ok.push_back(t);
-    if (ok.empty()) ok = theirs;
+    if (ok.empty()) {  // personne à portée (échiquier) : il attend
+      best = Plan{};
+      best.wait = true;
+      return best;
+    }
     best = {m0.id, {ok[irand(0, (int)ok.size() - 1)]}, false};
   }
   return best;
+}
+
+// ---------------------------------------------------------------------------
+// Échiquier (3.4) : où l'ordinateur va avant d'agir
+// ---------------------------------------------------------------------------
+// Intérêt d'une case (sans hasard) : la meilleure attaque possible de là (dos, encerclement, distance au contact
+// compris), moins le danger (adversaires qui pourront le frapper au prochain tour), le terrain et les zones
+// annoncées ; un lanceur de sorts garde ses distances, un combattant s'approche, un protecteur reste près des siens.
+float Battle::posValue(const FighterP& a, int cell) {
+  int keep = cellOf(a);
+  bool had = moved_.count(a.get()) > 0;
+  cells_[a.get()] = cell;
+  moved_.insert(a.get());  // de là, seulement ce qui est au contact (il ne bougera plus)
+  const Species& s = a->S();
+  bool caster = s.base[B_MAG] > s.base[B_ATK];
+  auto theirs = alive(oppOf(a));
+  float best = 0;
+  std::vector<std::string> moves = a->techs();
+  for (auto& id : a->spells())
+    if (a->mp >= moveInfo(id).cost) moves.push_back(id);
+  for (auto& id : moves) {
+    const Move& m = moveInfo(id);
+    if (!m.damaging()) continue;
+    if (m.target == Target::AllEnemies || m.zone == Area::All) {
+      float sum = 0;
+      for (auto& t : theirs) sum += attackScore(a, m, t);
+      best = std::max(best, sum * .7f);
+    } else
+      for (auto& t : theirs)
+        if (reachable(a, m, t)) best = std::max(best, zoneScore(a, m, t));
+  }
+  float v = best;
+  // Danger : chaque adversaire qui pourra le rejoindre au corps à corps à son prochain tour
+  float hpR = float(a->hp) / std::max(1, a->mhp), fear = (caster ? 7.f : 3.5f) * (1.6f - hpR);
+  int nearest = 99;
+  for (auto& o : theirs) {
+    int d = boardSteps(cellOf(o), cell);
+    nearest = std::min(nearest, d);
+    if (d <= moveRange(o) + reach(o)) v -= fear * (o->boss ? 2.f : 1.f);
+  }
+  if (int n = foesAround(a); n >= 2) v -= 8.f * (n - 1);  // encerclé
+  if (caster) v += std::min(nearest, 4) * 2.f;            // garder ses distances
+  else v -= nearest * 2.5f;                                // aller au contact
+  if (s.combatRole == "protecteur")                        // rester près des siens
+    for (auto& o : alive(sideOf(a)))
+      if (o != a && inBoardZone(Area::Cross, cell, cellOf(o))) v += 6;
+  if (terrainHurts(a, cell)) v -= 25;
+  for (auto& w : warnings_)
+    if (isAlly(a) && inBoardZone(w.zone, w.center, cell)) v -= 60;
+  int edge = isAlly(a) ? BOARD_W - 1 : 0;
+  if (rules().breakthrough > 0 && boardX(cell) == edge && !breakthrough_.count(a.get())) v += 10;  // Percée
+  cells_[a.get()] = keep;
+  if (!had) moved_.erase(a.get());
+  return v;
+}
+int Battle::planMove(const FighterP& a) {
+  if (moved_.count(a.get()) || cellOf(a) < 0) return -1;
+  float noise = isAlly(a) ? 0.f : .15f;  // les ennemis ne choisissent pas toujours la meilleure case
+  float stay = posValue(a, cellOf(a)) * (1 + noise * (frand() * 2 - 1)), best = stay + 2;  // bouger doit valoir la peine
+  int to = -1;
+  for (auto& [c, d] : walkable(a)) {
+    float v = (posValue(a, c) - d * .5f) * (1 + noise * (frand() * 2 - 1));
+    if (v > best) best = v, to = c;
+  }
+  return to;
 }
 
 // Intérêt d'une attaque sur une cible (sans hasard), dans l'unité de Battle::think :
@@ -1316,18 +1563,15 @@ float Battle::attackScore(const FighterP& a, const Move& m, const FighterP& t) c
   float score = m.power * moveEff(m, t->S()) * (hasType(a->S(), m.type) ? float(R.stab) : 1.f) * A / D * hit * weatherMult(m.type) * guardMult(t);
   if (ally && t->broken) score *= float(R.breakDamage);                                      // Brisure : il encaisse plus
   if (ally && !t->broken && t->shieldMax > 0 && moveEff(m, t->S()) > 1) score *= 1.f + .6f / float(std::max(1, t->shield));  // près de le briser
-  if (m.melee) {  // depuis l'arrière, ou sur une cible à l'arrière : moins fort
-    if (cellCol(std::max(0, cellOf(a))) == BACK_COL) score *= float(R.backRow);
-    if (cellCol(std::max(0, cellOf(t))) == BACK_COL) score *= float(R.backRow);
-  }
+  score *= posMult(a, t, m);  // échiquier : dans le dos, encerclé, distance au contact
+  if (m.melee && boardDist(cellOf(a), cellOf(t)) > reach(a)) score *= .9f;  // il faut d'abord s'approcher
   if (!ally) return score / paceTime(m);
   score *= 1 + std::min(1.f, (a->crit + m.critBonus) / 100.f) * float(R.critMult - 1);
   if (score >= t->hp * 1.2f) score += 15;  // achever un adversaire affaibli
   if (!t->S().combatRole.empty() && !t->boss) score *= 1.25f;  // rôles : abattre d'abord soigneur, chef et protecteur
   if (m.shove && !t->boss) {  // pousser / tirer : un choc contre un voisin ou le bord, ou une case qui blesse
-    int to = shoveDest(t, m);
-    bool clash = to == -1 && m.shove > 0;
-    for (auto& o : sideOf(t)) clash = clash || (to >= 0 && o != t && o->alive() && cellOf(o) == to);
+    int to = shoveDest(a, t, m);
+    bool clash = (to == -1 && m.shove > 0) || (to >= 0 && at(to) && at(to) != a);
     if (clash) score *= 1 + float(R.shoveClash);
     else if (to >= 0 && terrainHurts(t, to)) score += 12;
     else if (to >= 0 && m.shove < 0) score += 4;  // tiré vers l'avant : à portée du corps à corps
@@ -1350,7 +1594,7 @@ std::string Battle::damageText(const FighterP& a, const Move& m, const FighterP&
   const Rules& R = rules();
   bool magic = m.kind == Kind::Magic;
   float hit = m.acc / 100.f * a->acc / 100.f - (magic ? 0 : d->eva / 100.f);
-  if (!magic && cellCol(std::max(0, cellOf(d))) == BACK_COL) hit -= float(talentValue(d->S(), "esquive_arriere"));
+  if (!magic && !engaged(d)) hit -= float(talentValue(d->S(), "esquive_arriere"));  // talent Furtif : loin de la mêlée
   if (!magic && weather_ >= 0) hit += R.weathers[(size_t)weather_].acc / 100.f;
   if (const Rules::Terrain* tr = terrainAt(d); !magic && tr && tr->kind == "esquive") hit -= float(tr->value) / 100.f;
   // Brisure : l'efficacité d'un type n'est comptée qu'une fois découverte (sinon neutre, quelle qu'elle soit : rien ne
@@ -1359,10 +1603,10 @@ std::string Battle::damageText(const FighterP& a, const Move& m, const FighterP&
   if (eff <= 0) return T(" · aucun effet");
   float A = magic ? a->eMag() : a->eAtk(), D = magic ? d->eRes() : d->eDef();
   float stab = hasType(a->S(), m.type) ? float(R.stab) : 1.f, k = 1;
-  if (m.melee) {
-    if (cellCol(std::max(0, cellOf(a))) == BACK_COL) k *= float(R.backRow);
-    if (cellCol(std::max(0, cellOf(d))) == BACK_COL) k *= float(R.backRow);
-  }
+  // Échiquier : au corps à corps, il s'approche d'abord (vers la case que choisira approachCell)
+  int from = m.melee && boardDist(cellOf(a), cellOf(d)) > reach(a) ? approachCell(a, d) : -1;
+  k *= posMult(a, d, m, from);
+  bool back = m.melee && behind(a, d, from);
   if (d->broken) k *= float(R.breakDamage);
   k *= 1 - float(talentValue(d->S(), magic ? "resiste_magie" : "resiste_physique"));
   if (hasType(a->S(), m.type) && a->hp * 3 < a->mhp) k *= 1 + float(talentValue(a->S(), "rage"));
@@ -1371,25 +1615,35 @@ std::string Battle::damageText(const FighterP& a, const Move& m, const FighterP&
   float base = ((2 * a->lvl / 5.f + 2) * m.power * A / std::max(1.f, D) / float(R.dmgDivisor) + 2) * stab * eff * k;
   int lo = std::max(1, int(base * float(R.spreadMin))), hi = std::max(1, int(base));
   std::string s = T(" · ≈ ") + std::to_string(lo) + (hi > lo ? "-" + std::to_string(hi) : "") + T(" PV");
-  return s + " · " + std::to_string(int(std::lround(std::clamp(hit, 0.f, 1.f) * 100))) + " %";
+  s += " · " + std::to_string(int(std::lround(std::clamp(hit, 0.f, 1.f) * 100))) + " %";
+  if (back) s += T(" · dans le dos");
+  return s;
 }
 
 void Battle::autoCommand(FighterP a) {
   actor = a;
-  if (isAlly(a) && threatened(a)) {  // une attaque annoncée vise sa case : se mettre à l'abri
-    int c = safeCell(a);
-    if (c >= 0) return moveTo(a, c);
+  if (!moved_.count(a.get())) {  // échiquier : d'abord la meilleure case (à l'abri d'une attaque annoncée)
+    int c = planMove(a);
+    if (c < 0 && threatened(a)) c = safeCell(a);
+    step(a, c);
+    moved_.insert(a.get());
   }
   Plan p = think(a);
-  if (p.duo) duoMove(a, p.duo, p.move, p.targets);
+  if (p.wait) waitTurn(a);
+  else if (p.duo) duoMove(a, p.duo, p.move, p.targets);
   else useMove(a, p.move, p.targets, p.limit);
 }
 
 void Battle::enemyTurn(FighterP e) {
   actor = e;
-  if (bossPlan(e) || roleHeal(e) || enemyMove(e)) return;
+  if (bossPlan(e) || roleHeal(e)) return;
+  if (!moved_.count(e.get())) {
+    step(e, planMove(e));
+    moved_.insert(e.get());
+  }
   Plan p = think(e);
-  useMove(e, p.move, p.targets);
+  if (p.wait) waitTurn(e);
+  else useMove(e, p.move, p.targets);
 }
 
 // ---------------------------------------------------------------------------
@@ -1404,19 +1658,19 @@ bool Battle::tacticsActive() const { return autoPlay ? simTactics : G.tacticsAut
 bool Battle::threatened(const FighterP& f) const {
   int c = cellOf(f);
   if (terrainHurts(f, c)) return true;  // braises, ronces, verglas : mieux vaut changer de case
+  if (!isAlly(f)) return false;  // les attaques annoncées visent les alliés
   for (auto& w : warnings_)
-    if (inZone(w.zone, w.center, c)) return true;
+    if (inBoardZone(w.zone, w.center, c)) return true;
   return false;
 }
 int Battle::safeCell(const FighterP& f) const {
   int from = cellOf(f), best = -1, bestD = 99;
-  for (int c = 0; c < N_CELLS; c++) {
-    bool taken = false, danger = false;
-    for (auto& o : sideOf(f)) taken = taken || (o != f && cellOf(o) == c);
-    for (auto& w : warnings_) danger = danger || inZone(w.zone, w.center, c);
-    danger = danger || terrainHurts(f, c);
-    int d = std::abs(cellCol(c) - cellCol(from)) * 2 + std::abs(cellRow(c) - cellRow(from));  // garder sa colonne si possible
-    if (!taken && !danger && c != from && d < bestD) best = c, bestD = d;
+  if (moved_.count(f.get())) return -1;
+  for (auto& [c, steps] : walkable(f)) {
+    bool danger = terrainHurts(f, c);
+    for (auto& w : warnings_) danger = danger || (isAlly(f) && inBoardZone(w.zone, w.center, c));
+    int d = steps * 2 + (inHalf(isAlly(f), c) ? 0 : 3) + std::abs(boardY(c) - boardY(from));  // rester chez soi si possible
+    if (!danger && d < bestD) best = c, bestD = d;
   }
   return best;
 }
@@ -1428,7 +1682,7 @@ bool Battle::bossPlan(FighterP e) {
       warnings_.erase(it);
       std::vector<FighterP> hit;
       for (auto& a : alive(allies))
-        if (inZone(w.zone, w.center, cellOf(a))) hit.push_back(a);
+        if (inBoardZone(w.zone, w.center, cellOf(a))) hit.push_back(a);
       if (hit.empty()) {
         log.push_back(e->name() + " : " + moveInfo(w.move).name + T(" (annoncée), personne dans la zone"));
         sc.say(e->name() + T(" déchaîne ") + moveInfo(w.move).name + T("… mais tout le monde s'est écarté !"), 1.2f);
@@ -1453,52 +1707,43 @@ bool Battle::bossPlan(FighterP e) {
   for (Area z : {Area::Column, Area::Cross, Area::Line})
     for (auto& a : alive(allies)) {
       int n = 0;
-      for (auto& b : alive(allies)) n += inZone(z, cellOf(a), cellOf(b));
+      for (auto& b : alive(allies)) n += inBoardZone(z, cellOf(a), cellOf(b));
       if (n > most || (n == most && frand() < .3f)) most = n, zone = z, center = cellOf(a);
     }
   warnings_.push_back({e, best, zone, center});
-  log.push_back(e->name() + T(" annonce ") + moveInfo(best).name + " (" + zoneName(zone) + ", " + cellName(center) + ")");
+  log.push_back(e->name() + T(" annonce ") + moveInfo(best).name + " (" + zoneName(zone) + ", " + boardName(center) + ")");
   sound("statut");
   sc.say(e->name() + T(" prépare ") + moveInfo(best).name + T(" ! Écartez-vous de la zone rouge."), 1.4f);
   return false;  // l'annonce ne lui coûte pas son tour : il attaque aussitôt
 }
-bool Battle::enemyMove(FighterP e) {
-  if (isAlly(e) || e->boss || duel()) return false;
-  int c = cellOf(e), col = cellCol(c), row = cellRow(c);
-  const Species& s = e->S();
-  bool caster = s.base[B_MAG] > s.base[B_ATK];
-  auto freeCell = [&](int cc) {
-    for (auto& o : foes)
-      if (cellOf(o) == cc && o->alive()) return false;
-    return true;
-  };
-  int to = -1;
-  if (terrainHurts(e, c) && frand() < .6f)  // une case qui blesse ou ralentit : la quitter
-    for (int k : {col, col == 0 ? 1 : col - 1, col == BACK_COL ? BACK_COL - 1 : col + 1})
-      for (int rr = 0; rr < GRID && to < 0; rr++) {
-        int cc = cellAt((row + rr) % GRID, k);
-        if (freeCell(cc) && !terrainHurts(e, cc)) to = cc;
-      }
-  if (caster && col <= 1 && frand() < .5f)  // un lanceur de sorts trop en avant se met à l'abri
-    for (int k : {BACK_COL, BACK_COL - 1})
-      if (to < 0 && freeCell(cellAt(row, k))) to = cellAt(row, k);
-  if (!caster && col >= 2 && frand() < .4f)  // un combattant trop loin avance
-    for (int k : {0, 1})
-      if (to < 0 && freeCell(cellAt(row, k))) to = cellAt(row, k);
-  if (to < 0) return false;
-  moveTo(e, to);
-  return true;
-}
-
 bool Battle::tacticTurn(FighterP a) {
   if (!a->tacticsOn) return false;
   Plan p;
-  if (!tacticPlan(a, p)) return false;
+  if (!tacticPlan(a, p)) {
+    // Échiquier : si aucune de ses attaques n'atteint personne, il s'approche (puis ses tactiques rejouent), sinon il
+    // attend ; s'il a de quoi frapper, c'est au joueur de choisir (menu), comme avant
+    for (auto& id : a->techs())
+      for (auto& f : alive(foes))
+        if (moveInfo(id).damaging() && reachable(a, moveInfo(id), f)) return false;
+    actor = a;
+    if (!moved_.count(a.get()))
+      if (int c = planMove(a); c >= 0) {
+        log.push_back(a->name() + T(" : tactiques, s'approche"));
+        moveTo(a, c);
+        return true;
+      }
+    waitTurn(a);
+    return true;
+  }
   actor = a;
   log.push_back(a->name() + T(" : tactique ") + std::to_string(p.tactic + 1));
-  if (p.cell >= 0) {  // se mettre à l'abri
-    moveTo(a, p.cell);
-    return true;
+  if (p.cell >= 0) {  // se mettre à l'abri, puis agir (une autre règle, sinon l'ordinateur)
+    step(a, p.cell);
+    moved_.insert(a.get());
+    Plan q;
+    if (!tacticPlan(a, q) || q.cell >= 0) return autoCommand(a), true;
+    log.push_back(a->name() + T(" : tactique ") + std::to_string(q.tactic + 1));
+    p = q;
   }
   if (!p.item.empty()) useItem(a, p.item, p.targets.at(0));
   else if (p.duo) duoMove(a, p.duo, p.move, p.targets);
@@ -1553,7 +1798,7 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
     if (c == "allie_chef") return !allies.empty() && t == allies[0];
     if (c == "soi_limite") return a->lim >= 100;
     if (c == "soi_menace") return threatened(a);
-    if (c == "allie_avant_pv_moins") return cellCol(std::max(0, cellOf(t))) == 0 && t->hp * 100 < tc.value * t->mhp;
+    if (c == "allie_avant_pv_moins") return engaged(t) && t->hp * 100 < tc.value * t->mhp;  // au contact d'un ennemi
     if (c == "ennemis_groupes") {
       if (!x.m) return false;
       if (x.m->zone == Area::All) return (int)liveFoes.size() >= tc.value;
@@ -1685,7 +1930,7 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
   bool magic = m.kind == Kind::Magic;
   // Précision : l'esquive ne joue que contre les attaques physiques
   float hit = m.acc / 100.f * a->acc / 100.f - (magic ? 0 : d->eva / 100.f);
-  if (!magic && cellCol(std::max(0, cellOf(d))) == BACK_COL) hit -= float(talentValue(d->S(), "esquive_arriere"));  // talent Furtif
+  if (!magic && !engaged(d)) hit -= float(talentValue(d->S(), "esquive_arriere"));  // talent Furtif : loin de la mêlée
   if (!magic && weather_ >= 0) hit += R.weathers[(size_t)weather_].acc / 100.f;                            // brume, blizzard
   if (const Rules::Terrain* tr = terrainAt(d); !magic && tr && tr->kind == "esquive") hit -= float(tr->value) / 100.f;  // herbes hautes
   if (frand() >= hit) {
@@ -1706,10 +1951,9 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
   float spread = float(R.spreadMin) + frand() * float(1 - R.spreadMin);
   bool crit = frand() * 100 < a->crit + m.critBonus + float(talentValue(a->S(), "critique"));  // talent Œil perçant
   float k = crit ? float(R.critMult) : 1.f;
-  if (m.melee) {  // damier : l'arrière frappe et reçoit moins fort au corps à corps
-    if (cellCol(std::max(0, cellOf(a))) == BACK_COL) k *= float(R.backRow);
-    if (cellCol(std::max(0, cellOf(d))) == BACK_COL) k *= float(R.backRow);
-  }
+  float place = posMult(a, d, m);  // échiquier : dans le dos, encerclé, distance au contact
+  k *= place;
+  bool back = m.melee && isAlly(a) != isAlly(d) && behind(a, d);
   k *= mult;
   if (d->broken) k *= float(R.breakDamage);  // Brisure : un ennemi brisé encaisse plus
   k *= 1 - float(talentValue(d->S(), magic ? "resiste_magie" : "resiste_physique"));  // talents Carapace, Écorce runique
@@ -1733,6 +1977,10 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
   sound(fx);
   pop(d, std::to_string(dmg), eff > 1 ? GOLD : eff < 1 ? GREY : WHITE);
   if (crit) pop(d, T("Critique !"), RED), shakeT_ = G.time;
+  if (back) {
+    pop(d, T("Dans le dos !"), rgb(0xffb070));
+    if (isAlly(a)) tip("dos");
+  }
   if (eff > 1) pop(d, T("Efficace !"), GOLD);
   else if (eff < 1) pop(d, T("Résiste"), GREY);
   if (isAlly(d) || duel()) d->lim = std::min(100.f, d->lim + dmg * float(R.limitGain) / d->mhp);  // en duel, les deux équipes
@@ -1761,7 +2009,8 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
       if (!a->alive()) knockOut(a);
     }
   }
-  log.push_back(a->name() + " > " + d->name() + " : " + m.name + " " + std::to_string(dmg) + (crit ? T(" critique") : "") +
+  log.push_back(a->name() + " > " + d->name() + " : " + m.name + " " + std::to_string(dmg) + (crit ? T(" critique") : "") + (back ? T(" dans le dos") : "") +
+                (place < .99f ? T(" au contact") : place > 1.01f && !back ? T(" encerclé") : "") +
                 (eff > 1 ? T(" efficace") : eff < 1 ? T(" résiste") : "") + T(" (reste ") + std::to_string(d->hp) + "/" + std::to_string(d->mhp) + ")");
   return dmg;
 }
@@ -1769,17 +2018,22 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
 // ---------------------------------------------------------------------------
 // Pousser / tirer, météo et terrain (2.6)
 // ---------------------------------------------------------------------------
-int Battle::shoveDest(const FighterP& t, const Move& m) const {
+// Pousser éloigne la cible du lanceur dans son axe (vers le bord de son camp s'ils sont dans la même colonne),
+// tirer la rapproche. Le plateau entier compte : on peut pousser un ennemi contre un des siens, ou l'attirer chez soi.
+int Battle::shoveDest(const FighterP& a, const FighterP& t, const Move& m) const {
   if (t->boss) return -2;
-  int c = cellOf(t);
-  if (c < 0) return -2;
-  int col = cellCol(c) + m.shove;
-  if (col < 0 || col > BACK_COL) return -1;
-  return cellAt(cellRow(c), col);
+  int c = cellOf(t), ac = cellOf(a);
+  if (c < 0 || ac < 0) return -2;
+  int dir = boardX(c) > boardX(ac) ? 1 : boardX(c) < boardX(ac) ? -1 : isAlly(t) ? -1 : 1;
+  int x = boardX(c) + dir * m.shove;
+  if (x < 0 || x >= BOARD_W) return -1;
+  int to = boardAt(boardY(c), x);
+  if (to == ac) return -2;  // tiré contre le lanceur : il reste où il est
+  return to;
 }
 
 void Battle::shove(const FighterP& a, const FighterP& t, const Move& m, int dmg, std::vector<FighterP>& ko) {
-  int to = shoveDest(t, m);
+  int to = shoveDest(a, t, m);
   if (isAlly(a)) tip("pousser");
   if (to == -2) {
     if (t->boss) pop(t, T("Inébranlable"), GREY);
@@ -1801,29 +2055,27 @@ void Battle::shove(const FighterP& a, const FighterP& t, const Move& m, int dmg,
     }
     return;
   }
-  FighterP occ;
-  for (auto& o : sideOf(t))
-    if (o != t && cellOf(o) == to) occ = o;
-  if (occ && occ->alive()) {  // case prise : les deux se heurtent
+  FighterP occ = at(to);
+  if (occ) {  // case prise (par un allié ou un adversaire) : les deux se heurtent
     hurt(t), hurt(occ);
     pop(t, T("Choc !"), rgb(0xffb070));
     shakeT_ = G.time;
     log.push_back("  " + t->name() + T(" heurte ") + occ->name() + T(" : choc ") + std::to_string(clash));
     return;
   }
-  if (occ) cells_[occ.get()] = cellOf(t);  // un combattant K.O. sur la case : il prend la place
+  if (shown()) slide_[t.get()] = {pos(t), G.time};
   cells_[t.get()] = to;
   pop(t, m.shove > 0 ? T("Recule") : T("Avance"), rgb(0xd8e0ff));
-  log.push_back("  " + t->name() + (m.shove > 0 ? T(" poussé : ") : T(" tiré : ")) + cellName(to));
+  log.push_back("  " + t->name() + (m.shove > 0 ? T(" poussé : ") : T(" tiré : ")) + boardName(to));
   if (terrainTurn(t, true) && std::find(ko.begin(), ko.end(), t) == ko.end()) ko.push_back(t);
 }
 
-const Rules::Terrain* Battle::terrainOf(bool allySide, int cell) const {
-  if (cell < 0 || cell >= N_CELLS) return nullptr;
-  int i = terrain_[allySide ? 0 : 1][(size_t)cell];
+const Rules::Terrain* Battle::terrainOf(int cell) const {
+  if (cell < 0 || cell >= BOARD_CELLS) return nullptr;
+  int i = terrain_[(size_t)cell];
   return i >= 0 && i < (int)rules().terrains.size() ? &rules().terrains[(size_t)i] : nullptr;
 }
-const Rules::Terrain* Battle::terrainAt(const FighterP& f) const { return terrainOf(isAlly(f), cellOf(f)); }
+const Rules::Terrain* Battle::terrainAt(const FighterP& f) const { return terrainOf(cellOf(f)); }
 bool Battle::terrainHits(const FighterP& f, const Rules::Terrain* t) const {
   if (!t) return false;
   for (auto& ty : t->immune)
@@ -1832,7 +2084,7 @@ bool Battle::terrainHits(const FighterP& f, const Rules::Terrain* t) const {
   return true;
 }
 bool Battle::terrainHurts(const FighterP& f, int cell) const {
-  const Rules::Terrain* t = terrainOf(isAlly(f), cell);
+  const Rules::Terrain* t = terrainOf(cell);
   if (!t || !terrainHits(f, t)) return false;
   return t->kind == "degats" || t->kind == "lent" || (t->kind == "poison" && f->status == Status::None && !immuneTo(f->S(), Status::Poison));
 }
@@ -1901,14 +2153,7 @@ void Battle::checkPhase(const FighterP& f) {
       if (rules().weathers[i].id == w) weather_ = (int)i;
     for (auto& r : p.value("renforts", Json::array())) {
       if (alive(foes).size() >= 6) break;
-      int cell = -1;
-      for (int col = 0; col <= BACK_COL && cell < 0; col++)
-        for (int row = 0; row < GRID && cell < 0; row++) {
-          int c = cellAt(row, col);
-          bool taken = false;
-          for (auto& o : foes) taken = taken || (o->alive() && cellOf(o) == c);
-          if (!taken) cell = c;
-        }
+      int cell = freeCellNear(false, -1);  // dans le camp des ennemis, le plus près de l'avant
       if (cell < 0) break;
       FighterP n = makeFoe(r, std::max(1, f->lvl - 4));
       initFoe(n);
@@ -1925,7 +2170,7 @@ void Battle::checkPhase(const FighterP& f) {
 float Battle::guardMult(const FighterP& d) const {
   if (d->S().combatRole == "protecteur") return 1;
   for (auto& o : sideOf(d))
-    if (o != d && o->alive() && o->S().combatRole == "protecteur" && inZone(Area::Cross, cellOf(o), cellOf(d))) return float(1 - rules().roleGuard);
+    if (o != d && o->alive() && o->S().combatRole == "protecteur" && inBoardZone(Area::Cross, cellOf(o), cellOf(d))) return float(1 - rules().roleGuard);
   return 1;
 }
 
@@ -2004,6 +2249,20 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
   cursor = nullptr;
   aiming_ = nullptr;
   const Move& m = moveInfo(id);
+  // Échiquier : au corps à corps, il rejoint d'abord sa cible (s'il ne s'est pas encore déplacé)
+  if (boost == 1 && !isLimit && m.melee && m.zone != Area::All && m.target == Target::Enemy && targets.size() == 1 && targets[0]) {
+    const FighterP& t = targets[0];
+    if (boardDist(cellOf(a), cellOf(t)) > reach(a)) {
+      int c = moved_.count(a.get()) ? -1 : approachCell(a, t);
+      if (c < 0) {
+        log.push_back(a->name() + " : " + m.name + T(", cible hors d'atteinte"));
+        sc.say(a->name() + T(" ne peut pas atteindre ") + t->name() + ".", .6f);
+        sc.call([this, a] { afterAction(a, float(rules().quickGauge)); });
+        return;
+      }
+      step(a, c);
+    }
+  }
   // Zone autour d'une cible : les combattants voisins sont touchés aussi, un peu moins fort
   FighterP center = boost == 1 && m.zone != Area::Single && m.zone != Area::All && targets.size() == 1 ? targets[0] : nullptr;
   if (center) targets = zoneTargets(m, center);
@@ -2027,6 +2286,7 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
       if (m.kind == Kind::Revive) {
         if (t->alive()) continue;
         t->clearBattle();
+        if (at(cellOf(t))) cells_[t.get()] = freeCellNear(isAlly(t), cellOf(t));  // sa case a été prise entre-temps
         t->hp = std::max(1, t->mhp * m.power / 100);
         t->atb = 0;
         pop(t, "+" + std::to_string(t->hp), GREEN);
@@ -2100,6 +2360,7 @@ void Battle::useItem(FighterP a, const std::string& id, FighterP t) {
     sound(d.capture > 0 ? "lancer" : "soin");
     if (d.revive) {
       t->clearBattle();
+      if (at(cellOf(t))) cells_[t.get()] = freeCellNear(isAlly(t), cellOf(t));  // sa case a été prise entre-temps
       t->hp = std::max(1, t->mhp * d.revive / 100);
       t->atb = 0;
       pop(t, "+" + std::to_string(t->hp), GREEN);
@@ -2149,13 +2410,45 @@ void Battle::useItem(FighterP a, const std::string& id, FighterP t) {
 void Battle::moveTo(FighterP a, int cell) {
   G.menus.clear();
   if (follower()) {  // l'invité envoie son ordre ; l'hôte (ou le chef) vérifie et déplace
-    send_(net_ == Net::Follow ? leader_ : -1, Json{{"t", "ordre"}, {"i", mine(a)[1]}, {"deplacer", cell}});
+    send_(net_ == Net::Follow ? leader_ : -1, Json{{"t", "ordre"}, {"i", mine(a)[1]}, {"deplacer", netCell(cell)}});
     actor = nullptr;
     return;
   }
-  cells_[a.get()] = cell;
-  log.push_back(a->name() + T(" se déplace : ") + cellName(cell));
-  sc.say(a->name() + T(" se déplace."), .45f);
+  cursor = nullptr;
+  step(a, cell);
+  moved_.insert(a.get());
+  sc.wait(.25f);  // le temps de glisser jusqu'à la case
+  sc.call([this, a] { resumeTurn(a); });
+}
+
+// Après « Se déplacer », le tour continue : son joueur (ou l'ordinateur) choisit maintenant son action
+void Battle::resumeTurn(FighterP a) {
+  if (!a->alive()) return afterAction(a);  // tombé en chemin (terrain)
+  actor = a;
+  if (isAlly(a) && coop() && owner(a) != me_) {  // gardien : allié d'un autre joueur
+    if (owner(a) < 0) return autoCommand(a);
+    remoteTurn_ = a;
+    send_(owner(a), Json{{"t", "tour"}, {"i", mine(a)[1]}, {"bouge", true}});
+  } else if (isAlly(a)) {
+    if (tacticsActive() && tacticTurn(a)) return;
+    if (autoPlay) autoCommand(a);
+    else command(a);
+  } else if (net_ == Net::Host) {  // combattant de l'invité
+    remoteTurn_ = a;
+    send_(-1, Json{{"t", "tour"}, {"i", mine(a)[1]}, {"bouge", true}});
+  } else enemyTurn(a);
+}
+
+void Battle::waitTurn(FighterP a) {
+  G.menus.clear();
+  cursor = nullptr;
+  if (follower()) {
+    send_(net_ == Net::Follow ? leader_ : -1, Json{{"t", "ordre"}, {"i", mine(a)[1]}, {"attendre", true}});
+    actor = nullptr;
+    return;
+  }
+  log.push_back(a->name() + T(" attend"));
+  sc.say(a->name() + T(" attend."), .45f);
   sc.call([this, a] { afterAction(a, float(rules().quickGauge)); });
 }
 
@@ -2167,6 +2460,7 @@ void Battle::swapIn(FighterP a, FighterP r) {
   auto ia = std::find(G.team.begin(), G.team.end(), a), ib = std::find(G.team.begin(), G.team.end(), r);
   std::iter_swap(ia, ib);
   a->stage.fill(0);  // les bonus et malus ne suivent pas celui qui recule
+  moved_.erase(a.get()), moved_.erase(r.get());
   r->atb = 0;
   a->atb = 0;
   sc.say(a->name() + T(" recule. ") + r->name() + T(" entre au combat !"), 1.1f);
@@ -2193,6 +2487,7 @@ void Battle::tryFlee(FighterP a) {
 void Battle::afterAction(FighterP a, float gauge) {
   a->atb = gauge;
   actor = nullptr;
+  moved_.erase(a.get());  // son prochain tour : il pourra de nouveau se déplacer
   // Poison et brûlure : dégâts à la fin du tour de celui qui en souffre
   if (a->alive() && (a->status == Status::Poison || a->status == Status::Burn)) {
     bool poison = a->status == Status::Poison;
@@ -2224,7 +2519,7 @@ void Battle::afterAction(FighterP a, float gauge) {
     double heal = talentValue(a->S(), "soin_voisins");
     if (heal > 0)
       for (auto& o : sideOf(a))
-        if (o != a && o->alive() && o->hp < o->mhp && inZone(Area::Cross, cellOf(a), cellOf(o))) {
+        if (o != a && o->alive() && o->hp < o->mhp && inBoardZone(Area::Cross, cellOf(a), cellOf(o))) {
           int h = std::max(1, int(o->mhp * heal));
           o->hp = std::min(o->mhp, o->hp + h);
           pop(o, "+" + std::to_string(h), GREEN);
@@ -2248,7 +2543,9 @@ void Battle::checkEnd() {
     if (!foes[i]->alive() && !reserve.empty()) {
       FighterP n = reserve.front();
       reserve.erase(reserve.begin());
-      cells_[n.get()] = cellOf(foes[i]);  // le renfort prend la case de l'ennemi tombé
+      // le renfort entre dans le camp des ennemis, près de la ligne de l'ennemi tombé
+      int dead = cellOf(foes[i]);
+      cells_[n.get()] = freeCellNear(false, dead >= 0 && inHalf(false, dead) ? dead : boardAt(dead >= 0 ? boardY(dead) : 1, GRID));
       G.see(*n);  // bestiaire
       foes[i] = n;
       n->atb = frand() * 30;
@@ -2361,28 +2658,37 @@ void Battle::drawZones(float t) {
   bool picking = boardPicking();
   const Move* mv = nullptr;
   int center = -1;
-  bool side = false;  // camp de la zone (vrai : alliés)
+  bool side = false;  // camp visé (vrai : alliés), pour une zone « tout le camp »
   if (picking) {
     Menu& m = G.menus.top();
-    side = pick_.allySide;
     for (size_t i = 0; i < pick_.cells.size() && i < m.items.size(); i++)
-      if ((int)i != m.sel && m.items[i].enabled) tile(g, cellPos(side, pick_.cells[i]), rgb(0xffffff, uint8_t(90 + 60 * pulse)), true);
+      if ((int)i != m.sel && m.items[i].enabled) tile(g, cellPos(pick_.cells[i]), rgb(0xffffff, uint8_t(90 + 60 * pulse)), true);
     if (m.sel >= 0 && m.sel < (int)pick_.cells.size()) center = pick_.cells[(size_t)m.sel];
     if (!pick_.move) mv = aiming_;
     if (pick_.move && center >= 0 && actor) {  // le combattant en transparence sur la case choisie
-      Pt p = cellPos(true, center);
+      Pt p = cellPos(center);
       g.alpha = .45f;
-      drawFighterSprite(g, *actor, p.x, p.y, 1, true, t);
+      drawFighterSprite(g, *actor, p.x, p.y, 1, boardX(center) < BOARD_W - 1, t);
       g.alpha = 1;
+    }
+    if (mv && mv->melee && center >= 0 && actor && boardDist(cellOf(actor), center) > reach(actor)) {
+      int from = approachCell(actor, at(center));  // corps à corps : la case d'où il frappera
+      if (from >= 0) {
+        Pt p = cellPos(from);
+        g.alpha = .35f;
+        drawFighterSprite(g, *actor, p.x, p.y, 1, boardX(from) < boardX(center), t);
+        g.alpha = 1;
+        tile(g, p, rgb(0x8fd0ff, uint8_t(120 + 60 * pulse)), true);
+      }
     }
   } else if (!preview_.empty() && previewDepth_ == G.menus.depth() && G.menus.active() && actor) {
     mv = &moveInfo(preview_);
     if (mv->target == Target::Enemy) {
       if (cursor && cursor->alive()) center = cellOf(cursor);
-      // corps à corps : les ennemis hors de portée sont barrés
+      // corps à corps : les ennemis hors d'atteinte sont barrés
       for (auto& f : alive(foes))
         if (!reachable(actor, *mv, f)) {
-          Pt p = cellPos(false, cellOf(f));
+          Pt p = cellPos(cellOf(f));
           g.line(p.x - 6, p.y + 10, p.x + 6, p.y + 16, 2, rgb(0xff5a4a, 200));
           g.line(p.x + 6, p.y + 10, p.x - 6, p.y + 16, 2, rgb(0xff5a4a, 200));
         }
@@ -2392,16 +2698,20 @@ void Battle::drawZones(float t) {
     } else side = mv->target == Target::AllAllies;
   }
   if (!mv && center >= 0) {  // objet, allié, case : seulement la case choisie
-    tile(g, cellPos(side, center), rgb(0xffd34d, uint8_t(150 + 80 * pulse)));
+    tile(g, cellPos(center), rgb(0xffd34d, uint8_t(150 + 80 * pulse)));
     return;
   }
   if (!mv) return;
   bool all = mv->zone == Area::All || mv->target == Target::AllEnemies || mv->target == Target::AllAllies;
-  for (int c = 0; c < N_CELLS; c++) {
-    bool main = c == center, in = all || (center >= 0 && inZone(mv->zone, center, c));
+  if (all) {  // tout un camp : les cases de ses combattants
+    for (auto& f : alive(side ? allies : foes)) tile(g, cellPos(cellOf(f)), rgb(0xff9a3a, uint8_t(90 + 50 * pulse)));
+    return;
+  }
+  for (int c = 0; c < BOARD_CELLS; c++) {
+    bool main = c == center, in = center >= 0 && inBoardZone(mv->zone, center, c);
     if (!in) continue;
-    tile(g, cellPos(side, c), main ? rgb(0xffd34d, uint8_t(150 + 80 * pulse)) : rgb(0xff9a3a, uint8_t(90 + 50 * pulse)));
-    if (main) tile(g, cellPos(side, c), rgb(0xfff6c8, 230), true);
+    tile(g, cellPos(c), main ? rgb(0xffd34d, uint8_t(150 + 80 * pulse)) : rgb(0xff9a3a, uint8_t(90 + 50 * pulse)));
+    if (main) tile(g, cellPos(c), rgb(0xfff6c8, 230), true);
   }
 }
 
@@ -2552,14 +2862,24 @@ void Battle::draw() {
   if (float night = shown() ? G.nightAmount() : 0.f; night > 0)  // jour et nuit (2.6), comme sur la carte
     g.rect(L, 0, W, SCREEN_H, rgb(0x0a1440, uint8_t(80 * night)));
   bool blinking = blink && t - blinkT < .42f && int((t - blinkT) / .07f) % 2 == 0;
-  // Damier : une marque au sol par case ; la zone de la technique visée et la case choisie pour se déplacer en or
-  for (int side = 0; side < 2; side++)
-    for (int c = 0; c < N_CELLS; c++) {
-      Pt p = cellPos(side == 1, c);
-      // une dalle claire en losange, vue en perspective
-      g.poly({{p.x - 14, p.y + 13}, {p.x, p.y + 8}, {p.x + 14, p.y + 13}, {p.x, p.y + 18}}, rgb(0xffffff, 34));
-      g.poly({{p.x - 10, p.y + 13}, {p.x, p.y + 9.5f}, {p.x + 10, p.y + 13}, {p.x, p.y + 16.5f}}, rgb(0x000000, 18));
-      if (const Rules::Terrain* tr = terrainOf(side == 1, c)) {  // case de terrain (2.6) : couleur et petit décor animé
+  // Échiquier (3.4) : une dalle par case, claires et foncées en alternance ; la moitié de chaque camp légèrement
+  // teintée (bleu : le nôtre, rouge : l'adverse), la ligne de front au milieu
+  {
+    Pt a = cellPos(boardAt(0, GRID - 1)), b = cellPos(boardAt(0, GRID)), c2 = cellPos(boardAt(GRID - 1, GRID - 1)), d2 = cellPos(boardAt(GRID - 1, GRID));
+    float x0 = (a.x + b.x) / 2, y0 = a.y + 6, x1 = (c2.x + d2.x) / 2, y1 = c2.y + 20;
+    for (int i = 0; i < 12; i += 2) {  // tirets
+      float u = i / 12.f, v = (i + 1) / 12.f;
+      g.line(x0 + (x1 - x0) * u, y0 + (y1 - y0) * u, x0 + (x1 - x0) * v, y0 + (y1 - y0) * v, 1, rgb(0xfff0c0, 110));
+    }
+  }
+  for (int c = 0; c < BOARD_CELLS; c++) {
+      int side = inHalf(true, c) ? 1 : 0;
+      Pt p = cellPos(c);
+      bool dark = (boardX(c) + boardY(c)) % 2;
+      // une dalle en losange, vue en perspective
+      g.poly({{p.x - 15, p.y + 13}, {p.x, p.y + 7.5f}, {p.x + 15, p.y + 13}, {p.x, p.y + 18.5f}}, rgb(dark ? 0x000000 : 0xffffff, dark ? 34 : 56));
+      g.poly({{p.x - 10, p.y + 13}, {p.x, p.y + 9.5f}, {p.x + 10, p.y + 13}, {p.x, p.y + 16.5f}}, rgb(side ? 0x6fb4ff : 0xff7a6a, 40));
+      if (const Rules::Terrain* tr = terrainOf(c)) {  // case de terrain (2.6) : couleur et petit décor animé
         Color col = rgb(tr->color);
         col.a = 120;
         g.poly({{p.x - 14, p.y + 13}, {p.x, p.y + 8}, {p.x + 14, p.y + 13}, {p.x, p.y + 18}}, col);
@@ -2587,9 +2907,9 @@ void Battle::draw() {
   std::vector<std::pair<int, int>> warn = netWarn_;
   for (auto& w : warnings_) warn.push_back({w.center, (int)w.zone});
   for (auto& [center, zone] : warn)
-    for (int c = 0; c < N_CELLS; c++)
-      if (inZone(Area(zone), center, c)) {
-        Pt p = cellPos(true, c);
+    for (int c = 0; c < BOARD_CELLS; c++)
+      if (inBoardZone(Area(zone), center, c)) {
+        Pt p = cellPos(c);
         g.ellipse(p.x, p.y + 13, 14, 5, rgb(0xff3b30, uint8_t(120 + 90 * std::sin(t * 7))));
       }
   // Combattants, du haut du damier vers le bas : ceux de devant passent par-dessus
@@ -2607,7 +2927,7 @@ void Battle::draw() {
     bool side = false;
     if (boardPicking()) {
       Menu& m = G.menus.top();
-      if (!pick_.move && m.sel >= 0 && m.sel < (int)pick_.cells.size()) zCenter = pick_.cells[(size_t)m.sel], side = pick_.allySide, zm = aiming_;
+      if (!pick_.move && m.sel >= 0 && m.sel < (int)pick_.cells.size()) zCenter = pick_.cells[(size_t)m.sel], side = at(zCenter) && isAlly(at(zCenter)), zm = aiming_;
     } else if (!preview_.empty() && previewDepth_ == G.menus.depth() && G.menus.active() && cursor && cursor->alive() && !isAlly(cursor) &&
                moveInfo(preview_).target == Target::Enemy) {
       zm = &moveInfo(preview_);
@@ -2615,8 +2935,8 @@ void Battle::draw() {
     }
     if (zCenter >= 0) {
       zSide = side;
-      for (int c = 0; c < N_CELLS; c++)
-        if (c == zCenter || (zm && (zm->zone == Area::All || inZone(zm->zone, zCenter, c)))) zCells.insert(c);
+      for (int c = 0; c < BOARD_CELLS; c++)
+        if (c == zCenter || (zm && (zm->zone == Area::All || inBoardZone(zm->zone, zCenter, c)))) zCells.insert(c);
     }
   }
   for (auto& f : shown) {
@@ -2635,7 +2955,7 @@ void Battle::draw() {
         g.alpha = 1;
         continue;
       }
-      if (!(blinking && blink == f)) drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, s, false, t + p.x * .01f);  // regarde à gauche
+      if (!(blinking && blink == f)) drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, s, facesRight(f), t + p.x * .01f);  // vers l'adversaire le plus proche
       float bw = f->boss ? 24 : 15, by = std::max(46.f, p.y - fighterTop(*f, s) - 6);
       g.rect(p.x - bw - 1, by - 1, bw * 2 + 2, 4, rgb(0x0a0f33));
       g.rect(p.x - bw, by, bw * 2 * f->hp / f->mhp, 2, rgb(f->broken ? 0xffe066 : 0xff8a7a));
@@ -2681,8 +3001,8 @@ void Battle::draw() {
     else if (!f->alive()) pose = "ko";
     else if (summaryOn_) pose = "victoire";
     if (!pose.empty() && !f->alive()) g.alpha = 1;
-    if (!(blinking && blink == f) && !(!pose.empty() && drawFighterPose(g, *f, pose, p.x + o.x, p.y + o.y, true)))
-      drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, 1, true, t + p.x * .01f);  // regarde à droite
+    if (!(blinking && blink == f) && !(!pose.empty() && drawFighterPose(g, *f, pose, p.x + o.x, p.y + o.y, facesRight(f))))
+      drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, 1, facesRight(f), t + p.x * .01f);  // vers l'adversaire le plus proche
     g.alpha = 1;
     drawStatusTag(*f, p.x - 24, p.y - 16);
     if (actor == f) {  // celui qui choisit son action : une flèche au-dessus de sa tête
@@ -2693,10 +3013,10 @@ void Battle::draw() {
   }
   // Par-dessus les combattants : contour de la zone et flèche au-dessus de la cible (le sprite cache sa case)
   if (zSide >= 0) {
-    for (int c : zCells) tile(g, cellPos(zSide == 1, c), rgb(c == zCenter ? 0xfff2a0 : 0xffb050, 210), true);
+    for (int c : zCells) tile(g, cellPos(c), rgb(c == zCenter ? 0xfff2a0 : 0xffb050, 210), true);
     for (auto& f : zSide == 1 ? allies : foes)
       if (cellOf(f) == zCenter) {
-        Pt p = cellPos(zSide == 1, zCenter);
+        Pt p = cellPos(zCenter);
         float y = std::max(48.f, p.y - fighterTop(*f, 1) - 16) + std::sin(t * 8) * 1.5f;
         g.tri(p.x - 5, y, p.x + 5, y, p.x, y + 6, rgb(0xffe066));
         g.tri(p.x - 3, y + 1, p.x + 3, y + 1, p.x, y + 4, rgb(0xfff8d0));
@@ -2803,7 +3123,7 @@ void Battle::goOnline(Net mode, std::function<void(const Json&)> send, const std
   for (auto* v : {&foes, &reserve})  // pas de Brisure en duel : les deux camps sont des joueurs
     for (auto& e : *v) e->shieldMax = e->shield = 0, e->broken = false;
   weather_ = -1;  // ni météo ni terrain : le duel reste le même chez les deux joueurs
-  for (auto& side : terrain_) side.fill(-1);
+  terrain_.fill(-1);
   sc.clear();
   if (mode == Net::Host) sc.say(T("Duel : ") + me + T(" contre ") + other + " !", 1.3f);
 }
@@ -2862,7 +3182,7 @@ Json Battle::netState() const {
     for (auto& f : v) {
       Json st = Json::array();
       for (int k = 0; k < N_STAGES; k++) st.push_back(f->stage[k]);
-      a.push_back(Json::array({f->hp, f->mp, (int)std::lround(f->atb), (int)std::lround(f->lim), (int)f->status, st, cellOf(f), f->shield, f->broken ? 1 : 0}));
+      a.push_back(Json::array({f->hp, f->mp, (int)std::lround(f->atb), (int)std::lround(f->lim), (int)f->status, st, netCell(cellOf(f)), f->shield, f->broken ? 1 : 0}));
     }
     return a;
   };
@@ -2873,10 +3193,9 @@ Json Battle::netState() const {
     wait = (remoteTurn_ || G.menus.active()) && it != players_.end() ? it->second : "";
   }
   Json warn = Json::array();
-  for (auto& w : warnings_) warn.push_back(Json::array({w.center, (int)w.zone}));
+  for (auto& w : warnings_) warn.push_back(Json::array({netCell(w.center), (int)w.zone}));
   Json ter = Json::array();
-  for (auto& side : terrain_)
-    for (int v : side) ter.push_back(v);
+  for (int v : terrain_) ter.push_back(v);
   return Json{{"t", "etat"}, {"a", pack(allies)}, {"b", pack(foes)}, {"msg", sc.showingMessage() ? sc.text() : std::string()}, {"attente", wait},
               {"w", warn}, {"meteo", weather_}, {"terrain", ter}};
 }
@@ -2906,7 +3225,11 @@ void Battle::netMessage(const Json& m) {
         for (size_t i = 0; i < v.size() && i < a.size(); i++) {
           const Json& x = a[i];
           Fighter& f = *v[i];
-          if (x.size() > 6) cells_[&f] = std::clamp(x.at(6).get<int>(), -1, N_CELLS - 1);  // la case, décidée chez l'hôte
+          if (x.size() > 6) {  // la case, décidée chez l'hôte (en duel, le plateau est vu en miroir)
+            int c = netCell(std::clamp(x.at(6).get<int>(), -1, BOARD_CELLS - 1));
+            if (cells_.count(&f) && cells_[&f] != c && cells_[&f] >= 0 && shown()) slide_[&f] = {cellPos(cells_[&f]), G.time};
+            cells_[&f] = c;
+          }
           if (x.size() > 8) f.shield = x.at(7).get<int>(), f.broken = x.at(8).get<int>() != 0;  // Brisure
           // at() : une liste trop courte lève une erreur (rattrapée par Online::update) au lieu de lire n'importe quoi
           f.hp = x.at(0).get<int>(), f.mp = x.at(1).get<int>(), f.atb = x.at(2).get<float>(), f.lim = x.at(3).get<float>();
@@ -2920,21 +3243,23 @@ void Battle::netMessage(const Json& m) {
       if (msg != netMsg_) netMsg_ = msg, netMsgT_ = G.time;
       netWarn_.clear();
       for (auto& w : m.value("w", Json::array()))
-        if (w.is_array() && w.size() == 2) netWarn_.push_back({std::clamp(w[0].get<int>(), 0, N_CELLS - 1), std::clamp(w[1].get<int>(), 0, 4)});
+        if (w.is_array() && w.size() == 2) netWarn_.push_back({netCell(std::clamp(w[0].get<int>(), 0, BOARD_CELLS - 1)), std::clamp(w[1].get<int>(), 0, 4)});
       netWait_ = jget<std::string>(m, "attente", "");
       int wi = jget(m, "meteo", -1);
       weather_ = wi >= 0 && wi < (int)rules().weathers.size() ? wi : -1;
       Json ter = m.value("terrain", Json::array());
-      if (ter.size() == 2 * N_CELLS)
+      if (ter.size() == BOARD_CELLS)
         for (size_t i = 0; i < ter.size(); i++) {
           int v = ter[i].is_number_integer() ? ter[i].get<int>() : -1;
-          terrain_[i / N_CELLS][i % N_CELLS] = v >= 0 && v < (int)rules().terrains.size() ? v : -1;
+          terrain_[(size_t)netCell((int)i)] = v >= 0 && v < (int)rules().terrains.size() ? v : -1;
         }
     } else if (k == "tour") {
       int i = jget(m, "i", -1);
       if (i < 0 || i >= (int)allies.size() || !allies[(size_t)i]->alive() || !mineToCommand(allies[(size_t)i])) return;
       FighterP a = allies[(size_t)i];
       actor = a;
+      if (jget(m, "bouge", false)) moved_.insert(a.get());  // il s'est déjà déplacé : son action maintenant
+      else moved_.erase(a.get());
       if (G.tacticsAuto && tacticTurn(a)) return;  // mode auto : les tactiques choisissent
       command(a);
     } else if (k == "pop") {
@@ -2990,14 +3315,14 @@ void Battle::netMessage(const Json& m) {
     for (auto& c : cs)
       if (FighterP t = other(c)) targets.push_back(t);
     bool ok = i >= 0 && i < (int)side.size() && side[(size_t)i] == f && !targets.empty();
-    if (m.contains("deplacer")) {  // se déplacer : vers une case libre de son camp
-      int c = jget(m, "deplacer", -1);
-      bool free = i >= 0 && i < (int)side.size() && side[(size_t)i] == f && c >= 0 && c < N_CELLS;
-      for (auto& x : side) free = free && cellOf(x) != c;
-      if (free) return moveTo(f, c);
+    bool mineF = i >= 0 && i < (int)side.size() && side[(size_t)i] == f;
+    if (m.contains("deplacer")) {  // se déplacer : vers une case où il peut aller ce tour
+      int c = netCell(jget(m, "deplacer", -1));
+      if (mineF && !moved_.count(f.get()) && walkable(f).count(c)) return moveTo(f, c);
       if (net_ == Net::Lead) return autoCommand(f);
       return enemyTurn(f);
     }
+    if (m.contains("attendre") && mineF) return waitTurn(f);
     std::string obj = jget<std::string>(m, "objet", ""), id = jget<std::string>(m, "move", "");
     bool lim = jget(m, "limite", false);
     if (ok && !obj.empty()) {  // gardien : objet déjà pris dans le sac de ce joueur
@@ -3010,6 +3335,7 @@ void Battle::netMessage(const Json& m) {
       auto known = f->techs();
       for (auto& s : f->spells()) known.push_back(s);
       ok = hasMove(id) && std::find(known.begin(), known.end(), id) != known.end() && f->mp >= moveInfo(id).cost;
+      if (ok && moveInfo(id).target == Target::Enemy) ok = reachable(f, moveInfo(id), targets[0]);  // corps à corps : à portée
     }
     if (ok) useMove(f, id, targets, lim);
     else if (net_ == Net::Lead) autoCommand(f);  // ordre impossible : l'ordinateur joue à sa place

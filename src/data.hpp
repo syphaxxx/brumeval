@@ -65,12 +65,29 @@ inline int cellCol(int c) { return c % GRID; }
 inline int cellRow(int c) { return c / GRID; }
 inline int cellAt(int row, int col) { return row * GRID + col; }
 std::string cellName(int c);  // « Avant · haut »
+// Échiquier (3.4, demandé le 2026-10-18) : en combat, les deux camps partagent un seul plateau de BOARD_W × GRID
+// cases ; chacun peut passer de l'autre côté. Colonne x = case % BOARD_W : 0 à GRID - 1 pour le camp de gauche (les
+// alliés ; 0 = leur bord, GRID - 1 = leur avant), GRID à BOARD_W - 1 pour celui de droite (GRID = son avant).
+// Fighter::cell (la formation, sauvegardée) reste une case de son camp (0 à N_CELLS - 1) : toBoard la place.
+constexpr int BOARD_W = 2 * GRID;
+constexpr int BOARD_CELLS = BOARD_W * GRID;
+inline int boardX(int b) { return b % BOARD_W; }
+inline int boardY(int b) { return b / BOARD_W; }
+inline int boardAt(int y, int x) { return y * BOARD_W + x; }
+inline int toBoard(bool leftSide, int c) { return boardAt(cellRow(c), leftSide ? BACK_COL - cellCol(c) : GRID + cellCol(c)); }
+inline bool inHalf(bool leftSide, int b) { return leftSide ? boardX(b) < GRID : boardX(b) >= GRID; }
+// Distance « du roi » (diagonales comprises) et « à pied » (sans diagonale) entre deux cases du plateau
+int boardDist(int a, int b);
+int boardSteps(int a, int b);
+std::string boardName(int b);  // « Notre camp, avant · haut », « Camp adverse, arrière · bas »
 // Zone d'effet d'une technique autour de sa cible : la cible seule, sa ligne (en profondeur),
 // sa colonne (tout un rang), elle et ses voisines (croix), ou tout le camp
 enum class Area { Single, Line, Column, Cross, All };
 const char* zoneId(Area z);    // "case", "ligne", "colonne", "croix", "tout"
 const char* zoneName(Area z);  // « Une cible »…
 bool inZone(Area z, int center, int cell);  // la case est-elle touchée quand la zone vise center ?
+// La même chose sur le plateau de l'échiquier : une ligne traverse les deux camps (BOARD_W cases)
+bool inBoardZone(Area z, int center, int cell);
 
 struct Move {
   std::string id, name;
@@ -204,7 +221,6 @@ struct Rules {
   double critMult = 1.5, stageStep = .25;
   int accBase = 100, evaBase = 2, critBase = 5;
   int quickGauge = 25, heavyDelay = 25;  // jauge après une technique rapide (%), retard après une lourde (%)
-  double backRow = .75;                  // damier : dégâts au corps à corps donnés et reçus depuis l'arrière
   double zoneSide = .75;                 // zone d'effet : dégâts sur les cases autour de la cible
   double bossWarn = .35;                 // chance qu'un boss annonce sa plus grosse attaque (un tour à l'avance)
   double bossBurst = 1.6;                // puissance de l'attaque annoncée (sur ceux restés dans la zone)
@@ -221,6 +237,13 @@ struct Rules {
   int socketWeapon = 1, socketArmor = 1, socketAccessory = 1, socketForge = 2;
   // Terrain (2.6) : nombre de cases spéciales sur chaque damier
   int terrainMin = 0, terrainMax = 2;
+  // Échiquier (3.4) : cases parcourues par tour (« Se déplacer » ne finit plus le tour), portée du corps à corps
+  // d'un boss, coup dans le dos (depuis le côté du camp de la cible), dégâts reçus en plus par adversaire au contact
+  // au-delà du premier (encerclé), attaque à distance au contact d'un ennemi, bonus de la Percée (atteindre le bord
+  // adverse, une fois par combat) ; types qui passent par-dessus les combattants (vol) ou vont plus loin (rapides)
+  int moveRange = 2, bossReach = 2, breakthrough = 1;
+  double backStab = 1.3, surround = .1, contact = .75;
+  std::vector<std::string> flyTypes, fastTypes;
   // États
   double poisonDmg = .1, burnDmg = .0625, burnAtk = .75, paraSpeed = .5, paraSkip = .25;
   int sleepMin = 1, sleepMax = 3;

@@ -494,49 +494,83 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     team = {makeFighter("lior", 20), makeFighter("maelle", 20)};
     startBattle({brute, mage, extra}, false, nullptr);
     Battle& B = *battle_;
-    B.cells_[brute.get()] = cellAt(1, 0), B.cells_[extra.get()] = cellAt(2, 0), B.cells_[mage.get()] = cellAt(1, BACK_COL);  // deux à l'avant, le mage à l'arrière (sans le hasard)
+    bool halves = true;  // échiquier (3.4) : chaque camp part de sa moitié du plateau
+    for (auto& f : B.allies) halves = halves && inHalf(true, B.cellOf(f));
+    for (auto& f : B.foes) halves = halves && inHalf(false, B.cellOf(f));
+    check(halves, "échiquier : les alliés partent de la moitié gauche du plateau, les ennemis de la droite");
+    FighterP lior = team[0], maelle = team[1];
+    auto clearCells = [&] {  // tout le monde loin de tout (sans le hasard du placement)
+      B.cells_[maelle.get()] = boardAt(3, 0);
+      B.moved_.clear();
+      B.terrain_.fill(-1);
+    };
+    clearCells();
+    B.cells_[brute.get()] = boardAt(1, 4), B.cells_[extra.get()] = boardAt(2, 4), B.cells_[mage.get()] = boardAt(1, 7);
+    B.cells_[lior.get()] = boardAt(1, 2);
     const Move& bite = moveInfo("mordant");  // corps à corps
     const Move& wave = moveInfo("onde");     // à distance
-    bool reach = B.reachable(team[0], bite, brute) && !B.reachable(team[0], bite, mage) && B.reachable(team[0], wave, mage);
-    brute->hp = extra->hp = 0;  // l'avant tombe : le corps à corps atteint l'arrière
-    bool opened = B.reachable(team[0], bite, mage);
-    brute->hp = brute->mhp, extra->hp = extra->mhp;
-    check(reach && opened, "damier : le corps à corps ne vise que l'avant ennemi tant qu'il tient ; la distance vise partout");
-    // L'arrière reçoit moins de dégâts au corps à corps (même coup, même hasard)
-    auto hitOn = [&](const FighterP& d, int cell) {
-      B.cells_[d.get()] = cell;
-      d->hp = d->mhp;
-      seedRandom(2026);  // la même suite de tirages devant et derrière : seule la case change
+    // Corps à corps : au contact, ou qu'on peut rejoindre ce tour ; pas l'arrière ennemi (trop loin, derrière la ligne)
+    bool reach = B.reachable(lior, bite, brute) && !B.reachable(lior, bite, mage) && B.reachable(lior, wave, mage);
+    B.moved_.insert(lior.get());  // déjà déplacé : seulement ce qui est au contact
+    bool afterMove = !B.reachable(lior, bite, brute);
+    B.moved_.clear();
+    B.cells_[lior.get()] = boardAt(1, 3);  // au contact : la marche s'arrête, pas de passage à travers la ligne
+    bool blocked = true;
+    for (auto& [c, d] : B.walkable(lior)) blocked = blocked && boardX(c) <= GRID;
+    check(reach && afterMove && blocked, "échiquier : le corps à corps vise un ennemi au contact ou qu'on peut rejoindre ; on s'arrête au contact d'un ennemi");
+    // Dans le dos : même coup, même hasard, frappé depuis le côté de son camp
+    auto hitFrom = [&](const FighterP& d, int from, const Move& m) {
+      B.cells_[lior.get()] = from;
+      seedRandom(2026);  // la même suite de tirages : seule la case change
       long long total = 0;
       for (int k = 0; k < 200; k++) {
         int before = d->hp = d->mhp;
-        if (B.applyHit(team[0], d, bite) > 0) total += before - d->hp;
+        if (B.applyHit(lior, d, m) > 0) total += before - d->hp;
       }
+      d->hp = d->mhp;
       return total;
     };
-    long long front = hitOn(extra, cellAt(0, 1)), back = hitOn(extra, cellAt(0, BACK_COL));
+    B.cells_[brute.get()] = boardAt(3, 7), B.cells_[mage.get()] = boardAt(3, 6);
+    B.cells_[extra.get()] = boardAt(0, 5);
+    long long front = hitFrom(extra, boardAt(0, 4), bite), back = hitFrom(extra, boardAt(0, 6), bite);
+    // Distance au contact : moins fort
+    long long far = hitFrom(extra, boardAt(2, 2), wave), near = hitFrom(extra, boardAt(0, 4), wave);
     seedRandom(std::random_device{}());  // la suite du mode test retrouve son hasard
-    check(back > 0 && back < front * 0.85, "damier : à l'arrière, les coups au corps à corps font moins mal (" + std::to_string(front) + " contre " +
-                                               std::to_string(back) + " sur 200 coups)");
+    check(back > front * 1.15 && near > 0 && near < far * 0.85,
+          "échiquier : un coup dans le dos fait plus mal (" + std::to_string(back) + " contre " + std::to_string(front) +
+              ") ; à distance, moins fort au contact (" + std::to_string(near) + " contre " + std::to_string(far) + ")");
     // Zone en croix : la cible et ses voisines
     Move cross = wave;
     cross.zone = Area::Cross;
-    B.cells_[brute.get()] = cellAt(1, 1), B.cells_[mage.get()] = cellAt(1, 2), B.cells_[extra.get()] = 0;  // centre, son voisin, un coin
+    B.cells_[brute.get()] = boardAt(1, 5), B.cells_[mage.get()] = boardAt(1, 6), B.cells_[extra.get()] = boardAt(3, 7);  // centre, son voisin, un coin
     auto hit = B.zoneTargets(cross, brute);
-    check(hit.size() == 2 && hit[0] == brute && hit[1] == mage, "damier : une zone en croix touche la cible et ses voisines, pas le coin");
-    // Se déplacer : la case change, la jauge repart (action rapide)
+    check(hit.size() == 2 && hit[0] == brute && hit[1] == mage, "échiquier : une zone en croix touche la cible et ses voisines, pas le coin");
+    // Se déplacer : la case change et le tour continue (le menu revient) ; Attendre finit le tour
     B.sc.clear();
-    FighterP lior = team[0];
-    int to = -1;
-    for (int c = N_CELLS - 1; c >= 0 && to < 0; c--)
-      if (B.cellOf(team[0]) != c && B.cellOf(team[1]) != c) to = c;
+    B.cells_[lior.get()] = boardAt(1, 1);
+    lior->atb = 100;
+    int to = boardAt(1, 2);
     B.moveTo(lior, to);
+    for (int i = 0; i < 200 && B.sc.busy(); i++) frame();
+    bool again = B.cellOf(lior) == to && menus.active() && B.actor == lior && B.moved_.count(lior.get());
+    B.waitTurn(lior);
     for (int i = 0; i < 200 && B.sc.busy(); i++) {
       in.confirm = true;
       frame();
     }
-    check(B.cellOf(lior) == to && lior->atb == float(rules().quickGauge), "damier : « Se déplacer » change de case et la jauge repart à " +
-                                                                             std::to_string(rules().quickGauge) + " %");
+    check(again && lior->atb == float(rules().quickGauge) && !B.moved_.count(lior.get()),
+          "échiquier : « Se déplacer » change de case sans finir le tour ; « Attendre » le finit (jauge à " + std::to_string(rules().quickGauge) + " %)");
+    // Percée : atteindre le bord adverse donne un bonus, une seule fois
+    int atk0 = lior->stage[S_ATK];
+    B.step(lior, boardAt(0, BOARD_W - 1));
+    B.step(lior, boardAt(1, BOARD_W - 2));
+    B.step(lior, boardAt(0, BOARD_W - 1));
+    check(rules().breakthrough <= 0 || lior->stage[S_ATK] == std::min(3, atk0 + rules().breakthrough), "échiquier : Percée en atteignant le bord adverse (une fois)");
+    lior->stage.fill(0);
+    B.moved_.clear();
+    B.cells_[lior.get()] = boardAt(1, 2);
+    B.sc.clear();
+    menus.clear();
     {  // Sauvegarde d'avant la 2.0 : « case 8 » (3x3, arrière en bas) devient l'arrière en bas du 4x4 ; « case4 » est lu tel quel
       std::vector<FighterP> t = {makeFighter("lior", 5)};
       std::istringstream a("8"), b("13");
@@ -547,11 +581,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     }
     // Attaque annoncée (1.8) : elle frappe ceux restés dans la zone, pas ceux qui se sont écartés
     {
-      FighterP boss = brute, maelle = team[1];
+      FighterP boss = brute;
       boss->boss = true;
       int keepAcc = boss->acc, keepEva = lior->eva;
       boss->acc = 1000, lior->eva = 0;  // un coup raté par hasard ferait échouer le test (vu sur Mac)
-      for (auto& side : B.terrain_) side.fill(-1);  // ni braises ni ronces (une case qui blesse compte comme menacée)
+      B.terrain_.fill(-1);  // ni braises ni ronces (une case qui blesse compte comme menacée)
       B.weather_ = -1;
       B.sc.clear();
       int liorCell = B.cellOf(lior);
@@ -586,7 +620,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       lior->tactics = {Tactic{true, "soi_menace", 0, Tactic::Act::Auto, "esquiver"}};
       lior->tacticsOn = true;
       Battle::Plan p;
-      bool tactic = B.tacticPlan(lior, p) && p.cell >= 0 && !inZone(Area::Single, B.cellOf(lior), p.cell);
+      bool tactic = B.tacticPlan(lior, p) && p.cell >= 0 && p.cell != B.cellOf(lior);
       B.warnings_.clear();
       lior->tactics = defaultTactics(lior->S());
       boss->boss = false;
@@ -722,6 +756,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
 
   // --- Combat piloté par les menus ---
   startBattle({makeFighter("mulotin", 4), makeFighter("champichou", 5), makeFighter("piafouine", 4)}, false, nullptr);
+  if (battle_) {  // échiquier : les ennemis au contact de l'équipe, pour que les menus suivants aient tous une cible
+    Battle& B = *battle_;
+    for (size_t i = 0; i < B.foes.size(); i++) B.cells_[B.foes[i].get()] = boardAt((int)i % GRID, GRID);
+    for (size_t i = 0; i < B.allies.size(); i++) B.cells_[B.allies[i].get()] = boardAt((int)i % GRID, GRID - 1 - (int)i / GRID);
+  }
   for (int i = 0; i < 1500 && !menus.active(); i++) frame();
   check(menus.active(), "le menu de commande s'ouvre quand une jauge ATB est pleine");
   {
@@ -756,7 +795,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       if ((int)i != before && menus.top().items[i].enabled) other = (int)i;
     bool mouseOk = true;
     if (other >= 0) {  // la souris sur la case d'un autre ennemi : il devient la cible
-      Pt c = B.cellPos(B.pick_.allySide, B.pick_.cells[(size_t)other]);
+      Pt c = B.cellPos(B.pick_.cells[(size_t)other]);
       in.mouseOn = in.moved = true;
       in.mx = (int)c.x, in.my = (int)c.y + 4;
       frame();
@@ -948,25 +987,28 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     Battle& B = *battle_;
     FighterP f1 = B.foes[0], f2 = B.foes[1];
     for (auto& f : B.foes) f->mhp = f->hp = 5000;
-    for (auto& side : B.terrain_) side.fill(-1);
+    B.terrain_.fill(-1);
     B.weather_ = -1;
     const Move &push = moveInfo("charge"), &pull = moveInfo("grappin");
     std::vector<FighterP> ko;
-    B.cells_[f1.get()] = cellAt(0, 0), B.cells_[f2.get()] = cellAt(0, 1);
+    // Échiquier : la poussée suit l'axe du lanceur (Lior à gauche, sur la même ligne)
+    B.cells_[lior.get()] = boardAt(0, 2);
+    B.cells_[f1.get()] = boardAt(0, 4), B.cells_[f2.get()] = boardAt(0, 5);
     B.shove(lior, f1, push, 100, ko);  // case prise : choc pour les deux, personne ne bouge
     int ch = std::max(1, int(100 * rules().shoveClash));
-    bool clash = B.cellOf(f1) == cellAt(0, 0) && f1->hp == 5000 - ch && f2->hp == 5000 - ch;
-    B.cells_[f2.get()] = cellAt(2, 2);
+    bool clash = B.cellOf(f1) == boardAt(0, 4) && f1->hp == 5000 - ch && f2->hp == 5000 - ch;
+    B.cells_[f2.get()] = boardAt(2, 6);
     B.shove(lior, f1, push, 100, ko);
-    bool pushed = B.cellOf(f1) == cellAt(0, 1);
+    bool pushed = B.cellOf(f1) == boardAt(0, 5);
     B.shove(lior, f1, pull, 100, ko);
-    B.shove(lior, f1, pull, 100, ko);  // déjà à l'avant : ne bouge plus
-    bool pulled = B.cellOf(f1) == cellAt(0, 0) && f1->hp == 5000 - ch;
-    B.cells_[f1.get()] = cellAt(0, BACK_COL);
+    B.shove(lior, f1, pull, 100, ko);
+    B.shove(lior, f1, pull, 100, ko);  // contre Lior : ne bouge plus
+    bool pulled = B.cellOf(f1) == boardAt(0, 3) && f1->hp == 5000 - ch;
+    B.cells_[f1.get()] = boardAt(0, BOARD_W - 1);
     B.shove(lior, f1, push, 100, ko);  // contre le bord
-    bool edge = B.cellOf(f1) == cellAt(0, BACK_COL) && f1->hp == 5000 - 2 * ch;
+    bool edge = B.cellOf(f1) == boardAt(0, BOARD_W - 1) && f1->hp == 5000 - 2 * ch;
     f2->boss = true;
-    bool boss = B.shoveDest(f2, push) == -2;
+    bool boss = B.shoveDest(lior, f2, push) == -2;
     f2->boss = false;
     // Terrain : braises sous f1 (Ombre : pas insensible), verglas sous f2
     auto terrainIdx = [&](const std::string& id) {
@@ -975,22 +1017,22 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       return -1;
     };
     int braises = terrainIdx("braises"), verglas = terrainIdx("verglas");
-    B.terrain_[1][(size_t)B.cellOf(f1)] = braises;
-    B.terrain_[1][(size_t)B.cellOf(f2)] = verglas;
+    B.terrain_[(size_t)B.cellOf(f1)] = braises;
+    B.terrain_[(size_t)B.cellOf(f2)] = verglas;
     int hp1 = f1->hp;
     float slow = B.atbRate(f2), fast = B.atbRate(f1);
     bool burnt = braises >= 0 && !B.terrainTurn(f1, false) && f1->hp < hp1 && B.threatened(f1);
     bool slowed = verglas >= 0 && slow < fast * .9f;
-    B.terrain_[1][(size_t)cellAt(0, 0)] = braises;  // tiré sur des braises : brûlé aussitôt
+    B.terrain_[(size_t)boardAt(0, 4)] = braises;  // tiré sur des braises : brûlé aussitôt
     hp1 = f1->hp;
-    B.cells_[f1.get()] = cellAt(0, 1);
+    B.cells_[f1.get()] = boardAt(0, 5);
     B.shove(lior, f1, pull, 10, ko);
-    bool onArrival = B.cellOf(f1) == cellAt(0, 0) && f1->hp < hp1 - 5;
+    bool onArrival = B.cellOf(f1) == boardAt(0, 4) && f1->hp < hp1 - 5;
     // Météo : la pluie renforce l'Eau
     for (size_t i = 0; i < rules().weathers.size(); i++)
       if (rules().weathers[i].id == "pluie") B.weather_ = (int)i;
     bool rain = B.weather_ >= 0 && std::abs(B.weatherMult(typeOf("eau")) - 1.25f) < 1e-4f && std::abs(B.weatherMult(typeOf("normal")) - 1) < 1e-4f;
-    B.terrain_[0][(size_t)B.cellOf(lior)] = terrainIdx("herbes");
+    B.terrain_[(size_t)B.cellOf(lior)] = terrainIdx("herbes");
     B.sc.clear();
     run(.8f);
     snap("99_meteo_terrain");
@@ -1051,6 +1093,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     mode = Mode::Map;
     tipsOff_ = false;
     tipsSeen.clear();
+    tipsSeen.insert("echiquier");  // déjà vue : celle du bouclier vient ensuite
     team = {makeFighter("lior", 20)};
     startBattle({makeFighter("brumelin", 5)}, false, nullptr);
     battle_->start -= 2;
@@ -1162,9 +1205,9 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     startBattle({makeFighter("galetor", 10), makeFighter("brumelin", 10), makeFighter("louvet", 10), makeFighter("champichou", 10)}, false, nullptr);
     Battle& C = *battle_;
     FighterP gal = C.foes[0], bru = C.foes[1], lou = C.foes[2], cha = C.foes[3];
-    C.cells_[gal.get()] = cellAt(1, 0), C.cells_[bru.get()] = cellAt(1, 1), C.cells_[lou.get()] = cellAt(3, 3), C.cells_[cha.get()] = cellAt(0, 3);
+    C.cells_[gal.get()] = boardAt(1, 4), C.cells_[bru.get()] = boardAt(1, 5), C.cells_[lou.get()] = boardAt(3, 7), C.cells_[cha.get()] = boardAt(0, 7);
     bool guarded = std::abs(C.guardMult(bru) - float(1 - rules().roleGuard)) < 1e-4f;
-    C.cells_[bru.get()] = cellAt(3, 1);
+    C.cells_[bru.get()] = boardAt(3, 5);
     bool alone = C.guardMult(bru) == 1;
     float fast = C.atbRate(bru);
     lou->hp = 0;
@@ -1372,7 +1415,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     startBattle(setup, nullptr);
     Battle& B = *battle_;
     B.sc.clear();
-    for (auto& side : B.terrain_) side.fill(-1);  // pas de case tirée au hasard sous l'ennemi (soin ou brûlure)
+    B.terrain_.fill(-1);  // pas de case tirée au hasard sous l'ennemi (soin ou brûlure)
     B.weather_ = -1;
     auto foe = B.foes[0];
     foe->status = Status::Poison;

@@ -127,17 +127,20 @@ static std::vector<HelpPage> helpPages() {
     for (auto& t : R.talents) tl.push_back(t.name + " : " + t.desc);
     p.push_back({::T("Talents"), ::T("Le pouvoir passif de chaque espèce."), tl});
   }
-  p.push_back({::T("Damier"), ::T("Les ") + std::to_string(N_CELLS) + ::T(" cases de chaque camp, corps à corps et distance."),
-               {::T("Chaque camp a ") + std::to_string(N_CELLS) + ::T(" cases : ") + std::to_string(GRID) + ::T(" colonnes (de l'avant à l'arrière) et ") +
-                    std::to_string(GRID) + ::T(" lignes. L'avant est du côté de l'adversaire."),
-                ::T("Corps à corps : ne vise que la colonne ennemie la plus avancée encore debout. Tant que l'avant tient, l'arrière est à l'abri."),
-                ::T("À distance (sorts, flèches, jets…) : n'importe quelle case."),
-                ::T("Au corps à corps, frapper depuis l'arrière ou viser l'arrière ne fait que ") + pct(R.backRow) + ::T(" des dégâts."),
-                ::T("Se déplacer : une action rapide (la jauge repart à ") + std::to_string(R.quickGauge) + ::T(" %), pour s'abriter ou s'approcher."),
-                ::T("Formation (Échap > Formation) : la case de chacun au début du combat. Les costauds devant, les lanceurs de sorts derrière.")}});
+  p.push_back({::T("Échiquier"), ::T("Un seul plateau pour les deux camps : se placer, avancer, passer derrière."),
+               {::T("Les deux camps partagent un plateau de ") + std::to_string(BOARD_W) + ::T(" colonnes sur ") + std::to_string(GRID) +
+                    ::T(" lignes : votre équipe part de la gauche, les ennemis de la droite. Chacun peut passer de l'autre côté."),
+                ::T("Se déplacer : une fois par tour, avant d'agir, jusqu'à ") + std::to_string(R.moveRange) +
+                    ::T(" cases (une de plus pour les types Vent et Foudre). On traverse ses alliés, pas les ennemis, et on s'arrête en arrivant à leur contact. Les types Vent et Esprit volent par-dessus tout."),
+                ::T("Corps à corps : un ennemi au contact (les 8 cases autour ; un boss frappe plus loin). Si la cible est plus loin mais qu'on peut la rejoindre, on s'approche d'abord."),
+                ::T("À distance (sorts, flèches, jets…) : n'importe quelle case, mais seulement ") + pct(R.contact) + ::T(" des dégâts quand un ennemi est au contact du lanceur."),
+                ::T("Dans le dos : frapper un ennemi depuis le côté de son camp fait ×") + num(R.backStab) + ::T(" de dégâts. Encerclé : chaque adversaire au contact au-delà du premier ajoute ") + pct(R.surround) + ::T(" aux dégâts reçus (pas un boss : trop grand pour être encerclé)."),
+                ::T("Percée : le premier qui atteint le bord du camp adverse gagne +") + std::to_string(R.breakthrough) + ::T(" en Attaque, Magie et Vitesse pour le combat (les ennemis aussi : bloquez-les !)."),
+                ::T("Une ligne de combattants protège ceux de derrière : les ennemis doivent la contourner. Attendre : finir son tour sans agir (rejoue plus tôt)."),
+                ::T("Formation (Échap > Formation) : la case de chacun au début du combat, dans votre moitié. Les costauds devant, les lanceurs de sorts derrière.")}});
   p.push_back({::T("Zones"), ::T("Ligne, colonne, croix, tout le camp ; attaques annoncées."),
                {::T("Une cible : seulement la case visée."),
-                ::T("Ligne : la case visée et toute sa ligne, de l'avant à l'arrière."),
+                ::T("Ligne : la case visée et toute sa ligne, d'un bord du plateau à l'autre."),
                 ::T("Colonne : la case visée et toute sa colonne, de haut en bas."),
                 ::T("Croix : la case visée et ses voisines (dessus, dessous, devant, derrière)."),
                 ::T("Tout le camp : tous les ennemis (ou tous les alliés), sans viser."),

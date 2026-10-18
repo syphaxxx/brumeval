@@ -85,6 +85,7 @@ class Battle {
     int tactic = -1;   // numéro de la tactique qui a choisi cette action
     int cell = -1;     // se déplacer vers cette case (tactique « Se mettre à l'abri »)
     FighterP duo;      // technique en duo : le partenaire
+    bool wait = false; // rien à portée : il attend (son tour finit, il rejoue plus tôt)
   };
   // Techniques en duo (2.6) : celles que a peut lancer maintenant, avec quel partenaire
   struct DuoOpt {
@@ -105,9 +106,8 @@ class Battle {
   std::vector<Warning> warnings_;
   std::vector<std::pair<int, int>> netWarn_;  // chez l'invité : zones annoncées reçues (case, zone)
   bool threatened(const FighterP& f) const;   // sa case est dans une zone annoncée
-  int safeCell(const FighterP& f) const;      // case libre de son camp, hors des zones annoncées (-1 : aucune)
+  int safeCell(const FighterP& f) const;      // case où il peut aller ce tour, hors des zones annoncées (-1 : aucune)
   bool bossPlan(FighterP e);                  // boss : annonce ou déclenche son attaque ; vrai si le tour est joué
-  bool enemyMove(FighterP e);                 // ennemi : reculer (lanceur à l'avant) ou avancer ; vrai si joué
   Game& G;
   Script sc;
   std::vector<FighterP> allies, foes, reserve;
@@ -130,16 +130,42 @@ class Battle {
 
   bool isAlly(const FighterP& f) const;
   std::vector<FighterP> alive(const std::vector<FighterP>& v) const;
-  Pt pos(const FighterP& f) const;
-  Pt cellPos(bool allySide, int cell) const;  // centre d'une case du damier à l'écran
-  // Damier (data.hpp) : la case de chaque combattant pendant ce combat ; au départ, la formation
-  // de l'équipe (Fighter::cell) pour les alliés, un placement automatique pour les ennemis
+  Pt pos(const FighterP& f) const;      // à l'écran, en glissant vers sa nouvelle case
+  Pt cellPos(int cell) const;           // centre d'une case du plateau à l'écran
+  // Échiquier (3.4, data.hpp) : un seul plateau pour les deux camps, les alliés à gauche. La case de chaque
+  // combattant pendant ce combat ; au départ, la formation de l'équipe (Fighter::cell) pour les alliés, un
+  // placement automatique pour les ennemis, chacun dans sa moitié. On peut ensuite passer de l'autre côté.
   std::map<const Fighter*, int> cells_;
   std::map<const Fighter*, float> koT_;  // moment du K.O. (un ennemi vaincu s'efface en 0,6 s avec un éclat)
-  int cellOf(const FighterP& f) const;  // -1 : pas sur le damier
-  void place(const std::vector<FighterP>& v, bool keep);
+  int cellOf(const FighterP& f) const;  // -1 : pas sur le plateau
+  void place(const std::vector<FighterP>& v, bool keep, bool left);
   const std::vector<FighterP>& sideOf(const FighterP& f) const { return isAlly(f) ? allies : foes; }
-  // Corps à corps : seulement la colonne la plus avancée encore debout du camp visé (sauf zone « tout »)
+  const std::vector<FighterP>& oppOf(const FighterP& f) const { return isAlly(f) ? foes : allies; }
+  FighterP at(int cell) const;                 // combattant debout sur cette case
+  int freeCellNear(bool left, int near) const;  // case libre de ce camp, la plus proche de near (-1 : aucune)
+  // Déplacement : une fois par tour, jusqu'à moveRange cases (pas de diagonale) ; les alliés se traversent, pas
+  // les adversaires, et on s'arrête en arrivant au contact de l'un d'eux. Les volants passent par-dessus tout.
+  std::set<const Fighter*> moved_;  // ceux qui se sont déjà déplacés pendant leur tour
+  int moveRange(const FighterP& f) const;
+  bool flier(const FighterP& f) const;
+  std::map<int, int> walkable(const FighterP& f) const;  // cases où il peut aller ce tour → nombre de pas
+  int reach(const FighterP& a) const;                     // portée du corps à corps (1 : les 8 cases autour ; boss : plus)
+  // cell / from : la case où il se trouverait (-1 : sa case actuelle)
+  bool engaged(const FighterP& f, int cell = -1) const;   // un adversaire est au contact
+  int foesAround(const FighterP& d, int cell = -1) const; // adversaires de d au contact
+  bool behind(const FighterP& a, const FighterP& d, int from = -1) const;  // a frappe d dans le dos (côté du camp de d)
+  float posMult(const FighterP& a, const FighterP& d, const Move& m, int from = -1) const;  // dos, encerclé, distance au contact
+  int approachCell(const FighterP& a, const FighterP& t) const;  // case d'où frapper t au corps à corps (-1 : aucune)
+  float posValue(const FighterP& a, int cell);  // intérêt de cette case pour l'ordinateur (attaques possibles, danger)
+  int planMove(const FighterP& a);              // ordinateur : où aller avant d'agir (-1 : rester)
+  void step(const FighterP& a, int cell);       // le déplacer (glisse à l'écran ; Percée en atteignant le bord adverse)
+  std::set<const Fighter*> breakthrough_;       // ceux qui ont déjà fait leur Percée
+  std::map<const Fighter*, std::pair<Pt, float>> slide_;  // dessin : d'où il part et quand
+  void resumeTurn(FighterP a);                  // après « Se déplacer » : le même combattant choisit son action
+  void waitTurn(FighterP a);                    // « Attendre » : finir son tour sans agir (rejoue plus tôt)
+  int netCell(int c) const;                     // duel : le plateau est vu en miroir chez l'invité
+  bool facesRight(const FighterP& f) const;     // tourné vers l'adversaire le plus proche
+  // Corps à corps : un adversaire au contact, ou qu'on peut rejoindre ce tour (on s'approche avant de frapper)
   bool reachable(const FighterP& a, const Move& m, const FighterP& t) const;
   // Victimes d'une technique visant center : center d'abord, puis les autres combattants de sa zone
   std::vector<FighterP> zoneTargets(const Move& m, const FighterP& center) const;
@@ -150,22 +176,21 @@ class Battle {
   // n'est pas dessiné (Menu::hidden) ; cells : la case de chaque ligne de ce menu.
   struct BoardPick {
     size_t depth = 0;  // place du menu caché dans la pile (0 : aucun choix en cours)
-    bool allySide = false;
     std::vector<int> cells;
     bool move = false;  // « Se déplacer » : le combattant apparaît en transparence sur la case
   };
   BoardPick pick_;
-  void boardMenu(Menu t, bool allySide, std::vector<int> cells, bool move = false);
+  void boardMenu(Menu t, std::vector<int> cells, bool move = false);
   bool boardPicking() const;
   void boardInput();
-  int cellUnder(bool allySide, float x, float y, const std::vector<int>& among) const;  // index dans among (-1 : aucune)
+  int cellUnder(float x, float y, const std::vector<int>& among) const;  // index dans among (-1 : aucune)
   // Aperçu de la zone en survolant une technique, avant même de choisir la cible
   std::string preview_;
   size_t previewDepth_ = 0;
   void previewMove(const FighterP& a, const std::string& id);
   void drawZones(float t);
   void drawHud(float t);
-  void moveTo(FighterP a, int cell);  // change de case (action rapide)
+  void moveTo(FighterP a, int cell);  // « Se déplacer » : change de case, puis choisit son action
   void pop(const FighterP& f, const std::string& t, Color c);
   // Bruitage (audio.hpp), seulement pour le combat affiché (pas les simulations) ;
   // share : l'hôte ou le chef le fait aussi entendre aux autres joueurs
@@ -260,14 +285,15 @@ class Battle {
   // 2.6 : pousser / tirer (Into the Breach). La cible change de colonne ; case prise ou bord : choc.
   // Les combattants mis K.O. par le choc sont ajoutés à ko.
   void shove(const FighterP& a, const FighterP& t, const Move& m, int dmg, std::vector<FighterP>& ko);
-  int shoveDest(const FighterP& t, const Move& m) const;  // case d'arrivée (-1 : bord ; -2 : boss, ne bouge pas)
-  // Météo (indice dans rules().weathers, -1 : temps calme) et cases de terrain de chaque damier
+  // Case d'arrivée, dans l'axe du lanceur (-1 : bord ; -2 : boss ou rien à faire, ne bouge pas)
+  int shoveDest(const FighterP& a, const FighterP& t, const Move& m) const;
+  // Météo (indice dans rules().weathers, -1 : temps calme) et cases de terrain du plateau
   int weather_ = -1;
-  std::array<std::array<int, N_CELLS>, 2> terrain_{};  // [0] alliés, [1] ennemis : indice dans rules().terrains, -1 : rien
-  const Rules::Terrain* terrainOf(bool allySide, int cell) const;
+  std::array<int, BOARD_CELLS> terrain_{};  // indice dans rules().terrains, -1 : rien
+  const Rules::Terrain* terrainOf(int cell) const;
   const Rules::Terrain* terrainAt(const FighterP& f) const;  // case spéciale sous ce combattant (nullptr : aucune)
   bool terrainHits(const FighterP& f, const Rules::Terrain* t) const;  // le terrain agit sur lui (pas insensible)
-  bool terrainHurts(const FighterP& f, int cell) const;                 // cette case de son camp le blesse ou le ralentit
+  bool terrainHurts(const FighterP& f, int cell) const;                 // cette case le blesse ou le ralentit
   bool terrainTurn(const FighterP& f, bool arrived);                    // effet de sa case ; vrai s'il tombe K.O.
   float weatherMult(int type) const;
   float atbRate(const FighterP& f) const;  // vitesse de sa jauge ATB (compagnon, verglas)

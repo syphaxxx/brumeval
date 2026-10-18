@@ -68,6 +68,27 @@ std::string cellName(int c) {
   if (c < 0 || c >= N_CELLS) return "?";
   return std::string(T(COLS[cellCol(c)])) + " · " + T(ROWS[cellRow(c)]);
 }
+int boardDist(int a, int b) { return std::max(std::abs(boardX(a) - boardX(b)), std::abs(boardY(a) - boardY(b))); }
+int boardSteps(int a, int b) { return std::abs(boardX(a) - boardX(b)) + std::abs(boardY(a) - boardY(b)); }
+std::string boardName(int b) {
+  static const char* COLS[GRID] = {"arrière", "milieu arrière", "milieu avant", "avant"};
+  static const char* ROWS[GRID] = {"haut", "centre haut", "centre bas", "bas"};
+  if (b < 0 || b >= BOARD_CELLS) return "?";
+  int x = boardX(b);
+  bool ours = x < GRID;
+  return std::string(ours ? T("Notre camp, ") : T("Camp adverse, ")) + T(COLS[ours ? x : BOARD_W - 1 - x]) + " · " + T(ROWS[boardY(b)]);
+}
+bool inBoardZone(Area z, int center, int cell) {
+  int dc = std::abs(boardX(center) - boardX(cell)), dr = std::abs(boardY(center) - boardY(cell));
+  switch (z) {
+    case Area::Single: return dc == 0 && dr == 0;
+    case Area::Line: return dr == 0;
+    case Area::Column: return dc == 0;
+    case Area::Cross: return dc + dr <= 1;
+    case Area::All: return true;
+  }
+  return false;
+}
 bool inZone(Area z, int center, int cell) {
   int dc = std::abs(cellCol(center) - cellCol(cell)), dr = std::abs(cellRow(center) - cellRow(cell));
   switch (z) {
@@ -179,7 +200,6 @@ std::vector<RuleField> ruleFields(Rules& r) {
       I("combat", "esquive_base", "Esquive par défaut (%)", r.evaBase, 0, 100, 1),
       I("combat", "critique_base", "Critique par défaut (%)", r.critBase, 0, 100, 1),
       I("combat", "jauge_rapide", "Technique rapide : jauge de départ (%)", r.quickGauge, 0, 90, 5),
-      D("combat", "arriere", "Arrière : dégâts au corps à corps donnés et reçus", r.backRow, .1, 1, .05),
       D("combat", "zone_voisins", "Zone d'effet : dégâts autour de la cible", r.zoneSide, 0, 1, .05),
       D("combat", "boss_annonce", "Boss : chance d'annoncer une attaque", r.bossWarn, 0, 1, .05),
       D("combat", "boss_annonce_puissance", "Boss : puissance de l'attaque annoncée", r.bossBurst, 1, 5, .1),
@@ -197,6 +217,12 @@ std::vector<RuleField> ruleFields(Rules& r) {
       D("damier", "choc", "Pousser : choc (part des dégâts) si la case est prise", r.shoveClash, 0, 2, .05),
       I("damier", "terrain_min", "Terrain : cases spéciales par camp (minimum)", r.terrainMin, 0, 8, 1),
       I("damier", "terrain_max", "Terrain : cases spéciales par camp (maximum)", r.terrainMax, 0, 8, 1),
+      I("damier", "mouvement", "Échiquier : cases parcourues par tour", r.moveRange, 0, 6, 1),
+      I("damier", "allonge_boss", "Échiquier : portée du corps à corps d'un boss", r.bossReach, 1, 4, 1),
+      D("damier", "dos", "Échiquier : dégâts d'un coup dans le dos", r.backStab, 1, 3, .05),
+      D("damier", "encercle", "Échiquier : dégâts en plus par adversaire au contact (au-delà du 1er)", r.surround, 0, 1, .05),
+      D("damier", "contact", "Échiquier : distance ou magie au contact d'un ennemi", r.contact, .1, 1, .05),
+      I("damier", "percee", "Échiquier : Percée (bonus en atteignant le bord adverse)", r.breakthrough, 0, 3, 1),
       I("duo", "jauge", "Duo : jauge ATB du partenaire (%)", r.duoGauge, 0, 100, 5),
       D("etats", "poison_degats", "Poison : part des PV perdus par tour", r.poisonDmg, 0, 1, .01),
       D("etats", "brulure_degats", "Brûlure : part des PV perdus par tour", r.burnDmg, 0, 1, .01),
@@ -267,6 +293,10 @@ static void loadRules(const Json& j) {
   if (j.contains("recompenses"))
     for (auto& b : j["recompenses"].value("butin_type", Json::array()))
       r.typeDrops.push_back({b.at("type").get<std::string>(), b.at("objet").get<std::string>(), b.at("chance").get<double>()});
+  if (j.contains("damier")) {
+    r.flyTypes = jget(j["damier"], "vol", std::vector<std::string>{});
+    r.fastTypes = jget(j["damier"], "rapides", std::vector<std::string>{});
+  }
   for (auto& w : j.value("meteo", Json::array())) {
     Rules::Weather x;
     x.id = w.at("id").get<std::string>(), x.name = tr(w.at("nom").get<std::string>());
