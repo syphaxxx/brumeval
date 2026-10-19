@@ -374,6 +374,7 @@ bool challengeSetup(const std::string& id, BattleSetup& s) {
     }
     s.fixedBoard = true;
     s.canCapture = false;
+    s.training = true;  // combattants prêtés : jamais de gains pour l'équipe du joueur
     s.theme = (int)themeOf(jget<std::string>(c, "decor", "vallee"));
     s.intro = T("Défi : ") + tr(jget<std::string>(c, "nom", "")) + ". " + tr(jget<std::string>(c, "description", ""));
     return !s.allies.empty() && !s.foes.empty();
@@ -1257,6 +1258,9 @@ void Battle::command(FighterP a) {
                        G.menus.push(t);
                      }});
   if (canFlee) m.items.push_back({T("Fuir"), "", T("Tenter de fuir avec toute l'équipe."), true, [this, a] { tryFlee(a); }});
+  // Entraînement : le sac du joueur n'est pas à disposition (une défaite ne doit rien coûter)
+  if (training_)
+    m.items.erase(std::remove_if(m.items.begin(), m.items.end(), [](const MenuItem& it) { return it.label == T("Objet"); }), m.items.end());
   // Duel : ni objets ni remplaçants (l'équipement compte) ; gardien à plusieurs : pas de remplaçants
   if (net_ != Net::None) {
     bool d = duel();

@@ -306,6 +306,9 @@ void Game::update(float dt) {
         steps = 0;
         auto after = afterBattle_;
         afterBattle_ = nullptr;
+        if (training && trainingHp_.size() == team.size())
+          for (size_t i = 0; i < team.size(); i++) team[i]->hp = trainingHp_[i].first, team[i]->mp = trainingHp_[i].second;
+        trainingHp_.clear();
         if (r == BattleResult::Lose && !training) {
           sc.clear();  // la défaite interrompt l'événement en cours
           defeat();
@@ -409,6 +412,9 @@ void Game::startBattle(BattleSetup setup, std::function<void(BattleResult)> afte
   for (auto& f : setup.foes) see(*f);  // bestiaire (les renforts : quand ils entrent, battle.cpp)
   afterBattle_ = std::move(after);
   arenaBattle_ = mode == Mode::Arena;
+  trainingHp_.clear();
+  if (setup.training)  // entraînement : l'équipe retrouvera ses PV et PM, quoi qu'il arrive
+    for (auto& f : team) trainingHp_.push_back({f->hp, f->mp});
   Theme th = setup.theme >= 0 ? Theme(setup.theme) : M().theme;
   battle_ = std::make_unique<Battle>(*this, std::move(setup), th);
   mode = Mode::Battle;

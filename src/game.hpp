@@ -194,7 +194,8 @@ class Game {
   void bestiaryMenu(int sel = 0);    // toutes les créatures : vues, obtenues, fiche
   void formationMenu(int sel = 0);   // la case de chaque combattant sur le damier
   int formationCell_ = -1;           // case surlignée sur le dessin du damier (panelMode_ 4)
-  bool formationPick_ = false;       // le choix de la case est ouvert : la souris peut la désigner sur le dessin
+  bool formationPick_ = false;
+  std::vector<std::pair<int, int>> trainingHp_;  // entraînement : PV et PM de l'équipe avant le combat (remis après)       // le choix de la case est ouvert : la souris peut la désigner sur le dessin
   int formationCellAt(int mx, int my) const;  // case de la formation sous la souris (-1 : aucune)
   void drawFormationPanel(int x, int y);
   std::string bestiarySel_;          // espèce dont la fiche est affichée (panelMode_ 3)
