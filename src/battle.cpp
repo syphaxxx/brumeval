@@ -398,6 +398,12 @@ int Battle::freeCellNear(bool left, int near) const {
                       : std::abs(boardX(c) - (left ? GRID - 1 : GRID)) * 4 + std::abs(boardY(c) * 2 - (GRID - 1));
     if (d < bd) bd = d, best = c;
   }
+  if (best < 0)  // sa moitié est pleine (combattants passés de ce côté, obstacles) : la case libre la plus proche ailleurs
+    for (int c = 0; c < BOARD_CELLS; c++)
+      if (!at(c) && !blockedCell(c)) {
+        int d = near >= 0 ? boardSteps(c, near) : std::abs(boardX(c) - (left ? 0 : BOARD_W - 1));
+        if (d < bd) bd = d, best = c;
+      }
   return best;
 }
 

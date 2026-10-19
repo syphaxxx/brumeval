@@ -2517,7 +2517,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
             "expédition : la même graine redonne exactement le même monde");
       // À plusieurs, chaque joueur génère le monde chez lui : l'empreinte doit être la même sous Windows, Mac et Linux
       std::string wh = Expedition::worldHash(2026, 3);
-      check(wh == "28da4b9e14a4ce4d", "expédition : la graine 2026 donne le même monde sur tous les systèmes (empreinte " + wh + ")");
+      check(wh == "171c24418b3b440e", "expédition : la graine 2026 donne le même monde sur tous les systèmes (empreinte " + wh + ")");
       procgen::Content c1 = procgen::generateBase(7), c6 = c1;
       std::string shop1 = procgen::generateRegion(7, 1, c1).events.dump(), shop6;
       for (int k = 1; k <= 6; k++) shop6 = procgen::generateRegion(7, k, c6).events.dump();
