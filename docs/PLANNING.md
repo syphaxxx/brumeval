@@ -196,6 +196,22 @@ Branche `echiquier` (version 3.4), pas encore publiée.
    d'effets Godot si l'utilisateur veut remplacer ou compléter ceux de sa planche ; obstacles sur l'échiquier
    (rochers, arbres) ; techniques qui font bondir ou échanger de case.
 
+## Étape 2 sexies — Carte blanche du 19 octobre (7 h → 19 h, l'utilisateur absent)
+
+« Fais la même chose que la dernière fois que je suis parti » : améliorer le jeu à tous les niveaux, sans questions,
+tout permis sauf fusionner. Suite de la branche `echiquier` (3.4). Plan, dans l'ordre :
+
+1. Compilation Windows / Mac / Linux vérifiée par une demande de fusion en brouillon (à ne pas fusionner).
+2. Échiquier : obstacles sur le plateau selon le décor (rochers, souches, cristaux : on ne peut ni s'y arrêter ni les
+   traverser, sauf en volant).
+3. Échiquier : en mode auto (tactiques), les alliés choisissent aussi leur case avant d'agir, comme l'ordinateur.
+4. Échiquier : en choisissant sa case, les cases où un ennemi pourra frapper au prochain tour sont marquées (danger).
+5. Techniques de mouvement : des bonds (frapper puis sauter derrière la cible) et des échanges de place, pour des
+   créatures agiles et des héros ; l'IA et l'aide les connaissent.
+6. Graphismes : obstacles et nouvelles poses ; petits défauts vus sur les captures (étiquette d'état sur un nombre).
+7. Équilibrage mesuré, joueur automatique, tests en français et en anglais, revue Codex, documentation.
+8. Page de bilan pour le retour de l'utilisateur.
+
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
 - Fait en 1.6 : **réserve de créatures** (au-delà de 8 membres) et
