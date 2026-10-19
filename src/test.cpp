@@ -559,6 +559,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         if (cm.items[i].label == T("Se déplacer")) cm.sel = (int)i;
       in.confirm = true;
       frame();
+      for (size_t i = 0; i < B.pick_.cells.size(); i++)  // une case à deux pas : le chemin se voit
+        if (B.pick_.cells[i] == boardAt(2, 2) && menus.active()) menus.top().sel = (int)i;
       run(.1f);
       snap("echiquier_deplacer");
       menus.clear();

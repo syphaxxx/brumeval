@@ -272,6 +272,7 @@ void Arena::startChallenge(int i) {
   s.fixedBoard = true;
   s.canCapture = false;
   s.theme = (int)themeOf(jget<std::string>(c, "decor", "vallee"));
+  s.intro = T("Défi : ") + tr(jget<std::string>(c, "nom", "")) + ". " + tr(jget<std::string>(c, "description", ""));
   G.team = s.allies;  // personne en réserve, pas d'objets : la position fait tout
   teamSlot_.clear();
   G.items.clear();

@@ -43,6 +43,7 @@ struct BattleSetup {
   // Défis de l'échiquier (3.4) : plateau imposé (cases des alliés et des ennemis, obstacles), sans météo ni terrain
   bool fixedBoard = false;
   std::vector<int> allyCells, foeCells, obstacleCells;
+  std::string intro;  // message d'ouverture à la place de « … surgit » (défi : la leçon)
 };
 
 class Battle {

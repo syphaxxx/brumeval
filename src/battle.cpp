@@ -343,7 +343,8 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
   else if (boss) intro = leader->name() + T(" surgit devant vous !");
   else if (foes.size() > 1) intro = std::to_string(foes.size()) + T(" créatures sauvages surgissent !");
   else intro = leader->name() + T(" sauvage apparaît !");
-  sc.say(intro, 1.3f);
+  if (!s.intro.empty()) intro = s.intro;
+  sc.say(intro, s.intro.empty() ? 1.3f : 0.f);  // la leçon d'un défi attend Entrée
 }
 
 bool Battle::isAlly(const FighterP& f) const { return std::find(allies.begin(), allies.end(), f) != allies.end(); }
