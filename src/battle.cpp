@@ -470,13 +470,35 @@ static bool spriteFx(Gfx& g, const std::string& type, const Pt& p, float k, bool
       {"metal", {"gfx_metal_0", "gfx_metal_1", "gfx_metal_2", "gfx_metal_3", "gfx_metal_4", "gfx_metal_5", "gfx_metal_6", "gfx_metal_7"}},
       {"normal", {"gfx_normal_0", "gfx_normal_1", "gfx_normal_2", "gfx_normal_3", "gfx_normal_4", "gfx_normal_5", "gfx_normal_6", "gfx_normal_7"}},
   };
+  static const std::map<std::string, uint32_t> SPARK = {  // couleur des étincelles de chaque type
+      {"feu", 0xff8a3a}, {"glace", 0xbfe8ff}, {"foudre", 0xfff06a}, {"vent", 0xc8ffd8}, {"eau", 0x6ab8ff},
+      {"poison", 0xb46aff}, {"plante", 0x8aff6a}, {"roche", 0xc8a070}, {"ombre", 0x8a6ab8}, {"esprit", 0xe0c8ff},
+      {"lumiere", 0xfff8c0}, {"soin", 0x9aff9a}, {"metal", 0xd8e0f0}, {"normal", 0xffffff}};
   auto it = FX.find(heal ? "soin" : type);
   if (it == FX.end()) return false;
   const auto& v = it->second;
-  const SpriteRect* r = findSprite(v[std::min(v.size() - 1, size_t(k * v.size()))]);
+  // Les images de la planche s'enchaînent en fondu (2 à 4 images : sans fondu, l'effet saccade)
+  float f = std::clamp(k, 0.f, .999f) * v.size();
+  size_t i = std::min(v.size() - 1, size_t(f));
+  float mixT = v.size() > 1 && i + 1 < v.size() ? std::clamp((f - i - .6f) / .4f, 0.f, 1.f) : 0.f;
+  const SpriteRect* r = findSprite(v[i]);
   if (!r) return false;
-  Color c{255, 255, 255, uint8_t(255 * std::clamp((1 - k) * 2.5f, 0.f, 1.f))};
-  g.sprite(*r, std::round(p.x - r->w / 2.f), std::round(p.y + 12 - r->h), false, 1, c);
+  float fade = std::clamp((1 - k) * 2.5f, 0.f, 1.f);
+  g.sprite(*r, std::round(p.x - r->w / 2.f), std::round(p.y + 12 - r->h), false, 1, Color{255, 255, 255, uint8_t(255 * fade * (1 - mixT))});
+  if (mixT > 0)
+    if (const SpriteRect* r2 = findSprite(v[i + 1]))
+      g.sprite(*r2, std::round(p.x - r2->w / 2.f), std::round(p.y + 12 - r2->h), false, 1, Color{255, 255, 255, uint8_t(255 * fade * mixT)});
+  // Étincelles du type qui jaillissent de la cible et retombent
+  auto sp = SPARK.find(heal ? "soin" : type);
+  if (sp != SPARK.end() && k > .1f) {
+    float u = (k - .1f) / .9f;
+    for (int s = 0; s < 10; s++) {
+      float a = s * 2.399f + (heal ? 0 : 1.f), spd = 14 + (s * 7) % 11;
+      float x = p.x + std::cos(a) * spd * u * 1.4f, y = p.y - 2 + std::sin(a) * spd * u * .8f + (heal ? -20 * u : 18 * u * u);
+      Color c = rgb(sp->second, uint8_t(230 * (1 - u)));
+      g.rect(std::round(x), std::round(y), s % 3 ? 1 : 2, s % 3 ? 1 : 2, c);
+    }
+  }
   return true;
 }
 
