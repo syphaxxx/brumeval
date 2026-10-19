@@ -295,6 +295,17 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
           terrain_[(size_t)c] = pool[(size_t)irand(0, (int)pool.size() - 1)];
         }
       }
+    // Obstacles (3.4) : dans les quatre colonnes du milieu, sur des cases libres et sans terrain
+    auto it = R.obstacleSprites.find(th);
+    if (it != R.obstacleSprites.end() && !it->second.empty()) {
+      int n = irand(R.obstacleMin, std::max(R.obstacleMin, R.obstacleMax));
+      for (int k = 0, tries = 0; k < n && tries < 40; tries++) {
+        int c = boardAt(irand(0, GRID - 1), irand(GRID - 2, GRID + 1));
+        if (at(c) || blockedCell(c) || terrain_[(size_t)c] >= 0) continue;
+        obstacles_[c] = it->second[(size_t)irand(0, (int)it->second.size() - 1)];
+        k++;
+      }
+    }
   }
   for (auto& a : allies) a->atb = 20 + frand() * 50;
   for (auto& e : foes) e->atb = frand() * 30;
@@ -363,7 +374,7 @@ FighterP Battle::at(int c) const {
 int Battle::freeCellNear(bool left, int near) const {
   int best = -1, bd = 99;
   for (int c = 0; c < BOARD_CELLS; c++) {
-    if (!inHalf(left, c) || at(c)) continue;
+    if (!inHalf(left, c) || at(c) || blockedCell(c)) continue;
     // près de near ; sans near, le plus près de l'avant de ce camp
     int d = near >= 0 ? boardSteps(c, near) * 2 + std::abs(boardY(c) - boardY(near))
                       : std::abs(boardX(c) - (left ? GRID - 1 : GRID)) * 4 + std::abs(boardY(c) * 2 - (GRID - 1));
@@ -409,13 +420,13 @@ std::map<int, int> Battle::walkable(const FighterP& f) const {
       int x = boardX(c) + DX[k], y = boardY(c) + DY[k];
       if (x < 0 || x >= BOARD_W || y < 0 || y >= GRID) continue;
       int n = boardAt(y, x);
-      if (dist.count(n) || (!fly && foeOn(n))) continue;
+      if (dist.count(n) || (!fly && (foeOn(n) || blockedCell(n)))) continue;
       dist[n] = d + 1;
       todo.push_back(n);
     }
   }
   for (auto& [c, d] : dist)
-    if (c != from && !at(c)) out[c] = d;  // on traverse un allié, mais on ne s'arrête pas sur lui
+    if (c != from && !at(c) && !blockedCell(c)) out[c] = d;  // on traverse un allié, mais on ne s'arrête pas sur lui
   return out;
 }
 int Battle::reach(const FighterP& a) const { return a->boss ? rules().bossReach : 1; }
@@ -805,7 +816,7 @@ void Battle::startTips() {
   bool shield = false, role = false, terrain = false;
   for (auto& f : foes) shield = shield || f->shieldMax > 0, role = role || !f->S().combatRole.empty();
   for (int v : terrain_) terrain = terrain || v >= 0;
-  std::pair<const char*, bool> order[] = {{"echiquier", true}, {"bouclier", shield}, {"ordre", true}, {"role", role}, {"meteo", weather_ >= 0}, {"terrain", terrain}, {"talent", true}};
+  std::pair<const char*, bool> order[] = {{"echiquier", true}, {"obstacle", !obstacles_.empty()}, {"bouclier", shield}, {"ordre", true}, {"role", role}, {"meteo", weather_ >= 0}, {"terrain", terrain}, {"talent", true}};
   for (auto& [id, ok] : order)
     if (ok && G.tip(id, sc)) return;
 }
@@ -1577,7 +1588,7 @@ float Battle::attackScore(const FighterP& a, const Move& m, const FighterP& t) c
   if (!t->S().combatRole.empty() && !t->boss) score *= 1.25f;  // rôles : abattre d'abord soigneur, chef et protecteur
   if (m.shove && !t->boss) {  // pousser / tirer : un choc contre un voisin ou le bord, ou une case qui blesse
     int to = shoveDest(a, t, m);
-    bool clash = (to == -1 && m.shove > 0) || (to >= 0 && at(to) && at(to) != a);
+    bool clash = (to == -1 && m.shove > 0) || (to >= 0 && ((at(to) && at(to) != a) || blockedCell(to)));
     if (clash) score *= 1 + float(R.shoveClash);
     else if (to >= 0 && terrainHurts(t, to)) score += 12;
     else if (to >= 0 && m.shove < 0) score += 4;  // tiré vers l'avant : à portée du corps à corps
@@ -2065,6 +2076,13 @@ void Battle::shove(const FighterP& a, const FighterP& t, const Move& m, int dmg,
       shakeT_ = G.time;
       log.push_back("  " + t->name() + T(" poussé contre le bord : choc ") + std::to_string(clash));
     }
+    return;
+  }
+  if (blockedCell(to)) {  // contre un obstacle : choc, comme contre le bord
+    hurt(t);
+    pop(t, T("Choc !"), rgb(0xffb070));
+    shakeT_ = G.time;
+    log.push_back("  " + t->name() + T(" heurte un obstacle : choc ") + std::to_string(clash));
     return;
   }
   FighterP occ = at(to);
@@ -2926,6 +2944,13 @@ void Battle::draw() {
         Pt p = cellPos(c);
         g.ellipse(p.x, p.y + 13, 14, 5, rgb(0xff3b30, uint8_t(120 + 90 * std::sin(t * 7))));
       }
+  // Obstacles (3.4) : posés sur leur case, avec leur ombre (sous les combattants : ils sont petits)
+  for (auto& [c, spr] : obstacles_)
+    if (const SpriteRect* r = findSprite(spr)) {
+      Pt p = cellPos(c);
+      g.ellipse(p.x, p.y + 14, r->w * .4f, 3, rgb(0, 60));
+      g.sprite(*r, std::round(p.x - r->w / 2.f), std::round(p.y + 16 - r->h), c % 2 == 1);
+    }
   // Combattants, du haut du damier vers le bas : ceux de devant passent par-dessus
   std::vector<FighterP> shown;
   for (auto& f : foes)
@@ -3145,8 +3170,9 @@ void Battle::goOnline(Net mode, std::function<void(const Json&)> send, const std
   names_[0] = me, names_[1] = other;
   for (auto* v : {&foes, &reserve})  // pas de Brisure en duel : les deux camps sont des joueurs
     for (auto& e : *v) e->shieldMax = e->shield = 0, e->broken = false;
-  weather_ = -1;  // ni météo ni terrain : le duel reste le même chez les deux joueurs
+  weather_ = -1;  // ni météo ni terrain ni obstacles : le duel reste le même chez les deux joueurs
   terrain_.fill(-1);
+  obstacles_.clear();
   sc.clear();
   if (mode == Net::Host) sc.say(T("Duel : ") + me + T(" contre ") + other + " !", 1.3f);
 }
@@ -3219,8 +3245,10 @@ Json Battle::netState() const {
   for (auto& w : warnings_) warn.push_back(Json::array({netCell(w.center), (int)w.zone}));
   Json ter = Json::array();
   for (int v : terrain_) ter.push_back(v);
+  Json obs = Json::array();
+  for (auto& [c, spr] : obstacles_) obs.push_back(Json::array({netCell(c), spr}));
   return Json{{"t", "etat"}, {"a", pack(allies)}, {"b", pack(foes)}, {"msg", sc.showingMessage() ? sc.text() : std::string()}, {"attente", wait},
-              {"w", warn}, {"meteo", weather_}, {"terrain", ter}};
+              {"w", warn}, {"meteo", weather_}, {"terrain", ter}, {"obstacles", obs}};
 }
 
 void Battle::netMessage(const Json& m) {
@@ -3276,6 +3304,10 @@ void Battle::netMessage(const Json& m) {
           int v = ter[i].is_number_integer() ? ter[i].get<int>() : -1;
           terrain_[(size_t)netCell((int)i)] = v >= 0 && v < (int)rules().terrains.size() ? v : -1;
         }
+      obstacles_.clear();
+      for (auto& o : m.value("obstacles", Json::array()))
+        if (o.is_array() && o.size() == 2 && o[0].is_number_integer() && o[1].is_string())
+          obstacles_[netCell(std::clamp(o[0].get<int>(), 0, BOARD_CELLS - 1))] = o[1].get<std::string>();
     } else if (k == "tour") {
       int i = jget(m, "i", -1);
       if (i < 0 || i >= (int)allies.size() || !allies[(size_t)i]->alive() || !mineToCommand(allies[(size_t)i])) return;

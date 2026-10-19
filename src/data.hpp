@@ -244,6 +244,10 @@ struct Rules {
   int moveRange = 2, bossReach = 2, breakthrough = 1;
   double backStab = 1.3, surround = .1, contact = .75;
   std::vector<std::string> flyTypes, fastTypes;
+  // Obstacles (3.4) : entre obstacleMin et obstacleMax cases du milieu du plateau sont prises par un décor
+  // (sprite tiré dans obstacleSprites[décor]) : personne ne s'y arrête ni ne les traverse, sauf en volant
+  int obstacleMin = 0, obstacleMax = 2;
+  std::map<std::string, std::vector<std::string>> obstacleSprites;
   // États
   double poisonDmg = .1, burnDmg = .0625, burnAtk = .75, paraSpeed = .5, paraSkip = .25;
   int sleepMin = 1, sleepMax = 3;

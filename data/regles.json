@@ -45,7 +45,16 @@
     "contact": 0.75,
     "percee": 1,
     "vol": ["vent", "esprit"],
-    "rapides": ["vent", "foudre"]
+    "rapides": ["vent", "foudre"],
+    "obstacles_min": 0,
+    "obstacles_max": 3,
+    "decors_obstacles": {
+      "vallee": ["rocher", "buisson", "tonneau"],
+      "foret": ["buisson_2", "buisson_baies", "pierres_moussues"],
+      "cendres": ["rocher", "rochers", "cailloux"],
+      "grotte": ["rocher", "cailloux", "rochers"],
+      "neige": ["rocher", "sapin_petit"]
+    }
   },
   "meteo": [
     {
@@ -190,6 +199,11 @@
       "id": "echiquier",
       "aide": "Échiquier",
       "texte": "Les deux camps partagent le plateau. « Se déplacer » ne finit pas le tour : avancez, contournez la ligne ennemie et frappez dans le dos, ou protégez vos lanceurs de sorts."
+    },
+    {
+      "id": "obstacle",
+      "aide": "Échiquier",
+      "texte": "Un obstacle bloque le passage au milieu du plateau : contournez-le, abritez vos lanceurs derrière, ou poussez un ennemi contre lui (choc !)."
     },
     {
       "id": "bouclier",

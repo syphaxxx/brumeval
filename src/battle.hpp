@@ -296,6 +296,9 @@ class Battle {
   // Météo (indice dans rules().weathers, -1 : temps calme) et cases de terrain du plateau
   int weather_ = -1;
   std::array<int, BOARD_CELLS> terrain_{};  // indice dans rules().terrains, -1 : rien
+  // Obstacles (3.4) : case → sprite du décor (rocher, buisson…) ; on ne s'y arrête pas, on ne les traverse qu'en volant
+  std::map<int, std::string> obstacles_;
+  bool blockedCell(int c) const { return obstacles_.count(c) > 0; }
   const Rules::Terrain* terrainOf(int cell) const;
   const Rules::Terrain* terrainAt(const FighterP& f) const;  // case spéciale sous ce combattant (nullptr : aucune)
   bool terrainHits(const FighterP& f, const Rules::Terrain* t) const;  // le terrain agit sur lui (pas insensible)

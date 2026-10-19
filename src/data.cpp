@@ -223,6 +223,8 @@ std::vector<RuleField> ruleFields(Rules& r) {
       D("damier", "encercle", "Échiquier : dégâts en plus par adversaire au contact (au-delà du 1er)", r.surround, 0, 1, .05),
       D("damier", "contact", "Échiquier : distance ou magie au contact d'un ennemi", r.contact, .1, 1, .05),
       I("damier", "percee", "Échiquier : Percée (bonus en atteignant le bord adverse)", r.breakthrough, 0, 3, 1),
+      I("damier", "obstacles_min", "Échiquier : obstacles sur le plateau (minimum)", r.obstacleMin, 0, 6, 1),
+      I("damier", "obstacles_max", "Échiquier : obstacles sur le plateau (maximum)", r.obstacleMax, 0, 6, 1),
       I("duo", "jauge", "Duo : jauge ATB du partenaire (%)", r.duoGauge, 0, 100, 5),
       D("etats", "poison_degats", "Poison : part des PV perdus par tour", r.poisonDmg, 0, 1, .01),
       D("etats", "brulure_degats", "Brûlure : part des PV perdus par tour", r.burnDmg, 0, 1, .01),
@@ -296,6 +298,8 @@ static void loadRules(const Json& j) {
   if (j.contains("damier")) {
     r.flyTypes = jget(j["damier"], "vol", std::vector<std::string>{});
     r.fastTypes = jget(j["damier"], "rapides", std::vector<std::string>{});
+    Json obs = j["damier"].value("decors_obstacles", Json::object());  // variable : la boucle doit la garder en vie
+    for (auto& [th, v] : obs.items()) r.obstacleSprites[th] = v.get<std::vector<std::string>>();
   }
   for (auto& w : j.value("meteo", Json::array())) {
     Rules::Weather x;

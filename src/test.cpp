@@ -503,6 +503,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       B.cells_[maelle.get()] = boardAt(3, 0);
       B.moved_.clear();
       B.terrain_.fill(-1);
+      B.obstacles_.clear();
     };
     clearCells();
     B.cells_[brute.get()] = boardAt(1, 4), B.cells_[extra.get()] = boardAt(2, 4), B.cells_[mage.get()] = boardAt(1, 7);
@@ -570,6 +571,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       B.cells_[maelle.get()] = boardAt(2, 2), B.cells_[brute.get()] = boardAt(1, 5), B.cells_[mage.get()] = boardAt(0, 6);
       B.cells_[extra.get()] = boardAt(3, 4);
       B.cells_[lior.get()] = boardAt(2, BOARD_W - 1);
+      B.obstacles_ = {{boardAt(3, 2), "rocher"}, {boardAt(0, 4), "buisson"}};
       B.pops.clear();
       B.start = time - 5;  // sans les bandes de l'entrée en combat
       B.bursts_.push_back({lior, "percee", time});
@@ -578,6 +580,14 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       snap("echiquier_percee");
       mage->broken = false, mage->shield = mage->shieldMax;
     }
+    // Obstacle : on ne s'y arrête pas et on ne le traverse pas (le détour coûte trop de pas)
+    B.cells_[lior.get()] = boardAt(1, 1);
+    B.moved_.clear();
+    bool openRoad = B.walkable(lior).count(boardAt(1, 3)) > 0;
+    B.obstacles_[boardAt(1, 2)] = "rocher";
+    auto road = B.walkable(lior);
+    check(openRoad && !road.count(boardAt(1, 2)) && !road.count(boardAt(1, 3)), "échiquier : un obstacle bloque le passage (ni arrêt ni traversée)");
+    B.obstacles_.clear();
     lior->stage.fill(0);
     B.moved_.clear();
     B.cells_[lior.get()] = boardAt(1, 2);
@@ -770,6 +780,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   startBattle({makeFighter("mulotin", 4), makeFighter("champichou", 5), makeFighter("piafouine", 4)}, false, nullptr);
   if (battle_) {  // échiquier : les ennemis au contact de l'équipe, pour que les menus suivants aient tous une cible
     Battle& B = *battle_;
+    B.obstacles_.clear();
     for (size_t i = 0; i < B.foes.size(); i++) B.cells_[B.foes[i].get()] = boardAt((int)i % GRID, GRID);
     for (size_t i = 0; i < B.allies.size(); i++) B.cells_[B.allies[i].get()] = boardAt((int)i % GRID, GRID - 1 - (int)i / GRID);
   }
@@ -1007,6 +1018,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     FighterP f1 = B.foes[0], f2 = B.foes[1];
     for (auto& f : B.foes) f->mhp = f->hp = 5000;
     B.terrain_.fill(-1);
+    B.obstacles_.clear();
     B.weather_ = -1;
     const Move &push = moveInfo("charge"), &pull = moveInfo("grappin");
     std::vector<FighterP> ko;
@@ -1029,6 +1041,13 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     f2->boss = true;
     bool boss = B.shoveDest(lior, f2, push) == -2;
     f2->boss = false;
+    B.cells_[f1.get()] = boardAt(0, 4);  // contre un obstacle : choc, il ne bouge pas
+    B.obstacles_[boardAt(0, 5)] = "rocher";
+    int hpRock = f1->hp;
+    B.shove(lior, f1, push, 100, ko);
+    bool rock = B.cellOf(f1) == boardAt(0, 4) && f1->hp == hpRock - ch;
+    B.obstacles_.clear();
+    edge = edge && rock;
     // Terrain : braises sous f1 (Ombre : pas insensible), verglas sous f2
     auto terrainIdx = [&](const std::string& id) {
       for (size_t i = 0; i < rules().terrains.size(); i++)

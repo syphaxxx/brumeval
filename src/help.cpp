@@ -137,6 +137,7 @@ static std::vector<HelpPage> helpPages() {
                 ::T("Dans le dos : frapper un ennemi depuis le côté de son camp fait ×") + num(R.backStab) + ::T(" de dégâts. Encerclé : chaque adversaire au contact au-delà du premier ajoute ") + pct(R.surround) + ::T(" aux dégâts reçus (pas un boss : trop grand pour être encerclé)."),
                 ::T("Percée : le premier qui atteint le bord du camp adverse gagne +") + std::to_string(R.breakthrough) + ::T(" en Attaque, Magie et Vitesse pour le combat (les ennemis aussi : bloquez-les !)."),
                 ::T("Une ligne de combattants protège ceux de derrière : les ennemis doivent la contourner. Attendre : finir son tour sans agir (rejoue plus tôt)."),
+                ::T("Obstacles : rochers, buissons ou tonneaux au milieu du plateau. Personne ne s'y arrête ni ne les traverse (sauf en volant) ; une cible poussée contre l'un d'eux subit un choc."),
                 ::T("Formation (Échap > Formation) : la case de chacun au début du combat, dans votre moitié. Les costauds devant, les lanceurs de sorts derrière.")}});
   p.push_back({::T("Zones"), ::T("Ligne, colonne, croix, tout le camp ; attaques annoncées."),
                {::T("Une cible : seulement la case visée."),
