@@ -398,7 +398,7 @@ static bool hasTypeIn(const Species& s, const std::vector<std::string>& ids) {
 }
 int Battle::moveRange(const FighterP& f) const { return rules().moveRange + (hasTypeIn(f->S(), rules().fastTypes) ? 1 : 0); }
 bool Battle::flier(const FighterP& f) const { return hasTypeIn(f->S(), rules().flyTypes); }
-std::map<int, int> Battle::walkable(const FighterP& f) const {
+std::map<int, int> Battle::walkable(const FighterP& f, std::map<int, int>* parent) const {
   std::map<int, int> out;
   int from = cellOf(f), range = moveRange(f);
   if (from < 0 || range <= 0) return out;
@@ -428,12 +428,22 @@ std::map<int, int> Battle::walkable(const FighterP& f) const {
       int n = boardAt(y, x);
       if (dist.count(n) || (!fly && (foeOn(n) || blockedCell(n)))) continue;
       dist[n] = d + 1;
+      if (parent) (*parent)[n] = c;
       todo.push_back(n);
     }
   }
   for (auto& [c, d] : dist)
     if (c != from && !at(c) && !blockedCell(c)) out[c] = d;  // on traverse un allié, mais on ne s'arrête pas sur lui
   return out;
+}
+std::vector<int> Battle::pathTo(const FighterP& f, int cell) const {
+  std::map<int, int> parent;
+  std::vector<int> path;
+  if (!walkable(f, &parent).count(cell)) return path;
+  for (int c = cell; c != cellOf(f) && parent.count(c); c = parent[c]) path.push_back(c);
+  path.push_back(cellOf(f));
+  std::reverse(path.begin(), path.end());
+  return path;
 }
 int Battle::reach(const FighterP& a) const { return a->boss ? rules().bossReach : 1; }
 bool Battle::engaged(const FighterP& f, int cell) const { return foesAround(f, cell) > 0; }
@@ -1168,6 +1178,17 @@ void Battle::command(FighterP a) {
                          boardMenu(t, cells, true);
                        }});
   }
+  if (moved_.count(a.get()) && moveFrom_.count(a.get()) && !at(moveFrom_[a.get()]))  // annuler son déplacement
+    m.items.push_back({T("Revenir"), "", T("Annuler son déplacement : retour à sa case, on peut de nouveau se déplacer."), true, [this, a] {
+                         G.menus.clear();
+                         if (shown()) slide_[a.get()] = {pos(a), G.time};
+                         cells_[a.get()] = moveFrom_[a.get()];
+                         moveFrom_.erase(a.get());
+                         moved_.erase(a.get());
+                         sound("pas");
+                         log.push_back(a->name() + T(" revient sur ses pas"));
+                         command(a);
+                       }});
   m.items.push_back({T("Attendre"), "", T("Finir son tour sans agir : rejoue plus tôt."), true, [this, a] { waitTurn(a); }});
   std::vector<FighterP> bench;  // avec des héros : un héros n'est remplacé que par un héros
   for (auto& r : G.team)
@@ -2551,8 +2572,11 @@ void Battle::moveTo(FighterP a, int cell) {
     return;
   }
   cursor = nullptr;
+  int from = cellOf(a);
+  bool broke = breakthrough_.count(a.get()) > 0;
   step(a, cell);
   moved_.insert(a.get());
+  if (net_ == Net::None && breakthrough_.count(a.get()) == (broke ? 1u : 0u)) moveFrom_[a.get()] = from;  // « Revenir » possible
   sc.wait(.25f);  // le temps de glisser jusqu'à la case
   sc.call([this, a] { resumeTurn(a); });
 }
@@ -2624,6 +2648,7 @@ void Battle::afterAction(FighterP a, float gauge) {
   a->atb = gauge;
   actor = nullptr;
   moved_.erase(a.get());  // son prochain tour : il pourra de nouveau se déplacer
+  moveFrom_.erase(a.get());
   // Poison et brûlure : dégâts à la fin du tour de celui qui en souffre
   if (a->alive() && (a->status == Status::Poison || a->status == Status::Burn)) {
     bool poison = a->status == Status::Poison;
@@ -2813,6 +2838,16 @@ void Battle::drawZones(float t) {
           g.poly({{x, y - 2.5f}, {x + 2.5f, y}, {x, y + 2.5f}, {x - 2.5f, y}}, rgb(0xff4a3a, 220));
         }
       }
+    if (pick_.move && center >= 0 && actor) {  // le chemin jusqu'à la case : des points le long des pas
+      auto path = pathTo(actor, center);
+      for (size_t i = 1; i < path.size(); i++) {
+        Pt p0 = cellPos(path[i - 1]), p1 = cellPos(path[i]);
+        for (int k = 1; k <= 3; k++) {
+          float u = k / 4.f;
+          g.ellipse(p0.x + (p1.x - p0.x) * u, p0.y + 13 + (p1.y - p0.y) * u, 1.5f, 1.2f, rgb(0xfff2a0, uint8_t(170 + 60 * pulse)));
+        }
+      }
+    }
     if (pick_.move && center >= 0 && actor) {  // le combattant en transparence sur la case choisie
       Pt p = cellPos(center);
       g.alpha = .45f;

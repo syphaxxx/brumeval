@@ -567,6 +567,24 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     B.moveTo(lior, to);
     for (int i = 0; i < 200 && B.sc.busy(); i++) frame();
     bool again = B.cellOf(lior) == to && menus.active() && B.actor == lior && B.moved_.count(lior.get());
+    {  // « Revenir » : retour à la case de départ, on peut de nouveau se déplacer ; le chemin passe par des cases voisines
+      bool undone = false;
+      for (auto& it : menus.top().items)
+        if (it.label == T("Revenir") && it.act) {
+          auto act = it.act;
+          act();
+          undone = B.cellOf(lior) == boardAt(1, 1) && !B.moved_.count(lior.get()) && menus.active();
+          break;
+        }
+      auto path = B.pathTo(lior, boardAt(0, 2));
+      bool road = path.size() == 3 && path.front() == boardAt(1, 1) && path.back() == boardAt(0, 2);
+      for (size_t i = 1; i < path.size(); i++) road = road && boardSteps(path[i - 1], path[i]) == 1;
+      check(undone && road, std::string("échiquier : « Revenir » annule le déplacement ; le chemin affiché suit des pas voisins") +
+                                (undone ? "" : " (pas revenu)") + (road ? "" : " (chemin : " + std::to_string(path.size()) + " cases)"));
+      menus.clear();
+      B.moveTo(lior, to);
+      for (int i = 0; i < 200 && B.sc.busy(); i++) frame();
+    }
     B.waitTurn(lior);
     for (int i = 0; i < 200 && B.sc.busy(); i++) {
       in.confirm = true;

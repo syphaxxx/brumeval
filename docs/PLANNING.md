@@ -229,6 +229,13 @@ Deuxième série (7 h 35) :
 Avancement : 9 à 12 faits (portée en bleu ; sons « pas », « bond », « echange » ; tactiques S'approcher, Contourner,
 Protéger ; formation choisie sur le dessin, flèches dans les quatre directions et souris).
 
+Troisième série (7 h 50) :
+13. En choisissant sa case, le chemin s'affiche (pointillés le long des pas).
+14. « Revenir » : annuler son déplacement tant qu'on n'a pas agi (pas en ligne).
+15. Animaux des villes (chien, chat, poule, vache, cheval) : marche animée, rendue avec Blender.
+16. Mesures, joueur automatique, revue, bilan.
+Avancement : 13 et 14 faits (chemin en pointillés dorés ; « Revenir », pas en ligne ni après une Percée).
+
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
 - Fait en 1.6 : **réserve de créatures** (au-delà de 8 membres) et

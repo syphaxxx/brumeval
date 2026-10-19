@@ -68,7 +68,10 @@ gauche, les ennemis de la droite, et **chacun peut passer de l'autre côté**.
   combat. Les ennemis aussi : barrez-leur la route.
 - **Obstacles** : selon le décor, des rochers, buissons ou tonneaux occupent quelques cases du milieu. On ne peut
   ni s'y arrêter ni les traverser (sauf en volant) ; un ennemi poussé contre l'un d'eux subit un choc.
-- En choisissant sa case, de petits **losanges rouges** montrent combien d'ennemis pourront y frapper au prochain tour.
+- En choisissant sa case, de petits **losanges rouges** montrent combien d'ennemis pourront y frapper au prochain tour,
+  et le chemin s'affiche en pointillés. Tant qu'on n'a pas agi, **Revenir** annule le déplacement.
+- **Tactiques** de l'échiquier : S'approcher, Contourner (passer dans le dos) et Protéger un allié ; le tour continue
+  ensuite avec la règle suivante. En mode auto, chacun choisit aussi sa case avant d'agir.
 - Certaines techniques **bougent** : Dague, Coup de bec, Piqué tonnerre et Lame d'ombre font **bondir** derrière la
   cible ; Coup bas fait **échanger** sa case avec celle de la cible.
 - Chaque technique a une **zone** : une cible, une **ligne** (d'un bord du plateau à l'autre), une **colonne**, une

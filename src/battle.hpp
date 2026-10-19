@@ -148,7 +148,10 @@ class Battle {
   std::set<const Fighter*> moved_;  // ceux qui se sont déjà déplacés pendant leur tour
   int moveRange(const FighterP& f) const;
   bool flier(const FighterP& f) const;
-  std::map<int, int> walkable(const FighterP& f) const;  // cases où il peut aller ce tour → nombre de pas
+  // cases où il peut aller ce tour → nombre de pas (parent : d'où l'on arrive sur chaque case, pour le chemin)
+  std::map<int, int> walkable(const FighterP& f, std::map<int, int>* parent = nullptr) const;
+  std::vector<int> pathTo(const FighterP& f, int cell) const;  // les cases du chemin, de sa case jusqu'à cell
+  std::map<const Fighter*, int> moveFrom_;                   // « Revenir » : sa case avant « Se déplacer » (ce tour)
   int reach(const FighterP& a) const;                     // portée du corps à corps (1 : les 8 cases autour ; boss : plus)
   // cell / from : la case où il se trouverait (-1 : sa case actuelle)
   bool engaged(const FighterP& f, int cell = -1) const;   // un adversaire est au contact

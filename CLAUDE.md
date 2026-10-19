@@ -429,7 +429,11 @@ code) ; `docs/GUIDE.md` les range par domaine.
   tactiques commencent par `planMove` (pas chez l'invité). « Se déplacer » marque les cases menacées
   (`meleeThreat` : losanges rouges, aide « Danger : n ennemis »). Techniques de mouvement (`Move::motion`, champ
   `mouvement`) : `bond` (le lanceur saute derrière la cible, `leapDest`) et `echange` (cases échangées, pas un
-  boss), dans `motionAfterHit` ; effets Godot `poussiere` et `echange`. Mesuré (BRUMEVAL_SIMULATIONS=2) : sans
+  boss), dans `motionAfterHit` ; effets Godot `poussiere` et `echange`. Sons `pas`, `bond`, `echange`. Menu de commande :
+  portée en bleu (`walkable`), « Revenir » (`moveFrom_`, pas en ligne ni après une Percée) ; choix de case : chemin
+  (`pathTo`). Tactiques `approcher`, `contourner`, `proteger` (`Plan::cell`, le tour continue) ; une règle de
+  déplacement qui s'applique passe avant `planMove`. Formation : liste dans l'ordre du dessin (colonnes), Gauche/Droite
+  par `adjust`, souris sur le dessin (`formationPick_`, `formationCellAt`). Mesuré (BRUMEVAL_SIMULATIONS=2) : sans
   réglage, boss bien plus faciles (encerclés par 6 alliés : +60 %) ; après (boss ni encerclés ni gênés au contact,
   encerclement 10 %, Ignarok N.25, Ronce-Mère N.22, Mère des Brumes N.41), difficulté proche de la 3.3.
 - Attaques annoncées (1.8) : `Battle::bossPlan` ; un boss (pas en duel) annonce
