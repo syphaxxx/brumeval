@@ -65,9 +65,9 @@
       "y": 14,
       "l": 30,
       "h": 26,
-      "niveau_min": 62,
-      "niveau_max": 66,
-      "max_ennemis": 4,
+      "niveau_min": 60,
+      "niveau_max": 64,
+      "max_ennemis": 3,
       "creatures": ["rocaube", "aubespectre", "nacrelin", "loup_aube"]
     }
   ],

@@ -28,7 +28,7 @@
     "##.T...T.......T...nnnnnnnnnnn=nnnnnnnnnnn..T.....~iii~TT........nnnnnnnnn...nnnnn##",
     "##.........T..T....nnnnnnnnnnn=nnnnnnnnnnn..T....~iiiii~....========nnnnn.....nnnn##",
     "##.....TT....T....Tnnnnnnnnnnn=nnnnnnnnnnn.......~iiiii~T.......n....n...n.......n.#",
-    "##.T................nnnnnnnnn.=TnnnnnnnnnT...T.T~iiiiiii~.##nnnnnnnnn...nnn........#",
+    "##.T................nnnnnnnnn.=TnnnnnnnnnT...T.T~iiiiiii~.##nnnnnnnnn...nnn........k",
     "##.T.T.~~~.T.T......TTnnnnn...=...nnnnn.......T.~iiiiiii~T##nnnnnnnnnnnn#####nn....#",
     "##...~~~~~~~.T................==............=====iiiiiii~.##nnnnnnnnnnnnn#nnnnnn...#",
     "##.T.~~iii~~..................==................~iiiiiii~.##.Tnn##nnnnn#####nnnnn..#",
@@ -210,7 +210,8 @@
       "evenement": "tom_2",
       "si": {"drapeau": ["tom1", "boss3"]},
       "cache_si": "tom2"
-    }
+    },
+    {"x": 81, "y": 22, "apparence": "chevalier", "direction": "droite", "evenement": "garde_glacier"}
   ],
   "coffres": [
     {"x": 57, "y": 23, "objet": "fleur_givre", "quantite": 1},
@@ -234,7 +235,17 @@
   "passages": [
     {"x": 30, "y": 3, "vers": "temple", "tx": 20, "ty": 27, "direction": "haut"},
     {"x": 30, "y": 43, "vers": "cendrelune", "tx": 13, "ty": 1, "direction": "bas"},
-    {"x": 31, "y": 43, "vers": "cendrelune", "tx": 13, "ty": 1, "direction": "bas"}
+    {"x": 31, "y": 43, "vers": "cendrelune", "tx": 13, "ty": 1, "direction": "bas"},
+    {
+      "x": 83,
+      "y": 24,
+      "vers": "glacier",
+      "tx": 28,
+      "ty": 30,
+      "direction": "droite",
+      "condition": {"drapeau": "boss2"},
+      "message": "Un mur de glace ferme le passage."
+    }
   ],
   "zones": [
     {

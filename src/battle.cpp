@@ -2667,6 +2667,13 @@ void Battle::draw() {
   auto ground = [&](uint32_t far, uint32_t nearC) { g.gradV(L, HZ - 2, W, SCREEN_H - HZ + 2, rgb(far), rgb(nearC)); };
   if (bg == Theme::Vallee && !boss) {
     g.gradV(L, 0, W, HZ, rgb(0x8fc0db), rgb(0xdfeac0));
+    // montagnes lointaines (bleutées par la distance) et nuages qui passent lentement
+    g.poly(ridge({{0, 112}, {40, 70}, {90, 96}, {150, 58}, {205, 92}, {255, 66}, {320, 98}, {320, 112}}, 84, 90), rgb(0xa9c6d8));
+    g.poly(ridge({{0, 112}, {70, 88}, {120, 104}, {190, 82}, {250, 102}, {320, 90}, {320, 112}}, 96, 94), rgb(0xb8d2c4));
+    for (int i = 0; i < 6 * more / 100 + 1; i++) {
+      float cx = L + std::fmod(i * 97.f + t * 4, W + 140) - 70, cy = 7 + (i % 3) * 8.f;
+      g.ellipse(cx, cy, 16, 4, rgb(0xffffff, 190)), g.ellipse(cx - 9, cy + 1, 9, 3, rgb(0xffffff, 170)), g.ellipse(cx + 8, cy - 2, 9, 4, rgb(0xffffff, 200));
+    }
     if (L < 0) g.ellipse(L + 10, HZ, 70, 9, rgb(0xaed08c)), g.ellipse(R - 10, HZ, 70, 10, rgb(0xbcd89a));
     g.ellipse(70, HZ, 120, 11, rgb(0xbcd89a));
     g.ellipse(260, HZ + 1, 110, 9, rgb(0xaed08c));
@@ -2704,6 +2711,13 @@ void Battle::draw() {
       g.rect(L + std::fmod(i * 41 + t * 6, W), std::fmod(i * 23 + t * 14, 180.f), 1, 1, rgb(0xffb347, 160));
   } else {
     g.gradV(L, 0, W, HZ, rgb(0x120e18), rgb(0x2e2838));
+    for (int i = L < 0 ? (int)std::floor(L / 23) - 1 : 0; i * 23.f < R; i++) {  // stalactites, et une goutte qui tombe de temps en temps
+      float x = i * 23.f + (i * 7) % 9, len = 8 + (i * 13) % 14;
+      g.tri(x - 4, 0, x + 4, 0, x, len, rgb(0x241e30));
+      g.tri(x - 2, 0, x + 1, 0, x - 1, len - 3, rgb(0x3a3248));
+      float ph = std::fmod(t * .7f + i * .37f, 3.f);
+      if (ph < 1) g.rect(x, len + ph * (HZ - len), 1, 2, rgb(0x9fd8ff, 160));
+    }
     ground(0x3a3444, 0x585060);
     for (int i = L < 0 ? (int)std::floor((L - 20) / 70) : 0; 20 + i * 70.f < R; i++) {
       float x = 20 + i * 70.f;

@@ -3240,9 +3240,9 @@
               {
                 "espece": "brume_noire",
                 "niveau": 68,
-                "pv": 8,
+                "pv": 6.5,
                 "boss": true,
-                "bouclier": 16,
+                "bouclier": 14,
                 "phases": [
                   {
                     "pv": 0.7,
@@ -3805,6 +3805,294 @@
           },
           {"action": "quete", "id": "peche"}
         ]
+      }
+    ]
+  },
+  "mineur": {
+    "pages": [
+      {
+        "si": {"drapeau": "mines_boss"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Mineur : Le troll est parti ! On va pouvoir rouvrir la mine. Merci, les jeunes."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "boss1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Mineur : La vieille mine, à l'ouest… Un troll s'y est installé quand le volcan a commencé à gronder."
+          },
+          {
+            "action": "dire",
+            "texte": "Mineur : Il y a encore du bon minerai là-dedans. Et une salle de pierres qu'on n'a jamais su ouvrir."
+          },
+          {"action": "quete", "id": "mines"}
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Mineur : Tant que Sylvarque garde le col, plus personne ne vient acheter notre minerai."
+          }
+        ]
+      }
+    ]
+  },
+  "mines_boss": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Au fond de la galerie, un troll énorme ronge des cailloux. Il vous a sentis !"
+      },
+      {
+        "action": "question",
+        "texte": "Combattre ?",
+        "oui": [
+          {
+            "action": "combat",
+            "ennemis": [
+              {"espece": "rocaillou", "niveau": 18},
+              {"espece": "troll_mines", "niveau": 21, "pv": 4, "boss": true, "bouclier": 5},
+              {"espece": "galetor", "niveau": 18}
+            ],
+            "renforts": [{"espece": "brutor", "niveau": 19}],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "mines_boss"},
+              {"action": "donner", "objet": "croc_troll", "quantite": 1},
+              {"action": "or", "quantite": 800},
+              {
+                "action": "dire",
+                "texte": "Le troll s'enfuit par une galerie effondrée. Il a laissé un croc derrière lui."
+              },
+              {"action": "quete", "id": "mines", "fin": true}
+            ],
+            "musique": "boss"
+          }
+        ],
+        "non": [{"action": "dire", "texte": "Vous reculez sans bruit."}]
+      }
+    ]
+  },
+  "garde_glacier": {
+    "pages": [
+      {
+        "si": {"drapeau": "glacier_boss"},
+        "actions": [
+          {"action": "dire", "texte": "Garde : Le colosse est tombé ! Le glacier redevient silencieux."}
+        ]
+      },
+      {
+        "si": {"drapeau": "boss2"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Garde : Le glacier, à l'est, s'est réveillé en même temps que le Givrecorne. Un colosse de glace y marche."
+          },
+          {
+            "action": "dire",
+            "texte": "Garde : Si vous y allez, couvrez-vous. Et méfiez-vous des dalles : les anciens y ont caché quelque chose."
+          },
+          {"action": "quete", "id": "glacier"}
+        ]
+      },
+      {"actions": [{"action": "dire", "texte": "Garde : Personne ne passe. Le glacier est trop dangereux."}]}
+    ]
+  },
+  "glacier_boss": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Une montagne de glace se déplie lentement : le Colosse de givre ouvre deux yeux bleus."
+      },
+      {
+        "action": "question",
+        "texte": "Combattre ?",
+        "oui": [
+          {
+            "action": "combat",
+            "ennemis": [
+              {"espece": "givrelin", "niveau": 30},
+              {
+                "espece": "colosse_givre",
+                "niveau": 33,
+                "pv": 4.5,
+                "boss": true,
+                "bouclier": 6,
+                "phases": [{"pv": 0.5, "message": "Le Colosse se couvre de givre !", "bonus": {"defense": 1}}]
+              },
+              {"espece": "banquisot", "niveau": 30}
+            ],
+            "renforts": [],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "glacier_boss"},
+              {"action": "donner", "objet": "coeur_colosse", "quantite": 1},
+              {"action": "or", "quantite": 2000},
+              {
+                "action": "dire",
+                "texte": "Le Colosse s'effondre en mille éclats. Au milieu, un bloc de glace bat comme un cœur."
+              },
+              {"action": "quete", "id": "glacier", "fin": true}
+            ],
+            "musique": "boss"
+          }
+        ],
+        "non": [{"action": "dire", "texte": "Vous reculez sans bruit."}]
+      }
+    ]
+  },
+  "epave_boss": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Dans la cale noyée, l'eau se met à bouillonner. Un œil immense s'ouvre sous la surface."
+      },
+      {"action": "dire", "texte": "Le Léviathan surgit, couvert d'algues et de coquillages !"},
+      {
+        "action": "question",
+        "texte": "Combattre ?",
+        "oui": [
+          {
+            "action": "combat",
+            "ennemis": [
+              {"espece": "noyelin", "niveau": 48},
+              {
+                "espece": "leviathan",
+                "niveau": 52,
+                "pv": 5,
+                "boss": true,
+                "bouclier": 8,
+                "phases": [
+                  {
+                    "pv": 0.5,
+                    "message": "Le Léviathan appelle les profondeurs !",
+                    "renforts": [{"espece": "voltanguille", "niveau": 49}]
+                  }
+                ]
+              },
+              {"espece": "noyelin", "niveau": 48}
+            ],
+            "renforts": [],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "epave_boss"},
+              {"action": "donner", "objet": "oeil_leviathan", "quantite": 1},
+              {"action": "or", "quantite": 5000},
+              {
+                "action": "dire",
+                "texte": "Le Léviathan sombre dans les profondeurs. Une perle noire roule sur le pont : son œil."
+              },
+              {"action": "quete", "id": "epave", "fin": true}
+            ],
+            "musique": "boss"
+          }
+        ],
+        "non": [{"action": "dire", "texte": "Vous reculez sans bruit."}]
+      }
+    ]
+  },
+  "ilya_abime": {
+    "pages": [
+      {
+        "si": {"drapeau": "abime3_boss"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ilya : L'Orage ancien… Même mon peuple ne savait pas qu'il dormait là. Vous êtes vraiment incroyables."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ilya : Cette faille s'est ouverte quand la Brume Noire est tombée. Elle descend très profond."
+          },
+          {
+            "action": "dire",
+            "texte": "Ilya : Tout au fond, quelque chose gronde. Un reste de l'orage d'il y a mille ans, peut-être."
+          },
+          {
+            "action": "dire",
+            "texte": "Ilya : N'y allez que si vous êtes très forts. Trois étages, et personne n'en est jamais remonté."
+          },
+          {"action": "quete", "id": "abime"}
+        ]
+      }
+    ]
+  },
+  "abime3_boss": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Au fond de l'Abîme, l'air crépite. Une tempête de feu et d'éclairs prend forme."
+      },
+      {
+        "action": "dire",
+        "texte": "Orage ancien : Mille ans… Mille ans dans le noir. Je vais enfin revoir le ciel !"
+      },
+      {
+        "action": "question",
+        "texte": "Combattre ?",
+        "oui": [
+          {
+            "action": "combat",
+            "ennemis": [
+              {"espece": "nebulis", "niveau": 94},
+              {
+                "espece": "orage_ancien",
+                "niveau": 100,
+                "pv": 9,
+                "boss": true,
+                "bouclier": 18,
+                "phases": [
+                  {"pv": 0.7, "message": "L'Orage ancien embrase l'Abîme !", "bonus": {"magie": 1}},
+                  {
+                    "pv": 0.4,
+                    "message": "Des éclairs jaillissent de partout !",
+                    "bouclier": 14,
+                    "renforts": [{"espece": "orageline", "niveau": 95}]
+                  },
+                  {
+                    "pv": 0.15,
+                    "message": "L'Orage ancien rassemble ses dernières forces !",
+                    "bonus": {"attaque": 1, "vitesse": 1}
+                  }
+                ]
+              },
+              {"espece": "brumeloup", "niveau": 94}
+            ],
+            "renforts": [],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "abime3_boss"},
+              {"action": "donner", "objet": "eclair_fige", "quantite": 1},
+              {"action": "or", "quantite": 20000},
+              {
+                "action": "dire",
+                "texte": "L'Orage ancien se disperse en une pluie d'étincelles. Il ne reste qu'un éclair figé dans le cristal."
+              },
+              {"action": "donner", "objet": "lame_orage", "quantite": 1},
+              {"action": "quete", "id": "abime", "fin": true}
+            ],
+            "musique": "boss_final"
+          }
+        ],
+        "non": [{"action": "dire", "texte": "Vous reculez sans bruit."}]
       }
     ]
   }

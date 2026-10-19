@@ -25,9 +25,9 @@
     "TTTTTTTT,TTTTTTTTTTT.....TTTTT==T,,,,,,,,,,,TTTT",
     "TTTTT,,,,,,,TTTTTTTTTT.TTTTTTT==T,,,,,,,,,,,TTTT",
     "TTTTT,,,,,,,TTTTTTTTTT,TTTTTTT==T,,,,,.,,,,,TTTT",
-    "TTTT,,,,,,,F,TTTTTT,,,,,,,TTTT==T,,,,,.,,,,,TTTT",
-    "TTTT,,,,F,,,,TTTTTT,,,,,,,TTTT==T,,,,,.,,,,,TTTT",
-    "TTTT,,,,.,,,,TTTTT,,,,,,,,,TTT==TTF,,,.,,,,TTTTT",
+    "T.....,,,,,F,TTTTTT,,,,,,,TTTT==T,,,,,.,,,,,TTTT",
+    "=.....,,F,,,,TTTTTT,,,,,,,TTTT==T,,,,,.,,,,,TTTT",
+    "T.....,,.,,,,TTTTT,,,,,,,,,TTT==TTF,,,.,,,,TTTTT",
     "TTTTT,,,.......===============.........,,,TTTTTT",
     "TTTTT,,,,,,,TT==================TTTTTT,TTTTTTTTT",
     "TTTTTTTT,TTTTT==TTT,,,,,,,TTTTTTTTTTTTTTTTTTTTTT",
@@ -56,6 +56,14 @@
         "Je suis venue avec Ilya pour garder le bois. Le Gardien ne nous laisse plus passer.",
         "Il croit que tout ce qui vient d'ailleurs apporte la brume."
       ]
+    },
+    {
+      "x": 2,
+      "y": 21,
+      "apparence": "mage_givre",
+      "direction": "gauche",
+      "evenement": "ilya_abime",
+      "si": {"drapeau": "aube_fin"}
     }
   ],
   "coffres": [
@@ -89,6 +97,16 @@
       "direction": "haut",
       "condition": {"drapeau": "gardien_lueurs"},
       "message": "Le Gardien des Lueurs barre le chemin."
+    },
+    {
+      "x": 0,
+      "y": 22,
+      "vers": "abime1",
+      "tx": 8,
+      "ty": 30,
+      "direction": "gauche",
+      "condition": {"drapeau": "aube_fin"},
+      "message": "Un vent glacé sort d'une faille. Il vaut mieux attendre que l'île soit en paix."
     }
   ],
   "zones": [
@@ -99,7 +117,7 @@
       "h": 22,
       "niveau_min": 55,
       "niveau_max": 59,
-      "max_ennemis": 4,
+      "max_ennemis": 3,
       "creatures": ["lueurine", "loup_aube", "aubelle", "aubespectre"]
     },
     {
@@ -109,8 +127,8 @@
       "h": 18,
       "niveau_min": 57,
       "niveau_max": 60,
-      "max_ennemis": 4,
-      "creatures": ["lueurine", "loup_aube", "aubespectre", "rocaube", "nacrelin"]
+      "max_ennemis": 3,
+      "creatures": ["lueurine", "loup_aube", "aubespectre", "rocaube"]
     }
   ],
   "boss": [{"x": 23, "y": 5, "espece": "gardien_lueurs", "drapeau": "gardien_lueurs"}],

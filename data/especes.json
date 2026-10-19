@@ -1279,5 +1279,53 @@
       [1, "foudre_noire"]
     ],
     "talent": "esprit_clair"
+  },
+  {
+    "id": "troll_mines",
+    "nom": "Troll des mines",
+    "sprite": "troll_mines",
+    "types": ["roche", "normal"],
+    "base": {"pv": 96, "pm": 20, "attaque": 66, "defense": 70, "magie": 30, "resistance": 44, "vitesse": 34},
+    "immunites": ["sommeil"],
+    "forme": "boss",
+    "couleurs": ["#8a6a4a", "#e0c8a0"],
+    "apprend": [[1, "fracas"], [1, "eboul"], [1, "seisme"], [1, "cri"]],
+    "talent": "carapace"
+  },
+  {
+    "id": "colosse_givre",
+    "nom": "Colosse de givre",
+    "sprite": "colosse_givre",
+    "types": ["glace", "roche"],
+    "base": {"pv": 104, "pm": 30, "attaque": 70, "defense": 74, "magie": 50, "resistance": 58, "vitesse": 36},
+    "immunites": ["sommeil"],
+    "forme": "boss",
+    "couleurs": ["#a0d0f0", "#ffffff"],
+    "apprend": [[1, "corne_givre"], [1, "avalanche"], [1, "blizzard_eternel"], [1, "carapace"]],
+    "talent": "cuirasse"
+  },
+  {
+    "id": "leviathan",
+    "nom": "Léviathan",
+    "sprite": "leviathan",
+    "types": ["eau", "ombre"],
+    "base": {"pv": 110, "pm": 50, "attaque": 70, "defense": 62, "magie": 72, "resistance": 64, "vitesse": 56},
+    "immunites": ["sommeil"],
+    "forme": "boss",
+    "couleurs": ["#2a6a6a", "#a0ffe0"],
+    "apprend": [[1, "trombe"], [1, "lame_ombre"], [1, "vague"], [1, "eclipse"]],
+    "talent": "piquant"
+  },
+  {
+    "id": "orage_ancien",
+    "nom": "Orage ancien",
+    "sprite": "orage_ancien",
+    "types": ["foudre", "feu"],
+    "base": {"pv": 130, "pm": 80, "attaque": 80, "defense": 72, "magie": 86, "resistance": 78, "vitesse": 68},
+    "immunites": ["sommeil"],
+    "forme": "boss",
+    "couleurs": ["#c0402a", "#ffe08a"],
+    "apprend": [[1, "foudre_noire"], [1, "pyro"], [1, "orage"], [1, "ouragan"], [1, "eclipse"]],
+    "talent": "esprit_clair"
   }
 ]

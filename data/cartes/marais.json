@@ -73,7 +73,7 @@
       "h": 36,
       "niveau_min": 57,
       "niveau_max": 61,
-      "max_ennemis": 4,
+      "max_ennemis": 3,
       "creatures": ["crapale", "vasepent", "aubespectre", "lueurine"]
     },
     {
@@ -83,7 +83,7 @@
       "h": 36,
       "niveau_min": 59,
       "niveau_max": 62,
-      "max_ennemis": 4,
+      "max_ennemis": 3,
       "creatures": ["crapale", "vasepent", "rocaube"]
     }
   ],

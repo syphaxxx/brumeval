@@ -710,6 +710,43 @@
     "trophee": true
   },
   {
+    "id": "croc_troll",
+    "nom": "Croc de troll",
+    "description": "Trophée : un croc gros comme un poing, rapporté des Mines de Forgeroc.",
+    "prix": 300,
+    "trophee": true
+  },
+  {
+    "id": "coeur_colosse",
+    "nom": "Cœur du colosse",
+    "description": "Trophée : un bloc de glace qui ne fond jamais, venu du Glacier de Givreval.",
+    "prix": 700,
+    "trophee": true
+  },
+  {
+    "id": "oeil_leviathan",
+    "nom": "Œil du Léviathan",
+    "description": "Trophée : une perle noire, l'œil du monstre de l'épave.",
+    "prix": 1200,
+    "trophee": true
+  },
+  {
+    "id": "eclair_fige",
+    "nom": "Éclair figé",
+    "description": "Trophée : un éclair pris dans le cristal, au fond de l'Abîme.",
+    "prix": 2500,
+    "trophee": true
+  },
+  {
+    "id": "lame_orage",
+    "nom": "Lame de l'orage ancien",
+    "icone": "ic_epee_4",
+    "description": "Forgée dans l'éclair figé. Elle gronde quand on la tire.",
+    "prix": 8000,
+    "equipement": "arme",
+    "bonus": {"attaque": 24, "magie": 8, "vitesse": 3, "critique": 6}
+  },
+  {
     "id": "lame_aube",
     "nom": "Lame d'Aube",
     "icone": "ic_epee_5",

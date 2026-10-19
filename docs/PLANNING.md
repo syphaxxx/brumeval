@@ -324,6 +324,12 @@ nouvelles cartes ; écho de la musique alloué une fois hors du fil du son).
 Ensuite : 5 en partie (les épreuves des gardiens : huit combats puis Ilya, au sanctuaire d'Aube) ; la pêche (18 poissons,
 carnet et maître pêcheur au port). Joueur automatique : 3 h 34 avec les épreuves (Ilya demande trois essais) ;
 estimation pour un vrai joueur : 7 h 30, sans compter la pêche.
+Puis quatre donjons optionnels, un par moment de l'histoire : Mines de Forgeroc, Glacier de Givreval, Épave du
+Léviathan, et l'Abîme (trois étages, super-boss) après l'acte 3.
+Réglage : l'acte 3 était trop dur pour certaines équipes (meutes de 4 à 6 au Gouffre et à la Citadelle, Brume Noire
+battue au 7e essai) : meutes de 3 au plus, Gouffre N.58-61, Citadelle N.60-64, Brume Noire PV ×6,5 (au lieu de 8).
+Joueur automatique : tout fini (Orage ancien compris) en 6 h 01, 14 défaites ; estimation pour un vrai joueur : 12 h,
+sans compter la pêche ni l'Expédition. Combats : nuages et montagnes au fond de la vallée, stalactites dans les grottes.
 Prochaines pistes pour approcher 20 h : un acte 4 / une région de plus, une ligue de l'Arène, un donjon d'après la
 fin à étages, la pêche, des captures demandées par plus de quêtes, des combats plus riches à mi-parcours.
 

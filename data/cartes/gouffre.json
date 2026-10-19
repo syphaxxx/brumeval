@@ -87,9 +87,9 @@
       "y": 0,
       "l": 36,
       "h": 30,
-      "niveau_min": 60,
-      "niveau_max": 63,
-      "max_ennemis": 4,
+      "niveau_min": 58,
+      "niveau_max": 61,
+      "max_ennemis": 3,
       "creatures": ["rocaube", "aubespectre", "vasepent", "nacrelin"]
     }
   ],

@@ -1733,6 +1733,10 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     view("marais", 20, 16, RIGHT, "aube_marais");
     view("gouffre", 22, 11, RIGHT, "aube_gouffre");
     view("citadelle", 14, 14, UP, "aube_citadelle");
+    view("mines", 9, 29, UP, "donjon_mines");
+    view("glacier", 28, 29, UP, "donjon_glacier");
+    view("epave", 22, 29, UP, "donjon_epave");
+    view("abime1", 8, 29, UP, "donjon_abime1");
     auto fight = [&](const char* map, std::vector<FighterP> foes, const char* name) {
       changeMap(mi(map), 2, 2, DOWN);
       startBattle(foes, false, nullptr);

@@ -192,7 +192,7 @@ EV = {
         {"action": "question", "texte": "Affronter la Brume Noire ?", "oui": [
             {"action": "combat", "musique": "boss_final", "ennemis": [
                 {"espece": "aubespectre", "niveau": 62},
-                {"espece": "brume_noire", "niveau": 68, "pv": 8, "boss": True, "bouclier": 16,
+                {"espece": "brume_noire", "niveau": 68, "pv": 6.5, "boss": True, "bouclier": 14,
                  "phases": [{"pv": 0.7, "message": "La brume s'épaissit : la Brume Noire appelle ses ombres !", "bonus": {"magie": 1},
                              "renforts": [{"espece": "aubespectre", "niveau": 63}]},
                             {"pv": 0.4, "message": "La Brume Noire dévore la lumière !", "bouclier": 14, "bonus": {"vitesse": 1}},

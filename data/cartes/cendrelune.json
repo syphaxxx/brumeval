@@ -52,7 +52,7 @@
     "mgggggaaaaRagg=ggggggggaaaaamaa=aggRRRRRggggggag=dddddgggggmmmgmmmgggdddddaaaaaaaaaaammm",
     "maagaaaaRRRRRg=ggggggggaaaaamaa=gggggggggggggggg=ggdggggggggggggmagdddddaaaaaaaaaaaaaamm",
     "maaaaaaaaaRagg=ggggggggaaaaaaaa=gggggggggggggggg=gggggggggggggggmgaaadaaaaagaaaaaaaaaaam",
-    "maaaaaaaaaaaaa=ggggggggaaaaaaaa=gggggggggggggggg=gggggaaaagggggggaaaaaadaagggaaaagaaaaam",
+    "kaaaaaaaaaaaaa=ggggggggaaaaaaaa=gggggggggggggggg=gggggaaaagggggggaaaaaadaagggaaaagaaaaam",
     "maaaaaaaaaaaga=aggggggggamaaaag=gggggggggggggggg=gggggaaaaagggggaaaaaadddggggggggggggaam",
     "maaaaaagggggggRgggggggggmmmaaaagmggggmggmggggagggggggaaaagdgggggggaaadddddgggdgggggggggm",
     "maaaaaggggggggggggggggggamaaaammmmmmmmmmmmggaadggggggaggmgdgggggggggRmdddgggdddgmggggdgm",
@@ -186,7 +186,8 @@
       "evenement": "tom_1",
       "si": {"drapeau": "boss1"},
       "cache_si": "tom1"
-    }
+    },
+    {"x": 2, "y": 47, "apparence": "montagnard", "direction": "gauche", "evenement": "mineur"}
   ],
   "coffres": [
     {"x": 60, "y": 41, "objet": "superpotion", "quantite": 2},
@@ -223,6 +224,16 @@
       "direction": "haut",
       "condition": {"drapeau": "boss2"},
       "message": "Le col du Nord est pris dans les glaces. Un vent glacé souffle depuis que le volcan gronde…"
+    },
+    {
+      "x": 0,
+      "y": 48,
+      "vers": "mines",
+      "tx": 9,
+      "ty": 30,
+      "direction": "gauche",
+      "condition": {"drapeau": "boss1"},
+      "message": "Des planches clouées ferment la vieille mine."
     }
   ],
   "zones": [

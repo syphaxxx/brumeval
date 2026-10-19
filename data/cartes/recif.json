@@ -38,7 +38,7 @@
     "TT.....................==.....................TT",
     "TT.R...................==.....................TT",
     "TT.....................==.....................TT",
-    "TTTTTTTTTTTTTTTTTTTTTTT==TTTTTTTTTTTTTTTTTTTTTTT"
+    "TTTTTTTTTTTTTTTTTTTTTTT==TTT=TTTTTTTTTTTTTTTTTTT"
   ],
   "batiments": [],
   "habitants": [
@@ -79,7 +79,17 @@
     {"x": 23, "y": 35, "vers": "port", "tx": 19, "ty": 1, "direction": "bas"},
     {"x": 24, "y": 35, "vers": "port", "tx": 20, "ty": 1, "direction": "bas"},
     {"x": 23, "y": 0, "vers": "ruines", "tx": 17, "ty": 28, "direction": "haut"},
-    {"x": 24, "y": 0, "vers": "ruines", "tx": 18, "ty": 28, "direction": "haut"}
+    {"x": 24, "y": 0, "vers": "ruines", "tx": 18, "ty": 28, "direction": "haut"},
+    {
+      "x": 28,
+      "y": 35,
+      "vers": "epave",
+      "tx": 22,
+      "ty": 30,
+      "direction": "bas",
+      "condition": {"drapeau": "boss4"},
+      "message": "La marée est trop haute pour atteindre l'épave."
+    }
   ],
   "zones": [
     {

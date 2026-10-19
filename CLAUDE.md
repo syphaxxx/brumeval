@@ -549,6 +549,12 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - Épreuves des gardiens (2026-10-20) : après `aube_fin`, la porte du sanctuaire d'Aube (événement `epreuves`) ouvre huit
   combats contre des esprits gardiens (drapeaux `epreuve1`…`epreuve8`, niveaux 70 à 84), puis Ilya (`epreuve9`,
   Insigne des gardiens) ; quête `epreuves`. Script `outils/villes/epreuves.py`.
+- Donjons optionnels (2026-10-20, `outils/villes/donjons.py`, salles et couloirs tirés d'une graine fixe, outil
+  commun `outils/villes/cartegen.py`) : Mines de Forgeroc (`mines`, entrée à l'ouest de Forgeroc sous `boss1`, énigme),
+  Glacier de Givreval (`glacier`, est des Pics, `boss2`, énigme), Épave du Léviathan (`epave`, sud du Récif, `boss4`),
+  l'Abîme (`abime1` à `abime3`, ouest du Bois des Lueurs, `aube_fin`, escaliers `k`, super-boss Orage ancien N.100).
+  Boss recolorés (troll_mines, colosse_givre, leviathan, orage_ancien), drapeau `<carte>_boss`, quêtes `mines`,
+  `glacier`, `epave`, `abime`.
 - Pêche (2026-10-20, `peche.cpp`) : face à une case `~` avec l'objet `canne` (donné par le maître pêcheur du port,
   événement `maitre_pecheur`), `Game::interact` lance `startFishing` ; `fishing_` (0 attente, 1 ça mord : Entrée vite,
   2 ferrage : Entrée quand le curseur est dans la zone verte, `need` coups, 3 ratés = ligne cassée) ; le jeu attend
