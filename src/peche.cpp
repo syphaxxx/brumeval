@@ -5,6 +5,7 @@
 // condition « poissons_min »).
 #include <algorithm>
 #include <cmath>
+#include <set>
 
 #include "audio.hpp"
 #include "data.hpp"
@@ -50,8 +51,11 @@ int fishSpecies() { return (int)fishTable().size(); }
 
 std::vector<std::string> checkFishing() {
   std::vector<std::string> err;
-  for (auto& f : fishTable())
+  std::set<std::string> seen;
+  for (auto& f : fishTable()) {
     if (!hasItem(f.id)) err.push_back(T("data/peche.json : objet inconnu « ") + f.id + " »");
+    if (!seen.insert(f.id).second) err.push_back(T("data/peche.json : poisson en double « ") + f.id + " »");
+  }
   if (fishTable().empty()) err.push_back(T("data/peche.json : aucun poisson"));
   return err;
 }

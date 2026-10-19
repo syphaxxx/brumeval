@@ -2370,6 +2370,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     menus.clear();
     {  // Pêche : face au lac de la Vallée, attendre, ferrer, puis trois coups dans la zone verte
       auto savedItems = items;
+      auto savedFlags = flags;
       menus.clear();
       sc.clear();
       int wx = -1, wy = -1;
@@ -2403,7 +2404,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       }
       check(started && bite && reel && !fishing_.on && items[fish] == before + 1 && has("peche:" + fish) && fishCaught() >= 1,
             "pêche : on lance la ligne face à l'eau, ça mord, on ferre, et le poisson (" + item(fish).name + ") va au sac et au carnet");
-      flags.erase("peche:" + fish);
+      flags = savedFlags;
       items = savedItems;
     }
     {  // Primes : le tableau dans tous ses états, puis une prime de bout en bout
@@ -3205,9 +3206,10 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     int keepRespawn[3] = {respawnMap, respawnX, respawnY};  // une nouvelle partie change le point de réveil
     startPilot(true);
     for (int i = 0; i < 30 * 240 && pilot_ && !pilot_->over(); i++) update(1 / 30.f);  // quatre minutes de démo
-    bool talked = pilot_ && flags.count("quete:medaillon") > 0;
+    bool talked = false;  // une quête acceptée (depuis les 20 quêtes, pas forcément le médaillon en premier)
+    for (auto& f : flags) talked = talked || f.rfind("quete:", 0) == 0;
     size_t steps = pilot_ ? pilot_->journal.size() : 0;
-    check(talked && steps >= 4, "démo : le joueur automatique avance (quête du médaillon acceptée, " + std::to_string(steps) + " étapes au journal)");
+    check(pilot_ && talked && steps >= 4, "démo : le joueur automatique avance (une quête acceptée, " + std::to_string(steps) + " étapes au journal)");
     // Commandes de la démo : Espace pause / reprise, une autre touche ne fait rien, Échap quitte
     bool ctl = false;
     if (pilot_) {

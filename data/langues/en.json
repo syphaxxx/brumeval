@@ -1153,6 +1153,7 @@
   "Retour, menu": "Back, menu",
   "Mode auto (combat)": "Auto mode (battle)",
   "data/peche.json : objet inconnu « ": "data/peche.json: unknown item \"",
+  "data/peche.json : poisson en double « ": "data/peche.json: duplicate fish \"",
   "data/peche.json : aucun poisson": "data/peche.json: no fish",
   "Vous remontez la ligne.": "You reel in the line.",
   "Trop tôt : le poisson a eu peur.": "Too early: the fish got scared.",

@@ -253,15 +253,15 @@ void Game::update(float dt) {
     in.endFrame();
     return;
   }
-  if (fishing_.on && mode == Mode::Map && !sc.busy()) {  // pêche : le reste du jeu attend
-    updateFishing(dt);
+  if (helpPage_ >= 0) {  // aide ouverte : le reste du jeu attend
+    lastHelp_ = helpPage_;
+    updateHelp();
     updateMusic();
     in.endFrame();
     return;
   }
-  if (helpPage_ >= 0) {  // aide ouverte : le reste du jeu attend
-    lastHelp_ = helpPage_;
-    updateHelp();
+  if (fishing_.on && mode == Mode::Map && !sc.busy() && !menus.active()) {  // pêche : le reste du jeu attend
+    updateFishing(dt);
     updateMusic();
     in.endFrame();
     return;
@@ -419,6 +419,7 @@ void Game::recruit(const std::string& id, int minLvl) {
 }
 
 void Game::startBattle(BattleSetup setup, std::function<void(BattleResult)> after) {
+  fishing_.on = false;  // une pêche en cours s'arrête (sans rien perdre)
   for (auto& f : setup.foes) see(*f);  // bestiaire (les renforts : quand ils entrent, battle.cpp)
   afterBattle_ = std::move(after);
   arenaBattle_ = mode == Mode::Arena;
@@ -691,6 +692,7 @@ void Game::bossTouched(const BossSpot& b) {
 }
 
 void Game::changeMap(int m, int x, int y, int d) {
+  fishing_.on = false;
   trail_.clear();  // le compagnon réapparaît au premier pas
   footprints_.clear();
   talkNpc_ = -1;
@@ -806,6 +808,7 @@ void Game::ask(const std::string& q, std::function<void()> yes, std::function<vo
 // Menus
 // ---------------------------------------------------------------------------
 void Game::titleMenu() {
+  fishing_.on = false;
   pilot_.reset();  // fin de la démo : la partie reprend son fichier de sauvegarde habituel
   demoPaused_ = false;
   if (!saveBeforePilot_.empty()) saveName_ = saveBeforePilot_, saveBeforePilot_.clear();
@@ -926,7 +929,7 @@ void Game::draw() {
       if (story_) story_->draw();
       break;
   }
-  if (fishing_.on && mode == Mode::Map) drawFishing();
+  if (fishing_.on && mode == Mode::Map && !sc.busy() && !menus.active()) drawFishing();
   if (!evoTo_.empty()) drawEvolution();
   if (worldMapOn_) drawWorldMap();
   if (helpPage_ >= 0) drawHelp();
