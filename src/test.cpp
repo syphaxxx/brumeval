@@ -3261,6 +3261,28 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   simSetup("Kraken des récifs (équipe N.46)", {{"lior", 46}, {"maelle", 46}, {"selene", 46}, {"braisenard", 46}, {"gouttelin", 46}, {"ronceau", 46}}, bossEvent("kraken"), 30);
   simSetup("Griffon tempête (équipe N.50)", {{"lior", 50}, {"maelle", 50}, {"kael", 50}, {"braisenard", 50}, {"gouttelin", 50}, {"ronceau", 50}}, bossEvent("griffon"), 30);
   simSetup("Seigneur des Orages (équipe N.54)", {{"lior", 54}, {"maelle", 54}, {"isra", 54}, {"braisenard", 54}, {"gouttelin", 54}, {"ronceau", 54}}, bossEvent("seigneur_orage"), 30);
+  {  // Défis de l'échiquier (3.4) : l'IA seule doit pouvoir les gagner parfois, sans que ce soit acquis
+    Json defis = readJson("defis.json");
+    for (auto& d : defis) {
+      std::vector<std::pair<std::string, int>> party;
+      for (auto& e : d.value("allies", Json::array())) party.push_back({e.at("espece").get<std::string>(), jget(e, "niveau", 10)});
+      std::string name = T("Défi : ") + tr(jget<std::string>(d, "nom", ""));
+      simSetup(name.c_str(), party, [&, d] {
+        BattleSetup s;
+        auto cell = [](const Json& e) {
+          Json p = e.value("case", Json::array({1, 1}));
+          return boardAt(p.at(0).get<int>(), p.at(1).get<int>());
+        };
+        s.allies = team;
+        for (auto& e : d.value("allies", Json::array())) s.allyCells.push_back(cell(e));
+        for (auto& e : d.value("ennemis", Json::array())) s.foes.push_back(makeFoe(e, 10)), s.foeCells.push_back(cell(e));
+        for (auto& o : d.value("obstacles", Json::array())) s.obstacleCells.push_back(boardAt(o.at(0).get<int>(), o.at(1).get<int>()));
+        s.fixedBoard = true, s.canCapture = false;
+        s.theme = (int)themeOf(jget<std::string>(d, "decor", "vallee"));
+        return s;
+      }, 20);
+    }
+  }
 
   std::printf("\nMêmes combats, alliés guidés par les tactiques de départ :\n");
   sim("Bois (N.8 contre 3 x N.4-7)", {{"lior", 8}, {"maelle", 8}, {"braisenard", 8}},

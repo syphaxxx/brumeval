@@ -166,6 +166,7 @@ class Battle {
   int planMove(const FighterP& a);              // ordinateur : où aller avant d'agir (-1 : rester)
   void step(const FighterP& a, int cell);       // le déplacer (glisse à l'écran ; Percée en atteignant le bord adverse)
   std::set<const Fighter*> breakthrough_;       // ceux qui ont déjà fait leur Percée
+  float quietT_ = 0;  // temps de combat sans dégâts ni soins : au-delà de 40 s, l'ordinateur va au contact (pas de blocage)
   struct Burst {  // éclat dessiné par-dessus un combattant (Percée, Brisure : images gfx_<fx>_k de Godot)
     FighterP f;
     const char* fx;

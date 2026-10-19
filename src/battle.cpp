@@ -996,6 +996,7 @@ void Battle::drawTurnOrder(float y, float minX, float maxX) {
 }
 
 void Battle::tickATB(float dt) {
+  quietT_ += dt;
   std::vector<FighterP> all = alive(allies);
   for (auto& e : alive(foes)) all.push_back(e);
   for (auto& f : all) {
@@ -1572,12 +1573,17 @@ float Battle::posValue(const FighterP& a, int cell) {
   cells_[a.get()] = cell;
   moved_.insert(a.get());  // de là, seulement ce qui est au contact (il ne bougera plus)
   const Species& s = a->S();
-  bool caster = s.base[B_MAG] > s.base[B_ATK];
   auto theirs = alive(oppOf(a));
   float best = 0;
   std::vector<std::string> moves = a->techs();
   for (auto& id : a->spells())
     if (a->mp >= moveInfo(id).cost) moves.push_back(id);
+  // Lanceur de sorts : seulement s'il lui reste une attaque à distance (sinon, à court de PM, il doit aller au contact,
+  // ou les deux camps peuvent s'attendre sans fin)
+  bool ranged = false;
+  for (auto& id : moves) ranged = ranged || (moveInfo(id).damaging() && !moveInfo(id).melee);
+  bool stalled = quietT_ > 40;  // rien ne se passe depuis longtemps : tout le monde va au contact
+  bool caster = s.base[B_MAG] > s.base[B_ATK] && ranged && !stalled;
   for (auto& id : moves) {
     const Move& m = moveInfo(id);
     if (!m.damaging()) continue;
@@ -1591,7 +1597,7 @@ float Battle::posValue(const FighterP& a, int cell) {
   }
   float v = best;
   // Danger : chaque adversaire qui pourra le rejoindre au corps à corps à son prochain tour
-  float hpR = float(a->hp) / std::max(1, a->mhp), fear = (caster ? 7.f : 3.5f) * (1.6f - hpR);
+  float hpR = float(a->hp) / std::max(1, a->mhp), fear = stalled ? 0.f : (caster ? 7.f : 3.5f) * (1.6f - hpR);
   int nearest = 99;
   for (auto& o : theirs) {
     int d = boardSteps(cellOf(o), cell);
@@ -2093,6 +2099,7 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
   if (const Rules::Terrain* tr = terrainAt(a); magic && tr && tr->kind == "magie") k *= 1 + float(tr->value);  // cristaux
   int dmg = std::max(1, int(((2 * a->lvl / 5.f + 2) * m.power * A / std::max(1.f, D) / float(R.dmgDivisor) + 2) * stab * eff * spread * k));
   d->hp = std::max(0, d->hp - dmg);
+  quietT_ = 0;
   if (eff > 1 && d->shieldMax > 0) {  // Brisure : une faiblesse entame le bouclier, et l'équipe la retient
     if (isAlly(a) && G.weak.insert(d->sp + ":" + std::to_string(m.type)).second) tip("faiblesse");
     if (!d->broken && d->alive()) {

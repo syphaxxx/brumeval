@@ -9,9 +9,9 @@
       {"espece": "isra", "niveau": 12, "case": [2, 1]}
     ],
     "ennemis": [
-      {"espece": "galetor", "niveau": 12, "case": [1, 4]},
-      {"espece": "esprillon", "niveau": 11, "case": [1, 6]},
-      {"espece": "champichou", "niveau": 10, "case": [2, 6]}
+      {"espece": "galetor", "niveau": 10, "case": [1, 4]},
+      {"espece": "esprillon", "niveau": 9, "case": [1, 6]},
+      {"espece": "champichou", "niveau": 8, "case": [2, 6]}
     ],
     "obstacles": [[2, 4], [3, 3]]
   },
@@ -21,13 +21,13 @@
     "decor": "foret",
     "description": "Kael vole par-dessus les loups. Atteignez le bord du camp adverse pour la Percée, puis tirez de loin.",
     "allies": [
-      {"espece": "kael", "niveau": 14, "case": [0, 1]},
-      {"espece": "lior", "niveau": 14, "case": [1, 2]}
+      {"espece": "kael", "niveau": 15, "case": [0, 1]},
+      {"espece": "lior", "niveau": 15, "case": [1, 2]}
     ],
     "ennemis": [
-      {"espece": "louvet", "niveau": 13, "case": [1, 5]},
-      {"espece": "louvet", "niveau": 13, "case": [2, 5]},
-      {"espece": "rocaillou", "niveau": 13, "case": [2, 4]}
+      {"espece": "louvet", "niveau": 10, "case": [1, 5]},
+      {"espece": "louvet", "niveau": 10, "case": [2, 5]},
+      {"espece": "rocaillou", "niveau": 10, "case": [2, 4]}
     ],
     "obstacles": [[0, 4]]
   },
@@ -43,10 +43,10 @@
       {"espece": "galetor", "niveau": 14, "case": [2, 2]}
     ],
     "ennemis": [
-      {"espece": "mulotin", "niveau": 14, "case": [0, 5]},
-      {"espece": "louvet", "niveau": 14, "case": [1, 6]},
-      {"espece": "mulotin", "niveau": 14, "case": [3, 5]},
-      {"espece": "noctaile", "niveau": 13, "case": [2, 7]}
+      {"espece": "mulotin", "niveau": 17, "case": [0, 5]},
+      {"espece": "louvet", "niveau": 17, "case": [1, 6]},
+      {"espece": "mulotin", "niveau": 17, "case": [3, 5]},
+      {"espece": "noctaile", "niveau": 16, "case": [2, 7]}
     ],
     "obstacles": [[0, 3], [3, 3]]
   },
