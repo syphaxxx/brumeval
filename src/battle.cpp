@@ -314,6 +314,16 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
       }
     }
   }
+  if (s.fixedBoard) {  // défi : tout est imposé
+    weather_ = -1;
+    terrain_.fill(-1);
+    obstacles_.clear();
+    for (size_t i = 0; i < allies.size() && i < s.allyCells.size(); i++) cells_[allies[i].get()] = s.allyCells[i];
+    for (size_t i = 0; i < foes.size() && i < s.foeCells.size(); i++) cells_[foes[i].get()] = s.foeCells[i];
+    auto it = rules().obstacleSprites.find(themeName(bg));
+    for (size_t i = 0; i < s.obstacleCells.size(); i++)
+      obstacles_[s.obstacleCells[i]] = it != rules().obstacleSprites.end() && !it->second.empty() ? it->second[i % it->second.size()] : "rocher";
+  }
   for (auto& a : allies) a->atb = 20 + frand() * 50;
   for (auto& e : foes) e->atb = frand() * 30;
   // Talents de début de combat : Vif (jauge avancée), Intimidation (Attaque des adversaires −1)

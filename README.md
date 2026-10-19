@@ -73,6 +73,8 @@ gauche, les ennemis de la droite, et **chacun peut passer de l'autre côté**.
 - **Tactiques** de l'échiquier : S'approcher, Contourner (passer dans le dos) et Protéger un allié ; le tour continue
   ensuite avec la règle suivante. En mode auto, chacun choisit aussi sa case avant d'agir.
 - **Bottes** (accessoires) : les Bottes de vent (Forgeroc) et les Bottes ailées (Givreval) font avancer d'une case de plus.
+- **Défis de l'échiquier** (écran titre > Outils > Arène) : quatre positions imposées, une leçon chacune (dans le dos,
+  Percée, tenir une ligne, pousser contre un rocher).
 - Certaines techniques **bougent** : Dague, Coup de bec, Piqué tonnerre et Lame d'ombre font **bondir** derrière la
   cible ; Coup bas fait **échanger** sa case avec celle de la cible.
 - Chaque technique a une **zone** : une cible, une **ligne** (d'un bord du plateau à l'autre), une **colonne**, une

@@ -1748,6 +1748,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       check(mode == Mode::Arena && !A.lastLog.empty() && !A.lastResult.empty(), "arène : combat à la main puis retour avec le journal");
       in.press[DOWN] = true;  // Modèles…
       frame();
+      in.press[DOWN] = true;  // Défis de l'échiquier…
+      frame();
       in.press[DOWN] = true;  // Journal
       frame();
       in.confirm = true;
@@ -1755,6 +1757,38 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       run(.2f);
       snap("38_arene_journal");
       menus.clear();
+      // Défis de l'échiquier (3.4) : données valides, plateau imposé, retour à la liste (réussi)
+      {
+        Json defis = readJson("defis.json");
+        bool valid = defis.is_array() && !defis.empty();
+        for (auto& d : defis) {
+          for (auto* k : {"allies", "ennemis"})
+            for (auto& e : d.value(k, Json::array())) valid = valid && hasSpecies(e.value("espece", ""));
+          valid = valid && d.contains("nom") && d.contains("description");
+        }
+        A.menuChallenges();
+        run(.2f);
+        snap("defis_menu");
+        A.startChallenge(0);
+        bool placed = battle_ && battle_->allies.size() == defis[0]["allies"].size() && !battle_->obstacles_.empty() && battle_->weather_ < 0;
+        for (size_t i = 0; placed && i < battle_->allies.size(); i++)
+          placed = battle_->cellOf(battle_->allies[i]) == boardAt(defis[0]["allies"][i]["case"][0].get<int>(), defis[0]["allies"][i]["case"][1].get<int>());
+        if (battle_) {
+          battle_->start = time - 5;
+          run(.5f);
+          snap("defi_dos");
+          for (auto& f : battle_->foes) f->hp = 0, battle_->knockOut(f);
+          battle_->sc.clear();
+          battle_->checkEnd();
+        }
+        for (int i = 0; i < 60 * 30 && mode == Mode::Battle; i++) {
+          if (battle_ && battle_->sc.busy()) in.confirm = true;
+          frame();
+        }
+        bool back = mode == Mode::Arena && menus.active() && menus.top().title == T("Défis de l'échiquier") && menus.top().items[0].right == T("réussi");
+        check(valid && placed && back, "arène : défis de l'échiquier (données valides, plateau imposé, retour à la liste « réussi »)");
+        menus.clear();
+      }
     }
     mode = Mode::Title;
     titleMenu();

@@ -1,0 +1,68 @@
+[
+  {
+    "id": "dos",
+    "nom": "Dans le dos",
+    "decor": "vallee",
+    "description": "Un Galetor protège deux soigneurs. Contournez-le par le haut et frappez les soigneurs dans le dos.",
+    "allies": [
+      {"espece": "lior", "niveau": 12, "case": [1, 2]},
+      {"espece": "isra", "niveau": 12, "case": [2, 1]}
+    ],
+    "ennemis": [
+      {"espece": "galetor", "niveau": 12, "case": [1, 4]},
+      {"espece": "esprillon", "niveau": 11, "case": [1, 6]},
+      {"espece": "champichou", "niveau": 10, "case": [2, 6]}
+    ],
+    "obstacles": [[2, 4], [3, 3]]
+  },
+  {
+    "id": "percee",
+    "nom": "La Percée",
+    "decor": "foret",
+    "description": "Kael vole par-dessus les loups. Atteignez le bord du camp adverse pour la Percée, puis tirez de loin.",
+    "allies": [
+      {"espece": "kael", "niveau": 14, "case": [0, 1]},
+      {"espece": "lior", "niveau": 14, "case": [1, 2]}
+    ],
+    "ennemis": [
+      {"espece": "louvet", "niveau": 13, "case": [1, 5]},
+      {"espece": "louvet", "niveau": 13, "case": [2, 5]},
+      {"espece": "rocaillou", "niveau": 13, "case": [2, 4]}
+    ],
+    "obstacles": [[0, 4]]
+  },
+  {
+    "id": "mur",
+    "nom": "Le mur",
+    "decor": "neige",
+    "description": "Une meute rapide fonce sur Maëlle et Isra. Tenez la ligne avec Brann et Galetor ; attention, la chauve-souris vole.",
+    "allies": [
+      {"espece": "maelle", "niveau": 14, "case": [1, 0]},
+      {"espece": "isra", "niveau": 14, "case": [2, 0]},
+      {"espece": "brann", "niveau": 15, "case": [1, 2]},
+      {"espece": "galetor", "niveau": 14, "case": [2, 2]}
+    ],
+    "ennemis": [
+      {"espece": "mulotin", "niveau": 14, "case": [0, 5]},
+      {"espece": "louvet", "niveau": 14, "case": [1, 6]},
+      {"espece": "mulotin", "niveau": 14, "case": [3, 5]},
+      {"espece": "noctaile", "niveau": 13, "case": [2, 7]}
+    ],
+    "obstacles": [[0, 3], [3, 3]]
+  },
+  {
+    "id": "bousculade",
+    "nom": "Bousculade",
+    "decor": "cendres",
+    "description": "Les ennemis sont adossés à des rochers. Poussez-les contre : choc !",
+    "allies": [
+      {"espece": "brann", "niveau": 15, "case": [1, 3]},
+      {"espece": "piafouine", "niveau": 15, "case": [2, 3]}
+    ],
+    "ennemis": [
+      {"espece": "serpentin", "niveau": 14, "case": [1, 4]},
+      {"espece": "tisonnel", "niveau": 14, "case": [2, 4]}
+    ],
+    "obstacles": [[1, 5], [2, 5]]
+  }
+]

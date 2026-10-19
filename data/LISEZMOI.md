@@ -350,3 +350,10 @@ vraie. Une quête commencée pose le drapeau `quete:<id>`, une quête terminée
 
 Conditions possibles (toutes doivent être vraies) : `drapeau`, `sans_drapeau`,
 `objet`, `sans_objet`, `or_min`, `membre` (une espèce présente dans l'équipe).
+
+## defis.json (3.4)
+
+Les défis de l'échiquier (Arène > Défis de l'échiquier…). Chaque défi : `id`, `nom`, `description` (la leçon, montrée
+dans le menu), `decor` (vallee, foret, neige, cendres, grotte), `allies` et `ennemis` (comme les ennemis d'un combat :
+`espece`, `niveau`, `pv`, `boss`…, plus `case` : [ligne 0-3, colonne 0-7] du plateau ; les alliés partent à gauche,
+colonnes 0 à 3), `obstacles` : liste de [ligne, colonne].

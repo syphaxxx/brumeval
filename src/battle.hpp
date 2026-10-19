@@ -40,6 +40,9 @@ struct BattleSetup {
   std::string foeName;            // nom de l'adversaire (« Garo le braconnier »), vide pour des créatures sauvages
   bool boss = false, canFlee = true, canCapture = true;
   int theme = -1;                 // décor (Theme) ; -1 : celui de la carte actuelle
+  // Défis de l'échiquier (3.4) : plateau imposé (cases des alliés et des ennemis, obstacles), sans météo ni terrain
+  bool fixedBoard = false;
+  std::vector<int> allyCells, foeCells, obstacleCells;
 };
 
 class Battle {

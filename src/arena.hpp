@@ -5,6 +5,7 @@
 #pragma once
 #include <array>
 #include <map>
+#include <set>
 #include <memory>
 #include <string>
 #include <vector>
@@ -57,6 +58,10 @@ class Arena {
   void startSim(int n);
   bool simulating() const { return simRunning_; }
   void startManual();
+  // Défis de l'échiquier (3.4, data/defis.json) : positions imposées, une leçon chacun (dans le dos, Percée…)
+  void menuChallenges(int sel = 0);
+  void startChallenge(int i);
+  int challengeCount() const;
 
  private:
   struct Preset {
@@ -84,6 +89,8 @@ class Arena {
   void menuSlot(bool foe, int i, int sel = 0);
   void pickSpecies(bool foe, int i);
   void menuPresets();
+  int challenge_ = -1;                 // défi en cours (-1 : aucun)
+  std::set<std::string> challengesWon_;  // défis réussis depuis l'ouverture de l'Arène
   void menuLog();
   void loadPresets();
   FighterP make(const ArenaSlot& s) const;
