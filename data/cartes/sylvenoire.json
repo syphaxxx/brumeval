@@ -135,7 +135,9 @@
       "evenement": "bandit2",
       "vue": 1,
       "vue_jusqua": "bandit2"
-    }
+    },
+    {"x": 15, "y": 23, "apparence": "marchande", "direction": "bas", "evenement": "quete_caravane"},
+    {"x": 20, "y": 25, "apparence": "docteur", "direction": "bas", "evenement": "quete_champignons"}
   ],
   "coffres": [
     {"x": 3, "y": 32, "objet": "elixir", "quantite": 1},
@@ -147,7 +149,14 @@
     {"x": 26, "y": 34, "objet": "remede", "quantite": 2},
     {"x": 49, "y": 47, "objet": "lanterne_or", "quantite": 1},
     {"x": 11, "y": 46, "objet": "remede", "quantite": 3},
-    {"x": 33, "y": 52, "or": 900}
+    {"x": 33, "y": 52, "or": 900},
+    {"x": 8, "y": 22, "objet": "champignon_lune", "quantite": 1},
+    {"x": 34, "y": 49, "objet": "champignon_lune", "quantite": 1},
+    {"x": 48, "y": 18, "objet": "champignon_lune", "quantite": 1},
+    {"x": 53, "y": 2, "objet": "eclat_brume", "quantite": 1},
+    {"x": 2, "y": 54, "objet": "eclat_brume", "quantite": 1},
+    {"x": 54, "y": 54, "objet": "eclat_brume", "quantite": 1},
+    {"x": 2, "y": 11, "objet": "eclat_brume", "quantite": 1}
   ],
   "panneaux": [
     {"x": 52, "y": 19, "texte": "Forêt de Sylve-Noire. Des bandits y rôdent : restez sur les chemins."},
@@ -202,7 +211,17 @@
       ]
     }
   ],
-  "boss": [{"x": 7, "y": 33, "espece": "ronce_mere", "drapeau": "ronce", "evenement": "ronce_mere"}],
+  "boss": [
+    {"x": 7, "y": 33, "espece": "ronce_mere", "drapeau": "ronce", "evenement": "ronce_mere"},
+    {
+      "x": 42,
+      "y": 41,
+      "espece": "brutor",
+      "drapeau": "caravane_reprise",
+      "evenement": "pillards",
+      "si": {"drapeau": "quete:caravane"}
+    }
+  ],
   "declencheurs": [{"x": 52, "y": 19, "l": 3, "h": 3, "evenement": "foret_entree", "jusqua": "foret_vue"}],
   "carte_monde": [12, 44]
 }

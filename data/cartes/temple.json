@@ -52,7 +52,9 @@
     {"x": 11, "y": 4, "objet": "superpotion", "quantite": 2},
     {"x": 26, "y": 16, "objet": "cristal_givre", "quantite": 2},
     {"x": 23, "y": 13, "objet": "lanterne_or", "quantite": 1},
-    {"x": 20, "y": 7, "objet": "elixir", "quantite": 1}
+    {"x": 20, "y": 7, "objet": "elixir", "quantite": 1},
+    {"x": 2, "y": 2, "objet": "eclat_brume", "quantite": 1},
+    {"x": 38, "y": 2, "objet": "eclat_brume", "quantite": 1}
   ],
   "panneaux": [
     {

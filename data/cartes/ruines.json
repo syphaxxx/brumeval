@@ -60,7 +60,10 @@
   "habitants": [],
   "coffres": [
     {"x": 5, "y": 15, "objet": "perle", "quantite": 1},
-    {"x": 31, "y": 15, "objet": "gemme_maitre", "quantite": 1}
+    {"x": 31, "y": 15, "objet": "gemme_maitre", "quantite": 1},
+    {"x": 6, "y": 22, "objet": "partition", "quantite": 1},
+    {"x": 4, "y": 23, "objet": "eclat_brume", "quantite": 1},
+    {"x": 22, "y": 2, "objet": "eclat_brume", "quantite": 1}
   ],
   "panneaux": [
     {

@@ -45,6 +45,7 @@ struct BattleSetup {
   std::vector<int> allyCells, foeCells, obstacleCells;
   std::string intro;  // message d'ouverture à la place de « … surgit » (défi : la leçon)
   bool training = false;  // entraînement : ni gains, et une défaite ne coûte rien (Game::startBattle)
+  std::string music;      // morceau imposé (« musique » de l'action combat), sinon combat ou boss
 };
 
 // Défi de l'échiquier (data/defis.json) : alliés, ennemis, obstacles et décor imposés (faux : défi inconnu)
@@ -121,6 +122,7 @@ class Battle {
   std::vector<FighterP> allies, foes, reserve;
   std::string foeName;
   bool boss, canFlee, canCapture;
+  std::string music;  // morceau imposé (BattleSetup::music)
   Theme bg;
   float start = 0;
   FighterP actor, cursor, blink;

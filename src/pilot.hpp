@@ -35,6 +35,9 @@ class Pilot {
   std::string summary() const;  // une ligne : temps, niveau, équipe, progression
   std::map<std::string, float> timeBy;  // temps de jeu par activité (combat, entraînement, trajet, menus, dialogue)
   std::string timeReport() const;
+  std::string humanEstimate() const;  // durée pour un vrai joueur (très approximative)
+  std::string lastRead_;              // dernier message lu (estimation de la lecture)
+  long long readChars_ = 0;
 
  private:
   // Case où se tenir, et direction à regarder avant d'appuyer sur Entrée (-1 : y arriver suffit)

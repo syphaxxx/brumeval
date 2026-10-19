@@ -174,6 +174,18 @@
       "direction": "gauche",
       "dialogue": ["Le chat de l'auberge se chauffe sur les pavés tièdes."],
       "promenade": 1
+    },
+    {"x": 9, "y": 33, "apparence": "villageois", "direction": "bas", "evenement": "aldo"},
+    {"x": 9, "y": 41, "apparence": "forgeron", "direction": "droite", "evenement": "quete_apprenti"},
+    {"x": 26, "y": 36, "apparence": "enfant", "direction": "bas", "evenement": "quete_oeuf"},
+    {
+      "x": 22,
+      "y": 25,
+      "apparence": "villageois",
+      "direction": "gauche",
+      "evenement": "tom_1",
+      "si": {"drapeau": "boss1"},
+      "cache_si": "tom1"
     }
   ],
   "coffres": [
@@ -186,7 +198,11 @@
     {"x": 24, "y": 2, "objet": "coeur_braise", "quantite": 1},
     {"x": 59, "y": 52, "objet": "lanterne_or", "quantite": 1},
     {"x": 82, "y": 54, "objet": "elixir", "quantite": 1},
-    {"x": 23, "y": 48, "or": 1200}
+    {"x": 23, "y": 48, "or": 1200},
+    {"x": 86, "y": 2, "objet": "eclat_brume", "quantite": 1},
+    {"x": 86, "y": 51, "objet": "eclat_brume", "quantite": 1},
+    {"x": 42, "y": 2, "objet": "eclat_brume", "quantite": 1},
+    {"x": 60, "y": 54, "objet": "eclat_brume", "quantite": 1}
   ],
   "panneaux": [
     {"x": 3, "y": 32, "texte": "Forgeroc, la ville des forges."},

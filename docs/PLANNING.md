@@ -307,6 +307,15 @@ que l'utile) ; un joueur, à peu près 4 à 6 h avec les à-côtés. Pour 20 h, 
 
 Branches : `echiquier` (3.4) puis la suite sur la même branche ; jamais de fusion ni de publication sans demande.
 
+Avancement (nuit du 19 au 20) : 1 fait (15 primes, tableaux dans 5 villages, rangs et récompenses uniques, 3 super-boss
+après la fin) ; 2 fait (20 quêtes : 14 nouvelles, dont un rival en trois combats, une quête qui donne un Draconnet,
+un naturaliste qui demande de montrer des créatures, un conte qui explique la brume après la fin) ; 3 fait (30 éclats
+de brume dans des coffres reculés, collectionneuse de la Vallée : récompenses à 5, 10, 20, 30) ; 6 fait (13 morceaux
+réécrits ou nouveaux avec `outils/musique/compose.py` : vibrato, écho, contre-chants ; port, abysses, orage, dernier
+combat). Le rapport du joueur automatique donne maintenant une estimation pour un vrai joueur (très approximative).
+Joueur automatique : 2 h 07 (au lieu de 1 h 30), 19 quêtes sur 20 (le naturaliste demande des captures précises),
+toutes les primes, 30 éclats.
+
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
 - Fait en 1.6 : **réserve de créatures** (au-delà de 8 membres) et

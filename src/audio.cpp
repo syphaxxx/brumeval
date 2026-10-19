@@ -40,11 +40,15 @@ struct Note {
 struct Voice {
   Wave wave = SQUARE;
   float vol = .2f, duty = .5f, decay = 0;  // decay > 0 : son pincé qui s'éteint (secondes)
+  float vibrato = 0, vibRate = 5.5f;       // vibrato (demi-tons, Hz), après un court instant sur une note tenue
+  float attack = .005f;                    // montée du son (secondes) : douce pour les nappes
+  float sweep = 0;                         // « rapport » qui ondule (carrée) : timbre vivant, comme sur les vieilles consoles
   std::vector<Note> notes;
 };
 struct Track {
   float step = .25f;  // durée d'une case (secondes)
   std::vector<Voice> voices;
+  float echoDelay = 0, echoFeedback = 0, echoMix = 0;  // écho de toute la musique (« echo » : delai, retour, melange)
 };
 
 std::map<std::string, Effect> effects_;
@@ -115,6 +119,12 @@ Track readTrack(const std::string& id, const Json& j) {
   float tempo = std::clamp(jget(j, "tempo", 120.f), 20.f, 400.f);
   int perBeat = std::clamp(jget(j, "pas_par_temps", 2), 1, 8);
   tr.step = 60.f / tempo / perBeat;
+  if (j.contains("echo")) {  // écho : la musique se répète, plus faible, après « delai » secondes
+    const Json& e = j["echo"];
+    tr.echoDelay = std::clamp(jget(e, "delai", .3f), .02f, 1.f);
+    tr.echoFeedback = std::clamp(jget(e, "retour", .3f), 0.f, .8f);
+    tr.echoMix = std::clamp(jget(e, "melange", .3f), 0.f, 1.f);
+  }
   Json voices = j.value("voix", Json::array());
   for (auto& v : voices) {
     Voice vo;
@@ -123,6 +133,10 @@ Track readTrack(const std::string& id, const Json& j) {
     vo.vol = std::clamp(jget(v, "volume", .2f), 0.f, 1.f);
     vo.duty = std::clamp(jget(v, "rapport", .5f), .05f, .95f);
     vo.decay = std::max(0.f, jget(v, "extinction", vo.wave == NOISE ? .06f : 0.f));
+    vo.vibrato = std::clamp(jget(v, "vibrato", 0.f), 0.f, 2.f);
+    vo.vibRate = std::clamp(jget(v, "vitesse_vibrato", 5.5f), .5f, 20.f);
+    vo.attack = std::clamp(jget(v, "attaque", .005f), .001f, 2.f);
+    vo.sweep = std::clamp(jget(v, "ondulation", 0.f), 0.f, .4f);
     float hitFreq = v.contains("frequence") ? freqOf(v["frequence"], where) : 4000.f;
     std::istringstream in(jget<std::string>(v, "notes", ""));
     std::string tok;
@@ -209,7 +223,16 @@ class Mixer {
         fade_ -= dt / .35f;
         if (fade_ <= 0) start(pending);
       }
-      if (tr_) m = musicSample(dt) * fade_;
+      if (tr_) {
+        m = musicSample(dt);
+        if (tr_->echoMix > 0 && !echo_.empty()) {  // écho : ligne à retard sur la musique seule
+          float d = echo_[echoPos_];
+          echo_[echoPos_] = m + d * tr_->echoFeedback;
+          echoPos_ = (echoPos_ + 1) % echo_.size();
+          m += d * tr_->echoMix;
+        }
+        m *= fade_;
+      }
       for (auto& p : fx_) {
         p.t += dt;
         for (size_t k = 0; k < p.e->segs.size(); k++) {
@@ -233,6 +256,8 @@ class Mixer {
   uint32_t seed_ = 12345;
   int step_ = -1;
   float stepT_ = 0, fade_ = 1;
+  std::vector<float> echo_;
+  size_t echoPos_ = 0;
 
   void start(std::string id) {  // par valeur : id vient souvent de « pending », vidé ci-dessous
     track = id;
@@ -242,6 +267,8 @@ class Mixer {
     auto it = tracks_.find(id);
     tr_ = it == tracks_.end() ? nullptr : &it->second;
     voices_.assign(tr_ ? tr_->voices.size() : 0, VoicePlay{});
+    echo_.assign(tr_ && tr_->echoMix > 0 ? std::max<size_t>(1, size_t(tr_->echoDelay * RATE)) : 0, 0.f);
+    echoPos_ = 0;
     step_ = -1;
     stepT_ = tr_ ? tr_->step : 0;  // la première case commence tout de suite
   }
@@ -265,12 +292,16 @@ class Mixer {
       VoicePlay& p = voices_[v];
       if (!p.on) continue;
       p.t += dt;
-      float env = std::min(1.f, p.t / .005f);
+      float env = std::min(1.f, p.t / V.attack);
       env *= V.decay > 0 ? std::exp(-p.t / V.decay) : .7f + .3f * std::exp(-p.t / .08f);
       // Fin de la note (la case suivante n'est pas une prolongation) : extinction rapide
       const Note& next = V.notes[(size_t)(step_ + 1) % V.notes.size()];
       if (!next.tie) env *= std::min(1.f, (T.step - stepT_) / .02f);
-      s += p.osc.next(V.wave, p.freq, V.duty) * V.vol * env;
+      float f = p.freq;
+      if (V.vibrato > 0 && p.t > .18f)  // vibrato : seulement sur une note tenue, et qui s'installe doucement
+        f *= std::pow(2.f, V.vibrato / 12.f * std::min(1.f, (p.t - .18f) / .25f) * std::sin(6.2831853f * V.vibRate * p.t));
+      float duty = V.sweep > 0 ? std::clamp(V.duty + V.sweep * std::sin(6.2831853f * .7f * p.t), .05f, .95f) : V.duty;
+      s += p.osc.next(V.wave, f, duty) * V.vol * env;
     }
     return s;
   }

@@ -253,6 +253,7 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
       canCapture(s.canCapture), bg(bg_) {
   allies = s.allies.empty() ? G.front() : std::move(s.allies);
   training_ = s.training;
+  music = s.music;
   for (auto& a : allies) hasHero_ = hasHero_ || a->S().human;
   place(allies, !coop(), true);  // la formation de l'équipe (au gardien à plusieurs : placement automatique)
   place(foes, false, false);

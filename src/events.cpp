@@ -111,6 +111,11 @@ static void checkAction(const Json& a, const std::string& where, std::vector<std
     }
     for (auto& e : a.value("renforts", Json::array()))
       if (!hasSpecies(jget<std::string>(e, "espece", ""))) err.push_back(w + T(" : espèce inconnue en renfort « ") + jget<std::string>(e, "espece", "") + " »");
+    if (a.contains("musique")) {
+      auto names = audio::trackNames();
+      if (std::find(names.begin(), names.end(), jget<std::string>(a, "musique", "")) == names.end())
+        err.push_back(w + T(" : musique inconnue « ") + jget<std::string>(a, "musique", "") + " »");
+    }
     checkList(a.value("victoire", Json::array()), w + T(" > victoire"), err);
     checkList(a.value("defaite", Json::array()), w + T(" > défaite"), err);
   } else if (k == "question") {
@@ -166,6 +171,10 @@ std::vector<std::string> checkEvents() {
     for (auto& t : m.triggers) ref(t.event, m.name + T(", déclencheur (") + std::to_string(t.x) + ", " + std::to_string(t.y) + ")");
     for (auto& w : m.warps)
       if (!w.condition.is_null()) checkCondition(w.condition, m.name + T(", passage (") + std::to_string(w.x) + ", " + std::to_string(w.y) + ")", err);
+    for (auto& n : m.npcs)
+      if (!n.cond.is_null()) checkCondition(n.cond, m.name + T(", habitant (") + std::to_string(n.x) + ", " + std::to_string(n.y) + ")", err);
+    for (auto& b : m.bosses)
+      if (!b.cond.is_null() && !b.bounty) checkCondition(b.cond, m.name + T(", boss « ") + b.id + " »", err);
     for (auto& b : m.buildings)
       if (!b.decor()) ref(b.event, m.name + T(", bâtiment « ") + b.name + " »");
     for (auto& b : m.bosses) ref(b.event, m.name + T(", boss « ") + b.id + " »");
@@ -327,6 +336,7 @@ void Game::execAction(const Json& a) {
     for (auto& e : a.value("renforts", Json::array())) setup.reserve.push_back(make(e));
     setup.foeName = fillText(tr(jget<std::string>(a, "nom", "")));
     setup.boss = jget(a, "boss", false);
+    setup.music = jget<std::string>(a, "musique", "");
     setup.canFlee = jget(a, "fuite", true);
     setup.canCapture = jget(a, "capture", true) && !setup.fixedBoard;
     Json win = a.value("victoire", Json::array()), lose = a.value("defaite", Json::array());

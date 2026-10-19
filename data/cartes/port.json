@@ -126,7 +126,17 @@
       "direction": "droite",
       "dialogue": ["Le chat du port guette les barques."],
       "promenade": 1
-    }
+    },
+    {
+      "x": 28,
+      "y": 13,
+      "apparence": "villageois",
+      "direction": "bas",
+      "evenement": "tom_3",
+      "si": {"drapeau": "tom2"}
+    },
+    {"x": 30, "y": 19, "apparence": "pecheur", "direction": "gauche", "evenement": "quete_capitaine"},
+    {"x": 12, "y": 16, "apparence": "barman", "direction": "droite", "evenement": "quete_partitions"}
   ],
   "coffres": [{"x": 3, "y": 21, "objet": "superpotion", "quantite": 3}],
   "panneaux": [

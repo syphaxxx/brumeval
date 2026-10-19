@@ -172,6 +172,44 @@
       "direction": "gauche",
       "dialogue": ["Le chien a de la neige plein les moustaches."],
       "promenade": 2
+    },
+    {"x": 22, "y": 34, "apparence": "villageoise", "direction": "bas", "evenement": "quete_cache_cache"},
+    {
+      "x": 62,
+      "y": 13,
+      "apparence": "enfant",
+      "direction": "bas",
+      "evenement": "enfant_cache_1",
+      "si": {"drapeau": "quete:cache_cache"},
+      "cache_si": "enfant_1_trouve"
+    },
+    {
+      "x": 9,
+      "y": 8,
+      "apparence": "enfant",
+      "direction": "bas",
+      "evenement": "enfant_cache_2",
+      "si": {"drapeau": "quete:cache_cache"},
+      "cache_si": "enfant_2_trouve"
+    },
+    {
+      "x": 75,
+      "y": 37,
+      "apparence": "enfant",
+      "direction": "bas",
+      "evenement": "enfant_cache_3",
+      "si": {"drapeau": "quete:cache_cache"},
+      "cache_si": "enfant_3_trouve"
+    },
+    {"x": 10, "y": 38, "apparence": "ancien", "direction": "droite", "evenement": "quete_bains"},
+    {
+      "x": 28,
+      "y": 35,
+      "apparence": "villageois",
+      "direction": "bas",
+      "evenement": "tom_2",
+      "si": {"drapeau": ["tom1", "boss3"]},
+      "cache_si": "tom2"
     }
   ],
   "coffres": [
@@ -183,7 +221,11 @@
     {"x": 12, "y": 19, "objet": "cristal_givre", "quantite": 2},
     {"x": 72, "y": 30, "objet": "lanterne_or", "quantite": 2},
     {"x": 81, "y": 16, "objet": "elixir", "quantite": 2},
-    {"x": 78, "y": 39, "or": 2500}
+    {"x": 78, "y": 39, "or": 2500},
+    {"x": 82, "y": 4, "objet": "eclat_brume", "quantite": 1},
+    {"x": 4, "y": 4, "objet": "eclat_brume", "quantite": 1},
+    {"x": 82, "y": 40, "objet": "eclat_brume", "quantite": 1},
+    {"x": 4, "y": 40, "objet": "eclat_brume", "quantite": 1}
   ],
   "panneaux": [
     {"x": 28, "y": 40, "texte": "Givreval, le village au pied des Pics."},

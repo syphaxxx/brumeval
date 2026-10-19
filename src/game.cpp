@@ -378,8 +378,11 @@ void Game::update(float dt) {
 // pendant la fin d'un combat (la fanfare de victoire ou de défaite se joue seule)
 void Game::updateMusic() {
   std::string t = "titre";
-  if (mode == Mode::Battle && battle_) t = battle_->ending_ ? "" : battle_->boss ? "boss" : "combat";
-  else if (mode == Mode::Map && mapId >= 0 && mapId < (int)maps().size()) t = audio::musicForPlace(themeName(M().theme));
+  if (mode == Mode::Battle && battle_) t = battle_->ending_ ? "" : !battle_->music.empty() ? battle_->music : battle_->boss ? "boss" : "combat";
+  else if (mode == Mode::Map && mapId >= 0 && mapId < (int)maps().size()) {
+    t = audio::musicForPlace(M().id);  // « lieux » : une carte peut avoir son morceau (port, tour…), sinon celui de son thème
+    if (t.empty()) t = audio::musicForPlace(themeName(M().theme));
+  }
   audio::music(t);
 }
 
@@ -446,7 +449,7 @@ void Game::defeat() {
 // ---------------------------------------------------------------------------
 // Carte
 // ---------------------------------------------------------------------------
-bool Game::npcVisible(const Npc& n) const { return n.hideIf.empty() || !has(n.hideIf); }
+bool Game::npcVisible(const Npc& n) const { return (n.hideIf.empty() || !has(n.hideIf)) && (n.cond.is_null() || checkCond(n.cond)); }
 bool Game::bossAlive(const BossSpot& b) const { return !has(b.flag) && (b.cond.is_null() || checkCond(b.cond)); }
 
 bool Game::blocked(int x, int y) const { return blockedOn(M(), x, y); }

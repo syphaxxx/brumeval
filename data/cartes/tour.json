@@ -51,7 +51,10 @@
   "habitants": [],
   "coffres": [
     {"x": 5, "y": 27, "objet": "elixir", "quantite": 2},
-    {"x": 24, "y": 27, "objet": "gemme_orage", "quantite": 1}
+    {"x": 24, "y": 27, "objet": "gemme_orage", "quantite": 1},
+    {"x": 18, "y": 30, "objet": "partition", "quantite": 1},
+    {"x": 9, "y": 2, "objet": "eclat_brume", "quantite": 1},
+    {"x": 20, "y": 2, "objet": "eclat_brume", "quantite": 1}
   ],
   "panneaux": [],
   "passages": [

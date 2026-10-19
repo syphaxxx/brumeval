@@ -235,7 +235,44 @@
       "direction": "gauche",
       "dialogue": ["Le cheval de la ferme hennit doucement."],
       "promenade": 1
-    }
+    },
+    {
+      "x": 38,
+      "y": 2,
+      "apparence": "chat",
+      "direction": "bas",
+      "evenement": "chat_moustache",
+      "si": {"drapeau": "quete:chat"},
+      "cache_si": "chat_trouve"
+    },
+    {"x": 29, "y": 12, "apparence": "voyageuse", "direction": "bas", "evenement": "quete_naturaliste"},
+    {"x": 29, "y": 17, "apparence": "villageoise", "direction": "bas", "evenement": "quete_lettre"},
+    {
+      "x": 12,
+      "y": 11,
+      "apparence": "ancien",
+      "direction": "bas",
+      "evenement": "quete_conte",
+      "si": {"drapeau": "boss5"}
+    },
+    {
+      "x": 43,
+      "y": 38,
+      "apparence": "paysan",
+      "direction": "bas",
+      "evenement": "quete_ruches",
+      "si": {"drapeau": "boss1"}
+    },
+    {"x": 9, "y": 17, "apparence": "enfant", "direction": "droite", "evenement": "quete_chat"},
+    {
+      "x": 11,
+      "y": 17,
+      "apparence": "chat",
+      "direction": "gauche",
+      "evenement": "chat_rentre",
+      "si": {"drapeau": "chat_trouve"}
+    },
+    {"x": 25, "y": 18, "apparence": "marchande", "direction": "bas", "evenement": "collectionneuse"}
   ],
   "coffres": [
     {"x": 12, "y": 24, "objet": "medaillon", "quantite": 1},
@@ -249,7 +286,11 @@
     {"x": 2, "y": 3, "objet": "lanterne", "quantite": 2},
     {"x": 55, "y": 53, "objet": "lanterne_argent", "quantite": 2},
     {"x": 21, "y": 55, "objet": "superpotion", "quantite": 2},
-    {"x": 29, "y": 46, "or": 600}
+    {"x": 29, "y": 46, "or": 600},
+    {"x": 2, "y": 58, "objet": "eclat_brume", "quantite": 1},
+    {"x": 62, "y": 2, "objet": "eclat_brume", "quantite": 1},
+    {"x": 62, "y": 57, "objet": "eclat_brume", "quantite": 1},
+    {"x": 3, "y": 30, "objet": "eclat_brume", "quantite": 1}
   ],
   "panneaux": [
     {"x": 6, "y": 10, "texte": "Village de Brumeval. Maison de soin au nord-ouest, boutique au nord-est."},
@@ -353,6 +394,16 @@
       ]
     }
   ],
-  "boss": [{"x": 59, "y": 32, "espece": "sylvarque", "drapeau": "boss1", "evenement": "sylvarque"}],
+  "boss": [
+    {"x": 59, "y": 32, "espece": "sylvarque", "drapeau": "boss1", "evenement": "sylvarque"},
+    {
+      "x": 50,
+      "y": 39,
+      "espece": "lucioline",
+      "drapeau": "ruches_libres",
+      "evenement": "nuee_ruches",
+      "si": {"drapeau": "quete:ruches"}
+    }
+  ],
   "carte_monde": [34, 50]
 }

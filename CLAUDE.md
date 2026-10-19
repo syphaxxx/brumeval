@@ -234,7 +234,12 @@ code) ; `docs/GUIDE.md` les range par domaine.
   (seulement le combat affiché, pas les simulations ; l'hôte ou le chef envoie
   `son` aux autres). Les menus font leurs bruits eux-mêmes (`MenuStack::update`).
   Le mode test n'ouvre pas de sortie son mais fabrique chaque morceau et chaque
-  effet (`audio::render`) pour vérifier qu'ils s'entendent.
+  effet (`audio::render`) pour vérifier qu'ils s'entendent. Musiques (2026-10-19) : écrites par
+  `outils/musique/compose.py` d'après `outils/musique/morceaux.py` (13 morceaux : grille d'accords, mélodie,
+  contre-chant, arpège, basse et batterie fabriqués d'après les accords) ; voix avec `vibrato`, `attaque`,
+  `ondulation`, morceau avec `echo` (ligne à retard du `Mixer`) ; `lieux` accepte un identifiant de carte
+  (`Game::updateMusic` : carte, puis thème) ; `BattleSetup::music` (« musique » de l'action combat, vérifiée par
+  `checkEvents`).
 - Évolution (2.2, plan validé le 2026-10-12) : `Species::evolveTo` / `evolveLvl` (champ `evolution` : `espece`, `niveau`) et
   `size` (`taille`, dessin agrandi dans `drawCreature`) ; `canEvolve` / `evolve` (data.cpp : même niveau, équipement,
   tactiques, case, compagnon ; PV et PM en proportion). Après un combat gagné (hors Expédition, Arène, duel),
@@ -296,9 +301,12 @@ code) ; `docs/GUIDE.md` les range par domaine.
   (`drawMap`). Les 12 intérieurs des villages sont `data/cartes/<village>_<lieu>.json`.
 - Quêtes annexes : `data/quetes.json` (lu par `loadEvents`, vérifié par
   `checkEvents`), action `quete` (drapeaux `quete:<id>` et `quete:<id>:fin`,
-  `questFlag`), journal `Game::journalMenu`. Trois quêtes : `medaillon`
-  (vallée), `braises` (Forgeroc, boss de carte `tisonnels`), `tisane` (Givreval) ;
-  leurs habitants sont dans les intérieurs.
+  `questFlag`), journal `Game::journalMenu`. 20 quêtes (2026-10-19 : 14 de plus, ajoutées par un script de
+  Claude) : `medaillon`, `braises`, `tisane`, `grimoire`, `cristal`, `perles`, puis `chat`, `naturaliste` (montrer
+  des créatures : condition `membre`), `lettre`, `apprenti`, `caravane` (boss de carte sous condition), `champignons`,
+  `oeuf` (donne un Draconnet), `cache_cache`, `bains`, `rival` (Tom, trois combats au fil de l'histoire),
+  `capitaine`, `partitions`, `conte` (après la fin), `ruches`. Habitants et boss de carte peuvent avoir `si` (présents
+  seulement si la condition est vraie : `Npc::cond`, `BossSpot::cond`).
 - Événements : habitants (`evenement`), portes des bâtiments (genre ou
   `evenement`) et boss lancent un événement de `data/evenements.json`. Les
   actions sont exécutées par `Game::execAction` (events.cpp) via le `Script` ;

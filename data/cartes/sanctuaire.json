@@ -23,7 +23,11 @@
   ],
   "batiments": [],
   "habitants": [],
-  "coffres": [{"x": 10, "y": 2, "objet": "elixir", "quantite": 2}, {"x": 5, "y": 2, "or": 2000}],
+  "coffres": [
+    {"x": 10, "y": 2, "objet": "elixir", "quantite": 2},
+    {"x": 5, "y": 2, "or": 2000},
+    {"x": 2, "y": 14, "objet": "eclat_brume", "quantite": 1}
+  ],
   "panneaux": [],
   "passages": [
     {"x": 10, "y": 15, "vers": "temple", "tx": 19, "ty": 1, "direction": "bas"},

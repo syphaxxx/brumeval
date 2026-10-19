@@ -1754,6 +1754,7 @@
         "oui": [
           {
             "action": "combat",
+            "musique": "boss_final",
             "ennemis": [
               {
                 "espece": "seigneur_orage",
@@ -1816,6 +1817,1085 @@
           {
             "action": "dire",
             "texte": "Le Coffrelin recrache trois lanternes d'or avant de se refermer pour de bon."
+          }
+        ]
+      }
+    ]
+  },
+  "quete_chat": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:chat:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Fillette : Moustache dort au soleil toute la journée maintenant. Il ne s'éloigne plus !"
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["quete:chat", "chat_trouve"]},
+        "actions": [
+          {"action": "dire", "texte": "Fillette : Moustache ! Tu es rentré ! Oh merci, merci !"},
+          {"action": "or", "quantite": 120},
+          {"action": "donner", "objet": "plume", "quantite": 1},
+          {"action": "quete", "id": "chat", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:chat"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Fillette : Moustache aime chasser les papillons dans les prés du nord. Il a peur de la brume…"
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Fillette : Mon chat Moustache a disparu depuis que la brume est tombée…"
+          },
+          {
+            "action": "question",
+            "texte": "Chercher Moustache ?",
+            "oui": [
+              {"action": "quete", "id": "chat"},
+              {
+                "action": "dire",
+                "texte": "Fillette : Il est tout roux avec une tache blanche. Il adore les prés au nord du village !"
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Fillette : Pauvre Moustache…"}]
+          }
+        ]
+      }
+    ]
+  },
+  "chat_moustache": {
+    "actions": [
+      {"action": "dire", "texte": "Miaou ! Moustache se frotte contre vos jambes, puis file vers le village."},
+      {"action": "drapeau", "nom": "chat_trouve"}
+    ]
+  },
+  "chat_rentre": {"actions": [{"action": "dire", "texte": "Moustache ronronne."}]},
+  "quete_naturaliste": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:naturaliste:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Naturaliste : Mon carnet est complet ! Grâce à vous, les savants de l'archipel liront tout sur les créatures de la vallée."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["quete:naturaliste", "nat2"], "membre": "brumelin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Naturaliste : Un Brumelin, apprivoisé ! On dit qu'ils sont nés de la brume elle-même… Fascinant."
+          },
+          {
+            "action": "dire",
+            "texte": "Naturaliste : Mon carnet est complet. Prenez cette gemme : elle renforce la vie de qui la porte."
+          },
+          {"action": "donner", "objet": "gemme_vie", "quantite": 1},
+          {"action": "drapeau", "nom": "nat3"},
+          {"action": "quete", "id": "naturaliste", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": ["quete:naturaliste", "nat2"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Naturaliste : Il me reste à étudier un Brumelin. On en croise près du col, à l'est, où la brume est la plus épaisse."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["quete:naturaliste", "nat1"], "membre": "rocaillou"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Naturaliste : Un Rocaillou ! Sa carapace est plus dure que je ne pensais."
+          },
+          {"action": "dire", "texte": "Naturaliste : Merci ! Voici de quoi en attraper d'autres."},
+          {"action": "donner", "objet": "lanterne_argent", "quantite": 2},
+          {"action": "drapeau", "nom": "nat2"}
+        ]
+      },
+      {
+        "si": {"drapeau": ["quete:naturaliste", "nat1"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Naturaliste : Maintenant, un Rocaillou. Ils se cachent dans les herbes, à l'est du village."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:naturaliste", "membre": "grenouillon"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Naturaliste : Oh, un Grenouillon ! Regardez ces pattes… Merci, je note tout."
+          },
+          {"action": "donner", "objet": "lanterne", "quantite": 3},
+          {"action": "drapeau", "nom": "nat1"}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:naturaliste"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Naturaliste : Pour commencer, montrez-moi un Grenouillon. Il y en a près des mares, au sud."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Naturaliste : Bonjour ! J'étudie les créatures de la vallée pour les savants de l'archipel."
+          },
+          {
+            "action": "dire",
+            "texte": "Naturaliste : Mais je suis bien trop maladroite pour en attraper moi-même…"
+          },
+          {
+            "action": "question",
+            "texte": "Aider la naturaliste à remplir son carnet ?",
+            "oui": [
+              {"action": "quete", "id": "naturaliste"},
+              {
+                "action": "dire",
+                "texte": "Naturaliste : Merci ! Montrez-moi d'abord un Grenouillon : il suffit qu'il soit dans votre équipe."
+              }
+            ],
+            "non": [
+              {"action": "dire", "texte": "Naturaliste : Dommage. Je reste ici, si vous changez d'avis."}
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "quete_lettre": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:lettre:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Mère d'Aldo : Aldo m'a répondu ! Il viendra pour les moissons. Merci d'avoir porté ma lettre."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:lettre"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Mère d'Aldo : Mon fils Aldo est apprenti à Forgeroc, dans les Monts Cendrelune. Vous lui donnerez ma lettre ?"
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "boss1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Mère d'Aldo : Mon fils est parti travailler à Forgeroc avant la brume. Je n'ai plus de nouvelles…"
+          },
+          {
+            "action": "question",
+            "texte": "Porter une lettre à Forgeroc ?",
+            "oui": [
+              {"action": "quete", "id": "lettre"},
+              {"action": "donner", "objet": "lettre_aldo", "quantite": 1},
+              {
+                "action": "dire",
+                "texte": "Mère d'Aldo : Il s'appelle Aldo. Il a les cheveux en bataille, comme son père."
+              }
+            ],
+            "non": [
+              {"action": "dire", "texte": "Mère d'Aldo : Je comprends. Les routes sont dangereuses…"}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Villageoise : Mon fils est à Forgeroc, de l'autre côté du col. Tant que Sylvarque garde le passage, aucune lettre ne passe."
+          }
+        ]
+      }
+    ]
+  },
+  "aldo": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:lettre:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Aldo : Je suis passé à la forge de Brann ce matin. Un jour, j'aurai ma propre enclume !"
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:lettre", "objet": "lettre_aldo"},
+        "actions": [
+          {"action": "retirer", "objet": "lettre_aldo"},
+          {"action": "dire", "texte": "Aldo : Une lettre de maman ? Elle va bien ? Ouf…"},
+          {
+            "action": "dire",
+            "texte": "Aldo : Tenez, c'est ma première paie. Prenez au moins le minerai, j'en ai trop."
+          },
+          {"action": "or", "quantite": 300},
+          {"action": "donner", "objet": "minerai", "quantite": 3},
+          {"action": "quete", "id": "lettre", "fin": true}
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Aldo : Avec la brume, plus personne ne descend dans la vallée. J'espère que maman va bien."
+          }
+        ]
+      }
+    ]
+  },
+  "quete_apprenti": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:apprenti:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Apprenti : Brann dit que mes lames sont « presque utilisables ». C'est un compliment, chez lui !"
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:apprenti", "objet_min": {"minerai": 5}},
+        "actions": [
+          {"action": "retirer", "objet": "minerai", "quantite": 5},
+          {
+            "action": "dire",
+            "texte": "Apprenti : Cinq minerais ! Je vais pouvoir m'entraîner toute la nuit."
+          },
+          {
+            "action": "dire",
+            "texte": "Apprenti : Tenez, c'est la première hache que j'ai forgée seul. Brann l'a trouvée « correcte »."
+          },
+          {"action": "donner", "objet": "hache_braise", "quantite": 1},
+          {"action": "quete", "id": "apprenti", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:apprenti"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Apprenti : Il me faut cinq minerais de fer. Les créatures de pierre en laissent parfois, et on en trouve dans les coffres."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Apprenti : Brann ne me laisse pas toucher à son minerai. Il dit que je le gâche."
+          },
+          {
+            "action": "question",
+            "texte": "Rapporter cinq minerais de fer à l'apprenti ?",
+            "oui": [
+              {"action": "quete", "id": "apprenti"},
+              {
+                "action": "dire",
+                "texte": "Apprenti : Vrai ? Je vous forgerai quelque chose en échange, promis !"
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Apprenti : Tant pis, je vais encore taper sur des clous."}]
+          }
+        ]
+      }
+    ]
+  },
+  "quete_caravane": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:caravane:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Marchande : Grâce à vous, je peux reprendre la route. Si vous passez par le port, demandez la caravane de Lysa !"
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:caravane", "objet": "coffret_caravane"},
+        "actions": [
+          {"action": "retirer", "objet": "coffret_caravane"},
+          {"action": "dire", "texte": "Marchande : Mon coffret ! Et il n'est même pas ouvert…"},
+          {
+            "action": "dire",
+            "texte": "Marchande : Prenez cette robe, je la gardais pour un client qui n'est jamais venu."
+          },
+          {"action": "or", "quantite": 400},
+          {"action": "donner", "objet": "robe_mage", "quantite": 1},
+          {"action": "quete", "id": "caravane", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:caravane"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Marchande : Les pillards sont partis vers le sud de la forêt, au-delà de la rivière."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Marchande : Des pillards gobelins ont attaqué ma caravane ! Ils ont pris mon coffret, tout ce que je possède…"
+          },
+          {
+            "action": "question",
+            "texte": "Reprendre le coffret aux pillards ?",
+            "oui": [
+              {"action": "quete", "id": "caravane"},
+              {
+                "action": "dire",
+                "texte": "Marchande : Ils sont partis vers le sud de la forêt. Un Brutor les commande !"
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Marchande : Je comprends… ils sont dangereux."}]
+          }
+        ]
+      }
+    ]
+  },
+  "pillards": {
+    "actions": [
+      {"action": "dire", "texte": "Les pillards gobelins se partagent le butin. « Encore des voleurs ? »"},
+      {
+        "action": "combat",
+        "nom": "Les pillards",
+        "ennemis": [
+          {"espece": "gobelard", "niveau": 15},
+          {"espece": "brutor", "niveau": 18, "pv": 2, "boss": true},
+          {"espece": "gobelard", "niveau": 15}
+        ],
+        "fuite": true,
+        "capture": false,
+        "victoire": [
+          {"action": "drapeau", "nom": "caravane_reprise"},
+          {"action": "donner", "objet": "coffret_caravane", "quantite": 1},
+          {"action": "dire", "texte": "Les pillards s'enfuient en laissant le coffret."}
+        ]
+      }
+    ]
+  },
+  "quete_champignons": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:champignons:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Herboriste : Mes remèdes de lune soignent les fièvres de tout le camp. Merci encore !"
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:champignons", "objet_min": {"champignon_lune": 3}},
+        "actions": [
+          {"action": "retirer", "objet": "champignon_lune", "quantite": 3},
+          {"action": "dire", "texte": "Herboriste : Trois champignons de lune ! Ils brillent encore…"},
+          {
+            "action": "dire",
+            "texte": "Herboriste : Voici des éthers de ma fabrication, et ce talisman : il garde l'esprit clair."
+          },
+          {"action": "donner", "objet": "ether", "quantite": 3},
+          {"action": "donner", "objet": "talisman_esprit", "quantite": 1},
+          {"action": "quete", "id": "champignons", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:champignons"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Herboriste : Il me faut trois champignons de lune. Ils poussent dans de vieux coffres oubliés, aux quatre coins de la forêt."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Herboriste : Les fièvres de la brume touchent tout le camp. Il me faudrait des champignons de lune pour mes remèdes…"
+          },
+          {
+            "action": "question",
+            "texte": "Chercher trois champignons de lune ?",
+            "oui": [
+              {"action": "quete", "id": "champignons"},
+              {
+                "action": "dire",
+                "texte": "Herboriste : Ils poussent à l'ombre, souvent dans de vieux coffres pourris. Bonne chance !"
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Herboriste : Je vais me débrouiller… je crois."}]
+          }
+        ]
+      }
+    ]
+  },
+  "quete_oeuf": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:oeuf:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Garçon : Prenez bien soin de Draconnet ! Il adore qu'on lui gratte le menton."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["quete:oeuf", "oeuf_chaud"]},
+        "actions": [
+          {"action": "dire", "texte": "Garçon : L'œuf a éclos ! Regardez, c'est un petit Draconnet !"},
+          {
+            "action": "dire",
+            "texte": "Garçon : Maman ne veut pas d'un dragon à la maison… Il sera mieux avec vous. Vous l'emmènerez voir le monde ?"
+          },
+          {"action": "recruter", "espece": "draconnet", "niveau": 18},
+          {"action": "quete", "id": "oeuf", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:oeuf", "objet": "coeur_braise"},
+        "actions": [
+          {"action": "retirer", "objet": "coeur_braise", "quantite": 1},
+          {"action": "dire", "texte": "Garçon : Un Cœur de braise ! Je le glisse sous l'œuf…"},
+          {"action": "dire", "texte": "L'œuf se met à briller doucement. Il craque !"},
+          {"action": "drapeau", "nom": "oeuf_chaud"}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:oeuf"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Garçon : L'œuf refroidit… Il lui faut un Cœur de braise. On en trouve sur les créatures de feu du volcan."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "boss2"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Garçon : Psst ! J'ai trouvé un œuf près du volcan. Il est tout froid, maintenant…"
+          },
+          {
+            "action": "question",
+            "texte": "Aider le garçon à réchauffer l'œuf ?",
+            "oui": [
+              {"action": "quete", "id": "oeuf"},
+              {
+                "action": "dire",
+                "texte": "Garçon : Il faudrait un Cœur de braise. Les créatures de feu en laissent parfois."
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Garçon : Bon… je vais le couver moi-même."}]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Garçon : Le volcan gronde trop fort. Maman dit de ne pas sortir de Forgeroc."
+          }
+        ]
+      }
+    ]
+  },
+  "enfant_cache_1": {
+    "actions": [
+      {"action": "dire", "texte": "Lou : Zut, trouvé ! Je rentre au village…"},
+      {"action": "drapeau", "nom": "enfant_1_trouve"}
+    ]
+  },
+  "enfant_cache_2": {
+    "actions": [
+      {"action": "dire", "texte": "Pip : Zut, trouvé ! Je rentre au village…"},
+      {"action": "drapeau", "nom": "enfant_2_trouve"}
+    ]
+  },
+  "enfant_cache_3": {
+    "actions": [
+      {"action": "dire", "texte": "Nino : Zut, trouvé ! Je rentre au village…"},
+      {"action": "drapeau", "nom": "enfant_3_trouve"}
+    ]
+  },
+  "quete_cache_cache": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:cache_cache:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Mère : Les petits ne parlent que de vous. Vous êtes devenus le meilleur chercheur de Givreval !"
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["quete:cache_cache", "enfant_1_trouve", "enfant_2_trouve", "enfant_3_trouve"]},
+        "actions": [
+          {"action": "dire", "texte": "Mère : Ils sont tous rentrés, les joues toutes rouges ! Merci."},
+          {"action": "dire", "texte": "Mère : Prenez ceci. Mon père disait qu'elle réveille le courage."},
+          {"action": "or", "quantite": 500},
+          {"action": "donner", "objet": "gemme_eveil", "quantite": 1},
+          {"action": "quete", "id": "cache_cache", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:cache_cache"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Mère : Lou, Pip et Nino jouent à cache-cache dans les Pics. Il en manque encore ! Ils se cachent loin, ces chenapans…"
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "boss2"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Mère : Mes trois enfants jouent à cache-cache dans la neige depuis ce matin. Il va bientôt faire nuit…"
+          },
+          {
+            "action": "question",
+            "texte": "Retrouver les trois enfants ?",
+            "oui": [
+              {"action": "quete", "id": "cache_cache"},
+              {
+                "action": "dire",
+                "texte": "Mère : Merci ! Lou, Pip et Nino. Ils adorent se cacher loin du village."
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Mère : Je vais attendre encore un peu…"}]
+          }
+        ]
+      }
+    ]
+  },
+  "quete_bains": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:bains:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Vieil homme : Ah… l'eau est parfaite. Revenez quand vous voulez, les bains sont pour tout le monde !"
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:bains", "objet_min": {"coeur_braise": 2}},
+        "actions": [
+          {"action": "retirer", "objet": "coeur_braise", "quantite": 2},
+          {"action": "dire", "texte": "Vieil homme : Deux Cœurs de braise ! Je les plonge dans le bassin…"},
+          {"action": "dire", "texte": "L'eau se met à fumer. Tout le village accourt !"},
+          {
+            "action": "dire",
+            "texte": "Vieil homme : Prenez cette armure : je l'ai portée quand j'étais garde. Elle ne craint pas le froid."
+          },
+          {"action": "donner", "objet": "armure_givre", "quantite": 1},
+          {"action": "quete", "id": "bains", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:bains"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Vieil homme : Deux Cœurs de braise suffiraient à chauffer le bassin. Les créatures de feu de Cendrelune en laissent parfois."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "boss2"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Vieil homme : Autrefois, Givreval avait des bains chauds. La source a gelé quand le Givrecorne s'est réveillé…"
+          },
+          {
+            "action": "question",
+            "texte": "Rapporter deux Cœurs de braise ?",
+            "oui": [
+              {"action": "quete", "id": "bains"},
+              {
+                "action": "dire",
+                "texte": "Vieil homme : Vous feriez ça ? Mes vieux os vous remercient d'avance."
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Vieil homme : Brr. Tant pis."}]
+          }
+        ]
+      }
+    ]
+  },
+  "tom_1": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Tom : Hé ! C'est vous qui avez battu Sylvarque ? Moi aussi, je serai un grand dresseur !"
+      },
+      {
+        "action": "question",
+        "texte": "Accepter le combat de Tom ?",
+        "oui": [
+          {"action": "quete", "id": "rival"},
+          {
+            "action": "combat",
+            "nom": "Tom",
+            "ennemis": [
+              {"espece": "louvet", "niveau": 14},
+              {"espece": "voltigeon", "niveau": 15},
+              {"espece": "galetor", "niveau": 14}
+            ],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "tom1"},
+              {
+                "action": "dire",
+                "texte": "Tom : Déjà ? Pff… La prochaine fois, je serai prêt. On se reverra à Givreval !"
+              },
+              {"action": "or", "quantite": 300},
+              {"action": "donner", "objet": "superpotion", "quantite": 2}
+            ]
+          }
+        ],
+        "non": [{"action": "dire", "texte": "Tom : Vous avez peur, hein ?"}]
+      }
+    ]
+  },
+  "tom_2": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Tom : Je vous attendais ! Mes créatures ont grandi. Cette fois, je ne perdrai pas !"
+      },
+      {
+        "action": "question",
+        "texte": "Combattre Tom ?",
+        "oui": [
+          {
+            "action": "combat",
+            "nom": "Tom",
+            "ennemis": [
+              {"espece": "louvet", "niveau": 32},
+              {"espece": "voltigeon", "niveau": 33},
+              {"espece": "galetor", "niveau": 32, "pv": 1.5}
+            ],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "tom2"},
+              {
+                "action": "dire",
+                "texte": "Tom : Encore perdu ! Mais j'ai compris quelque chose… Rendez-vous au port. Là, vous verrez !"
+              },
+              {"action": "or", "quantite": 900},
+              {"action": "donner", "objet": "gemme_esprit", "quantite": 1}
+            ]
+          }
+        ],
+        "non": [{"action": "dire", "texte": "Tom : Revenez quand vous serez prêts !"}]
+      }
+    ]
+  },
+  "tom_3": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:rival:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Tom : Un jour, je partirai explorer les îles au-delà de l'orage. Peut-être qu'on se croisera là-bas ?"
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Tom : Le port ! Les créatures de la mer sont incroyables. Regardez ce que j'ai appris !"
+          },
+          {
+            "action": "question",
+            "texte": "Dernier combat contre Tom ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Tom",
+                "ennemis": [
+                  {"espece": "louvet", "niveau": 48},
+                  {"espece": "voltanguille", "niveau": 49, "pv": 1.5},
+                  {"espece": "galetor", "niveau": 48}
+                ],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {
+                    "action": "dire",
+                    "texte": "Tom : … Vous êtes vraiment les meilleurs. Merci de m'avoir pris au sérieux."
+                  },
+                  {
+                    "action": "dire",
+                    "texte": "Tom : Prenez ça. C'est ma gemme fétiche : elle porte bonheur aux vrais dresseurs."
+                  },
+                  {"action": "or", "quantite": 2000},
+                  {"action": "donner", "objet": "gemme_rempart", "quantite": 1},
+                  {"action": "quete", "id": "rival", "fin": true}
+                ]
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Tom : Je vous attends !"}]
+          }
+        ]
+      }
+    ]
+  },
+  "quete_capitaine": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:capitaine:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Capitaine Morvan : Quand l'orage sera loin, je vous emmènerai pêcher au large. Promis !"
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Capitaine Morvan : Personne ne bat la flotte du capitaine Morvan ! Enfin… personne avant vous, peut-être ?"
+          },
+          {
+            "action": "question",
+            "texte": "Relever le défi du capitaine ?",
+            "oui": [
+              {"action": "quete", "id": "capitaine"},
+              {
+                "action": "combat",
+                "nom": "Capitaine Morvan",
+                "ennemis": [
+                  {"espece": "coquillon", "niveau": 45},
+                  {"espece": "voltanguille", "niveau": 47, "pv": 2, "boss": true},
+                  {"espece": "ecumet", "niveau": 45}
+                ],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {
+                    "action": "dire",
+                    "texte": "Capitaine Morvan : Par toutes les marées ! Vous méritez ceci : l'amulette de ma grand-mère, elle bat au rythme des vagues."
+                  },
+                  {"action": "or", "quantite": 1500},
+                  {"action": "donner", "objet": "amulette_maree", "quantite": 1},
+                  {"action": "quete", "id": "capitaine", "fin": true}
+                ]
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Capitaine Morvan : Les terriens… toujours prudents."}]
+          }
+        ]
+      }
+    ]
+  },
+  "quete_partitions": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:partitions:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Barde : « Brume de l'aube, rends-nous la mer… » Tout le port la chante, maintenant !"
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:partitions", "objet_min": {"partition": 3}},
+        "actions": [
+          {"action": "retirer", "objet": "partition", "quantite": 3},
+          {"action": "dire", "texte": "Barde : Mes trois pages ! La chanson est complète !"},
+          {
+            "action": "dire",
+            "texte": "Barde : « Brume de l'aube, rends-nous la mer, / l'orage dort au fond des flots, / et les héros rentrent au port, / la lanterne au bout des doigts. »"
+          },
+          {
+            "action": "dire",
+            "texte": "Barde : Pour vous, cette gemme. Elle rend coup pour coup, comme un bon refrain."
+          },
+          {"action": "donner", "objet": "gemme_contre", "quantite": 1},
+          {"action": "or", "quantite": 800},
+          {"action": "quete", "id": "partitions", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:partitions"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Barde : Trois pages, emportées par l'orage : une au Récif, une dans les Ruines, une dans la Tour."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Barde : L'orage a emporté les pages de ma plus belle chanson ! Sans elles, je ne sais plus la fin…"
+          },
+          {
+            "action": "question",
+            "texte": "Chercher les pages de la chanson ?",
+            "oui": [
+              {"action": "quete", "id": "partitions"},
+              {
+                "action": "dire",
+                "texte": "Barde : Le vent les a portées au Récif, dans les Ruines et jusqu'à la Tour de l'Orage."
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Barde : La la la… non, ce n'est pas ça."}]
+          }
+        ]
+      }
+    ]
+  },
+  "quete_conte": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:conte:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Conteuse : Les enfants me demandent votre histoire tous les soirs. Je la raconte un peu mieux à chaque fois."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Conteuse : Alors c'est vous… Venez, asseyez-vous. Je vais vous dire ce que ma grand-mère me disait."
+          },
+          {
+            "action": "dire",
+            "texte": "Conteuse : Il y a mille ans, l'orage voulait recouvrir le monde. Les premiers gardiens l'ont enfermé sous la brume."
+          },
+          {
+            "action": "dire",
+            "texte": "Conteuse : La brume était une prison. Mais une prison qui rend les créatures sauvages… alors on a oublié pourquoi elle était là."
+          },
+          {
+            "action": "dire",
+            "texte": "Conteuse : Vous avez dissipé la brume, et l'orage s'est réveillé. Puis vous l'avez vaincu. La prison n'est plus nécessaire."
+          },
+          {
+            "action": "dire",
+            "texte": "Conteuse : Les gardiens d'autrefois seraient fiers. Prenez ces élixirs, et ce conseil : la brume n'a pas disparu partout."
+          },
+          {"action": "donner", "objet": "elixir", "quantite": 2},
+          {"action": "quete", "id": "conte", "fin": true}
+        ]
+      }
+    ]
+  },
+  "quete_ruches": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:ruches:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Apiculteur : Mes abeilles butinent de nouveau. Le miel de cette année sera le meilleur de la vallée !"
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["quete:ruches", "ruches_libres"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Apiculteur : Les Luciolines sont parties ! Mes abeilles osent enfin sortir."
+          },
+          {
+            "action": "dire",
+            "texte": "Apiculteur : Voici ma récompense : du miel… et ces potions que j'avais de côté."
+          },
+          {"action": "donner", "objet": "superpotion", "quantite": 3},
+          {"action": "or", "quantite": 250},
+          {"action": "quete", "id": "ruches", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:ruches"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Apiculteur : Les Luciolines sont près des ruches, juste à côté. Faites attention, elles piquent !"
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Apiculteur : Une nuée de Luciolines s'est installée près de mes ruches. Mes abeilles ne sortent plus…"
+          },
+          {
+            "action": "question",
+            "texte": "Chasser les Luciolines ?",
+            "oui": [
+              {"action": "quete", "id": "ruches"},
+              {"action": "dire", "texte": "Apiculteur : Merci ! Elles sont juste là, près des ruches."}
+            ],
+            "non": [{"action": "dire", "texte": "Apiculteur : Bzz… quelle misère."}]
+          }
+        ]
+      }
+    ]
+  },
+  "nuee_ruches": {
+    "actions": [
+      {"action": "dire", "texte": "Les Luciolines bourdonnent de colère !"},
+      {
+        "action": "combat",
+        "nom": "La nuée",
+        "ennemis": [
+          {"espece": "lucioline", "niveau": 12},
+          {"espece": "lucioline", "niveau": 13, "pv": 2, "boss": true},
+          {"espece": "lucioline", "niveau": 12}
+        ],
+        "fuite": true,
+        "capture": false,
+        "victoire": [
+          {"action": "drapeau", "nom": "ruches_libres"},
+          {"action": "dire", "texte": "La nuée se disperse dans les bois."}
+        ]
+      }
+    ]
+  },
+  "collectionneuse": {
+    "pages": [
+      {
+        "si": {"drapeau": "eclats30"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Collectionneuse : Ma collection est complète grâce à vous. Les éclats brillent comme au premier jour de la brume."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:eclats", "sans_drapeau": "eclats30", "objet_min": {"eclat_brume": 30}},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Collectionneuse : Trente ! La collection complète ! Je n'y croyais plus…"
+          },
+          {
+            "action": "dire",
+            "texte": "Collectionneuse : Ce manteau est tissé de brume figée. Il est à vous : personne ne le mérite plus que vous."
+          },
+          {"action": "donner", "objet": "manteau_brume", "quantite": 1},
+          {"action": "drapeau", "nom": "eclats30"},
+          {"action": "quete", "id": "eclats", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:eclats", "sans_drapeau": "eclats20", "objet_min": {"eclat_brume": 20}},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Collectionneuse : Vingt éclats ! Ils chantent quand on les approche, vous entendez ?"
+          },
+          {"action": "dire", "texte": "Collectionneuse : Prenez cette gemme, la plus belle de ma boutique."},
+          {"action": "donner", "objet": "gemme_maitre", "quantite": 1},
+          {"action": "drapeau", "nom": "eclats20"}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:eclats", "sans_drapeau": "eclats10", "objet_min": {"eclat_brume": 10}},
+        "actions": [
+          {"action": "dire", "texte": "Collectionneuse : Dix éclats ! Assez pour tailler un anneau."},
+          {"action": "dire", "texte": "Collectionneuse : Le voici. Il est léger comme un souffle."},
+          {"action": "donner", "objet": "anneau_brume", "quantite": 1},
+          {"action": "drapeau", "nom": "eclats10"}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:eclats", "sans_drapeau": "eclats5", "objet_min": {"eclat_brume": 5}},
+        "actions": [
+          {"action": "dire", "texte": "Collectionneuse : Cinq éclats ! Vous avez l'œil."},
+          {"action": "dire", "texte": "Collectionneuse : Tenez, quelques lanternes d'or et de quoi voyager."},
+          {"action": "donner", "objet": "lanterne_or", "quantite": 3},
+          {"action": "or", "quantite": 500},
+          {"action": "drapeau", "nom": "eclats5"}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:eclats"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Collectionneuse : Les éclats dorment dans de vieux coffres, au bout du monde. Il y en a trente en tout, j'en suis sûre."
+          },
+          {
+            "action": "dire",
+            "texte": "Collectionneuse : Je récompense ceux qui en ont cinq, dix, vingt… et trente !"
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Collectionneuse : Bonjour ! Je collectionne les éclats de brume : des morceaux de brume figée, froids comme du verre."
+          },
+          {
+            "action": "dire",
+            "texte": "Collectionneuse : On en trouve dans de vieux coffres, aux quatre coins du monde. Vous m'aiderez à les retrouver ?"
+          },
+          {"action": "quete", "id": "eclats"},
+          {
+            "action": "dire",
+            "texte": "Collectionneuse : Gardez-les : montrez-les-moi quand vous en aurez cinq, dix, vingt ou trente."
           }
         ]
       }

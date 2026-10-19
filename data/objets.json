@@ -374,6 +374,66 @@
     "important": true
   },
   {
+    "id": "eclat_brume",
+    "nom": "Éclat de brume",
+    "icone": "ic_gemme_cristal",
+    "description": "Un fragment de brume figée, froid comme du verre. Une collectionneuse de la Vallée les recherche.",
+    "prix": 0
+  },
+  {
+    "id": "anneau_brume",
+    "nom": "Anneau de brume",
+    "icone": "ic_acc_6",
+    "description": "Taillé dans dix éclats de brume. Celui qui le porte glisse entre les coups.",
+    "prix": 1600,
+    "equipement": "accessoire",
+    "bonus": {"vitesse": 3, "esquive": 4, "resistance": 3}
+  },
+  {
+    "id": "manteau_brume",
+    "nom": "Manteau de brume",
+    "icone": "ic_armure_7",
+    "description": "Tissé de trente éclats de brume. Léger comme l'aube, solide comme la montagne.",
+    "prix": 4000,
+    "equipement": "armure",
+    "bonus": {"pv": 25, "defense": 12, "resistance": 12, "esquive": 4}
+  },
+  {
+    "id": "lettre_aldo",
+    "nom": "Lettre pour Aldo",
+    "icone": "ic_livre",
+    "description": "Une lettre cachetée de cire bleue, pour Aldo, à Forgeroc.",
+    "prix": 0
+  },
+  {
+    "id": "coffret_caravane",
+    "nom": "Coffret de la caravane",
+    "icone": "ic_sac",
+    "description": "Un coffret de marchande, cabossé mais toujours fermé.",
+    "prix": 0
+  },
+  {
+    "id": "champignon_lune",
+    "nom": "Champignon de lune",
+    "icone": "ic_herbe",
+    "description": "Un champignon pâle qui brille faiblement dans le noir.",
+    "prix": 0
+  },
+  {
+    "id": "oeuf_braise",
+    "nom": "Œuf tiède",
+    "icone": "ic_gemme_coeur",
+    "description": "Un gros œuf écailleux, encore tiède. Quelque chose bouge dedans.",
+    "prix": 0
+  },
+  {
+    "id": "partition",
+    "nom": "Page de partition",
+    "icone": "ic_livre",
+    "description": "Une page de musique, tachée d'eau de mer. On devine une mélodie.",
+    "prix": 0
+  },
+  {
     "id": "gemme_vie",
     "nom": "Gemme de vie",
     "icone": "ic_gemme_vie",

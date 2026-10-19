@@ -1140,6 +1140,23 @@ std::string Pilot::timeReport() const {
   return s;
 }
 
+// Durée pour un vrai joueur, très approximative (étape « 20 heures ») : le joueur automatique sait toujours où
+// aller, ne lit rien et combat avec ses tactiques. Hypothèses : il faut deux fois plus de marche pour trouver son
+// chemin, 1,4 fois plus de temps en combat (choisir ses ordres), 12 caractères lus par seconde, +10 % de menus
+std::string Pilot::humanEstimate() const {
+  auto get = [&](const char* k) {
+    auto it = timeBy.find(k);
+    return it == timeBy.end() ? 0.f : it->second;
+  };
+  float walk = get("trajet") * 2 + get("entraînement (marche)") * 1.5f;
+  float fight = (get("combat (trajet)") + get("combat difficile") + get("combat (entraînement)")) * 1.4f;
+  float read = readChars_ / 12.f;
+  float total = (walk + fight + read + get("menus") + get("dialogue")) * 1.1f;
+  int m = int(total / 60);
+  return "estimation pour un joueur (très approximative) : " + std::to_string(m / 60) + " h " + std::to_string(m % 60) + " min (lecture " +
+         std::to_string(int(read / 60)) + " min, marche ×2, combats ×1,4, menus +10 %)";
+}
+
 std::string Pilot::summary() const {
   std::string t;
   for (auto& f : G.team) t += (t.empty() ? "" : ", ") + f->name() + " N." + std::to_string(f->lvl);
@@ -1225,6 +1242,10 @@ void Pilot::update(float dt) {
     const char* what = b ? (battleWild_ && goal_.kind == Grind ? "combat (entraînement)" : battleWild_ ? "combat (trajet)" : "combat difficile")
                        : G.menus.active() ? "menus" : G.sc.busy() ? "dialogue" : goal_.kind == Grind ? "entraînement (marche)" : "trajet";
     timeBy[what] += dt;
+    if (!b && G.sc.showingMessage() && G.sc.text() != lastRead_) {  // ce qu'un joueur aurait à lire (estimation)
+      lastRead_ = G.sc.text();
+      for (unsigned char c : lastRead_) readChars_ += (c & 0xC0) != 0x80;
+    }
   }
   watch();
   if (stuck) return;
@@ -1351,6 +1372,7 @@ int Game::autoGame(SDL_Surface* target, const std::string& out) {
   say(P.finished ? "RÉSULTAT : histoire terminée" : "RÉSULTAT : histoire NON terminée");
   say(P.summary());
   say(P.timeReport());
+  say(P.humanEstimate());
   for (auto& s : g.layoutIssues) say("mise en page : " + s);
   return P.finished && g.layoutIssues.empty() ? 0 : 1;
 }

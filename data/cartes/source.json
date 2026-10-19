@@ -62,7 +62,9 @@
     {"x": 8, "y": 9, "objet": "elixir", "quantite": 2},
     {"x": 37, "y": 4, "or": 3000},
     {"x": 31, "y": 9, "objet": "plume_ange", "quantite": 1},
-    {"x": 14, "y": 27, "objet": "cristal_givre", "quantite": 2}
+    {"x": 14, "y": 27, "objet": "cristal_givre", "quantite": 2},
+    {"x": 14, "y": 28, "objet": "eclat_brume", "quantite": 1},
+    {"x": 36, "y": 4, "objet": "eclat_brume", "quantite": 1}
   ],
   "panneaux": [
     {

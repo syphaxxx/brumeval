@@ -181,6 +181,7 @@ MapDef mapFromJson(const Json& j) {
     n.event = jget<std::string>(o, "evenement", "");
     for (auto& l : jget(o, "dialogue", std::vector<std::string>{})) n.lines.push_back(tr(l));
     n.hideIf = jget<std::string>(o, "cache_si", "");
+    n.cond = o.value("si", Json());
     n.sight = jget(o, "vue", 0);
     n.sightUntil = jget<std::string>(o, "vue_jusqua", "");
     n.roam = n.sight > 0 ? 0 : jget(o, "promenade", 0);  // un dresseur garde sa place : son regard compte
@@ -215,6 +216,7 @@ MapDef mapFromJson(const Json& j) {
   for (auto& o : j.value("boss", Json::array())) {
     BossSpot b{o.at("x").get<int>(), o.at("y").get<int>(), o.at("espece").get<std::string>(), o.at("drapeau").get<std::string>(), ""};
     b.event = jget<std::string>(o, "evenement", b.id);
+    b.cond = o.value("si", Json());
     m.bosses.push_back(b);
   }
   addBountySpots(m);  // primes (jamais écrites par mapToJson : la carte relue les retrouve)
@@ -244,6 +246,7 @@ Json mapToJson(const MapDef& m) {
     Json p = {{"x", x.x}, {"y", x.y}, {"apparence", look(x.look).id}, {"direction", dirName(x.dir)}};
     if (!x.event.empty()) p["evenement"] = x.event;
     if (!x.hideIf.empty()) p["cache_si"] = x.hideIf;
+    if (!x.cond.is_null()) p["si"] = x.cond;
     if (x.sight > 0) p["vue"] = x.sight;
     if (!x.sightUntil.empty()) p["vue_jusqua"] = x.sightUntil;
     if (x.roam > 0) p["promenade"] = x.roam;
@@ -285,6 +288,7 @@ Json mapToJson(const MapDef& m) {
     if (x.bounty) continue;  // ajouté par addBountySpots
     Json p = {{"x", x.x}, {"y", x.y}, {"espece", x.id}, {"drapeau", x.flag}};
     if (x.event != x.id) p["evenement"] = x.event;
+    if (!x.cond.is_null()) p["si"] = x.cond;
     bo.push_back(p);
   }
   o["boss"] = bo;

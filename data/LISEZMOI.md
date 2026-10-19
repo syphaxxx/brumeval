@@ -53,9 +53,20 @@ rend le morceau moins répétitif. Garder des longueurs multiples l'une de
 l'autre. `extinction` (en secondes) fait s'éteindre chaque note toute seule,
 comme une corde pincée.
 
+Options d'une voix (2026-10-19) : `vibrato` (en demi-tons, 0.1 à 0.3 ; il s'installe sur
+les notes tenues), `vitesse_vibrato` (Hz, 5.5 par défaut), `attaque` (secondes de montée
+du son : 0.2 pour une nappe douce), `ondulation` (le `rapport` d'une onde carrée ondule :
+timbre vivant). Option d'un morceau : `echo` (`delai` en secondes, `retour` 0 à 0.8,
+`melange` 0 à 1) : la musique se répète plus faiblement, comme dans une grotte.
+Les morceaux sont écrits par `python outils/musique/compose.py` à partir des partitions
+de `outils/musique/morceaux.py` (accords, mélodie, accompagnement fabriqué d'après les
+accords) : modifier plutôt ce fichier, puis relancer le script.
+
 **Lieux** (`lieux`) : la musique de chaque thème de carte (`vallee`, `foret`,
-`cendres`, `grotte`, `neige`, `interieur`). Les morceaux `titre`, `combat` et
-`boss` sont joués à l'écran titre et en combat.
+`cendres`, `grotte`, `neige`, `interieur`), et d'une carte précise par son identifiant
+(`port`, `recif`, `ruines`, `tour`), qui passe avant son thème. Les morceaux `titre`,
+`combat` et `boss` sont joués à l'écran titre et en combat ; l'action `combat` peut
+imposer le sien (`"musique": "boss_final"`).
 
 **Effets** (`effets`) : une liste de sons simples joués l'un après l'autre
 (ou `{"variation": 0.1, "sons": [...]}` : la hauteur change un peu, au hasard,
@@ -291,7 +302,8 @@ table, `h` lit, `e` étagère (une bibliothèque pour deux cases), `o` comptoir,
 - `declencheurs` : une zone (`x`, `y`, `l`, `h`) qui lance un `evenement` quand
   on y entre, tant que le drapeau `jusqua` n'est pas posé.
 - `habitants` : `dialogue` (phrases simples) ou `evenement`, `cache_si` (disparaît
-  quand le drapeau est posé), `vue` et `vue_jusqua` pour les dresseurs,
+  quand le drapeau est posé), `si` (présent seulement si ces conditions sont vraies, comme le `si` des événements ;
+  aussi pour un `boss` de carte), `vue` et `vue_jusqua` pour les dresseurs,
   `promenade` (un promeneur marche jusqu'à cette distance de sa place ; jamais
   un dresseur).
 
