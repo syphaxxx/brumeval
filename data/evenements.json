@@ -748,6 +748,51 @@
       }
     ]
   },
+  "maitre_armes": {
+    "pages": [
+      {
+        "si": {"drapeau": "maitre_bottes"},
+        "actions": [
+          {"action": "dire", "texte": "Maître d'armes : Encore un peu d'entraînement ? D'autres défis vous attendent dans l'Arène."},
+          {
+            "action": "question",
+            "texte": "Reprendre le défi « Dans le dos » ?",
+            "oui": [{"action": "combat", "defi": "dos", "entrainement": true, "fuite": true}]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Maître d'armes : Au combat, le terrain est un échiquier. On peut avancer, contourner, et frapper l'ennemi dans le dos."
+          },
+          {
+            "action": "dire",
+            "texte": "Maître d'armes : Montrez-moi : deux combattants contre un protecteur et deux soigneurs. Une défaite ne vous coûtera rien."
+          },
+          {
+            "action": "question",
+            "texte": "Relever le défi ?",
+            "oui": [
+              {
+                "action": "combat",
+                "defi": "dos",
+                "entrainement": true,
+                "fuite": true,
+                "victoire": [
+                  {"action": "dire", "texte": "Maître d'armes : Bien joué ! Prenez ces bottes : elles vous porteront une case plus loin."},
+                  {"action": "donner", "objet": "bottes_vent"},
+                  {"action": "drapeau", "nom": "maitre_bottes"}
+                ],
+                "defaite": [{"action": "dire", "texte": "Maître d'armes : Ce n'est rien. Contournez le protecteur par le haut, et revenez me voir."}]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
   "maison_selene": {
     "pages": [
       {

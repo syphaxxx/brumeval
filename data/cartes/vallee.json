@@ -139,6 +139,7 @@
         "La boutique, juste à côté, vend potions, éthers et lanternes."
       ]
     },
+    {"x": 20, "y": 8, "apparence": "garde", "direction": "bas", "evenement": "maitre_armes"},
     {"x": 17, "y": 15, "apparence": "ancien", "direction": "bas", "evenement": "ancien"},
     {"x": 7, "y": 15, "apparence": "maelle", "direction": "bas", "evenement": "maelle", "cache_si": "maelle"},
     {

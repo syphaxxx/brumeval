@@ -81,7 +81,11 @@ static void checkAction(const Json& a, const std::string& where, std::vector<std
   else if (k == "recruter") {
     if (need("espece") && !hasSpecies(a["espece"].get<std::string>())) err.push_back(w + T(" : espèce inconnue « ") + a["espece"].get<std::string>() + " »");
   } else if (k == "combat") {
-    if (need("ennemis")) {
+    if (a.contains("defi")) {  // défi de l'échiquier (data/defis.json)
+      BattleSetup probe;
+      if (!a["defi"].is_string() || !challengeSetup(a["defi"].get<std::string>(), probe))
+        err.push_back(w + T(" : défi inconnu « ") + (a["defi"].is_string() ? a["defi"].get<std::string>() : std::string("?")) + " »");
+    } else if (need("ennemis")) {
       if (a["ennemis"].empty() || a["ennemis"].size() > 6) err.push_back(w + T(" : il faut entre 1 et 6 ennemis"));
       for (auto& e : a["ennemis"]) {
         if (!hasSpecies(jget<std::string>(e, "espece", ""))) err.push_back(w + T(" : espèce inconnue « ") + jget<std::string>(e, "espece", "") + " »");
@@ -307,12 +311,14 @@ void Game::execAction(const Json& a) {
   } else if (k == "combat") {
     auto make = [&](const Json& e) { return makeFoe(e, avgLevel()); };
     BattleSetup setup;
-    for (auto& e : a["ennemis"]) setup.foes.push_back(make(e));
+    if (a.contains("defi") && !challengeSetup(a["defi"].get<std::string>(), setup)) return;  // défi de l'échiquier (3.4)
+    setup.training = jget(a, "entrainement", false);
+    for (auto& e : a.value("ennemis", Json::array())) setup.foes.push_back(make(e));
     for (auto& e : a.value("renforts", Json::array())) setup.reserve.push_back(make(e));
     setup.foeName = fillText(tr(jget<std::string>(a, "nom", "")));
     setup.boss = jget(a, "boss", false);
     setup.canFlee = jget(a, "fuite", true);
-    setup.canCapture = jget(a, "capture", true);
+    setup.canCapture = jget(a, "capture", true) && !setup.fixedBoard;
     Json win = a.value("victoire", Json::array()), lose = a.value("defaite", Json::array());
     startBattle(std::move(setup), [this, win, lose](BattleResult r) {
       if (r == BattleResult::Win) runActions(win);

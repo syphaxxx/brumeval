@@ -299,19 +299,20 @@ void Game::update(float dt) {
           arena_->onBattleEnd(r, log);
           break;
         }
+        bool training = battle_->training_;
         battle_.reset();
         mode = Mode::Map;
         menus.clear();
         steps = 0;
         auto after = afterBattle_;
         afterBattle_ = nullptr;
-        if (r == BattleResult::Lose) {
+        if (r == BattleResult::Lose && !training) {
           sc.clear();  // la défaite interrompt l'événement en cours
           defeat();
         }
         groupBattle_ = false;
         if (after) sc.runNow([&] { after(r); });
-        if (r == BattleResult::Win && !inExpedition()) sc.call([this] { offerEvolutions(); });
+        if (r == BattleResult::Win && !inExpedition() && !training) sc.call([this] { offerEvolutions(); });
       }
       break;
     }

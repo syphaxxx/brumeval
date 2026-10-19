@@ -44,7 +44,11 @@ struct BattleSetup {
   bool fixedBoard = false;
   std::vector<int> allyCells, foeCells, obstacleCells;
   std::string intro;  // message d'ouverture à la place de « … surgit » (défi : la leçon)
+  bool training = false;  // entraînement : ni gains, et une défaite ne coûte rien (Game::startBattle)
 };
+
+// Défi de l'échiquier (data/defis.json) : alliés, ennemis, obstacles et décor imposés (faux : défi inconnu)
+bool challengeSetup(const std::string& id, BattleSetup& out);
 
 class Battle {
  public:
@@ -292,6 +296,7 @@ class Battle {
   void tip(const char* id);
   void startTips();
   bool startTips_ = false;
+  bool training_ = false;  // entraînement (BattleSetup::training)
   void initFoe(const FighterP& e);   // bouclier de Brisure d'un ennemi qui entre (début, renfort)
   // Phases d'un boss (2.7) : sous un seuil de PV, message, bouclier rechargé, bonus, techniques,
   // météo, renforts (jamais en ligne)

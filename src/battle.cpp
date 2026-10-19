@@ -9,6 +9,7 @@
 #include "audio.hpp"
 #include "game.hpp"
 #include "sprites.hpp"
+#include "store.hpp"
 #include "tactics.hpp"
 
 static const Color WHITE = rgb(0xffffff), GOLD = rgb(0xffe066), GREY = rgb(0xb9c0de), GREEN = rgb(0x7dffa8), BLUE = rgb(0x8fd0ff),
@@ -251,6 +252,7 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
     : G(game), foes(std::move(s.foes)), reserve(std::move(s.reserve)), foeName(std::move(s.foeName)), boss(s.boss), canFlee(s.canFlee),
       canCapture(s.canCapture), bg(bg_) {
   allies = s.allies.empty() ? G.front() : std::move(s.allies);
+  training_ = s.training;
   for (auto& a : allies) hasHero_ = hasHero_ || a->S().human;
   place(allies, !coop(), true);  // la formation de l'équipe (au gardien à plusieurs : placement automatique)
   place(foes, false, false);
@@ -345,6 +347,38 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
   else intro = leader->name() + T(" sauvage apparaît !");
   if (!s.intro.empty()) intro = s.intro;
   sc.say(intro, s.intro.empty() ? 1.3f : 0.f);  // la leçon d'un défi attend Entrée
+}
+
+bool challengeSetup(const std::string& id, BattleSetup& s) {
+  Json d = readJson("defis.json");
+  for (auto& c : d) {
+    if (jget<std::string>(c, "id", "") != id) continue;
+    auto cell = [](const Json& e) {
+      Json p = e.value("case", Json::array({1, 1}));
+      return boardAt(std::clamp(p.at(0).get<int>(), 0, GRID - 1), std::clamp(p.at(1).get<int>(), 0, BOARD_W - 1));
+    };
+    for (auto& e : c.value("allies", Json::array())) {
+      s.allies.push_back(makeFighter(e.at("espece").get<std::string>(), jget(e, "niveau", 10)));
+      s.allyCells.push_back(cell(e));
+    }
+    for (auto& e : c.value("ennemis", Json::array())) {
+      s.foes.push_back(makeFoe(e, 10));
+      s.foeCells.push_back(cell(e));
+    }
+    for (auto& o : c.value("obstacles", Json::array())) {  // seulement sur le plateau, sur une case libre
+      int y = o.at(0).get<int>(), x = o.at(1).get<int>(), b = boardAt(y, x);
+      bool free = y >= 0 && y < GRID && x >= 0 && x < BOARD_W;
+      for (int t : s.allyCells) free = free && t != b;
+      for (int t : s.foeCells) free = free && t != b;
+      if (free) s.obstacleCells.push_back(b);
+    }
+    s.fixedBoard = true;
+    s.canCapture = false;
+    s.theme = (int)themeOf(jget<std::string>(c, "decor", "vallee"));
+    s.intro = T("Défi : ") + tr(jget<std::string>(c, "nom", "")) + ". " + tr(jget<std::string>(c, "description", ""));
+    return !s.allies.empty() && !s.foes.empty();
+  }
+  return false;
 }
 
 bool Battle::isAlly(const FighterP& f) const { return std::find(allies.begin(), allies.end(), f) != allies.end(); }
@@ -1207,8 +1241,9 @@ void Battle::command(FighterP a) {
                        }});
   m.items.push_back({T("Attendre"), "", T("Finir son tour sans agir : rejoue plus tôt."), true, [this, a] { waitTurn(a); }});
   std::vector<FighterP> bench;  // avec des héros : un héros n'est remplacé que par un héros
+  bool inTeam = std::find(G.team.begin(), G.team.end(), a) != G.team.end();  // défi : des combattants prêtés, sans remplaçants
   for (auto& r : G.team)
-    if (r->alive() && !isAlly(r) && (!hasHero_ || r->S().human == a->S().human)) bench.push_back(r);
+    if (inTeam && r->alive() && !isAlly(r) && (!hasHero_ || r->S().human == a->S().human)) bench.push_back(r);
   m.items.push_back({T("Changer"), "", bench.empty() ? T("Personne pour vous remplacer.") : T("Faire entrer un remplaçant de l'équipe."), !bench.empty(),
                      [this, a, bench] {
                        Menu t;
@@ -2752,6 +2787,18 @@ void Battle::checkEnd() {
 
 void Battle::victory() {
   ending_ = true;
+  if (training_) {  // entraînement : ni expérience, ni or, ni objet
+    sound("victoire", false);
+    sc.wait(.6f);
+    sc.call([this] {
+      summary_ = {T("Entraînement réussi !")};
+      summaryOn_ = true;
+      summaryT_ = G.time;
+      sc.halt();
+    });
+    sc.call([this] { finish(BattleResult::Win); });
+    return;
+  }
   const Rules& R = rules();
   int total = 0, goldGain = 0;
   for (auto& d : defeated) {

@@ -254,31 +254,8 @@ void Arena::menuChallenges(int sel) {
 void Arena::startChallenge(int i) {
   Json d = readJson("defis.json");
   if (i < 0 || i >= (int)d.size()) return;
-  const Json& c = d[(size_t)i];
   BattleSetup s;
-  auto cell = [](const Json& e) {
-    Json p = e.value("case", Json::array({1, 1}));
-    return boardAt(std::clamp(p.at(0).get<int>(), 0, GRID - 1), std::clamp(p.at(1).get<int>(), 0, BOARD_W - 1));
-  };
-  for (auto& e : c.value("allies", Json::array())) {
-    s.allies.push_back(makeFighter(e.at("espece").get<std::string>(), jget(e, "niveau", 10)));
-    s.allyCells.push_back(cell(e));
-  }
-  for (auto& e : c.value("ennemis", Json::array())) {
-    s.foes.push_back(makeFoe(e, 10));
-    s.foeCells.push_back(cell(e));
-  }
-  for (auto& o : c.value("obstacles", Json::array())) {  // seulement sur le plateau, sur une case libre
-    int y = o.at(0).get<int>(), x = o.at(1).get<int>(), b = boardAt(y, x);
-    bool free = y >= 0 && y < GRID && x >= 0 && x < BOARD_W;
-    for (int t : s.allyCells) free = free && t != b;
-    for (int t : s.foeCells) free = free && t != b;
-    if (free) s.obstacleCells.push_back(b);
-  }
-  s.fixedBoard = true;
-  s.canCapture = false;
-  s.theme = (int)themeOf(jget<std::string>(c, "decor", "vallee"));
-  s.intro = T("Défi : ") + tr(jget<std::string>(c, "nom", "")) + ". " + tr(jget<std::string>(c, "description", ""));
+  if (!challengeSetup(jget<std::string>(d[(size_t)i], "id", ""), s)) return;
   G.team = s.allies;  // personne en réserve, pas d'objets : la position fait tout
   teamSlot_.clear();
   G.items.clear();

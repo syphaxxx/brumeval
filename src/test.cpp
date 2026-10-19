@@ -1197,7 +1197,12 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     pauseMenu();
     bool offered = false;
     for (auto& it : menus.top().items)
-      if (it.label == T("Recommencer l'énigme")) offered = true, it.act();
+      if (it.label == T("Recommencer l'énigme")) {
+        auto act = it.act;  // copie : l'action vide les menus, donc détruit ce bouton pendant qu'elle s'exécute
+        offered = true;
+        act();
+        break;
+      }
     bool reset = offered && boulders_ == start && px == R.puzzleX && py == R.puzzleY;
     menus.clear();
     path = solvePuzzle(R, px, py, boulders_, [this](int x, int y) { return !boulderAt(x, y) && blocked(x, y); });

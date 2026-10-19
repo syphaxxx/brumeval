@@ -238,7 +238,12 @@ Avancement : 13 et 14 faits (chemin en pointillés dorés ; « Revenir », pas e
 15 abandonné : des animaux rendus en 3D seraient bien moins beaux que leurs sprites dessinés (très détaillés) ; à la
 place, ils trottinent en marchant (petit bond à chaque pas, dessin seul).
 En plus : bottes qui font avancer d'une case de plus (Bottes de vent à Forgeroc, Bottes ailées à Givreval) ; défis
-de l'échiquier dans l'Arène (data/defis.json : Dans le dos, La Percée, Le mur, Bousculade).
+de l'échiquier dans l'Arène (data/defis.json : Dans le dos, La Percée, Le mur, Bousculade) ; maître d'armes dans la
+Vallée (premier défi en entraînement, Bottes de vent) ; cercle d'invocation des Limites (Godot) ; fiches : « Pas ».
+Point ouvert du 16 octobre résolu : le plantage rare du mode test venait du test de l'énigme, qui appelait l'action de
+« Recommencer l'énigme » alors qu'elle détruit son propre menu (relu ensuite en mémoire libérée) ; trouvé avec cdb.
+Aussi corrigé : le joueur automatique lisait la liste « ennemis » d'un combat sans vérifier qu'elle existe, et
+remplaçait l'équipe par des copies quand un combat n'avait pas d'ennemis.
 Relecture Codex de la série : 2 remarques justes corrigées (Protéger avec une condition « Soi », « Revenir » gardé
 après un remplacement). Page de bilan : https://claude.ai/artifact/KbjqopS4iS7eXWjgjLL5my
 

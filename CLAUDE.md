@@ -437,7 +437,11 @@ code) ; `docs/GUIDE.md` les range par domaine.
   par `adjust`, souris sur le dessin (`formationPick_`, `formationCellAt`). Équipement : champ `mouvement`
   (`ItemDef::moveBonus`, ajouté dans `moveRange`) : Bottes de vent, Bottes ailées. Défis : `data/defis.json` (alliés,
   ennemis et obstacles avec `case` [ligne, colonne] du plateau, `decor`), `Arena::menuChallenges`/`startChallenge`,
-  `BattleSetup::fixedBoard` (`allyCells`, `foeCells`, `obstacleCells` ; ni météo ni terrain). Mesuré (BRUMEVAL_SIMULATIONS=2) : sans
+  `BattleSetup::fixedBoard` (`allyCells`, `foeCells`, `obstacleCells` ; ni météo ni terrain), `challengeSetup(id)` (battle.cpp,
+  partagé par l'Arène, les événements et le joueur automatique). Action `combat` d'un événement : `defi` (ce défi, ses
+  combattants prêtés : pas de « Changer ») et `entrainement` (ni gains ni évolutions, une défaite ne coûte rien :
+  `BattleSetup::training`) ; maître d'armes de la Vallée (événement `maitre_armes`, drapeau `maitre_bottes`, Bottes de
+  vent). Mesuré (BRUMEVAL_SIMULATIONS=2) : sans
   réglage, boss bien plus faciles (encerclés par 6 alliés : +60 %) ; après (boss ni encerclés ni gênés au contact,
   encerclement 10 %, Ignarok N.25, Ronce-Mère N.22, Mère des Brumes N.41), difficulté proche de la 3.3.
 - Attaques annoncées (1.8) : `Battle::bossPlan` ; un boss (pas en duel) annonce

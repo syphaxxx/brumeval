@@ -232,7 +232,8 @@ void Pilot::inspectList(const Json& list, Info& in, int depth) const {
       if (!in.combat) in.fight = a;
       in.combat = true;
       in.boss = in.boss || jget(a, "boss", false);
-      for (auto& e : a["ennemis"]) in.lvl = std::max(in.lvl, jget(e, "niveau", G.avgLevel()));
+      Json foes = a.value("ennemis", Json::array());  // un défi (« defi ») n'a pas de liste d'ennemis
+      for (auto& e : foes) in.lvl = std::max(in.lvl, jget(e, "niveau", G.avgLevel()));
     } else if (k == "boutique") {
       for (auto& id : nameList(a["objets"])) in.shop.push_back(id);
     } else if (k == "forge") in.forge = true;
@@ -330,9 +331,13 @@ float Pilot::rehearse(const Json& fight, int n, bool fullHealth) {
     G.team = team, G.reserve.clear(), G.items = keepItems, G.gold = keepGold;
     BattleSetup s;
     auto make = [&](const Json& e) { return makeFoe(e, G.avgLevel()); };
+    if (fight.contains("defi") && fight["defi"].is_string()) challengeSetup(fight["defi"].get<std::string>(), s);  // ses combattants
     for (auto& e : fight.value("ennemis", Json::array())) s.foes.push_back(make(e));
     for (auto& e : fight.value("renforts", Json::array())) s.reserve.push_back(make(e));
-    if (s.foes.empty()) return 1;
+    if (s.foes.empty()) {  // rien à combattre : gagné d'avance (l'équipe est remise en place après la boucle)
+      wins = n;
+      break;
+    }
     s.boss = jget(fight, "boss", false);
     s.canFlee = false, s.canCapture = false;
     Battle b(G, std::move(s), maps()[G.mapId].theme);
