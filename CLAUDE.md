@@ -404,7 +404,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
   rencontres sont fréquentes (+`nature_dense`) et les groupes grands (jusqu'à
   `meute_max`, 6). Règles, rencontres.
 - Échiquier (3.4, demandé le 2026-10-18 : « que ça marche comme un échiquier, que les combattants puissent passer du
-  côté adverse ») : en combat, un seul plateau de `BOARD_W` × `GRID` (8 × 4) cases pour les deux camps (data.hpp :
+  côté adverse ») ; code dans `src/echiquier.cpp` (méthodes de `Battle` sur le plateau, `challengeSetup`) : en combat, un seul plateau de `BOARD_W` × `GRID` (8 × 4) cases pour les deux camps (data.hpp :
   `boardX`, `boardY`, `boardAt`, `inHalf`, `boardDist` (diagonales comprises), `boardSteps`, `inBoardZone`,
   `boardName`). Alliés à gauche (colonnes 0 à 3, avant en 3), ennemis à droite (4 à 7, avant en 4). `Battle::cells_` =
   case du plateau ; la formation (`Fighter::cell`, ligne `case4` de la sauvegarde, 0 à 15 dans sa moitié, `GRID` 4,

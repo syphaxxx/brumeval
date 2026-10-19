@@ -248,6 +248,14 @@ Après-midi : IA qui ne s'attend plus sans fin (test de non-blocage), cinquième
 3 remarques justes corrigées (un défi est toujours un entraînement, pas d'objets du sac, PV et PM remis). Mesuré
 (BRUMEVAL_SIMULATIONS=2) : difficulté des boss dans le bruit de la 3.3 ; joueur automatique : histoire finie (1 h 32,
 2 défaites), bottes du maître d'armes gagnées une fois.
+
+Cinquième série (soir du 19, « continue comme ça ») :
+17. Ménage : le code de l'échiquier sort de battle.cpp (plus de 3 400 lignes) dans src/echiquier.cpp, sans rien
+    changer au jeu ; relecture Codex.
+18. Défis dans l'histoire : un instructeur à Forgeroc (« Bousculade ») et un à Givreval (« Le mur »), en entraînement,
+    avec une récompense la première fois.
+19. Aide : une page « Nouveautés 3.4 » pour les joueurs qui reprennent une partie.
+20. Vérifications, mesures, page de bilan.
 Relecture Codex de la série : 2 remarques justes corrigées (Protéger avec une condition « Soi », « Revenir » gardé
 après un remplacement). Page de bilan : https://claude.ai/artifact/KbjqopS4iS7eXWjgjLL5my
 
