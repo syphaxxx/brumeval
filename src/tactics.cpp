@@ -49,6 +49,9 @@ static const std::vector<TacticAuto> AUTOS = {
     {"guerison", ::T("Guérison"), TSide::Ally, ::T("Un sort qui guérit les états (poison, sommeil…).")},
     {"limite", ::T("Limite"), TSide::Any, ::T("La technique ultime, quand la jauge Limite est pleine.")},
     {"esquiver", ::T("Se mettre à l'abri"), TSide::Ally, ::T("Changer de case pour fuir la zone rouge d'un boss ou une case qui blesse (action rapide).")},
+    {"approcher", ::T("S'approcher"), TSide::Foe, ::T("Aller vers cet ennemi, au contact si possible. Le tour continue : la règle suivante choisit l'action.")},
+    {"contourner", ::T("Contourner"), TSide::Foe, ::T("Passer dans le dos de cet ennemi (coups plus forts). Le tour continue ensuite.")},
+    {"proteger", ::T("Protéger"), TSide::Ally, ::T("Se placer à côté de cet allié, du côté des ennemis, pour le couvrir. Le tour continue ensuite.")},
 };
 
 const std::vector<TacticCond>& tacticConds() { return CONDS; }

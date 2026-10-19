@@ -614,6 +614,29 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       B.moved_.clear();
       check(data && leapt && swapped, "échiquier : bond derrière la cible, échange de cases");
     }
+    {  // Tactiques de l'échiquier : s'approcher, contourner, protéger (le tour continue ensuite)
+      auto keepT = lior->tactics;
+      bool keepOn = lior->tacticsOn;
+      lior->tacticsOn = true;
+      B.moved_.clear();
+      B.cells_[mage.get()] = boardAt(3, 7), B.cells_[extra.get()] = boardAt(0, 7);
+      Battle::Plan p;
+      lior->tactics = {Tactic{true, "ennemi_pv_bas", 0, Tactic::Act::Auto, "approcher"}};
+      B.cells_[lior.get()] = boardAt(1, 0), B.cells_[brute.get()] = boardAt(1, 4), B.cells_[maelle.get()] = boardAt(3, 0);
+      brute->hp = 1;
+      bool closer = B.tacticPlan(lior, p) && p.cell >= 0 && boardDist(p.cell, boardAt(1, 4)) < 4;
+      lior->tactics = {Tactic{true, "ennemi_pv_bas", 0, Tactic::Act::Auto, "contourner"}};
+      B.cells_[lior.get()] = boardAt(2, 4), B.cells_[brute.get()] = boardAt(1, 2);  // l'ennemi est passé chez nous
+      bool around = B.tacticPlan(lior, p) && p.cell >= 0 && boardDist(p.cell, boardAt(1, 2)) <= 1 && boardX(p.cell) > 2;
+      lior->tactics = {Tactic{true, "allie_chef", 0, Tactic::Act::Auto, "proteger"}};
+      B.cells_[lior.get()] = boardAt(0, 0), B.cells_[maelle.get()] = boardAt(2, 1), B.cells_[brute.get()] = boardAt(1, 5);
+      std::swap(B.allies[0], B.allies[1]);  // Maëlle en chef d'équipe
+      bool cover = B.tacticPlan(lior, p) && p.cell >= 0 && inBoardZone(Area::Cross, boardAt(2, 1), p.cell);
+      std::swap(B.allies[0], B.allies[1]);
+      brute->hp = brute->mhp;
+      lior->tactics = keepT, lior->tacticsOn = keepOn;
+      check(closer && around && cover, "tactiques : s'approcher, contourner (dans le dos), protéger un allié");
+    }
     lior->stage.fill(0);
     B.moved_.clear();
     B.cells_[lior.get()] = boardAt(1, 2);

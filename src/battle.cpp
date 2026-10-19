@@ -1759,7 +1759,10 @@ bool Battle::tacticTurn(FighterP a) {
   if (!a->tacticsOn) return false;
   // Échiquier : en mode auto, il choisit d'abord sa case comme l'ordinateur (à l'abri d'une zone annoncée, au contact,
   // dans le dos…) ; s'il reste en place, il peut encore s'approcher pour une attaque choisie par ses tactiques
-  if (!moved_.count(a.get()) && !follower()) {
+  // (sauf si une de ses règles est un déplacement qui s'applique : il la suit)
+  Plan first;
+  bool ruleMoves = !moved_.count(a.get()) && tacticPlan(a, first) && first.cell >= 0;
+  if (!moved_.count(a.get()) && !follower() && !ruleMoves) {
     int c = planMove(a);
     if (c >= 0) {
       actor = a;
@@ -1905,6 +1908,44 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
       bool cond = c->side == TSide::Self ? holds(tc, Act{}, a) : true;
       int cell = safeCell(a);
       if (!cond || cell < 0) continue;
+      out = Plan{};
+      out.tactic = i, out.cell = cell;
+      return true;
+    } else if (tc.act == "approcher" || tc.act == "contourner" || tc.act == "proteger") {
+      // Échiquier (3.4) : se déplacer vers la cible de la condition ; le tour continue (tacticTurn rejoue les règles)
+      if (moved_.count(a.get())) continue;
+      auto ways = walkable(a);
+      if (ways.empty()) continue;
+      std::vector<FighterP> pool;
+      for (auto& t : c->side == TSide::Foe ? liveFoes : liveAllies)
+        if (t != a && holds(tc, Act{}, t)) pool.push_back(t);
+      std::stable_sort(pool.begin(), pool.end(), [&](const FighterP& x, const FighterP& y) { return order(tc.cond, x) < order(tc.cond, y); });
+      int cell = -1;
+      for (auto& t : pool) {
+        int tcell = cellOf(t), best = 1 << 20;
+        for (auto& [w, steps] : ways) {
+          int score = -1;
+          if (tc.act == "approcher") score = boardDist(w, tcell) * 10 + steps;  // au plus près, puis le chemin le plus court
+          else if (tc.act == "contourner") {
+            if (boardDist(w, tcell) > reach(a) || !behind(a, t, w)) continue;
+            score = steps;
+          } else {  // protéger : à côté de l'allié (en croix), le plus près possible des ennemis
+            if (!inBoardZone(Area::Cross, tcell, w)) continue;
+            int near = 99;
+            for (auto& o : liveFoes) near = std::min(near, boardSteps(cellOf(o), w));
+            score = near * 10 + steps;
+          }
+          if (threatened(a) && isAlly(a)) {
+            bool danger = terrainHurts(a, w);
+            for (auto& wn : warnings_) danger = danger || inBoardZone(wn.zone, wn.center, w);
+            if (danger) continue;
+          }
+          if (score < best) best = score, cell = w;
+        }
+        if (tc.act == "approcher" && cell >= 0 && boardDist(cell, tcell) >= boardDist(cellOf(a), tcell)) cell = -1;  // pas plus près
+        if (cell >= 0) break;
+      }
+      if (cell < 0) continue;
       out = Plan{};
       out.tactic = i, out.cell = cell;
       return true;
