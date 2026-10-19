@@ -358,7 +358,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   (fiches `personnages.json`, couleurs de leur sprite), les rend de dos et de profil en 4 images de marche ;
   `pixeliser.py` les réduit en pixel art (contour d'un pixel) dans `outils/sprites/rendus/`, que `decoupe.py` range
   dans l'atlas. `outils/godot/effets/rendu.gd` rend des effets en particules image par image (`gfx_<type>_k` : Métal,
-  Normal dans `spriteFx`, Percée et Brisure dans `Battle::bursts_`). Marche à suivre et pièges : compétence
+  Normal dans `spriteFx`, Percée et Brisure dans `Battle::bursts_` ; cercle d'invocation `gfx_cercle_k` sous les cibles
+  d'une Limite, dans `Battle::draw`). Marche à suivre et pièges : compétence
   `sprites-blender-godot`.
 - Améliorations (branche `ameliorations`, carte blanche du 2026-10-16) : petits détails du sol en sprites (touffes,
   fleurettes, cailloux selon `hsh`, dans `drawTile` '.'), hautes herbes `,`/`g` en touffes de la planche

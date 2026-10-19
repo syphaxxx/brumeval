@@ -18,7 +18,7 @@ RACINE = os.path.dirname(os.path.dirname(ICI))
 RENDUS = os.path.join(ICI, 'effets', 'rendus')
 SORTIE = os.path.join(RACINE, 'outils', 'sprites', 'rendus')
 # Effets dessinés par Godot que le jeu utilise (les autres types gardent ceux de la planche de l'utilisateur)
-UTILISES = ['metal', 'normal', 'percee', 'brisure', 'poussiere', 'echange']
+UTILISES = ['metal', 'normal', 'percee', 'brisure', 'poussiere', 'echange', 'cercle']
 
 
 def main():

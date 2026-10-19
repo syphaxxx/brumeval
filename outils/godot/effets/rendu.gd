@@ -13,10 +13,11 @@ const LARGEUR := 80
 const HAUTEUR := 96
 const IMAGES := 8
 const TYPES := ["feu", "glace", "foudre", "eau", "plante", "poison", "roche", "vent", "ombre", "esprit", "lumiere",
-		"metal", "normal", "soin", "percee", "brisure", "poussiere", "echange"]
+		"metal", "normal", "soin", "percee", "brisure", "poussiere", "echange", "cercle"]
 
 var vue: SubViewport
 var eclair: Line2D
+var cercle: Array = []  # cercle d'invocation : anneaux et étoile, redessinés à chaque image
 var hasard := RandomNumberGenerator.new()
 
 
@@ -49,10 +50,13 @@ func _rendre(t: String, sortie: String) -> void:
 	vue.add_child(centre)
 	hasard.seed = hash(t)
 	eclair = null
+	cercle = []
 	_effet(t, centre)
 	for k in IMAGES:
 		if eclair:
 			_zigzag(k)
+		if cercle.size() > 0:
+			_tourne(k)
 		await process_frame
 		await RenderingServer.frame_post_draw
 		vue.get_texture().get_image().save_png("%s/%s_%d.png" % [sortie, t, k])
@@ -218,6 +222,16 @@ func _effet(t: String, c: Node2D) -> void:
 					"ensemble": 1.0, "couleurs": ["#ffffff", "#e0d0ff", "#a080e000"]})
 			_gerbe(c, {"nombre": 18, "duree": 0.5, "zone": 6.0, "vitesse": Vector2(4, 8), "tourne": -2.4,
 					"ensemble": 1.0, "couleurs": ["#ffffff", "#d0f0ff", "#70b0e000"]})
+		"cercle":  # Limite : cercle d'invocation au sol (vu en perspective), qui tourne et s'allume, étincelles qui montent
+			for i in 3:
+				var l := Line2D.new()
+				l.width = 2 if i < 2 else 1
+				l.closed = true
+				l.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+				c.add_child(l)
+				cercle.append(l)
+			_gerbe(c, {"nombre": 24, "duree": 0.5, "zone": Vector2(28, 6), "depart": Vector2(0, 16), "direction": Vector2.UP,
+					"ecart": 5.0, "vitesse": Vector2(30, 70), "ensemble": 0.3, "couleurs": ["#ffffff", "#ffe8a0", "#ff9ad000"]})
 		"metal":  # étincelles
 			_gerbe(c, {"nombre": 30, "duree": 0.35, "vitesse": Vector2(60, 140), "gravite": Vector2(0, 200), "frein": 40.0,
 					"couleurs": ["#ffffff", "#e8f0ff", "#a8b8d8", "#6a7a9a00"]})
@@ -241,6 +255,31 @@ func _croix() -> Texture2D:
 		im.set_pixel(2, i, Color.WHITE)
 		im.set_pixel(i, 2, Color.WHITE)
 	return ImageTexture.create_from_image(im)
+
+
+# Cercle d'invocation : deux anneaux et une étoile à six branches, aplatis (sol en perspective), qui tournent ;
+# il s'allume (image 0 à 2), brille, puis s'efface (image 6 et 7)
+func _tourne(k: int) -> void:
+	var a := k * PI / 14.0
+	var alpha: float = min(1.0, (k + 1) / 3.0) * (1.0 if k < 6 else (8 - k) / 3.0)
+	var rx := [36.0, 28.0, 30.0]
+	for i in 3:
+		var pts := PackedVector2Array()
+		var n := 32 if i < 2 else 12
+		for j in n:
+			var t: float
+			var r: float
+			if i < 2:
+				t = TAU * j / n + a * (1 if i == 0 else -1)
+				r = rx[i]
+			else:  # étoile : alterne pointe et creux
+				t = TAU * j / n + a * 2
+				r = rx[2] if j % 2 == 0 else rx[2] * 0.45
+			pts.append(Vector2(cos(t) * r, 16 + sin(t) * r * 0.32))
+		cercle[i].points = pts
+		var col := Color("#ffe066") if i == 0 else Color("#ff9ad0") if i == 1 else Color("#fff6d0")
+		col.a = alpha
+		cercle[i].default_color = col
 
 
 # Éclair : une ligne brisée du haut jusqu'à la cible, redessinée à chaque image, qui s'efface

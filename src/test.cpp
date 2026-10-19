@@ -926,6 +926,18 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     bool two = B.anim_.targets.size() == 2;
     for (int i = 0; i < 18; i++) frame();
     snap("90_anim_soin");
+    std::vector<float> keepAtb;  // personne ne joue pendant la capture (une autre animation remplacerait celle-ci)
+    for (auto* side : {&B.allies, &B.foes})
+      for (auto& f : *side) keepAtb.push_back(f->atb), f->atb = -500;
+    B.sc.clear();
+    B.startAnim(B.allies[0], B.alive(B.foes), Battle::Fx::Hit, rgb(0xff8ac8), true, 0);  // Limite : cercle d'invocation au sol
+    for (int i = 0; i < 20; i++) frame();
+    snap("anim_limite");
+    {
+      size_t k = 0;
+      for (auto* side : {&B.allies, &B.foes})
+        for (auto& f : *side) f->atb = keepAtb[k++];
+    }
     check(lunge.y < 0 && two, "combat : animations (élan du lanceur, effet sur chaque cible)");
   }
   for (int i = 0; i < 60 * 300 && mode == Mode::Battle; i++) {

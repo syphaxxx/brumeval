@@ -32,7 +32,9 @@ Puis le mode test (captures `habitants_poses`, `echiquier_percee`) et regarder l
   0 et 2 au repos, 1 et 3 un pas). La face dessinée par l'utilisateur (`_bas_0`) est gardée : pixeliser.py n'écrit
   que le dos et le profil, pour ne pas mêler deux styles en marchant vers le bas (`--face` sinon).
 - Les effets Godot servent là où la planche de l'utilisateur n'a rien (Métal, Normal) et pour les nouveautés
-  (Percée, Brisure : `Battle::bursts_`). Ne pas remplacer ses dessins sans le lui demander.
+  (Percée, Brisure, poussière du bond, échange : `Battle::bursts_` ; cercle d'invocation des Limites). Ne pas
+  remplacer ses dessins sans le lui demander. Un effet dessiné (pas des particules) : des `Line2D` mises à jour à
+  chaque image dans la boucle de `_rendre` (exemples : `_zigzag` pour l'éclair, `_tourne` pour le cercle).
 - Tailles : l'atlas est deux fois plus fin que le jeu (`_echelle` 2). Personnage : 48 px de haut dans l'atlas (24 en
   jeu ; enfant 44). Effet : toile de 80 × 96 (40 × 48 en jeu), centre de la cible à 62 % de la hauteur.
 

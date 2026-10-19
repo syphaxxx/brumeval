@@ -3116,6 +3116,13 @@ void Battle::draw() {
         Pt p = cellPos(c);
         g.ellipse(p.x, p.y + 13, 14, 5, rgb(0xff3b30, uint8_t(120 + 90 * std::sin(t * 7))));
       }
+  // Limite (3.4) : un cercle d'invocation (Godot) tourne au sol sous chaque cible, sous les combattants
+  if (anim_.limit && t - anim_.t0 >= 0 && t - anim_.t0 < .8f)
+    if (const SpriteRect* r = findSprite("gfx_cercle_" + std::to_string(std::clamp(int((t - anim_.t0) / .8f * 8), 0, 7))))
+      for (auto& f : anim_.targets) {
+        Pt p = pos(f);
+        g.sprite(*r, std::round(p.x - r->w / 2.f), std::round(p.y + 23 - r->h));
+      }
   // Obstacles (3.4) : posés sur leur case, avec leur ombre (sous les combattants : ils sont petits)
   for (auto& [c, spr] : obstacles_)
     if (const SpriteRect* r = findSprite(spr)) {
