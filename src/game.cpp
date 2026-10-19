@@ -1354,6 +1354,8 @@ void Game::drawDialogue() {
   }
   g.window(4, y, 312, 66);
   auto full = Gfx::wrap(askText_.empty() ? sc.text() : askText_, 296);
+  if (full.size() >= 4 && Gfx::textW(full[3]) > 284)  // la 4e ligne irait sous la flèche « ▼ » : lignes un peu plus courtes
+    full = Gfx::wrap(askText_.empty() ? sc.text() : askText_, 284);
   // Découpe le texte visible selon les mêmes lignes que le texte complet
   int remaining = 0;
   for (unsigned char c : text)
