@@ -244,6 +244,10 @@ Point ouvert du 16 octobre résolu : le plantage rare du mode test venait du tes
 « Recommencer l'énigme » alors qu'elle détruit son propre menu (relu ensuite en mémoire libérée) ; trouvé avec cdb.
 Aussi corrigé : le joueur automatique lisait la liste « ennemis » d'un combat sans vérifier qu'elle existe, et
 remplaçait l'équipe par des copies quand un combat n'avait pas d'ennemis.
+Après-midi : IA qui ne s'attend plus sans fin (test de non-blocage), cinquième défi « Les ailes » ; relecture Codex :
+3 remarques justes corrigées (un défi est toujours un entraînement, pas d'objets du sac, PV et PM remis). Mesuré
+(BRUMEVAL_SIMULATIONS=2) : difficulté des boss dans le bruit de la 3.3 ; joueur automatique : histoire finie (1 h 32,
+2 défaites), bottes du maître d'armes gagnées une fois.
 Relecture Codex de la série : 2 remarques justes corrigées (Protéger avec une condition « Soi », « Revenir » gardé
 après un remplacement). Page de bilan : https://claude.ai/artifact/KbjqopS4iS7eXWjgjLL5my
 
