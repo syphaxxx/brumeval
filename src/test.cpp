@@ -1776,8 +1776,16 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         Json defis = readJson("defis.json");
         bool valid = defis.is_array() && !defis.empty();
         for (auto& d : defis) {
+          std::set<int> used;  // chaque position une seule fois, sur le plateau ; les alliés dans leur moitié
+          auto at = [&](const Json& p, bool ally) {
+            int y = p.at(0).get<int>(), x = p.at(1).get<int>();
+            bool ok = y >= 0 && y < GRID && x >= 0 && x < BOARD_W && used.insert(boardAt(y, x)).second;
+            return ok && (!ally || x < GRID);
+          };
           for (auto* k : {"allies", "ennemis"})
-            for (auto& e : d.value(k, Json::array())) valid = valid && hasSpecies(e.value("espece", ""));
+            for (auto& e : d.value(k, Json::array()))
+              valid = valid && hasSpecies(e.value("espece", "")) && e.contains("case") && at(e["case"], std::string(k) == "allies");
+          for (auto& o : d.value("obstacles", Json::array())) valid = valid && at(o, false);
           valid = valid && d.contains("nom") && d.contains("description");
         }
         A.menuChallenges();

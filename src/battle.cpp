@@ -991,7 +991,11 @@ void Battle::drawTurnOrder(float y, float minX, float maxX) {
 }
 
 void Battle::tickATB(float dt) {
-  quietT_ += dt;
+  long long sum = 0;
+  for (auto* side : {&allies, &foes})
+    for (auto& f : *side) sum += f->hp;
+  if (sum != hpSum_) hpSum_ = sum, quietT_ = 0;
+  else quietT_ += dt;
   std::vector<FighterP> all = alive(allies);
   for (auto& e : alive(foes)) all.push_back(e);
   for (auto& f : all) {
@@ -2094,7 +2098,6 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
   if (const Rules::Terrain* tr = terrainAt(a); magic && tr && tr->kind == "magie") k *= 1 + float(tr->value);  // cristaux
   int dmg = std::max(1, int(((2 * a->lvl / 5.f + 2) * m.power * A / std::max(1.f, D) / float(R.dmgDivisor) + 2) * stab * eff * spread * k));
   d->hp = std::max(0, d->hp - dmg);
-  quietT_ = 0;
   if (eff > 1 && d->shieldMax > 0) {  // Brisure : une faiblesse entame le bouclier, et l'équipe la retient
     if (isAlly(a) && G.weak.insert(d->sp + ":" + std::to_string(m.type)).second) tip("faiblesse");
     if (!d->broken && d->alive()) {

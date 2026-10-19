@@ -268,7 +268,13 @@ void Arena::startChallenge(int i) {
     s.foes.push_back(makeFoe(e, 10));
     s.foeCells.push_back(cell(e));
   }
-  for (auto& o : c.value("obstacles", Json::array())) s.obstacleCells.push_back(boardAt(o.at(0).get<int>(), o.at(1).get<int>()));
+  for (auto& o : c.value("obstacles", Json::array())) {  // seulement sur le plateau, sur une case libre
+    int y = o.at(0).get<int>(), x = o.at(1).get<int>(), b = boardAt(y, x);
+    bool free = y >= 0 && y < GRID && x >= 0 && x < BOARD_W;
+    for (int t : s.allyCells) free = free && t != b;
+    for (int t : s.foeCells) free = free && t != b;
+    if (free) s.obstacleCells.push_back(b);
+  }
   s.fixedBoard = true;
   s.canCapture = false;
   s.theme = (int)themeOf(jget<std::string>(c, "decor", "vallee"));
