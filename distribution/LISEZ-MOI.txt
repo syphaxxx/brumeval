@@ -65,7 +65,9 @@ COMMANDES
   on avance, puis on agit. Au corps à corps, on frappe un ennemi au contact (on
   s'approche d'abord s'il le faut) ; frapper dans le dos fait plus mal ; tirer
   ou lancer un sort au contact d'un ennemi est moins fort. Atteindre le bord du
-  camp adverse donne une Percée (bonus pour tout le combat).
+  camp adverse donne une Percée (bonus pour tout le combat). Des obstacles
+  (rochers, buissons) bloquent le passage ; certaines techniques font bondir
+  derrière la cible ou échanger de place.
   Échap > Formation : la case de chacun au début du combat. La case et la cible
   se choisissent sur le plateau (flèches ou souris).
   Zone rouge : un boss prépare une grosse attaque, écartez-vous !

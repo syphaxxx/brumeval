@@ -305,7 +305,9 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
       int n = irand(R.obstacleMin, std::max(R.obstacleMin, R.obstacleMax));
       for (int k = 0, tries = 0; k < n && tries < 40; tries++) {
         int c = boardAt(irand(0, GRID - 1), irand(GRID - 2, GRID + 1));
-        if (at(c) || blockedCell(c) || terrain_[(size_t)c] >= 0) continue;
+        int inCol = 0;  // jamais une colonne bouchée : au plus GRID - 2 obstacles par colonne
+        for (auto& [oc, spr] : obstacles_) inCol += boardX(oc) == boardX(c);
+        if (at(c) || blockedCell(c) || terrain_[(size_t)c] >= 0 || inCol >= GRID - 2) continue;
         obstacles_[c] = it->second[(size_t)irand(0, (int)it->second.size() - 1)];
         k++;
       }
@@ -509,7 +511,9 @@ int Battle::meleeThreat(const FighterP& f, int cell) const {
     if (!o->alive() || cellOf(o) < 0) continue;
     bool melee = false;
     for (auto& id : o->techs()) melee = melee || (moveInfo(id).melee && moveInfo(id).damaging());
-    if (melee && boardSteps(cellOf(o), cell) <= moveRange(o) + reach(o)) n++;
+    // pas jusqu'à une case d'où il frappe (diagonales comprises) : la plus proche dans le carré de rayon reach autour
+    int dx = std::abs(boardX(cellOf(o)) - boardX(cell)), dy = std::abs(boardY(cellOf(o)) - boardY(cell)), r = reach(o);
+    if (melee && std::max(0, dx - r) + std::max(0, dy - r) <= moveRange(o)) n++;
   }
   return n;
 }
@@ -2136,19 +2140,23 @@ int Battle::leapDest(const FighterP& a, const FighterP& t) const {
   int to = boardAt(y, x);
   return at(to) || blockedCell(to) ? -1 : to;
 }
-void Battle::motionAfterHit(const FighterP& a, const FighterP& t, const Move& m) {
+void Battle::motionAfterHit(const FighterP& a, const FighterP& t, const Move& m, std::vector<FighterP>& ko) {
   if (m.motion == "bond") {
     int to = leapDest(a, t);
     if (to < 0) return;
     step(a, to);
     pop(a, T("Bond !"), rgb(0xd8e0ff));
+    bursts_.push_back({a, "poussiere", G.time + .2f});  // quand il touche le sol
   } else if (m.motion == "echange" && t->alive() && !t->boss) {
     int ca = cellOf(a), ct = cellOf(t);
     if (shown()) slide_[t.get()] = {pos(t), G.time};
     cells_[t.get()] = ca;
     step(a, ct);
     pop(t, T("Échange !"), rgb(0xd8e0ff));
+    bursts_.push_back({a, "echange", G.time}), bursts_.push_back({t, "echange", G.time});
     log.push_back("  " + a->name() + T(" échange de place avec ") + t->name());
+    // la cible arrive sur une case pendant le tour d'un autre : son terrain agit aussitôt (comme une poussée)
+    if (terrainTurn(t, true) && std::find(ko.begin(), ko.end(), t) == ko.end()) ko.push_back(t);
   }
 }
 
@@ -2407,7 +2415,7 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
             if (!e.self) applyEffect(t, e);
           if (m.shove && t == targets[0] && dmg > 0) shove(a, t, m, dmg, *ko);
         }
-        if (!m.motion.empty() && t == targets[0] && a->alive()) motionAfterHit(a, t, m);
+        if (!m.motion.empty() && t == targets[0] && a->alive()) motionAfterHit(a, t, m, *ko);
       }
     }
     if (landed || m.kind == Kind::Status)
@@ -3126,7 +3134,9 @@ void Battle::draw() {
   drawAnim();
   // Éclats (3.4, dessinés avec Godot) : Percée et Brisure, 8 images en une demi-seconde, posés sur le combattant
   bursts_.erase(std::remove_if(bursts_.begin(), bursts_.end(), [&](const Burst& b) { return t - b.t0 > .5f; }), bursts_.end());
+  // (le bond : la poussière part un peu après, quand le combattant touche le sol)
   for (auto& b : bursts_) {
+    if (t < b.t0) continue;  // pas encore (poussière à l'atterrissage)
     int k = std::clamp(int((t - b.t0) / .5f * 8), 0, 7);
     if (const SpriteRect* r = findSprite(std::string("gfx_") + b.fx + "_" + std::to_string(k))) {
       Pt p = pos(b.f);

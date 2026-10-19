@@ -298,7 +298,7 @@ class Battle {
   int shoveDest(const FighterP& a, const FighterP& t, const Move& m) const;
   // Techniques de mouvement (3.4) : bond derrière la cible, échange de cases ; case d'arrivée du bond (-1 : impossible)
   int leapDest(const FighterP& a, const FighterP& t) const;
-  void motionAfterHit(const FighterP& a, const FighterP& t, const Move& m);
+  void motionAfterHit(const FighterP& a, const FighterP& t, const Move& m, std::vector<FighterP>& ko);
   // Météo (indice dans rules().weathers, -1 : temps calme) et cases de terrain du plateau
   int weather_ = -1;
   std::array<int, BOARD_CELLS> terrain_{};  // indice dans rules().terrains, -1 : rien

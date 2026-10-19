@@ -423,7 +423,13 @@ code) ; `docs/GUIDE.md` les range par domaine.
   technique sans cible atteignable est « hors d'atteinte ». Dessin : `cellPos(case)` (colonnes de 32 px), cases
   alternées, moitiés teintées, ligne de front, glissement (`slide_`), regard vers l'adversaire le plus proche
   (`facesRight`). Réseau : cases du plateau dans `etat`, vues **en miroir** chez l'invité du duel (`netCell`) ;
-  `tour` porte `bouge` (déjà déplacé), ordres `deplacer` et `attendre`. Mesuré (BRUMEVAL_SIMULATIONS=2) : sans
+  `tour` porte `bouge` (déjà déplacé), ordres `deplacer` et `attendre`, `obstacles` dans `etat`. Obstacles
+  (`obstacles_`, `blockedCell` ; règles `obstacles_min/max`, sprites par décor `decors_obstacles`) : tirés dans les 4
+  colonnes du milieu, ni arrêt ni traversée (sauf vol), choc si on y pousse ; aucun en duel. En mode auto, les
+  tactiques commencent par `planMove` (pas chez l'invité). « Se déplacer » marque les cases menacées
+  (`meleeThreat` : losanges rouges, aide « Danger : n ennemis »). Techniques de mouvement (`Move::motion`, champ
+  `mouvement`) : `bond` (le lanceur saute derrière la cible, `leapDest`) et `echange` (cases échangées, pas un
+  boss), dans `motionAfterHit` ; effets Godot `poussiere` et `echange`. Mesuré (BRUMEVAL_SIMULATIONS=2) : sans
   réglage, boss bien plus faciles (encerclés par 6 alliés : +60 %) ; après (boss ni encerclés ni gênés au contact,
   encerclement 10 %, Ignarok N.25, Ronce-Mère N.22, Mère des Brumes N.41), difficulté proche de la 3.3.
 - Attaques annoncées (1.8) : `Battle::bossPlan` ; un boss (pas en duel) annonce

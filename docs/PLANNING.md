@@ -212,6 +212,14 @@ tout permis sauf fusionner. Suite de la branche `echiquier` (3.4). Plan, dans l'
 7. Équilibrage mesuré, joueur automatique, tests en français et en anglais, revue Codex, documentation.
 8. Page de bilan pour le retour de l'utilisateur.
 
+Avancement : 1 impossible (envoi sur GitHub refusé par les permissions de Claude Code : tout est resté en local, compilé
+et testé sous Windows seulement) ; 2 fait (obstacles) ; 3 fait (placement auto en mode tactiques) ; 4 fait (losanges
+rouges, aide « Danger ») ; 5 fait (bond : Dague, Coup de bec, Piqué tonnerre, Lame d'ombre ; échange : Coup bas ;
+le duo « Percée » renommé « Assaut perçant ») ; 6 : effets Godot de poussière (bond) et d'échange.
+Revue Codex : 3 remarques justes corrigées (colonne bouchée par les obstacles, terrain à l'arrivée d'un échange,
+menace en diagonale). Mesuré (BRUMEVAL_SIMULATIONS=2) : difficulté dans le bruit de la 3.3 ; joueur automatique :
+histoire finie (1 h 26, 3 défaites).
+
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
 - Fait en 1.6 : **réserve de créatures** (au-delà de 8 membres) et

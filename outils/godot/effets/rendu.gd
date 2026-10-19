@@ -13,7 +13,7 @@ const LARGEUR := 80
 const HAUTEUR := 96
 const IMAGES := 8
 const TYPES := ["feu", "glace", "foudre", "eau", "plante", "poison", "roche", "vent", "ombre", "esprit", "lumiere",
-		"metal", "normal", "soin", "percee", "brisure"]
+		"metal", "normal", "soin", "percee", "brisure", "poussiere", "echange"]
 
 var vue: SubViewport
 var eclair: Line2D
@@ -209,6 +209,15 @@ func _effet(t: String, c: Node2D) -> void:
 					"couleurs": ["#e8f0ff", "#c8d6f0", "#2a4a8a", "#1a2a5a00"]})
 			_gerbe(c, {"nombre": 20, "duree": 0.35, "depart": Vector2(0, -8), "vitesse": Vector2(60, 120), "frein": 150.0,
 					"ensemble": 1.0, "couleurs": ["#ffffff", "#ffe066", "#ffd34d00"]})
+		"poussiere":  # atterrissage d'un bond : nuage de poussière qui s'étale au ras du sol
+			_gerbe(c, {"nombre": 22, "duree": 0.5, "zone": Vector2(6, 1), "depart": Vector2(0, 16), "direction": Vector2.UP,
+					"ecart": 80.0, "vitesse": Vector2(30, 60), "frein": 90.0, "gravite": Vector2(0, 40), "forme": -2,
+					"taille": Vector2(0.6, 1.2), "ensemble": 1.0, "couleurs": ["#f0e6d0", "#c8b898", "#9a8a7000"]})
+		"echange":  # échange de cases : deux traînées qui tournent l'une autour de l'autre
+			_gerbe(c, {"nombre": 18, "duree": 0.5, "zone": 12.0, "vitesse": Vector2(4, 8), "tourne": 2.0, "forme": -1,
+					"ensemble": 1.0, "couleurs": ["#ffffff", "#e0d0ff", "#a080e000"]})
+			_gerbe(c, {"nombre": 18, "duree": 0.5, "zone": 6.0, "vitesse": Vector2(4, 8), "tourne": -2.4,
+					"ensemble": 1.0, "couleurs": ["#ffffff", "#d0f0ff", "#70b0e000"]})
 		"metal":  # étincelles
 			_gerbe(c, {"nombre": 30, "duree": 0.35, "vitesse": Vector2(60, 140), "gravite": Vector2(0, 200), "frein": 40.0,
 					"couleurs": ["#ffffff", "#e8f0ff", "#a8b8d8", "#6a7a9a00"]})

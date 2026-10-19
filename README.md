@@ -66,6 +66,11 @@ gauche, les ennemis de la droite, et **chacun peut passer de l'autre côté**.
   adversaire au contact au-delà du premier ajoute 10 % aux dégâts reçus (pas un boss).
 - **Percée** : le premier qui atteint le bord du camp adverse gagne +1 en Attaque, Magie et Vitesse pour tout le
   combat. Les ennemis aussi : barrez-leur la route.
+- **Obstacles** : selon le décor, des rochers, buissons ou tonneaux occupent quelques cases du milieu. On ne peut
+  ni s'y arrêter ni les traverser (sauf en volant) ; un ennemi poussé contre l'un d'eux subit un choc.
+- En choisissant sa case, de petits **losanges rouges** montrent combien d'ennemis pourront y frapper au prochain tour.
+- Certaines techniques **bougent** : Dague, Coup de bec, Piqué tonnerre et Lame d'ombre font **bondir** derrière la
+  cible ; Coup bas fait **échanger** sa case avec celle de la cible.
 - Chaque technique a une **zone** : une cible, une **ligne** (d'un bord du plateau à l'autre), une **colonne**, une
   **croix** (la cible et ses voisines) ou tout le camp. Les cases autour de la cible prennent un peu moins. En
   choisissant la cible, les cases touchées s'allument en or.

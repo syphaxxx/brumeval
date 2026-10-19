@@ -606,9 +606,10 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       B.cells_[mage.get()] = boardAt(3, 7), B.cells_[extra.get()] = boardAt(0, 7);
       Move leap = moveInfo("dague"), swap = moveInfo("coup_bas");
       bool data = leap.motion == "bond" && swap.motion == "echange";
-      B.motionAfterHit(lior, brute, leap);
+      std::vector<FighterP> none;
+      B.motionAfterHit(lior, brute, leap, none);
       bool leapt = B.cellOf(lior) == boardAt(1, 5) && B.cellOf(brute) == boardAt(1, 4);
-      B.motionAfterHit(lior, brute, swap);
+      B.motionAfterHit(lior, brute, swap, none);
       bool swapped = B.cellOf(lior) == boardAt(1, 4) && B.cellOf(brute) == boardAt(1, 5);
       B.moved_.clear();
       check(data && leapt && swapped, "échiquier : bond derrière la cible, échange de cases");
