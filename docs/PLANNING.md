@@ -266,6 +266,47 @@ non-blocage toujours vert) : deux parties finies avec 0 et 1 défaite (1 h 20 et
 Relecture Codex de la série : 2 remarques justes corrigées (Protéger avec une condition « Soi », « Revenir » gardé
 après un remplacement). Page de bilan : https://claude.ai/artifact/KbjqopS4iS7eXWjgjLL5my
 
+## Étape 2 septies — 20 heures de jeu (demandé le 2026-10-19 au soir)
+
+« Améliore tout sans exception » : au moins **20 heures** de durée de vie, meilleurs graphismes, animations, sprites,
+gameplay et musiques ; liberté totale d'inspiration ; étudier d'autres jeux du genre ; travailler sans arrêt, sans
+demander d'avis. Petits détails d'abord : allié K.O. visible (fait : couché, grisé, étoiles et « K.O. ») ; habitants
+de dos et de profil trop différents du reste du jeu (fait : tirés de leur dessin de face, `outils/sprites/tourner.py`).
+
+Ce qu'apprennent les jeux du genre (recherches du 19 au soir) :
+- Cassette Beasts (capture de créatures, indépendant) : ~20 h pour l'histoire, 27 h avec les à-côtés ; son
+  après-histoire (quêtes, boss, tableau de quêtes tirées au hasard) sert aussi à compléter la collection.
+- Sea of Stars : beaucoup de joueurs sautent les à-côtés, la récompense doit donc compter (objet unique, coquillages
+  à collectionner, chaque quête allume un pilier utile pour la fin).
+- Chained Echoes : quêtes annexes ouvertes au début de chaque acte ; une quête qui donne un équipier vaut le détour.
+- Dragon Fantasy, Ni no Kuni : des **primes** (monstres recherchés, mini-boss) ; les dernières, après la fin, mènent
+  à un super-boss. Super Mario RPG : trésors cachés à collectionner, super-boss (Culex).
+- Pixel art (Slynyrd) : 4 images de marche par direction ; le dos montre ce qui reconnaît le personnage (cheveux,
+  sac) ; un pied posé, le passage, l'autre pied.
+
+Durée actuelle : le joueur automatique finit l'histoire en ~1 h 30 de jeu (il ne lit rien, ne se perd jamais, ne fait
+que l'utile) ; un joueur, à peu près 4 à 6 h avec les à-côtés. Pour 20 h, il faut environ quatre fois plus de contenu
+**qui vaut la peine**, pas du remplissage. Plan, dans l'ordre (chaque morceau testé, joueur automatique, bilan) :
+
+1. **Primes** : tableau d'annonces dans chaque village ; monstres recherchés (variantes plus fortes, talents, phases)
+   placés sur les cartes déjà visitées ; on accepte, on chasse, on touche la prime ; rang de chasseur et récompenses
+   uniques ; les dernières après la fin.
+2. **Quêtes annexes** : de 6 à 20 au moins, dans les villages et les intérieurs, avec des personnages qui reviennent ;
+   certaines donnent un équipier, une évolution rare, une technique.
+3. **Collection** : éclats de brume cachés sur toutes les cartes (coins, énigmes), échangés contre des objets uniques ;
+   Bestiaire complété = récompense.
+4. **Acte 3** : nouvelle région (îles ou terres d'au-delà de la tempête), nouveaux villages, créatures, boss, et une
+   vraie fin ; histoire des héros approfondie (passé de Lior, de Maëlle, d'Isra).
+5. **Après la fin** : donjon des Abysses de brume (étages, de plus en plus durs), super-boss, primes d'élite, ligue de
+   l'Arène.
+6. **Musiques** : morceaux plus riches (mélodie, contre-chant, basse, percussions ; un thème par région), étudiés sur
+   les musiques du genre.
+7. **Graphismes et animations** : poses d'attaque des héros, effets, décors des nouvelles régions, en gardant le style
+   des planches de l'utilisateur.
+8. Équilibrage de la progression sur la nouvelle longueur (niveaux, prix, butin), mesures, documentation.
+
+Branches : `echiquier` (3.4) puis la suite sur la même branche ; jamais de fusion ni de publication sans demande.
+
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
 - Fait en 1.6 : **réserve de créatures** (au-delà de 8 membres) et
