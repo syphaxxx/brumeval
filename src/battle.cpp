@@ -401,20 +401,8 @@ int Battle::freeCellNear(bool left, int near) const {
   return best;
 }
 
-// L'espèce a-t-elle un de ces types (identifiants des règles) ?
-static bool hasTypeIn(const Species& s, const std::vector<std::string>& ids) {
-  for (auto& ty : ids)
-    for (size_t k = 0; k < types().size(); k++)
-      if (types()[k].id == ty && hasType(s, (int)k)) return true;
-  return false;
-}
-int Battle::moveRange(const FighterP& f) const {
-  int r = rules().moveRange + (hasTypeIn(f->S(), rules().fastTypes) ? 1 : 0);
-  for (auto& id : f->gear)  // bottes : une case de plus
-    if (!id.empty() && hasItem(id)) r += item(id).moveBonus;
-  return r;
-}
-bool Battle::flier(const FighterP& f) const { return hasTypeIn(f->S(), rules().flyTypes); }
+int Battle::moveRange(const FighterP& f) const { return fighterMoveRange(*f); }
+bool Battle::flier(const FighterP& f) const { return speciesFlies(f->S()); }
 std::map<int, int> Battle::walkable(const FighterP& f, std::map<int, int>* parent) const {
   std::map<int, int> out;
   int from = cellOf(f), range = moveRange(f);

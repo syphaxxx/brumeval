@@ -947,6 +947,20 @@ FighterP makeFoe(const Json& e, int defaultLevel) {
   return f;
 }
 
+static bool hasTypeIn(const Species& s, const std::vector<std::string>& ids) {
+  for (auto& ty : ids)
+    for (size_t k = 0; k < TYPES.size(); k++)
+      if (TYPES[k].id == ty && hasType(s, (int)k)) return true;
+  return false;
+}
+int fighterMoveRange(const Fighter& f) {
+  int r = RULES.moveRange + (hasTypeIn(f.S(), RULES.fastTypes) ? 1 : 0);
+  for (auto& id : f.gear)  // bottes : une case de plus
+    if (!id.empty() && hasItem(id)) r += item(id).moveBonus;
+  return r;
+}
+bool speciesFlies(const Species& s) { return hasTypeIn(s, RULES.flyTypes); }
+
 FighterP makeFighter(const std::string& id, int lvl) {
   auto f = std::make_shared<Fighter>();
   f->sp = id;

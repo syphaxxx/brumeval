@@ -67,7 +67,9 @@ COMMANDES
   ou lancer un sort au contact d'un ennemi est moins fort. Atteindre le bord du
   camp adverse donne une Percée (bonus pour tout le combat). Des obstacles
   (rochers, buissons) bloquent le passage ; certaines techniques font bondir
-  derrière la cible ou échanger de place.
+  derrière la cible ou échanger de place. « Revenir » annule un déplacement
+  tant qu'on n'a pas agi. Les bottes font avancer d'une case de plus.
+  Pour s'entraîner : Outils > Arène > Défis de l'échiquier.
   Échap > Formation : la case de chacun au début du combat. La case et la cible
   se choisissent sur le plateau (flèches ou souris).
   Zone rouge : un boss prépare une grosse attaque, écartez-vous !

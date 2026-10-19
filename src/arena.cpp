@@ -647,6 +647,7 @@ void drawFighterCard(Gfx& g, const Fighter& f, int x, int y, int w, int h, float
   if (!strong.empty()) para(T("Résiste : ") + strong, GREEN);
   if (!cat.empty()) para(T("Dégâts reçus : ") + cat, MUTED);
   if (!imm.empty()) para(T("Insensible : ") + imm, MUTED);
+  para(T("Échiquier : ") + std::to_string(fighterMoveRange(f)) + T(" cases par tour") + (speciesFlies(s) ? T(", vole") : ""), MUTED);
   std::string tech;
   for (auto& id : f.techs()) tech += (tech.empty() ? "" : ", ") + moveInfo(id).name;
   for (auto& id : f.spells()) tech += (tech.empty() ? "" : ", ") + moveInfo(id).name;

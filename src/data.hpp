@@ -443,6 +443,9 @@ int irand(int lo, int hi);  // entier entre lo et hi inclus
 FighterP makeFighter(const std::string& id, int lvl);
 // Un ennemi décrit dans un combat (« espece », « niveau », « pv » multiplicateur, « boss », « bouclier », « phases »)
 FighterP makeFoe(const Json& e, int defaultLevel);
+// Échiquier (3.4) : cases parcourues par tour (règle, types rapides, bottes) ; l'espèce vole par-dessus les combattants
+int fighterMoveRange(const Fighter& f);
+bool speciesFlies(const Species& s);
 // Qui combat : les « heroes » premiers héros valides de l'équipe, chacun suivi de son compagnon
 // (sa créature choisie, sinon la première créature libre, dans l'ordre de l'équipe). Une équipe
 // sans héros (mode test, Arène) combat comme avant : ses premiers membres valides.

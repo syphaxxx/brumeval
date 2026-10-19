@@ -1022,7 +1022,7 @@ void Game::drawTeamPanel(int x, int y, int sel) {
     }
   auto limitLines = f.S().limit.empty() ? std::vector<std::string>{} : Gfx::wrap(T("Limite : ") + moveInfo(f.S().limit).name, w - 16);
   int lines = (int)techLines.size() + (int)magicLines.size() + (int)limitLines.size();
-  g.window(x, y, w, std::min(SCREEN_H - y - 2, 34 + 4 * 11 + 3 + 4 * 11 + 3 + lines * 11 + 6));
+  g.window(x, y, w, std::min(SCREEN_H - y - 2, 34 + 5 * 11 + 3 + 4 * 11 + 3 + lines * 11 + 6));
   g.text(x + 8, y + 6, f.name(), GOLD);
   g.text(x + w - 8, y + 6, T("Niveau ") + std::to_string(f.lvl), WHITE, 2);
   if (const Rules::Talent* tl = talentOf(f.S())) g.text(x + 8, y + 19, T("Talent : ") + tl->name, rgb(0xffd34d));  // (Aide > Talents)
@@ -1042,6 +1042,7 @@ void Game::drawTeamPanel(int x, int y, int sel) {
   row(T("PV"), std::to_string(f.hp) + "/" + std::to_string(f.mhp));
   row(T("PM"), std::to_string(f.mp) + "/" + std::to_string(f.mmp));
   row(T("Exp."), std::to_string(f.xp) + "/" + std::to_string(f.need()));
+  row(T("Pas"), std::to_string(fighterMoveRange(f)) + T(" cases") + (speciesFlies(f.S()) ? T(", vole") : ""));  // échiquier
   ly += 3;
   // Statistiques sur deux colonnes
   auto pair = [&](const char* a, int va, const char* b, const std::string& vb) {
