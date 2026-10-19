@@ -32,6 +32,23 @@
     "obstacles": [[0, 4]]
   },
   {
+    "id": "ailes",
+    "nom": "Les ailes",
+    "decor": "cendres",
+    "description": "Rochers et protecteurs ferment la route. Kael vole par-dessus pour abattre les soigneurs ; Brann tient la ligne.",
+    "allies": [
+      {"espece": "kael", "niveau": 17, "case": [1, 2]},
+      {"espece": "brann", "niveau": 17, "case": [2, 3]}
+    ],
+    "ennemis": [
+      {"espece": "rocaillou", "niveau": 13, "case": [1, 4]},
+      {"espece": "galetor", "niveau": 12, "case": [2, 4]},
+      {"espece": "esprillon", "niveau": 12, "case": [1, 7]},
+      {"espece": "champichou", "niveau": 11, "case": [2, 7]}
+    ],
+    "obstacles": [[0, 4], [3, 4]]
+  },
+  {
     "id": "mur",
     "nom": "Le mur",
     "decor": "neige",
@@ -43,10 +60,10 @@
       {"espece": "galetor", "niveau": 14, "case": [2, 2]}
     ],
     "ennemis": [
-      {"espece": "mulotin", "niveau": 17, "case": [0, 5]},
-      {"espece": "louvet", "niveau": 17, "case": [1, 6]},
-      {"espece": "mulotin", "niveau": 17, "case": [3, 5]},
-      {"espece": "noctaile", "niveau": 16, "case": [2, 7]}
+      {"espece": "mulotin", "niveau": 18, "case": [0, 5]},
+      {"espece": "louvet", "niveau": 18, "case": [1, 6]},
+      {"espece": "mulotin", "niveau": 18, "case": [3, 5]},
+      {"espece": "noctaile", "niveau": 17, "case": [2, 7]}
     ],
     "obstacles": [[0, 3], [3, 3]]
   },
@@ -60,8 +77,8 @@
       {"espece": "piafouine", "niveau": 15, "case": [2, 3]}
     ],
     "ennemis": [
-      {"espece": "serpentin", "niveau": 14, "case": [1, 4]},
-      {"espece": "tisonnel", "niveau": 14, "case": [2, 4]}
+      {"espece": "serpentin", "niveau": 15, "case": [1, 4]},
+      {"espece": "tisonnel", "niveau": 15, "case": [2, 4]}
     ],
     "obstacles": [[1, 5], [2, 5]]
   }

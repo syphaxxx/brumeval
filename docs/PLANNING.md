@@ -238,7 +238,7 @@ Avancement : 13 et 14 faits (chemin en pointillés dorés ; « Revenir », pas e
 15 abandonné : des animaux rendus en 3D seraient bien moins beaux que leurs sprites dessinés (très détaillés) ; à la
 place, ils trottinent en marchant (petit bond à chaque pas, dessin seul).
 En plus : bottes qui font avancer d'une case de plus (Bottes de vent à Forgeroc, Bottes ailées à Givreval) ; défis
-de l'échiquier dans l'Arène (data/defis.json : Dans le dos, La Percée, Le mur, Bousculade) ; maître d'armes dans la
+de l'échiquier dans l'Arène (data/defis.json : Dans le dos, La Percée, Les ailes, Le mur, Bousculade) ; maître d'armes dans la
 Vallée (premier défi en entraînement, Bottes de vent) ; cercle d'invocation des Limites (Godot) ; fiches : « Pas ».
 Point ouvert du 16 octobre résolu : le plantage rare du mode test venait du test de l'énigme, qui appelait l'action de
 « Recommencer l'énigme » alors qu'elle détruit son propre menu (relu ensuite en mémoire libérée) ; trouvé avec cdb.
