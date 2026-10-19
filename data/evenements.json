@@ -748,6 +748,75 @@
       }
     ]
   },
+  "instructeur_forgeroc": {
+    "pages": [
+      {
+        "si": {"drapeau": "instructeur_forgeroc"},
+        "actions": [
+          {"action": "question", "texte": "Reprendre le défi « Bousculade » ?", "oui": [{"action": "combat", "defi": "bousculade", "entrainement": true, "fuite": true}]}
+        ]
+      },
+      {
+        "actions": [
+          {"action": "dire", "texte": "Instructeur : À Forgeroc, on se bat contre la roche. Un ennemi poussé contre un rocher prend un choc."},
+          {"action": "dire", "texte": "Instructeur : Brann et une Piafouine contre deux créatures adossées aux rochers. Une défaite ne vous coûtera rien."},
+          {
+            "action": "question",
+            "texte": "Relever le défi ?",
+            "oui": [
+              {
+                "action": "combat",
+                "defi": "bousculade",
+                "entrainement": true,
+                "fuite": true,
+                "victoire": [
+                  {"action": "dire", "texte": "Instructeur : Joli travail ! Voilà de quoi forger, et de quoi vous soigner."},
+                  {"action": "donner", "objet": "minerai", "quantite": 3},
+                  {"action": "donner", "objet": "superpotion", "quantite": 2},
+                  {"action": "drapeau", "nom": "instructeur_forgeroc"}
+                ],
+                "defaite": [{"action": "dire", "texte": "Instructeur : Poussez-les contre les rochers derrière eux, c'est là que ça fait mal."}]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "instructeur_givreval": {
+    "pages": [
+      {
+        "si": {"drapeau": "instructeur_givreval"},
+        "actions": [
+          {"action": "question", "texte": "Reprendre le défi « Le mur » ?", "oui": [{"action": "combat", "defi": "mur", "entrainement": true, "fuite": true}]}
+        ]
+      },
+      {
+        "actions": [
+          {"action": "dire", "texte": "Instructeur : Dans les Pics, une meute fonce toujours sur les mages. Il faut une ligne pour l'arrêter."},
+          {"action": "dire", "texte": "Instructeur : Brann et Galetor protègent Maëlle et Isra. Une défaite ne vous coûtera rien."},
+          {
+            "action": "question",
+            "texte": "Relever le défi ?",
+            "oui": [
+              {
+                "action": "combat",
+                "defi": "mur",
+                "entrainement": true,
+                "fuite": true,
+                "victoire": [
+                  {"action": "dire", "texte": "Instructeur : La ligne a tenu ! Prenez ces bottes ailées."},
+                  {"action": "donner", "objet": "bottes_ailees"},
+                  {"action": "drapeau", "nom": "instructeur_givreval"}
+                ],
+                "defaite": [{"action": "dire", "texte": "Instructeur : Serrez la ligne devant les mages, et méfiez-vous de ce qui vole."}]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
   "maitre_armes": {
     "pages": [
       {

@@ -105,6 +105,7 @@
     }
   ],
   "habitants": [
+    {"x": 18, "y": 36, "apparence": "garde", "direction": "bas", "evenement": "instructeur_forgeroc"},
     {
       "x": 4,
       "y": 35,

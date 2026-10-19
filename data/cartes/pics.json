@@ -103,6 +103,7 @@
     }
   ],
   "habitants": [
+    {"x": 38, "y": 36, "apparence": "garde", "direction": "bas", "evenement": "instructeur_givreval"},
     {
       "x": 41,
       "y": 35,
