@@ -185,6 +185,7 @@ struct ItemDef {
   int slot = -1;               // équipement : emplacement (GearSlot) ; -1 : pas un équipement
   std::array<int, N_GEAR_STATS> bonus{};
   bool trophy = false;         // trophée d'un boss (champ "trophee") : sert à la forge
+  int moveBonus = 0;           // échiquier (3.4, champ « mouvement ») : cases de déplacement en plus quand on le porte
   // Forge (2.1) : chaque arme et armure existe aussi forgée, « epee_fer+2 », objet généré au
   // chargement (pas dans objets.json) : forged = son niveau, base = l'objet d'origine
   int forged = 0;

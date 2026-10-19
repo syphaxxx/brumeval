@@ -631,6 +631,12 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       bool swapped = B.cellOf(lior) == boardAt(1, 4) && B.cellOf(brute) == boardAt(1, 5);
       B.moved_.clear();
       check(data && leapt && swapped, "échiquier : bond derrière la cible, échange de cases");
+      int base = B.moveRange(lior);
+      std::string keepAcc = lior->gear[G_ACCESSORY];
+      lior->gear[G_ACCESSORY] = "bottes_vent";
+      bool boots = B.moveRange(lior) == base + 1 && item("bottes_vent").moveBonus == 1;
+      lior->gear[G_ACCESSORY] = keepAcc;
+      check(boots, "échiquier : les bottes donnent une case de déplacement en plus");
     }
     {  // Tactiques de l'échiquier : s'approcher, contourner, protéger (le tour continue ensuite)
       auto keepT = lior->tactics;

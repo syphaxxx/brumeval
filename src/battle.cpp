@@ -160,6 +160,7 @@ std::string itemDetails(const ItemDef& d) {
   if (d.slot >= 0) {
     std::string b = d.bonusText();
     v.push_back(std::string(gearSlotName(d.slot)) + (b.empty() ? "" : " : " + b) + (d.slot != G_ACCESSORY ? T(" (héros seulement)") : ""));
+    if (d.moveBonus > 0) v.push_back(T("Échiquier : se déplace de ") + std::to_string(d.moveBonus) + T(" case de plus"));
   }
   if (d.healHp) v.push_back(d.healHp >= 999 ? T("Rend tous les PV") : T("Rend ") + std::to_string(d.healHp) + T(" PV"));
   if (d.healMp) v.push_back(d.healMp >= 999 ? T("Rend tous les PM") : T("Rend ") + std::to_string(d.healMp) + T(" PM"));
@@ -396,7 +397,12 @@ static bool hasTypeIn(const Species& s, const std::vector<std::string>& ids) {
       if (types()[k].id == ty && hasType(s, (int)k)) return true;
   return false;
 }
-int Battle::moveRange(const FighterP& f) const { return rules().moveRange + (hasTypeIn(f->S(), rules().fastTypes) ? 1 : 0); }
+int Battle::moveRange(const FighterP& f) const {
+  int r = rules().moveRange + (hasTypeIn(f->S(), rules().fastTypes) ? 1 : 0);
+  for (auto& id : f->gear)  // bottes : une case de plus
+    if (!id.empty() && hasItem(id)) r += item(id).moveBonus;
+  return r;
+}
 bool Battle::flier(const FighterP& f) const { return hasTypeIn(f->S(), rules().flyTypes); }
 std::map<int, int> Battle::walkable(const FighterP& f, std::map<int, int>* parent) const {
   std::map<int, int> out;

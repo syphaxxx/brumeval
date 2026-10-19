@@ -514,6 +514,7 @@ void rebuildData() {
         if (i == N_GEAR_STATS) throw std::runtime_error("Objet « " + d.id + " » : bonus inconnu « " + k + " »");
         d.bonus[i] = v.get<int>();
       }
+      d.moveBonus = jget(o, "mouvement", 0);
     }
     if (o.contains("gemme")) {
       const Json& g = o["gemme"];

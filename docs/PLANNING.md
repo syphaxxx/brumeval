@@ -237,6 +237,9 @@ Troisième série (7 h 50) :
 Avancement : 13 et 14 faits (chemin en pointillés dorés ; « Revenir », pas en ligne ni après une Percée).
 15 abandonné : des animaux rendus en 3D seraient bien moins beaux que leurs sprites dessinés (très détaillés) ; à la
 place, ils trottinent en marchant (petit bond à chaque pas, dessin seul).
+En plus : bottes qui font avancer d'une case de plus (Bottes de vent à Forgeroc, Bottes ailées à Givreval).
+Relecture Codex de la série : 2 remarques justes corrigées (Protéger avec une condition « Soi », « Revenir » gardé
+après un remplacement). Page de bilan : https://claude.ai/artifact/KbjqopS4iS7eXWjgjLL5my
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 

@@ -322,6 +322,26 @@
     "bonus": {"esquive": 5, "vitesse": 2}
   },
   {
+    "id": "bottes_vent",
+    "nom": "Bottes de vent",
+    "icone": "ic_bottes_2",
+    "description": "Légères comme une brise : on arrive plus vite là où il faut.",
+    "prix": 700,
+    "equipement": "accessoire",
+    "bonus": {"esquive": 2},
+    "mouvement": 1
+  },
+  {
+    "id": "bottes_ailees",
+    "nom": "Bottes ailées",
+    "icone": "ic_bottes_4",
+    "description": "Des plumes cousues aux chevilles, pour traverser le champ de bataille.",
+    "prix": 2200,
+    "equipement": "accessoire",
+    "bonus": {"vitesse": 3, "esquive": 3},
+    "mouvement": 1
+  },
+  {
     "id": "pendentif_brume",
     "nom": "Pendentif de brume",
     "icone": "ic_acc_7",
