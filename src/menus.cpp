@@ -12,6 +12,7 @@
 #include "mapedit.hpp"
 #include "online.hpp"
 #include "options.hpp"
+#include "primes.hpp"
 #include "sprites.hpp"
 #include "storyedit.hpp"
 #include "tactics.hpp"
@@ -745,6 +746,17 @@ void Game::journalMenu() {
     }
     MenuItem it{tr(jget<std::string>(q, "nom", id)), done ? T("terminée") : T("en cours"), tr(jget<std::string>(q, "lieu", "")) + " — " + help, true, nullptr};
     it.color = done ? 0xaab3d8 : 0;
+    it.shrink = true;
+    m.items.push_back(it);
+  }
+  for (auto& b : bounties()) {  // primes acceptées, pas encore touchées
+    std::string id = jget<std::string>(b, "id", "");
+    if (!has(bountyFlag(id, 0)) || has(bountyFlag(id, 2))) continue;
+    bool beaten = has(bountyFlag(id, 1));
+    MenuItem it{T("Prime : ") + tr(jget<std::string>(b, "nom", id)), beaten ? T("Prime !") : T("en chasse"),
+                tr(jget<std::string>(b, "lieu", "")) + " — " +
+                    (beaten ? std::string(T("Vaincu : toucher la prime à un tableau d'annonces.")) : tr(jget<std::string>(b, "description", ""))),
+                true, nullptr};
     it.shrink = true;
     m.items.push_back(it);
   }

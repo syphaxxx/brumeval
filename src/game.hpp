@@ -189,6 +189,11 @@ class Game {
   int forgeStock(const std::string& id) const;               // « trophee » : tous les trophées
   std::string forgeCost(const ItemDef& d, std::string* missing) const;
   void journalMenu();
+  // Primes (chasse.cpp, primes.hpp) : tableau d'annonces (tuile G) ; rang de chasseur selon les primes touchées
+  void bountyMenu(int sel = 0);
+  void claimBounty(const std::string& id);
+  int bountiesClaimed() const;
+  std::string hunterTitle() const;
   void companionsMenu(int sel = 0);  // la créature compagnon de chaque héros
   void reserveMenu(int sel = 0);     // déposer, reprendre ou échanger des créatures avec la réserve
   void bestiaryMenu(int sel = 0);    // toutes les créatures : vues, obtenues, fiche

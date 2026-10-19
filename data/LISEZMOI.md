@@ -25,6 +25,7 @@ toutes les références existent et que chaque lieu des cartes est accessible.
 | `cartes/*.json` | Une carte par fichier : tuiles, bâtiments, habitants, coffres… |
 | `sons.json` | Musiques et bruitages (fabriqués par le jeu, sans fichier audio) |
 | `quetes.json` | Quêtes annexes : nom, lieu, étapes affichées dans le journal |
+| `primes.json` | Primes (monstres recherchés) du tableau d'annonces et rangs de chasseur (voir plus bas) |
 
 ## Le son (`sons.json`)
 
@@ -350,6 +351,16 @@ vraie. Une quête commencée pose le drapeau `quete:<id>`, une quête terminée
 
 Conditions possibles (toutes doivent être vraies) : `drapeau`, `sans_drapeau`,
 `objet`, `sans_objet`, `or_min`, `membre` (une espèce présente dans l'équipe).
+
+## primes.json (primes, 2026-10-19)
+
+Le tableau d'annonces (tuile `G` d'une carte) montre les primes. `rangs` : `primes` (nombre de primes touchées),
+`titre`, `objets` (donnés en atteignant ce rang). Chaque prime de `primes` : `id`, `nom`, `etoiles` (1 à 5),
+`carte`, `x`, `y` (coin haut-gauche du monstre, un bloc de 2×2 cases libres), `espece` (dessin sur la carte),
+`lieu`, `description`, `arrivee` (phrase au début du combat), `si` (condition pour qu'elle soit offerte), `combat`
+(comme l'action `combat` : `ennemis` avec `pv`, `boss`, `bouclier`, `phases`…, `renforts`, `fuite`), `or`, `objets`
+(liste de `{id, quantite}`). Drapeaux : `prime:<id>` (acceptée : le monstre apparaît), `prime:<id>:vaincue`,
+`prime:<id>:fin` (touchée). Le mode test vérifie que chaque monstre est accessible à pied.
 
 ## defis.json (3.4)
 

@@ -92,6 +92,8 @@ struct BossSpot {
   std::string id;     // espèce affichée sur la carte
   std::string flag;   // drapeau posé quand il est vaincu (le boss disparaît)
   std::string event;  // événement lancé quand on lui parle
+  Json cond;          // facultatif : présent seulement si ces conditions sont vraies (comme « si » des événements)
+  bool bounty = false;  // monstre d'une prime (primes.hpp) : ajouté au chargement, jamais écrit dans la carte
 };
 
 struct MapDef {

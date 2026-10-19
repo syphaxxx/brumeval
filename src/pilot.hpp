@@ -42,6 +42,8 @@ class Pilot {
     int node, face;
   };
   enum Kind { Heal, Shop, Normal, Danger, Grind };
+  bool bountyWork() const;  // primes à prendre ou à toucher
+  void bountyStep();        // menu du tableau des primes
   struct Goal {
     std::string key, what;  // identifiant (« pnj:vallee:3 »), description pour le journal
     Kind kind = Normal;

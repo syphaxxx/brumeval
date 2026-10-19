@@ -552,6 +552,42 @@
     "bonus": {"pv": 40, "resistance": 4}
   },
   {
+    "id": "insigne_chasseur",
+    "nom": "Insigne du chasseur",
+    "icone": "ic_acc_3",
+    "description": "Remis aux chasseurs de primes reconnus. On vise mieux quand on le porte.",
+    "prix": 600,
+    "equipement": "accessoire",
+    "bonus": {"precision": 4, "critique": 4}
+  },
+  {
+    "id": "cape_traqueur",
+    "nom": "Cape du traqueur",
+    "icone": "ic_armure_4",
+    "description": "Légère et couleur de mousse : le gibier ne vous entend pas venir.",
+    "prix": 1500,
+    "equipement": "armure",
+    "bonus": {"defense": 7, "esquive": 4, "vitesse": 2}
+  },
+  {
+    "id": "lance_traqueur",
+    "nom": "Lance du traqueur",
+    "icone": "ic_lance_3",
+    "description": "Une lance de chasse en bois de givre, d'une précision redoutable.",
+    "prix": 2600,
+    "equipement": "arme",
+    "bonus": {"attaque": 14, "precision": 8, "critique": 4}
+  },
+  {
+    "id": "couronne_brumes",
+    "nom": "Couronne des brumes",
+    "icone": "ic_acc_8",
+    "description": "Tressée par les gens de l'archipel pour le plus grand chasseur. Elle brille d'une lumière douce.",
+    "prix": 5000,
+    "equipement": "accessoire",
+    "bonus": {"pv": 30, "attaque": 5, "defense": 5, "magie": 5, "resistance": 5, "vitesse": 3}
+  },
+  {
     "id": "gemme_maitre",
     "nom": "Gemme du maître",
     "icone": "ic_gemme_maitre",

@@ -13,6 +13,7 @@
 #include "mapedit.hpp"
 #include "online.hpp"
 #include "pilot.hpp"
+#include "primes.hpp"
 #include "options.hpp"
 #include "settings.hpp"
 #include "storyedit.hpp"
@@ -446,7 +447,7 @@ void Game::defeat() {
 // Carte
 // ---------------------------------------------------------------------------
 bool Game::npcVisible(const Npc& n) const { return n.hideIf.empty() || !has(n.hideIf); }
-bool Game::bossAlive(const BossSpot& b) const { return !has(b.flag); }
+bool Game::bossAlive(const BossSpot& b) const { return !has(b.flag) && (b.cond.is_null() || checkCond(b.cond)); }
 
 bool Game::blocked(int x, int y) const { return blockedOn(M(), x, y); }
 bool Game::blockedOn(const MapDef& m, int x, int y) const {
@@ -723,6 +724,8 @@ void Game::interact() {
     if (bossAlive(b) && fx >= b.x && fx <= b.x + 1 && fy >= b.y && fy <= b.y + 1) return bossTouched(b);
   for (auto& b : m.buildings)
     if (fx == b.doorX() && fy == b.doorY()) return enterDoor(b);
+  if (fx >= 0 && fy >= 0 && fx < m.w() && fy < m.h() && m.rows[fy][fx] == 'G' && !inExpedition() && !bounties().empty())
+    return bountyMenu();  // tableau d'annonces : les primes
 }
 
 // Porte d'un bâtiment (Entrée devant elle ou marcher dedans) : on entre s'il a un intérieur, sinon son événement
@@ -1131,7 +1134,15 @@ void Game::drawMap() {
     }
   for (auto& b : m.bosses)
     if (bossAlive(b))
-      actors.push_back({float(b.y * 16 + 16), [&, b] { drawCreature(g, b.id, (b.x + 1) * 16 - camX, (b.y + 1) * 16 - camY - 2, .6f, false, time); }});
+      actors.push_back({float(b.y * 16 + 16), [&, b] {
+                          drawCreature(g, b.id, (b.x + 1) * 16 - camX, (b.y + 1) * 16 - camY - 2, .6f, false, time);
+                          if (b.bounty) {  // monstre d'une prime : bulle rouge « ! » au-dessus
+                            float bx = (b.x + 1) * 16 - camX - 4, by = b.y * 16 - camY - 14 + std::sin(time * 4) * 1.5f;
+                            g.rect(bx - 1, by - 1, 10, 11, rgb(0x2a1010));
+                            g.rect(bx, by, 8, 9, rgb(0xd2493f));
+                            g.text(bx + 2, by - 1, "!", WHITE, 0, false);
+                          }
+                        }});
   // Expédition à plusieurs : les autres joueurs de la région, avec leur pseudo (doré : prêt devant le gardien)
   if (online_ && online_->inGroup())
     for (auto& a : online_->avatars())

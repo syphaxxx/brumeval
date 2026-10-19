@@ -13,6 +13,7 @@
 
 #include "battle.hpp"
 #include "events.hpp"
+#include "primes.hpp"
 #include "game.hpp"
 #include "world.hpp"
 
@@ -426,6 +427,17 @@ std::vector<Pilot::Goal> Pilot::goals() {
       out.push_back(g);
     }
     // Les panneaux ne font que donner un texte : il ne va pas les lire
+    if (!G.inExpedition() && bountyWork())  // primes à prendre ou à toucher : au tableau d'annonces le plus proche
+      for (int y = 0; y < M.h(); y++)
+        for (int x = 0; x < M.w(); x++)
+          if (M.rows[y][x] == 'G') {
+            Goal g;
+            g.key = "primes:" + M.id + ":" + std::to_string(x) + ":" + std::to_string(y);
+            if (tries_[g.key] >= 30) continue;
+            g.what = "tableau des primes (" + M.name + ")";
+            around(g, x, y, 1, 1);
+            out.push_back(g);
+          }
     for (auto& b : M.buildings) {
       if (!b.interior.empty() || b.event.empty() || b.decor()) continue;  // une maison avec un intérieur : c'est un passage
       Goal g;
@@ -809,6 +821,7 @@ void Pilot::menuStep() {
   }
   if (t.title.rfind(T("Boutique"), 0) == 0) return shopping();
   if (t.title.rfind(T("Forge"), 0) == 0) return forging();
+  if (t.title.rfind(T("Primes"), 0) == 0) return bountyStep();
   status = "menu : " + t.title;
   if (t.cancelable) G.in.cancel = true;
   else G.in.confirm = true;
@@ -979,6 +992,29 @@ bool Pilot::forgeWanted() const {
       if (missing.empty() && G.gold >= rules().forge[(size_t)item(id).forged].gold + 150) return true;  // garder de quoi acheter des potions
     }
   return false;
+}
+
+// Primes : il y a une prime à prendre (offerte) ou à toucher (vaincue)
+bool Pilot::bountyWork() const {
+  for (auto& b : bounties()) {
+    std::string id = jget<std::string>(b, "id", "");
+    if (G.has(bountyFlag(id, 1)) && !G.has(bountyFlag(id, 2))) return true;
+    if (!G.has(bountyFlag(id, 0)) && (!b.contains("si") || G.checkCond(b["si"]))) return true;
+  }
+  return false;
+}
+
+// Au tableau : il touche les primes vaincues et prend toutes les autres (il n'ira les chasser que prêt, comme un boss)
+void Pilot::bountyStep() {
+  status = "primes";
+  Menu& t = G.menus.top();
+  for (auto& it : t.items)
+    if (it.enabled && (it.right == T("Prime !") || it.right == T("à prendre"))) {
+      if (pickItem(it.label) == 2) note("Prime : " + it.label + " (" + it.right + ")");
+      return;
+    }
+  G.in.cancel = true;
+  wait_ = .3f;
 }
 
 void Pilot::forging() {

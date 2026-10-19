@@ -7,6 +7,7 @@
 #include "audio.hpp"
 #include "data.hpp"
 #include "game.hpp"
+#include "primes.hpp"
 #include "world.hpp"
 
 static Json EVENTS = Json::object();
@@ -21,7 +22,7 @@ std::string questFlag(const std::string& id, bool done) { return "quete:" + id +
 Json& events() { return EVENTS; }
 const Json* findEvent(const std::string& id) {
   auto it = EVENTS.find(id);
-  return it == EVENTS.end() ? nullptr : &*it;
+  return it == EVENTS.end() ? bountyEvent(id) : &*it;  // « prime:<id> » : combat d'une prime (primes.hpp)
 }
 void loadEvents() {
   EVENTS = readJson("evenements.json");
@@ -149,6 +150,15 @@ std::vector<std::string> checkEvents() {
       checkList(pages[p].value("actions", Json::array()), where, err);
     }
   }
+  bool storyWorld = false;  // en Expédition, seule la région générée est chargée (« expedition_<k> ») : pas de primes
+  for (auto& m : maps()) storyWorld = storyWorld || m.id.rfind("expedition_", 0) != 0;
+  for (auto& b : storyWorld ? bounties() : Json::array()) {  // primes : leur condition et leur combat
+    std::string id = jget<std::string>(b, "id", ""), where = T("Prime « ") + id + " »";
+    if (b.contains("si")) checkCondition(b["si"], where, err);
+    if (const Json* ev = bountyEvent("prime:" + id)) checkList(ev->value("actions", Json::array()), where, err);
+  }
+  if (storyWorld)
+    for (auto& e : checkBounties()) err.push_back(e);
   auto ref = [&](const std::string& id, const std::string& who) {
     if (!id.empty() && !findEvent(id)) err.push_back(who + T(" : événement inconnu « ") + id + " »");
   };

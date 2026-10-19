@@ -446,6 +446,15 @@ code) ; `docs/GUIDE.md` les range par domaine.
   vent). Mesuré (BRUMEVAL_SIMULATIONS=2) : sans
   réglage, boss bien plus faciles (encerclés par 6 alliés : +60 %) ; après (boss ni encerclés ni gênés au contact,
   encerclement 10 %, Ignarok N.25, Ronce-Mère N.22, Mère des Brumes N.41), difficulté proche de la 3.3.
+- Primes (demandé le 2026-10-19 : « au moins 20 heures de jeu ») : `data/primes.json`, `primes.hpp` (chargées par
+  `loadMaps`, qui ajoute le monstre de chaque prime à sa carte : `BossSpot::bounty`, visible si `BossSpot::cond`, jamais
+  écrit par `mapToJson`), événement généré `prime:<id>` (`bountyEvent`, trouvé par `findEvent`, jamais dans
+  evenements.json), drapeaux `prime:<id>`, `:vaincue`, `:fin` (`bountyFlag`). Tableau d'annonces = tuile `G`
+  (`Game::interact` → `bountyMenu`, chasse.cpp ; pas en Expédition) dans la Vallée, à Forgeroc, Sylve-Noire,
+  Givreval et au Port ; `claimBounty` (or, objets, rang de chasseur `bountyRanks`, `hunterTitle`). Bulle rouge « ! »
+  au-dessus du monstre ; Journal : primes en cours. 15 primes (12 pendant l'histoire, 3 après la fin : Sylvarque,
+  Ignarok, Mère des Brumes, super-boss). Joueur automatique : `Pilot::bountyWork`/`bountyStep` (prend tout, touche
+  tout ; chasse comme un boss, quand il est prêt). `checkEvents` vérifie les primes (sauf en Expédition).
 - Attaques annoncées (1.8) : `Battle::bossPlan` ; un boss (pas en duel) annonce
   parfois (`boss_annonce`, 0,35) sa plus forte attaque sur la colonne, croix ou
   ligne qui couvre le plus d'alliés (`warnings_`, zone rouge, 8e champ `w` de

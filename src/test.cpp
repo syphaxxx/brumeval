@@ -21,6 +21,7 @@
 #include "online.hpp"
 #include "options.hpp"
 #include "pilot.hpp"
+#include "primes.hpp"
 #include "settings.hpp"
 #include "sprites.hpp"
 #include "storyedit.hpp"
@@ -2361,6 +2362,61 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     show("forge");
     snap("forge_sac");
     menus.clear();
+    {  // Primes : le tableau dans tous ses états, puis une prime de bout en bout
+      auto savedFlags = flags;
+      auto savedItems = items;
+      int savedGold = gold;
+      flags.insert("boss1");
+      for (const char* id : {"mulot_geant", "champichou_rieur"})
+        for (int k = 0; k < 3; k++) flags.insert(bountyFlag(id, k));
+      flags.erase(bountyFlag("champichou_rieur", 2));
+      bountyMenu();
+      show("primes");
+      snap("primes");
+      menus.clear();
+      journalMenu();
+      show("journal : primes");
+      menus.clear();
+      // croc_gris : à prendre (Entrée sur sa ligne), son monstre apparaît à Sylve-Noire, vaincu, prime touchée
+      flags.insert(bountyFlag("champichou_rieur", 2));
+      bountyMenu();
+      int row = -1;
+      for (int i = 0; i < (int)menus.top().items.size(); i++)
+        if (menus.top().items[i].right == T("à prendre") && row < 0) row = i;
+      menus.top().sel = std::max(0, row);
+      in.confirm = true;
+      frame();
+      std::string took;
+      for (auto& b : bounties())
+        if (has(bountyFlag(jget<std::string>(b, "id", ""), 0)) && jget<std::string>(b, "id", "") != "mulot_geant" &&
+            jget<std::string>(b, "id", "") != "champichou_rieur")
+          took = jget<std::string>(b, "id", "");
+      const BossSpot* spot = nullptr;
+      for (auto& m : maps())
+        for (auto& bs : m.bosses)
+          if (bs.bounty && bs.event == "prime:" + took) spot = &bs;
+      bool visible = spot && bossAlive(*spot) && findEvent(spot->event);
+      flags.insert(bountyFlag(took, 1));
+      bool gone = spot && !bossAlive(*spot);
+      int g0 = gold;
+      menus.clear();
+      sc.clear();
+      claimBounty(took);
+      while (sc.busy()) {
+        in.confirm = true;
+        frame();
+      }
+      check(row >= 0 && !took.empty() && visible && gone && has(bountyFlag(took, 2)) && gold > g0 && bountiesClaimed() == 3 &&
+                items["insigne_chasseur"] > savedItems["insigne_chasseur"] && hunterTitle() == tr("Chasseur"),
+            "primes : acceptée au tableau, le monstre apparaît sur sa carte puis disparaît vaincu ; prime touchée (or, objets), "
+            "rang « Chasseur » à la troisième (" + took + ")");
+      menus.clear();
+      sc.clear();
+      noticeT_ = 0;
+      flags = savedFlags;
+      items = savedItems;
+      gold = savedGold;
+    }
     reserve = {makeFighter("carapierre", 40), makeFighter("cristallin", 40), makeFighter("braisenard", 12)};
     reserveMenu(1);
     show("réserve");

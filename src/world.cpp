@@ -9,6 +9,7 @@
 
 #include "data.hpp"
 #include "i18n.hpp"
+#include "primes.hpp"
 
 bool tileWalkable(char c) {
   if (c == 'O' || c == 'P' || c == 'D') return true;  // rochers, plaques et grilles de l'énigme : gérés par Game::blockedOn
@@ -216,6 +217,7 @@ MapDef mapFromJson(const Json& j) {
     b.event = jget<std::string>(o, "evenement", b.id);
     m.bosses.push_back(b);
   }
+  addBountySpots(m);  // primes (jamais écrites par mapToJson : la carte relue les retrouve)
   return m;
 }
 
@@ -280,6 +282,7 @@ Json mapToJson(const MapDef& m) {
   o["zones"] = z;
   Json bo = Json::array();
   for (auto& x : m.bosses) {
+    if (x.bounty) continue;  // ajouté par addBountySpots
     Json p = {{"x", x.x}, {"y", x.y}, {"espece", x.id}, {"drapeau", x.flag}};
     if (x.event != x.id) p["evenement"] = x.event;
     bo.push_back(p);
@@ -299,6 +302,7 @@ Json mapToJson(const MapDef& m) {
 
 void loadMaps() {
   MAPS.clear();
+  loadBounties();  // avant les cartes : mapFromJson y ajoute le monstre de chaque prime
   for (auto& f : listJson("cartes")) {
     try {
       MAPS.push_back(mapFromJson(readJson("cartes/" + f + ".json")));

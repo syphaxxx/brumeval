@@ -143,6 +143,10 @@ puis un événement qui la commence (`{"action": "quete", "id": …}`) et la
 termine (`"fin": true`), avec des pages qui testent les drapeaux
 `quete:<id>` et `quete:<id>:fin`. Exemple complet : `quete_medaillon`.
 
+**Une prime** (monstre recherché) : une entrée dans `data/primes.json` (carte, case libre de 2×2, combat,
+récompense, condition `si`) ; elle apparaît aux tableaux d'annonces (tuile `G`). Code : `primes.cpp` (données,
+événement généré « prime:<id> », monstre ajouté à sa carte) et `chasse.cpp` (menu du tableau, récompense, rang).
+
 **Une musique ou un bruitage** : `data/sons.json` (format dans
 `data/LISEZMOI.md`). Une musique de lieu se choisit par le thème de la carte
 (`lieux`). Un nouveau bruitage joué par le code : `audio::play("nom")` (en
