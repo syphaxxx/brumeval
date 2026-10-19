@@ -2802,7 +2802,10 @@ void Battle::draw() {
   for (auto& f : foes)
     if (f->alive() || (koT_.count(f.get()) && t - koT_[f.get()] < .6f)) shown.push_back(f);  // vaincu : il s'efface
   for (auto& a : allies) shown.push_back(a);
-  std::stable_sort(shown.begin(), shown.end(), [&](const FighterP& a, const FighterP& b) { return pos(a).y < pos(b).y; });
+  std::stable_sort(shown.begin(), shown.end(), [&](const FighterP& a, const FighterP& b) {
+    if (a->alive() != b->alive()) return !a->alive();  // les K.O. sont couchés au sol : dessinés avant les autres
+    return pos(a).y < pos(b).y;
+  });
   // Zone en cours (choix sur le damier, ou aperçu de la technique survolée) : les combattants du camp visé hors de
   // la zone sont estompés, pour que la cible ressorte même quand ils se chevauchent
   int zSide = -1, zCenter = -1;
@@ -2885,7 +2888,19 @@ void Battle::draw() {
     if (anim_.actor == f && anim_.fx == Fx::Capture && ce >= 0 && ce < .5f) pose = "lancer_" + std::to_string(std::min(4, int(ce / .09f)));
     else if (!f->alive()) pose = "ko";
     else if (summaryOn_) pose = "victoire";
-    if (!pose.empty() && !f->alive()) g.alpha = 1;
+    if (!f->alive()) {  // K.O. (demandé le 2026-10-19 : on doit le voir au premier coup d'œil) : couché, grisé, « K.O. »
+      g.alpha = .9f;
+      g.spriteTint = rgb(0x8a8aa0);
+      g.ellipse(p.x, p.y + 13, 13, 3.5f, rgb(0, 70));
+      if (!drawFighterPose(g, *f, "ko", p.x, p.y, facesRight(f))) {  // pas de pose dessinée : le sprite couché sur le côté
+        g.spriteAngle = facesRight(f) ? -90.f : 90.f;
+        drawFighterSprite(g, *f, p.x, p.y + 8, 1, facesRight(f), 0);
+        g.spriteAngle = 0;
+      }
+      g.spriteTint = rgb(0xffffff);
+      g.alpha = 1;
+      continue;  // étoiles et « K.O. » : après tous les combattants (jamais cachés)
+    }
     if (!(blinking && blink == f) && !(!pose.empty() && drawFighterPose(g, *f, pose, p.x + o.x, p.y + o.y, facesRight(f))))
       drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, 1, facesRight(f), t + p.x * .01f);  // vers l'adversaire le plus proche
     g.alpha = 1;
@@ -2896,6 +2911,19 @@ void Battle::draw() {
     }
     if (cursor == f) g.cursor(p.x - 24, p.y - 4);
   }
+  // Alliés K.O. : petites étoiles qui tournent et « K.O. », par-dessus tout le monde
+  for (auto& f : allies)
+    if (!f->alive()) {
+      Pt p = pos(f);
+      for (int i = 0; i < 3; i++) {
+        float a = t * 3 + i * 2.094f;
+        float sx = p.x + std::cos(a) * 8, sy = p.y + 2 + std::sin(a) * 2.5f;
+        g.tri(sx - 2, sy, sx + 2, sy, sx, sy - 3, rgb(0xffe066, 210));
+        g.tri(sx - 2, sy - 2, sx + 2, sy - 2, sx, sy + 1, rgb(0xffe066, 210));
+      }
+      g.rect(p.x - 11, p.y - 7, 22, 9, rgb(0x0a0f33, 200));
+      g.text(p.x, p.y - 8, T("K.O."), rgb(0xff7b6b), 1, false);
+    }
   // Par-dessus les combattants : contour de la zone et flèche au-dessus de la cible (le sprite cache sa case)
   if (zSide >= 0) {
     for (int c : zCells) tile(g, cellPos(c), rgb(c == zCenter ? 0xfff2a0 : 0xffb050, 210), true);

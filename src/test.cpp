@@ -965,6 +965,14 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     B.startAnim(B.allies[0], B.alive(B.foes), Battle::Fx::Hit, rgb(0xff8ac8), true, 0);  // Limite : cercle d'invocation au sol
     for (int i = 0; i < 20; i++) frame();
     snap("anim_limite");
+    {  // K.O. : couché, grisé, « K.O. » au-dessus (2026-10-19 : « on ne fait pas la différence »)
+      int keepHp = B.allies[1]->hp;
+      B.allies[1]->hp = 0;
+      B.anim_.t0 = -10;  // pas d'animation par-dessus
+      run(.1f);
+      snap("allie_ko");
+      B.allies[1]->hp = keepHp;
+    }
     {
       size_t k = 0;
       for (auto* side : {&B.allies, &B.foes})

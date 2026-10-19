@@ -42,6 +42,8 @@ class Gfx {
   SDL_Renderer* renderer() const { return r_; }
 
   float alpha = 1.f;  // opacité globale appliquée à tout ce qui est dessiné
+  float spriteAngle = 0;                       // rotation des sprites (degrés, autour de leur centre) : combattant K.O. couché
+  Color spriteTint = {255, 255, 255, 255};     // teinte multipliée à tous les sprites (K.O. : grisé)
 
   // Écran plus large que le jeu (16:9, 16:10…) : l'image fait fullW pixels de large (320 au
   // moins) et tout se place dans la zone de 320 pixels du milieu, décalée de ox pixels. Un

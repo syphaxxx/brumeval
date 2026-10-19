@@ -131,14 +131,14 @@ void Gfx::sprite(const SpriteRect& s, float x, float y, bool flip, float scale, 
   SDL_FRect dst{float(std::lround(x) + ox), float(std::lround(y)), s.w * scale, s.h * scale};
   SDL_RendererFlip fl = flip && tex == atlas_ ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
   SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
-  SDL_SetTextureColorMod(tex, tint.r, tint.g, tint.b);
+  SDL_SetTextureColorMod(tex, uint8_t(tint.r * spriteTint.r / 255), uint8_t(tint.g * spriteTint.g / 255), uint8_t(tint.b * spriteTint.b / 255));
   SDL_SetTextureAlphaMod(tex, uint8_t(tint.a * std::clamp(alpha, 0.f, 1.f)));
-  SDL_RenderCopyExF(r_, tex, &src, &dst, 0, nullptr, fl);
+  SDL_RenderCopyExF(r_, tex, &src, &dst, spriteAngle, nullptr, fl);
   if (flash > 0) {  // éclat blanc : le sprite rajouté en mode additif
     SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_ADD);
     SDL_SetTextureColorMod(tex, 255, 255, 255);
     SDL_SetTextureAlphaMod(tex, uint8_t(255 * std::clamp(flash, 0.f, 1.f) * std::clamp(alpha, 0.f, 1.f)));
-    SDL_RenderCopyExF(r_, tex, &src, &dst, 0, nullptr, fl);
+    SDL_RenderCopyExF(r_, tex, &src, &dst, spriteAngle, nullptr, fl);
     SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
   }
 }
