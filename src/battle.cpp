@@ -529,6 +529,7 @@ void Battle::step(const FighterP& a, int cell) {
   if (shown()) slide_[a.get()] = {pos(a), G.time};
   cells_[a.get()] = cell;
   moved_.insert(a.get());
+  sound("pas");
   log.push_back(a->name() + T(" va en ") + boardName(cell));
   int edge = isAlly(a) ? BOARD_W - 1 : 0;
   int bonus = rules().breakthrough;
@@ -2145,6 +2146,7 @@ void Battle::motionAfterHit(const FighterP& a, const FighterP& t, const Move& m,
     int to = leapDest(a, t);
     if (to < 0) return;
     step(a, to);
+    sound("bond");
     pop(a, T("Bond !"), rgb(0xd8e0ff));
     bursts_.push_back({a, "poussiere", G.time + .2f});  // quand il touche le sol
   } else if (m.motion == "echange" && t->alive() && !t->boss) {
@@ -2152,6 +2154,7 @@ void Battle::motionAfterHit(const FighterP& a, const FighterP& t, const Move& m,
     if (shown()) slide_[t.get()] = {pos(t), G.time};
     cells_[t.get()] = ca;
     step(a, ct);
+    sound("echange");
     pop(t, T("Échange !"), rgb(0xd8e0ff));
     bursts_.push_back({a, "echange", G.time}), bursts_.push_back({t, "echange", G.time});
     log.push_back("  " + a->name() + T(" échange de place avec ") + t->name());
@@ -2751,6 +2754,9 @@ void Battle::drawZones(float t) {
   const Move* mv = nullptr;
   int center = -1;
   bool side = false;  // camp visé (vrai : alliés), pour une zone « tout le camp »
+  // Menu de commande d'un allié (3.4) : ses cases possibles pour ce tour, en bleu léger (portée de déplacement)
+  if (!picking && actor && isAlly(actor) && G.menus.active() && G.menus.depth() == 1 && !moved_.count(actor.get()) && !follower())
+    for (auto& [c, d] : walkable(actor)) tile(g, cellPos(c), rgb(0x8fd0ff, uint8_t(46 + 18 * pulse)));
   if (picking) {
     Menu& m = G.menus.top();
     for (size_t i = 0; i < pick_.cells.size() && i < m.items.size(); i++)

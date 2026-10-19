@@ -1087,6 +1087,60 @@
         "volume": 0.2
       }
     ],
+    "pas": {
+      "variation": 0.2,
+      "sons": [
+        {
+          "onde": "bruit",
+          "de": 900,
+          "a": 300,
+          "duree": 0.04,
+          "volume": 0.16,
+          "depart": 0
+        },
+        {
+          "onde": "bruit",
+          "de": 800,
+          "a": 260,
+          "duree": 0.04,
+          "volume": 0.13,
+          "depart": 0.11
+        }
+      ]
+    },
+    "bond": [
+      {
+        "onde": "bruit",
+        "de": 4000,
+        "a": 900,
+        "duree": 0.16,
+        "volume": 0.2
+      },
+      {
+        "onde": "sinus",
+        "de": 220,
+        "a": 520,
+        "duree": 0.12,
+        "volume": 0.18
+      }
+    ],
+    "echange": [
+      {
+        "onde": "sinus",
+        "de": 900,
+        "a": 400,
+        "duree": 0.14,
+        "volume": 0.2
+      },
+      {
+        "onde": "sinus",
+        "de": 400,
+        "a": 900,
+        "duree": 0.14,
+        "volume": 0.2,
+        "depart": 0
+      }
+    ],
     "limite": [
       {
         "onde": "scie",

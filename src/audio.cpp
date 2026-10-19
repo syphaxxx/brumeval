@@ -296,7 +296,7 @@ struct Lock {
 // Effets que le jeu demande (le mode test vérifie qu'ils existent tous)
 static const char* REQUIRED_EFFECTS[] = {"curseur", "valider", "retour", "refus", "coup", "critique", "sort", "soin", "rate", "ko",
                                          "statut", "bonus", "malus", "lancer", "capture", "capture_rate", "niveau", "victoire",
-                                         "defaite", "rencontre", "fuite", "coffre", "achat", "porte", "limite"};
+                                         "defaite", "rencontre", "fuite", "coffre", "achat", "porte", "limite", "pas", "bond", "echange"};
 static const char* REQUIRED_TRACKS[] = {"titre", "combat", "boss"};
 
 void loadSounds() {

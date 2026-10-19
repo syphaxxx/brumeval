@@ -220,6 +220,13 @@ Revue Codex : 3 remarques justes corrigées (colonne bouchée par les obstacles,
 menace en diagonale). Mesuré (BRUMEVAL_SIMULATIONS=2) : difficulté dans le bruit de la 3.3 ; joueur automatique :
 histoire finie (1 h 26, 3 défaites).
 
+Deuxième série (7 h 35) :
+9. Portée visible : quand un allié choisit son action, les cases où il peut aller ce tour s'allument doucement.
+10. Sons : un pas quand on change de case, un souffle pour le bond, un son pour l'échange.
+11. Tactiques de l'échiquier : actions « S'approcher », « Protéger un allié » (se placer devant le plus blessé) et
+    « Contourner » (passer dans le dos de la cible), dans l'éditeur de tactiques et pour le joueur automatique.
+12. Formation : choisir la case de chacun sur un dessin du plateau (flèches et souris), comme en combat.
+
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
 - Fait en 1.6 : **réserve de créatures** (au-delà de 8 membres) et
