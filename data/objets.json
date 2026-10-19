@@ -567,6 +567,43 @@
     "trophee": true
   },
   {
+    "id": "larme_aube",
+    "nom": "Larme d'Aube",
+    "icone": "ic_gemme_perle",
+    "description": "Une larme de lumière, tiède comme un matin d'été. Elle ouvre la porte du Gouffre.",
+    "prix": 0
+  },
+  {
+    "id": "seve_lueurs",
+    "nom": "Sève des Lueurs",
+    "description": "Trophée : une goutte de sève qui brille dans le noir, donnée par le Gardien des Lueurs.",
+    "prix": 900,
+    "trophee": true
+  },
+  {
+    "id": "couronne_nenuphar",
+    "nom": "Couronne de nénuphar",
+    "description": "Trophée : la couronne de la Reine du Marais, toujours fraîche.",
+    "prix": 1100,
+    "trophee": true
+  },
+  {
+    "id": "coeur_aube",
+    "nom": "Cœur d'Aube",
+    "description": "Trophée : ce qui reste de la Brume Noire, une perle de lumière rose.",
+    "prix": 2000,
+    "trophee": true
+  },
+  {
+    "id": "lame_aube",
+    "nom": "Lame d'Aube",
+    "icone": "ic_epee_5",
+    "description": "L'épée du Premier Gardien. Elle brille comme le soleil qui se lève.",
+    "prix": 5000,
+    "equipement": "arme",
+    "bonus": {"attaque": 19, "magie": 6, "critique": 8}
+  },
+  {
     "id": "lame_ecume",
     "nom": "Lame d'écume",
     "icone": "ic_epee_2",

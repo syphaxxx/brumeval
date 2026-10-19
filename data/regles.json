@@ -351,6 +351,27 @@
       "lieu": "le sommet de la Tour de l'Orage",
       "gemme": "gemme_maitre",
       "texte": "Trois phases : la foudre, puis des renforts (un Nuageon soigneur : visez-le), puis un dernier souffle. Gardez Limites et duos pour la fin."
+    },
+    {
+      "drapeau": "gardien_lueurs",
+      "boss": "gardien_lueurs",
+      "lieu": "le nord du Bois des Lueurs",
+      "gemme": "gemme_pyro",
+      "texte": "À mi-vie, il appelle une Lueurine et se renforce contre la magie : abattez-la aussitôt."
+    },
+    {
+      "drapeau": "reine_marais",
+      "boss": "reine_marais",
+      "lieu": "l'îlot du Marais Pâle",
+      "gemme": "gemme_foudre",
+      "texte": "Elle empoisonne toute l'équipe : gardez des Remèdes. À 30 % de PV, un Vasepent vient l'aider."
+    },
+    {
+      "drapeau": "aube_fin",
+      "boss": "brume_noire",
+      "lieu": "le trône de la Citadelle des gardiens",
+      "gemme": "gemme_maitre",
+      "texte": "Trois phases, de plus en plus rapides ; un Aubespectre la soigne : visez-le. Ilya vous soigne juste avant."
     }
   ],
   "talents": [

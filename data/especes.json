@@ -1142,5 +1142,142 @@
     "couleurs": ["#8a5a2a", "#ffd34d"],
     "apprend": [[1, "crocs"], [1, "coup_acier"], [1, "blindage"], [40, "eclats_acier"]],
     "talent": "carapace"
+  },
+  {
+    "id": "lueurine",
+    "nom": "Lueurine",
+    "sprite": "lueurine",
+    "types": ["lumiere", "vent"],
+    "base": {"pv": 58, "pm": 32, "attaque": 50, "defense": 50, "magie": 76, "resistance": 66, "vitesse": 80},
+    "esquive": 8,
+    "forme": "insecte",
+    "couleurs": ["#7fe0e8", "#f0ffff"],
+    "apprend": [[1, "lumiere"], [1, "rafale"], [1, "hate"], [1, "prisme"], [58, "lame_air"], [62, "nova"]],
+    "talent": "vif"
+  },
+  {
+    "id": "loup_aube",
+    "nom": "Loup d'aube",
+    "sprite": "loup_aube",
+    "types": ["lumiere", "normal"],
+    "base": {"pv": 76, "pm": 22, "attaque": 82, "defense": 58, "magie": 40, "resistance": 52, "vitesse": 74},
+    "critique": 10,
+    "forme": "loup",
+    "couleurs": ["#e8d8a0", "#fff8e0"],
+    "apprend": [[1, "mordant"], [1, "hurlement"], [1, "ruee"], [1, "eclair"], [60, "prisme"]],
+    "talent": "intimidation",
+    "role_combat": "chef",
+    "taille": 1.15
+  },
+  {
+    "id": "crapale",
+    "nom": "Crapâle",
+    "sprite": "crapale",
+    "types": ["poison", "eau"],
+    "base": {"pv": 74, "pm": 28, "attaque": 54, "defense": 64, "magie": 66, "resistance": 62, "vitesse": 48},
+    "forme": "grenouille",
+    "couleurs": ["#a8d8b0", "#f0fff0"],
+    "apprend": [[1, "torrent"], [1, "acide"], [1, "nuage_toxique"], [1, "toxine"], [60, "trombe"]],
+    "talent": "piquant"
+  },
+  {
+    "id": "aubespectre",
+    "nom": "Aubespectre",
+    "sprite": "aubespectre",
+    "types": ["esprit", "lumiere"],
+    "base": {"pv": 58, "pm": 40, "attaque": 34, "defense": 50, "magie": 82, "resistance": 74, "vitesse": 66},
+    "forme": "fantome",
+    "couleurs": ["#f0a0c0", "#fff0f8"],
+    "apprend": [[1, "onde"], [1, "cauchemar"], [1, "soins"], [1, "rayon"], [62, "hurlement_spectral"]],
+    "talent": "furtif",
+    "role_combat": "soigneur"
+  },
+  {
+    "id": "rocaube",
+    "nom": "Rocaube",
+    "sprite": "rocaube",
+    "types": ["roche", "lumiere"],
+    "base": {"pv": 80, "pm": 14, "attaque": 76, "defense": 92, "magie": 36, "resistance": 62, "vitesse": 30},
+    "forme": "rocher",
+    "couleurs": ["#c89098", "#ffe0e8"],
+    "apprend": [[1, "eboul"], [1, "avalanche"], [1, "carapace"], [1, "seisme"], [62, "prisme"]],
+    "talent": "carapace",
+    "role_combat": "protecteur"
+  },
+  {
+    "id": "vasepent",
+    "nom": "Vasepent",
+    "sprite": "vasepent",
+    "types": ["poison", "plante"],
+    "base": {"pv": 64, "pm": 22, "attaque": 74, "defense": 54, "magie": 58, "resistance": 52, "vitesse": 72},
+    "forme": "serpent",
+    "couleurs": ["#7a9a4a", "#e0f0a0"],
+    "apprend": [[1, "venin"], [1, "etreinte"], [1, "acide"], [1, "pollen"], [60, "toxine"]],
+    "talent": "piquant"
+  },
+  {
+    "id": "aubelle",
+    "nom": "Aubelle",
+    "sprite": "aubelle",
+    "types": ["vent", "lumiere"],
+    "base": {"pv": 60, "pm": 30, "attaque": 66, "defense": 48, "magie": 62, "resistance": 54, "vitesse": 86},
+    "esquive": 6,
+    "forme": "oiseau",
+    "couleurs": ["#d08060", "#fff0d0"],
+    "apprend": [[1, "fleche_vent"], [1, "lame_air"], [1, "lumiere"], [1, "ouragan"]],
+    "talent": "vif"
+  },
+  {
+    "id": "nacrelin",
+    "nom": "Nacrelin",
+    "sprite": "nacrelin",
+    "types": ["eau", "lumiere"],
+    "base": {"pv": 72, "pm": 36, "attaque": 70, "defense": 64, "magie": 74, "resistance": 70, "vitesse": 68},
+    "forme": "lezard",
+    "couleurs": ["#b8d8f0", "#ffffff"],
+    "apprend": [[1, "vague"], [1, "rayon"], [1, "trombe"], [1, "prisme"], [64, "nova"]],
+    "talent": "meditation"
+  },
+  {
+    "id": "gardien_lueurs",
+    "nom": "Gardien des Lueurs",
+    "sprite": "gardien_lueurs",
+    "types": ["plante", "lumiere"],
+    "base": {"pv": 105, "pm": 44, "attaque": 70, "defense": 72, "magie": 62, "resistance": 64, "vitesse": 44},
+    "immunites": ["sommeil"],
+    "forme": "boss",
+    "couleurs": ["#3a9a88", "#d0fff0"],
+    "apprend": [[1, "etreinte"], [1, "prisme"], [1, "tempete"], [1, "rayon"]],
+    "talent": "cuirasse"
+  },
+  {
+    "id": "reine_marais",
+    "nom": "Reine du Marais",
+    "sprite": "reine_marais",
+    "types": ["poison", "eau"],
+    "base": {"pv": 110, "pm": 50, "attaque": 60, "defense": 62, "magie": 74, "resistance": 66, "vitesse": 52},
+    "immunites": ["sommeil"],
+    "forme": "boss",
+    "couleurs": ["#8a6ab8", "#f0e0ff"],
+    "apprend": [[1, "nuage_toxique"], [1, "trombe"], [1, "etreinte"], [1, "toxine"], [1, "pollen"]],
+    "talent": "piquant"
+  },
+  {
+    "id": "brume_noire",
+    "nom": "Brume Noire",
+    "sprite": "brume_noire",
+    "types": ["ombre", "esprit"],
+    "base": {"pv": 120, "pm": 70, "attaque": 70, "defense": 66, "magie": 82, "resistance": 74, "vitesse": 60},
+    "immunites": ["sommeil"],
+    "forme": "boss",
+    "couleurs": ["#5a1a2a", "#ff9aa8"],
+    "apprend": [
+      [1, "eclipse"],
+      [1, "cauchemar"],
+      [1, "lame_ombre"],
+      [1, "hurlement_spectral"],
+      [1, "foudre_noire"]
+    ],
+    "talent": "esprit_clair"
   }
 ]

@@ -225,10 +225,10 @@ class Mixer {
       }
       if (tr_) {
         m = musicSample(dt);
-        if (tr_->echoMix > 0 && !echo_.empty()) {  // écho : ligne à retard sur la musique seule
+        if (tr_->echoMix > 0 && echoLen_ > 0) {  // écho : ligne à retard sur la musique seule
           float d = echo_[echoPos_];
           echo_[echoPos_] = m + d * tr_->echoFeedback;
-          echoPos_ = (echoPos_ + 1) % echo_.size();
+          echoPos_ = (echoPos_ + 1) % echoLen_;
           m += d * tr_->echoMix;
         }
         m *= fade_;
@@ -256,8 +256,8 @@ class Mixer {
   uint32_t seed_ = 12345;
   int step_ = -1;
   float stepT_ = 0, fade_ = 1;
-  std::vector<float> echo_;
-  size_t echoPos_ = 0;
+  std::vector<float> echo_ = std::vector<float>(RATE + 1, 0.f);  // ligne à retard (1 s au plus), allouée une fois :
+  size_t echoPos_ = 0, echoLen_ = 0;                               // jamais d'allocation dans le fil du son
 
   void start(std::string id) {  // par valeur : id vient souvent de « pending », vidé ci-dessous
     track = id;
@@ -267,7 +267,8 @@ class Mixer {
     auto it = tracks_.find(id);
     tr_ = it == tracks_.end() ? nullptr : &it->second;
     voices_.assign(tr_ ? tr_->voices.size() : 0, VoicePlay{});
-    echo_.assign(tr_ && tr_->echoMix > 0 ? std::max<size_t>(1, size_t(tr_->echoDelay * RATE)) : 0, 0.f);
+    echoLen_ = tr_ && tr_->echoMix > 0 ? std::min(echo_.size(), std::max<size_t>(1, size_t(tr_->echoDelay * RATE))) : 0;
+    std::fill(echo_.begin(), echo_.begin() + echoLen_, 0.f);
     echoPos_ = 0;
     step_ = -1;
     stepT_ = tr_ ? tr_->step : 0;  // la première case commence tout de suite

@@ -1,0 +1,174 @@
+{
+  "id": "aube",
+  "nom": "Havre-d'Aube",
+  "theme": "vallee",
+  "tuiles": [
+    "TTTTTTTTTTTTTTTTTTTT==TTTTTTTTTTTTTTTTTT",
+    "TTTTTTTTTTTTTTTTTTTT==TTTTTTTTTTTTTTTTTT",
+    "TT..................==....F...........TT",
+    "TT..F......F.T......==...............FTT",
+    "TT..................==.T...T..........TT",
+    "TT.....F..F.........==.....T..........TT",
+    "TT.T......F..T.F....==..F.............TT",
+    "TT...F..T...........==..............T.TT",
+    "TT...............F..==.F......F.......TT",
+    "TT........F.L.......==.......L......F.TT",
+    "TT...........qqqqqqqqqqqqqqGq.........TT",
+    "TT...........qqqqqqqqqqqqqqqq.........TT",
+    "TT....=......qqqqqqWWqqqqqqqq....=....TT",
+    "TT....=======qqqqqqWWqqqqqqq============",
+    "TT.F.....F...qqqqqqqqqqqqqqq============",
+    "TT...........qqqqqqqqqqqqqqqq......F..TT",
+    "TT...........qqQqqqqqqqqQqqqq.......F.TT",
+    "TTF.........L.U....U==.....U.L.......UTT",
+    "TT.....F............==.........U......TT",
+    "TT.....=.......M.M..==...........=....TT",
+    "TT.....===========================....TT",
+    "TT.......X..........==................TT",
+    "TT.......R..R.......==..........R.....TT",
+    "TT............R.....==...........R....TT",
+    "~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~",
+    "~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~",
+    "~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~",
+    "~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~",
+    "~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~",
+    "~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~"
+  ],
+  "batiments": [
+    {
+      "x": 4,
+      "y": 8,
+      "l": 5,
+      "h": 4,
+      "genre": "soin",
+      "nom": "Maison de soin",
+      "toit": "#d0806a",
+      "evenement": "aube_soin"
+    },
+    {
+      "x": 31,
+      "y": 8,
+      "l": 5,
+      "h": 4,
+      "genre": "boutique1",
+      "nom": "Comptoir d'Aube",
+      "toit": "#e0b04a",
+      "evenement": "aube_boutique"
+    },
+    {
+      "x": 4,
+      "y": 15,
+      "l": 6,
+      "h": 4,
+      "genre": "auberge",
+      "nom": "Auberge du Matin",
+      "toit": "#c86a8a",
+      "evenement": "auberge"
+    },
+    {
+      "x": 31,
+      "y": 15,
+      "l": 5,
+      "h": 4,
+      "genre": "maison",
+      "nom": "Maison d'Ilya",
+      "toit": "#8a7ac8",
+      "evenement": "aube_maison"
+    },
+    {
+      "x": 25,
+      "y": 3,
+      "l": 8,
+      "h": 4,
+      "genre": "decor",
+      "nom": "Sanctuaire des gardiens",
+      "toit": "#b0a080",
+      "dessin": "chateau"
+    }
+  ],
+  "habitants": [
+    {"x": 22, "y": 14, "apparence": "mage_givre", "direction": "bas", "evenement": "ilya"},
+    {
+      "x": 18,
+      "y": 20,
+      "apparence": "marchande",
+      "direction": "droite",
+      "dialogue": [
+        "Poissons d'argent, pêchés au lever du soleil !",
+        "Ici, le soleil se lève deux fois plus beau qu'ailleurs, dit-on."
+      ]
+    },
+    {
+      "x": 11,
+      "y": 21,
+      "apparence": "pecheur",
+      "direction": "droite",
+      "dialogue": [
+        "Mille ans que personne n'avait traversé l'orage. Et vous voilà !",
+        "Les anciens disaient que les premiers gardiens venaient d'ici."
+      ]
+    },
+    {
+      "x": 25,
+      "y": 11,
+      "apparence": "enfant",
+      "direction": "bas",
+      "promenade": 2,
+      "dialogue": [
+        "Au nord, les arbres brillent la nuit ! Maman dit qu'il ne faut pas y aller.",
+        "Le Gardien des Lueurs chasse tous ceux qui sentent la brume."
+      ]
+    },
+    {
+      "x": 14,
+      "y": 15,
+      "apparence": "ancien",
+      "direction": "droite",
+      "dialogue": [
+        "La Brume Noire s'est posée sur la Citadelle, au nord, il y a trois jours.",
+        "Depuis, les créatures de l'île ont peur. Même les oiseaux ne chantent plus."
+      ]
+    },
+    {
+      "x": 34,
+      "y": 12,
+      "apparence": "villageoise",
+      "direction": "gauche",
+      "dialogue": [
+        "Le Marais Pâle, à l'est, est le royaume de sa Reine. Elle garde une larme de lumière…",
+        "On dit que cette larme ouvre les portes de la Citadelle."
+      ]
+    },
+    {
+      "x": 23,
+      "y": 21,
+      "apparence": "chat",
+      "direction": "gauche",
+      "promenade": 1,
+      "dialogue": ["Le chat du port d'Aube dort au soleil."]
+    },
+    {
+      "x": 30,
+      "y": 21,
+      "apparence": "villageois",
+      "direction": "bas",
+      "evenement": "tom_aube",
+      "si": {"drapeau": "quete:rival:fin"}
+    },
+    {"x": 21, "y": 23, "apparence": "voyageuse", "direction": "droite", "evenement": "ysolde_aube"}
+  ],
+  "coffres": [],
+  "panneaux": [],
+  "passages": [
+    {"x": 20, "y": 29, "vers": "port", "tx": 35, "ty": 20, "direction": "gauche"},
+    {"x": 21, "y": 29, "vers": "port", "tx": 35, "ty": 20, "direction": "gauche"},
+    {"x": 20, "y": 0, "vers": "lueurs", "tx": 23, "ty": 38, "direction": "haut"},
+    {"x": 21, "y": 0, "vers": "lueurs", "tx": 24, "ty": 38, "direction": "haut"},
+    {"x": 39, "y": 13, "vers": "marais", "tx": 1, "ty": 17, "direction": "droite"},
+    {"x": 39, "y": 14, "vers": "marais", "tx": 1, "ty": 18, "direction": "droite"}
+  ],
+  "zones": [],
+  "boss": [],
+  "declencheurs": [{"x": 20, "y": 21, "l": 2, "h": 1, "evenement": "aube_arrivee", "jusqua": "aube_vue"}],
+  "carte_monde": [10, 92]
+}

@@ -2900,5 +2900,425 @@
         ]
       }
     ]
+  },
+  "ysolde": {
+    "pages": [
+      {
+        "si": {"drapeau": "boss5"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ysolde : Le ciel est dégagé ! Pour la première fois, on voit l'île d'Aube à l'horizon."
+          },
+          {
+            "action": "dire",
+            "texte": "Ysolde : Ma barque vous attend au bout de la jetée de l'est. On dit que les premiers gardiens venaient de là-bas."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ysolde : Je suis navigatrice. Mais tant que l'orage gronde au nord, aucune barque ne passe au large."
+          },
+          {
+            "action": "dire",
+            "texte": "Ysolde : Il paraît qu'au-delà de l'orage, il y a une île où le soleil se lève deux fois plus beau."
+          }
+        ]
+      }
+    ]
+  },
+  "ysolde_aube": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Ysolde : Quand vous voudrez rentrer, la jetée vous ramènera au Port d'Écume."
+      }
+    ]
+  },
+  "aube_arrivee": {
+    "actions": [{"action": "drapeau", "nom": "aube_vue"}, 
+      {
+        "action": "dire",
+        "texte": "Une île baignée de lumière rose. Des fleurs pâles partout, et au nord, des arbres qui brillent."
+      },
+      {"action": "dire", "texte": "Sur la place du village, une jeune femme en robe bleue vous fait signe."}
+    ]
+  },
+  "ilya": {
+    "pages": [
+      {
+        "si": {"drapeau": "aube_fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ilya : La brume est partie pour de bon. Les gardiens n'ont plus de prison à garder… seulement des créatures à protéger."
+          },
+          {"action": "dire", "texte": "Ilya : Revenez quand vous voulez. Aube sera toujours votre île."}
+        ]
+      },
+      {
+        "si": {"drapeau": ["gardien_lueurs", "reine_marais"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ilya : Vous avez la Larme d'Aube, et le Gardien vous laisse passer. Le Gouffre, au nord du bois, mène à la Citadelle."
+          },
+          {"action": "dire", "texte": "Ilya : Je vous y attendrai, devant le trône."}
+        ]
+      },
+      {
+        "si": {"drapeau": "ilya_parle"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ilya : Le Gardien des Lueurs garde le nord du bois. La Reine du Marais, à l'est, garde la Larme d'Aube."
+          },
+          {"action": "dire", "texte": "Ilya : Il vous faudra les deux pour atteindre la Citadelle."}
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ilya : Vous venez de l'autre côté de l'orage ? Alors c'est vous qui l'avez vaincu…"
+          },
+          {
+            "action": "dire",
+            "texte": "Ilya : Je suis Ilya, la dernière des gardiens d'Aube. Mon peuple a enfermé l'orage sous la brume, il y a mille ans."
+          },
+          {
+            "action": "dire",
+            "texte": "Ilya : Le premier d'entre nous, le Premier Gardien, s'est fondu dans la brume pour la garder fermée."
+          },
+          {
+            "action": "dire",
+            "texte": "Ilya : Quand l'orage est tombé, la brume qui restait s'est rassemblée ici. Elle a pris une forme : la Brume Noire."
+          },
+          {
+            "action": "dire",
+            "texte": "Ilya : Elle veut refermer la prison sur le monde entier. Cette fois, avec toutes les créatures dedans."
+          },
+          {"action": "dire", "texte": "Lior : Alors on va l'arrêter. Comment atteindre la Citadelle ?"},
+          {
+            "action": "dire",
+            "texte": "Ilya : Par le Gouffre, au nord du Bois des Lueurs. Mais le Gardien des Lueurs chasse tout ce qui sent la brume… et vous en venez."
+          },
+          {
+            "action": "dire",
+            "texte": "Ilya : Et la porte du Gouffre ne s'ouvre qu'avec la Larme d'Aube. La Reine du Marais la garde, à l'est du village."
+          },
+          {"action": "drapeau", "nom": "ilya_parle"}
+        ]
+      }
+    ]
+  },
+  "aube_soin": {
+    "actions": [
+      {"action": "soigner"},
+      {"action": "reveil"},
+      {
+        "action": "dire",
+        "texte": "Prêtresse : Que la lumière d'Aube vous rende vos forces. Voilà, tout le monde est en pleine forme !"
+      }
+    ]
+  },
+  "aube_boutique": {
+    "actions": [
+      {
+        "action": "boutique",
+        "objets": [
+          "potion",
+          "superpotion",
+          "ether",
+          "remede",
+          "elixir",
+          "plume",
+          "lanterne_or",
+          "lame_ecume",
+          "baton_orage",
+          "armure_ecaille",
+          "robe_orage",
+          "amulette_maree",
+          "bottes_ailees",
+          "gemme_vol",
+          "gemme_briseur",
+          "gemme_orage",
+          "gemme_maitre"
+        ]
+      }
+    ]
+  },
+  "aube_maison": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "La maison d'Ilya. Une carte de l'île est punaisée au mur : le Bois des Lueurs au nord, le Marais Pâle à l'est, et tout au nord, la Citadelle."
+      }
+    ]
+  },
+  "lueurs_entree": {
+    "actions": [{"action": "drapeau", "nom": "lueurs_vu"}, 
+      {
+        "action": "dire",
+        "texte": "Les arbres brillent d'une lumière douce. Des milliers de lucioles dansent entre les branches."
+      },
+      {
+        "action": "dire",
+        "texte": "Au nord, un chant grave fait trembler les feuilles. Quelque chose d'immense veille sur le bois."
+      }
+    ]
+  },
+  "gardien_lueurs": {
+    "actions": [
+      {"action": "dire", "texte": "Un arbre immense, couvert de lucioles, ouvre deux yeux d'ambre."},
+      {
+        "action": "dire",
+        "texte": "Gardien des Lueurs : Vous sentez la brume… Les enfants de la brume ne passeront pas !"
+      },
+      {
+        "action": "question",
+        "texte": "Affronter le Gardien des Lueurs ?",
+        "oui": [
+          {
+            "action": "combat",
+            "ennemis": [
+              {"espece": "lueurine", "niveau": 56},
+              {
+                "espece": "gardien_lueurs",
+                "niveau": 60,
+                "pv": 5,
+                "boss": true,
+                "bouclier": 9,
+                "phases": [
+                  {
+                    "pv": 0.5,
+                    "message": "Le Gardien appelle les lucioles du bois !",
+                    "bonus": {"resistance": 1},
+                    "renforts": [{"espece": "lueurine", "niveau": 57}]
+                  }
+                ]
+              },
+              {"espece": "lueurine", "niveau": 56}
+            ],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "gardien_lueurs"},
+              {"action": "donner", "objet": "seve_lueurs", "quantite": 1},
+              {
+                "action": "dire",
+                "texte": "Gardien des Lueurs : … Vous ne venez pas de la brume. Vous l'avez combattue. Pardonnez-moi."
+              },
+              {
+                "action": "dire",
+                "texte": "Gardien des Lueurs : Allez. Le Gouffre est au nord. Que la lumière vous guide."
+              }
+            ]
+          }
+        ],
+        "non": [
+          {
+            "action": "dire",
+            "texte": "Le Gardien referme les yeux, mais ses racines barrent toujours le chemin."
+          }
+        ]
+      }
+    ]
+  },
+  "reine_marais": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Sur l'îlot, une fleur géante s'ouvre. En son cœur, une larme brille comme le soleil levant."
+      },
+      {
+        "action": "dire",
+        "texte": "Reine du Marais : Ma larme ! Personne ne la touchera. Le marais vous avalera !"
+      },
+      {
+        "action": "question",
+        "texte": "Affronter la Reine du Marais ?",
+        "oui": [
+          {
+            "action": "combat",
+            "ennemis": [
+              {"espece": "crapale", "niveau": 58},
+              {
+                "espece": "reine_marais",
+                "niveau": 63,
+                "pv": 5.5,
+                "boss": true,
+                "bouclier": 10,
+                "phases": [
+                  {
+                    "pv": 0.6,
+                    "message": "La Reine s'enfonce dans la vase : sa magie gonfle !",
+                    "bonus": {"magie": 1}
+                  },
+                  {
+                    "pv": 0.3,
+                    "message": "La Reine appelle ses serpents !",
+                    "renforts": [{"espece": "vasepent", "niveau": 60}]
+                  }
+                ]
+              },
+              {"espece": "vasepent", "niveau": 58}
+            ],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "reine_marais"},
+              {"action": "donner", "objet": "larme_aube", "quantite": 1},
+              {"action": "donner", "objet": "couronne_nenuphar", "quantite": 1},
+              {
+                "action": "dire",
+                "texte": "La Reine se referme en bouton. La Larme d'Aube roule à vos pieds, tiède comme un matin d'été."
+              }
+            ]
+          }
+        ],
+        "non": [{"action": "dire", "texte": "La Reine ferme ses pétales et vous observe."}]
+      }
+    ]
+  },
+  "ilya_citadelle": {
+    "pages": [
+      {
+        "si": {"drapeau": "aube_fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ilya : C'est fini… Je n'arrive pas à y croire. Rentrons au village."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ilya : La Brume Noire est là-haut, sur le trône du Premier Gardien. Elle se nourrit de peur."
+          },
+          {"action": "dire", "texte": "Ilya : Laissez-moi vous aider."},
+          {"action": "soigner"},
+          {"action": "reveil"},
+          {
+            "action": "dire",
+            "texte": "Ilya pose la main sur vos épaules. Une chaleur douce vous rend toutes vos forces."
+          }
+        ]
+      }
+    ]
+  },
+  "brume_noire": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Sur le trône de cristal, une silhouette de fumée noire se lève. Des milliers d'yeux s'ouvrent dans la brume."
+      },
+      {
+        "action": "dire",
+        "texte": "Brume Noire : Vous avez brisé ma prison… Alors j'en bâtirai une nouvelle. Plus grande. Pour le monde entier."
+      },
+      {
+        "action": "dire",
+        "texte": "Lior : Personne n'enfermera plus les créatures. Ni l'orage, ni la brume, ni toi !"
+      },
+      {
+        "action": "question",
+        "texte": "Affronter la Brume Noire ?",
+        "oui": [
+          {
+            "action": "combat",
+            "musique": "boss_final",
+            "ennemis": [
+              {"espece": "aubespectre", "niveau": 62},
+              {
+                "espece": "brume_noire",
+                "niveau": 68,
+                "pv": 8,
+                "boss": true,
+                "bouclier": 16,
+                "phases": [
+                  {
+                    "pv": 0.7,
+                    "message": "La brume s'épaissit : la Brume Noire appelle ses ombres !",
+                    "bonus": {"magie": 1},
+                    "renforts": [{"espece": "aubespectre", "niveau": 63}]
+                  },
+                  {
+                    "pv": 0.4,
+                    "message": "La Brume Noire dévore la lumière !",
+                    "bouclier": 14,
+                    "bonus": {"vitesse": 1}
+                  },
+                  {
+                    "pv": 0.15,
+                    "message": "Dernier sursaut des ténèbres !",
+                    "bonus": {"attaque": 1, "magie": 1}
+                  }
+                ]
+              },
+              {"espece": "aubespectre", "niveau": 62}
+            ],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "aube_fin"},
+              {"action": "donner", "objet": "coeur_aube", "quantite": 1},
+              {"action": "donner", "objet": "lame_aube", "quantite": 1},
+              {
+                "action": "dire",
+                "texte": "La Brume Noire se déchire comme un voile. Au cœur, une silhouette de lumière : un vieil homme en armure ancienne."
+              },
+              {
+                "action": "dire",
+                "texte": "Premier Gardien : Merci… Mille ans que j'étais prisonnier de ma propre prison."
+              },
+              {
+                "action": "dire",
+                "texte": "Premier Gardien : Le monde n'a plus besoin de brume pour se protéger. Il a besoin de gardiens. De vrais gardiens."
+              },
+              {
+                "action": "dire",
+                "texte": "Premier Gardien : Lior… tu n'es plus un apprenti. Prends mon épée. Elle a assez dormi."
+              },
+              {
+                "action": "dire",
+                "texte": "Le Premier Gardien sourit, puis se dissout dans la lumière du matin. Partout sur l'île, les créatures se mettent à chanter."
+              },
+              {
+                "action": "fin",
+                "texte": "La dernière brume s'est levée sur l'île d'Aube. Les créatures sont libres, et les gardiens veillent sur elles. Fin de l'acte 3 : merci d'avoir joué !"
+              }
+            ]
+          }
+        ],
+        "non": [
+          {"action": "dire", "texte": "La Brume Noire rit, d'un rire qui ressemble au vent dans les ruines."}
+        ]
+      }
+    ]
+  },
+  "tom_aube": {
+    "pages": [
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Tom : Je vous avais dit qu'on se croiserait au-delà de l'orage ! J'ai déjà vu trois créatures que personne ne connaît."
+          },
+          {
+            "action": "dire",
+            "texte": "Tom : Il paraît qu'un Nacrelin vit dans le Gouffre. Je l'attraperai avant vous !"
+          }
+        ]
+      }
+    ]
   }
 }

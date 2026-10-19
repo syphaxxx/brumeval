@@ -64,9 +64,26 @@ void drawCreature(Gfx& g, const std::string& id, float x, float y, float s, bool
   if (const SpriteRect* r = own) {
     // Sprite (regard vers la gauche) : centré en x, posé sur l'ombre (y + 15)
     float k = crisp(s);
-    float bob = std::round(std::sin(t * 3.1f));
+    float x0 = std::round(x - r->w * k / 2), y0 = std::round(y + 16 * s - r->h * k);
+    bool flies = sp.shape == Shape::Bird || sp.shape == Shape::Bat || sp.shape == Shape::Ghost || sp.shape == Shape::Bug ||
+                 sp.shape == Shape::Wisp;
+    if (flies) {  // en vol : tout le corps flotte, l'ombre rétrécit quand il monte
+      float up = std::round((std::sin(t * 3.1f) * .5f + .5f) * 2 * std::min(k, 1.f));
+      g.ellipse(x, y + 15 * s, std::max(5.f, r->w * k * (.36f - up * .02f)), 3 * s, rgb(0, 40));
+      g.sprite(*r, x0, y0 - 1 - up, flip, k, tint);
+      return;
+    }
+    // Au sol : il respire. Le bas du corps reste posé, le haut (tête et épaules) descend d'un pixel puis remonte,
+    // comme les créatures au repos des jeux en pixel art ; décalé d'une créature à l'autre (selon x)
     g.ellipse(x, y + 15 * s, std::max(6.f, r->w * k * .38f), 3 * s, rgb(0, 46));
-    g.sprite(*r, std::round(x - r->w * k / 2), std::round(y + 16 * s - r->h * k + bob), flip, k, tint);
+    bool down = std::sin(t * 2.6f + x * .37f) > .2f;
+    int h = r->h, head = std::max(1, h * 9 / 20);
+    if (h < 10 || k < 1 || !down) {  // petit, ou dessiné en réduction (carte) : pas de respiration
+      g.sprite(*r, x0, y0, flip, k, tint);
+      return;
+    }
+    g.sprite(r->sub(0, head, r->w, h - head), x0, y0 + head * k, flip, k, tint);
+    g.sprite(r->sub(0, 0, r->w, head), x0, y0 + k, flip, k, tint);
     return;
   }
   Color C = rgb(sp.c1), L = rgb(sp.c2), D = shade(C, .3f);

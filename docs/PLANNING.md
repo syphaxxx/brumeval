@@ -315,6 +315,14 @@ réécrits ou nouveaux avec `outils/musique/compose.py` : vibrato, écho, contre
 combat). Le rapport du joueur automatique donne maintenant une estimation pour un vrai joueur (très approximative).
 Joueur automatique : 2 h 07 (au lieu de 1 h 30), 19 quêtes sur 20 (le naturaliste demande des captures précises),
 toutes les primes, 30 éclats.
+4 fait (20 octobre) : l'île d'Aube après le Seigneur des Orages : Havre-d'Aube, Bois des Lueurs, Marais Pâle, Gouffre
+d'Aube (énigme), Citadelle des gardiens ; 8 créatures et 3 boss d'Aube (recolorés), Ilya, le Premier Gardien et une
+vraie fin (le passé des gardiens et de la brume). Scripts `outils/villes/acte3.py` et `acte3_histoire.py`. Joueur
+automatique : tout fini en 2 h 14 ; estimation pour un vrai joueur : environ 5 h (lecture 1 h 05). Relecture Codex :
+3 remarques justes corrigées (drapeaux des déclencheurs d'arrivée, champ « evenement » des boss en double, enlevé des
+nouvelles cartes ; écho de la musique alloué une fois hors du fil du son).
+Prochaines pistes pour approcher 20 h : un acte 4 / une région de plus, une ligue de l'Arène, un donjon d'après la
+fin à étages, la pêche, des captures demandées par plus de quêtes, des combats plus riches à mi-parcours.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 

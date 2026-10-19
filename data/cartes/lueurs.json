@@ -1,0 +1,119 @@
+{
+  "id": "lueurs",
+  "nom": "Bois des Lueurs",
+  "theme": "foret",
+  "ambiance": {"effet": "lucioles"},
+  "tuiles": [
+    "TTTTTTTTTTTTTTTTTTTTTTT==TTTTTTTTTTTTTTTTTTTTTTT",
+    "TTTTTTTTTTTTTTTTTTTTTTT==TTTTTTTTTTTTTTTTTTTTTTT",
+    "TTTTTTTTTTTTTTTTTTTTTTT==TTTTTTTTTTTTTTTTTTTTTTT",
+    "TTTTTTTTTTTTTTTTTTTTTTT==TTTTTTTTTTTTTTTTTTTTTTT",
+    "TTTTTTTTTTTTTTTTTTTTTTT==TTTTTTTTTTTTTTTTTTTTTTT",
+    "TTTTTTTTTTTTTTTTTTTTTTT==TTTTTTTTTTTTTTT~TTTTTTT",
+    "TTTTTTTTTTTTTTTTTTTTTTT==TTTTTTTTTTTTT~~~~~TTTTT",
+    "TTTTTTTTTTTT,TTTTTTTTTT==TTTTTTTTTTTT~~~~~~~TTTT",
+    "TTTTTTTTT,,,,,,,TTTTTTT==TTTTT,TTTTT.~~~~~~~TTTT",
+    "TTTTTTTT,,,,,,,,,TTTTT===TT,,,,,,,TT.~~~~~~~TTTT",
+    "TTTTTTT,,,,,,,,,,,TTTT===TT,,,,,,,TT.T~~~~~TTTTT",
+    "TTTTTTT,,,,,,,,,,,TTTT==TT,,,,,,,,,T.TTT~TTTTTTT",
+    "TTTTTTT,,F,,.,,,,,TTTT==TT,,,,.......TTTTTTTTTTT",
+    "TTTTTTT,,,,,.,,,,,TTTT==TT,,,,.,,,,TTTTTTTTTTTTT",
+    "TTTTTTT,,,,,.,,,,,TTF.==.TT,,,.,,FTTTTTTTTTTTTTT",
+    "TTTTTTTT,,,,.,,,,TT...==..T,,,.,,,TTTT,TTTTTTTTT",
+    "TTTTTTTTT,,,...........=======.=TTT,,,,,,,TTTTTT",
+    "TTTTTTTTTTTT,TTTTTT...==========TT,,,,,,,,,TTTTT",
+    "TTTTTTTT,TTTTTTTTTTT.....TTTTT==T,,,,,,,,,,,TTTT",
+    "TTTTT,,,,,,,TTTTTTTTTT.TTTTTTT==T,,,,,,,,,,,TTTT",
+    "TTTTT,,,,,,,TTTTTTTTTT,TTTTTTT==T,,,,,.,,,,,TTTT",
+    "TTTT,,,,,,,F,TTTTTT,,,,,,,TTTT==T,,,,,.,,,,,TTTT",
+    "TTTT,,,,F,,,,TTTTTT,,,,,,,TTTT==T,,,,,.,,,,,TTTT",
+    "TTTT,,,,.,,,,TTTTT,,,,,,,,,TTT==TTF,,,.,,,,TTTTT",
+    "TTTTT,,,.......===============.........,,,TTTTTT",
+    "TTTTT,,,,,,,TT==================TTTTTT,TTTTTTTTT",
+    "TTTTTTTT,TTTTT==TTT,,,,,,,TTTTTTTTTTTTTTTTTTTTTT",
+    "TTTTTTTTTTTTTT==TTT,,,,,,,TTTT,TTTTTTTTTTTTTTTTT",
+    "TTTTTTTTTTTTTT==TTTTTT,TTTT,,,,,,,TTTTTTTTTTTTTT",
+    "TTTTTT,TTTTTTT==TTTTTTTTTTT,,,,,,,TTTTTTTTTTTTTT",
+    "TTTT,,,,,TT,,,==,,TTTTTTTT,,,,,,,,,TTT,TTTTTTTTT",
+    "TTT,,,,,,,T,F,==,,TTTTT................,,TTTTTTT",
+    "TTT,,,F,,,,,,,==,,,TTTT.TT,,,,,,,,,,,,.,,,TTTTTT",
+    "TTT,,,.........==========.T,,,,,,,T,,,.,,,TTTTTT",
+    "TTTT,,,,,T,,,,===========.T,,,,,,,T,,,,,,,TTTTTT",
+    "TTTTTT,TTTT,,,,,,,TTT..==.TTTT,TTTTT,,,,,TTTTTTT",
+    "TTTTTTTTTTT,F,,,,,TTTTT==TTTTTTTTTTTTT,TTTTTTTTT",
+    "TTTTTTTTTTTTTT,TTTTTTTT==TTTTTTTTTTTTTTTTTTTTTTT",
+    "TTTTTTTTTTTTTTTTTTTTTTT==TTTTTTTTTTTTTTTTTTTTTTT",
+    "TTTTTTTTTTTTTTTTTTTTTTT==TTTTTTTTTTTTTTTTTTTTTTT"
+  ],
+  "batiments": [],
+  "habitants": [
+    {
+      "x": 20,
+      "y": 34,
+      "apparence": "chevalier",
+      "direction": "droite",
+      "dialogue": [
+        "Je suis venue avec Ilya pour garder le bois. Le Gardien ne nous laisse plus passer.",
+        "Il croit que tout ce qui vient d'ailleurs apporte la brume."
+      ]
+    }
+  ],
+  "coffres": [
+    {"x": 8, "y": 20, "objet": "elixir", "quantite": 1},
+    {"x": 39, "y": 18, "objet": "gemme_esprit", "quantite": 1},
+    {"x": 12, "y": 10, "objet": "lanterne_or", "quantite": 3},
+    {"x": 36, "y": 7, "or": 3000},
+    {"x": 6, "y": 31, "objet": "superpotion", "quantite": 3},
+    {"x": 39, "y": 33, "objet": "plume", "quantite": 2}
+  ],
+  "panneaux": [],
+  "passages": [
+    {"x": 23, "y": 39, "vers": "aube", "tx": 20, "ty": 1, "direction": "bas"},
+    {"x": 24, "y": 39, "vers": "aube", "tx": 21, "ty": 1, "direction": "bas"},
+    {
+      "x": 23,
+      "y": 0,
+      "vers": "gouffre",
+      "tx": 17,
+      "ty": 28,
+      "direction": "haut",
+      "condition": {"drapeau": "gardien_lueurs"},
+      "message": "Le Gardien des Lueurs barre le chemin."
+    },
+    {
+      "x": 24,
+      "y": 0,
+      "vers": "gouffre",
+      "tx": 18,
+      "ty": 28,
+      "direction": "haut",
+      "condition": {"drapeau": "gardien_lueurs"},
+      "message": "Le Gardien des Lueurs barre le chemin."
+    }
+  ],
+  "zones": [
+    {
+      "x": 0,
+      "y": 18,
+      "l": 48,
+      "h": 22,
+      "niveau_min": 55,
+      "niveau_max": 59,
+      "max_ennemis": 4,
+      "creatures": ["lueurine", "loup_aube", "aubelle", "aubespectre"]
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "l": 48,
+      "h": 18,
+      "niveau_min": 57,
+      "niveau_max": 60,
+      "max_ennemis": 4,
+      "creatures": ["lueurine", "loup_aube", "aubespectre", "rocaube", "nacrelin"]
+    }
+  ],
+  "boss": [{"x": 23, "y": 5, "espece": "gardien_lueurs", "drapeau": "gardien_lueurs"}],
+  "declencheurs": [{"x": 23, "y": 37, "l": 2, "h": 2, "evenement": "lueurs_entree", "jusqua": "lueurs_vu"}],
+  "carte_monde": [8, 76]
+}

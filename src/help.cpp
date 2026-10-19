@@ -36,6 +36,13 @@ struct HelpPage {
 static std::vector<HelpPage> helpPages() {
   const Rules& R = rules();
   std::vector<HelpPage> p;
+  p.push_back({::T("Nouveautés 3.5"), ::T("Primes, quêtes, éclats de brume, l'île d'Aube, musiques."),
+               {::T("Primes : les tableaux d'annonces des villages affichent des monstres recherchés. Acceptez, chassez, touchez la prime, et montez en rang de chasseur."),
+                ::T("Quêtes : vingt quêtes en tout (Échap > Journal), dont un rival qui revient vous défier et une quête qui donne un compagnon."),
+                ::T("Éclats de brume : trente éclats cachés dans de vieux coffres, aux quatre coins du monde. Une collectionneuse de la Vallée les récompense."),
+                ::T("Après le Seigneur des Orages : une navigatrice du port vous emmène sur l'île d'Aube, pour un troisième acte."),
+                ::T("Musiques réécrites, et de nouveaux morceaux : le port, les abysses, la tour, le dernier combat."),
+                ::T("Un allié K.O. se voit enfin : couché, grisé, avec des étoiles. Les habitants ont des poses de dos et de profil.")}});
   p.push_back({::T("Nouveautés 3.4"), ::T("L'échiquier, les défis, les bottes : ce qui change."),
                {::T("Les deux camps partagent un seul plateau : on peut passer chez l'ennemi (page « Échiquier »)."),
                 ::T("Se déplacer ne finit plus le tour : on avance, puis on agit. Revenir annule le déplacement."),

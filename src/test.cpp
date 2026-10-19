@@ -1727,6 +1727,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     }
     view("temple", 20, 27, UP, "28_temple");
     view("sanctuaire", 10, 12, UP, "29_sanctuaire");
+    view("aube", 20, 15, UP, "aube_village");      // acte 3 (2026-10-20)
+    view("lueurs", 22, 24, UP, "aube_lueurs");
+    view("marais", 20, 16, RIGHT, "aube_marais");
+    view("gouffre", 22, 11, RIGHT, "aube_gouffre");
+    view("citadelle", 14, 14, UP, "aube_citadelle");
     auto fight = [&](const char* map, std::vector<FighterP> foes, const char* name) {
       changeMap(mi(map), 2, 2, DOWN);
       startBattle(foes, false, nullptr);
@@ -2442,13 +2447,15 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     menus.clear();
     helpMenu();  // Aide : la liste, puis chaque page (F1 l'ouvre aussi)
     show("aide");
-    int helpN = (int)menus.top().items.size() - 1;
+    int helpN = (int)menus.top().items.size() - 1, typesPage = -1;
+    for (int i = 0; i < helpN; i++)
+      if (menus.top().items[i].label == T("Types")) typesPage = i;
     in.confirm = true;
     frame();
     bool helpOk = helpPage_ == 0;
     for (int k = 0; k < helpN; k++) {
       show("aide : page " + std::to_string(k + 1));
-      snap(k == 7 ? "aide_types" : "aide_" + std::to_string(k + 1));
+      snap(k == typesPage ? "aide_types" : "aide_" + std::to_string(k + 1));
       in.press[RIGHT] = true;
       frame();
     }

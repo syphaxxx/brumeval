@@ -1,0 +1,92 @@
+{
+  "id": "marais",
+  "nom": "Marais Pâle",
+  "theme": "foret",
+  "ambiance": {"effet": "brume"},
+  "tuiles": [
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+    "T.zzzzzzzzzzzzzzzzz................z..........TT",
+    "Tzzzzzzzzzzzzzzzzz..............zzzzzzz.......TT",
+    "Tzzzzzzz~~zzzzzzzz.............z~zzzzzzz......TT",
+    "Tzzzzz~~~~~~zzzzzd............~~~~~zzzzTz.....TT",
+    "Tzzzzz~~~~~~~zzzz.....z.d....~~~~~~~~TTTTT....TT",
+    "Tzzzzz~~~~~~~~zzzz.,.zzzz.F.z~~~~~~~~TTTTTz...TT",
+    "Tzzzzz~~~~~~~~zzz....zzzz.zzz~~~~~~~~TTTTTTTzzTT",
+    "Tzzzzzz~~~~~~~zzz.zz.zzzzzzzzz~~~~~~~zTTTTTTTTTT",
+    "T.zzzzTTT~T~zzzzz.zz.zzzzzzzzz~~~~~~~zTTTTTTTTTT",
+    "T..zzzTTTTTzzzzz..zz.zzzzzzzzzz~~~~~zzzzTTTTTTTT",
+    "T.....TT============.=zzzzzzzzzzz~zzzzz......zTT",
+    "T......T==============zzzz~zzzzzzzzzzzz......zTT",
+    "T.......==........d.==.z~~~~~zzzzzzzzzz......zTT",
+    "T.......==..........==z.~~~~~zzz=======......zTT",
+    "T.......==..........==zz~~~~~zzz=======......zTT",
+    "========.=.,........==zzz~~~...z==zzzzz......zTT",
+    "========.=....~,....==zdzz~zT.T.==zzzzz......zTT",
+    "T..........,~~~~~..z==zzzzzTTTTT==...z.......zTT",
+    "T...........~~~~~..z==zzzzzzT.T.==...........zTT",
+    "T...........~~~~~..z==zzzzz..TTT==.......zzzzzTT",
+    "T.....z..,.T~~~~~zzz============.=..,......z..TT",
+    "T..zzzzz.TTTTT~~zzzz===B========.=...F..~.....TT",
+    "T.zzzzzz.TTTTTzzzzzz~~~~~~~zzzzz......~~~~~...TT",
+    "Tzzzz~zz.TTTTT.zzz~~~~~~~~~~zzzz.z...~~~~~~~..TT",
+    "Tzz~~~~~.TTTTT.zz~~~~~~~~~~~zzzz.zzzz~~~~~~~..TT",
+    "Tzz~~~~~.zzTzz..z~~~~~~~~~~~zzzz.zzz~~~~~~~~..TT",
+    "Tz~~~~~~.........~~~~~~~~~~~zzzz.zzT~~~~~~~...TT",
+    "Tz~~~~~~zzzTTTTT.~~~~~~~~~~~zzzz.zTT~~~~~...,.TT",
+    "Tz~~~~~zzzzTTTTT.~~~~~~~~~~zzzzz......B.......TT",
+    "Tzzz~zzzzzzTTTTT..~~~~~~~TzzzzzzzTTTTTz....,..TT",
+    "TzzzzzzzzzzzzT....zzT~TTTTzzzzzzzTTTTTz.......TT",
+    "Tzzzzzzzzzzz.......zTTTTTzzz.zzzzTTTTT........TT",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+  ],
+  "batiments": [],
+  "habitants": [
+    {
+      "x": 6,
+      "y": 18,
+      "apparence": "braconnier",
+      "direction": "droite",
+      "dialogue": [
+        "Le marais avale les imprudents. Restez sur le chemin !",
+        "La Reine vit sur l'îlot, tout à l'est. Elle ne laisse personne approcher de sa larme."
+      ]
+    }
+  ],
+  "coffres": [
+    {"x": 14, "y": 28, "objet": "gemme_vie", "quantite": 1},
+    {"x": 28, "y": 4, "objet": "elixir", "quantite": 2},
+    {"x": 42, "y": 30, "objet": "gemme_force", "quantite": 1},
+    {"x": 43, "y": 19, "or": 4000}
+  ],
+  "panneaux": [],
+  "passages": [
+    {"x": 0, "y": 17, "vers": "aube", "tx": 38, "ty": 13, "direction": "gauche"},
+    {"x": 0, "y": 18, "vers": "aube", "tx": 38, "ty": 14, "direction": "gauche"}
+  ],
+  "zones": [
+    {
+      "x": 0,
+      "y": 0,
+      "l": 38,
+      "h": 36,
+      "niveau_min": 57,
+      "niveau_max": 61,
+      "max_ennemis": 4,
+      "creatures": ["crapale", "vasepent", "aubespectre", "lueurine"]
+    },
+    {
+      "x": 38,
+      "y": 0,
+      "l": 10,
+      "h": 36,
+      "niveau_min": 59,
+      "niveau_max": 62,
+      "max_ennemis": 4,
+      "creatures": ["crapale", "vasepent", "rocaube"]
+    }
+  ],
+  "boss": [{"x": 41, "y": 15, "espece": "reine_marais", "drapeau": "reine_marais"}],
+  "carte_monde": [24, 90]
+}

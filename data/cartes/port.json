@@ -23,7 +23,7 @@
     "TT..F.....==.......==.............~~~~~~",
     "TT........==.......==............R~~~~~~",
     "TT........==..F....==.............~~~~~~",
-    "TT.Q...F..==.......==....F........~~~~~~",
+    "TT.Q...F..==.......==....F........BBB~~~",
     "TT........==.CCv.................R~~~~~~",
     "TT.....vCC==.............Cv.......~~~~~~",
     "~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
@@ -136,7 +136,8 @@
       "si": {"drapeau": "tom2"}
     },
     {"x": 30, "y": 19, "apparence": "pecheur", "direction": "gauche", "evenement": "quete_capitaine"},
-    {"x": 12, "y": 16, "apparence": "barman", "direction": "droite", "evenement": "quete_partitions"}
+    {"x": 12, "y": 16, "apparence": "barman", "direction": "droite", "evenement": "quete_partitions"},
+    {"x": 32, "y": 19, "apparence": "voyageuse", "direction": "bas", "evenement": "ysolde"}
   ],
   "coffres": [{"x": 3, "y": 21, "objet": "superpotion", "quantite": 3}],
   "panneaux": [
@@ -150,7 +151,17 @@
     {"x": 19, "y": 0, "vers": "recif", "tx": 23, "ty": 34, "direction": "haut"},
     {"x": 20, "y": 0, "vers": "recif", "tx": 24, "ty": 34, "direction": "haut"},
     {"x": 10, "y": 25, "vers": "vallee", "tx": 24, "ty": 38, "direction": "gauche"},
-    {"x": 11, "y": 25, "vers": "vallee", "tx": 24, "ty": 38, "direction": "gauche"}
+    {"x": 11, "y": 25, "vers": "vallee", "tx": 24, "ty": 38, "direction": "gauche"},
+    {
+      "x": 36,
+      "y": 20,
+      "vers": "aube",
+      "tx": 20,
+      "ty": 23,
+      "direction": "haut",
+      "condition": {"drapeau": "boss5"},
+      "message": "Au-delà de la jetée, l'orage tourne encore. Aucun bateau ne passerait."
+    }
   ],
   "zones": [],
   "boss": [],

@@ -345,7 +345,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   compilé seul dans image.cpp) ; `findSprite(nom)`, `Gfx::sprite(…)` (miroir, échelle, teinte, éclat). Champs :
   `sprite` des apparences (préfixe : `<p>_bas_0`, `_haut_k`, `_droite_k` ou `_gauche_k`, `_combat` ; un animal : un seul
   sprite) et des espèces (regard vers la gauche ; boss : `_grand`), `icone` des objets (dessinée devant le nom dans
-  tout menu, `itemIcon` de ui.cpp). Ce qui n'a pas de sprite garde son dessin en code. Personnages de la carte en
+  tout menu, `itemIcon` de ui.cpp). Ce qui n'a pas de sprite garde son dessin en code. Créatures au repos (`drawCreature`, 2026-10-20) : celles qui volent flottent (l'ombre rétrécit), les autres
+  respirent (le haut du sprite descend d'un pixel, puis remonte ; pas en réduction sur la carte). Personnages de la carte en
   16×24, combat en ~36 px ; `crisp` n'agrandit que d'un nombre entier de fois. Lior a ses visages (`lior_visage_0..4`,
   portrait des dialogues selon la réplique). Effets des sorts (`spriteFx` : une suite d'images par type, soins),
   invocation au-dessus des cibles d'une Limite (`inv_…` selon le type), textures 32×32 (`texTile` : parquet des
@@ -538,6 +539,13 @@ code) ; `docs/GUIDE.md` les range par domaine.
   (`bouldersMap_` : la carte qu'ils décrivent ; remis en place en changeant de carte, sauf énigme résolue),
   `pushBoulder` dans `tryMove`, « Recommencer l'énigme » (menu Échap), dessin dans `drawMap`. Joueur automatique :
   objectif `enigme:<carte>` puis `puzzleMoves_`. Condition `objet_min`. Final : `boss5` (Seigneur des Orages).
+- Acte 3 (2026-10-20, « 20 heures ») : l'île d'Aube, après le Seigneur des Orages (`boss5`). Jetée de l'est du port
+  (passage sous condition `boss5`, navigatrice Ysolde) ; cartes `aube` (Havre-d'Aube : soins, comptoir, Ilya),
+  `lueurs` (Bois des Lueurs, boss de carte `gardien_lueurs`), `marais` (Marais Pâle, `reine_marais` : Larme d'Aube),
+  `gouffre` (énigme des rochers, porte de lumière : passage sous condition `objet` `larme_aube`), `citadelle` (Ilya
+  soigne, `brume_noire`, drapeau `aube_fin`, écran de fin). 8 créatures d'Aube et 3 boss recolorés (variantes.json :
+  `lueurine`, `loup_aube`…). Écrit par `outils/villes/acte3.py` (cartes, vérifie l'accès à pied) puis
+  `outils/villes/acte3_histoire.py` (espèces, objets, conseils, événements) : pour refaire, remettre data/ avec git.
 - Langue (3.1) : `i18n.hpp` : `T("…")` (const char*) et `tr(std::string)` traduisent une phrase française avec
   `data/langues/<langue>.json` (absente : le français reste). `setLanguage` au démarrage (`options().english`, ligne
   `anglais` d'`options.txt` ; premier lancement : langue du système) et dans Options > Langue, puis `rebuildData()` et
