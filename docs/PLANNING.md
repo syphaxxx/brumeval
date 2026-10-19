@@ -226,6 +226,8 @@ Deuxième série (7 h 35) :
 11. Tactiques de l'échiquier : actions « S'approcher », « Protéger un allié » (se placer devant le plus blessé) et
     « Contourner » (passer dans le dos de la cible), dans l'éditeur de tactiques et pour le joueur automatique.
 12. Formation : choisir la case de chacun sur un dessin du plateau (flèches et souris), comme en combat.
+Avancement : 9 à 12 faits (portée en bleu ; sons « pas », « bond », « echange » ; tactiques S'approcher, Contourner,
+Protéger ; formation choisie sur le dessin, flèches dans les quatre directions et souris).
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 

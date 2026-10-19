@@ -434,7 +434,16 @@ void Game::formationMenu(int sel) {
                   Menu p;
                   p.title = T("Case de ") + utf8Prefix(f->name(), 10);
                   p.x = 8, p.y = 24, p.w = 132, p.rows = 9;  // à gauche du dessin du damier
-                  for (int c = 0; c < N_CELLS; c++) {
+                  // Dans l'ordre du dessin (3.4) : colonne par colonne de gauche à droite, de haut en bas ; Haut et Bas
+                  // changent de ligne, Gauche et Droite de colonne (adjust), la souris choisit sur le dessin
+                  formationPick_ = true;
+                  p.onCancel = [this] {
+                    formationPick_ = false;
+                    menus.pop();
+                  };
+                  for (int vx = 0; vx < GRID; vx++)
+                    for (int row = 0; row < GRID; row++) {
+                    int c = cellAt(row, BACK_COL - vx);
                     std::string who;
                     for (auto& o : front())
                       if (o != f && o->cell == c) who = o->name();
@@ -443,15 +452,23 @@ void Game::formationMenu(int sel) {
                                   for (auto& o : front())
                                     if (o != f && o->cell == c) o->cell = f->cell;  // échange de cases
                                   f->cell = c;
+                                  formationPick_ = false;
                                   menus.pop();
                                   menus.pop();
                                   formationMenu(at);
                                 },
                                 [this, c] { formationCell_ = c; }};
                     ci.shrink = true;
+                    ci.adjust = [this, vx, row](int d) {  // Gauche / Droite : la colonne voisine sur le dessin
+                      int nx = std::clamp(vx + d, 0, GRID - 1);
+                      Menu& mm = menus.top();
+                      mm.sel = nx * GRID + row;
+                      mm.top = std::clamp(mm.top, std::max(0, mm.sel - mm.rows + 1), mm.sel);  // la ligne reste visible
+                      formationCell_ = cellAt(row, BACK_COL - nx);
+                    };
                     p.items.push_back(ci);
                   }
-                  p.sel = std::clamp(f->cell, 0, N_CELLS - 1);
+                  p.sel = std::clamp((BACK_COL - cellCol(std::max(0, f->cell))) * GRID + cellRow(std::max(0, f->cell)), 0, N_CELLS - 1);
                   menus.push(p);
                 },
                 [this, f] { formationCell_ = f->cell; }};
@@ -461,6 +478,14 @@ void Game::formationMenu(int sel) {
   if (m.items.empty()) m.items.push_back({T("(personne)"), "", "", false, nullptr});
   m.sel = std::clamp(sel, 0, (int)m.items.size() - 1);
   menus.push(m);
+}
+
+// Géométrie du dessin de la formation (drawFormationPanel, posé en 146, 8)
+int Game::formationCellAt(int mx, int my) const {
+  const int x = 146, y = 8, w = 320 - x - 8, cw = (w - 16) / GRID, ch = 26;
+  int vx = (mx - x - 8) / cw, row = (my - y - 20) / ch;
+  if (mx < x + 8 || my < y + 20 || vx < 0 || vx >= GRID || row < 0 || row >= GRID) return -1;
+  return cellAt(row, BACK_COL - vx);
 }
 
 // Dessin de notre moitié de l'échiquier : l'avant à droite, face aux ennemis (comme en combat, 3.4)

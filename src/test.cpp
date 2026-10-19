@@ -722,10 +722,17 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     formationMenu(0);
     in.confirm = true;  // Lior : changer de case
     frame();
-    menus.top().sel = 8;  // Arrière · bas
+    // la liste suit le dessin (colonnes de gauche à droite) : Gauche / Droite changent de colonne
+    menus.top().sel = (BACK_COL - cellCol(8)) * GRID + cellRow(8);
+    in.press[LEFT] = true;
+    frame();
+    bool gridNav = formationCell_ == cellAt(cellRow(8), cellCol(8) + 1);
+    in.press[RIGHT] = true;
+    frame();
+    snap("formation_echiquier");
     in.confirm = true;
     frame();
-    bool chosen = team[0]->cell == 8;
+    bool chosen = team[0]->cell == 8 && gridNav;
     saveGame();
     loadGame();
     check(chosen && team[0]->cell == 8, "formation : Lior placé à l'arrière en bas depuis le menu, gardé par la sauvegarde");

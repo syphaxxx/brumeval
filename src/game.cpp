@@ -317,7 +317,17 @@ void Game::update(float dt) {
     }
     case Mode::Map: {
       if (menus.active()) {
+        if (formationPick_ && panelMode_ == 4 && in.mouseOn) {  // Formation : la souris sur le dessin du plateau
+          int c = formationCellAt(in.mx, in.my);
+          if (c >= 0) {
+            int idx = (BACK_COL - cellCol(c)) * GRID + cellRow(c);
+            Menu& fm = menus.top();
+            if (in.moved && idx < (int)fm.items.size()) fm.sel = idx, formationCell_ = c, fm.top = std::clamp(fm.top, std::max(0, idx - fm.rows + 1), idx);
+            if (in.mclick[0] && idx < (int)fm.items.size()) in.mclick[0] = false, fm.sel = idx, in.confirm = true;
+          }
+        }
         menus.update(in);
+        if (!menus.active()) formationPick_ = false;
         if (!menus.active()) panelMode_ = 0;
         break;
       }
