@@ -1169,6 +1169,7 @@
   "action inconnue « ": "unknown action “",
   "cette action vise un ennemi : il faut une condition « Ennemi ».": "this action targets an enemy: it needs an “Enemy” condition.",
   "cette action vise un allié : il faut une condition « Allié » ou « Soi ».": "this action targets an ally: it needs an “Ally” or “Self” condition.",
+  "Protéger vise un autre allié : il faut une condition « Allié ».": "Protect targets another ally: it needs an “Ally” condition.",
   "un allié K.O. ne peut recevoir qu'une réanimation.": "a K.O. ally can only receive a revival.",
   "une réanimation va avec la condition « Allié : K.O. ».": "a revival goes with the “Ally: K.O.” condition.",
   " ne connaît pas (ou plus) ": " doesn't know (or no longer knows) ",

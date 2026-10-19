@@ -2572,6 +2572,7 @@ void Battle::moveTo(FighterP a, int cell) {
     return;
   }
   cursor = nullptr;
+  moveFrom_.erase(a.get());  // une seule origine : celle de ce déplacement
   int from = cellOf(a);
   bool broke = breakthrough_.count(a.get()) > 0;
   step(a, cell);
@@ -2621,6 +2622,7 @@ void Battle::swapIn(FighterP a, FighterP r) {
   std::iter_swap(ia, ib);
   a->stage.fill(0);  // les bonus et malus ne suivent pas celui qui recule
   moved_.erase(a.get()), moved_.erase(r.get());
+  moveFrom_.erase(a.get()), moveFrom_.erase(r.get());
   r->atb = 0;
   a->atb = 0;
   sc.say(a->name() + T(" recule. ") + r->name() + T(" entre au combat !"), 1.1f);

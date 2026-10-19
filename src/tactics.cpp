@@ -132,6 +132,8 @@ std::string tacticProblem(const Tactic& t, const Fighter* f) {
   TSide a = tacticActSide(t);
   if (a == TSide::Foe && c->side != TSide::Foe) return ::T("cette action vise un ennemi : il faut une condition « Ennemi ».");
   if (a == TSide::Ally && c->side == TSide::Foe) return ::T("cette action vise un allié : il faut une condition « Allié » ou « Soi ».");
+  if (t.kind == Tactic::Act::Auto && t.act == "proteger" && c->side == TSide::Self)
+    return ::T("Protéger vise un autre allié : il faut une condition « Allié ».");
   bool rev = isRevive(t);
   if (t.cond == "allie_ko" && !rev) return ::T("un allié K.O. ne peut recevoir qu'une réanimation.");
   if (rev && t.cond != "allie_ko") return ::T("une réanimation va avec la condition « Allié : K.O. ».");
