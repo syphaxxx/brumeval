@@ -28,6 +28,10 @@ python outils/sprites/decoupe.py                  # l'atlas data/sprites.png + .
 
 Puis le mode test (captures `habitants_poses`, `echiquier_percee`) et regarder les images.
 
+- Habitants (2026-10-19) : l'utilisateur a trouvé leurs rendus Blender « trop différents du reste du jeu ». Leurs
+  poses viennent maintenant de `outils/sprites/tourner.py` (dessin de face retouché sur la planche, puis la même
+  réduction que tout l'atlas). Leçon : un rendu 3D se voit à côté de sprites dessinés ; pour un personnage de la
+  planche, partir de son dessin. Blender sert pour s'exercer ou pour ce qui n'a aucun dessin.
 - Le jeu trouve les poses par leur nom : `<sprite>_<bas|haut|droite|gauche>_<0..3>` (gauche = droite retournée ;
   0 et 2 au repos, 1 et 3 un pas). La face dessinée par l'utilisateur (`_bas_0`) est gardée : pixeliser.py n'écrit
   que le dos et le profil, pour ne pas mêler deux styles en marchant vers le bas (`--face` sinon).

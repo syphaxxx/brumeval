@@ -189,7 +189,8 @@ Branche `echiquier` (version 3.4), pas encore publiée.
    finie (actes 1 et 2, 1 h 32, 1 défaite).
 3. **Blender** (fait) : personnages chibi en 3D rendus en pixel art ; les 8 habitants qui n'avaient qu'une pose de
    face (homme, enfant, femme, pêcheur, barman, docteur, forgeron, paysan) ont maintenant dos et profil, en 4 images
-   de marche : ils se tournent et marchent.
+   de marche : ils se tournent et marchent. Jugés trop différents du reste du jeu (19 octobre au soir) : refaits
+   d'après leur dessin de face (`outils/sprites/tourner.py`), même style que les planches.
 4. **Godot** (fait) : effets en particules rendus image par image : types Métal et Normal, éclats de la Percée et de
    la Brisure.
 5. Pistes suivantes : poses de combat rendues avec Blender (attaque, garde) pour les héros qui n'en ont pas ; plus

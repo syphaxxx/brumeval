@@ -355,9 +355,11 @@ code) ; `docs/GUIDE.md` les range par domaine.
   (Ruines, Tour), Gobelard et Brutor (Sylve-Noire), Draconnet (volcan, rare), Coffrelin (coffre piégé des Ruines,
   « boss » de carte, événement `coffrelin`).
 - Blender et Godot (3.4, demandé le 2026-10-18) : `outils/blender/personnages.py` construit des personnages chibi en 3D
-  (fiches `personnages.json`, couleurs de leur sprite), les rend de dos et de profil en 4 images de marche ;
-  `pixeliser.py` les réduit en pixel art (contour d'un pixel) dans `outils/sprites/rendus/`, que `decoupe.py` range
-  dans l'atlas. `outils/godot/effets/rendu.gd` rend des effets en particules image par image (`gfx_<type>_k` : Métal,
+  (fiches `personnages.json`), `pixeliser.py` les réduit en pixel art dans `outils/sprites/rendus/`. Les habitants
+  rendus ainsi ont été jugés trop différents du reste du jeu (2026-10-19) : leurs poses de dos et de profil sont
+  maintenant tirées de leur dessin de face par `outils/sprites/tourner.py` (entrées `tourner` de `decoupe.json` :
+  visage changé en cheveux ou glissé de trois quarts, pieds décalés pour la marche ; options `chapeau`, `cheveux`,
+  `tablier`, `tourne`), avant la réduction commune : même style que les planches. Blender reste pour s'exercer. `outils/godot/effets/rendu.gd` rend des effets en particules image par image (`gfx_<type>_k` : Métal,
   Normal dans `spriteFx`, Percée et Brisure dans `Battle::bursts_` ; cercle d'invocation `gfx_cercle_k` sous les cibles
   d'une Limite, dans `Battle::draw`). Marche à suivre et pièges : compétence
   `sprites-blender-godot`.

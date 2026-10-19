@@ -10,7 +10,8 @@ outils/sprites/decoupe.json donne sa planche, sa boîte (en pixels de la planche
      comptent plus, sinon ils disparaissent) ;
   3. range tous les sprites dans une seule image (atlas).
 Options d'un sprite : rot (pivoté de n degrés), cadre ([largeur, hauteur] maximales), seul (garde seulement le plus gros morceau), fragments (garde toutes les particules : effets),
-plein (pas de fond à retirer : textures), couleurs (taille de la palette), miroir (retourné gauche-droite).
+plein (pas de fond à retirer : textures), couleurs (taille de la palette), miroir (retourné gauche-droite),
+tourner ("haut" ou "droite" : pose de dos ou de trois quarts tirée du dessin de face, voir tourner.py).
 Les variantes (outils/sprites/variantes.json) recolorent un sprite déjà découpé : {"id", "de", "teintes": [[teinte
 min, teinte max, nouvelle teinte, saturation x, luminosité x, saturation minimale], ...]} (teintes en degrés ;
 teinte min -1 = toutes les couleurs ; nouvelle teinte -1 = garder ; la saturation minimale colore aussi les gris).
@@ -27,6 +28,8 @@ import sys
 import numpy as np
 from PIL import Image, ImageDraw, ImageEnhance
 from scipy import ndimage as nd
+
+from tourner import tourner
 
 ICI = os.path.dirname(os.path.abspath(__file__))
 RACINE = os.path.dirname(os.path.dirname(ICI))
@@ -122,6 +125,8 @@ def reduire_plein(s, W, H, couleurs):
 
 def sprite(e):
     s, masque = decouper(e)
+    if e.get('tourner'):  # pose de dos ou de profil tirée du dessin de face (tourner.py)
+        s, masque = tourner(s, masque, e)
     if e.get('rot'):  # pivoté (armes longues en diagonale : icônes carrées)
         im = Image.fromarray(np.dstack([s.astype(np.uint8), (masque * 255).astype(np.uint8)]), 'RGBA')
         im = im.rotate(e['rot'], resample=Image.NEAREST, expand=True)

@@ -110,9 +110,9 @@ concernées dans `captures/`.
 `forme`, `couleurs`, `apprend`, et `sprite` : un nom de `data/sprites.json`), puis l'ajouter à une zone de
 rencontres d'une carte (`zones`, champ `pool`). **Un nouveau sprite** : sa boîte dans
 `outils/sprites/decoupe.json` (ou une recoloration dans `variantes.json`), puis `python outils/sprites/decoupe.py`
-et regarder `outils/sprites/apercu.png`. **Un personnage en 3D** (poses de dos, de profil, marche) : sa fiche dans
-`outils/blender/personnages.json`, puis Blender (`outils/blender/personnages.py`), `python outils/blender/pixeliser.py`
-et `decoupe.py`. **Un effet animé** : une gerbe de particules dans `outils/godot/effets/rendu.gd`, puis Godot,
+et regarder `outils/sprites/apercu.png`. **Les poses de dos et de profil d'un personnage dessiné seulement de face** : des entrées
+`tourner` dans `decoupe.json` (voir `outils/sprites/tourner.py`), puis `decoupe.py` (le rendu 3D avec Blender,
+`outils/blender/`, donnait un style trop différent). **Un effet animé** : une gerbe de particules dans `outils/godot/effets/rendu.gd`, puis Godot,
 `python outils/godot/pixeliser_effets.py <type>` et `decoupe.py` (marche à suivre : compétence `sprites-blender-godot`).
 Une nouvelle *forme* (dessin) : ajouter une
 valeur à `Shape` (data.hpp) **avant** `Human`, son nom dans `SHAPES`
