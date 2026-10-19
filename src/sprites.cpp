@@ -67,7 +67,7 @@ void drawCreature(Gfx& g, const std::string& id, float x, float y, float s, bool
     float x0 = std::round(x - r->w * k / 2), y0 = std::round(y + 16 * s - r->h * k);
     bool flies = sp.shape == Shape::Bird || sp.shape == Shape::Bat || sp.shape == Shape::Ghost || sp.shape == Shape::Bug ||
                  sp.shape == Shape::Wisp;
-    if (flies) {  // en vol : tout le corps flotte, l'ombre rétrécit quand il monte
+    if (flies && g.spriteAngle == 0) {  // en vol : tout le corps flotte, l'ombre rétrécit quand il monte
       float up = std::round((std::sin(t * 3.1f) * .5f + .5f) * 2 * std::min(k, 1.f));
       g.ellipse(x, y + 15 * s, std::max(5.f, r->w * k * (.36f - up * .02f)), 3 * s, rgb(0, 40));
       g.sprite(*r, x0, y0 - 1 - up, flip, k, tint);
@@ -78,7 +78,7 @@ void drawCreature(Gfx& g, const std::string& id, float x, float y, float s, bool
     g.ellipse(x, y + 15 * s, std::max(6.f, r->w * k * .38f), 3 * s, rgb(0, 46));
     bool down = std::sin(t * 2.6f + x * .37f) > .2f;
     int h = r->h, head = std::max(1, h * 9 / 20);
-    if (h < 10 || k < 1 || !down) {  // petit, ou dessiné en réduction (carte) : pas de respiration
+    if (h < 10 || k < 1 || !down || g.spriteAngle != 0) {  // petit, en réduction (carte) ou couché (K.O.) : pas de respiration
       g.sprite(*r, x0, y0, flip, k, tint);
       return;
     }
@@ -289,6 +289,7 @@ void drawCreature(Gfx& g, const std::string& id, float x, float y, float s, bool
 // Sprite d'un personnage : (x, y) = coin haut-gauche de sa case de 16x16 agrandie s fois. Sur la carte (s < 1,5) :
 // <sprite>_<direction>_<image> (gauche = droite retournée et inversement ; direction absente : de face) ; en plus
 // grand (combat, menus) : <sprite>_combat, tourné vers la gauche.
+static int breathPx_ = 0;  // combat : le haut du héros descend de ce nombre de pixels (respiration, drawFighterSprite)
 static bool humanSprite(Gfx& g, const Look& lk, float x, float y, float s, int dir, int step, bool run) {
   // Expédition (3.3) : un personnage généré (lk_…) prend le dessin d'un personnage de la planche selon son arme
   static const char* BY_WEAPON[] = {"homme", "aventuriere", "mage", "soldat", "aventuriere", "archere", "soldat"};
@@ -311,7 +312,13 @@ static bool humanSprite(Gfx& g, const Look& lk, float x, float y, float s, int d
     if (!r) return false;
     float cx = x + 8 * s, bottom = y + 16 * s;
     g.ellipse(cx, bottom - 1, r->w * k * .36f, 2 * k, rgb(0, 50));
-    g.sprite(*r, std::round(cx - r->w * k / 2), std::round(bottom - r->h * k), dir == 3, k, tint);
+    float x0 = std::round(cx - r->w * k / 2), y0 = std::round(bottom - r->h * k);
+    if (breathPx_ > 0 && r->h >= 16) {  // respiration : la tête et les épaules descendent, les pieds restent posés
+      int head = r->h * 2 / 5;
+      g.sprite(r->sub(0, head, r->w, r->h - head), x0, y0 + head * k, dir == 3, k, tint);
+      g.sprite(r->sub(0, 0, r->w, head), x0, y0 + breathPx_, dir == 3, k, tint);
+    } else
+      g.sprite(*r, x0, y0, dir == 3, k, tint);
     return true;
   }
   static const char* NAMES[] = {"haut", "bas", "gauche", "droite"};
@@ -486,8 +493,9 @@ void drawFighterSprite(Gfx& g, const Fighter& f, float x, float y, float s, bool
   const Species& sp = f.S();
   if (sp.human) {
     float k = 2 * s;
-    float bob = std::round(std::sin(t * 2.5f) * .6f);
-    drawHuman(g, look(sp.look), x - 8 * k, y - 10 * k + bob, k, faceRight ? 3 : 2, 0, true);
+    breathPx_ = g.spriteAngle == 0 && std::sin(t * 2.2f + x * .31f) > .3f ? 1 : 0;  // respire (pas couché : K.O.)
+    drawHuman(g, look(sp.look), x - 8 * k, y - 10 * k, k, faceRight ? 3 : 2, 0, true);
+    breathPx_ = 0;
   } else {
     drawCreature(g, f.sp, x, y, s, faceRight, t);
   }
