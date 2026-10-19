@@ -292,7 +292,7 @@ float Battle::posValue(const FighterP& a, int cell) {
   }
   if (int n = foesAround(a); n >= 2) v -= 8.f * (n - 1);  // encerclé
   if (caster) v += std::min(nearest, 4) * 2.f;            // garder ses distances
-  else v -= nearest * (best > 0 ? 2.5f : 5.f);             // aller au contact (vite s'il n'a rien à frapper d'ici)
+  else v -= nearest * 2.5f;                                // aller au contact (blocage : voir quietT_)
   if (s.combatRole == "protecteur")                        // rester près des siens
     for (auto& o : alive(sideOf(a)))
       if (o != a && inBoardZone(Area::Cross, cell, cellOf(o))) v += 6;
