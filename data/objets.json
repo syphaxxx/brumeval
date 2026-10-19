@@ -87,6 +87,121 @@
     "capture": 2.5
   },
   {
+    "id": "canne",
+    "nom": "Canne à pêche",
+    "icone": "ic_lance_1",
+    "description": "Face à l'eau, Entrée pour lancer la ligne. Quand ça mord, Entrée vite, puis Entrée dans la zone verte pour ferrer.",
+    "prix": 0
+  },
+  {
+    "id": "gardon",
+    "nom": "Gardon",
+    "description": "Un petit poisson argenté des lacs de la vallée. Difficulté : ★.",
+    "prix": 40
+  },
+  {
+    "id": "truite",
+    "nom": "Truite arc-en-ciel",
+    "description": "Ses écailles brillent de toutes les couleurs. Difficulté : ★★.",
+    "prix": 120
+  },
+  {
+    "id": "brochet_dore",
+    "nom": "Brochet doré",
+    "description": "Rare : un brochet couleur de soleil. Les pêcheurs en rêvent. Difficulté : ★★★★.",
+    "prix": 800
+  },
+  {
+    "id": "perche",
+    "nom": "Perche moussue",
+    "description": "Elle se cache sous les racines des vieux arbres. Difficulté : ★★.",
+    "prix": 90
+  },
+  {
+    "id": "silure",
+    "nom": "Silure des marais",
+    "description": "Énorme et paresseux, mais il tire fort. Difficulté : ★★★.",
+    "prix": 300
+  },
+  {
+    "id": "omble",
+    "nom": "Omble des glaces",
+    "description": "Il vit sous la glace et n'a jamais froid. Difficulté : ★★.",
+    "prix": 180
+  },
+  {
+    "id": "lotte",
+    "nom": "Lotte givrée",
+    "description": "Une lumière bleue pend devant sa bouche. Difficulté : ★★★★.",
+    "prix": 520
+  },
+  {
+    "id": "aveugle",
+    "nom": "Poisson aveugle",
+    "description": "Il n'a pas d'yeux, mais il sent tout. Difficulté : ★★.",
+    "prix": 220
+  },
+  {
+    "id": "sardine",
+    "nom": "Sardine",
+    "description": "Elle nage en bancs serrés le long des quais. Difficulté : ★.",
+    "prix": 30
+  },
+  {
+    "id": "maquereau",
+    "nom": "Maquereau",
+    "description": "Rayé de bleu, rapide comme une flèche. Difficulté : ★★.",
+    "prix": 100
+  },
+  {
+    "id": "bar",
+    "nom": "Bar d'écume",
+    "description": "Le poisson préféré du capitaine Morvan. Difficulté : ★★★.",
+    "prix": 280
+  },
+  {
+    "id": "raie",
+    "nom": "Raie lune",
+    "description": "Elle glisse sur le sable comme un oiseau dans le ciel. Difficulté : ★★★★.",
+    "prix": 600
+  },
+  {
+    "id": "poulpe",
+    "nom": "Poulpe des ruines",
+    "description": "Il vient des ruines englouties et vole les pièces des noyés. Difficulté : ★★★.",
+    "prix": 440
+  },
+  {
+    "id": "espadon",
+    "nom": "Espadon d'orage",
+    "description": "Très rare : on dit qu'il naît des éclairs qui tombent dans la mer. Difficulté : ★★★★★.",
+    "prix": 1800
+  },
+  {
+    "id": "poisson_lune",
+    "nom": "Poisson-lune",
+    "description": "Rond et rose, il dort à la surface les nuits d'Aube. Difficulté : ★★.",
+    "prix": 240
+  },
+  {
+    "id": "carpe_aube",
+    "nom": "Carpe d'aube",
+    "description": "Ses écailles ont la couleur du soleil levant. Difficulté : ★★★★.",
+    "prix": 1000
+  },
+  {
+    "id": "nacre",
+    "nom": "Poisson nacré",
+    "description": "Il brille comme une perle dans l'eau pâle. Difficulté : ★★★★.",
+    "prix": 840
+  },
+  {
+    "id": "roi_brumes",
+    "nom": "Roi des brumes",
+    "description": "Le poisson légendaire de la Source des Brumes. Presque personne ne l'a vu. Difficulté : ★★★★★.",
+    "prix": 3000
+  },
+  {
     "id": "minerai",
     "nom": "Minerai de fer",
     "icone": "ic_minerai",
@@ -602,6 +717,15 @@
     "prix": 5000,
     "equipement": "arme",
     "bonus": {"attaque": 19, "magie": 6, "critique": 8}
+  },
+  {
+    "id": "insigne_gardien",
+    "nom": "Insigne des gardiens",
+    "icone": "ic_acc_2",
+    "description": "Porté par les plus grands gardiens d'Aube. Il réchauffe le cœur au combat.",
+    "prix": 6000,
+    "equipement": "accessoire",
+    "bonus": {"pv": 40, "attaque": 4, "defense": 4, "magie": 4, "resistance": 4, "vitesse": 4}
   },
   {
     "id": "lame_ecume",

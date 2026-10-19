@@ -217,6 +217,21 @@ class Game {
   void openHelp(int page);
   void updateHelp();
   void drawHelp();
+  // Pêche (peche.cpp, 2026-10-20) : face à l'eau avec la canne ; 0 attente, 1 ça mord, 2 ferrage
+  struct Fishing {
+    bool on = false;
+    int state = 0, level = 1, need = 0, hits = 0, misses = 0, bx = 0, by = 0;
+    float t = 0, wait = 0, cursor = 0, dir = 1, zone = 0, zoneW = 0, speed = 0, flash = 0;
+    std::string fish;
+  } fishing_;
+  int camX_ = 0, camY_ = 0;  // caméra de la dernière carte dessinée (dessin de la pêche)
+  void startFishing(int wx, int wy);
+  void updateFishing(float dt);
+  void endFishing(const std::string& msg);
+  void drawFishing();
+ public:
+  int fishCaught() const;  // espèces de poissons du carnet
+ private:
   bool worldMapOn_ = false;  // carte du monde ouverte (3.3, menu pause) : le reste du jeu attend
   void drawWorldMap();
   int helpPage_ = -1, helpScroll_ = 0, lastHelp_ = 0;  // page affichée (-1 : aucune), défilement, dernière vue (F1)
@@ -306,3 +321,7 @@ class Game {
   friend class Online;
   friend class Pilot;
 };
+
+// Pêche (peche.cpp) : vérification de data/peche.json (mode test) et nombre d'espèces de poissons
+std::vector<std::string> checkFishing();
+int fishSpecies();

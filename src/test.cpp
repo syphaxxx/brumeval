@@ -72,6 +72,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   report(checkData(), "types, techniques, espèces, objets et règles cohérents");
   report(checkMaps(), std::to_string(maps().size()) + " cartes valides, tous les lieux sont accessibles à pied");
   report(checkEvents(), std::to_string(events().size()) + " événements valides");
+  report(checkFishing(), std::to_string(fishSpecies()) + " poissons à pêcher");
   auto mi = [](const char* id) { return std::max(0, mapIndex(id)); };
   // Relecture : écrire puis relire une carte doit redonner la même carte
   {
@@ -2367,6 +2368,44 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     show("forge");
     snap("forge_sac");
     menus.clear();
+    {  // Pêche : face au lac de la Vallée, attendre, ferrer, puis trois coups dans la zone verte
+      auto savedItems = items;
+      menus.clear();
+      sc.clear();
+      int wx = -1, wy = -1;
+      const MapDef& vm = maps()[(size_t)mi("vallee")];
+      for (int y = 1; y + 1 < vm.h() && wx < 0; y++)
+        for (int x = 1; x + 1 < vm.w() && wx < 0; x++)
+          if (vm.rows[y][x] == '~' && tileWalkable(vm.rows[y - 1][x]) && !blockedOn(vm, x, y - 1)) wx = x, wy = y;
+      changeMap(mi("vallee"), wx, wy - 1, DOWN);
+      items["canne"] = 1;
+      in.confirm = true;
+      frame();
+      bool started = fishing_.on && fishing_.state == 0 && !fishing_.fish.empty();
+      for (int i = 0; i < 60 * 8 && fishing_.on && fishing_.state == 0; i++) frame();
+      bool bite = fishing_.state == 1;
+      in.confirm = true;
+      frame();
+      bool reel = fishing_.state == 2;
+      fishing_.cursor = fishing_.zone + 1, fishing_.speed = 0;
+      draw();
+      snap("peche");
+      std::string fish = fishing_.fish;
+      int before = items[fish];
+      for (int i = 0; i < 10 && fishing_.on; i++) {
+        fishing_.cursor = fishing_.zone + fishing_.zoneW / 2, fishing_.speed = 0;
+        in.confirm = true;
+        frame();
+      }
+      while (sc.busy()) {
+        in.confirm = true;
+        frame();
+      }
+      check(started && bite && reel && !fishing_.on && items[fish] == before + 1 && has("peche:" + fish) && fishCaught() >= 1,
+            "pêche : on lance la ligne face à l'eau, ça mord, on ferre, et le poisson (" + item(fish).name + ") va au sac et au carnet");
+      flags.erase("peche:" + fish);
+      items = savedItems;
+    }
     {  // Primes : le tableau dans tous ses états, puis une prime de bout en bout
       auto savedFlags = flags;
       auto savedItems = items;

@@ -3320,5 +3320,492 @@
         ]
       }
     ]
+  },
+  "epreuves": {
+    "pages": [
+      {
+        "si": {"drapeau": "epreuve9"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ilya : Vous êtes les nouveaux gardiens d'Aube. Les esprits du sanctuaire dorment en paix."
+          },
+          {
+            "action": "dire",
+            "texte": "Ilya : Revenez me voir de temps en temps. Les créatures de l'île vous aiment bien."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "epreuve8"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Les huit esprits se rassemblent autour d'Ilya. Ils s'inclinent devant vous."
+          },
+          {
+            "action": "dire",
+            "texte": "Ilya : Il reste une épreuve. La mienne. Mon peuple disait qu'un gardien doit vaincre le dernier gardien pour le remplacer."
+          },
+          {"action": "dire", "texte": "Ilya : Je ne vous ferai pas de cadeau !"},
+          {
+            "action": "question",
+            "texte": "Affronter Ilya, dernière gardienne d'Aube ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Ilya",
+                "musique": "boss_final",
+                "ennemis": [
+                  {"espece": "loup_aube", "niveau": 84},
+                  {"espece": "nacrelin", "niveau": 86, "pv": 1.8, "boss": true, "bouclier": 6},
+                  {"espece": "aubespectre", "niveau": 84}
+                ],
+                "renforts": [{"espece": "rocaube", "niveau": 84}, {"espece": "lueurine", "niveau": 85}],
+                "boss": true,
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "epreuve9"},
+                  {"action": "donner", "objet": "insigne_gardien", "quantite": 1},
+                  {"action": "or", "quantite": 12000},
+                  {"action": "dire", "texte": "Ilya : … Bravo. Les esprits vous ont choisis, et moi aussi."},
+                  {
+                    "action": "dire",
+                    "texte": "Ilya : Prenez cet insigne. Il n'a été porté que par les plus grands gardiens d'Aube."
+                  },
+                  {"action": "quete", "id": "epreuves", "fin": true}
+                ]
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Ilya : Prenez votre temps. Je serai là."}]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "epreuve7", "sans_drapeau": "epreuve8"},
+        "actions": [
+          {"action": "dire", "texte": "Un esprit de lumière prend forme : Gardien Céleste."},
+          {
+            "action": "dire",
+            "texte": "Gardien Céleste : Le vent ne se bat pas : il emporte. Accrochez-vous !"
+          },
+          {
+            "action": "question",
+            "texte": "Commencer l'épreuve du Vent ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Gardien Céleste",
+                "ennemis": [
+                  {"espece": "aubelle", "niveau": 84},
+                  {"espece": "zephyrin", "niveau": 85, "pv": 1.8, "boss": true, "bouclier": 6},
+                  {"espece": "lueurine", "niveau": 84}
+                ],
+                "renforts": [{"espece": "griffon", "niveau": 84}, {"espece": "nuageon", "niveau": 84}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "epreuve8"},
+                  {"action": "or", "quantite": 6500},
+                  {"action": "donner", "objet": "gemme_briseur", "quantite": 1},
+                  {
+                    "action": "dire",
+                    "texte": "Gardien Céleste : Vous avez réussi l'épreuve du Vent. Que la lumière vous accompagne."
+                  }
+                ]
+              }
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "L'esprit s'efface doucement. Il reviendra quand vous serez prêts."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "epreuve6", "sans_drapeau": "epreuve7"},
+        "actions": [
+          {"action": "dire", "texte": "Un esprit de lumière prend forme : Gardienne Nocturne."},
+          {
+            "action": "dire",
+            "texte": "Gardienne Nocturne : Dans le noir, on ne voit que ce qu'on craint. Que craignez-vous ?"
+          },
+          {
+            "action": "question",
+            "texte": "Commencer l'épreuve des Ombres ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Gardienne Nocturne",
+                "ennemis": [
+                  {"espece": "brumeloup", "niveau": 82},
+                  {"espece": "nebulis", "niveau": 83, "pv": 1.8, "boss": true, "bouclier": 6},
+                  {"espece": "noctaile", "niveau": 82}
+                ],
+                "renforts": [{"espece": "aubespectre", "niveau": 82}, {"espece": "osselet", "niveau": 82}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "epreuve7"},
+                  {"action": "or", "quantite": 6000},
+                  {"action": "donner", "objet": "gemme_vol", "quantite": 1},
+                  {
+                    "action": "dire",
+                    "texte": "Gardienne Nocturne : Vous avez réussi l'épreuve des Ombres. Que la lumière vous accompagne."
+                  }
+                ]
+              }
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "L'esprit s'efface doucement. Il reviendra quand vous serez prêts."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "epreuve5", "sans_drapeau": "epreuve6"},
+        "actions": [
+          {"action": "dire", "texte": "Un esprit de lumière prend forme : Gardien Rempart."},
+          {"action": "dire", "texte": "Gardien Rempart : Personne n'a jamais fait reculer mes murailles."},
+          {
+            "action": "question",
+            "texte": "Commencer l'épreuve de la Pierre ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Gardien Rempart",
+                "ennemis": [
+                  {"espece": "ferrogeant", "niveau": 80},
+                  {"espece": "rocaube", "niveau": 81, "pv": 1.8, "boss": true, "bouclier": 6},
+                  {"espece": "bastillon", "niveau": 80}
+                ],
+                "renforts": [{"espece": "orbrume", "niveau": 80}, {"espece": "carapic", "niveau": 80}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "epreuve6"},
+                  {"action": "or", "quantite": 5500},
+                  {"action": "donner", "objet": "gemme_contre", "quantite": 1},
+                  {
+                    "action": "dire",
+                    "texte": "Gardien Rempart : Vous avez réussi l'épreuve de la Pierre. Que la lumière vous accompagne."
+                  }
+                ]
+              }
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "L'esprit s'efface doucement. Il reviendra quand vous serez prêts."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "epreuve4", "sans_drapeau": "epreuve5"},
+        "actions": [
+          {"action": "dire", "texte": "Un esprit de lumière prend forme : Gardienne Fulgurante."},
+          {
+            "action": "dire",
+            "texte": "Gardienne Fulgurante : Un éclair ne prévient jamais. Soyez plus rapides que moi !"
+          },
+          {
+            "action": "question",
+            "texte": "Commencer l'épreuve de la Foudre ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Gardienne Fulgurante",
+                "ennemis": [
+                  {"espece": "fulgurin", "niveau": 78},
+                  {"espece": "griffon", "niveau": 79, "pv": 1.8, "boss": true, "bouclier": 6},
+                  {"espece": "orageon", "niveau": 78}
+                ],
+                "renforts": [{"espece": "orageline", "niveau": 78}, {"espece": "voltanguille", "niveau": 78}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "epreuve5"},
+                  {"action": "or", "quantite": 5000},
+                  {"action": "donner", "objet": "gemme_rempart", "quantite": 1},
+                  {
+                    "action": "dire",
+                    "texte": "Gardienne Fulgurante : Vous avez réussi l'épreuve de la Foudre. Que la lumière vous accompagne."
+                  }
+                ]
+              }
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "L'esprit s'efface doucement. Il reviendra quand vous serez prêts."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "epreuve3", "sans_drapeau": "epreuve4"},
+        "actions": [
+          {"action": "dire", "texte": "Un esprit de lumière prend forme : Gardien Boréal."},
+          {
+            "action": "dire",
+            "texte": "Gardien Boréal : Le froid ralentit tout, sauf la volonté. Voyons la vôtre."
+          },
+          {
+            "action": "question",
+            "texte": "Commencer l'épreuve du Givre ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Gardien Boréal",
+                "ennemis": [
+                  {"espece": "givrenard", "niveau": 76},
+                  {"espece": "banquisot", "niveau": 77, "pv": 1.8, "boss": true, "bouclier": 6},
+                  {"espece": "givrelin", "niveau": 76}
+                ],
+                "renforts": [{"espece": "prismalin", "niveau": 76}, {"espece": "glaconnet", "niveau": 76}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "epreuve4"},
+                  {"action": "or", "quantite": 4500},
+                  {"action": "donner", "objet": "gemme_eveil", "quantite": 1},
+                  {
+                    "action": "dire",
+                    "texte": "Gardien Boréal : Vous avez réussi l'épreuve du Givre. Que la lumière vous accompagne."
+                  }
+                ]
+              }
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "L'esprit s'efface doucement. Il reviendra quand vous serez prêts."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "epreuve2", "sans_drapeau": "epreuve3"},
+        "actions": [
+          {"action": "dire", "texte": "Un esprit de lumière prend forme : Gardienne Sylve."},
+          {"action": "dire", "texte": "Gardienne Sylve : Les racines patientent mille ans. Moi aussi."},
+          {
+            "action": "question",
+            "texte": "Commencer l'épreuve des Racines ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Gardienne Sylve",
+                "ennemis": [
+                  {"espece": "ronceflore", "niveau": 74},
+                  {"espece": "ronce_mere", "niveau": 75, "pv": 1.8, "boss": true, "bouclier": 6},
+                  {"espece": "vasepent", "niveau": 74}
+                ],
+                "renforts": [{"espece": "champignard", "niveau": 74}, {"espece": "crapale", "niveau": 74}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "epreuve3"},
+                  {"action": "or", "quantite": 4000},
+                  {"action": "donner", "objet": "gemme_vie", "quantite": 1},
+                  {
+                    "action": "dire",
+                    "texte": "Gardienne Sylve : Vous avez réussi l'épreuve des Racines. Que la lumière vous accompagne."
+                  }
+                ]
+              }
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "L'esprit s'efface doucement. Il reviendra quand vous serez prêts."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "epreuve1", "sans_drapeau": "epreuve2"},
+        "actions": [
+          {"action": "dire", "texte": "Un esprit de lumière prend forme : Gardien des Marées."},
+          {
+            "action": "dire",
+            "texte": "Gardien des Marées : La mer use la pierre la plus dure. Saurez-vous tenir ?"
+          },
+          {
+            "action": "question",
+            "texte": "Commencer l'épreuve des Flots ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Gardien des Marées",
+                "ennemis": [
+                  {"espece": "torrentin", "niveau": 72},
+                  {"espece": "kraken", "niveau": 73, "pv": 1.8, "boss": true, "bouclier": 6},
+                  {"espece": "fulgoray", "niveau": 72}
+                ],
+                "renforts": [{"espece": "nacrelin", "niveau": 72}, {"espece": "bastillon", "niveau": 72}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "epreuve2"},
+                  {"action": "or", "quantite": 3500},
+                  {"action": "donner", "objet": "gemme_esprit", "quantite": 1},
+                  {
+                    "action": "dire",
+                    "texte": "Gardien des Marées : Vous avez réussi l'épreuve des Flots. Que la lumière vous accompagne."
+                  }
+                ]
+              }
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "L'esprit s'efface doucement. Il reviendra quand vous serez prêts."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "aube_fin", "sans_drapeau": "epreuve1"},
+        "actions": [
+          {"action": "dire", "texte": "Un esprit de lumière prend forme : Gardienne Ardente."},
+          {
+            "action": "dire",
+            "texte": "Gardienne Ardente : Le feu ne pardonne pas l'hésitation. Montrez-moi votre courage !"
+          },
+          {
+            "action": "question",
+            "texte": "Commencer l'épreuve de la Flamme ?",
+            "oui": [
+              {"action": "quete", "id": "epreuves"},
+              {
+                "action": "combat",
+                "nom": "Gardienne Ardente",
+                "ennemis": [
+                  {"espece": "fournezard", "niveau": 70},
+                  {"espece": "flammenard", "niveau": 71, "pv": 1.8, "boss": true, "bouclier": 6},
+                  {"espece": "lucifee", "niveau": 70}
+                ],
+                "renforts": [{"espece": "draconnet", "niveau": 70}, {"espece": "fournezard", "niveau": 70}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "epreuve1"},
+                  {"action": "or", "quantite": 3000},
+                  {"action": "donner", "objet": "gemme_force", "quantite": 1},
+                  {
+                    "action": "dire",
+                    "texte": "Gardienne Ardente : Vous avez réussi l'épreuve de la Flamme. Que la lumière vous accompagne."
+                  }
+                ]
+              }
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "L'esprit s'efface doucement. Il reviendra quand vous serez prêts."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Les portes du sanctuaire sont scellées par une lumière douce. Quelque chose attend, à l'intérieur."
+          },
+          {"action": "dire", "texte": "(Revenez quand la Brume Noire ne menacera plus l'île.)"}
+        ]
+      }
+    ]
+  },
+  "maitre_pecheur": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:peche", "sans_drapeau": "carnet_complet", "poissons_min": 18},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Maître pêcheur : Toutes les espèces… Même le Roi des brumes ! Tu es le plus grand pêcheur de l'archipel."
+          },
+          {"action": "donner", "objet": "amulette_maree", "quantite": 1},
+          {"action": "or", "quantite": 10000},
+          {"action": "drapeau", "nom": "carnet_complet"},
+          {"action": "quete", "id": "peche", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:peche", "sans_drapeau": "carnet15", "poissons_min": 15},
+        "actions": [
+          {"action": "dire", "texte": "Maître pêcheur : Quinze ! Même moi, je n'en ai jamais pris autant."},
+          {"action": "donner", "objet": "gemme_maitre", "quantite": 1},
+          {"action": "drapeau", "nom": "carnet15"}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:peche", "sans_drapeau": "carnet10", "poissons_min": 10},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Maître pêcheur : Dix espèces ! Celle-là, je l'ai trouvée dans le ventre d'un bar."
+          },
+          {"action": "donner", "objet": "gemme_eveil", "quantite": 1},
+          {"action": "drapeau", "nom": "carnet10"}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:peche", "sans_drapeau": "carnet5", "poissons_min": 5},
+        "actions": [
+          {"action": "dire", "texte": "Maître pêcheur : Cinq espèces ! Tu as la main, mon gars."},
+          {"action": "donner", "objet": "lanterne_or", "quantite": 3},
+          {"action": "or", "quantite": 1000},
+          {"action": "drapeau", "nom": "carnet5"}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:peche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Maître pêcheur : Chaque eau a ses poissons : les lacs de la vallée, la forêt, la neige, les grottes, la mer, et même l'île d'Aube."
+          },
+          {
+            "action": "dire",
+            "texte": "Maître pêcheur : Reviens me voir à 5, 10 et 15 espèces, et quand le carnet sera complet. Les plus rares sont les plus durs à ferrer !"
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Maître pêcheur : Hé, toi ! Tu as l'air d'avoir de la patience. Ça te dirait d'apprendre à pêcher ?"
+          },
+          {"action": "donner", "objet": "canne", "quantite": 1},
+          {
+            "action": "dire",
+            "texte": "Maître pêcheur : Face à l'eau, lance ta ligne. Quand ça mord : vite ! Puis appuie quand le curseur passe dans la zone verte."
+          },
+          {
+            "action": "dire",
+            "texte": "Maître pêcheur : Tiens aussi ce carnet. Montre-moi ce que tu attrapes : j'ai des cadeaux pour les bons pêcheurs."
+          },
+          {"action": "quete", "id": "peche"}
+        ]
+      }
+    ]
   }
 }

@@ -41,6 +41,8 @@ static std::vector<HelpPage> helpPages() {
                 ::T("Quêtes : vingt quêtes en tout (Échap > Journal), dont un rival qui revient vous défier et une quête qui donne un compagnon."),
                 ::T("Éclats de brume : trente éclats cachés dans de vieux coffres, aux quatre coins du monde. Une collectionneuse de la Vallée les récompense."),
                 ::T("Après le Seigneur des Orages : une navigatrice du port vous emmène sur l'île d'Aube, pour un troisième acte."),
+                ::T("Après l'acte 3 : les épreuves des gardiens, au sanctuaire d'Aube (huit combats puis Ilya)."),
+                ::T("La pêche : le maître pêcheur du port donne une canne. Face à l'eau, Entrée ; dix-huit poissons à trouver."),
                 ::T("Musiques réécrites, et de nouveaux morceaux : le port, les abysses, la tour, le dernier combat."),
                 ::T("Un allié K.O. se voit enfin : couché, grisé, avec des étoiles. Les habitants ont des poses de dos et de profil.")}});
   p.push_back({::T("Nouveautés 3.4"), ::T("L'échiquier, les défis, les bottes : ce qui change."),

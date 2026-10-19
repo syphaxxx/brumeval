@@ -51,7 +51,7 @@ static std::vector<std::string> names(const Json& v) {
 static void checkList(const Json& list, const std::string& where, std::vector<std::string>& err);
 
 static void checkCondition(const Json& c, const std::string& where, std::vector<std::string>& err) {
-  static const std::vector<std::string> keys = {"drapeau", "sans_drapeau", "objet", "sans_objet", "objet_min", "or_min", "membre"};
+  static const std::vector<std::string> keys = {"drapeau", "sans_drapeau", "objet", "sans_objet", "objet_min", "or_min", "membre", "poissons_min"};
   for (auto& [k, v] : c.items()) {
     if (std::find(keys.begin(), keys.end(), k) == keys.end()) err.push_back(where + T(" : condition inconnue « ") + k + " »");
     if (k == "objet" || k == "sans_objet")
@@ -218,6 +218,7 @@ bool Game::checkCond(const Json& c) const {
       if (count(id) < n.get<int>()) return false;
   }
   if (c.contains("or_min") && gold < c["or_min"].get<int>()) return false;
+  if (c.contains("poissons_min") && fishCaught() < c["poissons_min"].get<int>()) return false;  // carnet de pêche
   for (auto& id : names(c.value("membre", Json()))) {
     bool found = false;
     for (auto& f : team) found = found || f->sp == id;

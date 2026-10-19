@@ -10,9 +10,9 @@
     "TT..................==.T...T..........TT",
     "TT.....F..F.........==.....T..........TT",
     "TT.T......F..T.F....==..F.............TT",
-    "TT...F..T...........==..............T.TT",
-    "TT...............F..==.F......F.......TT",
-    "TT........F.L.......==.......L......F.TT",
+    "TT...F..T...........==.......=......T.TT",
+    "TT...............F..==.F.....=F.......TT",
+    "TT........F.L.......==.......=......F.TT",
     "TT...........qqqqqqqqqqqqqqGq.........TT",
     "TT...........qqqqqqqqqqqqqqqq.........TT",
     "TT....=......qqqqqqWWqqqqqqqq....=....TT",
@@ -80,10 +80,11 @@
       "y": 3,
       "l": 8,
       "h": 4,
-      "genre": "decor",
+      "genre": "maison",
       "nom": "Sanctuaire des gardiens",
       "toit": "#b0a080",
-      "dessin": "chateau"
+      "dessin": "chateau",
+      "evenement": "epreuves"
     }
   ],
   "habitants": [

@@ -1,0 +1,22 @@
+{
+  "poissons": [
+    {"objet": "gardon", "eaux": ["vallee"], "poids": 30, "difficulte": 1},
+    {"objet": "truite", "eaux": ["vallee", "foret"], "poids": 18, "difficulte": 2},
+    {"objet": "brochet_dore", "eaux": ["vallee"], "poids": 4, "difficulte": 4},
+    {"objet": "perche", "eaux": ["foret"], "poids": 25, "difficulte": 2},
+    {"objet": "silure", "eaux": ["foret", "marais"], "poids": 10, "difficulte": 3},
+    {"objet": "omble", "eaux": ["neige"], "poids": 22, "difficulte": 2},
+    {"objet": "lotte", "eaux": ["neige"], "poids": 8, "difficulte": 4},
+    {"objet": "aveugle", "eaux": ["grotte", "source"], "poids": 20, "difficulte": 2},
+    {"objet": "sardine", "eaux": ["port", "recif", "aube"], "poids": 30, "difficulte": 1},
+    {"objet": "maquereau", "eaux": ["port", "recif"], "poids": 20, "difficulte": 2},
+    {"objet": "bar", "eaux": ["port", "recif"], "poids": 12, "difficulte": 3},
+    {"objet": "raie", "eaux": ["recif", "ruines"], "poids": 7, "difficulte": 4},
+    {"objet": "poulpe", "eaux": ["recif"], "poids": 9, "difficulte": 3},
+    {"objet": "espadon", "eaux": ["recif", "tour"], "poids": 3, "difficulte": 5},
+    {"objet": "poisson_lune", "eaux": ["aube"], "poids": 18, "difficulte": 2},
+    {"objet": "carpe_aube", "eaux": ["aube", "lueurs"], "poids": 10, "difficulte": 4},
+    {"objet": "nacre", "eaux": ["marais", "lueurs"], "poids": 6, "difficulte": 4},
+    {"objet": "roi_brumes", "eaux": ["source"], "poids": 2, "difficulte": 5}
+  ]
+}

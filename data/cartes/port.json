@@ -137,7 +137,8 @@
     },
     {"x": 30, "y": 19, "apparence": "pecheur", "direction": "gauche", "evenement": "quete_capitaine"},
     {"x": 12, "y": 16, "apparence": "barman", "direction": "droite", "evenement": "quete_partitions"},
-    {"x": 32, "y": 19, "apparence": "voyageuse", "direction": "bas", "evenement": "ysolde"}
+    {"x": 32, "y": 19, "apparence": "voyageuse", "direction": "bas", "evenement": "ysolde"},
+    {"x": 6, "y": 21, "apparence": "pecheur", "direction": "droite", "evenement": "maitre_pecheur"}
   ],
   "coffres": [{"x": 3, "y": 21, "objet": "superpotion", "quantite": 3}],
   "panneaux": [

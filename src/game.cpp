@@ -253,6 +253,12 @@ void Game::update(float dt) {
     in.endFrame();
     return;
   }
+  if (fishing_.on && mode == Mode::Map && !sc.busy()) {  // pêche : le reste du jeu attend
+    updateFishing(dt);
+    updateMusic();
+    in.endFrame();
+    return;
+  }
   if (helpPage_ >= 0) {  // aide ouverte : le reste du jeu attend
     lastHelp_ = helpPage_;
     updateHelp();
@@ -729,6 +735,9 @@ void Game::interact() {
     if (fx == b.doorX() && fy == b.doorY()) return enterDoor(b);
   if (fx >= 0 && fy >= 0 && fx < m.w() && fy < m.h() && m.rows[fy][fx] == 'G' && !inExpedition() && !bounties().empty())
     return bountyMenu();  // tableau d'annonces : les primes
+  if (fx >= 0 && fy >= 0 && fx < m.w() && fy < m.h() && m.rows[fy][fx] == '~' && items.count("canne") && items.at("canne") > 0 &&
+      !inExpedition() && hasItem("canne"))
+    return startFishing(fx, fy);  // face à l'eau, avec la canne : pêcher
 }
 
 // Porte d'un bâtiment (Entrée devant elle ou marcher dedans) : on entre s'il a un intérieur, sinon son événement
@@ -917,6 +926,7 @@ void Game::draw() {
       if (story_) story_->draw();
       break;
   }
+  if (fishing_.on && mode == Mode::Map) drawFishing();
   if (!evoTo_.empty()) drawEvolution();
   if (worldMapOn_) drawWorldMap();
   if (helpPage_ >= 0) drawHelp();
@@ -1027,6 +1037,7 @@ void Game::drawMap() {
   // Carte moins haute que l'écran (intérieur) : centrée, comme une carte trop étroite
   float vhi = float(m.h() * 16 - SCREEN_H);
   int camY = vhi >= 0 ? (int)std::clamp(ppy - SCREEN_H / 2 + 8, 0.f, vhi) : (int)(vhi / 2);
+  camX_ = camX, camY_ = camY;
   int tx0 = std::max(0, (int)std::floor((camX + g.left()) / 16)), tx1 = (int)((camX + g.right()) / 16), ty0 = std::max(0, camY / 16);
   for (int y = ty0; y <= ty0 + SCREEN_H / 16 && y < m.h(); y++)
     for (int x = tx0; x <= tx1 && x < m.w(); x++) drawTile(g, m, x, y, x * 16 - camX, y * 16 - camY, time);

@@ -321,6 +321,9 @@ vraie fin (le passé des gardiens et de la brume). Scripts `outils/villes/acte3.
 automatique : tout fini en 2 h 14 ; estimation pour un vrai joueur : environ 5 h (lecture 1 h 05). Relecture Codex :
 3 remarques justes corrigées (drapeaux des déclencheurs d'arrivée, champ « evenement » des boss en double, enlevé des
 nouvelles cartes ; écho de la musique alloué une fois hors du fil du son).
+Ensuite : 5 en partie (les épreuves des gardiens : huit combats puis Ilya, au sanctuaire d'Aube) ; la pêche (18 poissons,
+carnet et maître pêcheur au port). Joueur automatique : 3 h 34 avec les épreuves (Ilya demande trois essais) ;
+estimation pour un vrai joueur : 7 h 30, sans compter la pêche.
 Prochaines pistes pour approcher 20 h : un acte 4 / une région de plus, une ligue de l'Arène, un donjon d'après la
 fin à étages, la pêche, des captures demandées par plus de quêtes, des combats plus riches à mi-parcours.
 

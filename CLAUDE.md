@@ -546,6 +546,16 @@ code) ; `docs/GUIDE.md` les range par domaine.
   soigne, `brume_noire`, drapeau `aube_fin`, écran de fin). 8 créatures d'Aube et 3 boss recolorés (variantes.json :
   `lueurine`, `loup_aube`…). Écrit par `outils/villes/acte3.py` (cartes, vérifie l'accès à pied) puis
   `outils/villes/acte3_histoire.py` (espèces, objets, conseils, événements) : pour refaire, remettre data/ avec git.
+- Épreuves des gardiens (2026-10-20) : après `aube_fin`, la porte du sanctuaire d'Aube (événement `epreuves`) ouvre huit
+  combats contre des esprits gardiens (drapeaux `epreuve1`…`epreuve8`, niveaux 70 à 84), puis Ilya (`epreuve9`,
+  Insigne des gardiens) ; quête `epreuves`. Script `outils/villes/epreuves.py`.
+- Pêche (2026-10-20, `peche.cpp`) : face à une case `~` avec l'objet `canne` (donné par le maître pêcheur du port,
+  événement `maitre_pecheur`), `Game::interact` lance `startFishing` ; `fishing_` (0 attente, 1 ça mord : Entrée vite,
+  2 ferrage : Entrée quand le curseur est dans la zone verte, `need` coups, 3 ratés = ligne cassée) ; le jeu attend
+  pendant ce temps (`Game::update`), dessin `drawFishing` par-dessus la carte (`camX_`, `camY_`). Poissons :
+  `data/peche.json` (`objet`, `eaux` : identifiants de carte d'abord, sinon thèmes ; `poids`, `difficulte`), objets de
+  objets.json ; drapeau `peche:<id>`, `Game::fishCaught`, condition `poissons_min` ; quête `peche` (récompenses à 5, 10,
+  15, 18 espèces). Script `outils/villes/peche.py`. Pas en Expédition ; le joueur automatique ne pêche pas.
 - Langue (3.1) : `i18n.hpp` : `T("…")` (const char*) et `tr(std::string)` traduisent une phrase française avec
   `data/langues/<langue>.json` (absente : le français reste). `setLanguage` au démarrage (`options().english`, ligne
   `anglais` d'`options.txt` ; premier lancement : langue du système) et dans Options > Langue, puis `rebuildData()` et
