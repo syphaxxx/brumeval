@@ -272,7 +272,15 @@
       "evenement": "chat_rentre",
       "si": {"drapeau": "chat_trouve"}
     },
-    {"x": 25, "y": 18, "apparence": "marchande", "direction": "bas", "evenement": "collectionneuse"}
+    {"x": 25, "y": 18, "apparence": "marchande", "direction": "bas", "evenement": "collectionneuse"},
+    {
+      "x": 33,
+      "y": 12,
+      "apparence": "ancien",
+      "direction": "bas",
+      "evenement": "professeure",
+      "si": {"drapeau": "nat3"}
+    }
   ],
   "coffres": [
     {"x": 12, "y": 24, "objet": "medaillon", "quantite": 1},

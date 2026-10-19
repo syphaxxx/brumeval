@@ -25,5 +25,6 @@
 {"id": "mines", "nom": "La vieille mine", "lieu": "Monts Cendrelune", "etapes": [{"texte": "Chasser le troll des Mines de Forgeroc, à l'ouest de la ville."}], "fin_texte": "Le troll a quitté la mine."},
 {"id": "glacier", "nom": "Le colosse du glacier", "lieu": "Pics Givrés", "etapes": [{"texte": "Abattre le Colosse de givre, au fond du Glacier de Givreval, à l'est des Pics."}], "fin_texte": "Le glacier est redevenu silencieux."},
 {"id": "epave", "nom": "L'épave du Léviathan", "lieu": "Récif d'Écume", "etapes": [{"texte": "Explorer l'épave échouée au sud du Récif d'Écume, et vaincre ce qui vit dans sa cale."}], "fin_texte": "Le Léviathan a sombré."},
-{"id": "abime", "nom": "L'Abîme", "lieu": "Bois des Lueurs", "etapes": [{"texte": "Descendre les trois étages de l'Abîme, à l'ouest du Bois des Lueurs, jusqu'à ce qui gronde au fond."}], "fin_texte": "L'Orage ancien est dissipé."}
+{"id": "abime", "nom": "L'Abîme", "lieu": "Bois des Lueurs", "etapes": [{"texte": "Descendre les trois étages de l'Abîme, à l'ouest du Bois des Lueurs, jusqu'à ce qui gronde au fond."}], "fin_texte": "L'Orage ancien est dissipé."},
+{"id": "bestiaire", "nom": "Le grand bestiaire", "lieu": "Vallée de Brumeval", "etapes": [{"texte": "Obtenir des espèces de créatures (Bestiaire) et les montrer à la professeure de la Vallée : 15, 30, 45 et 60."}], "fin_texte": "Le grand bestiaire de l'archipel est écrit."}
 ]

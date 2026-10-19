@@ -4095,5 +4095,80 @@
         "non": [{"action": "dire", "texte": "Vous reculez sans bruit."}]
       }
     ]
+  },
+  "professeure": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:bestiaire", "sans_drapeau": "bestiaire60", "especes_min": 60},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Professeure : Soixante espèces… Le plus grand bestiaire jamais réuni. Il portera votre nom, dans les livres de l'archipel."
+          },
+          {"action": "donner", "objet": "medaille_naturaliste", "quantite": 1},
+          {"action": "or", "quantite": 10000},
+          {"action": "drapeau", "nom": "bestiaire60"},
+          {"action": "quete", "id": "bestiaire", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:bestiaire", "sans_drapeau": "bestiaire45", "especes_min": 45},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Professeure : Quarante-cinq ! Vous avez dû parcourir tout l'archipel."
+          },
+          {"action": "donner", "objet": "bottes_ailees", "quantite": 1},
+          {"action": "drapeau", "nom": "bestiaire45"}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:bestiaire", "sans_drapeau": "bestiaire30", "especes_min": 30},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Professeure : Trente espèces ! Vous en savez plus que la moitié de mes collègues."
+          },
+          {"action": "donner", "objet": "gemme_maitre", "quantite": 1},
+          {"action": "drapeau", "nom": "bestiaire30"}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:bestiaire", "sans_drapeau": "bestiaire15", "especes_min": 15},
+        "actions": [
+          {"action": "dire", "texte": "Professeure : Quinze espèces ! Pour un début, c'est remarquable."},
+          {"action": "donner", "objet": "lanterne_or", "quantite": 5},
+          {"action": "or", "quantite": 2000},
+          {"action": "drapeau", "nom": "bestiaire15"}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:bestiaire"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Professeure : Chaque espèce obtenue (capturée, reçue ou évoluée) compte. Le Bestiaire du menu tient le compte."
+          },
+          {"action": "dire", "texte": "Professeure : Revenez à 15, 30, 45 et 60 espèces !"}
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Professeure : C'est vous qui avez aidé mon élève à remplir son carnet ? Ses notes sont excellentes."
+          },
+          {
+            "action": "dire",
+            "texte": "Professeure : J'écris le grand bestiaire de l'archipel. Il me faudrait quelqu'un sur le terrain…"
+          },
+          {"action": "quete", "id": "bestiaire"},
+          {
+            "action": "dire",
+            "texte": "Professeure : Rapportez-moi des espèces, autant que possible. Je récompense chaque étape."
+          }
+        ]
+      }
+    ]
   }
 }

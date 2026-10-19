@@ -765,6 +765,15 @@
     "bonus": {"pv": 40, "attaque": 4, "defense": 4, "magie": 4, "resistance": 4, "vitesse": 4}
   },
   {
+    "id": "medaille_naturaliste",
+    "nom": "Médaille du naturaliste",
+    "icone": "ic_acc_4",
+    "description": "Remise à ceux qui connaissent toutes les créatures. Elles semblent vous faire confiance.",
+    "prix": 5000,
+    "equipement": "accessoire",
+    "bonus": {"pv": 30, "attaque": 3, "defense": 3, "magie": 3, "resistance": 3, "vitesse": 3, "precision": 5}
+  },
+  {
     "id": "lame_ecume",
     "nom": "Lame d'écume",
     "icone": "ic_epee_2",

@@ -364,7 +364,7 @@ vraie. Une quête commencée pose le drapeau `quete:<id>`, une quête terminée
 
 Conditions possibles (toutes doivent être vraies) : `drapeau`, `sans_drapeau`,
 `objet`, `sans_objet`, `objet_min`, `or_min`, `membre` (une espèce présente dans l'équipe), `poissons_min`
-(espèces de poissons pêchées, carnet de pêche).
+(espèces de poissons pêchées, carnet de pêche), `especes_min` (espèces obtenues du Bestiaire).
 
 ## primes.json (primes, 2026-10-19)
 
