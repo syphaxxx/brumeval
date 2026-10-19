@@ -648,7 +648,17 @@ void drawProp(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
   if (c == 'j') jx = x > 0 && m.rows[y][x - 1] == 't' ? -2 : 2;  // la chaise contre sa table
   if (c != 'C' && c != 'U') g.ellipse(sx + 8 + jx, sy + 14, std::min(8.f, r->w * .4f), 2.5f, rgb(0, 45));
   bool flip = (c == 'T' && (h >> 11) % 2) || (c == 'j' && x > 0 && m.rows[y][x - 1] == 't');  // chaise tournée vers la table
-  g.sprite(*r, sx + 8 + jx - r->w / 2, sy + 16 - r->h + (c == 'T' ? 1 : 0), flip);
+  float x0 = sx + 8 + jx - r->w / 2, y0 = sy + 16 - r->h + (c == 'T' ? 1 : 0);
+  if (c == 'T' && r->h >= 16) {  // le vent : le haut de l'arbre penche d'un pixel par moments, en vague sur la carte
+    int sway = (int)std::round(std::sin(t * 1.3f + x * .45f + y * .2f) * .65f);
+    if (sway != 0) {
+      int top = r->h * 9 / 20;
+      g.sprite(r->sub(0, top, r->w, r->h - top), x0, y0 + top, flip);
+      g.sprite(r->sub(0, 0, r->w, top), x0 + sway, y0, flip);
+      return;
+    }
+  }
+  g.sprite(*r, x0, y0, flip);
 }
 
 // Fenêtre d'un mur d'intérieur (3.3) : la face d'un mur sur deux ou trois, sauf là où pend un cadre
