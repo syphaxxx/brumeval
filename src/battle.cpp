@@ -499,6 +499,16 @@ bool Battle::facesRight(const FighterP& f) const {
 }
 // Les cases voyagent dans les coordonnées de l'hôte : seul l'invité du duel les retourne (à la réception de l'état,
 // à l'envoi d'un déplacement), pour voir son équipe à gauche
+int Battle::meleeThreat(const FighterP& f, int cell) const {
+  int n = 0;
+  for (auto& o : oppOf(f)) {
+    if (!o->alive() || cellOf(o) < 0) continue;
+    bool melee = false;
+    for (auto& id : o->techs()) melee = melee || (moveInfo(id).melee && moveInfo(id).damaging());
+    if (melee && boardSteps(cellOf(o), cell) <= moveRange(o) + reach(o)) n++;
+  }
+  return n;
+}
 int Battle::netCell(int c) const {
   if (net_ != Net::Guest || c < 0 || c >= BOARD_CELLS) return c;
   return boardAt(boardY(c), BOARD_W - 1 - boardX(c));
@@ -1135,8 +1145,11 @@ void Battle::command(FighterP a) {
                            std::string where = boardX(c) == edge && !breakthrough_.count(a.get()) && rules().breakthrough > 0
                                                    ? T("Bord adverse : Percée ! Attaque, Magie et Vitesse +") + std::to_string(rules().breakthrough) + "."
                                                : !inHalf(true, c) ? T("Camp adverse : on peut frapper dans le dos, mais gare à l'encerclement.")
-                                                                  : T("Notre camp.");
-                           t.items.push_back({boardName(c), "", boardName(c) + " · " + (tr ? tr->name + " : " + tr->desc : where), true,
+                                                                  : std::string();
+                           int threat = meleeThreat(a, c);
+                           std::string danger = threat == 0 ? std::string(T(" · Hors de portée des ennemis au prochain tour."))
+                                                            : T(" · Danger : ") + std::to_string(threat) + T(" ennemi(s) pourront frapper ici.");
+                           t.items.push_back({boardName(c), "", boardName(c) + (tr ? " · " + tr->name + " : " + tr->desc : where.empty() ? "" : " · " + where) + danger, true,
                                               [this, a, c] { moveTo(a, c); }});
                          }
                          // la case la plus proche du combattant d'abord
@@ -1735,6 +1748,15 @@ bool Battle::bossPlan(FighterP e) {
 }
 bool Battle::tacticTurn(FighterP a) {
   if (!a->tacticsOn) return false;
+  // Échiquier : en mode auto, il choisit d'abord sa case comme l'ordinateur (à l'abri d'une zone annoncée, au contact,
+  // dans le dos…) ; s'il reste en place, il peut encore s'approcher pour une attaque choisie par ses tactiques
+  if (!moved_.count(a.get()) && !follower()) {
+    int c = planMove(a);
+    if (c >= 0) {
+      actor = a;
+      step(a, c);
+    }
+  }
   Plan p;
   if (!tacticPlan(a, p)) {
     // Échiquier : si aucune de ses attaques n'atteint personne, il s'approche (puis ses tactiques rejouent), sinon il
@@ -2696,6 +2718,15 @@ void Battle::drawZones(float t) {
       if ((int)i != m.sel && m.items[i].enabled) tile(g, cellPos(pick_.cells[i]), rgb(0xffffff, uint8_t(90 + 60 * pulse)), true);
     if (m.sel >= 0 && m.sel < (int)pick_.cells.size()) center = pick_.cells[(size_t)m.sel];
     if (!pick_.move) mv = aiming_;
+    if (pick_.move && actor)  // cases où des ennemis pourront frapper au prochain tour : un petit losange rouge par ennemi
+      for (size_t i = 0; i < pick_.cells.size(); i++) {
+        int n = std::min(3, meleeThreat(actor, pick_.cells[i]));
+        Pt p = cellPos(pick_.cells[i]);
+        for (int k = 0; k < n; k++) {
+          float x = p.x - (n - 1) * 3.f + k * 6, y = p.y + 13;
+          g.poly({{x, y - 2.5f}, {x + 2.5f, y}, {x, y + 2.5f}, {x - 2.5f, y}}, rgb(0xff4a3a, 220));
+        }
+      }
     if (pick_.move && center >= 0 && actor) {  // le combattant en transparence sur la case choisie
       Pt p = cellPos(center);
       g.alpha = .45f;

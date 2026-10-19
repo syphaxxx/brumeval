@@ -688,7 +688,7 @@
             "action": "combat",
             "ennemis": [
               {"espece": "serpentin", "niveau": 14},
-              {"espece": "ronce_mere", "niveau": 22, "pv": 8.5, "boss": true, "phases": [{"pv": 0.5, "message": "La Ronce-Mère fait germer un champignon guérisseur !", "renforts": [{"espece": "champichou", "niveau": 16}]}]},
+              {"espece": "ronce_mere", "niveau": 23, "pv": 8.5, "boss": true, "phases": [{"pv": 0.5, "message": "La Ronce-Mère fait germer un champignon guérisseur !", "renforts": [{"espece": "champichou", "niveau": 16}]}]},
               {"espece": "serpentin", "niveau": 14}
             ],
             "renforts": [{"espece": "crapoison", "niveau": 13}],
@@ -996,7 +996,7 @@
         "oui": [
           {
             "action": "combat",
-            "ennemis": [{"espece": "nebulis", "niveau": 36}, {"espece": "mere_brumes", "niveau": 41, "pv": 7.5, "boss": true, "phases": [{"pv": 0.66, "message": "La brume s'épaissit autour de la Mère des Brumes…", "meteo": "brume"}, {"pv": 0.33, "message": "La Mère des Brumes se déchaîne !", "bonus": {"magie": 1}, "techniques": ["suie"]}]}, {"espece": "brumeloup", "niveau": 36}],
+            "ennemis": [{"espece": "nebulis", "niveau": 36}, {"espece": "mere_brumes", "niveau": 42, "pv": 7.5, "boss": true, "phases": [{"pv": 0.66, "message": "La brume s'épaissit autour de la Mère des Brumes…", "meteo": "brume"}, {"pv": 0.33, "message": "La Mère des Brumes se déchaîne !", "bonus": {"magie": 1}, "techniques": ["suie"]}]}, {"espece": "brumeloup", "niveau": 36}],
             "renforts": [{"espece": "orbrume", "niveau": 36}],
             "boss": true,
             "fuite": false,

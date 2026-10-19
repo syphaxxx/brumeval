@@ -171,6 +171,9 @@ class Battle {
   void waitTurn(FighterP a);                    // « Attendre » : finir son tour sans agir (rejoue plus tôt)
   int netCell(int c) const;                     // duel : le plateau est vu en miroir chez l'invité
   bool facesRight(const FighterP& f) const;     // tourné vers l'adversaire le plus proche
+  // Adversaires de f qui pourront le frapper au corps à corps s'il se tient sur cette case (au prochain tour :
+  // déplacement + portée, sans compter les détours) : marqués en rouge quand on choisit où aller
+  int meleeThreat(const FighterP& f, int cell) const;
   // Corps à corps : un adversaire au contact, ou qu'on peut rejoindre ce tour (on s'approche avant de frapper)
   bool reachable(const FighterP& a, const Move& m, const FighterP& t) const;
   // Victimes d'une technique visant center : center d'abord, puis les autres combattants de sa zone

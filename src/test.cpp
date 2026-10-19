@@ -550,6 +550,19 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     B.sc.clear();
     B.cells_[lior.get()] = boardAt(1, 1);
     lior->atb = 100;
+    {  // capture : le choix de la case, avec les cases menacées (losanges rouges)
+      B.start = time - 5;
+      B.pops.clear();
+      B.command(lior);
+      Menu& cm = menus.top();
+      for (size_t i = 0; i < cm.items.size(); i++)
+        if (cm.items[i].label == T("Se déplacer")) cm.sel = (int)i;
+      in.confirm = true;
+      frame();
+      run(.1f);
+      snap("echiquier_deplacer");
+      menus.clear();
+    }
     int to = boardAt(1, 2);
     B.moveTo(lior, to);
     for (int i = 0; i < 200 && B.sc.busy(); i++) frame();
@@ -1131,7 +1144,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     mode = Mode::Map;
     tipsOff_ = false;
     tipsSeen.clear();
-    tipsSeen.insert("echiquier");  // déjà vue : celle du bouclier vient ensuite
+    tipsSeen.insert("echiquier"), tipsSeen.insert("obstacle");  // déjà vues : celle du bouclier vient ensuite
     team = {makeFighter("lior", 20)};
     startBattle({makeFighter("brumelin", 5)}, false, nullptr);
     battle_->start -= 2;
