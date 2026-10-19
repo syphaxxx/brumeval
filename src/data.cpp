@@ -414,6 +414,7 @@ void rebuildData() {
     m.melee = jget<std::string>(o, "portee", m.kind == Kind::Physical ? "corps" : "distance") == "corps";
     std::string sh = jget<std::string>(o, "deplace", "");
     m.shove = sh == "pousse" ? 1 : sh == "tire" ? -1 : 0;
+    m.motion = jget<std::string>(o, "mouvement", "");
     if (!sh.empty() && !m.shove) throw std::runtime_error("Technique " + m.id + " : « deplace » doit valoir pousse ou tire");
     if (o.contains("effet")) m.effects.push_back(parseEffect(o["effet"]));
     for (auto& e : o.value("effets", Json::array())) m.effects.push_back(parseEffect(e));

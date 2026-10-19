@@ -601,6 +601,18 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     auto road = B.walkable(lior);
     check(openRoad && !road.count(boardAt(1, 2)) && !road.count(boardAt(1, 3)), "échiquier : un obstacle bloque le passage (ni arrêt ni traversée)");
     B.obstacles_.clear();
+    {  // Techniques de mouvement : bond derrière la cible, échange de cases
+      B.cells_[lior.get()] = boardAt(1, 3), B.cells_[brute.get()] = boardAt(1, 4);
+      B.cells_[mage.get()] = boardAt(3, 7), B.cells_[extra.get()] = boardAt(0, 7);
+      Move leap = moveInfo("dague"), swap = moveInfo("coup_bas");
+      bool data = leap.motion == "bond" && swap.motion == "echange";
+      B.motionAfterHit(lior, brute, leap);
+      bool leapt = B.cellOf(lior) == boardAt(1, 5) && B.cellOf(brute) == boardAt(1, 4);
+      B.motionAfterHit(lior, brute, swap);
+      bool swapped = B.cellOf(lior) == boardAt(1, 4) && B.cellOf(brute) == boardAt(1, 5);
+      B.moved_.clear();
+      check(data && leapt && swapped, "échiquier : bond derrière la cible, échange de cases");
+    }
     lior->stage.fill(0);
     B.moved_.clear();
     B.cells_[lior.get()] = boardAt(1, 2);

@@ -103,6 +103,9 @@ struct Move {
   Area zone = Area::Single;  // zone d'effet (par défaut : selon la cible, « tous » = tout le camp)
   bool melee = false;        // corps à corps : ne vise que la colonne ennemie la plus avancée (défaut : physique)
   int shove = 0;             // 2.6 (Into the Breach) : +1 pousse la cible d'une case vers l'arrière, -1 la tire vers l'avant
+  // 3.4 (échiquier, champ « mouvement ») : "bond" = après le coup, le lanceur saute sur la case derrière la cible ;
+  // "echange" = le lanceur et la cible échangent leurs cases (pas un boss)
+  std::string motion;
   std::vector<Effect> effects;
   bool damaging() const { return kind == Kind::Physical || kind == Kind::Magic; }
 };

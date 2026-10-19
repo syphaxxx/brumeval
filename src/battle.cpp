@@ -80,6 +80,8 @@ std::string moveDetails(const Move& m, const Fighter* user) {
     s += T(". Effet : ");
     for (size_t i = 0; i < m.effects.size(); i++) s += (i ? ", " : "") + effectText(m.effects[i], m);
   }
+  if (m.motion == "bond") s += T(". Puis le lanceur bondit sur la case derrière la cible (si elle est libre)");
+  if (m.motion == "echange") s += T(". Puis le lanceur et la cible échangent leurs cases (pas un boss)");
   if (m.shove > 0) s += T(". Repousse la cible d'une case, loin du lanceur (case prise ou bord : choc pour les deux)");
   if (m.shove < 0) s += T(". Attire la cible d'une case vers le lanceur (case prise : choc pour les deux)");
   if (m.pace == Pace::Quick) s += T(". Rapide : rejoue plus tôt (jauge à ") + std::to_string(R.quickGauge) + " %)";
@@ -129,6 +131,8 @@ std::string moveBrief(const Move& m, const Fighter* user) {
     if (e.chance < 100) s += " " + std::to_string(e.chance) + " %";
     v.push_back(s);
   }
+  if (m.motion == "bond") v.push_back(T("Bondit derrière"));
+  if (m.motion == "echange") v.push_back(T("Échange de cases"));
   if (m.shove > 0) v.push_back(T("Repousse d'1 case"));
   if (m.shove < 0) v.push_back(T("Attire d'1 case"));
   if (m.pace == Pace::Quick) v.push_back(T("Rapide (jauge ") + std::to_string(R.quickGauge) + " %)");
@@ -2122,6 +2126,32 @@ void Battle::shove(const FighterP& a, const FighterP& t, const Move& m, int dmg,
   if (terrainTurn(t, true) && std::find(ko.begin(), ko.end(), t) == ko.end()) ko.push_back(t);
 }
 
+int Battle::leapDest(const FighterP& a, const FighterP& t) const {
+  int c = cellOf(t), ac = cellOf(a);
+  if (c < 0 || ac < 0) return -1;
+  int dx = boardX(c) - boardX(ac), dy = boardY(c) - boardY(ac), x = boardX(c), y = boardY(c);
+  if (std::abs(dy) > std::abs(dx)) y += dy > 0 ? 1 : -1;  // dans l'axe principal qui les sépare, de l'autre côté
+  else x += dx > 0 ? 1 : dx < 0 ? -1 : isAlly(t) ? -1 : 1;
+  if (x < 0 || x >= BOARD_W || y < 0 || y >= GRID) return -1;
+  int to = boardAt(y, x);
+  return at(to) || blockedCell(to) ? -1 : to;
+}
+void Battle::motionAfterHit(const FighterP& a, const FighterP& t, const Move& m) {
+  if (m.motion == "bond") {
+    int to = leapDest(a, t);
+    if (to < 0) return;
+    step(a, to);
+    pop(a, T("Bond !"), rgb(0xd8e0ff));
+  } else if (m.motion == "echange" && t->alive() && !t->boss) {
+    int ca = cellOf(a), ct = cellOf(t);
+    if (shown()) slide_[t.get()] = {pos(t), G.time};
+    cells_[t.get()] = ca;
+    step(a, ct);
+    pop(t, T("Échange !"), rgb(0xd8e0ff));
+    log.push_back("  " + a->name() + T(" échange de place avec ") + t->name());
+  }
+}
+
 const Rules::Terrain* Battle::terrainOf(int cell) const {
   if (cell < 0 || cell >= BOARD_CELLS) return nullptr;
   int i = terrain_[(size_t)cell];
@@ -2377,6 +2407,7 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
             if (!e.self) applyEffect(t, e);
           if (m.shove && t == targets[0] && dmg > 0) shove(a, t, m, dmg, *ko);
         }
+        if (!m.motion.empty() && t == targets[0] && a->alive()) motionAfterHit(a, t, m);
       }
     }
     if (landed || m.kind == Kind::Status)

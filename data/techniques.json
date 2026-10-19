@@ -73,6 +73,7 @@
     "puissance": 32,
     "critique": 20,
     "rythme": "rapide",
+    "mouvement": "bond",
     "description": "Rapide mais légère."
   },
   {
@@ -155,7 +156,8 @@
     "type": "normal",
     "genre": "physique",
     "cible": "ennemi",
-    "puissance": 40
+    "puissance": 40,
+    "mouvement": "bond"
   },
   {
     "id": "morsure",
@@ -241,7 +243,8 @@
     "cible": "ennemi",
     "puissance": 65,
     "precision": 90,
-    "effet": {"statut": "paralysie", "chance": 15}
+    "effet": {"statut": "paralysie", "chance": 15},
+    "mouvement": "bond"
   },
   {
     "id": "gel",
@@ -747,6 +750,7 @@
     "cible": "ennemi",
     "puissance": 45,
     "critique": 25,
+    "mouvement": "echange",
     "description": "Frappe là où ça fait mal."
   },
   {
@@ -1210,7 +1214,8 @@
     "genre": "physique",
     "cible": "ennemi",
     "puissance": 75,
-    "rythme": "lourde"
+    "rythme": "lourde",
+    "mouvement": "bond"
   },
   {
     "id": "hurlement_spectral",
@@ -1422,7 +1427,7 @@
   },
   {
     "id": "duo_percee",
-    "nom": "Percée",
+    "nom": "Assaut perçant",
     "type": "metal",
     "genre": "physique",
     "cible": "ennemi",
