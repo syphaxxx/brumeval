@@ -317,10 +317,14 @@ static bool humanSprite(Gfx& g, const Look& lk, float x, float y, float s, int d
     flip = r != nullptr;
   }
   if (!r) r = frame("bas");
-  if (!r && (r = findSprite(p))) flip = dir == 3;  // animal : un seul sprite, tourné vers la gauche
+  float hop = 0;
+  if (!r && (r = findSprite(p))) {  // animal : un seul sprite, tourné vers la gauche ; il trottine en marchant (3.4)
+    flip = dir == 3;
+    hop = step ? -1.f * s : 0.f;
+  }
   if (!r) return false;
   g.ellipse(x + 8 * s, y + 15 * s, 6 * s, 2 * s, rgb(0, 50));
-  g.sprite(*r, std::round(x + (16 * s - r->w * s) / 2), std::round(y + 16 * s - r->h * s), flip, s, tint);
+  g.sprite(*r, std::round(x + (16 * s - r->w * s) / 2), std::round(y + 16 * s - r->h * s + hop), flip, s, tint);
   return true;
 }
 

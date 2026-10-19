@@ -235,6 +235,8 @@ Troisième série (7 h 50) :
 15. Animaux des villes (chien, chat, poule, vache, cheval) : marche animée, rendue avec Blender.
 16. Mesures, joueur automatique, revue, bilan.
 Avancement : 13 et 14 faits (chemin en pointillés dorés ; « Revenir », pas en ligne ni après une Percée).
+15 abandonné : des animaux rendus en 3D seraient bien moins beaux que leurs sprites dessinés (très détaillés) ; à la
+place, ils trottinent en marchant (petit bond à chaque pas, dessin seul).
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
