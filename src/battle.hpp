@@ -171,8 +171,8 @@ class Battle {
   int planMove(const FighterP& a);              // ordinateur : où aller avant d'agir (-1 : rester)
   void step(const FighterP& a, int cell);       // le déplacer (glisse à l'écran ; Percée en atteignant le bord adverse)
   std::set<const Fighter*> breakthrough_;       // ceux qui ont déjà fait leur Percée
-  float quietT_ = 0;    // temps de jauges sans que les PV de personne changent : au-delà de 40 s, l'ordinateur va au contact
-  long long hpSum_ = -1;  // somme des PV de tous, pour voir s'ils changent (dégâts, soins, poison…)
+  float quietT_ = 0;    // temps de jauges sans que personne prenne de dégâts : au-delà de 40 s, l'ordinateur va au contact
+  long long hpSum_ = -1;  // somme des PV de tous, pour voir s'ils baissent (dégâts, poison…)
   struct Burst {  // éclat dessiné par-dessus un combattant (Percée, Brisure : images gfx_<fx>_k de Godot)
     FighterP f;
     const char* fx;

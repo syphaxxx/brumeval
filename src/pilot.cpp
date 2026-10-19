@@ -221,6 +221,8 @@ static std::vector<std::string> nameList(const Json& v) {
 void Pilot::inspectList(const Json& list, Info& in, int depth) const {
   for (auto& a : list) {
     std::string k = jget<std::string>(a, "action", "");
+    // Entraînement sans récompense (à refaire à volonté) : rien à gagner, ni objectif ni effet
+    if (k == "combat" && jget(a, "entrainement", false) && a.value("victoire", Json::array()).empty()) continue;
     // Seulement parler, attendre ou choisir le point de réveil : aucun effet sur la partie
     if (k != "dire" && k != "attendre" && k != "si" && k != "question" && k != "reveil" && k != "evenement") in.effect = true;
     if (k == "si") {

@@ -858,6 +858,38 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     items.erase("amulette_vie");
   }
 
+  // --- Échiquier : pas de combat bloqué (vu le 2026-10-19 : une créature presque K.O. sur une source qui la soigne et une
+  // alliée sans PM, chacune trop prudente pour s'approcher) ---
+  {
+    menus.clear();
+    sc.clear();
+    mode = Mode::Map;
+    auto keepTeam = team;
+    auto maelle = makeFighter("maelle", 6);
+    maelle->mp = 0;
+    team = {maelle};
+    auto mulot = makeFighter("mulotin", 5);
+    BattleResult res = BattleResult::Fled;
+    startBattle({mulot}, false, [&](BattleResult r) { res = r; }, false, false);
+    Battle& B = *battle_;
+    B.autoPlay = true;
+    B.obstacles_.clear(), B.terrain_.fill(-1), B.weather_ = -1;
+    B.cells_[maelle.get()] = boardAt(1, 0), B.cells_[mulot.get()] = boardAt(1, 6);
+    mulot->hp = 2;
+    for (size_t i = 0; i < rules().terrains.size(); i++)
+      if (rules().terrains[i].kind == "soin") B.terrain_[(size_t)boardAt(1, 6)] = (int)i;
+    for (int i = 0; i < 20 * 400 && mode == Mode::Battle; i++) {
+      in.confirm = true;
+      update(1 / 20.f);
+    }
+    check(mode != Mode::Battle && res != BattleResult::Fled, "échiquier : un combat où chacun hésite à s'approcher finit quand même");
+    if (battle_) battle_.reset();
+    mode = Mode::Map;
+    team = keepTeam;
+    menus.clear();
+    sc.clear();
+  }
+
   // --- Combat piloté par les menus ---
   startBattle({makeFighter("mulotin", 4), makeFighter("champichou", 5), makeFighter("piafouine", 4)}, false, nullptr);
   if (battle_) {  // échiquier : les ennemis au contact de l'équipe, pour que les menus suivants aient tous une cible

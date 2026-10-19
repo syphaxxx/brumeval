@@ -1028,8 +1028,9 @@ void Battle::tickATB(float dt) {
   long long sum = 0;
   for (auto* side : {&allies, &foes})
     for (auto& f : *side) sum += f->hp;
-  if (sum != hpSum_) hpSum_ = sum, quietT_ = 0;
+  if (sum < hpSum_) quietT_ = 0;  // quelqu'un a pris des dégâts (un soin, une source ne comptent pas)
   else quietT_ += dt;
+  hpSum_ = sum;
   std::vector<FighterP> all = alive(allies);
   for (auto& e : alive(foes)) all.push_back(e);
   for (auto& f : all) {
@@ -1640,7 +1641,7 @@ float Battle::posValue(const FighterP& a, int cell) {
   }
   if (int n = foesAround(a); n >= 2) v -= 8.f * (n - 1);  // encerclé
   if (caster) v += std::min(nearest, 4) * 2.f;            // garder ses distances
-  else v -= nearest * 2.5f;                                // aller au contact
+  else v -= nearest * (best > 0 ? 2.5f : 5.f);             // aller au contact (vite s'il n'a rien à frapper d'ici)
   if (s.combatRole == "protecteur")                        // rester près des siens
     for (auto& o : alive(sideOf(a)))
       if (o != a && inBoardZone(Area::Cross, cell, cellOf(o))) v += 6;
