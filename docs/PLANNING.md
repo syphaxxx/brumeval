@@ -256,6 +256,10 @@ Cinquième série (soir du 19, « continue comme ça ») :
     avec une récompense la première fois.
 19. Aide : une page « Nouveautés 3.4 » pour les joueurs qui reprennent une partie.
 20. Vérifications, mesures, page de bilan.
+Avancement : 17 fait (src/echiquier.cpp, 391 lignes déplacées à l'identique, vérifié ligne à ligne) ; 18 fait
+(instructeurs à Forgeroc et Givreval ; le joueur automatique les fait une fois chacun) ; 19 fait (page « Nouveautés
+3.4 » en tête de l'Aide). En plus : dans les dialogues, une 4e ligne longue ne passe plus sous la flèche « ▼ ».
+Joueur automatique : histoire finie (1 h 29, 5 défaites, surtout des meutes sauvages : variable d'une partie à l'autre).
 Relecture Codex de la série : 2 remarques justes corrigées (Protéger avec une condition « Soi », « Revenir » gardé
 après un remplacement). Page de bilan : https://claude.ai/artifact/KbjqopS4iS7eXWjgjLL5my
 
