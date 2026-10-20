@@ -215,8 +215,39 @@ MORCEAUX = {
         'basse': 'quinte', 'volume_basse': .26, 'batterie': 'calme', 'volume_batterie': .6,
         'echo': {'delai': .34, 'retour': .3, 'melange': .25},
     },
+    # Combats de l'archipel (2026-10-20) : mi mineur, houle à 6/8 rapide
+    'combat_mer': {
+        'tempo': 150, 'mesure': 3, 'onde': 'carree', 'rapport': .25, 'volume': .12, 'vibrato': .15,
+        'accords': 'Em C D B Em C Am B | C D Em Em Am B Em B',
+        'melodie': [
+            'E5 . G5 . B5 .', 'C6 . B5 . G5 .', 'A5 . F#5 . D5 .', 'D#5 . . . B4 .',
+            'E5 . . . G5 .', 'E5 . C5 . G4 .', 'A4 . C5 . E5 .', 'F#5 . . . D#5 .',
+            'G5 . E5 . C5 .', 'A5 . F#5 . D5 .', 'B5 . G5 . E5 .', 'G5 . . . . .',
+            'C6 . A5 . E5 .', 'D#5 . F#5 . B5 .', 'G5 . E5 . B4 .', 'D#5 . F#5 . A5 .',
+        ],
+        'arpege': 'monte_descend', 'octave_arpege': 4, 'volume_arpege': .045,
+        'basse': 'quinte', 'volume_basse': .3, 'batterie': 'marin', 'volume_batterie': 1,
+    },
+    # Combats de l'île d'Aube : la majeur lumineux, héroïque
+    'combat_aube': {
+        'tempo': 158, 'onde': 'carree', 'rapport': .5, 'volume': .11, 'vibrato': .18,
+        'accords': 'A F#m D E A F#m B E | D E C#m F#m D E A A',
+        'melodie': [
+            'A4 . C#5 . E5 . A5 .', 'F#5 . E5 . C#5 . A4 .', 'D5 . F#5 . A5 . F#5 .', 'E5 . . . G#4 . B4 .',
+            'C#5 . E5 . A5 . C#6 .', 'A5 . F#5 . C#5 . F#5 .', 'D#5 . F#5 . B5 . A5 .', 'G#5 . . . . . - -',
+            'F#5 . . E5 D5 . F#5 .', 'G#5 . . F#5 E5 . G#5 .', 'E5 . . C#5 G#4 . C#5 .', 'A5 . . . F#5 . C#5 .',
+            'D5 . F#5 . A5 . D6 .', 'B5 . G#5 . E5 . B4 .', 'C#5 . E5 . A5 . . .', 'A5 . G#5 . E5 . C#5 .',
+        ],
+        'arpege': 'monte', 'octave_arpege': 4, 'volume_arpege': .05,
+        'basse': 'galop', 'volume_basse': .3, 'batterie': 'combat',
+    },
 }
 
 # Morceau propre à une carte (identifiant de carte) en plus de ceux des thèmes
 LIEUX = {'port': 'port', 'recif': 'abysses', 'ruines': 'abysses', 'tour': 'orage', 'corail': 'port', 'marees': 'abysses', 'epave': 'abysses',
          'aube': 'aube', 'lueurs': 'aube', 'citadelle': 'grotte', 'abime1': 'grotte', 'abime2': 'grotte', 'abime3': 'grotte'}
+# Musique des combats ordinaires d'une carte (« combat:<carte> »)
+for _c in ('port', 'recif', 'ruines', 'corail', 'marees', 'epave', 'tour'):
+    LIEUX['combat:' + _c] = 'combat_mer'
+for _c in ('aube', 'lueurs', 'marais', 'gouffre', 'citadelle', 'abime1', 'abime2', 'abime3'):
+    LIEUX['combat:' + _c] = 'combat_aube'

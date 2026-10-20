@@ -238,7 +238,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
   `outils/musique/compose.py` d'après `outils/musique/morceaux.py` (13 morceaux : grille d'accords, mélodie,
   contre-chant, arpège, basse et batterie fabriqués d'après les accords) ; voix avec `vibrato`, `attaque`,
   `ondulation`, morceau avec `echo` (ligne à retard du `Mixer`) ; `lieux` accepte un identifiant de carte
-  (`Game::updateMusic` : carte, puis thème) ; `BattleSetup::music` (« musique » de l'action combat, vérifiée par
+  (`Game::updateMusic` : carte, puis thème ; `combat:<carte>` donne la musique des combats ordinaires de cette carte : `combat_mer` dans l'archipel, `combat_aube` sur Aube) ; `BattleSetup::music` (« musique » de l'action combat, vérifiée par
   `checkEvents`).
 - Évolution (2.2, plan validé le 2026-10-12) : `Species::evolveTo` / `evolveLvl` (champ `evolution` : `espece`, `niveau`) et
   `size` (`taille`, dessin agrandi dans `drawCreature`) ; `canEvolve` / `evolve` (data.cpp : même niveau, équipement,

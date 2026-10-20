@@ -388,7 +388,13 @@ void Game::update(float dt) {
 // pendant la fin d'un combat (la fanfare de victoire ou de défaite se joue seule)
 void Game::updateMusic() {
   std::string t = "titre";
-  if (mode == Mode::Battle && battle_) t = battle_->ending_ ? "" : !battle_->music.empty() ? battle_->music : battle_->boss ? "boss" : "combat";
+  if (mode == Mode::Battle && battle_) {
+    t = battle_->ending_ ? "" : !battle_->music.empty() ? battle_->music : battle_->boss ? "boss" : "combat";
+    if (t == "combat" && mapId >= 0 && mapId < (int)maps().size()) {  // « lieux » : « combat:<carte> » change la musique des combats
+      std::string c = audio::musicForPlace("combat:" + M().id);
+      if (!c.empty()) t = c;
+    }
+  }
   else if (mode == Mode::Map && mapId >= 0 && mapId < (int)maps().size()) {
     t = audio::musicForPlace(M().id);  // « lieux » : une carte peut avoir son morceau (port, tour…), sinon celui de son thème
     if (t.empty()) t = audio::musicForPlace(themeName(M().theme));
