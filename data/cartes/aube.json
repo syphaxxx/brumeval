@@ -43,7 +43,7 @@
       "genre": "soin",
       "nom": "Maison de soin",
       "toit": "#d0806a",
-      "evenement": "aube_soin"
+      "interieur": "aube_soin"
     },
     {
       "x": 31,
@@ -53,7 +53,7 @@
       "genre": "boutique1",
       "nom": "Comptoir d'Aube",
       "toit": "#e0b04a",
-      "evenement": "aube_boutique"
+      "interieur": "aube_boutique"
     },
     {
       "x": 4,
@@ -63,7 +63,7 @@
       "genre": "auberge",
       "nom": "Auberge du Matin",
       "toit": "#c86a8a",
-      "evenement": "auberge"
+      "interieur": "aube_auberge"
     },
     {
       "x": 31,
@@ -73,7 +73,7 @@
       "genre": "maison",
       "nom": "Maison d'Ilya",
       "toit": "#8a7ac8",
-      "evenement": "aube_maison"
+      "interieur": "aube_maison"
     },
     {
       "x": 25,

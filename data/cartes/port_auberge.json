@@ -1,0 +1,23 @@
+{
+  "id": "port_auberge",
+  "nom": "Auberge de l'Écume",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#hh.e.e.hh#",
+    "#.........#",
+    "#jt....jt.#",
+    "#.........#",
+    "#vv.....vv#",
+    "#.........#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [{"x": 5, "y": 3, "apparence": "barman", "evenement": "auberge", "direction": "bas"}],
+  "coffres": [],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "port", "tx": 26, "ty": 11, "direction": "bas"}],
+  "zones": [],
+  "boss": []
+}

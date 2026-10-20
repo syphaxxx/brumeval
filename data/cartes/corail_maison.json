@@ -1,0 +1,24 @@
+{
+  "id": "corail_maison",
+  "nom": "Maison de la doyenne",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#hh.e..e..#",
+    "#.........#",
+    "#.jtt.....#",
+    "#.jtt.....#",
+    "#........v#",
+    "#.........#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [],
+  "coffres": [],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "corail", "tx": 13, "ty": 22, "direction": "bas"}],
+  "zones": [],
+  "boss": [],
+  "declencheurs": [{"x": 5, "y": 6, "l": 1, "h": 1, "evenement": "maison_corail"}]
+}

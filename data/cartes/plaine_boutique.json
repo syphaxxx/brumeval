@@ -1,0 +1,25 @@
+{
+  "id": "plaine_boutique",
+  "nom": "Épicerie du moulin",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#eeeeeeeee#",
+    "#C.......C#",
+    "#ooo...ooo#",
+    "#.........#",
+    "#v.......v#",
+    "#.........#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [
+    {"x": 5, "y": 3, "apparence": "marchande", "evenement": "boutique_plaine", "direction": "bas"}
+  ],
+  "coffres": [],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "plaine", "tx": 24, "ty": 9, "direction": "bas"}],
+  "zones": [],
+  "boss": []
+}

@@ -298,7 +298,9 @@ code) ; `docs/GUIDE.md` les range par domaine.
   `tryMove` quand on marche dans la porte ; case d'arrivée `interiorEntry` :
   au-dessus du passage de sortie) ; `checkMaps` vérifie la sortie et part de cette case
   pour l'accessibilité. Une carte moins haute que l'écran est centrée
-  (`drawMap`). Les 12 intérieurs des villages sont `data/cartes/<village>_<lieu>.json`.
+  (`drawMap`). Les intérieurs des villages sont `data/cartes/<village>_<lieu>.json` (12 au départ ; 17 de plus pour
+  Moulinbourg, le port, Havre-d'Aube, Corail et Port-Écho, `outils/villes/interieurs_nouveaux.py` : le service passe à un
+  habitant de l'intérieur, la description d'une maison devient un déclencheur au premier pas).
 - Quêtes annexes : `data/quetes.json` (lu par `loadEvents`, vérifié par
   `checkEvents`), action `quete` (drapeaux `quete:<id>` et `quete:<id>:fin`,
   `questFlag`), journal `Game::journalMenu` (en tête : « Progression », `Game::progressMenu` : quêtes, primes,

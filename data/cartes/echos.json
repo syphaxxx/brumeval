@@ -45,7 +45,7 @@
       "genre": "soin",
       "nom": "Maison de soin",
       "toit": "#7a8ab0",
-      "evenement": "echos_soin"
+      "interieur": "echos_soin"
     },
     {
       "x": 34,
@@ -55,7 +55,7 @@
       "genre": "boutique1",
       "nom": "Comptoir des Échos",
       "toit": "#c8a050",
-      "evenement": "echos_boutique"
+      "interieur": "echos_boutique"
     },
     {
       "x": 4,
@@ -65,7 +65,7 @@
       "genre": "maison",
       "nom": "Maison d'Oriane",
       "toit": "#6a5aa8",
-      "evenement": "echos_maison"
+      "interieur": "echos_maison"
     },
     {
       "x": 33,

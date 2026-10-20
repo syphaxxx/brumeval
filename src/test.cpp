@@ -1783,6 +1783,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     view("echos", 21, 18, UP, "acte4_port_echo");
     view("pierres", 8, 17, UP, "acte4_foret_petrifiee");
     view("cratere", 36, 20, RIGHT, "acte4_cratere");
+    view("echos_maison", 5, 6, UP, "interieur_oriane");  // un des intérieurs des nouveaux villages (la description au premier pas)
     {  // un combat au Val des Murmures : ses arbres violets au fond (champ « arbres » de la carte)
       changeMap(mi("val"), 21, 15, UP);
       startBattle({makeFighter("lanternelle", 35)}, false, nullptr);

@@ -1,0 +1,23 @@
+{
+  "id": "corail_soin",
+  "nom": "Maison de soin",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#ee.....hh#",
+    "#.........#",
+    "#...ppp...#",
+    "#...ppp..v#",
+    "#tj.......#",
+    "#.........#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [{"x": 5, "y": 3, "apparence": "docteur", "evenement": "soin_corail", "direction": "bas"}],
+  "coffres": [],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "corail", "tx": 11, "ty": 12, "direction": "bas"}],
+  "zones": [],
+  "boss": []
+}

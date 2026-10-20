@@ -41,7 +41,7 @@
       "genre": "soin",
       "nom": "Maison de soin",
       "toit": "#b8483e",
-      "evenement": "port_soin"
+      "interieur": "port_soin"
     },
     {
       "x": 12,
@@ -51,7 +51,7 @@
       "genre": "boutique2",
       "nom": "Boutique du port",
       "toit": "#3f6fb0",
-      "evenement": "boutique_port"
+      "interieur": "port_boutique"
     },
     {
       "x": 23,
@@ -61,7 +61,7 @@
       "genre": "auberge",
       "nom": "Auberge de l'Écume",
       "toit": "#9a5a2a",
-      "evenement": "auberge"
+      "interieur": "port_auberge"
     },
     {
       "x": 23,
@@ -71,7 +71,7 @@
       "genre": "maison",
       "nom": "Maison de la gardienne du phare",
       "toit": "#5a6a9a",
-      "evenement": "port_maison"
+      "interieur": "port_maison"
     }
   ],
   "habitants": [

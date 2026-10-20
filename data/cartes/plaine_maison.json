@@ -1,0 +1,24 @@
+{
+  "id": "plaine_maison",
+  "nom": "Atelier du charpentier",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#hh.e..e..#",
+    "#.........#",
+    "#.jtt.....#",
+    "#.jtt.....#",
+    "#........v#",
+    "#.........#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [],
+  "coffres": [],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "plaine", "tx": 18, "ty": 27, "direction": "bas"}],
+  "zones": [],
+  "boss": [],
+  "declencheurs": [{"x": 5, "y": 6, "l": 1, "h": 1, "evenement": "atelier_plaine"}]
+}

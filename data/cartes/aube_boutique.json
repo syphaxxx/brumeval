@@ -1,0 +1,23 @@
+{
+  "id": "aube_boutique",
+  "nom": "Comptoir d'Aube",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#eeeeeeeee#",
+    "#C.......C#",
+    "#ooo...ooo#",
+    "#.........#",
+    "#v.......v#",
+    "#.........#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [{"x": 5, "y": 3, "apparence": "marchande", "evenement": "aube_boutique", "direction": "bas"}],
+  "coffres": [],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "aube", "tx": 33, "ty": 12, "direction": "bas"}],
+  "zones": [],
+  "boss": []
+}

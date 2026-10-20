@@ -49,7 +49,7 @@
       "genre": "soin",
       "nom": "Maison de soin",
       "toit": "#b8483e",
-      "evenement": "soin_plaine"
+      "interieur": "plaine_soin"
     },
     {
       "x": 22,
@@ -59,7 +59,7 @@
       "genre": "boutique1",
       "nom": "Épicerie du moulin",
       "toit": "#3f6fb0",
-      "evenement": "boutique_plaine"
+      "interieur": "plaine_boutique"
     },
     {
       "x": 16,
@@ -69,7 +69,7 @@
       "genre": "maison",
       "nom": "Atelier du charpentier",
       "toit": "#9a5a2a",
-      "evenement": "atelier_plaine"
+      "interieur": "plaine_maison"
     },
     {
       "x": 29,

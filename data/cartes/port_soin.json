@@ -1,0 +1,23 @@
+{
+  "id": "port_soin",
+  "nom": "Maison de soin",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#ee.....hh#",
+    "#.........#",
+    "#...ppp...#",
+    "#...ppp..v#",
+    "#tj.......#",
+    "#.........#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [{"x": 5, "y": 3, "apparence": "docteur", "evenement": "port_soin", "direction": "bas"}],
+  "coffres": [],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "port", "tx": 6, "ty": 11, "direction": "bas"}],
+  "zones": [],
+  "boss": []
+}

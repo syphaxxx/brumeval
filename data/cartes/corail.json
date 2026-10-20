@@ -43,7 +43,7 @@
       "genre": "soin",
       "nom": "Maison de soin",
       "toit": "#e08a7a",
-      "evenement": "soin_corail"
+      "interieur": "corail_soin"
     },
     {
       "x": 27,
@@ -53,7 +53,7 @@
       "genre": "boutique2",
       "nom": "Comptoir des coraux",
       "toit": "#4ab0b8",
-      "evenement": "boutique_corail"
+      "interieur": "corail_boutique"
     },
     {
       "x": 10,
@@ -63,7 +63,7 @@
       "genre": "maison",
       "nom": "Maison de la doyenne",
       "toit": "#c87ab8",
-      "evenement": "maison_corail"
+      "interieur": "corail_maison"
     }
   ],
   "habitants": [
