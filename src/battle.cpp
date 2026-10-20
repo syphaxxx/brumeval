@@ -2761,6 +2761,15 @@ void Battle::draw() {
       g.tri(x - 4, HZ - 1, x, HZ - 16, x + 4, HZ - 1, rgb(0x7fd6ff));
     }
   }
+  {  // Profondeur (2026-10-21) : bandes du sol de plus en plus larges vers l'avant (perspective), brume à l'horizon
+    bool bright = (bg == Theme::Vallee && !boss) || (bg == Theme::Neige && !boss);
+    const int N = 14;
+    for (int i = 1; i < N; i += 2) {
+      float y0 = HZ + (SCREEN_H - HZ) * std::pow(i / float(N), 1.8f), y1 = HZ + (SCREEN_H - HZ) * std::pow((i + 1) / float(N), 1.8f);
+      g.rect(L, std::round(y0), W, std::round(y1) - std::round(y0), rgb(0x000000, 9));
+    }
+    for (int i = 0; i < 16; i++) g.rect(L, HZ - 2 + i, W, 1, rgb(bright ? 0xffffff : 0x8a7ab0, uint8_t((16 - i) * (bright ? 4 : 2))));
+  }
   {  // Décor de l'horizon (3.3) : arbres, sapins ou rochers de la planche, en rang au fond et quelques-uns plus près
     std::vector<const char*> back, near;
     if (bg == Theme::Vallee && !boss) back = {"arbre", "arbre_petit", "arbre", "buisson", "arbre_automne"}, near = {"touffe_1", "fleurette_1", "touffe_3"};
@@ -2786,6 +2795,10 @@ void Battle::draw() {
   }
   if (float night = shown() ? G.nightAmount() : 0.f; night > 0)  // jour et nuit (2.6), comme sur la carte
     g.rect(L, 0, W, SCREEN_H, rgb(0x0a1440, uint8_t(80 * night)));
+  for (int i = 0; i < 28; i++) {  // vignette (2026-10-21) : les bords de l'écran un peu plus sombres, le regard va au centre
+    Color c = rgb(0x000000, uint8_t((28 - i) * 2));
+    g.rect(L + i, 0, 1, SCREEN_H, c), g.rect(R - 1 - i, 0, 1, SCREEN_H, c);
+  }
   bool blinking = blink && t - blinkT < .42f && int((t - blinkT) / .07f) % 2 == 0;
   // Échiquier (3.4) : une dalle par case, claires et foncées en alternance ; la moitié de chaque camp légèrement
   // teintée (bleu : le nôtre, rouge : l'adverse), la ligne de front au milieu
