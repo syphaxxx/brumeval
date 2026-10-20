@@ -3,6 +3,7 @@
   "nom": "Val des Murmures",
   "theme": "foret",
   "ambiance": {"effet": "brume"},
+  "arbres": "brume",
   "tuiles": [
     "TTTTTTTTTTTTTTTTTTTTTTT==TTTTTTTTTTTTTTTTTTTTTTT",
     "TTTTTTTTTTTTTTTTTTTTTTT==TTTTTTTTTTTTTTTTTTTTTTT",

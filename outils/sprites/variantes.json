@@ -110,5 +110,8 @@
   {"id": "sapin_petit_lueur", "de": "sapin_petit", "teintes": [[60, 200, 172, 1.15, 1.08]]},
   {"id": "sapin_pale", "de": "sapin", "teintes": [[60, 200, 95, 0.45, 1.12]]},
   {"id": "arbre_pale", "de": "arbre", "teintes": [[60, 200, 95, 0.45, 1.12]]},
-  {"id": "sapin_petit_pale", "de": "sapin_petit", "teintes": [[60, 200, 95, 0.45, 1.12]]}
+  {"id": "sapin_petit_pale", "de": "sapin_petit", "teintes": [[60, 200, 95, 0.45, 1.12]]},
+  {"id": "sapin_brume", "de": "sapin", "teintes": [[60, 200, 255, 0.55, 1.0]]},
+  {"id": "arbre_brume", "de": "arbre", "teintes": [[60, 200, 255, 0.55, 1.0]]},
+  {"id": "sapin_petit_brume", "de": "sapin_petit", "teintes": [[60, 200, 255, 0.55, 1.0]]}
 ]
