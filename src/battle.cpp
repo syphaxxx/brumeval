@@ -2986,7 +2986,23 @@ void Battle::draw() {
   }
   // Nombres flottants
   pops.erase(std::remove_if(pops.begin(), pops.end(), [&](const Pop& p) { return t - p.t > 1.f; }), pops.end());
-  for (auto& p : pops) g.text(p.x, p.y - std::min(1.f, (t - p.t) * 3) * 8, p.text, p.col, 1);
+  {  // nombres et mots qui jaillissent : un petit rebond, et jamais l'un sur l'autre (le plus récent monte au-dessus)
+    std::vector<const Pop*> order;
+    for (auto& p : pops) order.push_back(&p);
+    std::sort(order.begin(), order.end(), [](const Pop* a, const Pop* b) { return a->t < b->t; });
+    std::vector<std::pair<float, float>> placed;  // centre x, y des textes déjà posés
+    for (const Pop* p : order) {
+      float u = t - p->t, y = p->y - std::min(1.f, u * 3) * 8 - (u < .3f ? std::sin(u / .3f * 3.1416f) * 3 : 0.f);
+      float w = Gfx::textW(p->text) / 2.f + 2;
+      for (bool moved = true; moved;) {
+        moved = false;
+        for (auto& [px, py] : placed)
+          if (std::abs(px - p->x) < w + 10 && std::abs(py - y) < 9) y = py - 9, moved = true;
+      }
+      placed.push_back({p->x, y});
+      g.text(p->x, y, p->text, p->col, 1);
+    }
+  }
   if (flashT >= 0 && t - flashT < .5f) {
     Color c = flashCol;
     c.a = uint8_t(130 * (1 - (t - flashT) / .5f));
