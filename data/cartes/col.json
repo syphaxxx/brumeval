@@ -81,6 +81,24 @@
         "La Harpie de givre niche juste au-dessus. Tant qu'elle souffle, personne ne passe.",
         "Sélène, de Givreval, est venue jusqu'ici avant de rebrousser chemin."
       ]
+    },
+    {"x": 21, "y": 37, "apparence": "paysan", "direction": "gauche", "evenement": "quete_chien"},
+    {
+      "x": 25,
+      "y": 36,
+      "apparence": "chien",
+      "direction": "gauche",
+      "evenement": "chien_rentre",
+      "si": {"drapeau": "chien_trouve"}
+    },
+    {
+      "x": 31,
+      "y": 37,
+      "apparence": "chien",
+      "direction": "bas",
+      "evenement": "chien_col",
+      "si": {"drapeau": "quete:chien"},
+      "cache_si": "chien_trouve"
     }
   ],
   "coffres": [

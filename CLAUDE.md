@@ -305,7 +305,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   Claude) : `medaillon`, `braises`, `tisane`, `grimoire`, `cristal`, `perles`, puis `chat`, `naturaliste` (montrer
   des créatures : condition `membre`), `lettre`, `apprenti`, `caravane` (boss de carte sous condition), `champignons`,
   `oeuf` (donne un Draconnet), `cache_cache`, `bains`, `rival` (Tom, trois combats au fil de l'histoire),
-  `capitaine`, `partitions`, `conte` (après la fin), `ruches`. Habitants et boss de carte peuvent avoir `si` (présents
+  `capitaine`, `partitions`, `conte` (après la fin), `ruches` ; puis (outils/villes/quetes_lieux.py) `chien`, `collier`,
+  `message`, `tournoi`, `etude_aube`, et celles des nouveaux lieux (`trident`, `esprits`, donjons, `epreuves`, `peche`, `bestiaire`). Habitants et boss de carte peuvent avoir `si` (présents
   seulement si la condition est vraie : `Npc::cond`, `BossSpot::cond`).
 - Événements : habitants (`evenement`), portes des bâtiments (genre ou
   `evenement`) et boss lancent un événement de `data/evenements.json`. Les

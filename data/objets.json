@@ -833,6 +833,15 @@
     "bonus": {"pv": 40, "resistance": 4}
   },
   {
+    "id": "collier_corail",
+    "nom": "Collier de corail",
+    "icone": "ic_acc_5",
+    "description": "Trois perles d'écume sur un fil de corail rose. La mer protège celui qui le porte.",
+    "prix": 2400,
+    "equipement": "accessoire",
+    "bonus": {"pv": 25, "resistance": 6, "esquive": 3}
+  },
+  {
     "id": "insigne_chasseur",
     "nom": "Insigne du chasseur",
     "icone": "ic_acc_3",

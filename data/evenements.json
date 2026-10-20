@@ -4549,7 +4549,7 @@
           {
             "action": "dire",
             "texte": "L'esprit sourit enfin. « Merci… Je me souviens du chemin, maintenant. » Il s'efface dans la lumière."
-          }
+          }, {"action": "dire", "texte": "Avant de disparaître, l'esprit murmure : « Dites à ma fille Marine, au port, que j'étais fier d'elle… »"}, {"action": "quete", "id": "message"}
         ]
       }
     ]
@@ -4609,6 +4609,327 @@
           {
             "action": "dire",
             "texte": "L'esprit sourit enfin. « Merci… Je me souviens du chemin, maintenant. » Il s'efface dans la lumière."
+          }
+        ]
+      }
+    ]
+  },
+  "quete_chien": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:chien:fin"},
+        "actions": [
+          {"action": "dire", "texte": "Bergère : Flocon ne me quitte plus d'une semelle. Merci encore !"}
+        ]
+      },
+      {
+        "si": {"drapeau": ["quete:chien", "chien_trouve"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Bergère : Flocon ! Tu es là ! Je croyais que la Harpie l'avait emporté…"
+          },
+          {
+            "action": "dire",
+            "texte": "Bergère : Prenez ceci. Ma grand-mère disait qu'elle rend la vie à qui la porte."
+          },
+          {"action": "donner", "objet": "gemme_vie", "quantite": 1},
+          {"action": "or", "quantite": 600},
+          {"action": "quete", "id": "chien", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:chien"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Bergère : Flocon aime les herbes sèches, plus bas dans le col, à l'est. Il a peur du vent."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Bergère : Mon chien Flocon s'est enfui quand le vent s'est levé. Il n'est jamais revenu…"
+          },
+          {
+            "action": "question",
+            "texte": "Chercher Flocon ?",
+            "oui": [
+              {"action": "quete", "id": "chien"},
+              {
+                "action": "dire",
+                "texte": "Bergère : Il est tout blanc, avec une oreille noire. Il doit se cacher dans les herbes, plus bas."
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Bergère : Il reviendra peut-être tout seul…"}]
+          }
+        ]
+      }
+    ]
+  },
+  "chien_col": {
+    "actions": [
+      {"action": "dire", "texte": "Ouaf ! Flocon remue la queue, puis file vers le camp des bergers."},
+      {"action": "drapeau", "nom": "chien_trouve"}
+    ]
+  },
+  "chien_rentre": {"actions": [{"action": "dire", "texte": "Flocon se roule dans la neige."}]},
+  "quete_collier": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:collier:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Plongeuse : Le collier vous va bien ! Il brille encore plus au soleil."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:collier", "objet_min": {"perle": 3}},
+        "actions": [
+          {"action": "retirer", "objet": "perle", "quantite": 3},
+          {"action": "dire", "texte": "Plongeuse : Trois perles d'écume ! Laissez-moi une minute…"},
+          {
+            "action": "dire",
+            "texte": "Plongeuse : Voilà. Un collier de corail, le plus beau de l'île. Il est à vous."
+          },
+          {"action": "donner", "objet": "collier_corail", "quantite": 1},
+          {"action": "quete", "id": "collier", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:collier"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Plongeuse : Il me faut trois perles d'écume. On en trouve dans les coffres du Récif et des grottes de la mer."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Plongeuse : Je fais des colliers de corail. Mais il me manque des perles d'écume, et la mer est trop agitée pour plonger."
+          },
+          {
+            "action": "question",
+            "texte": "Rapporter trois perles d'écume ?",
+            "oui": [
+              {"action": "quete", "id": "collier"},
+              {
+                "action": "dire",
+                "texte": "Plongeuse : Merci ! Je vous ferai le plus beau collier de l'archipel."
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Plongeuse : Une autre fois, alors."}]
+          }
+        ]
+      }
+    ]
+  },
+  "fille_pecheur": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:message:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Marine : Je vais souvent au bout du quai, maintenant. Je crois qu'il me voit. Merci."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:message"},
+        "actions": [
+          {"action": "dire", "texte": "Marine : Mon père… Il a dit ça ? Qu'il était fier de moi ?"},
+          {
+            "action": "dire",
+            "texte": "Marine : Il est parti pêcher un matin de brume et n'est jamais rentré. J'ai attendu des années."
+          },
+          {
+            "action": "dire",
+            "texte": "Marine : Tenez, c'était son porte-bonheur. Il voudrait que vous l'ayez."
+          },
+          {"action": "donner", "objet": "gemme_soin", "quantite": 1},
+          {"action": "or", "quantite": 1200},
+          {"action": "quete", "id": "message", "fin": true}
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Marine : Mon père était pêcheur. Un jour de brume, il n'est pas rentré. Je regarde la mer en l'attendant encore."
+          }
+        ]
+      }
+    ]
+  },
+  "tournoi": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:tournoi:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Héraut : Gloire aux champions du tournoi de Forgeroc ! Votre nom est gravé sur l'enclume d'honneur."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "tournoi2"},
+        "actions": [
+          {"action": "dire", "texte": "Héraut : Dernière manche ! Le Champion Torvald vous attend."},
+          {
+            "action": "question",
+            "texte": "Combattre le Champion Torvald ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Champion Torvald",
+                "ennemis": [
+                  {"espece": "fournezard", "niveau": 36},
+                  {"espece": "ferrogeant", "niveau": 37},
+                  {"espece": "galetor", "niveau": 36}
+                ],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "tournoi3"},
+                  {"action": "or", "quantite": 2500},
+                  {"action": "donner", "objet": "gemme_force", "quantite": 1},
+                  {
+                    "action": "dire",
+                    "texte": "Héraut : Les champions de Forgeroc s'inclinent ! Voici la ceinture du tournoi."
+                  },
+                  {"action": "donner", "objet": "bague_vif", "quantite": 1},
+                  {"action": "quete", "id": "tournoi", "fin": true}
+                ]
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Héraut : Reposez-vous, champions."}]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "tournoi1"},
+        "actions": [
+          {"action": "dire", "texte": "Héraut : Deuxième manche : la Chevalière Mara !"},
+          {
+            "action": "question",
+            "texte": "Combattre la Chevalière Mara ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Chevalière Mara",
+                "ennemis": [
+                  {"espece": "ferrolin", "niveau": 31},
+                  {"espece": "draconnet", "niveau": 32},
+                  {"espece": "tisonnel", "niveau": 31}
+                ],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "tournoi2"},
+                  {"action": "or", "quantite": 1500},
+                  {"action": "donner", "objet": "superpotion", "quantite": 1},
+                  {"action": "dire", "texte": "Héraut : Victoire ! Revenez pour la manche suivante."}
+                ]
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Héraut : Comme vous voulez."}]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Héraut : Oyez ! Le tournoi de Forgeroc est ouvert à tous les dresseurs. Trois manches, trois adversaires."
+          },
+          {
+            "action": "question",
+            "texte": "Entrer dans le tournoi ?",
+            "oui": [
+              {"action": "quete", "id": "tournoi"},
+              {
+                "action": "combat",
+                "nom": "Garde Ossian",
+                "ennemis": [
+                  {"espece": "galetor", "niveau": 27},
+                  {"espece": "voltigeon", "niveau": 27},
+                  {"espece": "tisonnel", "niveau": 28}
+                ],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "tournoi1"},
+                  {"action": "or", "quantite": 800},
+                  {"action": "donner", "objet": "ether", "quantite": 1},
+                  {"action": "dire", "texte": "Héraut : Victoire ! Revenez pour la manche suivante."}
+                ]
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Héraut : Le tournoi vous attend quand vous voudrez."}]
+          }
+        ]
+      }
+    ]
+  },
+  "savante_aube": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:etude_aube:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Savante : Mon étude sur les créatures d'Aube sera lue dans tout l'archipel. Votre nom y est !"
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:etude_aube", "membre": ["lueurine", "loup_aube", "nacrelin"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Savante : Une Lueurine, un Loup d'aube et un Nacrelin ! Je n'en reviens pas."
+          },
+          {"action": "dire", "texte": "Savante : Prenez ceci pour vos recherches."},
+          {"action": "donner", "objet": "gemme_maitre", "quantite": 1},
+          {"action": "or", "quantite": 3000},
+          {"action": "quete", "id": "etude_aube", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:etude_aube"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Savante : Il me faut voir de près une Lueurine, un Loup d'aube et un Nacrelin, ensemble dans votre équipe."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Savante : Je suis venue étudier les créatures d'Aube. Elles ressemblent aux nôtres, mais la lumière de l'île les a changées."
+          },
+          {
+            "action": "question",
+            "texte": "Aider la savante dans son étude ?",
+            "oui": [
+              {"action": "quete", "id": "etude_aube"},
+              {
+                "action": "dire",
+                "texte": "Savante : Montrez-moi une Lueurine, un Loup d'aube et un Nacrelin, tous les trois dans votre équipe."
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Savante : Tant pis, je continuerai seule."}]
           }
         ]
       }

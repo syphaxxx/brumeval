@@ -98,7 +98,8 @@
         "Bienvenue sur l'île de Corail ! On ne voit pas souvent des étrangers.",
         "Depuis que la brume est partie, les bateaux reviennent un peu."
       ]
-    }
+    },
+    {"x": 30, "y": 15, "apparence": "villageoise", "direction": "gauche", "evenement": "quete_collier"}
   ],
   "coffres": [
     {"x": 33, "y": 20, "objet": "perle", "quantite": 1},

@@ -341,6 +341,9 @@ Dernière mesure (Val compris) : joueur automatique 5 h 21, 11 défaites ; estim
 Nouvelle partie + : après l'acte 3, recommencer l'histoire avec son équipe, ennemis +12 niveaux par tour.
 Mesure : joueur automatique 6 h 15 (il refuse la Nouvelle partie +) ; estimation pour un vrai joueur 12 h 20, sans la
 pêche, le grand bestiaire, l'Expédition ni la Nouvelle partie +.
+Cinq quêtes de plus dans les nouveaux lieux (`outils/villes/quetes_lieux.py`) : le chien de la bergère (Col), le
+collier de corail (Corail), le dernier message du pêcheur (Val → Port), le tournoi de Forgeroc (trois manches), les
+créatures d'Aube (montrer trois créatures). 33 quêtes en tout.
 Prochaines pistes pour approcher 20 h : un acte 4 / une région de plus, une ligue de l'Arène, un donjon d'après la
 fin à étages, la pêche, des captures demandées par plus de quêtes, des combats plus riches à mi-parcours.
 

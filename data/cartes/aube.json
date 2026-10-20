@@ -156,7 +156,8 @@
       "evenement": "tom_aube",
       "si": {"drapeau": "quete:rival:fin"}
     },
-    {"x": 21, "y": 23, "apparence": "voyageuse", "direction": "droite", "evenement": "ysolde_aube"}
+    {"x": 21, "y": 23, "apparence": "voyageuse", "direction": "droite", "evenement": "ysolde_aube"},
+    {"x": 27, "y": 19, "apparence": "voyageuse", "direction": "bas", "evenement": "savante_aube"}
   ],
   "coffres": [],
   "panneaux": [],
