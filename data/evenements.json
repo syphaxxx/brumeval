@@ -4469,5 +4469,149 @@
         "non": [{"action": "dire", "texte": "Le Gardien vous observe, immobile, sous l'eau."}]
       }
     ]
+  },
+  "val_entree": {
+    "actions": [
+      {"action": "drapeau", "nom": "val_vu"},
+      {
+        "action": "dire",
+        "texte": "La brume est si épaisse qu'on n'y voit pas à trois pas. On entend des voix, partout et nulle part."
+      },
+      {"action": "dire", "texte": "Un hameau se devine à l'entrée du val. Des lanternes y brûlent encore."}
+    ]
+  },
+  "gardienne_lanternes": {
+    "pages": [
+      {
+        "si": {"drapeau": ["esprit_val_1", "esprit_val_2", "esprit_val_3"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gardienne : Les trois esprits sont rentrés. Écoutez… La brume s'ouvre vers le nord."
+          },
+          {
+            "action": "dire",
+            "texte": "Gardienne : La Source des Brumes est au bout du chemin. Que nos lanternes vous guident."
+          },
+          {"action": "quete", "id": "esprits", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:esprits"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gardienne : Trois esprits errent encore : un pêcheur près des eaux, une fillette au fond du val, un soldat sur la colline. Apaisez-les."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gardienne : Vous venez du sanctuaire ? Alors vous avez vaincu le Givrecorne…"
+          },
+          {
+            "action": "dire",
+            "texte": "Gardienne : Je garde les lanternes de Brumaille. La brume a pris nos morts : leurs esprits errent dans le val et la rendent épaisse."
+          },
+          {
+            "action": "dire",
+            "texte": "Gardienne : Tant qu'ils errent, personne n'atteindra la Source. Apaisez-les, et je rallumerai le chemin."
+          },
+          {"action": "quete", "id": "esprits"}
+        ]
+      }
+    ]
+  },
+  "esprit_val_1": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Un vieil homme translucide fixe l'eau. « Où est ma barque ? Où est mon village ? »"
+      },
+      {
+        "action": "dire",
+        "texte": "La brume se resserre autour de l'esprit : des créatures surgissent pour le protéger !"
+      },
+      {
+        "action": "combat",
+        "nom": "Le pêcheur perdu",
+        "ennemis": [
+          {"espece": "nebulis", "niveau": 37},
+          {"espece": "esprillon", "niveau": 38, "pv": 2.5, "boss": true},
+          {"espece": "nebulis", "niveau": 37}
+        ],
+        "fuite": true,
+        "capture": false,
+        "victoire": [
+          {"action": "drapeau", "nom": "esprit_val_1"},
+          {
+            "action": "dire",
+            "texte": "L'esprit sourit enfin. « Merci… Je me souviens du chemin, maintenant. » Il s'efface dans la lumière."
+          }
+        ]
+      }
+    ]
+  },
+  "esprit_val_2": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Une petite silhouette pâle joue toute seule. « Tu veux jouer avec moi ? Pour toujours ? »"
+      },
+      {
+        "action": "dire",
+        "texte": "La brume se resserre autour de l'esprit : des créatures surgissent pour le protéger !"
+      },
+      {
+        "action": "combat",
+        "nom": "La fillette perdue",
+        "ennemis": [
+          {"espece": "esprillon", "niveau": 37},
+          {"espece": "esprillon", "niveau": 38, "pv": 2.5, "boss": true},
+          {"espece": "esprillon", "niveau": 37}
+        ],
+        "fuite": true,
+        "capture": false,
+        "victoire": [
+          {"action": "drapeau", "nom": "esprit_val_2"},
+          {
+            "action": "dire",
+            "texte": "L'esprit sourit enfin. « Merci… Je me souviens du chemin, maintenant. » Il s'efface dans la lumière."
+          }
+        ]
+      }
+    ]
+  },
+  "esprit_val_3": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Un soldat en armure rouillée monte la garde. « Halte ! Personne ne passe tant que la brume règne ! »"
+      },
+      {
+        "action": "dire",
+        "texte": "La brume se resserre autour de l'esprit : des créatures surgissent pour le protéger !"
+      },
+      {
+        "action": "combat",
+        "nom": "Le soldat perdu",
+        "ennemis": [
+          {"espece": "brumeloup", "niveau": 37},
+          {"espece": "esprillon", "niveau": 38, "pv": 2.5, "boss": true},
+          {"espece": "brumeloup", "niveau": 37}
+        ],
+        "fuite": true,
+        "capture": false,
+        "victoire": [
+          {"action": "drapeau", "nom": "esprit_val_3"},
+          {
+            "action": "dire",
+            "texte": "L'esprit sourit enfin. « Merci… Je me souviens du chemin, maintenant. » Il s'efface dans la lumière."
+          }
+        ]
+      }
+    ]
   }
 }

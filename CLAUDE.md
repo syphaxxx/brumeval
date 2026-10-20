@@ -552,6 +552,9 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - Col des Hurlevents (2026-10-20, `outils/villes/col.py`) : carte `col` de l'histoire entre les Monts Cendrelune et
   les Pics Givrés (le passage du nord de Cendrelune y mène sous `boss2`, celui des Pics en revient), camp de bergers
   (soins, boutique), Harpie de givre (boss de carte `harpie_givre`, drapeau `harpie`, conseil) qui ouvre le défilé.
+- Val des Murmures (2026-10-20, `outils/villes/val.py`) : carte `val` entre le sanctuaire du Givrecorne et la Source des
+  Brumes (les passages des deux cartes y mènent) : hameau de Brumaille, gardienne des lanternes (quête `esprits`), trois
+  esprits (`esprit_val_1..3`, un combat chacun) qui ouvrent le chemin de la Source.
 - Île de Corail (2026-10-20, `outils/villes/corail.py`) : acte 2, passe à l'est du Récif vers la carte `corail`
   (village : soins, comptoir, doyenne, quête `trident`) et la Grotte des Marées (`marees`, donjon de cartegen.py,
   Gardien des marées, drapeau `marees_boss`, objet `trident`) ; le passage du Récif vers les Ruines demande le trident.

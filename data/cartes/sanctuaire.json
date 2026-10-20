@@ -34,9 +34,9 @@
     {
       "x": 9,
       "y": 1,
-      "vers": "source",
-      "tx": 19,
-      "ty": 28,
+      "vers": "val",
+      "tx": 23,
+      "ty": 38,
       "direction": "haut",
       "condition": {"drapeau": "boss3"},
       "message": "Une faille glacée laisse filer une brume étrange. Le Givrecorne en garde l'accès."

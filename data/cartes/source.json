@@ -74,8 +74,8 @@
     }
   ],
   "passages": [
-    {"x": 19, "y": 29, "vers": "sanctuaire", "tx": 9, "ty": 2, "direction": "bas"},
-    {"x": 20, "y": 29, "vers": "sanctuaire", "tx": 9, "ty": 2, "direction": "bas"}
+    {"x": 19, "y": 29, "vers": "val", "tx": 23, "ty": 1, "direction": "bas"},
+    {"x": 20, "y": 29, "vers": "val", "tx": 24, "ty": 1, "direction": "bas"}
   ],
   "zones": [
     {
