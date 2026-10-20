@@ -200,5 +200,5 @@
     }
   ],
   "declencheurs": [{"x": 1, "y": 16, "l": 1, "h": 2, "evenement": "plaine_entree", "jusqua": "plaine_vue"}],
-  "carte_monde": [46, 48]
+  "carte_monde": [46, 36]
 }

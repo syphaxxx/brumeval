@@ -34,6 +34,8 @@ bool Game::saveGame() {
   for (auto& sp : caught)
     if (hasSpecies(sp)) f << "pris " << sp << '\n';
   for (auto& t : tipsSeen) f << "astuce " << t << '\n';  // astuces déjà montrées (2.8)
+  if (!inExpedition())
+    for (auto& v : visited) f << "lieu " << v << '\n';  // lieux visités (voyage rapide)
   for (auto& w : weak) {  // « espèce:numéro du type » : écrit avec l'identifiant du type (stable si on en ajoute)
     auto c = w.find(':');
     int t = std::atoi(w.c_str() + c + 1);
@@ -150,6 +152,7 @@ bool Game::loadGame() {
   team.clear();
   reserve.clear();
   seen.clear(), caught.clear(), weak.clear(), tipsSeen.clear();
+  visited.clear();
   bool inReserve = false;                      // après la ligne « reserve »
   std::vector<std::pair<size_t, int>> links;  // lignes « compagnon » : reliées à la fin
   items.clear();
@@ -197,6 +200,9 @@ bool Game::loadGame() {
     } else if (k == "astuce") {
       s >> v;
       tipsSeen.insert(v);
+    } else if (k == "lieu") {
+      s >> v;
+      if (mapIndex(v) >= 0) visited.insert(v);
     } else if (k == "faible") {
       std::string t;
       s >> v >> t;

@@ -51,6 +51,7 @@ static std::vector<HelpPage> helpPages() {
                 ::T("Parfois, une meute sauvage est menée par un alpha : plus fort, il annonce ses attaques comme un boss."),
                 ::T("Journal > Progression : tout ce qui reste à faire, en chiffres (quêtes, coffres, dresseurs, Bestiaire…)."),
                 ::T("Sauvegarde automatique à chaque passage et porte (Options > Sauvegarde auto pour la couper)."),
+                ::T("Voyage rapide : Échap > Carte, flèches pour choisir un village déjà visité, Entrée pour y aller."),
                 ::T("Cinq donjons optionnels (Mines, Glacier, Épave, Abîme, Vieux Phare) et le grand bestiaire de la professeure de la Vallée."),
                 ::T("Discussions : les héros se parlent au fil de l'aventure (Échap > Discussions)."),
                 ::T("Nouvelle partie + : après l'acte 3, Ilya propose de tout recommencer avec votre équipe, contre des créatures plus fortes."),

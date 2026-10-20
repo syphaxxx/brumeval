@@ -75,6 +75,7 @@ class Game {
   std::vector<FighterP> reserve;       // créatures en plus de l'équipe (captures et cadeaux quand elle est complète)
   // Bestiaire : espèces de créatures rencontrées et obtenues (lignes « vu » et « pris » de la sauvegarde)
   std::set<std::string> seen, caught;
+  std::set<std::string> visited;  // lieux de la carte du monde déjà visités (voyage rapide ; lignes « lieu » de la sauvegarde)
   // Brisure (2.5) : faiblesses découvertes (« espèce:type ») en frappant un ennemi sur l'une d'elles
   std::set<std::string> weak;
   bool weakKnown(const std::string& sp, int type) const { return weak.count(sp + ":" + std::to_string(type)) > 0; }
@@ -252,6 +253,11 @@ class Game {
  private:
   bool worldMapOn_ = false;  // carte du monde ouverte (3.3, menu pause) : le reste du jeu attend
   void drawWorldMap();
+  // Voyage rapide (2026-10-20) : les villages (une maison de soin) visités et atteignables d'ici ; flèches pour choisir,
+  // Entrée pour y aller (devant la maison de soin)
+  std::vector<int> travelTargets() const;
+  int worldSel_ = -1;  // la destination choisie (index de carte), -1 : aucune
+  std::vector<bool> worldOpen() const;  // les lieux de la carte du monde atteignables d'ici par des passages ouverts
   int helpPage_ = -1, helpScroll_ = 0, lastHelp_ = 0;  // page affichée (-1 : aucune), défilement, dernière vue (F1)
   void keysMenu(int sel = 0);
   bool padDir_[4] = {}, stickDir_[4] = {};  // directions tenues à la manette (croix, stick)

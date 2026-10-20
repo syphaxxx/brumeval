@@ -251,8 +251,30 @@ void Game::update(float dt) {
     checkDiscussions();
   }
   speedT_ -= dt / speed();  // même durée à l'écran quelle que soit la vitesse
-  if (worldMapOn_) {  // carte du monde : Entrée, Échap ou un clic la ferme
-    if (in.confirm || in.cancel || in.menu || in.mclick[0] || in.mclick[2]) worldMapOn_ = false, audio::play("retour");
+  if (worldMapOn_) {  // carte du monde : flèches pour choisir où aller (voyage rapide), Entrée pour y aller, Échap pour fermer
+    auto targets = travelTargets();
+    if (!targets.empty() && (in.press[UP] || in.press[DOWN] || in.press[LEFT] || in.press[RIGHT])) {
+      auto it = std::find(targets.begin(), targets.end(), worldSel_);
+      int k = it == targets.end() ? -1 : int(it - targets.begin());
+      k = (in.press[UP] || in.press[LEFT]) ? (k <= 0 ? (int)targets.size() - 1 : k - 1) : (k + 1) % (int)targets.size();
+      worldSel_ = targets[(size_t)k];
+      audio::play("curseur");
+    }
+    bool go = in.confirm && std::find(targets.begin(), targets.end(), worldSel_) != targets.end();
+    if (go) {  // devant la maison de soin du village choisi
+      worldMapOn_ = false;
+      menus.clear();
+      panelMode_ = 0;
+      for (auto& b : maps()[(size_t)worldSel_].buildings)
+        if (b.kind == "soin") {
+          audio::play("valider");
+          changeMap(worldSel_, b.doorX(), b.doorY() + 1, DOWN);
+          autoSave();
+          break;
+        }
+      worldSel_ = -1;
+    } else if (in.confirm || in.cancel || in.menu || in.mclick[0] || in.mclick[2])
+      worldMapOn_ = false, worldSel_ = -1, audio::play("retour");
     updateMusic();
     in.endFrame();
     return;
@@ -736,6 +758,7 @@ void Game::changeMap(int m, int x, int y, int d) {
   bool changed = m != mapId;
   mapId = m;
   if (changed) resetBoulders();
+  if (!inExpedition() && M().worldX >= 0) visited.insert(M().id);  // voyage rapide
   px = x, py = y, dir = d;
   moving = false;
   steps = 0;
@@ -991,6 +1014,7 @@ void Game::newGame(const std::string& starter) {
   team = {makeFighter(r.hero, r.startLevel), makeFighter(starter, r.startLevel)};
   reserve.clear();
   seen.clear(), caught.clear(), weak.clear(), tipsSeen.clear();
+  visited.clear();
   items.clear();
   for (auto& [id, n] : r.startItems) items[id] = n;
   gold = r.startGold;

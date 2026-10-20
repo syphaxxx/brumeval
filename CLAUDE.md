@@ -410,8 +410,9 @@ code) ; `docs/GUIDE.md` les range par domaine.
   hasard à part `walkSeed_`, rien d'enregistré), `npcCell` pour toute position d'habitant (collision, parole,
   dessin) ; chaque habitant se tourne vers le joueur qui lui parle (sauf un dresseur). Éditeur de cartes : objets hauts dessinés (`drawProp`,
   `drawPropIcon` dans la palette). Carte du monde (Échap > Carte, `worldMapOn_`, `drawWorldMap` dans menus.cpp) : les
-  lieux ayant `carte_monde` atteignables d'ici par des passages ouverts (`checkCond`), sans rien enregistrer ; pas en
-  Expédition. Eau `~` dessinée en code (la texture `tex_eau` de la planche n'est pas utilisable) : bords peu
+  lieux ayant `carte_monde` atteignables d'ici par des passages ouverts (`checkCond`, `worldOpen`) ; pas en
+  Expédition. Voyage rapide (2026-10-20) : flèches pour choisir un village déjà visité qui a une maison de soin
+  (`travelTargets`, `Game::visited`, lignes `lieu` de la sauvegarde), Entrée pour y aller (devant la maison de soin). Eau `~` dessinée en code (la texture `tex_eau` de la planche n'est pas utilisable) : bords peu
   profonds plus clairs, ombre de la berge, écume en tirets, vaguelettes, reflets. Neige (`ground`) : rides de vent,
   congères, brins secs, cristaux ; chemins `=` de neige tassée (empreintes, bords de neige fraîche), et les pas du
   joueur y restent 30 s (`footprints_`, dessin seul, vidé au changement de carte) ; case `c` d'une

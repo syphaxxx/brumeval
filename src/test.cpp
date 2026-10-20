@@ -1112,6 +1112,19 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     frame();
     check(!worldMapOn_ && mode == Mode::Map, "carte du monde : elle s'ouvre et se ferme (Échap)");
     check(!trail_.empty() && trail_.back() == std::make_pair(12, 34), "compagnon : il suit le joueur, une case derrière lui");
+    {  // voyage rapide : depuis Forgeroc, la Vallée (visitée, maison de soin) ; flèche pour la choisir, Entrée pour y aller
+      visited.insert("vallee");
+      worldMapOn_ = true;
+      in.press[DOWN] = true;
+      frame();
+      bool chosen = worldSel_ >= 0;
+      snap("carte_monde_voyage");
+      int target = worldSel_;
+      in.confirm = true;
+      frame();
+      bool went = !worldMapOn_ && mapId == target && target >= 0;
+      check(chosen && went, "voyage rapide : la carte du monde mène devant la maison de soin d'un village déjà visité");
+    }
     changeMap(mi("cendrelune"), 12, 34, DOWN);
   }
   {  // 3.3 : un promeneur (l'enfant de Forgeroc, « promenade » 2) marche sans s'éloigner, et se tourne quand on lui parle

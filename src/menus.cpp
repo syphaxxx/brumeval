@@ -1152,8 +1152,7 @@ void Game::drawTeamPanel(int x, int y, int sel) {
 // passages ouverts ; l'acte 2 reste caché tant que le bateau ne traverse pas. Rien n'est enregistré : tout se déduit
 // des passages et des drapeaux.
 // ---------------------------------------------------------------------------
-void Game::drawWorldMap() {
-  // Le lieu de départ : la carte où l'on est, ou celle où mène la sortie d'un intérieur
+std::vector<bool> Game::worldOpen() const {
   int here = mapId;
   if (M().theme == Theme::Interieur)
     for (auto& w : M().warps)
@@ -1167,11 +1166,37 @@ void Game::drawWorldMap() {
     for (auto& w : maps()[c].warps) {
       int t = mapIndex(w.map);
       if (t < 0 || open[t] || maps()[t].worldX < 0) continue;
-      if (!w.condition.is_null() && !checkCond(w.condition)) continue;  // passage fermé : on ne le voit pas encore
+      if (!w.condition.is_null() && !checkCond(w.condition)) continue;
       open[t] = true;
       todo.push_back(t);
     }
   }
+  return open;
+}
+
+std::vector<int> Game::travelTargets() const {
+  std::vector<int> out;
+  if (inExpedition() || (online_ && online_->connected()) || pilot_) return out;
+  auto open = worldOpen();
+  for (size_t i = 0; i < maps().size(); i++) {
+    if (!open[i] || (int)i == mapId || !visited.count(maps()[i].id)) continue;
+    for (auto& b : maps()[i].buildings)
+      if (b.kind == "soin") {
+        out.push_back((int)i);
+        break;
+      }
+  }
+  return out;
+}
+
+void Game::drawWorldMap() {
+  // Le lieu de départ : la carte où l'on est, ou celle où mène la sortie d'un intérieur
+  int here = mapId;
+  if (M().theme == Theme::Interieur)
+    for (auto& w : M().warps)
+      if (int t = mapIndex(w.map); t >= 0 && maps()[t].worldX >= 0) here = t;
+  auto targets = travelTargets();
+  auto open = worldOpen();  // passage fermé : on ne voit pas encore ce qu'il y a derrière
   const float X0 = 18, Y0 = 34, WW = 284, HH = 176;
   auto P = [&](const MapDef& m) { return Pt{X0 + m.worldX / 100 * WW, Y0 + m.worldY / 100 * HH}; };
   g.newLayer();
@@ -1209,8 +1234,17 @@ void Game::drawWorldMap() {
       g.ellipse(p.x, p.y, 4.5f, 3.5f, rgb(col));
       if (const SpriteRect* r = findSprite("lior_bas_0")) g.sprite(*r, std::round(p.x - 10 - r->w * .7f), std::round(p.y + 3 - r->h * .7f), false, .7f);  // à gauche du point
     }
+    bool sel = (int)i == worldSel_, can = std::find(targets.begin(), targets.end(), (int)i) != targets.end();
+    if (sel) {  // la destination choisie : un anneau bleu
+      float k = .5f + .5f * std::sin(time * 6);
+      g.ellipse(p.x, p.y, 9 + k * 2, 8 + k * 2, rgb(0x2a7ad8, uint8_t(120 + 80 * k)));
+      g.ellipse(p.x, p.y, 4.5f, 3.5f, rgb(col));
+    } else if (can)
+      g.ellipse(p.x + 5, p.y - 4, 1.5f, 1.5f, rgb(0x2a7ad8));  // un village où l'on peut aller
     std::string name = m.name;
-    g.text(p.x, p.y + 6, name, (int)i == here ? rgb(0x8a2a10) : rgb(0x4a321c), 1, false);
+    g.text(p.x, p.y + 6, name, sel ? rgb(0x1a4a9a) : (int)i == here ? rgb(0x8a2a10) : rgb(0x4a321c), 1, false);
   }
-  g.text(160, 218, T("Entrée ou Échap : fermer"), rgb(0x6a4a2a), 1, false);
+  g.text(160, 218, targets.empty() ? T("Entrée ou Échap : fermer")
+                   : worldSel_ >= 0 ? T("Entrée : y aller · Échap : fermer") : T("Flèches : choisir un village · Échap : fermer"),
+         rgb(0x6a4a2a), 1, false);
 }

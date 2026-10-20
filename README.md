@@ -333,6 +333,7 @@ de niveau 35-40 bien équipée.
 - **Discussions** entre les héros (Échap > Discussions), pluie de temps en temps,
   musiques réécrites.
 - **Sauvegarde automatique** à chaque passage et porte (Options > Sauvegarde auto pour la couper).
+- **Voyage rapide** : Échap > Carte, choisir un village déjà visité (flèches), Entrée pour y aller.
 - **Créatures de la nuit** : la nuit, d'autres créatures sortent dans les herbes ; parfois, une meute est menée
   par un **alpha** qui se bat comme un boss.
 - **Créatures chromatiques** : très rarement, une créature sauvage a des couleurs
