@@ -668,6 +668,13 @@
     "important": true
   },
   {
+    "id": "trident",
+    "nom": "Trident d'écume",
+    "icone": "ic_lance_4",
+    "description": "Une arme ancienne des gardiens de la mer. Elle ouvre la porte de corail des Ruines englouties.",
+    "prix": 0
+  },
+  {
     "id": "ecaille_kraken",
     "nom": "Écaille du Kraken",
     "description": "Trophée : une écaille irisée, dure comme l'acier.",

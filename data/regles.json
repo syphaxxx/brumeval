@@ -339,6 +339,13 @@
       "texte": "Le Nébulis (croix) la soigne : éliminez-le. La brume puis sa colère : gardez des PM pour la fin."
     },
     {
+      "drapeau": "marees_boss",
+      "boss": "gardien_marees",
+      "lieu": "le fond de la Grotte des Marées",
+      "gemme": "gemme_foudre",
+      "texte": "Une carapace très solide : la magie passe mieux que les coups. À mi-vie, il appelle la marée."
+    },
+    {
       "drapeau": "kraken",
       "boss": "kraken",
       "lieu": "les Ruines englouties, au nord du Récif d'Écume",

@@ -332,6 +332,7 @@ Joueur automatique : tout fini (Orage ancien compris) en 6 h 01, 14 défaites ; 
 sans compter la pêche ni l'Expédition. Combats : nuages et montagnes au fond de la vallée, stalactites dans les grottes.
 Le chemin de l'histoire s'allonge : le Col des Hurlevents (camp de bergers, Harpie de givre) entre les Monts
 Cendrelune et les Pics Givrés. Le grand bestiaire : la professeure récompense 15, 30, 45 et 60 espèces.
+Acte 2 plus long : l'île de Corail et la Grotte des Marées (le Trident d'écume ouvre les Ruines englouties).
 Prochaines pistes pour approcher 20 h : un acte 4 / une région de plus, une ligue de l'Arène, un donjon d'après la
 fin à étages, la pêche, des captures demandées par plus de quêtes, des combats plus riches à mi-parcours.
 

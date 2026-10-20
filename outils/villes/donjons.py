@@ -15,102 +15,11 @@ from collections import deque
 ICI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ICI)
 import carte  # noqa: E402
-from cartegen import Map, W_OK  # noqa: E402
+from cartegen import Map, W_OK, dungeon, finish  # noqa: E402,F401
 
 D = carte.R
 if os.path.exists(D + 'cartes/mines.json'):
     sys.exit('Les donjons existent déjà.')
-
-
-def dungeon(mid, nom, theme, w, h, seed, floor, enc, wall='#', nrooms=9, puzzle=False, decor='R'):
-    """Salles + couloirs. floor : sol des salles ; enc : sol des couloirs (rencontres). Rend (carte, entrée, salle du
-    boss, autres salles)."""
-    M = Map(mid, nom, theme, w, h, wall, seed)
-    rnd = M.rnd
-    rooms = []
-    tries = 0
-    while len(rooms) < nrooms and tries < 2000:
-        tries += 1
-        rw, rh = rnd.randint(5, 9), rnd.randint(4, 7)
-        x, y = rnd.randint(2, w - rw - 3), rnd.randint(2, h - rh - 6)
-        if any(x < r[0] + r[2] + 2 and r[0] < x + rw + 2 and y < r[1] + r[3] + 2 and r[1] < y + rh + 2 for r in rooms):
-            continue
-        rooms.append((x, y, rw, rh))
-    centers = [(x + rw // 2, y + rh // 2) for x, y, rw, rh in rooms]
-    # couloirs : arbre couvrant (le plus proche déjà relié), puis deux boucles
-    linked = [0]
-    for _ in range(1, len(rooms)):
-        best = None
-        for i in range(len(rooms)):
-            if i in linked:
-                continue
-            for j in linked:
-                d = abs(centers[i][0] - centers[j][0]) + abs(centers[i][1] - centers[j][1])
-                if best is None or d < best[0]:
-                    best = (d, i, j)
-        _, i, j = best
-        M.path([centers[j], (centers[i][0], centers[j][1]), centers[i]], enc, 2)
-        linked.append(i)
-    for _ in range(2):
-        i, j = rnd.sample(range(len(rooms)), 2)
-        M.path([centers[i], (centers[j][0], centers[i][1]), centers[j]], enc, 1)
-    for x, y, rw, rh in rooms:
-        M.rect(x, y, x + rw - 1, y + rh - 1, floor)
-        for cx, cy in ((x, y), (x + rw - 1, y), (x, y + rh - 1), (x + rw - 1, y + rh - 1)):  # décor dans les coins
-            if rnd.random() < .7:
-                M.put(cx, cy, rnd.choice(decor))
-    # entrée : la salle la plus basse, reliée au bord du bas
-    low = max(range(len(rooms)), key=lambda i: rooms[i][1] + rooms[i][3])
-    ex = centers[low][0]
-    M.path([(ex, h - 1), centers[low]], floor, 2)
-    # boss : la salle la plus loin de l'entrée (à pied)
-    dist = {}
-    q = deque([(ex, h - 2)])
-    dist[(ex, h - 2)] = 0
-    while q:
-        x, y = q.popleft()
-        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            n = (x + dx, y + dy)
-            if n not in dist and 0 <= n[0] < w and 0 <= n[1] < h and M.get(*n) in W_OK:
-                dist[n] = dist[(x, y)] + 1
-                q.append(n)
-    far = max(range(len(rooms)), key=lambda i: dist.get(centers[i], -1))
-    others = [i for i in range(len(rooms)) if i not in (far, low)]
-    if puzzle:  # le gabarit de l'énigme dans la plus grande autre salle (agrandie à 9 × 8, alcôve à droite)
-        pi = max(others, key=lambda i: rooms[i][2] * rooms[i][3])
-        others.remove(pi)
-        x, y = rooms[pi][0], rooms[pi][1]
-        x = min(x, w - 15)
-        y = min(y, h - 14)
-        M.path([centers[pi], (x + 1, y + 6)], floor, 1)  # relié au reste d'abord : le gabarit passe par-dessus
-        M.rect(x, y, x + 8, y + 7, '.')
-        M.put(x + 4, y + 3, 'O'), M.put(x + 6, y + 5, 'O')
-        M.put(x + 4, y + 1, 'P'), M.put(x + 8, y + 5, 'P')
-        M.rect(x + 9, y + 1, x + 11, y + 3, wall)
-        M.put(x + 9, y + 2, 'D'), M.put(x + 10, y + 2, '.'), M.put(x + 11, y + 2, '.')
-        M.m['enigme'] = {"drapeau": mid + "_grille", "x": x + 1, "y": y + 3,
-                         "message": "Les dalles s'enfoncent : la grille de l'alcôve se lève !", "zone": {"x": x, "y": y, "l": 12, "h": 8}}
-        M.chest(x + 11, y + 2, 'gemme_maitre' if mid != 'mines' else 'gemme_esprit')
-        rooms[pi] = (x, y, 9, 8)
-    return M, ex, rooms[far], [rooms[i] for i in others]
-
-
-def finish(M, ex, boss_room, others, boss, chests, back, cond, msg, zone, look_room_npc=None):
-    bx, by = boss_room[0] + boss_room[2] // 2 - 1, boss_room[1] + 1
-    M.rect(boss_room[0], boss_room[1], boss_room[0] + boss_room[2] - 1, boss_room[1] + boss_room[3] - 1, '.')
-    M.boss(bx, by, boss, M.mid + '_boss', M.mid + '_boss')
-    for (x, y, rw, rh), item in zip(others, chests):
-        M.chest(x + rw - 2, y + 1, *(item if isinstance(item, tuple) else (item,)))
-    M.warp(ex, M.h - 1, back[0], back[1], back[2], 'bas')
-    M.warp(ex + 1, M.h - 1, back[0], back[1], back[2], 'bas')
-    M.zone(0, 0, M.w, M.h, *zone)
-    r = M.reach((ex, M.h - 2))
-    for o in M.m['coffres']:
-        if not any(abs(o['x'] - x) + abs(o['y'] - y) == 1 for x, y in r) and not M.m.get('enigme'):
-            raise SystemExit('%s : coffre inaccessible %s' % (M.mid, o))
-    if not any(abs(bx - x) <= 2 and abs(by - y) <= 2 for x, y in r):
-        raise SystemExit('%s : boss inaccessible' % M.mid)
-    return M
 
 
 def entrance(mid, x, y, d, to, tx, ty, cond, msg, carve=None):

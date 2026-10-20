@@ -196,7 +196,27 @@ MORCEAUX = {
         'arpege': 'monte', 'octave_arpege': 4, 'volume_arpege': .05,
         'basse': 'octaves', 'volume_basse': .33, 'batterie': 'orage', 'volume_batterie': 1.1,
     },
+    # Île d'Aube (2026-10-20) : mi majeur, lumineux, une harpe et une flûte au lever du soleil
+    'aube': {
+        'tempo': 100, 'onde': 'triangle', 'volume': .26, 'vibrato': .2,
+        'accords': 'E B C#m A E B A B | C#m G#m A E F#m B E E',
+        'melodie': [
+            'B4 . E5 . G#5 . B5 .', 'A5 . G#5 . F#5 . D#5 .', 'E5 . . . C#5 . E5 .', 'C#5 . . . A4 . . .',
+            'G#4 . B4 . E5 . G#5 .', 'F#5 . E5 . D#5 . F#5 .', 'E5 . C#5 . A4 . C#5 .', 'D#5 . . . . . - -',
+            'E5 . . G#5 C#6 . B5 .', 'B5 . . . G#5 . D#5 .', 'C#6 . . . A5 . E5 .', 'E5 . . . B4 . . .',
+            'A5 . G#5 . F#5 . C#5 .', 'D#5 . E5 . F#5 . A5 .', 'G#5 . . . B4 . . .', 'E5 . . . . . - -',
+        ],
+        'contre': ['G#4 . . . . . . .', 'F#4 . . . . . . .', 'E4 . . . . . . .', 'E4 . . . . . . .',
+                   'G#4 . . . . . . .', 'F#4 . . . . . . .', 'E4 . . . . . . .', 'F#4 . . . . . . .',
+                   'E4 . . . . . . .', 'D#4 . . . . . . .', 'E4 . . . . . . .', 'G#4 . . . . . . .',
+                   'F#4 . . . . . . .', 'F#4 . . . . . . .', 'G#4 . . . . . . .', 'G#4 . . . . . . .'],
+        'onde_contre': 'sinus', 'volume_contre': .1, 'attaque_contre': .25,
+        'arpege': 'monte_descend', 'octave_arpege': 3, 'onde_arpege': 'sinus', 'volume_arpege': .12, 'extinction_arpege': .6,
+        'basse': 'quinte', 'volume_basse': .26, 'batterie': 'calme', 'volume_batterie': .6,
+        'echo': {'delai': .34, 'retour': .3, 'melange': .25},
+    },
 }
 
 # Morceau propre à une carte (identifiant de carte) en plus de ceux des thèmes
-LIEUX = {'port': 'port', 'recif': 'abysses', 'ruines': 'abysses', 'tour': 'orage'}
+LIEUX = {'port': 'port', 'recif': 'abysses', 'ruines': 'abysses', 'tour': 'orage', 'corail': 'port', 'marees': 'abysses', 'epave': 'abysses',
+         'aube': 'aube', 'lueurs': 'aube', 'citadelle': 'grotte', 'abime1': 'grotte', 'abime2': 'grotte', 'abime3': 'grotte'}

@@ -552,6 +552,10 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - Col des Hurlevents (2026-10-20, `outils/villes/col.py`) : carte `col` de l'histoire entre les Monts Cendrelune et
   les Pics Givrés (le passage du nord de Cendrelune y mène sous `boss2`, celui des Pics en revient), camp de bergers
   (soins, boutique), Harpie de givre (boss de carte `harpie_givre`, drapeau `harpie`, conseil) qui ouvre le défilé.
+- Île de Corail (2026-10-20, `outils/villes/corail.py`) : acte 2, passe à l'est du Récif vers la carte `corail`
+  (village : soins, comptoir, doyenne, quête `trident`) et la Grotte des Marées (`marees`, donjon de cartegen.py,
+  Gardien des marées, drapeau `marees_boss`, objet `trident`) ; le passage du Récif vers les Ruines demande le trident.
+  Les outils de donjon (`dungeon`, `finish`) sont dans `outils/villes/cartegen.py`.
 - Donjons optionnels (2026-10-20, `outils/villes/donjons.py`, salles et couloirs tirés d'une graine fixe, outil
   commun `outils/villes/cartegen.py`) : Mines de Forgeroc (`mines`, entrée à l'ouest de Forgeroc sous `boss1`, énigme),
   Glacier de Givreval (`glacier`, est des Pics, `boss2`, énigme), Épave du Léviathan (`epave`, sud du Récif, `boss4`),

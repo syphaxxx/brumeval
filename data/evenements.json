@@ -4299,5 +4299,175 @@
         "non": [{"action": "dire", "texte": "La Harpie vous fixe, immobile, au milieu du vent."}]
       }
     ]
+  },
+  "corail_entree": {
+    "actions": [
+      {"action": "drapeau", "nom": "corail_vu"},
+      {
+        "action": "dire",
+        "texte": "Une petite île couverte de coraux roses. Des maisons basses, des filets qui sèchent, une odeur de sel."
+      },
+      {
+        "action": "dire",
+        "texte": "Au nord, des falaises percées d'une grotte où la mer s'engouffre en grondant."
+      }
+    ]
+  },
+  "doyenne": {
+    "pages": [
+      {
+        "si": {"drapeau": "kraken"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Doyenne : Les Ruines sont ouvertes, et le Kraken ne gronde plus. Les anciens gardiens seraient fiers de vous."
+          }
+        ]
+      },
+      {
+        "si": {"objet": "trident"},
+        "actions": [
+          {"action": "dire", "texte": "Doyenne : Le Trident d'écume ! Je n'aurais jamais cru le revoir."},
+          {
+            "action": "dire",
+            "texte": "Doyenne : Allez à la porte de corail, au nord du Récif. Elle s'ouvrira devant lui."
+          },
+          {
+            "action": "dire",
+            "texte": "Doyenne : Mais méfiez-vous : derrière, le Kraken garde le chemin de la Tour de l'Orage."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:trident"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Doyenne : Le trident est au fond de la Grotte des Marées, au nord de l'île. Le Gardien des marées ne le laissera pas partir sans combat."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Doyenne : Des voyageurs du continent ? Alors c'est vous qui avez apaisé la Mère des Brumes."
+          },
+          {
+            "action": "dire",
+            "texte": "Doyenne : Vous cherchez la Tour de l'Orage ? Le seul chemin passe par les Ruines englouties."
+          },
+          {
+            "action": "dire",
+            "texte": "Doyenne : Mais les Ruines sont scellées par une porte de corail, depuis mille ans. Seul le Trident d'écume peut l'ouvrir."
+          },
+          {
+            "action": "dire",
+            "texte": "Doyenne : Il repose au fond de la Grotte des Marées, ici, au nord de l'île. Son gardien n'a jamais laissé personne en revenir."
+          },
+          {"action": "quete", "id": "trident"}
+        ]
+      }
+    ]
+  },
+  "soin_corail": {
+    "actions": [
+      {"action": "soigner"},
+      {"action": "reveil"},
+      {
+        "action": "dire",
+        "texte": "Soigneuse : L'eau de mer guérit tout, ou presque ! Voilà, tout le monde est remis."
+      }
+    ]
+  },
+  "boutique_corail": {
+    "actions": [
+      {
+        "action": "boutique",
+        "objets": [
+          "potion",
+          "superpotion",
+          "ether",
+          "remede",
+          "elixir",
+          "plume",
+          "lanterne_or",
+          "lame_givre",
+          "sceptre_aurore",
+          "armure_givre",
+          "plume_ange",
+          "amulette_maree",
+          "gemme_foudre",
+          "gemme_contre",
+          "gemme_vol"
+        ]
+      }
+    ]
+  },
+  "maison_corail": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "La maison de la doyenne. Des coquillages pendent au plafond, et une vieille carte montre une porte de corail."
+      }
+    ]
+  },
+  "marees_boss": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Au fond de la grotte, un trident brille dans un bassin. L'eau se soulève : une tortue géante couverte de corail se dresse."
+      },
+      {
+        "action": "dire",
+        "texte": "Gardien des marées : Mille ans que je garde ce trident. Prouvez que vous le méritez !"
+      },
+      {
+        "action": "question",
+        "texte": "Affronter le Gardien des marées ?",
+        "oui": [
+          {
+            "action": "combat",
+            "musique": "boss",
+            "ennemis": [
+              {"espece": "ecumet", "niveau": 46},
+              {
+                "espece": "gardien_marees",
+                "niveau": 50,
+                "pv": 5,
+                "boss": true,
+                "bouclier": 8,
+                "phases": [
+                  {
+                    "pv": 0.5,
+                    "message": "Le Gardien appelle la marée !",
+                    "meteo": "pluie",
+                    "renforts": [{"espece": "noyelin", "niveau": 47}]
+                  }
+                ]
+              },
+              {"espece": "coquillon", "niveau": 46}
+            ],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "marees_boss"},
+              {"action": "donner", "objet": "trident", "quantite": 1},
+              {
+                "action": "dire",
+                "texte": "Gardien des marées : … Vous êtes dignes. Prenez le trident, et ouvrez les Ruines."
+              },
+              {
+                "action": "dire",
+                "texte": "La tortue retourne au fond du bassin. Le Trident d'écume est à vous."
+              },
+              {"action": "quete", "id": "trident", "fin": true}
+            ]
+          }
+        ],
+        "non": [{"action": "dire", "texte": "Le Gardien vous observe, immobile, sous l'eau."}]
+      }
+    ]
   }
 }

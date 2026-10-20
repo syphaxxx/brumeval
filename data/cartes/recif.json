@@ -18,8 +18,8 @@
     "TT..,,,,,,,,,,,,,,,....==.R.,,,,,,,,,,,,,,,...TT",
     "TT..,,,,,,,,,,,,,,,....==...,,,,,,,,,,,,,,,...TT",
     "TT..,,,,,,,,,,,,,,,....==...,,,,,,,,,,,,,,,...TT",
-    "TT.....................==.....................TT",
-    "TT.....................==.....................TT",
+    "TT.....................==.......................",
+    "TT.....................==.......................",
     "TT~~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~~~~TT",
     "TT~~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~~~~TT",
     "TT~~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~~~~TT",
@@ -78,8 +78,26 @@
   "passages": [
     {"x": 23, "y": 35, "vers": "port", "tx": 19, "ty": 1, "direction": "bas"},
     {"x": 24, "y": 35, "vers": "port", "tx": 20, "ty": 1, "direction": "bas"},
-    {"x": 23, "y": 0, "vers": "ruines", "tx": 17, "ty": 28, "direction": "haut"},
-    {"x": 24, "y": 0, "vers": "ruines", "tx": 18, "ty": 28, "direction": "haut"},
+    {
+      "x": 23,
+      "y": 0,
+      "vers": "ruines",
+      "tx": 17,
+      "ty": 28,
+      "direction": "haut",
+      "condition": {"objet": "trident"},
+      "message": "Une porte de corail scelle les Ruines. On dit que seul le Trident d'écume peut l'ouvrir."
+    },
+    {
+      "x": 24,
+      "y": 0,
+      "vers": "ruines",
+      "tx": 18,
+      "ty": 28,
+      "direction": "haut",
+      "condition": {"objet": "trident"},
+      "message": "Une porte de corail scelle les Ruines. On dit que seul le Trident d'écume peut l'ouvrir."
+    },
     {
       "x": 28,
       "y": 35,
@@ -89,7 +107,9 @@
       "direction": "bas",
       "condition": {"drapeau": "boss4"},
       "message": "La marée est trop haute pour atteindre l'épave."
-    }
+    },
+    {"x": 47, "y": 15, "vers": "corail", "tx": 1, "ty": 14, "direction": "droite"},
+    {"x": 47, "y": 16, "vers": "corail", "tx": 1, "ty": 15, "direction": "droite"}
   ],
   "zones": [
     {

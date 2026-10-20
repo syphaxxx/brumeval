@@ -1729,6 +1729,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     view("temple", 20, 27, UP, "28_temple");
     view("sanctuaire", 10, 12, UP, "29_sanctuaire");
     view("col", 19, 33, UP, "col_camp");
+    view("corail", 20, 16, UP, "corail_village");
     view("aube", 20, 15, UP, "aube_village");      // acte 3 (2026-10-20)
     view("lueurs", 22, 24, UP, "aube_lueurs");
     view("marais", 20, 16, RIGHT, "aube_marais");

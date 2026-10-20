@@ -1339,5 +1339,17 @@
     "couleurs": ["#c8e8ff", "#ffffff"],
     "apprend": [[1, "rafale"], [1, "eclat_glace"], [1, "lame_air"], [1, "poudreuse"]],
     "talent": "vif"
+  },
+  {
+    "id": "gardien_marees",
+    "nom": "Gardien des marées",
+    "sprite": "gardien_marees",
+    "types": ["eau", "roche"],
+    "base": {"pv": 104, "pm": 40, "attaque": 64, "defense": 78, "magie": 58, "resistance": 66, "vitesse": 40},
+    "immunites": ["sommeil"],
+    "forme": "boss",
+    "couleurs": ["#2a9a9a", "#ffe08a"],
+    "apprend": [[1, "vague"], [1, "trombe"], [1, "avalanche"], [1, "carapace"]],
+    "talent": "cuirasse"
   }
 ]
