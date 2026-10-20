@@ -333,6 +333,8 @@ sans compter la pêche ni l'Expédition. Combats : nuages et montagnes au fond d
 Le chemin de l'histoire s'allonge : le Col des Hurlevents (camp de bergers, Harpie de givre) entre les Monts
 Cendrelune et les Pics Givrés. Le grand bestiaire : la professeure récompense 15, 30, 45 et 60 espèces.
 Acte 2 plus long : l'île de Corail et la Grotte des Marées (le Trident d'écume ouvre les Ruines englouties).
+Mesures : d'une partie à l'autre, le joueur automatique met de 4 h 50 à 6 h (surtout le temps passé à s'entraîner
+avant l'Orage ancien) ; estimation pour un vrai joueur de 9 h 40 à 12 h. Musique propre à l'île d'Aube.
 Prochaines pistes pour approcher 20 h : un acte 4 / une région de plus, une ligue de l'Arène, un donjon d'après la
 fin à étages, la pêche, des captures demandées par plus de quêtes, des combats plus riches à mi-parcours.
 
