@@ -1783,6 +1783,16 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     view("echos", 21, 18, UP, "acte4_port_echo");
     view("pierres", 8, 17, UP, "acte4_foret_petrifiee");
     view("cratere", 36, 20, RIGHT, "acte4_cratere");
+    {  // un combat au Val des Murmures : ses arbres violets au fond (champ « arbres » de la carte)
+      changeMap(mi("val"), 21, 15, UP);
+      startBattle({makeFighter("lanternelle", 35)}, false, nullptr);
+      run(.6f);
+      snap("combat_val");
+      battle_.reset();
+      mode = Mode::Map;
+      menus.clear();
+      sc.clear();
+    }
     view("col", 19, 33, UP, "col_camp");
     view("corail", 20, 16, UP, "corail_village");
     view("val", 23, 34, UP, "val_hameau");

@@ -2763,8 +2763,12 @@ void Battle::draw() {
     else if (bg == Theme::Foret) back = {"sapin", "arbre", "sapin_petit", "sapin"}, near = {"touffe_2", "touffe_4", "fleurette_2"};
     else if (bg == Theme::Neige && !boss) back = {"sapin_neige", "sapin_neige_petit"}, near = {};
     else if (bg == Theme::Cendres) back = {"rochers", "rocher"}, near = {"caillou", "cailloux"};
+    // les arbres de la carte (« arbres » : pierre, lueur…) se retrouvent au fond du combat
+    std::string kind = G.mapId >= 0 && G.mapId < (int)maps().size() && G.M().theme == bg ? G.M().trees : "";
     for (int i = 0; !back.empty() && L - 30 + i * 34.f < R + 30; i++) {  // au fond, posés sur l'horizon
-      const SpriteRect* r = findSprite(back[(size_t)(i * 7 + 3) % back.size()]);
+      std::string name = back[(size_t)(i * 7 + 3) % back.size()];
+      const SpriteRect* r = kind.empty() ? nullptr : findSprite(name + "_" + kind);
+      if (!r) r = findSprite(name);
       if (!r) break;
       float x = L - 30 + i * 34.f + (i * 13) % 11;
       g.sprite(*r, std::round(x - r->w / 2.f), std::round(HZ + 4 - r->h + (i % 3)), i % 2, 1, rgb(0xb8c4d8));  // plus pâles : la distance
