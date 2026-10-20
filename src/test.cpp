@@ -3499,8 +3499,13 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       return Json();
     };
     Json f = find(*findEvent(id));
-    return [f] {
+    int theme = -1;  // le décor de la carte du boss (sa météo et son terrain : la canicule du cratère…)
+    for (auto& m : maps())
+      for (auto& b : m.bosses)
+        if (b.event == id) theme = (int)m.theme;
+    return [f, theme] {
       BattleSetup s;
+      s.theme = theme;
       auto make = [](const Json& e) { return makeFoe(e, 1); };
       Json foes = f.value("ennemis", Json::array()), more = f.value("renforts", Json::array());
       for (auto& e : foes) s.foes.push_back(make(e));

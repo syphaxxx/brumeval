@@ -702,7 +702,8 @@ réécrits par `writeJson` (petites listes sur une ligne) : garder ce format.
 Mesures des boss, méthode et historique des réglages : compétence `equilibrage`. Un boss trop facile
 vient souvent de sa lenteur ou d'acolytes trop faibles, pas de ses PV. Un boss qui frappe toute l'équipe à chaque tour
 (Ouragan, Éclipse, Rayon sacré) écrase une équipe de six : lui donner plutôt des techniques à une cible ou en croix
-(mesuré le 2026-10-20 sur le Phénix d'écho et l'Ombre du Premier Gardien, simulations du mode test).
+(mesuré le 2026-10-20 sur le Phénix d'écho et l'Ombre du Premier Gardien, simulations du mode test ; elles se
+font dans le décor de la carte du boss, avec sa météo).
 
 ## À faire / pistes
 
