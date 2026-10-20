@@ -157,6 +157,7 @@ MapDef mapFromJson(const Json& j) {
     m.ambiance = jget<std::string>(j["ambiance"], "effet", "");
     m.ambianceUntil = jget<std::string>(j["ambiance"], "jusqua", "");
   }
+  m.trees = jget<std::string>(j, "arbres", "");
   m.rows = j.at("tuiles").get<std::vector<std::string>>();
   for (auto& r : m.rows)
     if (r.size() != m.rows[0].size()) throw std::runtime_error("toutes les lignes de « tuiles » doivent avoir la même longueur");
@@ -230,6 +231,7 @@ Json mapToJson(const MapDef& m) {
     o["ambiance"] = {{"effet", m.ambiance}};
     if (!m.ambianceUntil.empty()) o["ambiance"]["jusqua"] = m.ambianceUntil;
   }
+  if (!m.trees.empty()) o["arbres"] = m.trees;
   if (m.encounterRate > 0) o["taux_rencontre"] = (double)m.encounterRate;
   o["tuiles"] = m.rows;
   Json b = Json::array();

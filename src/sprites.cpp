@@ -648,6 +648,8 @@ static const SpriteRect* propSprite(const MapDef& m, int x, int y) {
     case 'G': id = "tableau_annonces"; break;
     case 'J': id = "banniere"; break;
   }
+  if (id && c == 'T' && !m.trees.empty())  // arbres d'une autre sorte (« arbres » de la carte : « pierre »…)
+    if (const SpriteRect* r = findSprite(std::string(id) + "_" + m.trees)) return r;
   return id ? findSprite(id) : nullptr;
 }
 bool hasProp(const MapDef& m, int x, int y) { return propSprite(m, x, y) != nullptr; }

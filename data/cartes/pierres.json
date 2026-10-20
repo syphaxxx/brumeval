@@ -3,6 +3,7 @@
   "nom": "Forêt Pétrifiée",
   "theme": "foret",
   "ambiance": {"effet": "brume"},
+  "arbres": "pierre",
   "tuiles": [
     "TTTTTTTTTTTTTTTTTTTTTTT==TTTTTTTTTTTTTTTTTTTTTTT",
     "TTTTTTTTTTTTTTTTTTTTTTT==TTTTTTTTTTTTTTTTTTTTTTT",

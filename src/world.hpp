@@ -104,6 +104,7 @@ struct MapDef {
   float encounterRate = 0;  // 0 = valeur des règles
   std::string ambiance;     // "", "brume", "cendres", "obscurite"
   std::string ambianceUntil;  // l'ambiance disparaît quand ce drapeau est posé
+  std::string trees;          // « arbres » : variante des sprites d'arbres (« pierre » : arbres pétrifiés), vide : normaux
   std::vector<std::string> rows;
   std::vector<Building> buildings;
   std::vector<Npc> npcs;

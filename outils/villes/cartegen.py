@@ -132,7 +132,7 @@ class Map:
 
     def save(self, extra=None):
         self.m["tuiles"] = [''.join(r) for r in self.g]
-        order = ["id", "nom", "theme", "ambiance", "tuiles", "batiments", "habitants", "coffres", "panneaux", "passages",
+        order = ["id", "nom", "theme", "ambiance", "arbres", "tuiles", "batiments", "habitants", "coffres", "panneaux", "passages",
                  "enigme", "zones", "boss", "declencheurs", "carte_monde"]
         m = {k: self.m[k] for k in order if k in self.m}
         carte.save(self.mid, m)

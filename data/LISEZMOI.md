@@ -293,6 +293,8 @@ table, `h` lit, `e` étagère (une bibliothèque pour deux cases), `o` comptoir,
   habitant de l'intérieur.
 - `zones` : rencontres (`x`, `y`, `l`, `h`, `niveau_min`, `niveau_max`, `max_ennemis`, `creatures`) ; `nuit`
   (facultatif) : les créatures de la nuit, la moitié des rencontres quand il fait nuit.
+- `arbres` (facultatif) : une autre sorte d'arbres, par exemple `pierre` (arbres pétrifiés : sprites
+  `<arbre>_pierre`, recolorés dans `outils/sprites/variantes.json`).
 - `ambiance` : `brume`, `cendres`, `obscurite`, `neige` ou `lucioles`, avec
   `jusqua` pour la faire disparaître quand un drapeau est posé.
 - `passages` : `condition` (mêmes conditions que `si` dans les événements) et
