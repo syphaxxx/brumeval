@@ -319,6 +319,7 @@ table, `h` lit, `e` étagère (une bibliothèque pour deux cases), `o` comptoir,
   un dresseur).
 - `coffres` : `objet` et `quantite`, ou `or` ; `si` : le coffre n'apparaît que si ces conditions sont vraies (une fois
   ouvert, il reste là) : cartes au trésor de Corbin.
+- `fete` (carte) : une condition ; vraie, des lanternes montent dans le ciel la nuit (fête des lanternes de la Vallée).
 
 ## Rappels sur le format JSON
 
@@ -378,7 +379,7 @@ vraie. Une quête commencée pose le drapeau `quete:<id>`, une quête terminée
 
 Conditions possibles (toutes doivent être vraies) : `drapeau`, `sans_drapeau`,
 `objet`, `sans_objet`, `objet_min`, `or_min`, `membre` (une espèce présente dans l'équipe), `poissons_min`
-(espèces de poissons pêchées, carnet de pêche), `especes_min` (espèces obtenues du Bestiaire), `chromatiques_min` (créatures chromatiques dans l'équipe et la réserve), `quetes_min` (quêtes terminées), `cartes_min` (cartes des gardiens obtenues).
+(espèces de poissons pêchées, carnet de pêche), `especes_min` (espèces obtenues du Bestiaire), `chromatiques_min` (créatures chromatiques dans l'équipe et la réserve), `quetes_min` (quêtes terminées), `cartes_min` (cartes des gardiens obtenues), `nuit` (`true` : seulement la nuit, `false` : le jour ; l'heure du jeu).
 
 ## primes.json (primes, 2026-10-19)
 

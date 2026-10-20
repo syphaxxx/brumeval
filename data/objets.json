@@ -1008,6 +1008,23 @@
     "bonus": {"pv": 100, "magie": 10, "resistance": 10, "vitesse": 5, "critique": 4}
   },
   {
+    "id": "lanterne_fete",
+    "nom": "Lanterne de fête",
+    "icone": "ic_lanterne",
+    "prix": 0,
+    "important": true,
+    "description": "Une lanterne de papier rouge, emportée par le vent. Lison en a besoin pour la fête."
+  },
+  {
+    "id": "lanterne_lison",
+    "nom": "Lanterne de Lison",
+    "icone": "ic_lanterne_or",
+    "prix": 3000,
+    "equipement": "accessoire",
+    "description": "La plus vieille lanterne de la fête. Sa lumière rassure les créatures de la nuit.",
+    "bonus": {"pv": 30, "magie": 5, "resistance": 5, "esquive": 3}
+  },
+  {
     "id": "medaillon_legendes",
     "nom": "Médaillon des légendes",
     "icone": "ic_acc_4",

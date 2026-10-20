@@ -340,6 +340,8 @@ de niveau 35-40 bien équipée.
   combats d'affilée.
 - **Pension de Moulinbourg** : deux créatures grandissent pendant que vous marchez ; deux d'un même type laissent
   parfois un œuf, qui éclot dans l'équipe.
+- **Fête des lanternes** : la nuit, sur la place de la Vallée, Lison a perdu ses lanternes ; retrouvées, elles montent
+  chaque nuit dans le ciel.
 - **Exploits** : 32 défis (finir les actes, remplir le Bestiaire, devenir champion…), cochés dans Journal > Exploits.
 - **Sauvegarde automatique** à chaque passage et porte (Options > Sauvegarde auto pour la couper).
 - **Voyage rapide** : Échap > Carte, choisir un village déjà visité (flèches), Entrée pour y aller.

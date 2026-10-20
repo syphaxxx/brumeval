@@ -637,6 +637,9 @@ code) ; `docs/GUIDE.md` les range par domaine.
   (`pensionEgg_`), emporté dans `eggs_` (espèce, pas restants) puis éclos (forme de base `baseForm`, niveau 1, plus
   souvent chromatique, drapeau `oeuf_eclos`). Règles `pension` de regles.json. Sauvegarde : `pension_niveaux`,
   `pension_pas`, `oeuf`, puis la ligne `pension` et ses `membre` (en dernier ; `Online::myTeam` s'y arrête). 32 exploits.
+- Fête des lanternes (2026-10-20, `outils/villes/fete.py`) : condition `nuit` (`Game::isNight`, l'heure du jeu même dans
+  un intérieur), Lison sur la place de la Vallée la nuit après `boss2`, cinq coffres `si` (quête et nuit) ; champ `fete`
+  d'une carte (`MapDef::festival`) : des lanternes montent dans le ciel la nuit (`drawMap`).
 - Épreuves des gardiens (2026-10-20) : après `aube_fin`, la porte du sanctuaire d'Aube (événement `epreuves`) ouvre huit
   combats contre des esprits gardiens (drapeaux `epreuve1`…`epreuve8`, niveaux 70 à 84), puis Ilya (`epreuve9`,
   Insigne des gardiens) ; quête `epreuves`. Script `outils/villes/epreuves.py` ; une phase à mi-vie pour chaque gardien,

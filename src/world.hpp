@@ -107,6 +107,7 @@ struct MapDef {
   std::string ambiance;     // "", "brume", "cendres", "obscurite"
   std::string ambianceUntil;  // l'ambiance disparaît quand ce drapeau est posé
   std::string trees;          // « arbres » : variante des sprites d'arbres (« pierre » : arbres pétrifiés), vide : normaux
+  Json festival;              // « fete » (2026-10-20) : condition ; vraie, des lanternes montent dans le ciel la nuit
   std::vector<std::string> rows;
   std::vector<Building> buildings;
   std::vector<Npc> npcs;

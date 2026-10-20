@@ -2600,6 +2600,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       menus.top().sel = 1;  // l'autre N.10 (le N.30 reste dans l'équipe)
       in.confirm = true;
       frame();
+      show("pension : deux créatures");
+      snap("pension");
       menus.clear();
       bool deposited = pension_.size() == 2 && team.size() == 2 && pensionCanEgg();
       for (int i = 0; i < 20000 && !pensionEgg_; i++) pensionStep();
@@ -2680,7 +2682,28 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
                                                           std::string(result > 0 ? "gagnée" : result < 0 ? "perdue" : "égalité") + ")");
       cardHandMenu();
       show("cartes : main");
+      snap("cartes_main");
       menus.clear();
+      flags = savedFlags;
+    }
+    {  // Fête des lanternes : condition « nuit », Lison seulement la nuit, des lanternes dans le ciel une fois la fête faite
+      auto savedFlags = flags;
+      float savedTime = time;
+      menus.clear();
+      sc.clear();
+      time = 360 * .3f;  // le jour
+      bool day = !isNight() && checkCond(Json{{"nuit", false}}) && !checkCond(Json{{"nuit", true}});
+      time = 468;  // la nuit
+      bool night = isNight() && checkCond(Json{{"nuit", true}});
+      flags = {"boss2", "fete_lanternes"};
+      int vi = mi("vallee");
+      bool lison = false;
+      for (auto& npc : maps()[(size_t)vi].npcs) lison = lison || (npc.event == "lison" && npcVisible(npc));
+      changeMap(vi, 16, 12, DOWN);
+      run(.5f);
+      snap("fete");
+      check(day && night && lison && !maps()[(size_t)vi].festival.is_null(), "fête des lanternes : la nuit, Lison est sur la place et des lanternes montent dans le ciel");
+      time = savedTime;
       flags = savedFlags;
     }
     {  // Cartes au trésor : le coffre caché n'apparaît (ni ne bloque) qu'avec sa carte, et contient la carte suivante
@@ -2690,7 +2713,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       sc.clear();
       int vi = mi("vallee"), ci = -1;
       for (size_t i = 0; i < maps()[(size_t)vi].chests.size(); i++)
-        if (!maps()[(size_t)vi].chests[i].cond.is_null()) ci = (int)i;
+        if (maps()[(size_t)vi].chests[i].cond.dump().find("carte_tresor_1") != std::string::npos) ci = (int)i;
       bool ok = ci >= 0;
       if (ok) {
         const MapDef& vm = maps()[(size_t)vi];

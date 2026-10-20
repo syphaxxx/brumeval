@@ -11186,5 +11186,72 @@
         ]
       }
     ]
+  },
+  "lison": {
+    "pages": [
+      {
+        "si": {"drapeau": "fete_lanternes"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Lison : Regarde ! Elles montent encore, chaque nuit. La vallée n'a jamais été aussi belle."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:lanternes", "objet_min": {"lanterne_fete": 5}},
+        "actions": [
+          {"action": "retirer", "objet": "lanterne_fete", "quantite": 5},
+          {
+            "action": "dire",
+            "texte": "Lison : Les cinq ! Tu les as toutes retrouvées ! Vite, allumons-les…"
+          },
+          {
+            "action": "dire",
+            "texte": "Une à une, les lanternes s'élèvent au-dessus de la place. Les habitants sortent pour les regarder monter vers les étoiles."
+          },
+          {"action": "drapeau", "nom": "fete_lanternes"},
+          {
+            "action": "dire",
+            "texte": "Lison : Merci. C'est la première fête depuis que la brume est partie. Garde celle-ci : c'est la mienne, la plus vieille."
+          },
+          {"action": "donner", "objet": "lanterne_lison", "quantite": 1},
+          {"action": "quete", "id": "lanternes", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:lanternes"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Lison : Les lanternes ne brillent que la nuit. Cherche dans les coins de la vallée, loin des maisons."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Lison : Bonsoir ! Je prépare la fête des lanternes, la première depuis que la brume s'est levée."
+          },
+          {
+            "action": "dire",
+            "texte": "Lison : Mais le vent a emporté mes cinq lanternes de fête ! Elles brillent quelque part dans la vallée, la nuit…"
+          },
+          {
+            "action": "question",
+            "texte": "Chercher les cinq lanternes de Lison ?",
+            "oui": [
+              {"action": "quete", "id": "lanternes"},
+              {
+                "action": "dire",
+                "texte": "Lison : Merci ! Elles ne se voient que la nuit. Reviens me voir quand tu les auras, de nuit aussi."
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Lison : Tant pis… La fête attendra encore un peu."}]
+          }
+        ]
+      }
+    ]
   }
 }

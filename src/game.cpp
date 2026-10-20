@@ -1198,6 +1198,10 @@ void Game::drawTitle() {
   }
 }
 
+bool Game::isNight() const {
+  float p = std::fmod(time / 720.f + .85f, 1.f);
+  return -std::cos(p * 6.2831853f) - .15f > .3f;  // nightAmount() > 0,5
+}
 float Game::nightAmount() const {
   if (!outdoors()) return 0;
   float p = std::fmod(time / 720.f + .85f, 1.f);  // 0 : midi ; la partie commence en matinée
@@ -1502,6 +1506,16 @@ void Game::drawMap() {
         g.ellipse(x, y, 1.5f, 1.5f, rgb(0xe8ff9a, uint8_t(night * (90 + 80 * std::sin(time * 3 + i)))));
       }
   }
+  // Fête des lanternes (champ « fete » de la carte) : la nuit, des lanternes de papier montent doucement dans le ciel
+  if (night > .3f && !m.festival.is_null() && checkCond(m.festival))
+    for (int i = 0; i < 14 * g.fullW / SCREEN_W; i++) {
+      float sp = 6 + i % 5 * 1.5f, y = 250 - std::fmod(time * sp + i * 71.f, 270.f);
+      float x = g.left() + std::fmod(i * 83.f + std::sin(time * .5f + i) * 8, (float)g.fullW);
+      uint8_t a = uint8_t(std::min(1.f, (night - .3f) * 2) * 255 * std::clamp(y / 60.f, 0.f, 1.f));
+      g.ellipse(x, y, 6, 6, rgb(0xffb04a, uint8_t(a / 6)));
+      g.rect(x - 2, y - 3, 5, 6, rgb(0xff9a3a, a));
+      g.rect(x - 1, y - 2, 3, 4, rgb(0xffe08a, a));
+    }
   // Feuilles qui tombent en forêt, papillons dans la vallée le jour
   if (m.ambiance.empty() && m.theme == Theme::Foret)
     for (int i = 0; i < 10 * g.fullW / SCREEN_W; i++) {

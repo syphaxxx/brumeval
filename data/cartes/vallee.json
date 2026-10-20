@@ -291,7 +291,15 @@
       "vue_jusqua": "route_vallee1"
     },
     {"x": 26, "y": 20, "apparence": "ermite", "direction": "bas", "evenement": "conteur_quiz"},
-    {"x": 33, "y": 14, "apparence": "voyageuse", "direction": "bas", "evenement": "assistant_chroma"}
+    {"x": 33, "y": 14, "apparence": "voyageuse", "direction": "bas", "evenement": "assistant_chroma"},
+    {
+      "x": 16,
+      "y": 10,
+      "apparence": "villageoise",
+      "direction": "bas",
+      "evenement": "lison",
+      "si": {"drapeau": "boss2", "nuit": true}
+    }
   ],
   "coffres": [
     {"x": 12, "y": 24, "objet": "medaillon", "quantite": 1},
@@ -310,7 +318,42 @@
     {"x": 62, "y": 2, "objet": "eclat_brume", "quantite": 1},
     {"x": 62, "y": 57, "objet": "eclat_brume", "quantite": 1},
     {"x": 3, "y": 30, "objet": "eclat_brume", "quantite": 1},
-    {"x": 1, "y": 44, "objet": "carte_tresor_2", "quantite": 1, "si": {"objet": "carte_tresor_1"}}
+    {"x": 1, "y": 44, "objet": "carte_tresor_2", "quantite": 1, "si": {"objet": "carte_tresor_1"}},
+    {
+      "x": 26,
+      "y": 58,
+      "objet": "lanterne_fete",
+      "quantite": 1,
+      "si": {"drapeau": "quete:lanternes", "nuit": true}
+    },
+    {
+      "x": 62,
+      "y": 58,
+      "objet": "lanterne_fete",
+      "quantite": 1,
+      "si": {"drapeau": "quete:lanternes", "nuit": true}
+    },
+    {
+      "x": 35,
+      "y": 52,
+      "objet": "lanterne_fete",
+      "quantite": 1,
+      "si": {"drapeau": "quete:lanternes", "nuit": true}
+    },
+    {
+      "x": 26,
+      "y": 44,
+      "objet": "lanterne_fete",
+      "quantite": 1,
+      "si": {"drapeau": "quete:lanternes", "nuit": true}
+    },
+    {
+      "x": 2,
+      "y": 55,
+      "objet": "lanterne_fete",
+      "quantite": 1,
+      "si": {"drapeau": "quete:lanternes", "nuit": true}
+    }
   ],
   "panneaux": [
     {"x": 6, "y": 10, "texte": "Village de Brumeval. Maison de soin au nord-ouest, boutique au nord-est."},
@@ -431,5 +474,6 @@
       "si": {"drapeau": "quete:ruches"}
     }
   ],
-  "carte_monde": [34, 50]
+  "carte_monde": [34, 50],
+  "fete": {"drapeau": "fete_lanternes"}
 }

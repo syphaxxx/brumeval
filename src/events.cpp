@@ -52,7 +52,7 @@ static void checkList(const Json& list, const std::string& where, std::vector<st
 
 static void checkCondition(const Json& c, const std::string& where, std::vector<std::string>& err) {
   static const std::vector<std::string> keys = {"drapeau", "sans_drapeau", "objet", "sans_objet", "objet_min", "or_min", "membre", "poissons_min", "especes_min",
-                                                "chromatiques_min", "quetes_min", "cartes_min"};
+                                                "chromatiques_min", "quetes_min", "cartes_min", "nuit"};
   for (auto& [k, v] : c.items()) {
     if (std::find(keys.begin(), keys.end(), k) == keys.end()) err.push_back(where + T(" : condition inconnue « ") + k + " »");
     if (k == "objet" || k == "sans_objet")
@@ -230,6 +230,7 @@ bool Game::checkCond(const Json& c) const {
       if (count(id) < n.get<int>()) return false;
   }
   if (c.contains("or_min") && gold < c["or_min"].get<int>()) return false;
+  if (c.contains("nuit") && c["nuit"].is_boolean() && isNight() != c["nuit"].get<bool>()) return false;  // la nuit (true) ou le jour
   if (c.contains("poissons_min") && fishCaught() < c["poissons_min"].get<int>()) return false;  // carnet de pêche
   if (c.contains("especes_min") && (int)caught.size() < c["especes_min"].get<int>()) return false;  // Bestiaire : espèces obtenues
   if (c.contains("cartes_min") && (int)cardCollection().size() < c["cartes_min"].get<int>()) return false;  // cartes des gardiens
