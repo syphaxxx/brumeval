@@ -332,6 +332,7 @@ de niveau 35-40 bien équipée.
   poissons) et la **Nouvelle partie +**.
 - **Discussions** entre les héros (Échap > Discussions), pluie de temps en temps,
   musiques réécrites.
+- **Sauvegarde automatique** à chaque passage et porte (Options > Sauvegarde auto pour la couper).
 - **Créatures de la nuit** : la nuit, d'autres créatures sortent dans les herbes ; parfois, une meute est menée
   par un **alpha** qui se bat comme un boss.
 - **Créatures chromatiques** : très rarement, une créature sauvage a des couleurs

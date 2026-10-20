@@ -623,7 +623,10 @@ void Game::arrive() {
   for (auto& w : M().warps)
     if (w.x == px && w.y == py && !(w.map == M().id && w.tx == px && w.ty == py)) {  // vers sa propre case : une barrière
       int m = mapIndex(w.map);
-      if (m >= 0) return changeMap(m, w.tx, w.ty, w.dir);
+      if (m >= 0) {
+        changeMap(m, w.tx, w.ty, w.dir);
+        return autoSave();
+      }
     }
   for (auto& t : M().triggers)
     if (px >= t.x && py >= t.y && px < t.x + t.w && py < t.y + t.h && (t.until.empty() || !has(t.until))) {
@@ -780,8 +783,20 @@ void Game::enterDoor(const Building& b) {
   if (b.decor()) return;  // décor : pas de porte
   audio::play("porte");
   int in = mapIndex(b.interior), ex, ey;
-  if (in >= 0 && interiorEntry(maps()[in], M().id, ex, ey)) return changeMap(in, ex, ey, UP);
+  if (in >= 0 && interiorEntry(maps()[in], M().id, ex, ey)) {
+    changeMap(in, ex, ey, UP);
+    return autoSave();
+  }
   runEvent(b.event);
+}
+
+// Sauvegarde automatique (2026-10-20) : à chaque passage et porte, dans l'histoire seulement (ni Expédition, ni en ligne,
+// ni mode test ou démo, qui ont leur propre fichier), si l'option est active
+void Game::autoSave() {
+  if (!options().autosave || inExpedition() || (online_ && online_->connected()) || saveName_ != autoSaveFile_ || pilot_ ||
+      editorTest_ || storyTest_ || mode != Mode::Map || team.empty())
+    return;
+  if (saveGame()) autoSaveT_ = time;
 }
 
 // Drapeau d'un coffre ouvert : carte et position (reste valable si on ajoute des coffres)
@@ -854,8 +869,21 @@ void Game::titleMenu() {
   menus.clear();
   Menu m;
   m.x = 102, m.y = 110, m.w = 116, m.rows = 8, m.cancelable = false;
-  m.items.push_back({T("Nouvelle partie"), "", "", true, [this] { starterMenu(); }});
   bool can = saveExists();
+  m.items.push_back({T("Nouvelle partie"), "", "", true, [this, can] {
+                       if (!can) return starterMenu();
+                       Menu c;  // une partie existe : la sauvegarde automatique la remplacerait
+                       c.title = T("Nouvelle partie ?");
+                       c.x = 70, c.y = 120, c.w = 180, c.rows = 2;
+                       c.items.push_back({T("Annuler"), "", T("Garder la partie en cours."), true, [this] { menus.pop(); }});
+                       c.items.push_back({T("Commencer"), "", T("Une partie est déjà sauvegardée : elle sera remplacée dès la première sauvegarde."), true,
+                                          [this] {
+                                            menus.pop();
+                                            starterMenu();
+                                          }});
+                       c.onCancel = [this] { menus.pop(); };
+                       menus.push(c);
+                     }});
   m.items.push_back({T("Continuer"), "", "", can, [this] {
                        if (loadGame()) {
                          menus.clear();
@@ -983,7 +1011,11 @@ void Game::draw() {
   g.clear(rgb(0x070a1c));
   switch (mode) {
     case Mode::Title: drawTitle(); break;
-    case Mode::Map: drawMap(); break;
+    case Mode::Map:
+      drawMap();
+      if (float a = time - autoSaveT_; a >= 0 && a < 1.6f && !sc.busy() && !menus.active())  // « Sauvegarde… » en bas à droite
+        g.text(g.right() - 6, SCREEN_H - 14, T("Sauvegarde…"), rgb(0xe8ecff, uint8_t(220 * std::min(1.f, (1.6f - a) * 2))), 2, false);
+      break;
     case Mode::Battle: battle_->draw(); break;
     case Mode::Ending: drawEnding(); break;
     case Mode::Arena:

@@ -84,6 +84,16 @@ void Game::optionsMenu(int sel) {
     tp.rightFn = [] { return std::string(options().tips ? T("Oui") : T("Non")); };
     m.items.push_back(tp);
   }
+  {
+    auto flip = [] {
+      options().autosave = !options().autosave;
+      saveOptions();
+    };
+    MenuItem as{T("Sauvegarde auto"), "", T("Sauvegarder la partie à chaque passage d'une carte à l'autre et à chaque porte."), true, flip};
+    as.adjust = [flip](int) { flip(); };
+    as.rightFn = [] { return std::string(options().autosave ? T("Oui") : T("Non")); };
+    m.items.push_back(as);
+  }
   m.items.push_back({T("Touches"), "", T("Changer les touches du clavier. La manette se branche toute seule."), true, [this] { keysMenu(); }});
   m.items.push_back({T("Retour"), "", "", true, [this, panel] {
                        panelMode_ = panel;

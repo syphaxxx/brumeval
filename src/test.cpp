@@ -134,7 +134,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     frame();
     snap("86_options");
     bool louder = options().music == std::min(10, vol + 1);
-    menus.top().sel = 6;  // Touches (après Langue et Astuces)
+    menus.top().sel = 7;  // Touches (après Langue, Astuces et Sauvegarde auto)
     in.confirm = true;
     frame();
     snap("87_touches");
@@ -157,8 +157,51 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     options() = Options{};
     loadOptions();
     bool reread = options().keys[K_UP] == SDL_SCANCODE_I && options().music == std::min(10, vol + 1) && options().speed == 3;
-    check(opened && louder && waiting && bound && fast && reread,
+    options().autosave = false;  // l'option « Sauvegarde auto » coupée se relit aussi
+    saveOptions();
+    options() = Options{};
+    loadOptions();
+    reread = reread && !options().autosave;
+    options().autosave = true;
+    check(opened && louder && waiting && bound && fast && reread && options().autosave,
           "options : écran titre > Options, volume de la musique, nouvelle touche pour « Haut », vitesse ×3 (F2), relues depuis le fichier");
+    {  // une partie sauvegardée : « Nouvelle partie » demande d'abord (la sauvegarde auto la remplacerait)
+      bool made = !saveExists() && saveGame();  // fichier du mode test, retiré ensuite
+      titleMenu();
+      menus.top().sel = 0;
+      in.confirm = true;
+      frame();
+      bool asked = menus.top().title == T("Nouvelle partie ?");
+      snap("nouvelle_partie_confirmer");
+      menus.clear();
+      if (made) std::remove(userFile(saveName_).c_str());
+      check(asked, "écran titre : « Nouvelle partie » demande confirmation quand une partie est sauvegardée");
+    }
+    {  // sauvegarde automatique : sur le fichier du mode test le temps de l'essai ; rien si l'option est coupée
+      std::string keepFile = autoSaveFile_;
+      Mode keepMode = mode;
+      bool hadSave = saveExists();
+      auto keepTeam = team;
+      if (team.empty()) team.push_back(makeFighter("lior", 5));
+      autoSaveFile_ = saveName_;
+      mode = Mode::Map;
+      std::remove(userFile(saveName_).c_str());
+      options().autosave = false;
+      autoSave();
+      bool silent = !saveExists();
+      options().autosave = true;
+      autoSave();
+      bool wrote = saveExists() && time - autoSaveT_ < 1;
+      autoSaveFile_ = keepFile;
+      std::remove(userFile(saveName_).c_str());
+      autoSave();  // revenu au vrai nom : le mode test ne sauvegarde plus tout seul
+      bool guarded = !saveExists();
+      team = keepTeam;
+      autoSaveT_ = -10;
+      if (hadSave) saveGame();
+      mode = keepMode;
+      check(silent && wrote && guarded, "sauvegarde automatique : écrite si l'option est active, jamais quand elle est coupée ni en mode test");
+    }
     std::remove(userFile(optionsFile).c_str());
     optionsFile = realFile;
     noticeT_ = 0;  // « Haut : I. » ne reste pas affiché sur les captures suivantes

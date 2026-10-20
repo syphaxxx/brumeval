@@ -194,6 +194,10 @@ code) ; `docs/GUIDE.md` les range par domaine.
   `membre` est suivie de `tactiques` (interrupteur) et des lignes `tactique` du
   membre ; `auto` garde le mode auto. Le mode test écrit dans
   `sauvegarde_test.txt` (`saveName_`) pour ne jamais toucher à la vraie partie.
+  Sauvegarde automatique (2026-10-20, `Game::autoSave`) : à chaque passage et porte, si `options().autosave`
+  (ligne `sauvegarde_auto` d'`options.txt`, Options > Sauvegarde auto) ; jamais en Expédition, en ligne, en démo ni
+  en mode test (`saveName_` différent) ; « Sauvegarde… » un instant en bas à droite. Nouvelle partie avec une partie
+  sauvegardée : confirmation d'abord.
 - Expédition (expedition.hpp, procgen.hpp) : tout le contenu est généré depuis
   une graine (`procgen::generateBase`, puis `generateRegion(graine, k, contenu)`
   région par région : la région k ne dépend que de la graine et de k). Le

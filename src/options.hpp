@@ -18,6 +18,7 @@ struct Options {
   int music = 6, effects = 7;  // volumes, 0 à 10
   int speed = 1;               // vitesse du jeu : ×1, ×2 ou ×3 (F2), voir Game::speed
   bool tips = true;
+  bool autosave = true;        // sauvegarde automatique à chaque passage et porte (2026-10-20)
   bool english = false;        // langue (3.1) : anglais au lieu du français (data/langues/en.json)            // astuces (2.8) : chaque nouvelle règle expliquée la première fois
   std::array<SDL_Scancode, N_KEYS> keys = defaultKeys();
   static std::array<SDL_Scancode, N_KEYS> defaultKeys();

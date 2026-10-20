@@ -162,6 +162,9 @@ class Game {
   // Menus
   void titleMenu();
   void starterMenu();
+  void autoSave();          // sauvegarde automatique (option), en changeant de carte à pied
+  float autoSaveT_ = -10;   // moment de la dernière (petit « Sauvegarde… » à l'écran)
+  std::string autoSaveFile_ = "sauvegarde.txt";  // seule la vraie partie se sauvegarde seule (le mode test le change)
   void newGame(const std::string& starter);
   void pauseMenu();
   void tacticsMenu(int sel = 0);
