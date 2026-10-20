@@ -232,5 +232,10 @@ bool Game::loadGame() {
   for (auto& m : team) m->hp = std::min(m->hp, m->mhp), m->mp = std::min(m->mp, m->mmp);
   lastNewTalks_ = newDiscussions();  // pas d'annonce pour les discussions déjà disponibles
   applyNewGamePlus();  // Nouvelle partie + : ennemis plus forts selon les drapeaux « ngp<k> »
+  if (!inExpedition() && mapId >= 0 && mapId < (int)maps().size()) {  // le lieu où l'on est (une ancienne sauvegarde n'a pas de « lieu »)
+    if (M().worldX >= 0) visited.insert(M().id);
+    for (auto& w : M().warps)  // dans un intérieur : son village
+      if (int t = mapIndex(w.map); M().theme == Theme::Interieur && t >= 0 && maps()[t].worldX >= 0) visited.insert(maps()[t].id);
+  }
   return !team.empty();
 }

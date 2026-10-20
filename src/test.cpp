@@ -2585,6 +2585,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       items["potion"] = 3;
       size_t n = team.size();
       sc.clear();
+      visited.insert("cendrelune");  // le voyage rapide repart de zéro
       execAction(Json{{"action", "nouvelle_partie_plus"}});
       while (sc.busy()) {
         in.confirm = true;
@@ -2593,7 +2594,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       Json probe = {{"espece", "mulotin"}, {"niveau", 5}};
       bool ok = has("ngp1") && !has("aube_fin") && has("peche:gardon") && !items.count("trident") && items["potion"] == 3 &&
                 team.size() == n && foeLevelBonus == NGP_LEVELS && makeFoe(probe, 1)->lvl == 5 + NGP_LEVELS &&
-                M().id == rules().startMap;
+                M().id == rules().startMap && !visited.count("cendrelune");
       check(ok, "nouvelle partie + : l'histoire recommence avec l'équipe, sans les objets importants, ennemis +" + std::to_string(NGP_LEVELS) + " niveaux");
       flags = savedFlags;
       items = savedItems;

@@ -990,6 +990,7 @@ void Game::startNewGamePlus() {
     if (f.rfind("ngp", 0) == 0 || f.rfind("peche:", 0) == 0) keep.insert(f);
   keep.insert("ngp" + std::to_string(n));
   flags = keep;
+  visited.clear();  // le voyage rapide repart de zéro : les passages (pont, bateaux…) sont refermés
   for (auto it = items.begin(); it != items.end();) {
     const bool key = hasItem(it->first) && item(it->first).price == 0 && item(it->first).slot < 0 && !item(it->first).gem;
     it = key ? items.erase(it) : std::next(it);
