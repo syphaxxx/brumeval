@@ -593,7 +593,9 @@ bool tallGrass(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t, b
   for (int i = 0; i < 2; i++) {
     const SpriteRect* r = findSprite(std::string(kind) + std::to_string(1 + ((h >> i) & 1)));
     if (!r) return false;
-    int sway = (int)std::lround(std::sin(t * 2.2f + x * .7f + y * .3f + i * 1.7f) * .6f);
+    // ondulation, plus une rafale qui traverse le champ d'ouest en est (une vague tous les ~4 s)
+    float gust = std::pow(std::max(0.f, std::sin(x * .35f + y * .12f - t * 1.6f)), 8.f) * 2.2f;
+    int sway = (int)std::lround(std::sin(t * 2.2f + x * .7f + y * .3f + i * 1.7f) * .6f + gust);
     int px = sx - 2 + i * 8 + sway, py = sy + 16 - r->h + i;
     if (!front) g.sprite(*r, px, py, (h >> (i + 4)) & 1);
     else {

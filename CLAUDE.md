@@ -377,7 +377,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
   `sprites-blender-godot`.
 - Améliorations (branche `ameliorations`, carte blanche du 2026-10-16) : petits détails du sol en sprites (touffes,
   fleurettes, cailloux selon `hsh`, dans `drawTile` '.'), hautes herbes `,`/`g` en touffes de la planche
-  (`tallGrass` ; `front` : le bas des touffes redessiné sur les pieds du joueur), montagnes `m` en éboulis de rochers.
+  (`tallGrass`, qui ondulent, avec des rafales qui traversent les champs ; `front` : le bas des touffes redessiné sur les pieds du joueur), montagnes `m` en éboulis de rochers.
   Courir : Maj ou X de la manette maintenu (`Input::run`, `Game::running_`, pas à 13/s au lieu de 7,5, images
   `lior_course_k`). Intérieurs : `e` = une bibliothèque pour deux cases, `t` = table (sprite « banc »), `j` = chaise
   (tournée vers la table), script `outils/villes/interieurs.py`. Expédition : une créature générée sans sprite prend
