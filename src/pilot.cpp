@@ -1374,6 +1374,7 @@ int Game::autoGame(SDL_Surface* target, const std::string& out) {
   say(P.summary());
   say(P.timeReport());
   say(P.humanEstimate());
+  say("exploits : " + std::to_string(g.exploitsDone()) + "/" + std::to_string(exploitCount()));
   for (auto& s : g.layoutIssues) say("mise en page : " + s);
   return P.finished && g.layoutIssues.empty() ? 0 : 1;
 }

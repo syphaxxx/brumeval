@@ -201,6 +201,10 @@ class Game {
   bool discussionOpen(const Json& d) const;
   int newDiscussions() const;
   void checkDiscussions();
+  // Exploits (exploits.cpp, data/exploits.json) : objectifs à atteindre, drapeaux « exploit:<id> »
+  void checkExploits();
+  void exploitsMenu();
+  int exploitsDone() const;
   int lastNewTalks_ = 0;
   float talkCheckT_ = 0;
   // Nouvelle partie + (2026-10-20) : drapeaux « ngp1 », « ngp2 »… ; chaque tour ajoute NGP_LEVELS niveaux aux ennemis
@@ -365,4 +369,7 @@ int fishSpecies();
 
 // Discussions (discussions.cpp) : vérification de data/discussions.json (mode test) et nombre de discussions
 std::vector<std::string> checkDiscussionsData();
+std::vector<std::string> checkExploitsData();
+int exploitCount();
+void checkConditionData(const Json& c, const std::string& where, std::vector<std::string>& err);  // une condition « si » bien écrite
 int discussionCount();

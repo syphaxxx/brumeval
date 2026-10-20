@@ -25,6 +25,7 @@ toutes les références existent et que chaque lieu des cartes est accessible.
 | `cartes/*.json` | Une carte par fichier : tuiles, bâtiments, habitants, coffres… |
 | `sons.json` | Musiques et bruitages (fabriqués par le jeu, sans fichier audio) |
 | `quetes.json` | Quêtes annexes : nom, lieu, étapes affichées dans le journal |
+| `exploits.json` | Exploits (Journal > Exploits) : `id`, `nom`, `description`, `si` (condition) ; atteint, il pose le drapeau `exploit:<id>` et reste acquis |
 | `discussions.json` | Discussions entre héros (Échap > Discussions) : `id`, `titre`, `si` (condition), `membres` (espèces dans l'équipe), `dialogue` (lignes « Nom : texte ») |
 | `peche.json` | Poissons de la pêche : `objet` (un objet de objets.json), `eaux` (identifiants de carte, sinon thèmes), `poids` (fréquence), `difficulte` (1 à 5) |
 | `primes.json` | Primes (monstres recherchés) du tableau d'annonces et rangs de chasseur (voir plus bas) |
@@ -372,7 +373,7 @@ vraie. Une quête commencée pose le drapeau `quete:<id>`, une quête terminée
 
 Conditions possibles (toutes doivent être vraies) : `drapeau`, `sans_drapeau`,
 `objet`, `sans_objet`, `objet_min`, `or_min`, `membre` (une espèce présente dans l'équipe), `poissons_min`
-(espèces de poissons pêchées, carnet de pêche), `especes_min` (espèces obtenues du Bestiaire), `chromatiques_min` (créatures chromatiques dans l'équipe et la réserve).
+(espèces de poissons pêchées, carnet de pêche), `especes_min` (espèces obtenues du Bestiaire), `chromatiques_min` (créatures chromatiques dans l'équipe et la réserve), `quetes_min` (quêtes terminées).
 
 ## primes.json (primes, 2026-10-19)
 

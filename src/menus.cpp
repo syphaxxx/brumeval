@@ -760,6 +760,10 @@ void Game::journalMenu() {
   if (std::string adv = adviceText(); !adv.empty()) m.items.push_back({T("Prochain gardien"), "", adv, true, nullptr});  // conseil (2.8)
   if (!inExpedition())
     m.items.push_back({T("Progression"), "", T("Ce que vous avez déjà accompli : quêtes, primes, dresseurs, coffres, Bestiaire…"), true, [this] { progressMenu(); }});
+  if (!inExpedition())
+    m.items.push_back({T("Exploits"), std::to_string(exploitsDone()) + "/" + std::to_string(exploitCount()),
+                       T("Des défis pour ceux qui veulent tout faire : finir les actes, remplir le Bestiaire, devenir champion…"), true,
+                       [this] { exploitsMenu(); }});
   for (auto& q : quests()) {
     std::string id = jget<std::string>(q, "id", "");
     if (!has(questFlag(id))) continue;

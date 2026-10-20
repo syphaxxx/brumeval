@@ -74,6 +74,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   report(checkEvents(), std::to_string(events().size()) + " événements valides");
   report(checkFishing(), std::to_string(fishSpecies()) + " poissons à pêcher");
   report(checkDiscussionsData(), std::to_string(discussionCount()) + " discussions entre les héros");
+  report(checkExploitsData(), std::to_string(exploitCount()) + " exploits");
   auto mi = [](const char* id) { return std::max(0, mapIndex(id)); };
   // Relecture : écrire puis relire une carte doit redonner la même carte
   {
@@ -2510,6 +2511,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       auto savedFlags = flags;
       menus.clear();
       sc.clear();
+      noticeT_ = 0;  // un exploit annoncé avant passerait sous la fenêtre de la pêche
       int wx = -1, wy = -1;
       const MapDef& vm = maps()[(size_t)mi("vallee")];
       for (int y = 1; y + 1 < vm.h() && wx < 0; y++)
@@ -2571,6 +2573,29 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       flags = savedFlags;
       team = savedTeam;
       noticeT_ = 0;
+    }
+    {  // Exploits : un objectif atteint s'annonce une fois et reste acquis ; Journal > Exploits les liste
+      auto savedFlags = flags;
+      flags = {"boss1"};
+      menus.clear();
+      sc.clear();
+      noticeT_ = 0;
+      checkExploits();
+      bool got = has("exploit:gardien") && noticeT_ > 0 && notice_.find(tr("Apprenti gardien")) != std::string::npos;
+      for (int i = 0; i < exploitCount() && noticeT_ > 0; i++) noticeT_ = 0, checkExploits();  // d'autres, selon l'équipe du test
+      int done = exploitsDone();
+      noticeT_ = 0;
+      checkExploits();
+      bool once = noticeT_ <= 0 && exploitsDone() == done;
+      flags.erase("boss1");
+      bool kept = exploitsDone() == done && has("exploit:gardien");
+      exploitsMenu();
+      bool listed = (int)menus.top().items.size() == exploitCount() && menus.top().items.back().right == "★";
+      show("exploits");
+      snap("exploits");
+      menus.clear();
+      check(got && once && kept && listed, "exploits : un objectif atteint s'annonce une seule fois, reste acquis et se coche dans Journal > Exploits");
+      flags = savedFlags;
     }
     {  // Nouvelle partie + : l'équipe reste, l'histoire recommence, les objets importants sont rendus, ennemis +12
       auto savedFlags = flags;

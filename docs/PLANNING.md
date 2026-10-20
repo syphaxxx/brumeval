@@ -369,6 +369,8 @@ Ensuite : arbres des lieux (pierre, lueur, pâle, brume ; aussi au fond des comb
 étincelles de niveau, Journal > Progression, quiz du conteur, 17 intérieurs pour les nouveaux villages, quête des
 couleurs rares (créatures chromatiques), musiques de la Plaine et du Vieux Phare, une description pour chaque
 créature du Bestiaire ; Phénix et Ombre réglés (plus d'attaque sur toute l'équipe à chaque tour).
+Puis : pluie sur la vallée et les forêts (météo des combats), alphas des meutes, sauvegarde automatique, voyage
+rapide (Échap > Carte), et 28 exploits (Journal > Exploits : fin des actes, Bestiaire, pêche, quêtes, Ligue…).
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 

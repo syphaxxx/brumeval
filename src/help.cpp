@@ -54,6 +54,7 @@ static std::vector<HelpPage> helpPages() {
                 ::T("Voyage rapide : Échap > Carte, flèches pour choisir un village déjà visité, Entrée pour y aller."),
                 ::T("Cinq donjons optionnels (Mines, Glacier, Épave, Abîme, Vieux Phare) et le grand bestiaire de la professeure de la Vallée."),
                 ::T("Discussions : les héros se parlent au fil de l'aventure (Échap > Discussions)."),
+                ::T("Exploits : vingt-huit défis à relever, de la fin des actes au carnet de pêche complet (Échap > Journal > Exploits)."),
                 ::T("Nouvelle partie + : après l'acte 3, Ilya propose de tout recommencer avec votre équipe, contre des créatures plus fortes."),
                 ::T("Après l'acte 3 : les épreuves des gardiens, au sanctuaire d'Aube (huit combats puis Ilya)."),
                 ::T("La pêche : le maître pêcheur du port donne une canne. Face à l'eau, Entrée ; dix-huit poissons à trouver."),

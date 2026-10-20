@@ -332,6 +332,7 @@ de niveau 35-40 bien équipée.
   poissons) et la **Nouvelle partie +**.
 - **Discussions** entre les héros (Échap > Discussions), pluie de temps en temps,
   musiques réécrites.
+- **Exploits** : 28 défis (finir les actes, remplir le Bestiaire, devenir champion…), cochés dans Journal > Exploits.
 - **Sauvegarde automatique** à chaque passage et porte (Options > Sauvegarde auto pour la couper).
 - **Voyage rapide** : Échap > Carte, choisir un village déjà visité (flèches), Entrée pour y aller.
 - **Créatures de la nuit** : la nuit, d'autres créatures sortent dans les herbes ; parfois, une meute est menée

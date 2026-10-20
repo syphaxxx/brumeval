@@ -606,6 +606,10 @@ code) ; `docs/GUIDE.md` les range par domaine.
   saynètes des Tales of) : `id`, `titre`, `si`, `membres` (espèces dans l'équipe), `dialogue` ; Échap > Discussions
   (nouvelles d'abord), drapeau `discussion:<id>` ; une nouvelle disponible est annoncée sur la carte
   (`checkDiscussions`, `lastNewTalks_`, remis au chargement). 38 discussions.
+- Exploits (2026-10-20, `exploits.cpp`, `data/exploits.json`) : des succès (`id`, `nom`, `description`, `si`) ;
+  `checkExploits` (toutes les secondes sur la carte, avec `checkDiscussions` ; pas en Expédition ni pendant la pêche)
+  pose `exploit:<id>` (acquis pour de bon) et l'annonce ; Journal > Exploits (`exploitsMenu`, à faire d'abord). 28
+  exploits ; condition `quetes_min` (quêtes terminées) ajoutée pour eux.
 - Épreuves des gardiens (2026-10-20) : après `aube_fin`, la porte du sanctuaire d'Aube (événement `epreuves`) ouvre huit
   combats contre des esprits gardiens (drapeaux `epreuve1`…`epreuve8`, niveaux 70 à 84), puis Ilya (`epreuve9`,
   Insigne des gardiens) ; quête `epreuves`. Script `outils/villes/epreuves.py` ; une phase à mi-vie pour chaque gardien,

@@ -246,9 +246,10 @@ void Game::update(float dt) {
   if (pilot_) pilot_->update(dt);    // joueur automatique : il choisit les touches de cette image
   banner -= dt;
   noticeT_ -= dt;
-  if (mode == Mode::Map && !sc.busy() && !menus.active() && (talkCheckT_ -= dt) < 0) {  // une nouvelle discussion ?
+  if (mode == Mode::Map && !sc.busy() && !menus.active() && !fishing_.on && (talkCheckT_ -= dt) < 0) {  // une nouvelle discussion ?
     talkCheckT_ = 1;
     checkDiscussions();
+    checkExploits();
   }
   speedT_ -= dt / speed();  // même durée à l'écran quelle que soit la vitesse
   if (worldMapOn_) {  // carte du monde : flèches pour choisir où aller (voyage rapide), Entrée pour y aller, Échap pour fermer
