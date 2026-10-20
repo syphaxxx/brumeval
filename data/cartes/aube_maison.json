@@ -14,7 +14,16 @@
     "#####p#####"
   ],
   "batiments": [],
-  "habitants": [],
+  "habitants": [
+    {
+      "x": 8,
+      "y": 4,
+      "apparence": "chat",
+      "direction": "bas",
+      "dialogue": ["Le chat d'Ilya vous regarde comme s'il savait tout de vous."],
+      "promenade": 1
+    }
+  ],
   "coffres": [],
   "panneaux": [],
   "passages": [{"x": 5, "y": 8, "vers": "aube", "tx": 33, "ty": 19, "direction": "bas"}],
