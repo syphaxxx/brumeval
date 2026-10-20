@@ -525,6 +525,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   temps sur un coffre fermé (`drawChest(…, t)`), et à l'ouverture des rayons de lumière et l'icône de l'objet qui monte
   (`Game::chestFx_`). Bulles d'humeur : de temps en temps, un habitant sans bulle de quête (ni dresseur) montre une
   note de musique, « … » ou un cœur (selon sa case ; dessin seul, `drawMap`).
+  Combat : les alliés qui gagnent un niveau sont entourés d'étincelles dorées pendant la fenêtre des gains
+  (`Battle::levelUps_`).
 - Stratégie 2.7 (FF7, boss en phases) : gemmes `ItemDef::gem` (`gemMove`, `gemBonus` en %, `gemSupport`/`gemValue`),
   `Fighter::gems[emplacement]` (ligne `gemmes <emplacement> id…` après `equipement`, aussi dans les échanges),
   `gemSockets` (règles `gemmes`), `trimGems` (rendues au sac quand l'équipement change), `gemSupport(f, effet)` ;

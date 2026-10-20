@@ -2460,6 +2460,7 @@ void Battle::victory() {
   sc.call([this, share, res, goldGain] {
     const Rules& R = rules();
     summary_.clear();
+    levelUps_.clear();
     bool up = false;
     if (share > 0) {
       for (auto& a : alive(allies)) {
@@ -2470,6 +2471,7 @@ void Battle::victory() {
         for (auto& m : msgs)
           if (m.find(T(" apprend ")) != std::string::npos) summary_.push_back("   " + m);
         up = up || a->lvl > before;
+        if (a->lvl > before) levelUps_.push_back(a.get());
       }
       bool others = false;
       for (auto& m : G.team)
@@ -3076,6 +3078,19 @@ void Battle::draw() {
   if (!ending_ && !summaryOn_ && !follower()) drawTurnOrder(orderY, orderX, orderMax);  // ordre des prochains tours, sous le message
   if (G.menus.shownDepth() <= 1) drawHud(t);  // un sous-menu ouvert prend sa place
   drawWeather();
+  if (summaryOn_)  // niveau gagné : une colonne d'étincelles dorées monte autour de l'allié
+    for (const Fighter* f : levelUps_)
+      for (auto& a : allies)
+        if (a.get() == f && a->alive()) {
+          Pt p = pos(a);
+          float age = t - summaryT_;
+          for (int k = 0; k < 10; k++) {
+            float ph = std::fmod(age * .9f + k * .1f, 1.f), x = p.x + std::sin(k * 2.4f + age * 3) * 10, y = p.y + 10 - ph * 46;
+            float s = 1.5f * std::sin(ph * 3.14159f);
+            g.rect(x - s, y, 2 * s + 1, 1, rgb(0xffe680, uint8_t(230 * (1 - ph)))), g.rect(x, y - s, 1, 2 * s + 1, rgb(0xffe680, uint8_t(230 * (1 - ph))));
+          }
+          if (age < 1.2f) g.text(p.x, p.y - 44 - age * 8, T("Niveau +"), rgb(0xffe066, uint8_t(255 * std::min(1.f, (1.2f - age) * 3))), 1);
+        }
   if (summaryOn_) {  // fenêtre des gains de la victoire
     // à droite, du côté des ennemis vaincus : l'équipe reste visible (pose de victoire)
     int w = Gfx::textW(T("Entrée : continuer"));
