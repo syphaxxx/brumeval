@@ -351,6 +351,8 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
   else if (boss) intro = leader->name() + T(" surgit devant vous !");
   else if (foes.size() > 1) intro = std::to_string(foes.size()) + T(" créatures sauvages surgissent !");
   else intro = leader->name() + T(" sauvage apparaît !");
+  for (auto& e : foes)
+    if (e->chroma && foeName.empty() && !boss) intro = T("Une créature chromatique ! ") + e->name() + T(" brille de couleurs rares.");
   if (!s.intro.empty()) intro = s.intro;
   sc.say(intro, s.intro.empty() ? 1.3f : 0.f);  // la leçon d'un défi attend Entrée
 }

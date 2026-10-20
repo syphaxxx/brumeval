@@ -1435,5 +1435,113 @@
     "apprend": [[1, "venin"], [1, "jet"], [1, "acide"], [48, "trombe"]],
     "talent": "piquant",
     "limite": "lim_serpentin"
+  },
+  {
+    "id": "petrolin",
+    "nom": "Pétrolin",
+    "sprite": "petrolin",
+    "types": ["roche", "plante"],
+    "base": {"pv": 82, "pm": 18, "attaque": 74, "defense": 90, "magie": 40, "resistance": 64, "vitesse": 32},
+    "forme": "rocher",
+    "couleurs": ["#8a9a80", "#d8e0c8"],
+    "apprend": [[1, "eboul"], [1, "etreinte"], [1, "carapace"], [1, "seisme"], [86, "avalanche"]],
+    "talent": "carapace",
+    "role_combat": "protecteur"
+  },
+  {
+    "id": "fossiloup",
+    "nom": "Fossiloup",
+    "sprite": "fossiloup",
+    "types": ["roche", "normal"],
+    "base": {"pv": 78, "pm": 20, "attaque": 86, "defense": 70, "magie": 34, "resistance": 50, "vitesse": 70},
+    "critique": 8,
+    "forme": "loup",
+    "couleurs": ["#9a9088", "#e8e0d8"],
+    "apprend": [[1, "morsure"], [1, "eboul"], [1, "cri"], [1, "eclair"], [86, "avalanche"]],
+    "talent": "intimidation",
+    "role_combat": "chef"
+  },
+  {
+    "id": "echoplume",
+    "nom": "Échoplume",
+    "sprite": "echoplume",
+    "types": ["vent", "esprit"],
+    "base": {"pv": 62, "pm": 34, "attaque": 64, "defense": 50, "magie": 72, "resistance": 62, "vitesse": 88},
+    "esquive": 8,
+    "forme": "oiseau",
+    "couleurs": ["#9a7ad0", "#f0e8ff"],
+    "apprend": [[1, "rafale"], [1, "onde"], [1, "lame_air"], [1, "cauchemar"], [86, "ouragan"]],
+    "talent": "vif"
+  },
+  {
+    "id": "cendrelys",
+    "nom": "Cendrelys",
+    "sprite": "cendrelys",
+    "types": ["feu", "esprit"],
+    "base": {"pv": 64, "pm": 40, "attaque": 52, "defense": 54, "magie": 84, "resistance": 70, "vitesse": 72},
+    "forme": "lezard",
+    "couleurs": ["#5a8ad8", "#e0f0ff"],
+    "apprend": [[1, "flam"], [1, "onde"], [1, "pyro"], [1, "hurlement_spectral"], [88, "brasier"]],
+    "talent": "meditation"
+  },
+  {
+    "id": "braisaure",
+    "nom": "Braisaure",
+    "sprite": "braisaure",
+    "types": ["feu", "roche"],
+    "base": {"pv": 80, "pm": 24, "attaque": 84, "defense": 76, "magie": 58, "resistance": 56, "vitesse": 58},
+    "forme": "lezard",
+    "couleurs": ["#9a2a1a", "#ffb060"],
+    "apprend": [[1, "crocs"], [1, "magma"], [1, "eboul"], [1, "poing"], [88, "seisme"]],
+    "talent": "rage",
+    "taille": 1.15
+  },
+  {
+    "id": "spectrecho",
+    "nom": "Spectrécho",
+    "sprite": "spectrecho",
+    "types": ["esprit", "ombre"],
+    "base": {"pv": 60, "pm": 44, "attaque": 40, "defense": 52, "magie": 86, "resistance": 76, "vitesse": 70},
+    "forme": "fantome",
+    "couleurs": ["#3aa8a0", "#e0fff8"],
+    "apprend": [[1, "onde"], [1, "voile"], [1, "cauchemar"], [1, "eclipse"], [90, "hurlement_spectral"]],
+    "talent": "furtif",
+    "role_combat": "soigneur"
+  },
+  {
+    "id": "colosse_echo",
+    "nom": "Colosse d'écho",
+    "sprite": "colosse_echo",
+    "types": ["roche", "esprit"],
+    "base": {"pv": 120, "pm": 40, "attaque": 82, "defense": 92, "magie": 60, "resistance": 74, "vitesse": 38},
+    "immunites": ["sommeil"],
+    "forme": "boss",
+    "couleurs": ["#6a7a6a", "#e0f0d0"],
+    "apprend": [[1, "fracas"], [1, "avalanche"], [1, "cauchemar"], [1, "seisme"], [1, "carapace"]],
+    "talent": "cuirasse"
+  },
+  {
+    "id": "phenix_echo",
+    "nom": "Phénix d'écho",
+    "sprite": "phenix_echo",
+    "types": ["feu", "vent"],
+    "base": {"pv": 115, "pm": 60, "attaque": 76, "defense": 64, "magie": 88, "resistance": 72, "vitesse": 80},
+    "immunites": ["sommeil"],
+    "forme": "boss",
+    "couleurs": ["#e05a1a", "#fff0a0"],
+    "apprend": [[1, "pyro"], [1, "ouragan"], [1, "brasier"], [1, "lame_air"], [1, "soins"]],
+    "talent": "regeneration"
+  },
+  {
+    "id": "ombre_gardien",
+    "nom": "Ombre du Gardien",
+    "sprite": "ombre_gardien",
+    "types": ["ombre", "lumiere"],
+    "base": {"pv": 135, "pm": 80, "attaque": 86, "defense": 78, "magie": 90, "resistance": 82, "vitesse": 70},
+    "immunites": ["sommeil"],
+    "forme": "boss",
+    "couleurs": ["#2a2a5a", "#ffe8a0"],
+    "apprend": [[1, "lame_ombre"], [1, "prisme"], [1, "nova"], [1, "eclipse"], [1, "rayon"]],
+    "talent": "esprit_clair"
   }
 ]

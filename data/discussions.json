@@ -369,5 +369,30 @@
       "Lior : Il essaie de grandir plus vite que moi.",
       "Maëlle : Avec trois pains par jour, il va surtout grandir en largeur."
     ]
+  },
+  {
+    "id": "echos",
+    "titre": "Trois fois",
+    "si": {"drapeau": "echos_vue"},
+    "membres": ["lior", "maelle"],
+    "dialogue": [
+      "Maëlle : Ohé ! … Ohé ! … Ohé !",
+      "Lior : Maëlle…",
+      "Maëlle : Quoi ? L'île répond ! C'est la première fois qu'une île me répond.",
+      "Lior : Elle répond trois fois. Ça veut dire qu'elle a beaucoup de choses à dire."
+    ]
+  },
+  {
+    "id": "premier_gardien",
+    "titre": "Mal, et sans jamais la lâcher",
+    "si": {"drapeau": "echos_fin"},
+    "membres": ["lior", "selene"],
+    "dialogue": [
+      "Sélène : « Mal, et sans jamais la lâcher. » C'est exactement ce que je t'avais dit, à Givreval.",
+      "Lior : Tu crois que le Premier Gardien était aussi mauvais que moi, au début ?",
+      "Sélène : Je crois que tous les gardiens commencent mal. Ce qui compte, c'est de ne jamais lâcher.",
+      "Lior : … C'était un compliment ?",
+      "Sélène : Le deuxième de l'année. Ne t'habitue pas."
+    ]
   }
 ]

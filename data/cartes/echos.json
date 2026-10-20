@@ -1,0 +1,134 @@
+{
+  "id": "echos",
+  "nom": "Port-Écho",
+  "theme": "vallee",
+  "tuiles": [
+    "TTTTTTTTTTTTTTTTTTTTT==TTTTTTTTTTTTTTTTTTTTT",
+    "TTTTTTTTTTTTTTTTTTTTT==TTTTTTTTTTTTTTTTTTTTT",
+    "TT........T..T.......==.......T...........TT",
+    "TT......T............==...................TT",
+    "TT.T....TT.....T.....==.F.F..............TTT",
+    "TT..T..............T.==..........T........TT",
+    "TT.........F.........==...................TT",
+    "TT........F..........==F.....F...F........TT",
+    "TT...................==..............F....TT",
+    "TT..........L........==.....F..L..........TT",
+    "TT....=......qqqqqqqqqqqqqqqqqq.....=.....TT",
+    "TT....=......qqqqqqqqqqqqqqqqqq.....=.....TT",
+    "TT....=......qqqWWqqqqqqqqqqqqq.....=.....TT",
+    "TT....=======qqqWWqqqqqqqqqqqqq=============",
+    "TT...........qqqqqqqqqqqqqqqqqq=============",
+    "TT.F.........qqqqqqqqqqqqqqqqqq...........TT",
+    "TT......F....qQqqqqqqqqqqqQqqqq...........TT",
+    "TT..........L........==..F.....L..........TT",
+    "TTF.......U..........==...................TT",
+    "TTF..F...............==................U..TT",
+    "TT.....=.......M.M...==...................TT",
+    "TT.....================....CCK...R......R.TT",
+    "TT.....FX............==F.......R..........TT",
+    "TT.............R.....==.....R.............TT",
+    "TT...................==...................TT",
+    "~~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~~~~",
+    "~~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~~~~",
+    "~~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~~~~",
+    "~~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~~~~",
+    "~~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~~~~",
+    "~~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~~~~",
+    "~~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~~~~"
+  ],
+  "batiments": [
+    {
+      "x": 4,
+      "y": 6,
+      "l": 5,
+      "h": 4,
+      "genre": "soin",
+      "nom": "Maison de soin",
+      "toit": "#7a8ab0",
+      "evenement": "echos_soin"
+    },
+    {
+      "x": 34,
+      "y": 6,
+      "l": 5,
+      "h": 4,
+      "genre": "boutique1",
+      "nom": "Comptoir des Échos",
+      "toit": "#c8a050",
+      "evenement": "echos_boutique"
+    },
+    {
+      "x": 4,
+      "y": 16,
+      "l": 6,
+      "h": 4,
+      "genre": "maison",
+      "nom": "Maison d'Oriane",
+      "toit": "#6a5aa8",
+      "evenement": "echos_maison"
+    },
+    {
+      "x": 33,
+      "y": 16,
+      "l": 8,
+      "h": 4,
+      "genre": "decor",
+      "nom": "Ruines du vieux phare",
+      "toit": "#a09080",
+      "dessin": "ruines"
+    }
+  ],
+  "habitants": [
+    {"x": 24, "y": 14, "apparence": "ermite", "direction": "bas", "evenement": "oriane"},
+    {
+      "x": 19,
+      "y": 20,
+      "apparence": "pecheur",
+      "direction": "droite",
+      "dialogue": [
+        "Ici, quand on crie, la montagne répond trois fois. Les enfants adorent ça.",
+        "Mille ans que l'île dormait sous la brume. On ne savait même pas qu'il y avait une mer autour !"
+      ]
+    },
+    {
+      "x": 30,
+      "y": 11,
+      "apparence": "villageoise",
+      "direction": "gauche",
+      "dialogue": [
+        "Les arbres du nord sont en pierre. On dit qu'ils étaient vivants, avant que l'écho ne les fige.",
+        "Un grand oiseau de feu tourne au-dessus du cratère, à l'est. Il ne dort jamais."
+      ]
+    },
+    {
+      "x": 10,
+      "y": 21,
+      "apparence": "enfant",
+      "direction": "bas",
+      "promenade": 2,
+      "dialogue": ["Écho ! … Écho ! … Tu entends ? L'île me répond !"]
+    },
+    {
+      "x": 36,
+      "y": 22,
+      "apparence": "chat",
+      "direction": "gauche",
+      "promenade": 1,
+      "dialogue": ["Le chat de Port-Écho miaule. L'écho miaule aussi."]
+    }
+  ],
+  "coffres": [],
+  "panneaux": [],
+  "passages": [
+    {"x": 21, "y": 31, "vers": "aube", "tx": 8, "ty": 27, "direction": "haut"},
+    {"x": 22, "y": 31, "vers": "aube", "tx": 9, "ty": 27, "direction": "haut"},
+    {"x": 21, "y": 0, "vers": "pierres", "tx": 23, "ty": 38, "direction": "haut"},
+    {"x": 22, "y": 0, "vers": "pierres", "tx": 24, "ty": 38, "direction": "haut"},
+    {"x": 43, "y": 13, "vers": "cratere", "tx": 1, "ty": 17, "direction": "droite"},
+    {"x": 43, "y": 14, "vers": "cratere", "tx": 1, "ty": 18, "direction": "droite"}
+  ],
+  "zones": [],
+  "boss": [],
+  "declencheurs": [{"x": 21, "y": 24, "l": 2, "h": 1, "evenement": "echos_arrivee", "jusqua": "echos_vue"}],
+  "carte_monde": [5, 80]
+}

@@ -175,6 +175,7 @@ class Game {
   void evolutionMenu();                      // les évolutions refusées, à faire maintenant
   void drawEvolution();
   std::string evoFrom_, evoTo_;              // effet en cours (espèces avant et après), vide : aucun
+  bool evoChroma_ = false;                   // la créature qui évolue est chromatique
   float evoT_ = 0;                           // début de l'effet (Game::time)
   bool offerEvolve_ = true;
   // Astuces (2.8) : celles déjà montrées (lignes « astuce » de la sauvegarde) ; le mode test les coupe sauf dans

@@ -235,7 +235,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
   `son` aux autres). Les menus font leurs bruits eux-mêmes (`MenuStack::update`).
   Le mode test n'ouvre pas de sortie son mais fabrique chaque morceau et chaque
   effet (`audio::render`) pour vérifier qu'ils s'entendent. Musiques (2026-10-19) : écrites par
-  `outils/musique/compose.py` d'après `outils/musique/morceaux.py` (13 morceaux : grille d'accords, mélodie,
+  `outils/musique/compose.py` d'après `outils/musique/morceaux.py` (17 morceaux, dont `echos` pour l'acte 4 ; chacun : grille d'accords, mélodie,
   contre-chant, arpège, basse et batterie fabriqués d'après les accords) ; voix avec `vibrato`, `attaque`,
   `ondulation`, morceau avec `echo` (ligne à retard du `Mixer`) ; `lieux` accepte un identifiant de carte
   (`Game::updateMusic` : carte, puis thème ; `combat:<carte>` donne la musique des combats ordinaires de cette carte : `combat_mer` dans l'archipel, `combat_aube` sur Aube) ; `BattleSetup::music` (« musique » de l'action combat, vérifiée par
@@ -552,6 +552,16 @@ code) ; `docs/GUIDE.md` les range par domaine.
   soigne, `brume_noire`, drapeau `aube_fin`, écran de fin). 8 créatures d'Aube et 3 boss recolorés (variantes.json :
   `lueurine`, `loup_aube`…). Écrit par `outils/villes/acte3.py` (cartes, vérifie l'accès à pied) puis
   `outils/villes/acte3_histoire.py` (espèces, objets, conseils, événements) : pour refaire, remettre data/ avec git.
+- Acte 4 (2026-10-20, `outils/villes/acte4.py`, puis `outils/sprites/decoupe.py`) : l'île des Échos, après `aube_fin`.
+  Jetée ouest de Havre-d'Aube (passages sous condition `aube_fin`, Ysolde en parle) ; cartes `echos` (Port-Écho :
+  soins, comptoir, Oriane, quête `echos`), `pierres` (Forêt Pétrifiée, boss de carte `colosse_echo`), `cratere`
+  (Cratère des Échos, `phenix_echo`), `sanctuaire_echos` (donjon à énigme de cartegen.py ; la porte du nord de la forêt
+  demande les deux drapeaux `colosse_echo_vaincu` et `phenix_echo_vaincu`) : Ombre du Premier Gardien (N.95, 3 phases),
+  drapeau `echos_fin`, Cœur d'écho, écran de fin. 6 créatures et 3 boss recolorés (variantes.json).
+- Créatures chromatiques (2026-10-20) : `Fighter::chroma` (ligne `chromatique` après `membre` dans la sauvegarde),
+  tirée dans `Game::encounter` (règle `rencontres.chromatique`, 0,006 ; jamais en Expédition) ; `decoupe.py` fabrique
+  `<sprite>_chroma` (teinte tournée de 140°, gris dorés) pour chaque créature ni humaine ni boss ; `drawCreature(…,
+  chroma)` le dessine avec des éclats dorés ; message d'entrée en combat.
 - Nouvelle partie + (2026-10-20) : après `aube_fin`, Ilya propose de tout recommencer (action `nouvelle_partie_plus`,
   `Game::startNewGamePlus`) : équipe, équipement, or, Bestiaire et drapeaux `peche:` gardés ; objets importants (prix 0,
   ni équipement ni gemme) rendus ; drapeaux effacés sauf `ngp<k>`, et `ngp<k+1>` posé. `foeLevelBonus` (data.cpp) =
@@ -560,7 +570,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - Discussions (2026-10-20, `discussions.cpp`, `data/discussions.json`) : conversations courtes entre héros (comme les
   saynètes des Tales of) : `id`, `titre`, `si`, `membres` (espèces dans l'équipe), `dialogue` ; Échap > Discussions
   (nouvelles d'abord), drapeau `discussion:<id>` ; une nouvelle disponible est annoncée sur la carte
-  (`checkDiscussions`, `lastNewTalks_`, remis au chargement). 30 discussions.
+  (`checkDiscussions`, `lastNewTalks_`, remis au chargement). 32 discussions.
 - Épreuves des gardiens (2026-10-20) : après `aube_fin`, la porte du sanctuaire d'Aube (événement `epreuves`) ouvre huit
   combats contre des esprits gardiens (drapeaux `epreuve1`…`epreuve8`, niveaux 70 à 84), puis Ilya (`epreuve9`,
   Insigne des gardiens) ; quête `epreuves`. Script `outils/villes/epreuves.py` ; une phase à mi-vie pour chaque gardien,

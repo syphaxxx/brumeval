@@ -45,6 +45,8 @@ static std::vector<HelpPage> helpPages() {
                 ::T("Des dresseurs vous défient le long des routes : vingt-huit combats de plus, de l'or et des objets à la clé."),
                 ::T("Après le Seigneur des Orages, les dresseurs battus proposent une revanche (épées croisées au-dessus d'eux)."),
                 ::T("La Ligue d'Écume, au port : quatre rangs, trois combats d'affilée chacun, sans soin entre eux."),
+                ::T("Après la Brume Noire : un quatrième acte sur l'île des Échos (la jetée ouest de Havre-d'Aube)."),
+                ::T("Créatures chromatiques : très rarement, une créature sauvage a des couleurs rares. Capturez-la !"),
                 ::T("Quatre donjons optionnels (Mines, Glacier, Épave, Abîme) et le grand bestiaire de la professeure de la Vallée."),
                 ::T("Discussions : les héros se parlent au fil de l'aventure (Échap > Discussions)."),
                 ::T("Nouvelle partie + : après l'acte 3, Ilya propose de tout recommencer avec votre équipe, contre des créatures plus fortes."),

@@ -55,6 +55,7 @@ bool Game::saveGame() {
       }
     if (m->cell >= 0) f << "case4 " << m->cell << '\n';  // formation sur le damier 4x4
     if (m->evolveLater) f << "evolution_plus_tard\n";       // évolution refusée (Échap > Évolution)
+    if (m->chroma) f << "chromatique\n";                    // couleurs rares (2026-10-20)
     auto c = std::find(team.begin(), team.end(), m->companion.lock());
     if (c != team.end() && hasSpecies(m->sp) && m->S().human) f << "compagnon " << (c - team.begin()) << '\n';
     f << "tactiques " << m->tacticsOn << '\n';
@@ -86,12 +87,16 @@ bool readMemberLine(const std::string& k, std::istream& s, std::vector<FighterP>
     return true;
   }
   if (k != "equipement" && k != "gemmes" && k != "tactiques" && k != "tactique" && k != "compagnon" && k != "case" && k != "case4" &&
-      k != "evolution_plus_tard")
+      k != "evolution_plus_tard" && k != "chromatique")
     return false;
   if (team.empty() || !team.back()) return true;
   Fighter& m = *team.back();
   if (k == "evolution_plus_tard") {
     m.evolveLater = true;
+    return true;
+  }
+  if (k == "chromatique") {
+    m.chroma = true;
     return true;
   }
   if (k == "case4" || k == "case") {  // formation : sa case sur le damier (« case » : ancien damier 3x3, avant la 2.0)

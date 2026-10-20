@@ -1046,7 +1046,7 @@ void Game::drawTeamPanel(int x, int y, int sel) {
   if (f.S().human) drawHuman(g, look(f.S().look), x + w - 40, y + 32, 2, DOWN, 0, false);  // sous la ligne du rôle
   else {  // à la taille de la place à droite des premières lignes (les petites créatures deux fois plus grandes)
     float k = creatureFit(f.sp, 44, 56);
-    drawCreature(g, f.sp, x + w - 34, y + 74 - 16 * k * f.S().size, k, false, time);
+    drawCreature(g, f.sp, x + w - 34, y + 74 - 16 * k * f.S().size, k, false, time, f.chroma);
   }
   int ly = y + 34;
   auto row = [&](const std::string& a, const std::string& b) {

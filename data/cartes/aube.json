@@ -27,12 +27,12 @@
     "TT.......X..........==................TT",
     "TT.......R..R.......==..........R.....TT",
     "TT............R.....==...........R....TT",
-    "~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~",
-    "~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~",
-    "~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~",
-    "~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~",
-    "~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~",
-    "~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~"
+    "~~~~~~~~BB~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~",
+    "~~~~~~~~BB~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~",
+    "~~~~~~~~BB~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~",
+    "~~~~~~~~BB~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~",
+    "~~~~~~~~BB~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~",
+    "~~~~~~~~BB~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~"
   ],
   "batiments": [
     {
@@ -178,7 +178,27 @@
     {"x": 20, "y": 0, "vers": "lueurs", "tx": 23, "ty": 38, "direction": "haut"},
     {"x": 21, "y": 0, "vers": "lueurs", "tx": 24, "ty": 38, "direction": "haut"},
     {"x": 39, "y": 13, "vers": "marais", "tx": 1, "ty": 17, "direction": "droite"},
-    {"x": 39, "y": 14, "vers": "marais", "tx": 1, "ty": 18, "direction": "droite"}
+    {"x": 39, "y": 14, "vers": "marais", "tx": 1, "ty": 18, "direction": "droite"},
+    {
+      "x": 8,
+      "y": 29,
+      "vers": "echos",
+      "tx": 21,
+      "ty": 30,
+      "direction": "haut",
+      "condition": {"drapeau": "aube_fin"},
+      "message": "Une barque est amarrée au bout de la jetée. Ysolde dit que la mer est trop sombre tant que la Brume Noire règne."
+    },
+    {
+      "x": 9,
+      "y": 29,
+      "vers": "echos",
+      "tx": 22,
+      "ty": 30,
+      "direction": "haut",
+      "condition": {"drapeau": "aube_fin"},
+      "message": "Une barque est amarrée au bout de la jetée. Ysolde dit que la mer est trop sombre tant que la Brume Noire règne."
+    }
   ],
   "zones": [],
   "boss": [],

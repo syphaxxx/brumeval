@@ -3295,10 +3295,27 @@
     ]
   },
   "ysolde_aube": {
-    "actions": [
+    "pages": [
       {
-        "action": "dire",
-        "texte": "Ysolde : Quand vous voudrez rentrer, la jetée vous ramènera au Port d'Écume."
+        "si": {"drapeau": "aube_fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ysolde : Vous avez vu ? Depuis que la Brume Noire s'est dissipée, une île est apparue au nord-ouest. Personne ne l'avait jamais vue."
+          },
+          {
+            "action": "dire",
+            "texte": "Ysolde : J'ai amarré une barque au bout de la nouvelle jetée, à l'ouest de la plage. Elle est à vous, si le cœur vous en dit."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ysolde : Quand vous voudrez rentrer, la jetée vous ramènera au Port d'Écume."
+          }
+        ]
       }
     ]
   },
@@ -8511,6 +8528,304 @@
             "texte": "Maîtresse de la Ligue : La Ligue d'Écume n'accepte que les dresseurs qui ont apaisé la Mère des Brumes. Revenez plus tard !"
           }
         ]
+      }
+    ]
+  },
+  "echos_arrivee": {
+    "actions": [
+      {"action": "drapeau", "nom": "echos_vue"},
+      {
+        "action": "dire",
+        "texte": "Une île de pierre grise, où chaque bruit revient trois fois. Un village de pêcheurs s'accroche aux rochers."
+      },
+      {"action": "dire", "texte": "Au nord, une forêt d'arbres de pierre. À l'est, une montagne fume."}
+    ]
+  },
+  "echos_soin": {
+    "actions": [
+      {"action": "soigner"},
+      {"action": "reveil"},
+      {"action": "dire", "texte": "Soigneuse : Reposez-vous. Ici, même le silence fait écho."}
+    ]
+  },
+  "echos_boutique": {
+    "actions": [
+      {
+        "action": "boutique",
+        "objets": [
+          "superpotion",
+          "elixir",
+          "ether",
+          "remede",
+          "plume",
+          "lanterne_or",
+          "gemme_vie",
+          "gemme_soin",
+          "gemme_force",
+          "gemme_esprit"
+        ]
+      }
+    ]
+  },
+  "echos_maison": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "La maison d'Oriane. Des coquillages pendent au plafond ; quand le vent passe, ils chantent."
+      }
+    ]
+  },
+  "oriane": {
+    "pages": [
+      {
+        "si": {"drapeau": "echos_fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Oriane : L'écho s'est tu. Le Premier Gardien repose enfin. Merci, gardiens."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["colosse_echo_vaincu", "phenix_echo_vaincu"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Oriane : Les deux échos sont libres. La porte du sanctuaire, au nord de la forêt de pierre, s'est ouverte."
+          },
+          {
+            "action": "dire",
+            "texte": "Oriane : L'Ombre du Premier Gardien vous y attend. Elle a sa force, mais plus son cœur. Rendez-le-lui."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:echos"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Oriane : Le Colosse dort dans la forêt de pierre, au nord. Le Phénix tourne au-dessus du cratère, à l'est."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Oriane : Je vous attendais. Je suis Oriane, la gardienne de cette île. Les anciens l'appelaient l'île des Échos."
+          },
+          {
+            "action": "dire",
+            "texte": "Oriane : Quand le Premier Gardien a enfermé l'orage, il a laissé ici l'écho de sa force, pour veiller si tout recommençait."
+          },
+          {
+            "action": "dire",
+            "texte": "Oriane : Mais la Brume Noire l'a touché avant de mourir. Son écho est devenu une ombre, et l'ombre a réveillé les deux gardiens de l'île."
+          },
+          {
+            "action": "dire",
+            "texte": "Oriane : Le Colosse de la forêt de pierre, et le Phénix du cratère. Libérez-les : leurs échos ouvriront le sanctuaire."
+          },
+          {"action": "quete", "id": "echos"}
+        ]
+      }
+    ]
+  },
+  "colosse_echo": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Au milieu de la clairière, un arbre de pierre se lève. Ce n'était pas un arbre : c'est un colosse couvert de mousse grise."
+      },
+      {"action": "dire", "texte": "Colosse d'écho : … QUI … QUI … QUI … réveille … la forêt ?"},
+      {
+        "action": "question",
+        "texte": "Affronter le Colosse d'écho ?",
+        "oui": [
+          {
+            "action": "combat",
+            "musique": "boss",
+            "ennemis": [
+              {"espece": "petrolin", "niveau": 85},
+              {
+                "espece": "colosse_echo",
+                "niveau": 88,
+                "pv": 5.5,
+                "boss": true,
+                "bouclier": 12,
+                "phases": [
+                  {
+                    "pv": 0.5,
+                    "message": "Le Colosse se couvre de pierre : sa défense grandit, et la forêt envoie de l'aide !",
+                    "bonus": {"defense": 1},
+                    "renforts": [{"espece": "petrolin", "niveau": 85}]
+                  }
+                ]
+              },
+              {"espece": "fossiloup", "niveau": 85}
+            ],
+            "renforts": [{"espece": "fossiloup", "niveau": 85}],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "colosse_echo_vaincu"},
+              {"action": "donner", "objet": "echo_pierre", "quantite": 1},
+              {
+                "action": "dire",
+                "texte": "Le Colosse se rassoit lentement. La mousse grise tombe : dessous, l'écorce redevient vivante."
+              },
+              {
+                "action": "dire",
+                "texte": "Colosse d'écho : … Merci … merci … merci … Prenez … mon écho."
+              }
+            ]
+          }
+        ],
+        "non": [
+          {"action": "dire", "texte": "Le Colosse se fige de nouveau. On dirait un arbre comme les autres."}
+        ]
+      }
+    ]
+  },
+  "phenix_echo": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Sur le rebord du cratère, un oiseau de feu se pose. Ses ailes soulèvent des tourbillons de cendres."
+      },
+      {
+        "action": "dire",
+        "texte": "Phénix d'écho : L'ombre m'a dit que vous viendrez éteindre ma flamme. Je brûlerai d'abord !"
+      },
+      {
+        "action": "question",
+        "texte": "Affronter le Phénix d'écho ?",
+        "oui": [
+          {
+            "action": "combat",
+            "musique": "boss",
+            "ennemis": [
+              {"espece": "cendrelys", "niveau": 86},
+              {
+                "espece": "phenix_echo",
+                "niveau": 87,
+                "pv": 4.5,
+                "boss": true,
+                "bouclier": 12,
+                "phases": [
+                  {
+                    "pv": 0.6,
+                    "message": "Le Phénix bat des ailes : l'air du cratère devient brûlant !",
+                    "bonus": {"magie": 1}
+                  },
+                  {
+                    "pv": 0.3,
+                    "message": "Le Phénix renaît de ses cendres : ses plumes flambent de nouveau !",
+                    "bonus": {"magie": 1, "vitesse": 1},
+                    "renforts": [{"espece": "cendrelys", "niveau": 86}]
+                  }
+                ]
+              },
+              {"espece": "braisaure", "niveau": 86}
+            ],
+            "renforts": [],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "phenix_echo_vaincu"},
+              {"action": "donner", "objet": "echo_flamme", "quantite": 1},
+              {
+                "action": "dire",
+                "texte": "Le Phénix se pose, épuisé. Sa flamme devient douce, presque dorée."
+              },
+              {
+                "action": "dire",
+                "texte": "Phénix d'écho : L'ombre m'avait menti… Tenez. Mon écho vous ouvrira le chemin."
+              }
+            ]
+          }
+        ],
+        "non": [{"action": "dire", "texte": "Le Phénix reprend son vol au-dessus du cratère."}]
+      }
+    ]
+  },
+  "sanctuaire_echos_boss": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Au fond du sanctuaire, une silhouette en armure se tient immobile. Elle a les traits du Premier Gardien, mais ses yeux sont vides."
+      },
+      {
+        "action": "dire",
+        "texte": "Ombre du Premier Gardien : Encore des gardiens… J'en ai vu mourir mille. Vous serez les derniers."
+      },
+      {
+        "action": "question",
+        "texte": "Affronter l'Ombre du Premier Gardien ?",
+        "oui": [
+          {
+            "action": "combat",
+            "musique": "boss_final",
+            "ennemis": [
+              {"espece": "echoplume", "niveau": 90},
+              {
+                "espece": "ombre_gardien",
+                "niveau": 95,
+                "pv": 7,
+                "boss": true,
+                "bouclier": 16,
+                "phases": [
+                  {
+                    "pv": 0.7,
+                    "message": "L'Ombre lève son épée : une lumière noire l'entoure !",
+                    "bonus": {"magie": 1}
+                  },
+                  {
+                    "pv": 0.45,
+                    "message": "L'Ombre appelle les échos du sanctuaire !",
+                    "renforts": [{"espece": "spectrecho", "niveau": 90}]
+                  },
+                  {
+                    "pv": 0.2,
+                    "message": "L'Ombre vacille… puis frappe de toutes ses forces !",
+                    "bonus": {"attaque": 1, "vitesse": 1}
+                  }
+                ]
+              },
+              {"espece": "echoplume", "niveau": 90}
+            ],
+            "renforts": [],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "sanctuaire_echos_boss"},
+              {"action": "drapeau", "nom": "echos_fin"},
+              {
+                "action": "dire",
+                "texte": "L'Ombre baisse son épée. Peu à peu, la lumière revient dans ses yeux."
+              },
+              {
+                "action": "dire",
+                "texte": "Premier Gardien : … Lior. C'est bien ton nom ? Tu tiens mon épée comme je la tenais, autrefois. Mal, et sans jamais la lâcher."
+              },
+              {
+                "action": "dire",
+                "texte": "Premier Gardien : Mon écho n'a plus rien à garder. Le monde a de nouveaux gardiens. Prends ce qu'il reste de moi."
+              },
+              {"action": "donner", "objet": "coeur_echo", "quantite": 1},
+              {"action": "or", "quantite": 20000},
+              {"action": "quete", "id": "echos", "fin": true},
+              {
+                "action": "fin",
+                "texte": "L'écho du Premier Gardien s'est tu. Sur l'île des Échos, chaque bruit ne revient plus qu'une fois : celui des vagues. Lior et ses amis rentrent à Havre-d'Aube, où Ilya les attend avec un sourire."
+              }
+            ]
+          }
+        ],
+        "non": [{"action": "dire", "texte": "L'Ombre ne bouge pas. Elle attend."}]
       }
     ]
   }

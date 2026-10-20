@@ -215,6 +215,25 @@ MORCEAUX = {
         'basse': 'quinte', 'volume_basse': .26, 'batterie': 'calme', 'volume_batterie': .6,
         'echo': {'delai': .34, 'retour': .3, 'melange': .25},
     },
+    # L'île des Échos (2026-10-20) : ré dorien, lent, chaque phrase revient en écho
+    'echos': {
+        'tempo': 84, 'onde': 'triangle', 'volume': .25, 'vibrato': .25,
+        'accords': 'Dm G Dm C Dm G Am Am | F C G Dm F C Dm Dm',
+        'melodie': [
+            'D5 . F5 . A5 . . .', 'B5 . A5 . G5 . . .', 'A5 . F5 . D5 . . .', 'E5 . . . G5 . E5 .',
+            'D5 . F5 . A5 . D6 .', 'B5 . . . A5 . G5 .', 'E5 . . . A5 . . .', 'A4 . . . . . - -',
+            'C6 . A5 . F5 . A5 .', 'G5 . E5 . C5 . E5 .', 'D5 . G5 . B5 . D6 .', 'C6 . . . A5 . . .',
+            'C6 . . . A5 . F5 .', 'E5 . G5 . C6 . . .', 'A5 . F5 . E5 . . .', 'D5 . . . . . - -',
+        ],
+        'contre': ['F4 . . . . . . .', 'D4 . . . . . . .', 'F4 . . . . . . .', 'E4 . . . . . . .',
+                   'F4 . . . . . . .', 'D4 . . . . . . .', 'E4 . . . . . . .', 'C4 . . . . . . .',
+                   'A4 . . . . . . .', 'G4 . . . . . . .', 'B4 . . . . . . .', 'A4 . . . . . . .',
+                   'A4 . . . . . . .', 'G4 . . . . . . .', 'F4 . . . . . . .', 'F4 . . . . . . .'],
+        'onde_contre': 'sinus', 'volume_contre': .1, 'attaque_contre': .3,
+        'arpege': 'monte_descend', 'octave_arpege': 3, 'onde_arpege': 'sinus', 'volume_arpege': .1, 'extinction_arpege': .7,
+        'basse': 'quinte', 'volume_basse': .24, 'batterie': 'calme', 'volume_batterie': .5,
+        'echo': {'delai': .43, 'retour': .45, 'melange': .38},
+    },
     # Combats de l'archipel (2026-10-20) : mi mineur, houle à 6/8 rapide
     'combat_mer': {
         'tempo': 150, 'mesure': 3, 'onde': 'carree', 'rapport': .25, 'volume': .12, 'vibrato': .15,
@@ -249,5 +268,6 @@ LIEUX = {'port': 'port', 'recif': 'abysses', 'ruines': 'abysses', 'tour': 'orage
 # Musique des combats ordinaires d'une carte (« combat:<carte> »)
 for _c in ('port', 'recif', 'ruines', 'corail', 'marees', 'epave', 'tour'):
     LIEUX['combat:' + _c] = 'combat_mer'
-for _c in ('aube', 'lueurs', 'marais', 'gouffre', 'citadelle', 'abime1', 'abime2', 'abime3'):
+LIEUX.update({'echos': 'echos', 'pierres': 'echos', 'cratere': 'cendres', 'sanctuaire_echos': 'grotte'})
+for _c in ('aube', 'lueurs', 'marais', 'gouffre', 'citadelle', 'abime1', 'abime2', 'abime3', 'echos', 'pierres', 'cratere', 'sanctuaire_echos'):
     LIEUX['combat:' + _c] = 'combat_aube'

@@ -56,11 +56,19 @@ static const SpriteRect* borrowedSprite(const Species& sp, Color& tint) {
   return findSprite(v[idHash(sp.id) % v.size()]);
 }
 
-void drawCreature(Gfx& g, const std::string& id, float x, float y, float s, bool flip, float t) {
+void drawCreature(Gfx& g, const std::string& id, float x, float y, float s, bool flip, float t, bool chroma) {
   const Species& sp = species(id);
   s *= sp.size;
   Color tint = rgb(0xffffff);
-  const SpriteRect* own = sp.sprite.empty() ? borrowedSprite(sp, tint) : findSprite(sp.sprite);
+  const SpriteRect* own = sp.sprite.empty() ? borrowedSprite(sp, tint) : nullptr;
+  if (!sp.sprite.empty() && !(chroma && (own = findSprite(sp.sprite + "_chroma")))) own = findSprite(sp.sprite);
+  if (chroma && own && g.spriteAngle == 0 && std::fmod(t * .7f + x * .013f, 1.f) < .3f) {  // chromatique : des éclats dorés
+    float ph = std::fmod(t * .7f + x * .013f, 1.f) / .3f, k = crisp(s);
+    for (int i = 0; i < 3; i++) {
+      float sx = x + (i - 1) * own->w * k * .35f, sy = y + 16 * s - own->h * k * (.55f + .25f * (i % 2)), r = 1 + 2.5f * std::sin(ph * 3.14159f);
+      g.rect(sx - r, sy, 2 * r + 1, 1, rgb(0xffe680)), g.rect(sx, sy - r, 1, 2 * r + 1, rgb(0xffe680));
+    }
+  }
   if (const SpriteRect* r = own) {
     // Sprite (regard vers la gauche) : centré en x, posé sur l'ombre (y + 15)
     float k = crisp(s);
@@ -449,7 +457,8 @@ bool drawFighterIcon(Gfx& g, const Fighter& f, float cx, float cy, float w, floa
     g.sprite(r->sub(0, 0, r->w, hh), std::round(cx - r->w * k / 2), std::round(cy - hh * k / 2), faceRight, k, tint);
     return true;
   }
-  const SpriteRect* r = sp.sprite.empty() ? borrowedSprite(sp, tint) : findSprite(sp.sprite);
+  const SpriteRect* r = sp.sprite.empty() ? borrowedSprite(sp, tint) : nullptr;
+  if (!sp.sprite.empty() && !(f.chroma && (r = findSprite(sp.sprite + "_chroma")))) r = findSprite(sp.sprite);  // chromatique
   if (!r) return false;
   float k = std::min({1.f, h / r->h, w / r->w});
   g.sprite(*r, std::round(cx - r->w * k / 2), std::round(cy - r->h * k / 2), faceRight, k, tint);
@@ -497,7 +506,7 @@ void drawFighterSprite(Gfx& g, const Fighter& f, float x, float y, float s, bool
     drawHuman(g, look(sp.look), x - 8 * k, y - 10 * k, k, faceRight ? 3 : 2, 0, true);
     breathPx_ = 0;
   } else {
-    drawCreature(g, f.sp, x, y, s, faceRight, t);
+    drawCreature(g, f.sp, x, y, s, faceRight, t, f.chroma);
   }
 }
 

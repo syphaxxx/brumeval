@@ -92,10 +92,11 @@ for cx, cy, r in [(16, 32, 4), (30, 30, 4), (8, 24, 4), (21, 22, 4), (38, 18, 5)
 P.disc(6, 14, 4, '.', only='T,')               # clairière du Colosse
 P.path([(12, 22), (12, 16), (8, 16)], '=', 2)
 P.path([(30, 22), (38, 22), (38, 18)], '.', 1)
-P.path([(30, 30), (40, 30)], '.', 1)
+P.path([(24, 32), (30, 32), (30, 30), (40, 30)], '.', 1)
 P.path([(23, 12), (14, 12), (14, 8)], '.', 1)
 P.path([(30, 12), (30, 8)], '.', 1)
-P.sprinkle(60, 'R', 'T', 2, 2, 45, 37)        # arbres pétrifiés : des rochers parmi les troncs
+P.sprinkle(60, 'R', 'T', 2, 2, 45, 37)        # arbres pétrifiés : des rochers parmi les troncs (puis 170 de plus,
+#                                                 au cœur des bois : retouche faite après coup sur la carte)
 P.sprinkle(20, 'R', ',', 2, 2, 45, 37, away=1)
 P.boss(5, 12, 'colosse_echo', 'colosse_echo_vaincu', 'colosse_echo')
 P.chest(38, 16, 'elixir', 2), P.chest(40, 31, 'gemme_force'), P.chest(14, 6, ('or'), 8000), P.chest(30, 6, 'gemme_maitre')
@@ -201,7 +202,7 @@ NEW = [
         [[1, "fracas"], [1, "avalanche"], [1, "cauchemar"], [1, "seisme"], [1, "carapace"]], "cuirasse", immunites=["sommeil"]),
     esp("phenix_echo", "Phénix d'écho", ["feu", "vent"], [115, 60, 76, 64, 88, 72, 80], "boss", ["#e05a1a", "#fff0a0"],
         [[1, "pyro"], [1, "ouragan"], [1, "brasier"], [1, "lame_air"], [1, "soins"]], "regeneration", immunites=["sommeil"]),
-    esp("ombre_gardien", "Ombre du Premier Gardien", ["ombre", "lumiere"], [135, 80, 86, 78, 90, 82, 70], "boss", ["#2a2a5a", "#ffe8a0"],
+    esp("ombre_gardien", "Ombre du Gardien", ["ombre", "lumiere"], [135, 80, 86, 78, 90, 82, 70], "boss", ["#2a2a5a", "#ffe8a0"],
         [[1, "lame_ombre"], [1, "prisme"], [1, "eclipse"], [1, "nova"], [1, "foudre_noire"], [1, "charge_heroique"]], "esprit_clair",
         immunites=["sommeil"]),
 ]
@@ -222,7 +223,7 @@ for vid, src, te in [("petrolin", "elem_terre", [[-1, 360, 95, 0.35, 0.95, 0.12]
                      ("braisaure", "dragonnet", [[-1, 360, 8, 1.1, 0.8]]),
                      ("spectrecho", "fantome", [[-1, 360, 175, 0.9, 1.0, 0.25]]),
                      ("colosse_echo", "golem_grand", [[-1, 360, 100, 0.25, 0.95, 0.1]]),
-                     ("phenix_echo", "griffon", [[-1, 360, 22, 1.25, 1.15]]),
+                     ("phenix_echo", "griffon", [[-1, 360, 14, 1.9, 1.2, 0.35]]),
                      ("ombre_gardien", "seigneur_orage", [[180, 320, 245, 0.7, 0.6], [0, 179, 45, 1.0, 1.1], [321, 360, 45, 1.0, 1.1]])]:
     body += ',' + nl + '  ' + json.dumps({"id": vid, "de": src, "teintes": te}, ensure_ascii=False)
 open(V, 'w', encoding='utf-8', newline='').write(body + nl + ']' + nl)

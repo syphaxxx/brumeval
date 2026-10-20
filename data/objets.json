@@ -876,6 +876,31 @@
     "bonus": {"magie": 12, "resistance": 6, "vitesse": 3}
   },
   {
+    "id": "echo_pierre",
+    "nom": "Écho de pierre",
+    "icone": "ic_gemme_cristal",
+    "prix": 0,
+    "important": true,
+    "description": "Un galet qui murmure quand on le serre dans la main. Le Colosse d'écho le gardait."
+  },
+  {
+    "id": "echo_flamme",
+    "nom": "Écho de flamme",
+    "icone": "ic_gemme_feu",
+    "prix": 0,
+    "important": true,
+    "description": "Une braise qui ne brûle pas, et qui chante tout bas. Le Phénix d'écho la gardait."
+  },
+  {
+    "id": "coeur_echo",
+    "nom": "Cœur d'écho",
+    "icone": "ic_acc_8",
+    "prix": 9000,
+    "equipement": "accessoire",
+    "description": "Le dernier écho du Premier Gardien, devenu calme. Il bat au rythme de celui qui le porte.",
+    "bonus": {"pv": 80, "attaque": 8, "magie": 8, "vitesse": 4, "critique": 3}
+  },
+  {
     "id": "couronne_colisee",
     "nom": "Couronne de la Ligue",
     "icone": "ic_acc_8",

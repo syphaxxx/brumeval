@@ -220,6 +220,7 @@ struct Rules {
   // à packDistance cases
   int packMax = 6;
   double packDistance = 30, packDense = .5;
+  double chroma = 0;  // chance qu'une créature sauvage soit chromatique (couleurs rares, sprite « _chroma »)
   // Combat
   double atbBase = 20, atbSpeed = 1.1, flee = .7, limitGain = 110, stab = 1.25, spreadMin = .85, dmgDivisor = 40;
   double critMult = 1.5, stageStep = .25;
@@ -407,6 +408,7 @@ struct Fighter {
   std::array<std::vector<std::string>, N_GEAR> gems;  // gemmes serties dans chaque équipement (2.7)
   int cell = -1;                         // formation : case choisie sur le damier (-1 : automatique)
   bool evolveLater = false;              // évolution refusée : proposée de nouveau seulement par Échap > Évolution
+  bool chroma = false;                   // créature chromatique (2026-10-20) : couleurs rares (sprite « <sprite>_chroma »)
   // Brisure (2.5), seulement pendant un combat : bouclier d'un ennemi ; un coup sur une faiblesse
   // retire un point ; à zéro, il est brisé jusqu'à son prochain tour (perdu) et subit plus de dégâts
   int shield = 0, shieldMax = 0;

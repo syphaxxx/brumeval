@@ -190,6 +190,22 @@ def recolorer_couleur(r, g, b, teintes):
     return [round(r2 * 255), round(g2 * 255), round(b2 * 255)]
 
 
+def chromatique(px):
+    """Couleurs d'une créature chromatique : teinte tournée de 140 degrés, un peu plus vive ; les gris deviennent dorés."""
+    out = px.copy()
+    vis = px[..., 3] > 0
+    for r, g, b in np.unique(px[vis][:, :3], axis=0):
+        m = vis & (px[..., 0] == r) & (px[..., 1] == g) & (px[..., 2] == b)
+        hh, ss, vv = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+        if ss >= 0.15:
+            hh, ss = (hh + 140 / 360) % 1, min(1, ss * 1.1)
+        elif 0.15 < vv < 0.97:
+            hh, ss = 45 / 360, 0.35
+        r2, g2, b2 = colorsys.hsv_to_rgb(hh, ss, vv)
+        out[m, :3] = [round(r2 * 255), round(g2 * 255), round(b2 * 255)]
+    return out
+
+
 def ranger(sprites, largeur=2048):
     """Rangement en étagères (du plus haut au plus bas) ; 1 px d'écart entre les sprites."""
     ordre = sorted(sprites, key=lambda k: -sprites[k].shape[0])
@@ -259,6 +275,11 @@ def main():
                 sprites[v['id']] = recolorer(sprites[v['de']], v['teintes'])
                 if v.get('miroir'):  # retourné gauche-droite (regard vers la gauche, comme les autres)
                     sprites[v['id']] = sprites[v['id']][:, ::-1].copy()
+    # Créatures chromatiques (2026-10-20) : pour chaque créature (ni humain ni boss), « <sprite>_chroma », teinte tournée
+    for e in json.load(open(os.path.join(RACINE, 'data', 'especes.json'), encoding='utf-8')):
+        k = e.get('sprite', '')
+        if k in sprites and not e.get('humain') and e.get('forme') != 'boss':
+            sprites[k + '_chroma'] = chromatique(sprites[k])
     if seuls:  # aperçu des seuls sprites dont le nom commence par un des arguments
         apercu({k: v for k, v in sprites.items() if any(k.startswith(p) for p in seuls)}, os.path.join(ICI, 'apercu.png'))
         print(len(sprites), 'sprites (aperçu seulement)')

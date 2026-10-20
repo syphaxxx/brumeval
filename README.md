@@ -310,6 +310,31 @@ Le Givrecorne vaincu, une faille s'ouvre au fond de son sanctuaire : la
 Nouvelles créatures, gardiens et un dernier boss facultatif, pour une équipe
 de niveau 35-40 bien équipée.
 
+## Une aventure bien plus longue (3.5, en préparation)
+
+- **Nouveaux lieux sur le chemin** : la Plaine des Moulins (un pont rongé par des
+  Rongecrins), le Col des Hurlevents (la Harpie de givre), le Val des Murmures
+  (trois esprits à apaiser), l'île de Corail et la Grotte des Marées (le Trident
+  d'écume ouvre les Ruines).
+- **Acte 3, l'île d'Aube** : après le Seigneur des Orages, la jetée de l'est du
+  port mène à Havre-d'Aube ; Bois des Lueurs, Marais Pâle, Gouffre et Citadelle,
+  jusqu'à la Brume Noire.
+- **Acte 4, l'île des Échos** : après la Brume Noire, la jetée ouest de
+  Havre-d'Aube ; le Colosse et le Phénix d'écho, puis l'Ombre du Premier Gardien.
+- **Primes** (tableaux d'annonces des villages), **43 quêtes** (Échap > Journal),
+  **30 éclats de brume** à collectionner, le **grand bestiaire** de la
+  professeure.
+- **28 dresseurs** sur les routes ; après le Seigneur des Orages, les dresseurs
+  battus proposent une **revanche** (épées croisées au-dessus d'eux). La **Ligue
+  d'Écume** au port : quatre rangs, trois combats d'affilée chacun.
+- **Après l'histoire** : les épreuves des gardiens, quatre donjons (Mines,
+  Glacier, Épave, Abîme), la **pêche** (canne du maître pêcheur du port, 18
+  poissons) et la **Nouvelle partie +**.
+- **Discussions** entre les héros (Échap > Discussions), pluie de temps en temps,
+  musiques réécrites.
+- **Créatures chromatiques** : très rarement, une créature sauvage a des couleurs
+  rares (et brille) : à capturer pour les collectionneurs.
+
 ## Mode Expédition (roguelite)
 
 Depuis l'écran titre, **Expédition** lance une aventure où tout est généré à

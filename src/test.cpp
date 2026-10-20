@@ -287,7 +287,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     team.clear();
     loadGame();
     bool kept = team.size() == 6 && team[1]->companion.lock() == team[5];
-    startBattle({makeFighter("tisonnel", 18), makeFighter("tisonnel", 18)}, false, nullptr);
+    {
+      auto shiny = makeFighter("tisonnel", 18);
+      shiny->chroma = true;  // capture 94 : une créature chromatique à côté d'une ordinaire
+      startBattle({makeFighter("tisonnel", 18), shiny}, false, nullptr);
+    }
     bool heroMenu = false, companionMenu = false;
     int turns = 0;
     for (int i = 0; i < 60 * 30 && mode == Mode::Battle && !(heroMenu && companionMenu); i++) {
@@ -696,6 +700,15 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       bool old = t[0]->cell == cellAt(2, BACK_COL);
       readMemberLine("case4", b, t, nullptr);
       check(old && t[0]->cell == 13, "damier 4x4 : la formation 3x3 d'une ancienne sauvegarde est convertie (l'arrière reste l'arrière)");
+    }
+    {  // Créatures chromatiques : sprite aux couleurs rares, ligne « chromatique » de la sauvegarde, rare chez les sauvages
+      std::vector<FighterP> t;
+      std::istringstream a("mulotin 5 0 10 5 0"), b("");
+      readMemberLine("membre", a, t, nullptr);
+      readMemberLine("chromatique", b, t, nullptr);
+      bool sprite = findSprite(species("mulotin").sprite + "_chroma") != nullptr;
+      check(t.size() == 1 && t[0] && t[0]->chroma && sprite && rules().chroma > 0 && rules().chroma < .05,
+            "créatures chromatiques : sprite aux couleurs rares, gardées dans la sauvegarde, rares dans les herbes");
     }
     // Attaque annoncée (1.8) : elle frappe ceux restés dans la zone, pas ceux qui se sont écartés
     {
@@ -1759,6 +1772,9 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     view("temple", 20, 27, UP, "28_temple");
     view("sanctuaire", 10, 12, UP, "29_sanctuaire");
     view("plaine", 21, 15, UP, "plaine_moulinbourg");
+    view("echos", 21, 18, UP, "acte4_port_echo");
+    view("pierres", 8, 17, UP, "acte4_foret_petrifiee");
+    view("cratere", 36, 20, RIGHT, "acte4_cratere");
     view("col", 19, 33, UP, "col_camp");
     view("corail", 20, 16, UP, "corail_village");
     view("val", 23, 34, UP, "val_hameau");

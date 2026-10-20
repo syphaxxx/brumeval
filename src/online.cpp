@@ -102,10 +102,10 @@ std::string Online::nameOf(int id) const {
 }
 Online::Player* Online::opponent() { return players_.size() == 1 ? &players_[0] : nullptr; }
 
-// Une équipe dans un message : [espèce, niveau, équipement] pour chaque membre
+// Une équipe dans un message : [espèce, niveau, équipement, chromatique] pour chaque membre (le 4e est facultatif)
 static Json teamJson(const std::vector<FighterP>& t) {
   Json team = Json::array();
-  for (auto& f : t) team.push_back(Json::array({f->sp, f->lvl, gearJson(*f)}));
+  for (auto& f : t) team.push_back(Json::array({f->sp, f->lvl, gearJson(*f), f->chroma}));
   return team;
 }
 
@@ -131,7 +131,7 @@ Json Online::playersJson() const {
   Json a = Json::array();
   auto team = [](const std::vector<Member>& t) {
     Json e = Json::array();
-    for (auto& m : t) e.push_back(Json::array({m.sp, m.lvl, m.gear}));
+    for (auto& m : t) e.push_back(Json::array({m.sp, m.lvl, m.gear, m.chroma}));
     return e;
   };
   a.push_back(Json{{"id", myId_}, {"nom", me_}, {"equipe", teamJson(myTeam())}});
@@ -144,7 +144,8 @@ static std::vector<Online::Member> readTeam(const Json& team) {
   std::vector<Online::Member> out;
   for (auto& e : team)
     if (e.is_array() && e.size() >= 2 && e[0].is_string() && e[1].is_number_integer() && out.size() < 3)
-      out.push_back({e[0].get<std::string>(), std::clamp(e[1].get<int>(), 1, 100), e.size() > 2 ? e[2] : Json::array()});
+      out.push_back({e[0].get<std::string>(), std::clamp(e[1].get<int>(), 1, 100), e.size() > 2 ? e[2] : Json::array(),
+                     e.size() > 3 && e[3].is_boolean() && e[3].get<bool>()});
   return out;
 }
 
@@ -377,6 +378,7 @@ void Online::startDuel(int theme) {
     if (hasSpecies(p.sp)) {
       theirs.push_back(makeFighter(p.sp, p.lvl));
       applyGear(*theirs.back(), p.gear);  // duel avec l'équipement de chacun
+      theirs.back()->chroma = p.chroma;
     }
   if (sameLevel_) {
     std::vector<FighterP> all = mine;

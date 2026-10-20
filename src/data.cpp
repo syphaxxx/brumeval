@@ -187,6 +187,7 @@ std::vector<RuleField> ruleFields(Rules& r) {
       I("rencontres", "meute_max", "Meutes : ennemis au plus", r.packMax, 1, 6, 1),
       D("rencontres", "meute_distance", "Meutes : profondeur maximale (cases)", r.packDistance, 5, 200, 1),
       D("rencontres", "nature_dense", "Rencontres en plus au plus profond", r.packDense, 0, 3, .05),
+      D("rencontres", "chromatique", "Chance d'une créature chromatique", r.chroma, 0, 1, .001),
       D("combat", "atb_base", "Vitesse ATB de base", r.atbBase, 0, 100, 1),
       D("combat", "atb_vitesse", "Multiplicateur de vitesse ATB", r.atbSpeed, .1, 5, .1),
       D("combat", "fuite", "Chance de fuite", r.flee, 0, 1, .05),

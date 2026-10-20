@@ -701,8 +701,10 @@ void Game::encounter() {
     for (int k = n; k < rules().packMax; k++)
       if (frand() < .5f * deep) n++;
     std::vector<FighterP> foes;
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < n; i++) {
       foes.push_back(makeFighter(z.pool[irand(0, (int)z.pool.size() - 1)], irand(z.lo, z.hi) + foeLevelBonus));
+      if (!inExpedition() && frand() < rules().chroma) foes.back()->chroma = true;  // couleurs rares
+    }
     startBattle(foes, false, nullptr);
     return;
   }
@@ -1282,11 +1284,11 @@ void Game::drawMap() {
     if (to.first != from.first) followDir_ = to.first > from.first ? RIGHT : LEFT;
     if (!(bx == ppx && by == ppy)) {  // pas sur le joueur (premier pas après un changement de carte)
       std::string sp = buddy->sp;
-      bool right = followDir_ == RIGHT;
+      bool right = followDir_ == RIGHT, chroma = buddy->chroma;
       // il trottine : un petit bond à chaque pas (deux par case en courant), sinon il respire sur place
       float hop = moving && from != to ? -std::fabs(std::sin(moveT * 3.14159f * (running_ ? 2 : 1))) * 3.5f : 0;
-      actors.push_back({by - .5f, [&, bx, by, sp, right, hop] {
-                          drawCreature(g, sp, bx - camX + 8, by - camY + 4 + std::round(hop), .62f, right, time);
+      actors.push_back({by - .5f, [&, bx, by, sp, right, hop, chroma] {
+                          drawCreature(g, sp, bx - camX + 8, by - camY + 4 + std::round(hop), .62f, right, time, chroma);
                         }});
     }
   }

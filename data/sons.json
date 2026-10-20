@@ -33,7 +33,15 @@
     "combat:citadelle": "combat_aube",
     "combat:abime1": "combat_aube",
     "combat:abime2": "combat_aube",
-    "combat:abime3": "combat_aube"
+    "combat:abime3": "combat_aube",
+    "echos": "echos",
+    "pierres": "echos",
+    "cratere": "cendres",
+    "sanctuaire_echos": "grotte",
+    "combat:echos": "combat_aube",
+    "combat:pierres": "combat_aube",
+    "combat:cratere": "combat_aube",
+    "combat:sanctuaire_echos": "combat_aube"
   },
   "musiques": {
     "titre": {
@@ -670,6 +678,49 @@
           "frequence": 7000,
           "extinction": 0.02,
           "notes": "x x x x x x x x | x x x x x x x x | x x x x x x x x | x x x x x x x x"
+        }
+      ]
+    },
+    "echos": {
+      "tempo": 84,
+      "echo": {"delai": 0.43, "retour": 0.45, "melange": 0.38},
+      "voix": [
+        {
+          "onde": "triangle",
+          "volume": 0.25,
+          "vibrato": 0.25,
+          "notes": "D5 . F5 . A5 . . . | B5 . A5 . G5 . . . | A5 . F5 . D5 . . . | E5 . . . G5 . E5 . | D5 . F5 . A5 . D6 . | B5 . . . A5 . G5 . | E5 . . . A5 . . . | A4 . . . . . - - | C6 . A5 . F5 . A5 . | G5 . E5 . C5 . E5 . | D5 . G5 . B5 . D6 . | C6 . . . A5 . . . | C6 . . . A5 . F5 . | E5 . G5 . C6 . . . | A5 . F5 . E5 . . . | D5 . . . . . - -"
+        },
+        {
+          "onde": "sinus",
+          "volume": 0.1,
+          "attaque": 0.3,
+          "notes": "F4 . . . . . . . | D4 . . . . . . . | F4 . . . . . . . | E4 . . . . . . . | F4 . . . . . . . | D4 . . . . . . . | E4 . . . . . . . | C4 . . . . . . . | A4 . . . . . . . | G4 . . . . . . . | B4 . . . . . . . | A4 . . . . . . . | A4 . . . . . . . | G4 . . . . . . . | F4 . . . . . . . | F4 . . . . . . ."
+        },
+        {
+          "onde": "sinus",
+          "volume": 0.1,
+          "extinction": 0.7,
+          "notes": "D3 F3 A3 D4 A3 F3 D3 F3 | G3 B3 D4 G4 D4 B3 G3 B3 | D3 F3 A3 D4 A3 F3 D3 F3 | C3 E3 G3 C4 G3 E3 C3 E3 | D3 F3 A3 D4 A3 F3 D3 F3 | G3 B3 D4 G4 D4 B3 G3 B3 | A3 C4 E4 A4 E4 C4 A3 C4 | A3 C4 E4 A4 E4 C4 A3 C4 | F3 A3 C4 F4 C4 A3 F3 A3 | C3 E3 G3 C4 G3 E3 C3 E3 | G3 B3 D4 G4 D4 B3 G3 B3 | D3 F3 A3 D4 A3 F3 D3 F3 | F3 A3 C4 F4 C4 A3 F3 A3 | C3 E3 G3 C4 G3 E3 C3 E3 | D3 F3 A3 D4 A3 F3 D3 F3 | D3 F3 A3 D4 A3 F3 D3 F3"
+        },
+        {
+          "onde": "triangle",
+          "volume": 0.24,
+          "notes": "D2 . A2 . D2 . A2 . | G2 . D3 . G2 . D3 . | D2 . A2 . D2 . A2 . | C2 . G2 . C2 . G2 . | D2 . A2 . D2 . A2 . | G2 . D3 . G2 . D3 . | A2 . E3 . A2 . E3 . | A2 . E3 . A2 . E3 . | F2 . C3 . F2 . C3 . | C2 . G2 . C2 . G2 . | G2 . D3 . G2 . D3 . | D2 . A2 . D2 . A2 . | F2 . C3 . F2 . C3 . | C2 . G2 . C2 . G2 . | D2 . A2 . D2 . A2 . | D2 . A2 . D2 . A2 ."
+        },
+        {
+          "onde": "bruit",
+          "volume": 0.075,
+          "frequence": 180,
+          "extinction": 0.08,
+          "notes": "x - - - - - - - | x - - - - - - - | x - - - - - - - | x - - - - - - -"
+        },
+        {
+          "onde": "bruit",
+          "volume": 0.018,
+          "frequence": 7000,
+          "extinction": 0.02,
+          "notes": "- - x - - - x - | - - x - - - x - | - - x - - - x - | - - x - - - x -"
         }
       ]
     }

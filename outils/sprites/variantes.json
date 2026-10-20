@@ -91,5 +91,14 @@
   {"id": "fongombre", "de": "champichou", "teintes": [[-1, 40, 280, 0.8, 0.8], [300, 360, 280, 0.8, 0.8]]},
   {"id": "corailleur", "de": "grenouillon", "teintes": [[60, 200, 355, 0.9, 1.15]]},
   {"id": "perlin", "de": "ecumet", "teintes": [[-1, 0, 250, 0.25, 1.35, 0.15]]},
-  {"id": "murenix", "de": "serpentin", "teintes": [[240, 330, 180, 1.0, 1.0]]}
+  {"id": "murenix", "de": "serpentin", "teintes": [[240, 330, 180, 1.0, 1.0]]},
+  {"id": "petrolin", "de": "elem_terre", "teintes": [[-1, 360, 95, 0.35, 0.95, 0.12]]},
+  {"id": "fossiloup", "de": "loup", "teintes": [[-1, 360, 30, 0.15, 1.05, 0.05]]},
+  {"id": "echoplume", "de": "piafouine", "teintes": [[-1, 360, 268, 0.75, 1.05]]},
+  {"id": "cendrelys", "de": "tisonnel", "teintes": [[0, 70, 215, 1.0, 1.1], [300, 360, 215, 1.0, 1.1]]},
+  {"id": "braisaure", "de": "dragonnet", "teintes": [[-1, 360, 8, 1.1, 0.8]]},
+  {"id": "spectrecho", "de": "fantome", "teintes": [[-1, 360, 175, 0.9, 1.0, 0.25]]},
+  {"id": "colosse_echo", "de": "golem_grand", "teintes": [[-1, 360, 100, 0.25, 0.95, 0.1]]},
+  {"id": "phenix_echo", "de": "griffon", "teintes": [[-1, 360, 14, 1.9, 1.2, 0.35]]},
+  {"id": "ombre_gardien", "de": "seigneur_orage", "teintes": [[180, 320, 245, 0.7, 0.6], [0, 179, 45, 1.0, 1.1], [321, 360, 45, 1.0, 1.1]]}
 ]

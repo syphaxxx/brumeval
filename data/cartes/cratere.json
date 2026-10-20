@@ -1,0 +1,70 @@
+{
+  "id": "cratere",
+  "nom": "Cratère des Échos",
+  "theme": "cendres",
+  "ambiance": {"effet": "cendres"},
+  "tuiles": [
+    "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmmmmmammmmmmmmmmmmmmmammmmmmmllmmmm",
+    "mmmmmmmmmmmmmmmaaaaaaammmmmmmmmaaaaaaammllllllmm",
+    "mmmmmmmmmmmmamaaaaaaaaammmmmmmmaagggaamllllllllm",
+    "mmmmmmmmmaaaaaaaagggaaaammmmmmaggg=ggaallllllllm",
+    "mmmmmmmmmaaagaaggggggaaammmmmmaggg=ggaallllllllm",
+    "mmmmmmmmaa=========================ggaallllllllm",
+    "mmmmmmmmag================aammmaaggaaalllllllllm",
+    "mmmmmmmmag==gggaaggaaaaa==aaammaaaaaaalllllllllm",
+    "mmmmmmammg==gggaaaaaaRaa==aaaammmmammmlllllllllm",
+    "mmmaaaaaaa==gaaaaaaaaaaa==aaaammmmmmmmmlllllllmm",
+    "mmmaaaaaaa==ammmmmaaaaag==aaaaammmmmmmmmamlmmmmm",
+    "mmaaaaaaaa==mmmmmmmaaggg==ggaaaaaammmaaaaaaammmm",
+    "============mmmmmmmaaggg==ggaaaaaaamaaaaaaaaammm",
+    "============mmmmmmmmaggg==ggaaaaaaaaaaaaaaaaaamm",
+    "mmmaaaaaaammmmmmmmmmmaag==aaaaaaaaaaaaaaaaaaaamm",
+    "mmmaaaaaaammmmmmmmmmmmmm==============aaaaaaaamm",
+    "mmmmmmammmmmmmmmmmmmmmmm==============aaaaaaaamm",
+    "mmmmmmmmmmmmmmmmammmmmmm=aagggggggaaaaaaaaaaaamm",
+    "mmmmmmmmmmmmmaaaaaaammmm=magggggggamaaaaaaaaammm",
+    "mmmmmmlmmmmmmaagaaaammmm=mmaagagaammmaaaaaaammmm",
+    "mmmmlllllmmmagggggaaammm=mmmmmammmmmmmmmammmmmmm",
+    "mmmmllllllmmaggg=========mmmmmmmmmmmmmmmmmlmlmmm",
+    "mmmmllllllmmaggggggaammmmmmmmmmmmmmmmmmmlllllllm",
+    "mmmlllllllmmmagggggammmmmmmmmmmmmmmmmmmmlllllllm",
+    "mmmlllllllmmmagggggammmmmmmmmmmmmmmmmmmmlllllllm",
+    "mmmlllllllmmmmmmgmmmmmmmmmmmmmmmmmmmmmmmlllllmmm",
+    "mmmmlllllmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmlllllmmm",
+    "mmmmmmlmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmlllllmmm",
+    "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmlmmmmm",
+    "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"
+  ],
+  "batiments": [],
+  "habitants": [],
+  "coffres": [
+    {"x": 16, "y": 28, "objet": "elixir", "quantite": 2},
+    {"x": 35, "y": 7, "objet": "gemme_vie", "quantite": 1},
+    {"x": 28, "y": 22, "or": 9000}
+  ],
+  "panneaux": [],
+  "passages": [
+    {"x": 0, "y": 17, "vers": "echos", "tx": 42, "ty": 13, "direction": "gauche"},
+    {"x": 0, "y": 18, "vers": "echos", "tx": 42, "ty": 14, "direction": "gauche"}
+  ],
+  "zones": [
+    {
+      "x": 0,
+      "y": 0,
+      "l": 48,
+      "h": 36,
+      "niveau_min": 86,
+      "niveau_max": 90,
+      "max_ennemis": 3,
+      "creatures": ["cendrelys", "braisaure", "fossiloup", "echoplume"]
+    }
+  ],
+  "boss": [{"x": 40, "y": 19, "espece": "phenix_echo", "drapeau": "phenix_echo_vaincu"}],
+  "carte_monde": [9, 79]
+}

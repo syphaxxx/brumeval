@@ -8,7 +8,7 @@
 #include "world.hpp"
 
 // Créature centrée sur (x, y). flip = tournée vers la droite.
-void drawCreature(Gfx& g, const std::string& sp, float x, float y, float s, bool flip, float t);
+void drawCreature(Gfx& g, const std::string& sp, float x, float y, float s, bool flip, float t, bool chroma = false);  // chroma : couleurs rares
 // Humain : (x, y) = coin haut-gauche d'une case de 16x16, mise à l'échelle par s.
 // dir : 0 haut, 1 bas, 2 gauche, 3 droite. step : 0, 1 ou 2 (pas de marche).
 void drawHuman(Gfx& g, const Look& lk, float x, float y, float s, int dir, int step, bool weapon, bool run = false);
