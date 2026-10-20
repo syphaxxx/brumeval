@@ -369,7 +369,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
   maintenant tirées de leur dessin de face par `outils/sprites/tourner.py` (entrées `tourner` de `decoupe.json` :
   visage changé en cheveux ou glissé de trois quarts, pieds décalés pour la marche ; options `chapeau`, `cheveux`,
   `tablier`, `tourne`), avant la réduction commune : même style que les planches. Blender reste pour s'exercer. `outils/godot/effets/rendu.gd` rend des effets en particules image par image (`gfx_<type>_k` : Métal,
-  Normal dans `spriteFx`, Percée et Brisure dans `Battle::bursts_` ; cercle d'invocation `gfx_cercle_k` sous les cibles
+  Normal, Plante et Esprit (2026-10-20) dans `spriteFx`, Percée et Brisure dans `Battle::bursts_` ; cercle d'invocation `gfx_cercle_k` sous les cibles
   d'une Limite, dans `Battle::draw`). Marche à suivre et pièges : compétence
   `sprites-blender-godot`.
 - Améliorations (branche `ameliorations`, carte blanche du 2026-10-16) : petits détails du sol en sprites (touffes,

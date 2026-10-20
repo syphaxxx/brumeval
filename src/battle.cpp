@@ -460,10 +460,10 @@ static bool spriteFx(Gfx& g, const std::string& type, const Pt& p, float k, bool
       {"vent", {"fx_vent_1", "fx_vent_2", "fx_vent_tornade"}},
       {"eau", {"fx_eau_1", "fx_eau_2", "fx_eau_3"}},
       {"poison", {"fx_poison_2", "fx_poison_4", "fx_poison_5", "fx_poison_nuage"}},
-      {"plante", {"fx_soin_1", "fx_regen"}},
+      {"plante", {"gfx_plante_0", "gfx_plante_1", "gfx_plante_2", "gfx_plante_3", "gfx_plante_4", "gfx_plante_5", "gfx_plante_6", "gfx_plante_7"}},  // Godot (2026-10-20) : la planche n'avait qu'une ou deux images
       {"roche", {"fx_terre_1", "fx_terre_2", "fx_terre_pics"}},
       {"ombre", {"fx_ombre_1", "fx_ombre_3", "fx_ombre_4", "fx_ombre_5"}},
-      {"esprit", {"fx_ombre_2", "fx_teleport"}},
+      {"esprit", {"gfx_esprit_0", "gfx_esprit_1", "gfx_esprit_2", "gfx_esprit_3", "gfx_esprit_4", "gfx_esprit_5", "gfx_esprit_6", "gfx_esprit_7"}},  // Godot (2026-10-20) : la planche n'avait qu'une ou deux images
       {"lumiere", {"fx_revelation"}},
       {"soin", {"fx_soin_1", "fx_soin_2", "fx_soin_3", "fx_soin_4"}},
       // 3.4 : effets fabriqués avec les particules de Godot (outils/godot/effets/), pour les types sans dessin
