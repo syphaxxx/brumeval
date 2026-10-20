@@ -235,7 +235,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
   `son` aux autres). Les menus font leurs bruits eux-mêmes (`MenuStack::update`).
   Le mode test n'ouvre pas de sortie son mais fabrique chaque morceau et chaque
   effet (`audio::render`) pour vérifier qu'ils s'entendent. Musiques (2026-10-19) : écrites par
-  `outils/musique/compose.py` d'après `outils/musique/morceaux.py` (17 morceaux, dont `echos` pour l'acte 4 ; chacun : grille d'accords, mélodie,
+  `outils/musique/compose.py` d'après `outils/musique/morceaux.py` (19 morceaux, dont `echos` pour l'acte 4, `plaine` et `phare` ; chacun : grille d'accords, mélodie,
   contre-chant, arpège, basse et batterie fabriqués d'après les accords) ; voix avec `vibrato`, `attaque`,
   `ondulation`, morceau avec `echo` (ligne à retard du `Mixer`) ; `lieux` accepte un identifiant de carte
   (`Game::updateMusic` : carte, puis thème ; `combat:<carte>` donne la musique des combats ordinaires de cette carte : `combat_mer` dans l'archipel, `combat_aube` sur Aube) ; `BattleSetup::music` (« musique » de l'action combat, vérifiée par

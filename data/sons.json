@@ -41,7 +41,13 @@
     "combat:echos": "combat_aube",
     "combat:pierres": "combat_aube",
     "combat:cratere": "combat_aube",
-    "combat:sanctuaire_echos": "combat_aube"
+    "combat:sanctuaire_echos": "combat_aube",
+    "plaine": "plaine",
+    "phare1": "phare",
+    "phare2": "phare",
+    "phare3": "phare",
+    "phare4": "phare",
+    "phare5": "phare"
   },
   "musiques": {
     "titre": {
@@ -721,6 +727,66 @@
           "frequence": 7000,
           "extinction": 0.02,
           "notes": "- - x - - - x - | - - x - - - x - | - - x - - - x - | - - x - - - x -"
+        }
+      ]
+    },
+    "plaine": {
+      "tempo": 120,
+      "pas_par_temps": 2,
+      "voix": [
+        {
+          "onde": "triangle",
+          "volume": 0.25,
+          "vibrato": 0.2,
+          "notes": "D5 . B4 . G4 . | A4 . . . F#4 . | G4 . B4 . E5 . | E5 . D5 . C5 . | B4 . D5 . G5 . | G5 . E5 . C5 . | D5 . . . A4 . | D5 . . . - - | E5 . G5 . E5 . | F#5 . A5 . F#5 . | D5 . . . B4 . | G5 . . . E5 . | C5 . E5 . A5 . | F#5 . E5 . D5 . | B4 . . . D5 . | G4 . . . - -"
+        },
+        {
+          "onde": "carree",
+          "volume": 0.05,
+          "rapport": 0.125,
+          "notes": "- - B4 . B4 . | - - F#4 . F#4 . | - - G4 . G4 . | - - E4 . E4 . | - - B4 . B4 . | - - E4 . E4 . | - - F#4 . F#4 . | - - F#4 . F#4 . | - - E4 . E4 . | - - F#4 . F#4 . | - - D5 . D5 . | - - G4 . G4 . | - - C5 . C5 . | - - F#4 . F#4 . | - - B4 . B4 . | - - B4 . B4 ."
+        },
+        {
+          "onde": "triangle",
+          "volume": 0.26,
+          "notes": "G2 . . G2 . . | D2 . . D2 . . | E2 . . E2 . . | C2 . . C2 . . | G2 . . G2 . . | C2 . . C2 . . | D2 . . D2 . . | D2 . . D2 . . | C2 . . C2 . . | D2 . . D2 . . | B2 . . B2 . . | E2 . . E2 . . | A2 . . A2 . . | D2 . . D2 . . | G2 . . G2 . . | G2 . . G2 . ."
+        },
+        {
+          "onde": "bruit",
+          "volume": 0.068,
+          "frequence": 180,
+          "extinction": 0.08,
+          "notes": "x - - - - - | x - - - - - | x - - - - - | x - - - - -"
+        },
+        {
+          "onde": "bruit",
+          "volume": 0.016,
+          "frequence": 7000,
+          "extinction": 0.02,
+          "notes": "- - x - x - | - - x - x - | - - x - x - | - - x - x -"
+        }
+      ]
+    },
+    "phare": {
+      "tempo": 76,
+      "echo": {"delai": 0.5, "retour": 0.45, "melange": 0.4},
+      "voix": [
+        {
+          "onde": "sinus",
+          "volume": 0.3,
+          "vibrato": 0.3,
+          "notes": "A4 . . . C5 . E5 . | F5 . . . E5 . C5 . | D5 . . . F5 . A5 . | G#5 . . . . . - - | E5 . . . A5 . . . | A5 . G5 . F5 . . . | D5 . . . G5 . B4 . | B4 . . . . . - - | C5 . . . A4 . F4 . | B4 . . . D5 . G5 . | E5 . . . C5 . A4 . | A4 . . . . . - - | F5 . . . D5 . A4 . | G#4 . . . B4 . E5 . | C5 . . . E5 . A5 . | A5 . . . . . - -"
+        },
+        {
+          "onde": "triangle",
+          "volume": 0.1,
+          "extinction": 0.6,
+          "notes": "A3 E4 C4 E4 A3 E4 C4 E4 | F3 C4 A3 C4 F3 C4 A3 C4 | D3 A3 F3 A3 D3 A3 F3 A3 | E3 B3 G#3 B3 E3 B3 G#3 B3 | A3 E4 C4 E4 A3 E4 C4 E4 | F3 C4 A3 C4 F3 C4 A3 C4 | G3 D4 B3 D4 G3 D4 B3 D4 | E3 B3 G#3 B3 E3 B3 G#3 B3 | F3 C4 A3 C4 F3 C4 A3 C4 | G3 D4 B3 D4 G3 D4 B3 D4 | A3 E4 C4 E4 A3 E4 C4 E4 | A3 E4 C4 E4 A3 E4 C4 E4 | D3 A3 F3 A3 D3 A3 F3 A3 | E3 B3 G#3 B3 E3 B3 G#3 B3 | A3 E4 C4 E4 A3 E4 C4 E4 | A3 E4 C4 E4 A3 E4 C4 E4"
+        },
+        {
+          "onde": "triangle",
+          "volume": 0.24,
+          "notes": "A2 . . . . . . . | F2 . . . . . . . | D2 . . . . . . . | E2 . . . . . . . | A2 . . . . . . . | F2 . . . . . . . | G2 . . . . . . . | E2 . . . . . . . | F2 . . . . . . . | G2 . . . . . . . | A2 . . . . . . . | A2 . . . . . . . | D2 . . . . . . . | E2 . . . . . . . | A2 . . . . . . . | A2 . . . . . . ."
         }
       ]
     }

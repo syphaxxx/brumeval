@@ -234,6 +234,33 @@ MORCEAUX = {
         'basse': 'quinte', 'volume_basse': .24, 'batterie': 'calme', 'volume_batterie': .5,
         'echo': {'delai': .43, 'retour': .45, 'melange': .38},
     },
+    # Plaine des Moulins (2026-10-20) : sol majeur, valse champêtre (flûte, moulins qui tournent)
+    'plaine': {
+        'tempo': 120, 'mesure': 3, 'onde': 'triangle', 'volume': .25, 'vibrato': .2,
+        'accords': 'G D Em C G C D D | C D Bm Em Am D G G',
+        'melodie': [
+            'D5 . B4 . G4 .', 'A4 . . . F#4 .', 'G4 . B4 . E5 .', 'E5 . D5 . C5 .',
+            'B4 . D5 . G5 .', 'G5 . E5 . C5 .', 'D5 . . . A4 .', 'D5 . . . - -',
+            'E5 . G5 . E5 .', 'F#5 . A5 . F#5 .', 'D5 . . . B4 .', 'G5 . . . E5 .',
+            'C5 . E5 . A5 .', 'F#5 . E5 . D5 .', 'B4 . . . D5 .', 'G4 . . . - -',
+        ],
+        'arpege': 'valse', 'octave_arpege': 4, 'volume_arpege': .05,
+        'basse': 'fondamentale', 'volume_basse': .26, 'batterie': 'valse', 'volume_batterie': .45,
+    },
+    # Le Vieux Phare (2026-10-20) : la mineur, lent, une lumière qui tourne dans le noir ; beaucoup d'écho
+    'phare': {
+        'tempo': 76, 'onde': 'sinus', 'volume': .3, 'vibrato': .3,
+        'accords': 'Am F Dm E Am F G E | F G Am Am Dm E Am Am',
+        'melodie': [
+            'A4 . . . C5 . E5 .', 'F5 . . . E5 . C5 .', 'D5 . . . F5 . A5 .', 'G#5 . . . . . - -',
+            'E5 . . . A5 . . .', 'A5 . G5 . F5 . . .', 'D5 . . . G5 . B4 .', 'B4 . . . . . - -',
+            'C5 . . . A4 . F4 .', 'B4 . . . D5 . G5 .', 'E5 . . . C5 . A4 .', 'A4 . . . . . - -',
+            'F5 . . . D5 . A4 .', 'G#4 . . . B4 . E5 .', 'C5 . . . E5 . A5 .', 'A5 . . . . . - -',
+        ],
+        'arpege': 'brise', 'octave_arpege': 3, 'onde_arpege': 'triangle', 'volume_arpege': .1, 'extinction_arpege': .6,
+        'basse': 'pedale', 'volume_basse': .24,
+        'echo': {'delai': .5, 'retour': .45, 'melange': .4},
+    },
     # Combats de l'archipel (2026-10-20) : mi mineur, houle à 6/8 rapide
     'combat_mer': {
         'tempo': 150, 'mesure': 3, 'onde': 'carree', 'rapport': .25, 'volume': .12, 'vibrato': .15,
@@ -269,5 +296,6 @@ LIEUX = {'port': 'port', 'recif': 'abysses', 'ruines': 'abysses', 'tour': 'orage
 for _c in ('port', 'recif', 'ruines', 'corail', 'marees', 'epave', 'tour'):
     LIEUX['combat:' + _c] = 'combat_mer'
 LIEUX.update({'echos': 'echos', 'pierres': 'echos', 'cratere': 'cendres', 'sanctuaire_echos': 'grotte'})
+LIEUX.update({'plaine': 'plaine', 'phare1': 'phare', 'phare2': 'phare', 'phare3': 'phare', 'phare4': 'phare', 'phare5': 'phare'})
 for _c in ('aube', 'lueurs', 'marais', 'gouffre', 'citadelle', 'abime1', 'abime2', 'abime3', 'echos', 'pierres', 'cratere', 'sanctuaire_echos'):
     LIEUX['combat:' + _c] = 'combat_aube'
