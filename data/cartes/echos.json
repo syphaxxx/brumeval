@@ -24,7 +24,7 @@
     "TTF.......U..........==...................TT",
     "TTF..F...............==................U..TT",
     "TT.....=.......M.M...==...................TT",
-    "TT.....================....CCK...R......R.TT",
+    "TT.....================....CCK...R....=.R.TT",
     "TT.....FX............==F.......R..........TT",
     "TT.............R.....==.....R.............TT",
     "TT...................==...................TT",
@@ -117,7 +117,8 @@
       "dialogue": ["Le chat de Port-Écho miaule. L'écho miaule aussi."]
     },
     {"x": 34, "y": 23, "apparence": "montagnard", "direction": "gauche", "evenement": "quete_cloche"},
-    {"x": 9, "y": 13, "apparence": "voyageuse", "direction": "droite", "evenement": "etude_oriane"}
+    {"x": 9, "y": 13, "apparence": "voyageuse", "direction": "droite", "evenement": "etude_oriane"},
+    {"x": 40, "y": 23, "apparence": "garde", "direction": "gauche", "evenement": "phare_sonneur"}
   ],
   "coffres": [],
   "panneaux": [],
@@ -127,7 +128,17 @@
     {"x": 21, "y": 0, "vers": "pierres", "tx": 23, "ty": 38, "direction": "haut"},
     {"x": 22, "y": 0, "vers": "pierres", "tx": 24, "ty": 38, "direction": "haut"},
     {"x": 43, "y": 13, "vers": "cratere", "tx": 1, "ty": 17, "direction": "droite"},
-    {"x": 43, "y": 14, "vers": "cratere", "tx": 1, "ty": 18, "direction": "droite"}
+    {"x": 43, "y": 14, "vers": "cratere", "tx": 1, "ty": 18, "direction": "droite"},
+    {
+      "x": 38,
+      "y": 21,
+      "vers": "phare1",
+      "tx": 16,
+      "ty": 30,
+      "direction": "haut",
+      "condition": {"drapeau": "echos_fin"},
+      "message": "Sous les ruines du vieux phare, un escalier descend dans le noir. Une voix murmure : « Pas encore… »"
+    }
   ],
   "zones": [],
   "boss": [],

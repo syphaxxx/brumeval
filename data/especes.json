@@ -1543,5 +1543,17 @@
     "couleurs": ["#2a2a5a", "#ffe8a0"],
     "apprend": [[1, "lame_ombre"], [1, "prisme"], [1, "nova"], [1, "cauchemar"]],
     "talent": "esprit_clair"
+  },
+  {
+    "id": "veilleur_phare",
+    "nom": "Veilleur du phare",
+    "sprite": "veilleur_phare",
+    "types": ["lumiere", "esprit"],
+    "base": {"pv": 130, "pm": 70, "attaque": 80, "defense": 80, "magie": 90, "resistance": 82, "vitesse": 62},
+    "immunites": ["sommeil"],
+    "forme": "boss",
+    "couleurs": ["#e0b040", "#fff8d0"],
+    "apprend": [[1, "prisme"], [1, "nova"], [1, "cauchemar"], [1, "lame_ombre"], [1, "soins"]],
+    "talent": "esprit_clair"
   }
 ]

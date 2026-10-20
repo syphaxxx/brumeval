@@ -3632,6 +3632,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
            bossEvent("abime3_boss"), 10);
   simSetup("Ombre du Premier Gardien (équipe N.100)", {{"lior", 100}, {"maelle", 100}, {"isra", 100}, {"braisenard", 100}, {"gouttelin", 100}, {"ronceau", 100}},
            bossEvent("sanctuaire_echos_boss"), 10);
+  simSetup("Veilleur du phare (équipe N.110)", {{"lior", 110}, {"maelle", 110}, {"isra", 110}, {"braisenard", 110}, {"gouttelin", 110}, {"ronceau", 110}},
+           bossEvent("phare5_boss"), 10);
   simGear = 0, simForge = 0;
 
   // Expédition : gardien de chaque région contre une équipe générée (héros, créature de départ,

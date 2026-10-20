@@ -327,8 +327,8 @@ de niveau 35-40 bien équipée.
 - **28 dresseurs** sur les routes ; après le Seigneur des Orages, les dresseurs
   battus proposent une **revanche** (épées croisées au-dessus d'eux). La **Ligue
   d'Écume** au port : quatre rangs, trois combats d'affilée chacun.
-- **Après l'histoire** : les épreuves des gardiens, quatre donjons (Mines,
-  Glacier, Épave, Abîme), la **pêche** (canne du maître pêcheur du port, 18
+- **Après l'histoire** : les épreuves des gardiens, cinq donjons (Mines,
+  Glacier, Épave, Abîme, et le Vieux Phare de l'île des Échos, cinq étages), la **pêche** (canne du maître pêcheur du port, 18
   poissons) et la **Nouvelle partie +**.
 - **Discussions** entre les héros (Échap > Discussions), pluie de temps en temps,
   musiques réécrites.

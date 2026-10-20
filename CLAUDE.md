@@ -613,7 +613,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   Glacier de Givreval (`glacier`, est des Pics, `boss2`, énigme), Épave du Léviathan (`epave`, sud du Récif, `boss4`),
   l'Abîme (`abime1` à `abime3`, ouest du Bois des Lueurs, `aube_fin`, escaliers `k`, super-boss Orage ancien N.100).
   Boss recolorés (troll_mines, colosse_givre, leviathan, orage_ancien), drapeau `<carte>_boss`, quêtes `mines`,
-  `glacier`, `epave`, `abime`.
+  `glacier`, `epave`, `abime`. Le Vieux Phare (`outils/villes/phare.py`, après l'acte 4) : `phare1` à `phare5` sous les
+  ruines de Port-Écho (passage sous `echos_fin`), créatures N.90-102, Veilleur du phare N.110 (`phare5_boss`), quête `phare`.
 - Pêche (2026-10-20, `peche.cpp`) : face à une case `~` avec l'objet `canne` (donné par le maître pêcheur du port,
   événement `maitre_pecheur`), `Game::interact` lance `startFishing` ; `fishing_` (0 attente, 1 ça mord : Entrée vite,
   2 ferrage : Entrée quand le curseur est dans la zone verte, `need` coups, 3 ratés = ligne cassée) ; le jeu attend

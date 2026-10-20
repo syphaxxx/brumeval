@@ -360,8 +360,8 @@ Cinq quêtes de plus pour les actes 2 et 3 (`outils/villes/quetes_actes.py`) : l
 l'enfant du marais, le spectre du Gouffre, les pages de l'orage (Ruines, Tour, Grotte des Marées), Coquillon et Perlin.
 L'éleveuse de Forgeroc (`outils/villes/eleveuse.py`) : huit créatures évoluées à lui montrer, une par une.
 Créatures de la nuit (`outils/villes/nuit.py`), écran titre en paysage de nuit, rafales dans les hautes herbes.
-Faits depuis la liste de pistes : acte 4, Ligue, pêche, captures demandées par des quêtes. Restent : un donjon
-d'après la fin à étages (au-delà de l'Abîme), des combats plus riches à mi-parcours, d'autres animations.
+Faits depuis la liste de pistes : acte 4, Ligue, pêche, captures demandées par des quêtes, alphas des meutes (combats
+plus riches), le Vieux Phare (`outils/villes/phare.py` : cinq étages après l'acte 4). Restent : d'autres animations.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 

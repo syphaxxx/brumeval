@@ -114,7 +114,7 @@
     {"id": "braisaure_ancestrale", "nom": "La Braisaure ancestrale", "etoiles": 5, "carte": "cratere", "x": 30, "y": 22, "espece": "braisaure", "si": {"drapeau": "echos_fin"},
      "lieu": "Cratère des Échos", "description": "Une Braisaure plus vieille que l'île elle-même. Depuis que l'écho s'est tu, elle sort de la lave pour chasser.",
      "arrivee": "La lave bouillonne : une Braisaure énorme en sort, couverte de roche en fusion !",
-     "combat": {"fuite": false, "ennemis": [{"espece": "cendrelys", "niveau": 92}, {"espece": "braisaure", "niveau": 95, "pv": 5, "boss": true, "bouclier": 10, "phases": [{"pv": 0.6, "message": "La Braisaure crache de la lave : l'air brûle !", "bonus": {"attaque": 1}}, {"pv": 0.3, "message": "Sa carapace de roche se fend… elle devient furieuse !", "bonus": {"vitesse": 1}}]}, {"espece": "braisaure", "niveau": 92}]},
+     "combat": {"fuite": false, "ennemis": [{"espece": "cendrelys", "niveau": 88}, {"espece": "braisaure", "niveau": 92, "pv": 4, "boss": true, "bouclier": 10, "phases": [{"pv": 0.6, "message": "La Braisaure crache de la lave : l'air brûle !", "bonus": {"attaque": 1}}, {"pv": 0.3, "message": "Sa carapace de roche se fend… elle devient furieuse !", "bonus": {"vitesse": 1}}]}, {"espece": "braisaure", "niveau": 88}]},
      "or": 20000, "objets": [{"id": "gemme_maitre"}, {"id": "elixir", "quantite": 3}]}
   ]
 }

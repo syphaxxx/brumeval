@@ -9185,5 +9185,108 @@
         ]
       }
     ]
+  },
+  "phare5_boss": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Au sommet du phare, une lanterne immense brille dans le noir. Une silhouette dorée se tient devant elle."
+      },
+      {
+        "action": "dire",
+        "texte": "Veilleur du phare : Mille ans que je garde cette lumière. Mille ans que personne ne monte jusqu'ici. Montrez-moi que vous la méritez."
+      },
+      {
+        "action": "question",
+        "texte": "Affronter le Veilleur du phare ?",
+        "oui": [
+          {
+            "action": "combat",
+            "musique": "boss_final",
+            "ennemis": [
+              {"espece": "spectrecho", "niveau": 104},
+              {
+                "espece": "veilleur_phare",
+                "niveau": 110,
+                "pv": 9,
+                "boss": true,
+                "bouclier": 18,
+                "phases": [
+                  {
+                    "pv": 0.7,
+                    "message": "La lanterne s'embrase : le Veilleur brille plus fort !",
+                    "bonus": {"magie": 1}
+                  },
+                  {
+                    "pv": 0.4,
+                    "message": "Le Veilleur appelle les échos du phare !",
+                    "bouclier": 14,
+                    "renforts": [{"espece": "fossiloup", "niveau": 104}]
+                  },
+                  {
+                    "pv": 0.15,
+                    "message": "La lumière vacille… le Veilleur rassemble ses dernières forces !",
+                    "bonus": {"attaque": 1, "vitesse": 1}
+                  }
+                ]
+              },
+              {"espece": "petrolin", "niveau": 104}
+            ],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "phare5_boss"},
+              {
+                "action": "dire",
+                "texte": "Le Veilleur baisse la tête. Sa lumière devient douce, comme une bougie."
+              },
+              {
+                "action": "dire",
+                "texte": "Veilleur du phare : Vous êtes les premiers. Prenez ma lanterne : qu'elle éclaire votre route, partout où vous irez."
+              },
+              {"action": "donner", "objet": "lanterne_veilleur", "quantite": 1},
+              {"action": "quete", "id": "phare", "fin": true}
+            ]
+          }
+        ],
+        "non": [{"action": "dire", "texte": "La lanterne tourne lentement. Le Veilleur attend."}]
+      }
+    ]
+  },
+  "phare_sonneur": {
+    "pages": [
+      {
+        "si": {"drapeau": "phare5_boss"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gardien des ruines : Le Veilleur vous a donné sa lanterne ? Alors le phare est en paix."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "echos_fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gardien des ruines : Sous le vieux phare, cinq étages descendent dans le noir. Tout en bas… ou tout en haut, on ne sait plus… veille le gardien de la lumière."
+          },
+          {
+            "action": "dire",
+            "texte": "Gardien des ruines : Les créatures y sont plus fortes que partout ailleurs. Même l'Abîme, à côté, c'est une promenade."
+          },
+          {"action": "quete", "id": "phare"}
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gardien des ruines : Le vieux phare est fermé. Tant que l'écho gronde, personne n'y descend."
+          }
+        ]
+      }
+    ]
   }
 }
