@@ -167,6 +167,48 @@
         ]
       },
       {
+        "si": {"drapeau": "braconnier_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Braconnier : Je vais continuer à m'entraîner. Un jour, peut-être…"
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["braconnier", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Braconnier : Vous revoilà ! Je me suis entraîné depuis notre dernier combat. Cette fois, je ne perdrai pas."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Le braconnier",
+                "ennemis": [{"espece": "braconnier", "niveau": 51}, {"espece": "rongecrin", "niveau": 50}],
+                "renforts": [{"espece": "zephyrin", "niveau": 50}, {"espece": "rongecrin", "niveau": 50}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "braconnier_revanche"},
+                  {
+                    "action": "dire",
+                    "texte": "Braconnier : Encore perdu… Vous êtes vraiment devenus des gardiens."
+                  },
+                  {"action": "or", "quantite": 2000},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
+          }
+        ]
+      },
+      {
         "actions": [
           {
             "action": "dire",
@@ -582,6 +624,45 @@
           }
         ]
       },
+      {
+        "si": {"drapeau": "bandit1_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Bandit : Je raconterai notre combat à mes petits-enfants. En changeant un peu la fin."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["bandit1", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Bandit : J'ai dit à tout le monde que vous m'aviez battu. Personne ne me croit. Une revanche, pour prouver que c'était de la chance ?"
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Le bandit",
+                "ennemis": [{"espece": "bandit", "niveau": 52}, {"espece": "brumeloup", "niveau": 51}],
+                "renforts": [{"espece": "brumeloup", "niveau": 51}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "bandit1_revanche"},
+                  {"action": "dire", "texte": "Bandit : Bon. Ce n'était pas de la chance."},
+                  {"action": "or", "quantite": 2040},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
+          }
+        ]
+      },
       {"actions": [{"action": "dire", "texte": "Bandit : Ne dis surtout pas au chef que j'ai perdu…"}]}
     ]
   },
@@ -604,6 +685,40 @@
               {"action": "drapeau", "nom": "bandit2"},
               {"action": "dire", "texte": "Bandit : D'accord, d'accord ! Le marais est à toi."}
             ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "bandit2_revanche"},
+        "actions": [{"action": "dire", "texte": "Bandit : Revenez quand vous voulez. Mais pas trop souvent."}]
+      },
+      {
+        "si": {"drapeau": ["bandit2", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Bandit : Mes créatures ont grandi, vous savez. Elles ont envie de vous montrer."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Le bandit",
+                "ennemis": [{"espece": "bandit", "niveau": 52}, {"espece": "serpentox", "niveau": 51}],
+                "renforts": [{"espece": "serpentox", "niveau": 51}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "bandit2_revanche"},
+                  {"action": "dire", "texte": "Bandit : Elles ont grandi, mais vous aussi."},
+                  {"action": "or", "quantite": 2040},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
           }
         ]
       },
@@ -939,6 +1054,48 @@
         ]
       },
       {
+        "si": {"drapeau": "chevalier1_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Chevalier du givre : Je vais continuer à m'entraîner. Un jour, peut-être…"
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["chevalier1", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Chevalier du givre : Vous revoilà ! Je me suis entraîné depuis notre dernier combat. Cette fois, je ne perdrai pas."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Le chevalier du givre",
+                "ennemis": [{"espece": "chevalier", "niveau": 54}, {"espece": "givrenard", "niveau": 53}],
+                "renforts": [{"espece": "mage_givre", "niveau": 53}, {"espece": "givrenard", "niveau": 53}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "chevalier1_revanche"},
+                  {
+                    "action": "dire",
+                    "texte": "Chevalier du givre : Encore perdu… Vous êtes vraiment devenus des gardiens."
+                  },
+                  {"action": "or", "quantite": 2120},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
+          }
+        ]
+      },
+      {
         "actions": [
           {
             "action": "dire",
@@ -966,6 +1123,45 @@
               {"action": "dire", "texte": "Chevalier : Bien joué. Prenez ceci pour la route."},
               {"action": "donner", "objet": "superpotion", "quantite": 2}
             ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "chevalier2_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Chevalier du givre : Je raconterai notre combat à mes petits-enfants. En changeant un peu la fin."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["chevalier2", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Chevalier du givre : J'ai dit à tout le monde que vous m'aviez battu. Personne ne me croit. Une revanche, pour prouver que c'était de la chance ?"
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Le chevalier du givre",
+                "ennemis": [{"espece": "chevalier", "niveau": 54}, {"espece": "ferrogeant", "niveau": 53}],
+                "renforts": [{"espece": "zephyrin", "niveau": 53}, {"espece": "ferrogeant", "niveau": 53}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "chevalier2_revanche"},
+                  {"action": "dire", "texte": "Chevalier du givre : Bon. Ce n'était pas de la chance."},
+                  {"action": "or", "quantite": 2120},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
           }
         ]
       },
@@ -1053,7 +1249,10 @@
       {
         "si": {"sans_drapeau": "gardien_brume1"},
         "actions": [
-          {"action": "dire", "texte": "Gardienne des brumes : La Mère dort. Je ne vous laisserai pas la réveiller !"},
+          {
+            "action": "dire",
+            "texte": "Gardienne des brumes : La Mère dort. Je ne vous laisserai pas la réveiller !"
+          },
           {
             "action": "combat",
             "nom": "La gardienne des brumes",
@@ -1063,14 +1262,59 @@
             "capture": false,
             "victoire": [
               {"action": "drapeau", "nom": "gardien_brume1"},
-              {"action": "dire", "texte": "Gardienne : Vous êtes forts… Peut-être assez pour l'apaiser, et non la détruire."}
+              {
+                "action": "dire",
+                "texte": "Gardienne : Vous êtes forts… Peut-être assez pour l'apaiser, et non la détruire."
+              }
             ]
           }
         ]
       },
       {
+        "si": {"drapeau": "gardien_brume1_revanche"},
         "actions": [
-          {"action": "dire", "texte": "Gardienne : La Mère des Brumes n'est pas méchante. Elle a peur, depuis que le feu et la glace se battaient."}
+          {
+            "action": "dire",
+            "texte": "Gardienne des brumes : Revenez quand vous voulez. Mais pas trop souvent."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["gardien_brume1", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gardienne des brumes : Mes créatures ont grandi, vous savez. Elles ont envie de vous montrer."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "La gardienne des brumes",
+                "ennemis": [{"espece": "mage_givre", "niveau": 55}, {"espece": "nebulis", "niveau": 54}],
+                "renforts": [{"espece": "orbrume", "niveau": 54}, {"espece": "nebulis", "niveau": 54}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "gardien_brume1_revanche"},
+                  {"action": "dire", "texte": "Gardienne des brumes : Elles ont grandi, mais vous aussi."},
+                  {"action": "or", "quantite": 2160},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gardienne : La Mère des Brumes n'est pas méchante. Elle a peur, depuis que le feu et la glace se battaient."
+          }
         ]
       }
     ]
@@ -1096,8 +1340,53 @@
         ]
       },
       {
+        "si": {"drapeau": "gardien_brume2_revanche"},
         "actions": [
-          {"action": "dire", "texte": "Gardien : La Mère des Brumes dort au nord. Sa brume s'apaise quand le monde est en paix."}
+          {
+            "action": "dire",
+            "texte": "Gardien des brumes : Je vais continuer à m'entraîner. Un jour, peut-être…"
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["gardien_brume2", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gardien des brumes : Vous revoilà ! Je me suis entraîné depuis notre dernier combat. Cette fois, je ne perdrai pas."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Le gardien des brumes",
+                "ennemis": [{"espece": "chevalier", "niveau": 55}, {"espece": "brumeloup", "niveau": 54}],
+                "renforts": [{"espece": "brumeloup", "niveau": 54}, {"espece": "brumeloup", "niveau": 54}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "gardien_brume2_revanche"},
+                  {
+                    "action": "dire",
+                    "texte": "Gardien des brumes : Encore perdu… Vous êtes vraiment devenus des gardiens."
+                  },
+                  {"action": "or", "quantite": 2160},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gardien : La Mère des Brumes dort au nord. Sa brume s'apaise quand le monde est en paix."
+          }
         ]
       }
     ]
@@ -1600,6 +1889,45 @@
         ]
       },
       {
+        "si": {"drapeau": "recif_dresseur1_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Chasseur de perles : Je raconterai notre combat à mes petits-enfants. En changeant un peu la fin."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["recif_dresseur1", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Chasseur de perles : J'ai dit à tout le monde que vous m'aviez battu. Personne ne me croit. Une revanche, pour prouver que c'était de la chance ?"
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Le chasseur de perles",
+                "ennemis": [{"espece": "fulgoray", "niveau": 56}, {"espece": "bastillon", "niveau": 55}],
+                "renforts": [{"espece": "ecumet", "niveau": 55}, {"espece": "bastillon", "niveau": 55}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "recif_dresseur1_revanche"},
+                  {"action": "dire", "texte": "Chasseur de perles : Bon. Ce n'était pas de la chance."},
+                  {"action": "or", "quantite": 2200},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
+          }
+        ]
+      },
+      {
         "actions": [
           {
             "action": "dire",
@@ -1631,6 +1959,42 @@
               {"action": "donner", "objet": "elixir"},
               {"action": "or", "quantite": 800}
             ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "recif_dresseur2_revanche"},
+        "actions": [
+          {"action": "dire", "texte": "Chevalier errant : Revenez quand vous voulez. Mais pas trop souvent."}
+        ]
+      },
+      {
+        "si": {"drapeau": ["recif_dresseur2", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Chevalier errant : Mes créatures ont grandi, vous savez. Elles ont envie de vous montrer."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Le chevalier errant",
+                "ennemis": [{"espece": "chevalier", "niveau": 56}, {"espece": "orageline", "niveau": 55}],
+                "renforts": [{"espece": "noyelin", "niveau": 55}, {"espece": "orageline", "niveau": 55}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "recif_dresseur2_revanche"},
+                  {"action": "dire", "texte": "Chevalier errant : Elles ont grandi, mais vous aussi."},
+                  {"action": "or", "quantite": 2200},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
           }
         ]
       },
@@ -3358,7 +3722,20 @@
                 "musique": "boss_final",
                 "ennemis": [
                   {"espece": "loup_aube", "niveau": 84},
-                  {"espece": "nacrelin", "niveau": 86, "pv": 1.8, "boss": true, "bouclier": 6},
+                  {
+                    "espece": "nacrelin",
+                    "niveau": 86,
+                    "pv": 1.8,
+                    "boss": true,
+                    "bouclier": 6,
+                    "phases": [
+                      {
+                        "pv": 0.5,
+                        "message": "L'esprit gardien rassemble ses dernières forces : il brille plus fort que jamais !",
+                        "bonus": {"attaque": 1, "magie": 1}
+                      }
+                    ]
+                  },
                   {"espece": "aubespectre", "niveau": 84}
                 ],
                 "renforts": [{"espece": "rocaube", "niveau": 84}, {"espece": "lueurine", "niveau": 85}],
@@ -3399,7 +3776,20 @@
                 "nom": "Gardien Céleste",
                 "ennemis": [
                   {"espece": "aubelle", "niveau": 84},
-                  {"espece": "zephyrin", "niveau": 85, "pv": 1.8, "boss": true, "bouclier": 6},
+                  {
+                    "espece": "zephyrin",
+                    "niveau": 85,
+                    "pv": 1.8,
+                    "boss": true,
+                    "bouclier": 6,
+                    "phases": [
+                      {
+                        "pv": 0.5,
+                        "message": "L'esprit gardien rassemble ses dernières forces : il brille plus fort que jamais !",
+                        "bonus": {"attaque": 1, "magie": 1}
+                      }
+                    ]
+                  },
                   {"espece": "lueurine", "niveau": 84}
                 ],
                 "renforts": [{"espece": "griffon", "niveau": 84}, {"espece": "nuageon", "niveau": 84}],
@@ -3442,7 +3832,20 @@
                 "nom": "Gardienne Nocturne",
                 "ennemis": [
                   {"espece": "brumeloup", "niveau": 82},
-                  {"espece": "nebulis", "niveau": 83, "pv": 1.8, "boss": true, "bouclier": 6},
+                  {
+                    "espece": "nebulis",
+                    "niveau": 83,
+                    "pv": 1.8,
+                    "boss": true,
+                    "bouclier": 6,
+                    "phases": [
+                      {
+                        "pv": 0.5,
+                        "message": "L'esprit gardien rassemble ses dernières forces : il brille plus fort que jamais !",
+                        "bonus": {"attaque": 1, "magie": 1}
+                      }
+                    ]
+                  },
                   {"espece": "noctaile", "niveau": 82}
                 ],
                 "renforts": [{"espece": "aubespectre", "niveau": 82}, {"espece": "osselet", "niveau": 82}],
@@ -3482,7 +3885,20 @@
                 "nom": "Gardien Rempart",
                 "ennemis": [
                   {"espece": "ferrogeant", "niveau": 80},
-                  {"espece": "rocaube", "niveau": 81, "pv": 1.8, "boss": true, "bouclier": 6},
+                  {
+                    "espece": "rocaube",
+                    "niveau": 81,
+                    "pv": 1.8,
+                    "boss": true,
+                    "bouclier": 6,
+                    "phases": [
+                      {
+                        "pv": 0.5,
+                        "message": "L'esprit gardien rassemble ses dernières forces : il brille plus fort que jamais !",
+                        "bonus": {"attaque": 1, "magie": 1}
+                      }
+                    ]
+                  },
                   {"espece": "bastillon", "niveau": 80}
                 ],
                 "renforts": [{"espece": "orbrume", "niveau": 80}, {"espece": "carapic", "niveau": 80}],
@@ -3525,7 +3941,20 @@
                 "nom": "Gardienne Fulgurante",
                 "ennemis": [
                   {"espece": "fulgurin", "niveau": 78},
-                  {"espece": "griffon", "niveau": 79, "pv": 1.8, "boss": true, "bouclier": 6},
+                  {
+                    "espece": "griffon",
+                    "niveau": 79,
+                    "pv": 1.8,
+                    "boss": true,
+                    "bouclier": 6,
+                    "phases": [
+                      {
+                        "pv": 0.5,
+                        "message": "L'esprit gardien rassemble ses dernières forces : il brille plus fort que jamais !",
+                        "bonus": {"attaque": 1, "magie": 1}
+                      }
+                    ]
+                  },
                   {"espece": "orageon", "niveau": 78}
                 ],
                 "renforts": [{"espece": "orageline", "niveau": 78}, {"espece": "voltanguille", "niveau": 78}],
@@ -3568,7 +3997,20 @@
                 "nom": "Gardien Boréal",
                 "ennemis": [
                   {"espece": "givrenard", "niveau": 76},
-                  {"espece": "banquisot", "niveau": 77, "pv": 1.8, "boss": true, "bouclier": 6},
+                  {
+                    "espece": "banquisot",
+                    "niveau": 77,
+                    "pv": 1.8,
+                    "boss": true,
+                    "bouclier": 6,
+                    "phases": [
+                      {
+                        "pv": 0.5,
+                        "message": "L'esprit gardien rassemble ses dernières forces : il brille plus fort que jamais !",
+                        "bonus": {"attaque": 1, "magie": 1}
+                      }
+                    ]
+                  },
                   {"espece": "givrelin", "niveau": 76}
                 ],
                 "renforts": [{"espece": "prismalin", "niveau": 76}, {"espece": "glaconnet", "niveau": 76}],
@@ -3608,7 +4050,20 @@
                 "nom": "Gardienne Sylve",
                 "ennemis": [
                   {"espece": "ronceflore", "niveau": 74},
-                  {"espece": "ronce_mere", "niveau": 75, "pv": 1.8, "boss": true, "bouclier": 6},
+                  {
+                    "espece": "ronce_mere",
+                    "niveau": 75,
+                    "pv": 1.8,
+                    "boss": true,
+                    "bouclier": 6,
+                    "phases": [
+                      {
+                        "pv": 0.5,
+                        "message": "L'esprit gardien rassemble ses dernières forces : il brille plus fort que jamais !",
+                        "bonus": {"attaque": 1, "magie": 1}
+                      }
+                    ]
+                  },
                   {"espece": "vasepent", "niveau": 74}
                 ],
                 "renforts": [{"espece": "champignard", "niveau": 74}, {"espece": "crapale", "niveau": 74}],
@@ -3651,7 +4106,20 @@
                 "nom": "Gardien des Marées",
                 "ennemis": [
                   {"espece": "torrentin", "niveau": 72},
-                  {"espece": "kraken", "niveau": 73, "pv": 1.8, "boss": true, "bouclier": 6},
+                  {
+                    "espece": "kraken",
+                    "niveau": 73,
+                    "pv": 1.8,
+                    "boss": true,
+                    "bouclier": 6,
+                    "phases": [
+                      {
+                        "pv": 0.5,
+                        "message": "L'esprit gardien rassemble ses dernières forces : il brille plus fort que jamais !",
+                        "bonus": {"attaque": 1, "magie": 1}
+                      }
+                    ]
+                  },
                   {"espece": "fulgoray", "niveau": 72}
                 ],
                 "renforts": [{"espece": "nacrelin", "niveau": 72}, {"espece": "bastillon", "niveau": 72}],
@@ -3695,7 +4163,20 @@
                 "nom": "Gardienne Ardente",
                 "ennemis": [
                   {"espece": "fournezard", "niveau": 70},
-                  {"espece": "flammenard", "niveau": 71, "pv": 1.8, "boss": true, "bouclier": 6},
+                  {
+                    "espece": "flammenard",
+                    "niveau": 71,
+                    "pv": 1.8,
+                    "boss": true,
+                    "bouclier": 6,
+                    "phases": [
+                      {
+                        "pv": 0.5,
+                        "message": "L'esprit gardien rassemble ses dernières forces : il brille plus fort que jamais !",
+                        "bonus": {"attaque": 1, "magie": 1}
+                      }
+                    ]
+                  },
                   {"espece": "lucifee", "niveau": 70}
                 ],
                 "renforts": [{"espece": "draconnet", "niveau": 70}, {"espece": "fournezard", "niveau": 70}],
@@ -3857,7 +4338,21 @@
             "action": "combat",
             "ennemis": [
               {"espece": "rocaillou", "niveau": 18},
-              {"espece": "troll_mines", "niveau": 21, "pv": 4, "boss": true, "bouclier": 5},
+              {
+                "espece": "troll_mines",
+                "niveau": 21,
+                "pv": 4,
+                "boss": true,
+                "bouclier": 5,
+                "phases": [
+                  {
+                    "pv": 0.5,
+                    "message": "Le troll arrache un étai : des pierres dégringolent, et un Rocaillou roule dans la mêlée !",
+                    "bonus": {"attaque": 1},
+                    "renforts": [{"espece": "rocaillou", "niveau": 19}]
+                  }
+                ]
+              },
               {"espece": "galetor", "niveau": 18}
             ],
             "renforts": [{"espece": "brutor", "niveau": 19}],
@@ -5080,7 +5575,20 @@
         "nom": "Les Rongecrins",
         "ennemis": [
           {"espece": "rongecrin", "niveau": 11},
-          {"espece": "rongecrin", "niveau": 13, "pv": 3, "boss": true, "bouclier": 3},
+          {
+            "espece": "rongecrin",
+            "niveau": 13,
+            "pv": 3,
+            "boss": true,
+            "bouclier": 3,
+            "phases": [
+              {
+                "pv": 0.5,
+                "message": "Le gros Rongecrin siffle entre ses dents : la bande accourt !",
+                "renforts": [{"espece": "rongecrin", "niveau": 11}]
+              }
+            ]
+          },
           {"espece": "mulotin", "niveau": 11}
         ],
         "renforts": [{"espece": "rongecrin", "niveau": 11}],
@@ -5121,6 +5629,48 @@
         ]
       },
       {
+        "si": {"drapeau": "route_vallee1_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Petit dresseur : Je vais continuer à m'entraîner. Un jour, peut-être…"
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_vallee1", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Petit dresseur : Vous revoilà ! Je me suis entraîné depuis notre dernier combat. Cette fois, je ne perdrai pas."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Petit dresseur",
+                "ennemis": [{"espece": "champignard", "niveau": 52}, {"espece": "lucifee", "niveau": 51}],
+                "renforts": [{"espece": "crapoison", "niveau": 51}, {"espece": "lucifee", "niveau": 51}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_vallee1_revanche"},
+                  {
+                    "action": "dire",
+                    "texte": "Petit dresseur : Encore perdu… Vous êtes vraiment devenus des gardiens."
+                  },
+                  {"action": "or", "quantite": 2040},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
+          }
+        ]
+      },
+      {
         "actions": [
           {"action": "dire", "texte": "Petit dresseur : Quand je serai grand, je serai gardien, comme toi !"}
         ]
@@ -5149,6 +5699,45 @@
               {"action": "or", "quantite": 280},
               {"action": "donner", "objet": "potion", "quantite": 1}
             ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "route_plaine1_revanche"},
+        "actions": [
+          {"action": "dire", "texte": "Fermier : Je vais continuer à m'entraîner. Un jour, peut-être…"}
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_plaine1", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Fermier : Vous revoilà ! Je me suis entraîné depuis notre dernier combat. Cette fois, je ne perdrai pas."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Fermier",
+                "ennemis": [{"espece": "zephyrin", "niveau": 52}, {"espece": "champignard", "niveau": 51}],
+                "renforts": [{"espece": "rongecrin", "niveau": 51}, {"espece": "champignard", "niveau": 51}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_plaine1_revanche"},
+                  {
+                    "action": "dire",
+                    "texte": "Fermier : Encore perdu… Vous êtes vraiment devenus des gardiens."
+                  },
+                  {"action": "or", "quantite": 2040},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
           }
         ]
       },
@@ -5183,6 +5772,45 @@
               {"action": "dire", "texte": "Randonneuse : Quelle énergie ! Je vais m'asseoir un moment."},
               {"action": "or", "quantite": 280}
             ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "route_plaine2_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Randonneuse : Je raconterai notre combat à mes petits-enfants. En changeant un peu la fin."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_plaine2", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Randonneuse : J'ai dit à tout le monde que vous m'aviez battu. Personne ne me croit. Une revanche, pour prouver que c'était de la chance ?"
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Randonneuse",
+                "ennemis": [{"espece": "brumeloup", "niveau": 52}, {"espece": "rongecrin", "niveau": 51}],
+                "renforts": [{"espece": "zephyrin", "niveau": 51}, {"espece": "rongecrin", "niveau": 51}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_plaine2_revanche"},
+                  {"action": "dire", "texte": "Randonneuse : Bon. Ce n'était pas de la chance."},
+                  {"action": "or", "quantite": 2040},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
           }
         ]
       },
@@ -5225,6 +5853,45 @@
         ]
       },
       {
+        "si": {"drapeau": "route_grotte1_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Spéléologue : Je raconterai notre combat à mes petits-enfants. En changeant un peu la fin."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_grotte1", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Spéléologue : J'ai dit à tout le monde que vous m'aviez battu. Personne ne me croit. Une revanche, pour prouver que c'était de la chance ?"
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Spéléologue",
+                "ennemis": [{"espece": "banquisot", "niveau": 53}, {"espece": "fournezard", "niveau": 52}],
+                "renforts": [{"espece": "tisseline", "niveau": 52}, {"espece": "fournezard", "niveau": 52}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_grotte1_revanche"},
+                  {"action": "dire", "texte": "Spéléologue : Bon. Ce n'était pas de la chance."},
+                  {"action": "or", "quantite": 2080},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
+          }
+        ]
+      },
+      {
         "actions": [
           {
             "action": "dire",
@@ -5256,6 +5923,45 @@
               {"action": "or", "quantite": 420},
               {"action": "donner", "objet": "minerai", "quantite": 1}
             ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "route_cendrelune1_revanche"},
+        "actions": [
+          {"action": "dire", "texte": "Mineur : Je vais continuer à m'entraîner. Un jour, peut-être…"}
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_cendrelune1", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Mineur : Vous revoilà ! Je me suis entraîné depuis notre dernier combat. Cette fois, je ne perdrai pas."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Mineur",
+                "ennemis": [{"espece": "banquisot", "niveau": 53}, {"espece": "fumerole", "niveau": 52}],
+                "renforts": [{"espece": "draconnet", "niveau": 52}, {"espece": "fumerole", "niveau": 52}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_cendrelune1_revanche"},
+                  {
+                    "action": "dire",
+                    "texte": "Mineur : Encore perdu… Vous êtes vraiment devenus des gardiens."
+                  },
+                  {"action": "or", "quantite": 2080},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
           }
         ]
       },
@@ -5294,6 +6000,45 @@
         ]
       },
       {
+        "si": {"drapeau": "route_cendrelune2_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Garde de la route : Je raconterai notre combat à mes petits-enfants. En changeant un peu la fin."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_cendrelune2", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Garde de la route : J'ai dit à tout le monde que vous m'aviez battu. Personne ne me croit. Une revanche, pour prouver que c'était de la chance ?"
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Garde de la route",
+                "ennemis": [{"espece": "fournezard", "niveau": 53}, {"espece": "galetor", "niveau": 52}],
+                "renforts": [{"espece": "orageon", "niveau": 52}, {"espece": "galetor", "niveau": 52}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_cendrelune2_revanche"},
+                  {"action": "dire", "texte": "Garde de la route : Bon. Ce n'était pas de la chance."},
+                  {"action": "or", "quantite": 2080},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
+          }
+        ]
+      },
+      {
         "actions": [
           {
             "action": "dire",
@@ -5325,6 +6070,45 @@
               {"action": "or", "quantite": 380},
               {"action": "donner", "objet": "remede", "quantite": 1}
             ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "route_sylvenoire1_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Herboriste : Je raconterai notre combat à mes petits-enfants. En changeant un peu la fin."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_sylvenoire1", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Herboriste : J'ai dit à tout le monde que vous m'aviez battu. Personne ne me croit. Une revanche, pour prouver que c'était de la chance ?"
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Herboriste",
+                "ennemis": [{"espece": "serpentox", "niveau": 53}, {"espece": "carapic", "niveau": 52}],
+                "renforts": [{"espece": "crapoison", "niveau": 52}, {"espece": "carapic", "niveau": 52}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_sylvenoire1_revanche"},
+                  {"action": "dire", "texte": "Herboriste : Bon. Ce n'était pas de la chance."},
+                  {"action": "or", "quantite": 2080},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
           }
         ]
       },
@@ -5367,6 +6151,45 @@
         ]
       },
       {
+        "si": {"drapeau": "route_mines1_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Contremaître : Je raconterai notre combat à mes petits-enfants. En changeant un peu la fin."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_mines1", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Contremaître : J'ai dit à tout le monde que vous m'aviez battu. Personne ne me croit. Une revanche, pour prouver que c'était de la chance ?"
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Contremaître",
+                "ennemis": [{"espece": "brutor", "niveau": 53}, {"espece": "galetor", "niveau": 52}],
+                "renforts": [{"espece": "galetor", "niveau": 52}, {"espece": "galetor", "niveau": 52}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_mines1_revanche"},
+                  {"action": "dire", "texte": "Contremaître : Bon. Ce n'était pas de la chance."},
+                  {"action": "or", "quantite": 2080},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
+          }
+        ]
+      },
+      {
         "actions": [
           {
             "action": "dire",
@@ -5397,6 +6220,45 @@
               {"action": "dire", "texte": "Berger : Hmpf. Tu as du cran, je te l'accorde."},
               {"action": "or", "quantite": 560}
             ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "route_col1_revanche"},
+        "actions": [
+          {"action": "dire", "texte": "Berger : Je vais continuer à m'entraîner. Un jour, peut-être…"}
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_col1", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Berger : Vous revoilà ! Je me suis entraîné depuis notre dernier combat. Cette fois, je ne perdrai pas."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Berger",
+                "ennemis": [{"espece": "givroc", "niveau": 54}, {"espece": "orageon", "niveau": 53}],
+                "renforts": [{"espece": "banquisot", "niveau": 53}, {"espece": "orageon", "niveau": 53}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_col1_revanche"},
+                  {
+                    "action": "dire",
+                    "texte": "Berger : Encore perdu… Vous êtes vraiment devenus des gardiens."
+                  },
+                  {"action": "or", "quantite": 2120},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
           }
         ]
       },
@@ -5436,6 +6298,45 @@
         ]
       },
       {
+        "si": {"drapeau": "route_col2_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Alpiniste : Je raconterai notre combat à mes petits-enfants. En changeant un peu la fin."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_col2", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Alpiniste : J'ai dit à tout le monde que vous m'aviez battu. Personne ne me croit. Une revanche, pour prouver que c'était de la chance ?"
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Alpiniste",
+                "ennemis": [{"espece": "zephyrin", "niveau": 54}, {"espece": "galetor", "niveau": 53}],
+                "renforts": [{"espece": "givrenard", "niveau": 53}, {"espece": "galetor", "niveau": 53}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_col2_revanche"},
+                  {"action": "dire", "texte": "Alpiniste : Bon. Ce n'était pas de la chance."},
+                  {"action": "or", "quantite": 2120},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
+          }
+        ]
+      },
+      {
         "actions": [
           {"action": "dire", "texte": "Alpiniste : Au-delà du col, les Pics Givrés. Couvrez-vous bien."}
         ]
@@ -5463,6 +6364,45 @@
               {"action": "dire", "texte": "Apprentie du givre : Je vais devoir relire mes leçons…"},
               {"action": "or", "quantite": 580}
             ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "route_pics1_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Apprentie du givre : Revenez quand vous voulez. Mais pas trop souvent."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_pics1", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Apprentie du givre : Mes créatures ont grandi, vous savez. Elles ont envie de vous montrer."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Apprentie du givre",
+                "ennemis": [{"espece": "mage_givre", "niveau": 54}, {"espece": "banquisot", "niveau": 53}],
+                "renforts": [{"espece": "givrenard", "niveau": 53}, {"espece": "banquisot", "niveau": 53}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_pics1_revanche"},
+                  {"action": "dire", "texte": "Apprentie du givre : Elles ont grandi, mais vous aussi."},
+                  {"action": "or", "quantite": 2120},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
           }
         ]
       },
@@ -5506,6 +6446,46 @@
         ]
       },
       {
+        "si": {"drapeau": "route_glacier1_revanche"},
+        "actions": [
+          {"action": "dire", "texte": "Chasseur de glace : Revenez quand vous voulez. Mais pas trop souvent."}
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_glacier1", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Chasseur de glace : Mes créatures ont grandi, vous savez. Elles ont envie de vous montrer."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Chasseur de glace",
+                "ennemis": [
+                  {"espece": "banquisot", "niveau": 55},
+                  {"espece": "banquisot", "niveau": 54},
+                  {"espece": "givrenard", "niveau": 54}
+                ],
+                "renforts": [{"espece": "givrenard", "niveau": 54}, {"espece": "givrenard", "niveau": 54}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_glacier1_revanche"},
+                  {"action": "dire", "texte": "Chasseur de glace : Elles ont grandi, mais vous aussi."},
+                  {"action": "or", "quantite": 2160},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
+          }
+        ]
+      },
+      {
         "actions": [
           {
             "action": "dire",
@@ -5540,6 +6520,49 @@
               {"action": "dire", "texte": "Ermite : Les esprits se sont trompés. Ça arrive."},
               {"action": "or", "quantite": 800}
             ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "route_val1_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ermite : Je raconterai notre combat à mes petits-enfants. En changeant un peu la fin."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_val1", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ermite : J'ai dit à tout le monde que vous m'aviez battu. Personne ne me croit. Une revanche, pour prouver que c'était de la chance ?"
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Ermite",
+                "ennemis": [
+                  {"espece": "orbrume", "niveau": 55},
+                  {"espece": "lanternelle", "niveau": 54},
+                  {"espece": "fongombre", "niveau": 54}
+                ],
+                "renforts": [{"espece": "fongombre", "niveau": 54}, {"espece": "fongombre", "niveau": 54}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_val1_revanche"},
+                  {"action": "dire", "texte": "Ermite : Bon. Ce n'était pas de la chance."},
+                  {"action": "or", "quantite": 2160},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
           }
         ]
       },
@@ -5580,6 +6603,46 @@
         ]
       },
       {
+        "si": {"drapeau": "route_val2_revanche"},
+        "actions": [
+          {"action": "dire", "texte": "Veilleuse : Revenez quand vous voulez. Mais pas trop souvent."}
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_val2", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Veilleuse : Mes créatures ont grandi, vous savez. Elles ont envie de vous montrer."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Veilleuse",
+                "ennemis": [
+                  {"espece": "nebulis", "niveau": 55},
+                  {"espece": "nebulis", "niveau": 54},
+                  {"espece": "brumeloup", "niveau": 54}
+                ],
+                "renforts": [{"espece": "brumeloup", "niveau": 54}, {"espece": "brumeloup", "niveau": 54}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_val2_revanche"},
+                  {"action": "dire", "texte": "Veilleuse : Elles ont grandi, mais vous aussi."},
+                  {"action": "or", "quantite": 2160},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
+          }
+        ]
+      },
+      {
         "actions": [
           {"action": "dire", "texte": "Veilleuse : La nuit, les murmures du Val deviennent des chants."}
         ]
@@ -5614,6 +6677,49 @@
               },
               {"action": "or", "quantite": 980}
             ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "route_recif1_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Pêcheur de crevettes : Revenez quand vous voulez. Mais pas trop souvent."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_recif1", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Pêcheur de crevettes : Mes créatures ont grandi, vous savez. Elles ont envie de vous montrer."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Pêcheur de crevettes",
+                "ennemis": [
+                  {"espece": "fulgoray", "niveau": 57},
+                  {"espece": "orageline", "niveau": 56},
+                  {"espece": "noyelin", "niveau": 56}
+                ],
+                "renforts": [{"espece": "noyelin", "niveau": 56}, {"espece": "noyelin", "niveau": 56}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_recif1_revanche"},
+                  {"action": "dire", "texte": "Pêcheur de crevettes : Elles ont grandi, mais vous aussi."},
+                  {"action": "or", "quantite": 2240},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
           }
         ]
       },
@@ -5657,6 +6763,46 @@
         ]
       },
       {
+        "si": {"drapeau": "route_corail1_revanche"},
+        "actions": [
+          {"action": "dire", "texte": "Plongeur : Revenez quand vous voulez. Mais pas trop souvent."}
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_corail1", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Plongeur : Mes créatures ont grandi, vous savez. Elles ont envie de vous montrer."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Plongeur",
+                "ennemis": [
+                  {"espece": "corailleur", "niveau": 56},
+                  {"espece": "perlin", "niveau": 55},
+                  {"espece": "ecumet", "niveau": 55}
+                ],
+                "renforts": [{"espece": "ecumet", "niveau": 55}, {"espece": "ecumet", "niveau": 55}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_corail1_revanche"},
+                  {"action": "dire", "texte": "Plongeur : Elles ont grandi, mais vous aussi."},
+                  {"action": "or", "quantite": 2200},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
+          }
+        ]
+      },
+      {
         "actions": [
           {
             "action": "dire",
@@ -5694,6 +6840,52 @@
               },
               {"action": "or", "quantite": 960}
             ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "route_corail2_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ramasseuse de coquillages : Je vais continuer à m'entraîner. Un jour, peut-être…"
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_corail2", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ramasseuse de coquillages : Vous revoilà ! Je me suis entraîné depuis notre dernier combat. Cette fois, je ne perdrai pas."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Ramasseuse de coquillages",
+                "ennemis": [
+                  {"espece": "bastillon", "niveau": 56},
+                  {"espece": "corailleur", "niveau": 55},
+                  {"espece": "perlin", "niveau": 55}
+                ],
+                "renforts": [{"espece": "perlin", "niveau": 55}, {"espece": "perlin", "niveau": 55}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_corail2_revanche"},
+                  {
+                    "action": "dire",
+                    "texte": "Ramasseuse de coquillages : Encore perdu… Vous êtes vraiment devenus des gardiens."
+                  },
+                  {"action": "or", "quantite": 2200},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
           }
         ]
       },
@@ -5740,6 +6932,52 @@
         ]
       },
       {
+        "si": {"drapeau": "route_marees1_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Chercheur de trésors : Je vais continuer à m'entraîner. Un jour, peut-être…"
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_marees1", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Chercheur de trésors : Vous revoilà ! Je me suis entraîné depuis notre dernier combat. Cette fois, je ne perdrai pas."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Chercheur de trésors",
+                "ennemis": [
+                  {"espece": "perlin", "niveau": 57},
+                  {"espece": "murenix", "niveau": 56},
+                  {"espece": "noyelin", "niveau": 56}
+                ],
+                "renforts": [{"espece": "noyelin", "niveau": 56}, {"espece": "noyelin", "niveau": 56}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_marees1_revanche"},
+                  {
+                    "action": "dire",
+                    "texte": "Chercheur de trésors : Encore perdu… Vous êtes vraiment devenus des gardiens."
+                  },
+                  {"action": "or", "quantite": 2240},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
+          }
+        ]
+      },
+      {
         "actions": [
           {"action": "dire", "texte": "Chercheur de trésors : La marée monte vite, ici. Ne traînez pas."}
         ]
@@ -5772,6 +7010,52 @@
               {"action": "or", "quantite": 1000},
               {"action": "donner", "objet": "elixir", "quantite": 1}
             ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "route_ruines1_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Archéologue : Je vais continuer à m'entraîner. Un jour, peut-être…"
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_ruines1", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Archéologue : Vous revoilà ! Je me suis entraîné depuis notre dernier combat. Cette fois, je ne perdrai pas."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Archéologue",
+                "ennemis": [
+                  {"espece": "fulgoray", "niveau": 57},
+                  {"espece": "bastillon", "niveau": 56},
+                  {"espece": "osselet", "niveau": 56}
+                ],
+                "renforts": [{"espece": "osselet", "niveau": 56}, {"espece": "osselet", "niveau": 56}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_ruines1_revanche"},
+                  {
+                    "action": "dire",
+                    "texte": "Archéologue : Encore perdu… Vous êtes vraiment devenus des gardiens."
+                  },
+                  {"action": "or", "quantite": 2240},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
           }
         ]
       },
@@ -5810,6 +7094,49 @@
               {"action": "dire", "texte": "Pilleur d'épaves : Aïe ! Bon, il en reste assez pour deux…"},
               {"action": "or", "quantite": 1040}
             ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "route_epave1_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Pilleur d'épaves : Je raconterai notre combat à mes petits-enfants. En changeant un peu la fin."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_epave1", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Pilleur d'épaves : J'ai dit à tout le monde que vous m'aviez battu. Personne ne me croit. Une revanche, pour prouver que c'était de la chance ?"
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Pilleur d'épaves",
+                "ennemis": [
+                  {"espece": "bandit", "niveau": 57},
+                  {"espece": "bastillon", "niveau": 56},
+                  {"espece": "noyelin", "niveau": 56}
+                ],
+                "renforts": [{"espece": "fulgoray", "niveau": 56}, {"espece": "noyelin", "niveau": 56}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_epave1_revanche"},
+                  {"action": "dire", "texte": "Pilleur d'épaves : Bon. Ce n'était pas de la chance."},
+                  {"action": "or", "quantite": 2240},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
           }
         ]
       },
@@ -5853,6 +7180,46 @@
         ]
       },
       {
+        "si": {"drapeau": "route_tour1_revanche"},
+        "actions": [
+          {"action": "dire", "texte": "Mage de l'orage : Revenez quand vous voulez. Mais pas trop souvent."}
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_tour1", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Mage de l'orage : Mes créatures ont grandi, vous savez. Elles ont envie de vous montrer."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Mage de l'orage",
+                "ennemis": [
+                  {"espece": "mage_givre", "niveau": 57},
+                  {"espece": "nuageon", "niveau": 56},
+                  {"espece": "bastillon", "niveau": 56}
+                ],
+                "renforts": [{"espece": "osselet", "niveau": 56}, {"espece": "bastillon", "niveau": 56}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_tour1_revanche"},
+                  {"action": "dire", "texte": "Mage de l'orage : Elles ont grandi, mais vous aussi."},
+                  {"action": "or", "quantite": 2240},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
+          }
+        ]
+      },
+      {
         "actions": [
           {
             "action": "dire",
@@ -5890,6 +7257,52 @@
           }
         ]
       },
+      {
+        "si": {"drapeau": "route_tour2_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Chevalier foudroyé : Je vais continuer à m'entraîner. Un jour, peut-être…"
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_tour2", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Chevalier foudroyé : Vous revoilà ! Je me suis entraîné depuis notre dernier combat. Cette fois, je ne perdrai pas."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Chevalier foudroyé",
+                "ennemis": [
+                  {"espece": "chevalier", "niveau": 57},
+                  {"espece": "fulgoray", "niveau": 56},
+                  {"espece": "orageline", "niveau": 56}
+                ],
+                "renforts": [{"espece": "noyelin", "niveau": 56}, {"espece": "orageline", "niveau": 56}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_tour2_revanche"},
+                  {
+                    "action": "dire",
+                    "texte": "Chevalier foudroyé : Encore perdu… Vous êtes vraiment devenus des gardiens."
+                  },
+                  {"action": "or", "quantite": 2240},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
+          }
+        ]
+      },
       {"actions": [{"action": "dire", "texte": "Chevalier foudroyé : Montez. Et ne regardez pas en bas."}]}
     ]
   },
@@ -5918,6 +7331,49 @@
               {"action": "dire", "texte": "Gardien des lueurs : Elles n'ont plus peur. Moi non plus."},
               {"action": "or", "quantite": 1240}
             ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "route_lueurs1_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gardien des lueurs : Revenez quand vous voulez. Mais pas trop souvent."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_lueurs1", "aube_fin"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gardien des lueurs : Mes créatures ont grandi, vous savez. Elles ont envie de vous montrer."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Gardien des lueurs",
+                "ennemis": [
+                  {"espece": "loup_aube", "niveau": 76},
+                  {"espece": "aubespectre", "niveau": 75},
+                  {"espece": "rocaube", "niveau": 75}
+                ],
+                "renforts": [{"espece": "rocaube", "niveau": 75}, {"espece": "rocaube", "niveau": 75}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_lueurs1_revanche"},
+                  {"action": "dire", "texte": "Gardien des lueurs : Elles ont grandi, mais vous aussi."},
+                  {"action": "or", "quantite": 3000},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
           }
         ]
       },
@@ -5961,6 +7417,52 @@
         ]
       },
       {
+        "si": {"drapeau": "route_lueurs2_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Cartographe : Je vais continuer à m'entraîner. Un jour, peut-être…"
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_lueurs2", "aube_fin"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Cartographe : Vous revoilà ! Je me suis entraîné depuis notre dernier combat. Cette fois, je ne perdrai pas."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Cartographe",
+                "ennemis": [
+                  {"espece": "lueurine", "niveau": 75},
+                  {"espece": "loup_aube", "niveau": 74},
+                  {"espece": "aubelle", "niveau": 74}
+                ],
+                "renforts": [{"espece": "aubelle", "niveau": 74}, {"espece": "aubelle", "niveau": 74}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_lueurs2_revanche"},
+                  {
+                    "action": "dire",
+                    "texte": "Cartographe : Encore perdu… Vous êtes vraiment devenus des gardiens."
+                  },
+                  {"action": "or", "quantite": 2960},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
+          }
+        ]
+      },
+      {
         "actions": [
           {"action": "dire", "texte": "Cartographe : Le Marais Pâle est au nord. Prenez des remèdes."}
         ]
@@ -5997,6 +7499,49 @@
         ]
       },
       {
+        "si": {"drapeau": "route_marais1_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Botaniste : Je raconterai notre combat à mes petits-enfants. En changeant un peu la fin."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_marais1", "aube_fin"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Botaniste : J'ai dit à tout le monde que vous m'aviez battu. Personne ne me croit. Une revanche, pour prouver que c'était de la chance ?"
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Botaniste",
+                "ennemis": [
+                  {"espece": "crapale", "niveau": 77},
+                  {"espece": "vasepent", "niveau": 76},
+                  {"espece": "rocaube", "niveau": 76}
+                ],
+                "renforts": [{"espece": "rocaube", "niveau": 76}, {"espece": "rocaube", "niveau": 76}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_marais1_revanche"},
+                  {"action": "dire", "texte": "Botaniste : Bon. Ce n'était pas de la chance."},
+                  {"action": "or", "quantite": 3040},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
+          }
+        ]
+      },
+      {
         "actions": [
           {"action": "dire", "texte": "Botaniste : La reine du marais garde une larme de lumière."}
         ]
@@ -6025,6 +7570,49 @@
               {"action": "dire", "texte": "Pêcheur du marais : Ça mord pas, ça mord pas… Même pas toi."},
               {"action": "or", "quantite": 1260}
             ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "route_marais2_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Pêcheur du marais : Revenez quand vous voulez. Mais pas trop souvent."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_marais2", "aube_fin"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Pêcheur du marais : Mes créatures ont grandi, vous savez. Elles ont envie de vous montrer."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Pêcheur du marais",
+                "ennemis": [
+                  {"espece": "aubespectre", "niveau": 76},
+                  {"espece": "lueurine", "niveau": 75},
+                  {"espece": "crapale", "niveau": 75}
+                ],
+                "renforts": [{"espece": "crapale", "niveau": 75}, {"espece": "crapale", "niveau": 75}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_marais2_revanche"},
+                  {"action": "dire", "texte": "Pêcheur du marais : Elles ont grandi, mais vous aussi."},
+                  {"action": "or", "quantite": 3000},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
           }
         ]
       },
@@ -6071,6 +7659,52 @@
         ]
       },
       {
+        "si": {"drapeau": "route_gouffre1_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Sentinelle d'Aube : Je vais continuer à m'entraîner. Un jour, peut-être…"
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_gouffre1", "aube_fin"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Sentinelle d'Aube : Vous revoilà ! Je me suis entraîné depuis notre dernier combat. Cette fois, je ne perdrai pas."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Sentinelle d'Aube",
+                "ennemis": [
+                  {"espece": "chevalier", "niveau": 76},
+                  {"espece": "vasepent", "niveau": 75},
+                  {"espece": "aubespectre", "niveau": 75}
+                ],
+                "renforts": [{"espece": "nacrelin", "niveau": 75}, {"espece": "aubespectre", "niveau": 75}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_gouffre1_revanche"},
+                  {
+                    "action": "dire",
+                    "texte": "Sentinelle d'Aube : Encore perdu… Vous êtes vraiment devenus des gardiens."
+                  },
+                  {"action": "or", "quantite": 3000},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
+          }
+        ]
+      },
+      {
         "actions": [
           {
             "action": "dire",
@@ -6108,6 +7742,49 @@
               },
               {"action": "or", "quantite": 1320}
             ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "route_citadelle1_revanche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Dernière apprentie : Revenez quand vous voulez. Mais pas trop souvent."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["route_citadelle1", "aube_fin"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Dernière apprentie : Mes créatures ont grandi, vous savez. Elles ont envie de vous montrer."
+          },
+          {
+            "action": "question",
+            "texte": "Accepter la revanche ?",
+            "oui": [
+              {
+                "action": "combat",
+                "nom": "Dernière apprentie",
+                "ennemis": [
+                  {"espece": "mage_givre", "niveau": 78},
+                  {"espece": "aubespectre", "niveau": 77},
+                  {"espece": "rocaube", "niveau": 77}
+                ],
+                "renforts": [{"espece": "nacrelin", "niveau": 77}, {"espece": "rocaube", "niveau": 77}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "drapeau", "nom": "route_citadelle1_revanche"},
+                  {"action": "dire", "texte": "Dernière apprentie : Elles ont grandi, mais vous aussi."},
+                  {"action": "or", "quantite": 3080},
+                  {"action": "donner", "objet": "elixir", "quantite": 1}
+                ]
+              }
+            ],
+            "non": []
           }
         ]
       },
@@ -6469,6 +8146,369 @@
               }
             ],
             "non": [{"action": "dire", "texte": "Pépin : Personne ne me croit jamais…"}]
+          }
+        ]
+      }
+    ]
+  },
+  "ligue": {
+    "pages": [
+      {
+        "si": {"drapeau": "ligue4"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Maîtresse de la Ligue : Les champions de la Ligue ! Votre nom est gravé au-dessus de la porte. Revenez me voir quand vous voulez."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["ligue3", "epreuve9"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Maîtresse de la Ligue : Le rang Champion : trois combats d'affilée, sans soin entre eux. Une défaite, et tout est à refaire."
+          },
+          {
+            "action": "question",
+            "texte": "Tenter le rang Champion ?",
+            "oui": [
+              {
+                "action": "dire",
+                "texte": "Ancien champion Edgar : On m'a fait revenir pour vous. J'espère que vous en valez la peine."
+              },
+              {
+                "action": "combat",
+                "nom": "Ancien champion Edgar",
+                "ennemis": [
+                  {"espece": "ferrogeant", "niveau": 92},
+                  {"espece": "fournezard", "niveau": 92},
+                  {"espece": "givrenard", "niveau": 92}
+                ],
+                "renforts": [{"espece": "brumeloup", "niveau": 92}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {
+                    "action": "dire",
+                    "texte": "Archimage Solène : Vous avez battu Ilya ? Alors je ne retiendrai pas mes coups."
+                  },
+                  {
+                    "action": "combat",
+                    "nom": "Archimage Solène",
+                    "ennemis": [
+                      {"espece": "mage_givre", "niveau": 93},
+                      {"espece": "aubespectre", "niveau": 93},
+                      {"espece": "orbrume", "niveau": 93}
+                    ],
+                    "renforts": [{"espece": "lueurine", "niveau": 93}],
+                    "fuite": false,
+                    "capture": false,
+                    "victoire": [
+                      {
+                        "action": "dire",
+                        "texte": "Maîtresse de la Ligue : Personne n'a jamais atteint ce combat. Montrez-moi tout !"
+                      },
+                      {
+                        "action": "combat",
+                        "nom": "Maîtresse Ysaline",
+                        "ennemis": [
+                          {"espece": "chevalier", "niveau": 95},
+                          {"espece": "draconnet", "niveau": 94},
+                          {"espece": "loup_aube", "niveau": 94}
+                        ],
+                        "renforts": [{"espece": "murenix", "niveau": 94}],
+                        "fuite": false,
+                        "capture": false,
+                        "victoire": [
+                          {"action": "drapeau", "nom": "ligue4"},
+                          {
+                            "action": "dire",
+                            "texte": "Maîtresse de la Ligue : Le rang Champion est à vous ! Bravo."
+                          },
+                          {"action": "or", "quantite": 30000},
+                          {"action": "donner", "objet": "gemme_maitre", "quantite": 1},
+                          {"action": "quete", "id": "ligue", "fin": true},
+                          {
+                            "action": "dire",
+                            "texte": "Maîtresse de la Ligue : Vous êtes les champions de la Ligue d'Écume. Le port tout entier va fêter ça !"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Maîtresse de la Ligue : Revenez quand vous serez prêts."}]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "ligue3"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Maîtresse de la Ligue : Bravo pour le rang Or ! Le rang Champion ouvrira plus tard : vous n'êtes pas encore prêts."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["ligue2", "aube_fin"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Maîtresse de la Ligue : Le rang Or : trois combats d'affilée, sans soin entre eux. Une défaite, et tout est à refaire."
+          },
+          {
+            "action": "question",
+            "texte": "Tenter le rang Or ?",
+            "oui": [
+              {"action": "dire", "texte": "Gardienne Liora : Les créatures d'Aube sont avec moi. Prêts ?"},
+              {
+                "action": "combat",
+                "nom": "Gardienne Liora",
+                "ennemis": [
+                  {"espece": "loup_aube", "niveau": 80},
+                  {"espece": "lueurine", "niveau": 80},
+                  {"espece": "aubelle", "niveau": 80}
+                ],
+                "renforts": [{"espece": "nacrelin", "niveau": 80}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {
+                    "action": "dire",
+                    "texte": "Sage Ambroise : J'ai vu tomber l'orage. Je ne tomberai pas, moi."
+                  },
+                  {
+                    "action": "combat",
+                    "nom": "Sage Ambroise",
+                    "ennemis": [
+                      {"espece": "aubespectre", "niveau": 81},
+                      {"espece": "rocaube", "niveau": 81},
+                      {"espece": "vasepent", "niveau": 81}
+                    ],
+                    "renforts": [{"espece": "crapale", "niveau": 81}],
+                    "fuite": false,
+                    "capture": false,
+                    "victoire": [
+                      {
+                        "action": "dire",
+                        "texte": "Championne Maëva : Le rang Or, c'est moi. Et je ne l'ai jamais perdu."
+                      },
+                      {
+                        "action": "combat",
+                        "nom": "Championne Maëva",
+                        "ennemis": [
+                          {"espece": "murenix", "niveau": 83},
+                          {"espece": "draconnet", "niveau": 82},
+                          {"espece": "loup_aube", "niveau": 82}
+                        ],
+                        "renforts": [{"espece": "corailleur", "niveau": 82}],
+                        "fuite": false,
+                        "capture": false,
+                        "victoire": [
+                          {"action": "drapeau", "nom": "ligue3"},
+                          {
+                            "action": "dire",
+                            "texte": "Maîtresse de la Ligue : Le rang Or est à vous ! Bravo."
+                          },
+                          {"action": "or", "quantite": 12000},
+                          {"action": "donner", "objet": "couronne_colisee", "quantite": 1}
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Maîtresse de la Ligue : Revenez quand vous serez prêts."}]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "ligue2"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Maîtresse de la Ligue : Bravo pour le rang Argent ! Le rang Or ouvrira plus tard : vous n'êtes pas encore prêts."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["ligue1", "boss5"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Maîtresse de la Ligue : Le rang Argent : trois combats d'affilée, sans soin entre eux. Une défaite, et tout est à refaire."
+          },
+          {
+            "action": "question",
+            "texte": "Tenter le rang Argent ?",
+            "oui": [
+              {
+                "action": "dire",
+                "texte": "Mage Célestin : Le rang Argent ne pardonne pas. Ma magie non plus."
+              },
+              {
+                "action": "combat",
+                "nom": "Mage Célestin",
+                "ennemis": [
+                  {"espece": "mage_givre", "niveau": 57},
+                  {"espece": "orbrume", "niveau": 57},
+                  {"espece": "nebulis", "niveau": 57}
+                ],
+                "renforts": [{"espece": "lanternelle", "niveau": 57}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {
+                    "action": "dire",
+                    "texte": "Chevalière Isaure : Vous avez tenu un combat. Tiendrez-vous le deuxième ?"
+                  },
+                  {
+                    "action": "combat",
+                    "nom": "Chevalière Isaure",
+                    "ennemis": [
+                      {"espece": "chevalier", "niveau": 58},
+                      {"espece": "ferrogeant", "niveau": 58},
+                      {"espece": "givrenard", "niveau": 58}
+                    ],
+                    "renforts": [{"espece": "galetor", "niveau": 58}],
+                    "fuite": false,
+                    "capture": false,
+                    "victoire": [
+                      {
+                        "action": "dire",
+                        "texte": "Dompteur Barnabé : Mes bêtes ont mangé des champions au petit-déjeuner !"
+                      },
+                      {
+                        "action": "combat",
+                        "nom": "Dompteur Barnabé",
+                        "ennemis": [
+                          {"espece": "brumeloup", "niveau": 60},
+                          {"espece": "fournezard", "niveau": 59},
+                          {"espece": "draconnet", "niveau": 59}
+                        ],
+                        "renforts": [{"espece": "fulgoray", "niveau": 59}],
+                        "fuite": false,
+                        "capture": false,
+                        "victoire": [
+                          {"action": "drapeau", "nom": "ligue2"},
+                          {
+                            "action": "dire",
+                            "texte": "Maîtresse de la Ligue : Le rang Argent est à vous ! Bravo."
+                          },
+                          {"action": "or", "quantite": 6000},
+                          {"action": "donner", "objet": "cape_stratege", "quantite": 1}
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Maîtresse de la Ligue : Revenez quand vous serez prêts."}]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "ligue1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Maîtresse de la Ligue : Bravo pour le rang Bronze ! Le rang Argent ouvrira plus tard : vous n'êtes pas encore prêts."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "boss4"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Maîtresse de la Ligue : Bienvenue à la Ligue d'Écume ! Ici, les meilleurs dresseurs de l'archipel s'affrontent."
+          },
+          {
+            "action": "dire",
+            "texte": "Maîtresse de la Ligue : Quatre rangs : Bronze, Argent, Or et Champion. Chaque rang, ce sont trois combats d'affilée, sans soin entre eux."
+          },
+          {"action": "quete", "id": "ligue"},
+          {
+            "action": "question",
+            "texte": "Tenter le rang Bronze ?",
+            "oui": [
+              {
+                "action": "dire",
+                "texte": "Marin Brice : Premier combat ! Mes créatures ont le pied marin, et vous ?"
+              },
+              {
+                "action": "combat",
+                "nom": "Marin Brice",
+                "ennemis": [
+                  {"espece": "voltanguille", "niveau": 47},
+                  {"espece": "bastillon", "niveau": 47},
+                  {"espece": "ecumet", "niveau": 47}
+                ],
+                "renforts": [{"espece": "noyelin", "niveau": 47}],
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {
+                    "action": "dire",
+                    "texte": "Dresseuse Ondine : Pas le temps de souffler ! À moi de jouer."
+                  },
+                  {
+                    "action": "combat",
+                    "nom": "Dresseuse Ondine",
+                    "ennemis": [
+                      {"espece": "orageline", "niveau": 48},
+                      {"espece": "nuageon", "niveau": 48},
+                      {"espece": "zephyrin", "niveau": 48}
+                    ],
+                    "renforts": [{"espece": "orageon", "niveau": 48}],
+                    "fuite": false,
+                    "capture": false,
+                    "victoire": [
+                      {
+                        "action": "dire",
+                        "texte": "Capitaine Hugo : Le dernier du rang Bronze, c'est moi. Et je ne coule jamais !"
+                      },
+                      {
+                        "action": "combat",
+                        "nom": "Capitaine Hugo",
+                        "ennemis": [
+                          {"espece": "bastillon", "niveau": 50},
+                          {"espece": "fulgoray", "niveau": 49},
+                          {"espece": "chevalier", "niveau": 49}
+                        ],
+                        "renforts": [{"espece": "bastillon", "niveau": 49}],
+                        "fuite": false,
+                        "capture": false,
+                        "victoire": [
+                          {"action": "drapeau", "nom": "ligue1"},
+                          {
+                            "action": "dire",
+                            "texte": "Maîtresse de la Ligue : Le rang Bronze est à vous ! Bravo."
+                          },
+                          {"action": "or", "quantite": 3000},
+                          {"action": "donner", "objet": "echarpe_lutteur", "quantite": 1}
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Maîtresse de la Ligue : Revenez quand vous serez prêts."}]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Maîtresse de la Ligue : La Ligue d'Écume n'accepte que les dresseurs qui ont apaisé la Mère des Brumes. Revenez plus tard !"
           }
         ]
       }

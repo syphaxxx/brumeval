@@ -43,6 +43,8 @@ static std::vector<HelpPage> helpPages() {
                 ::T("Après le Seigneur des Orages : une navigatrice du port vous emmène sur l'île d'Aube, pour un troisième acte."),
                 ::T("L'histoire passe par de nouveaux lieux : la Plaine des Moulins, le Col des Hurlevents, le Val des Murmures, l'île de Corail."),
                 ::T("Des dresseurs vous défient le long des routes : vingt-huit combats de plus, de l'or et des objets à la clé."),
+                ::T("Après le Seigneur des Orages, les dresseurs battus proposent une revanche (épées croisées au-dessus d'eux)."),
+                ::T("La Ligue d'Écume, au port : quatre rangs, trois combats d'affilée chacun, sans soin entre eux."),
                 ::T("Quatre donjons optionnels (Mines, Glacier, Épave, Abîme) et le grand bestiaire de la professeure de la Vallée."),
                 ::T("Discussions : les héros se parlent au fil de l'aventure (Échap > Discussions)."),
                 ::T("Nouvelle partie + : après l'acte 3, Ilya propose de tout recommencer avec votre équipe, contre des créatures plus fortes."),

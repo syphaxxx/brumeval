@@ -74,3 +74,25 @@ def roundtrip_ok(name):
     p = R + 'cartes/' + name + '.json'
     s = open(p, encoding='utf-8').read()
     return pretty(json.loads(s)) + '\n' == s
+
+
+def rewrite_events(ids, ev):
+    """Réécrit dans data/evenements.json les seules entrées `ids` d'après le dictionnaire `ev` (le reste ne bouge pas)."""
+    path = R + 'evenements.json'
+    et = open(path, encoding='utf-8', newline='').read()
+    nl = '\r\n' if '\r\n' in et else '\n'
+    lines = et.split(nl)
+    for tid in ids:
+        key = '  ' + json.dumps(tid, ensure_ascii=False) + ': '
+        i = next(j for j, l in enumerate(lines) if l.startswith(key))
+        j, depth = i, 0
+        while True:  # fin de l'entrée : accolades équilibrées
+            depth += lines[j].count('{') - lines[j].count('}')
+            if depth == 0:
+                break
+            j += 1
+        comma = lines[j].rstrip().endswith(',')
+        txt = key + pretty(ev[tid], 2, len(key.encode('utf-8'))) + (',' if comma else '')
+        lines[i:j + 1] = txt.split('\n')
+    open(path, 'w', encoding='utf-8', newline='').write(nl.join(lines))
+    assert json.load(open(path, encoding='utf-8')) == ev, 'evenements.json : réécriture fautive'

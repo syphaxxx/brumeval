@@ -6,7 +6,7 @@
     "TT#################==###########..~~~~~~",
     "TT.................==.............~~~~~~",
     "TT.................==.............~~~~~~",
-    "TT.F...............qq........F...R~~~~~~",
+    "TT.F...............qq.......JF..JR~~~~~~",
     "TT.................qq.............~~~~~~",
     "TT.................qq.............~~~~~~",
     "TT.................qq............R~~~~~~",
@@ -139,7 +139,8 @@
     {"x": 12, "y": 16, "apparence": "barman", "direction": "droite", "evenement": "quete_partitions"},
     {"x": 32, "y": 19, "apparence": "voyageuse", "direction": "bas", "evenement": "ysolde"},
     {"x": 6, "y": 21, "apparence": "pecheur", "direction": "droite", "evenement": "maitre_pecheur"},
-    {"x": 18, "y": 19, "apparence": "villageoise", "direction": "bas", "evenement": "fille_pecheur"}
+    {"x": 18, "y": 19, "apparence": "villageoise", "direction": "bas", "evenement": "fille_pecheur"},
+    {"x": 30, "y": 4, "apparence": "garde", "direction": "bas", "evenement": "ligue"}
   ],
   "coffres": [{"x": 3, "y": 21, "objet": "superpotion", "quantite": 3}],
   "panneaux": [

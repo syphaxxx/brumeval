@@ -100,7 +100,7 @@ class Game {
   void runEvent(const std::string& id);
   void runActions(const Json& list);
   bool checkCond(const Json& c) const;
-  int questMark(const std::string& event) const;  // bulle d'un habitant : 1 « ! » (quête à prendre), 2 « ? » (à rendre)
+  int questMark(const std::string& event) const;  // bulle d'un habitant : 1 « ! » (quête à prendre), 2 « ? » (à rendre), 3 épées (combat proposé)
   std::string fillText(std::string s) const;
 
  private:

@@ -563,7 +563,9 @@ code) ; `docs/GUIDE.md` les range par domaine.
   (`checkDiscussions`, `lastNewTalks_`, remis au chargement). 30 discussions.
 - Épreuves des gardiens (2026-10-20) : après `aube_fin`, la porte du sanctuaire d'Aube (événement `epreuves`) ouvre huit
   combats contre des esprits gardiens (drapeaux `epreuve1`…`epreuve8`, niveaux 70 à 84), puis Ilya (`epreuve9`,
-  Insigne des gardiens) ; quête `epreuves`. Script `outils/villes/epreuves.py`.
+  Insigne des gardiens) ; quête `epreuves`. Script `outils/villes/epreuves.py` ; une phase à mi-vie pour chaque gardien,
+  le troll des Mines et les Rongecrins (`outils/villes/phases.py`, avec `carte.rewrite_events` qui ne réécrit que
+  les entrées touchées d'evenements.json).
 - Col des Hurlevents (2026-10-20, `outils/villes/col.py`) : carte `col` de l'histoire entre les Monts Cendrelune et
   les Pics Givrés (le passage du nord de Cendrelune y mène sous `boss2`, celui des Pics en revient), camp de bergers
   (soins, boutique), Harpie de givre (boss de carte `harpie_givre`, drapeau `harpie`, conseil) qui ouvre le défilé.
@@ -577,7 +579,13 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - Dresseurs des routes (2026-10-20, `outils/villes/dresseurs.py`) : 28 habitants avec `vue` 3 (événements et drapeaux
   `route_<carte><n>`) de la Vallée à la Citadelle : case choisie par le script (près d'un chemin, rien de bouché, loin
   des passages, bâtiments et énigmes ; accessibilité vérifiée), équipe tirée des créatures de leur zone (évoluées selon
-  le niveau), or et parfois un objet.
+  le niveau), or et parfois un objet. Revanches (`outils/villes/revanches.py`) : 37 dresseurs battus (ceux des routes et
+  les anciens, sauf la mage du temple) proposent une revanche (question, drapeau `<drapeau>_revanche`) après `boss5`
+  (actes 1-2, N.50-56) ou `aube_fin` (Aube, N.74-77) ; `questMark` rend 3 (bulle d'épées croisées) pour un combat
+  proposé dans une question dont la victoire pose un drapeau pas encore posé.
+- Ligue d'Écume (2026-10-20, `outils/villes/ligue.py`) : la maîtresse de la Ligue au nord du port (événement `ligue`,
+  quête `ligue`) : rangs Bronze (`boss4`, N.47), Argent (`boss5`, N.57), Or (`aube_fin`, N.80), Champion (`epreuve9`,
+  N.92), chacun trois combats enchaînés dans `victoire` (sans soin), drapeaux `ligue1`…`ligue4`, accessoires uniques.
 - Île de Corail (2026-10-20, `outils/villes/corail.py`) : acte 2, passe à l'est du Récif vers la carte `corail`
   (village : soins, comptoir, doyenne, quête `trident`) et la Grotte des Marées (`marees`, donjon de cartegen.py,
   Gardien des marées, drapeau `marees_boss`, objet `trident`) ; le passage du Récif vers les Ruines demande le trident.

@@ -267,13 +267,25 @@ int Game::questMark(const std::string& id) const {
   } else if (ev->contains("actions")) acts = &(*ev)["actions"];
   if (!acts) return 0;
   int mark = 0;
+  bool offer = false;  // un combat proposé (question) dont la victoire pose un drapeau pas encore posé : une revanche…
+  int asked = 0;       // dans la réponse « oui » d'une question
   std::function<void(const Json&)> scan = [&](const Json& j) {  // aussi dans les réponses d'une question (« oui »)
     if (j.is_array())
       for (auto& x : j) scan(x);
     else if (j.is_object()) {
       std::string k = jget<std::string>(j, "action", "");
       if (k == "si") return scan(j.contains("condition") && checkCond(j["condition"]) ? j.value("alors", Json::array()) : j.value("sinon", Json::array()));
-      if (k == "combat") return;  // ce qui suit une victoire n'est pas disponible tout de suite
+      if (k == "question") {
+        asked++;
+        scan(j.value("oui", Json::array()));
+        asked--;
+        return scan(j.value("non", Json::array()));
+      }
+      if (k == "combat") {  // ce qui suit une victoire n'est pas disponible tout de suite
+        for (auto& v : asked ? j.value("victoire", Json::array()) : Json::array())
+          if (jget<std::string>(v, "action", "") == "drapeau" && !has(jget<std::string>(v, "nom", ""))) offer = true;
+        return;
+      }
       if (k == "quete" && j.contains("id") && j["id"].is_string()) {
         bool fin = jget(j, "fin", false);
         if (!has(questFlag(j["id"].get<std::string>(), fin))) mark = std::max(mark, fin ? 2 : 1);
@@ -283,7 +295,7 @@ int Game::questMark(const std::string& id) const {
     }
   };
   scan(*acts);
-  return mark;
+  return mark ? mark : offer ? 3 : 0;
 }
 
 void Game::runActions(const Json& list) {

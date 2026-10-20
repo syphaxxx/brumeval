@@ -134,6 +134,15 @@ fichier dans `data/cartes/`. Un **intérieur** : une carte au thème
 champ `interieur` sur le bâtiment du village. `checkMaps` vérifie que tout est
 accessible à pied.
 
+**Une région, des quêtes, des dresseurs écrits par un script** (étape « 20 heures ») : `outils/villes/` contient
+les scripts qui ont écrit les nouveaux lieux (`col.py`, `val.py`, `corail.py`, `plaine.py`, `donjons.py`…), les
+dresseurs (`dresseurs.py`, `revanches.py`), la Ligue (`ligue.py`) et les quêtes (`quetes_lieux.py`,
+`quetes_actes.py`). Outils communs : `cartegen.py` (classe `Map` : rectangles, taches, chemins, habitants, coffres,
+passages, donjons à salles), `place_util.py` (une case libre et atteignable à pied, sans rien boucher), `carte.py`
+(lecture et écriture au format du jeu ; `rewrite_events` ne réécrit que les entrées touchées d'`evenements.json`).
+Chaque script ne tourne qu'une fois (il refuse s'il trouve déjà son contenu) : pour le refaire, remettre `data/`
+avec git. Puis `python outils/textes.py` et les traductions anglaises.
+
 **Un dialogue, une scène** : l'éditeur d'histoire, ou `data/evenements.json`
 (pages avec conditions, actions). Le lancer depuis un habitant (`evenement`),
 une porte, un boss de carte ou une zone déclencheuse.

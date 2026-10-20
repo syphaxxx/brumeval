@@ -878,6 +878,17 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
           "quête annexe : le médaillon (acceptée, inscrite au journal, trouvée dans un coffre, rendue contre une récompense)");
     items.erase("amulette_vie");
   }
+  {  // revanches des dresseurs : épées croisées au-dessus du braconnier battu, une fois le Seigneur des Orages vaincu
+    auto saved = flags;
+    flags.insert("braconnier");
+    int before = questMark("braconnier");
+    flags.insert("boss5");
+    int offered = questMark("braconnier");
+    flags.insert("braconnier_revanche");
+    int after = questMark("braconnier");
+    flags = saved;
+    check(before == 0 && offered == 3 && after == 0, "revanches : le dresseur battu propose une revanche après le Seigneur des Orages (bulle d'épées), plus rien ensuite");
+  }
 
   // --- Échiquier : pas de combat bloqué (vu le 2026-10-19 : une créature presque K.O. sur une source qui la soigne et une
   // alliée sans PM, chacune trop prudente pour s'approcher) ---

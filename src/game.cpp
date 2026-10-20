@@ -1220,7 +1220,11 @@ void Game::drawMap() {
                             g.rect(bx, by, 9, 11, c);
                             g.frame(bx, by, 9, 11, rgb(0x1a1a24));
                             g.rect(bx + 3, by + 11, 3, 1, rgb(0x1a1a24)), g.rect(bx + 4, by + 12, 1, 1, rgb(0x1a1a24));  // pointe
-                            g.text(bx + 2, by - 1, mk == 2 ? "?" : "!", mk == 2 ? rgb(0x7a4a00) : rgb(0xd2493f), 0, false);
+                            if (mk == 3) {  // combat proposé (revanche, défi) : deux épées croisées
+                              g.line(bx + 2, by + 2, bx + 7, by + 8, 1, rgb(0x3a4a6a)), g.line(bx + 7, by + 2, bx + 2, by + 8, 1, rgb(0x3a4a6a));
+                              g.rect(bx + 1, by + 7, 3, 1, rgb(0x9a6a2a)), g.rect(bx + 6, by + 7, 3, 1, rgb(0x9a6a2a));
+                            } else
+                              g.text(bx + 2, by - 1, mk == 2 ? "?" : "!", mk == 2 ? rgb(0x7a4a00) : rgb(0xd2493f), 0, false);
                           }});
       }
     }

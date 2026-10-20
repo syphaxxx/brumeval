@@ -876,6 +876,33 @@
     "bonus": {"magie": 12, "resistance": 6, "vitesse": 3}
   },
   {
+    "id": "couronne_colisee",
+    "nom": "Couronne de la Ligue",
+    "icone": "ic_acc_8",
+    "description": "Une couronne d'or ciselée de vagues. Elle n'appartient qu'aux vainqueurs du rang Or.",
+    "prix": 8000,
+    "equipement": "accessoire",
+    "bonus": {"pv": 40, "attaque": 6, "magie": 6, "defense": 6, "resistance": 6, "vitesse": 3}
+  },
+  {
+    "id": "cape_stratege",
+    "nom": "Cape du stratège",
+    "icone": "ic_acc_6",
+    "description": "La cape gris argent des vainqueurs du rang Argent. On dit qu'elle aide à voir venir les coups.",
+    "prix": 4200,
+    "equipement": "accessoire",
+    "bonus": {"defense": 10, "resistance": 10, "esquive": 3}
+  },
+  {
+    "id": "echarpe_lutteur",
+    "nom": "Écharpe du lutteur",
+    "icone": "ic_acc_2",
+    "description": "L'écharpe rouge des vainqueurs du rang Bronze de la Ligue.",
+    "prix": 2600,
+    "equipement": "accessoire",
+    "bonus": {"attaque": 8, "vitesse": 3, "critique": 3}
+  },
+  {
     "id": "insigne_chasseur",
     "nom": "Insigne du chasseur",
     "icone": "ic_acc_3",
