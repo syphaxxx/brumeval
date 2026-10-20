@@ -190,6 +190,7 @@ class Game {
   int forgeStock(const std::string& id) const;               // « trophee » : tous les trophées
   std::string forgeCost(const ItemDef& d, std::string* missing) const;
   void journalMenu();
+  void progressMenu();  // Journal > Progression : ce qui est déjà fait, en chiffres (2026-10-20)
   // Discussions entre les héros (discussions.cpp, data/discussions.json)
   void discussionsMenu(int sel = 0);
   void playDiscussion(const std::string& id);

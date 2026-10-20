@@ -301,7 +301,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   (`drawMap`). Les 12 intérieurs des villages sont `data/cartes/<village>_<lieu>.json`.
 - Quêtes annexes : `data/quetes.json` (lu par `loadEvents`, vérifié par
   `checkEvents`), action `quete` (drapeaux `quete:<id>` et `quete:<id>:fin`,
-  `questFlag`), journal `Game::journalMenu`. 20 quêtes (2026-10-19 : 14 de plus, ajoutées par un script de
+  `questFlag`), journal `Game::journalMenu` (en tête : « Progression », `Game::progressMenu` : quêtes, primes,
+  dresseurs, revanches, coffres, Bestiaire, poissons, discussions, chromatiques, tout recalculé d'après les drapeaux). 20 quêtes (2026-10-19 : 14 de plus, ajoutées par un script de
   Claude) : `medaillon`, `braises`, `tisane`, `grimoire`, `cristal`, `perles`, puis `chat`, `naturaliste` (montrer
   des créatures : condition `membre`), `lettre`, `apprenti`, `caravane` (boss de carte sous condition), `champignons`,
   `oeuf` (donne un Draconnet), `cache_cache`, `bains`, `rival` (Tom, trois combats au fil de l'histoire),

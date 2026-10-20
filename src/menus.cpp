@@ -738,6 +738,8 @@ void Game::journalMenu() {
   m.title = T("Journal");
   m.x = 8, m.y = 8, m.w = 220, m.rows = 9;
   if (std::string adv = adviceText(); !adv.empty()) m.items.push_back({T("Prochain gardien"), "", adv, true, nullptr});  // conseil (2.8)
+  if (!inExpedition())
+    m.items.push_back({T("Progression"), "", T("Ce que vous avez déjà accompli : quêtes, primes, dresseurs, coffres, Bestiaire…"), true, [this] { progressMenu(); }});
   for (auto& q : quests()) {
     std::string id = jget<std::string>(q, "id", "");
     if (!has(questFlag(id))) continue;
@@ -769,6 +771,53 @@ void Game::journalMenu() {
     panelMode_ = 1;
     menus.pop();
   };
+  menus.push(m);
+}
+
+// Progression (2026-10-20) : des compteurs, tous calculés d'après les données et les drapeaux (rien d'enregistré en plus)
+void Game::progressMenu() {
+  Menu m;
+  m.title = T("Progression");
+  m.x = 8, m.y = 8, m.w = 230, m.rows = 10;
+  auto line = [&](const char* name, int done, int total, const char* help) {
+    if (total <= 0) return;
+    MenuItem it{name, std::to_string(done) + " / " + std::to_string(total), help, true, nullptr};
+    if (done >= total) it.color = 0xffe066;  // tout est fait : en or
+    m.items.push_back(it);
+  };
+  int q = 0, qd = 0, b = 0, bd = 0, trn = 0, trd = 0, rv = 0, rvd = 0, ch = 0, chd = 0, sp = 0, cr = 0, talk = 0;
+  for (auto& x : quests()) {
+    std::string id = jget<std::string>(x, "id", "");
+    q++, qd += has(questFlag(id, true));
+  }
+  for (auto& x : bounties()) b++, bd += has(bountyFlag(jget<std::string>(x, "id", ""), 2));
+  for (auto& map : maps()) {
+    for (auto& n : map.npcs)
+      if (n.sight > 0 && !n.sightUntil.empty()) {
+        trn++, trd += has(n.sightUntil);
+        const Json* ev = findEvent(n.event);
+        if (ev && ev->dump().find(n.sightUntil + "_revanche") != std::string::npos) rv++, rvd += has(n.sightUntil + "_revanche");
+      }
+    for (auto& c : map.chests) ch++, chd += has("coffre:" + map.id + ":" + std::to_string(c.x) + ":" + std::to_string(c.y));
+  }
+  for (auto& s : allSpecies()) sp += !s.human && s.shape != Shape::Boss;
+  noteBestiary();
+  int caughtN = 0;
+  for (auto& id : caught) caughtN += hasSpecies(id) && !species(id).human && species(id).shape != Shape::Boss;
+  for (auto* v : {&team, &reserve})
+    for (auto& f : *v) cr += f->chroma;
+  for (auto& f : flags) talk += f.rfind("discussion:", 0) == 0;
+  line(T("Quêtes terminées"), qd, q, T("Les quêtes du Journal, rendues à ceux qui les ont données."));
+  line(T("Primes touchées"), bd, b, T("Les monstres des tableaux d'annonces, vaincus et payés."));
+  line(T("Dresseurs battus"), trd, trn, T("Les dresseurs qui vous défient quand vous passez devant eux."));
+  line(T("Revanches gagnées"), rvd, rv, T("Après le Seigneur des Orages, les dresseurs battus proposent une revanche."));
+  line(T("Coffres ouverts"), chd, ch, T("Tous les coffres du monde, éclats de brume compris."));
+  line(T("Créatures obtenues"), caughtN, sp, T("Le Bestiaire : les créatures capturées ou reçues (sans les humains ni les boss)."));
+  line(T("Poissons pêchés"), fishCaught(), fishSpecies(), T("Le carnet du maître pêcheur du port."));
+  line(T("Discussions écoutées"), talk, discussionCount(), T("Échap > Discussions : ce que se disent les héros."));
+  MenuItem c{T("Créatures chromatiques"), std::to_string(cr), T("Les créatures aux couleurs rares de votre équipe et de votre réserve."), true, nullptr};
+  m.items.push_back(c);
+  m.onCancel = [this] { menus.pop(); };
   menus.push(m);
 }
 

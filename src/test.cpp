@@ -2543,6 +2543,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       menus.clear();
       journalMenu();
       show("journal : primes");
+      progressMenu();
+      show("journal : progression");
+      snap("progression");
+      check(menus.top().items.size() >= 8 && menus.top().items[0].right.find(" / ") != std::string::npos,
+            "journal : la page Progression compte quêtes, primes, dresseurs, coffres, Bestiaire, poissons et discussions");
       menus.clear();
       // croc_gris : à prendre (Entrée sur sa ligne), son monstre apparaît à Sylve-Noire, vaincu, prime touchée
       flags.insert(bountyFlag("champichou_rieur", 2));
