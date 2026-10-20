@@ -710,6 +710,12 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       readMemberLine("membre", a, t, nullptr);
       readMemberLine("chromatique", b, t, nullptr);
       bool sprite = findSprite(species("mulotin").sprite + "_chroma") != nullptr;
+      Json one = {{"chromatiques_min", 1}};
+      bool before = checkCond(one);
+      if (!t.empty() && t[0]) team.push_back(t[0]);
+      bool after = checkCond(one);
+      if (!t.empty() && t[0]) team.pop_back();
+      check(!before && after, "condition chromatiques_min : vraie dès qu'une créature chromatique est dans l'équipe");
       check(t.size() == 1 && t[0] && t[0]->chroma && sprite && rules().chroma > 0 && rules().chroma < .05 && rules().alpha > 0 && rules().alpha < .2,
             "créatures chromatiques : sprite aux couleurs rares, gardées dans la sauvegarde, rares dans les herbes ; meutes menées par un alpha");
     }

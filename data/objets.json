@@ -936,6 +936,15 @@
     "bonus": {"pv": 100, "magie": 10, "resistance": 10, "vitesse": 5, "critique": 4}
   },
   {
+    "id": "prisme_chromatique",
+    "nom": "Prisme chromatique",
+    "icone": "ic_gemme_cristal",
+    "prix": 9000,
+    "equipement": "accessoire",
+    "description": "Un prisme qui décompose la lumière en couleurs que personne n'a jamais vues. Il porte bonheur aux chasseurs de raretés.",
+    "bonus": {"pv": 50, "attaque": 6, "defense": 6, "magie": 6, "resistance": 6, "vitesse": 4, "critique": 4}
+  },
+  {
     "id": "couronne_colisee",
     "nom": "Couronne de la Ligue",
     "icone": "ic_acc_8",

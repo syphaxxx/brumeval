@@ -579,7 +579,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - Créatures chromatiques (2026-10-20) : `Fighter::chroma` (ligne `chromatique` après `membre` dans la sauvegarde),
   tirée dans `Game::encounter` (règle `rencontres.chromatique`, 0,006 ; jamais en Expédition) ; `decoupe.py` fabrique
   `<sprite>_chroma` (teinte tournée de 140°, gris dorés) pour chaque créature ni humaine ni boss ; `drawCreature(…,
-  chroma)` le dessine avec des éclats dorés ; message d'entrée en combat. Alphas (même jour) : une meute de 2 créatures ou
+  chroma)` le dessine avec des éclats dorés ; message d'entrée en combat ; condition `chromatiques_min`, quête `chroma`
+  (l'assistant de la professeure, `outils/villes/chromatiques.py`). Alphas (même jour) : une meute de 2 créatures ou
   plus est parfois menée par un alpha (règle `rencontres.alpha`, 0,06 ; pas en Expédition) : +`alpha_niveaux` (3) et `Fighter::boss`
   (dessiné plus grand, bouclier de boss, attaques annoncées, gains de boss ; capturé, il redevient ordinaire) ; message « Une meute menée par un alpha ».
 - Nouvelle partie + (2026-10-20) : après `aube_fin`, Ilya propose de tout recommencer (action `nouvelle_partie_plus`,

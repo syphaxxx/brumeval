@@ -290,7 +290,8 @@
       "vue": 3,
       "vue_jusqua": "route_vallee1"
     },
-    {"x": 26, "y": 20, "apparence": "ermite", "direction": "bas", "evenement": "conteur_quiz"}
+    {"x": 26, "y": 20, "apparence": "ermite", "direction": "bas", "evenement": "conteur_quiz"},
+    {"x": 33, "y": 14, "apparence": "voyageuse", "direction": "bas", "evenement": "assistant_chroma"}
   ],
   "coffres": [
     {"x": 12, "y": 24, "objet": "medaillon", "quantite": 1},

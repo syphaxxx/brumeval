@@ -9554,5 +9554,82 @@
         ]
       }
     ]
+  },
+  "assistant_chroma": {
+    "pages": [
+      {
+        "si": {"drapeau": "chroma3"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Assistant : Trois créatures chromatiques ! Ma thèse est terminée grâce à vous."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["quete:chroma", "chroma1"], "sans_drapeau": "chroma3", "chromatiques_min": 3},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Assistant : Trois ! Trois créatures aux couleurs rares, réunies ! La professeure ne va pas me croire."
+          },
+          {
+            "action": "dire",
+            "texte": "Assistant : Prenez ce prisme. Il décompose la lumière en couleurs que personne n'a jamais vues."
+          },
+          {"action": "donner", "objet": "prisme_chromatique", "quantite": 1},
+          {"action": "or", "quantite": 10000},
+          {"action": "drapeau", "nom": "chroma3"},
+          {"action": "quete", "id": "chroma", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:chroma", "sans_drapeau": "chroma1", "chromatiques_min": 1},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Assistant : Une créature chromatique ! Regardez ces couleurs… On en voit une sur cent cinquante, à peine."
+          },
+          {
+            "action": "dire",
+            "texte": "Assistant : Voici pour vous remercier. Si vous en trouvez trois, revenez me voir !"
+          },
+          {"action": "donner", "objet": "gemme_maitre", "quantite": 1},
+          {"action": "or", "quantite": 3000},
+          {"action": "drapeau", "nom": "chroma1"}
+        ]
+      },
+      {
+        "si": {"drapeau": "chroma1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Assistant : Il m'en faudrait trois, ensemble, dans votre équipe ou votre réserve."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:chroma"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Assistant : Une créature chromatique brille de couleurs rares dès le début du combat. Capturez-la !"
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Assistant : J'étudie les créatures chromatiques : des créatures aux couleurs rares, qui brillent un peu."
+          },
+          {
+            "action": "dire",
+            "texte": "Assistant : On en croise une sur cent cinquante, environ. Si vous en capturez une, montrez-la-moi !"
+          },
+          {"action": "quete", "id": "chroma"}
+        ]
+      }
+    ]
   }
 }
