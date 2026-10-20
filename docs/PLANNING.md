@@ -337,6 +337,7 @@ Mesures : d'une partie à l'autre, le joueur automatique met de 4 h 50 à 6 h (s
 avant l'Orage ancien) ; estimation pour un vrai joueur de 9 h 40 à 12 h. Musique propre à l'île d'Aube.
 Le Val des Murmures (trois esprits à apaiser) entre le sanctuaire et la Source des Brumes. Effets Plante et Esprit
 refaits avec Godot.
+Dernière mesure (Val compris) : joueur automatique 5 h 21, 11 défaites ; estimation pour un vrai joueur 10 h 36.
 Prochaines pistes pour approcher 20 h : un acte 4 / une région de plus, une ligue de l'Arène, un donjon d'après la
 fin à étages, la pêche, des captures demandées par plus de quêtes, des combats plus riches à mi-parcours.
 

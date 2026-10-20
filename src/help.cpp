@@ -41,6 +41,8 @@ static std::vector<HelpPage> helpPages() {
                 ::T("Quêtes : vingt quêtes en tout (Échap > Journal), dont un rival qui revient vous défier et une quête qui donne un compagnon."),
                 ::T("Éclats de brume : trente éclats cachés dans de vieux coffres, aux quatre coins du monde. Une collectionneuse de la Vallée les récompense."),
                 ::T("Après le Seigneur des Orages : une navigatrice du port vous emmène sur l'île d'Aube, pour un troisième acte."),
+                ::T("L'histoire passe par de nouveaux lieux : le Col des Hurlevents, le Val des Murmures, l'île de Corail."),
+                ::T("Quatre donjons optionnels (Mines, Glacier, Épave, Abîme) et le grand bestiaire de la professeure de la Vallée."),
                 ::T("Après l'acte 3 : les épreuves des gardiens, au sanctuaire d'Aube (huit combats puis Ilya)."),
                 ::T("La pêche : le maître pêcheur du port donne une canne. Face à l'eau, Entrée ; dix-huit poissons à trouver."),
                 ::T("Musiques réécrites, et de nouveaux morceaux : le port, les abysses, la tour, le dernier combat."),
