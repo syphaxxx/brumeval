@@ -9288,5 +9288,267 @@
         ]
       }
     ]
+  },
+  "conteur_quiz": {
+    "pages": [
+      {
+        "si": {"drapeau": "quiz10"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Conteur : Dix sur dix ! Vous connaissez votre histoire mieux que moi. Je n'ai plus qu'à l'écrire."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quiz9"},
+        "actions": [
+          {"action": "dire", "texte": "Conteur : Question 10 sur 10."},
+          {
+            "action": "question",
+            "texte": "Kael traquait-il les bandits de la forêt de Sylve-Noire ?",
+            "oui": [
+              {"action": "drapeau", "nom": "quiz10"},
+              {"action": "or", "quantite": 3000},
+              {"action": "dire", "texte": "Conteur : Exact !"},
+              {
+                "action": "dire",
+                "texte": "Conteur : Les dix questions ! Tenez : mon plus beau trésor, et mon respect éternel."
+              },
+              {"action": "donner", "objet": "gemme_maitre", "quantite": 1},
+              {"action": "donner", "objet": "elixir", "quantite": 3},
+              {"action": "quete", "id": "quiz", "fin": true}
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "Conteur : Hé non ! Réfléchissez bien, et revenez quand vous voudrez."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quiz8"},
+        "actions": [
+          {"action": "dire", "texte": "Conteur : Question 9 sur 10."},
+          {
+            "action": "question",
+            "texte": "Le Colosse d'écho gardait-il un écho de flamme ?",
+            "oui": [
+              {
+                "action": "dire",
+                "texte": "Conteur : Hé non ! Réfléchissez bien, et revenez quand vous voudrez."
+              }
+            ],
+            "non": [
+              {"action": "drapeau", "nom": "quiz9"},
+              {"action": "or", "quantite": 2700},
+              {"action": "dire", "texte": "Conteur : Exact !"},
+              {"action": "dire", "texte": "Conteur : Revenez me voir pour la question suivante."}
+            ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quiz7"},
+        "actions": [
+          {"action": "dire", "texte": "Conteur : Question 8 sur 10."},
+          {
+            "action": "question",
+            "texte": "La Larme d'Aube ouvre-t-elle la porte du Gouffre ?",
+            "oui": [
+              {"action": "drapeau", "nom": "quiz8"},
+              {"action": "or", "quantite": 2400},
+              {"action": "dire", "texte": "Conteur : Exact !"},
+              {"action": "dire", "texte": "Conteur : Revenez me voir pour la question suivante."}
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "Conteur : Hé non ! Réfléchissez bien, et revenez quand vous voudrez."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quiz6"},
+        "actions": [
+          {"action": "dire", "texte": "Conteur : Question 7 sur 10."},
+          {
+            "action": "question",
+            "texte": "Ilya est-elle la dernière gardienne d'Aube ?",
+            "oui": [
+              {"action": "drapeau", "nom": "quiz7"},
+              {"action": "or", "quantite": 2100},
+              {"action": "dire", "texte": "Conteur : Exact !"},
+              {"action": "dire", "texte": "Conteur : Revenez me voir pour la question suivante."}
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "Conteur : Hé non ! Réfléchissez bien, et revenez quand vous voudrez."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quiz5"},
+        "actions": [
+          {"action": "dire", "texte": "Conteur : Question 6 sur 10."},
+          {
+            "action": "question",
+            "texte": "Le Seigneur des Orages vous attendait-il au fond de la Grotte des Marées ?",
+            "oui": [
+              {
+                "action": "dire",
+                "texte": "Conteur : Hé non ! Réfléchissez bien, et revenez quand vous voudrez."
+              }
+            ],
+            "non": [
+              {"action": "drapeau", "nom": "quiz6"},
+              {"action": "or", "quantite": 1800},
+              {"action": "dire", "texte": "Conteur : Exact !"},
+              {"action": "dire", "texte": "Conteur : Revenez me voir pour la question suivante."}
+            ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quiz4"},
+        "actions": [
+          {"action": "dire", "texte": "Conteur : Question 5 sur 10."},
+          {
+            "action": "question",
+            "texte": "Le Trident d'écume ouvre-t-il les Ruines englouties ?",
+            "oui": [
+              {"action": "drapeau", "nom": "quiz5"},
+              {"action": "or", "quantite": 1500},
+              {"action": "dire", "texte": "Conteur : Exact !"},
+              {"action": "dire", "texte": "Conteur : Revenez me voir pour la question suivante."}
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "Conteur : Hé non ! Réfléchissez bien, et revenez quand vous voudrez."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quiz3"},
+        "actions": [
+          {"action": "dire", "texte": "Conteur : Question 4 sur 10."},
+          {
+            "action": "question",
+            "texte": "Sélène est-elle née à Port d'Écume ?",
+            "oui": [
+              {
+                "action": "dire",
+                "texte": "Conteur : Hé non ! Réfléchissez bien, et revenez quand vous voudrez."
+              }
+            ],
+            "non": [
+              {"action": "drapeau", "nom": "quiz4"},
+              {"action": "or", "quantite": 1200},
+              {"action": "dire", "texte": "Conteur : Exact !"},
+              {"action": "dire", "texte": "Conteur : Revenez me voir pour la question suivante."}
+            ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quiz2"},
+        "actions": [
+          {"action": "dire", "texte": "Conteur : Question 3 sur 10."},
+          {
+            "action": "question",
+            "texte": "Brann travaille-t-il à la forge de Forgeroc ?",
+            "oui": [
+              {"action": "drapeau", "nom": "quiz3"},
+              {"action": "or", "quantite": 900},
+              {"action": "dire", "texte": "Conteur : Exact !"},
+              {"action": "dire", "texte": "Conteur : Revenez me voir pour la question suivante."}
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "Conteur : Hé non ! Réfléchissez bien, et revenez quand vous voudrez."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quiz1"},
+        "actions": [
+          {"action": "dire", "texte": "Conteur : Question 2 sur 10."},
+          {
+            "action": "question",
+            "texte": "Ignarok dormait-il dans les Pics Givrés ?",
+            "oui": [
+              {
+                "action": "dire",
+                "texte": "Conteur : Hé non ! Réfléchissez bien, et revenez quand vous voudrez."
+              }
+            ],
+            "non": [
+              {"action": "drapeau", "nom": "quiz2"},
+              {"action": "or", "quantite": 600},
+              {"action": "dire", "texte": "Conteur : Exact !"},
+              {"action": "dire", "texte": "Conteur : Revenez me voir pour la question suivante."}
+            ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:quiz"},
+        "actions": [
+          {"action": "dire", "texte": "Conteur : Question 1 sur 10."},
+          {
+            "action": "question",
+            "texte": "Sylvarque fut-il le premier gardien que vous avez apaisé ?",
+            "oui": [
+              {"action": "drapeau", "nom": "quiz1"},
+              {"action": "or", "quantite": 300},
+              {"action": "dire", "texte": "Conteur : Exact !"},
+              {"action": "dire", "texte": "Conteur : Revenez me voir pour la question suivante."}
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "Conteur : Hé non ! Réfléchissez bien, et revenez quand vous voudrez."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "echos_fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Conteur : J'écris l'histoire des gardiens de Brumeval. Mais ma mémoire n'est plus ce qu'elle était…"
+          },
+          {
+            "action": "dire",
+            "texte": "Conteur : Si vous répondez à mes dix questions, je vous récompenserai. Oui ou non, c'est tout ce que je demande."
+          },
+          {"action": "quete", "id": "quiz"},
+          {"action": "dire", "texte": "Conteur : Parlez-moi encore pour la première question."}
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Conteur : J'écris l'histoire des gardiens. Revenez quand elle sera finie… si elle finit un jour."
+          }
+        ]
+      }
+    ]
   }
 }

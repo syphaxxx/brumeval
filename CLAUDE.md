@@ -310,7 +310,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   `message`, `tournoi`, `etude_aube`, puis (outils/villes/quetes_actes.py, actes 2 et 3) `phare_aube`, `enfant_marais`,
   `spectre` (boss de carte sous condition dans le Gouffre), `pages_orage`, `carapace`, puis `echos`, `cloche`, `etude_oriane`
   (acte 4), `eleveuse` (Forgeroc, `outils/villes/eleveuse.py` : huit créatures évoluées à montrer, une par une,
-  drapeaux `eleveuse1`…`8`), et celles des nouveaux lieux (`trident`, `esprits`, donjons, `epreuves`, `peche`, `bestiaire`). Habitants et boss de carte peuvent avoir `si` (présents
+  drapeaux `eleveuse1`…`8`), `quiz` (le conteur de la Vallée après `echos_fin`, dix questions oui/non,
+  `outils/villes/quiz.py`), et celles des nouveaux lieux (`trident`, `esprits`, donjons, `epreuves`, `peche`, `bestiaire`). Habitants et boss de carte peuvent avoir `si` (présents
   seulement si la condition est vraie : `Npc::cond`, `BossSpot::cond`).
 - Événements : habitants (`evenement`), portes des bâtiments (genre ou
   `evenement`) et boss lancent un événement de `data/evenements.json`. Les
