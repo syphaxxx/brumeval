@@ -19,7 +19,8 @@
     "chance_2e": 0.55,
     "chance_3e": 0.35,
     "meute_distance": 50,
-    "chromatique": 0.006
+    "chromatique": 0.006,
+    "alpha": 0.06
   },
   "combat": {
     "atb_base": 20,

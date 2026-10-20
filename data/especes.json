@@ -1541,7 +1541,7 @@
     "immunites": ["sommeil"],
     "forme": "boss",
     "couleurs": ["#2a2a5a", "#ffe8a0"],
-    "apprend": [[1, "lame_ombre"], [1, "prisme"], [1, "nova"], [1, "eclipse"], [1, "rayon"]],
+    "apprend": [[1, "lame_ombre"], [1, "prisme"], [1, "nova"], [1, "cauchemar"]],
     "talent": "esprit_clair"
   }
 ]

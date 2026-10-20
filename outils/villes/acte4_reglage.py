@@ -18,7 +18,7 @@ ESP = json.load(open(D + 'especes.json', encoding='utf-8'))
 og = next(e for e in ESP if e['id'] == 'ombre_gardien')
 if not any(m == 'charge_heroique' for _, m in og['apprend']):
     sys.exit('Déjà fait.')
-og['apprend'] = [[1, "lame_ombre"], [1, "prisme"], [1, "nova"], [1, "eclipse"], [1, "rayon"]]
+og['apprend'] = [[1, "lame_ombre"], [1, "prisme"], [1, "nova"], [1, "cauchemar"]]  # 3e mesure : rien qui frappe toute l'équipe
 open(D + 'especes.json', 'w', encoding='utf-8', newline='\n').write(carte.pretty(ESP) + '\n')
 EV = json.load(open(D + 'evenements.json', encoding='utf-8'))
 
@@ -30,7 +30,8 @@ def fight(ev):
 
 
 f = fight(EV['sanctuaire_echos_boss'])
-f['ennemis'][0] = {"espece": "echoplume", "niveau": 90}
+f['ennemis'][0] = {"espece": "fossiloup", "niveau": 90}   # 3e mesure : plus d'Échoplumes (Ouragan sur toute l'équipe)
+f['ennemis'][2] = {"espece": "petrolin", "niveau": 90}
 f['renforts'] = []
 f['ennemis'][1]['phases'][1]['renforts'] = [{"espece": "spectrecho", "niveau": 90}]
 p = fight(EV['phenix_echo'])

@@ -710,8 +710,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       readMemberLine("membre", a, t, nullptr);
       readMemberLine("chromatique", b, t, nullptr);
       bool sprite = findSprite(species("mulotin").sprite + "_chroma") != nullptr;
-      check(t.size() == 1 && t[0] && t[0]->chroma && sprite && rules().chroma > 0 && rules().chroma < .05,
-            "créatures chromatiques : sprite aux couleurs rares, gardées dans la sauvegarde, rares dans les herbes");
+      check(t.size() == 1 && t[0] && t[0]->chroma && sprite && rules().chroma > 0 && rules().chroma < .05 && rules().alpha > 0 && rules().alpha < .2,
+            "créatures chromatiques : sprite aux couleurs rares, gardées dans la sauvegarde, rares dans les herbes ; meutes menées par un alpha");
     }
     // Attaque annoncée (1.8) : elle frappe ceux restés dans la zone, pas ceux qui se sont écartés
     {
@@ -3627,6 +3627,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   simSetup("Kraken des récifs (équipe N.46)", {{"lior", 46}, {"maelle", 46}, {"selene", 46}, {"braisenard", 46}, {"gouttelin", 46}, {"ronceau", 46}}, bossEvent("kraken"), 30);
   simSetup("Griffon tempête (équipe N.50)", {{"lior", 50}, {"maelle", 50}, {"kael", 50}, {"braisenard", 50}, {"gouttelin", 50}, {"ronceau", 50}}, bossEvent("griffon"), 30);
   simSetup("Seigneur des Orages (équipe N.54)", {{"lior", 54}, {"maelle", 54}, {"isra", 54}, {"braisenard", 54}, {"gouttelin", 54}, {"ronceau", 54}}, bossEvent("seigneur_orage"), 30);
+  // Après la fin (2026-10-20) : l'Orage ancien (Abîme) sert de repère pour l'Ombre du Premier Gardien (acte 4)
+  simSetup("Orage ancien (équipe N.100)", {{"lior", 100}, {"maelle", 100}, {"isra", 100}, {"braisenard", 100}, {"gouttelin", 100}, {"ronceau", 100}},
+           bossEvent("abime3_boss"), 10);
+  simSetup("Ombre du Premier Gardien (équipe N.100)", {{"lior", 100}, {"maelle", 100}, {"isra", 100}, {"braisenard", 100}, {"gouttelin", 100}, {"ronceau", 100}},
+           bossEvent("sanctuaire_echos_boss"), 10);
   simGear = 0, simForge = 0;
 
   // Expédition : gardien de chaque région contre une équipe générée (héros, créature de départ,

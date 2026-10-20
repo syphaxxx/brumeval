@@ -89,7 +89,7 @@ PR = [
      "Une Braisaure plus vieille que l'île elle-même. Depuis que l'écho s'est tu, elle sort de la lave pour chasser.",
      "arrivee": "La lave bouillonne : une Braisaure énorme en sort, couverte de roche en fusion !",
      "combat": {"fuite": False, "ennemis": [{"espece": "cendrelys", "niveau": 92},
-                                           {"espece": "braisaure", "niveau": 98, "pv": 6, "boss": True, "bouclier": 12,
+                                           {"espece": "braisaure", "niveau": 95, "pv": 5, "boss": True, "bouclier": 10,  # réglé après le joueur automatique
                                             "phases": [{"pv": 0.6, "message": "La Braisaure crache de la lave : l'air brûle !", "bonus": {"attaque": 1}},
                                                        {"pv": 0.3, "message": "Sa carapace de roche se fend… elle devient furieuse !",
                                                         "bonus": {"vitesse": 1}}]},

@@ -351,6 +351,7 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
   else if (boss) intro = leader->name() + T(" surgit devant vous !");
   else if (foes.size() > 1) intro = std::to_string(foes.size()) + T(" créatures sauvages surgissent !");
   else intro = leader->name() + T(" sauvage apparaît !");
+  if (foeName.empty() && !boss && leader->boss && !leader->S().human) intro = T("Une meute menée par un alpha : ") + leader->name() + " !";
   for (auto& e : foes)
     if (e->chroma && foeName.empty() && !boss) intro = T("Une créature chromatique ! ") + e->name() + T(" brille de couleurs rares.");
   if (!s.intro.empty()) intro = s.intro;

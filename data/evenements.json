@@ -8769,7 +8769,7 @@
             "action": "combat",
             "musique": "boss_final",
             "ennemis": [
-              {"espece": "echoplume", "niveau": 90},
+              {"espece": "fossiloup", "niveau": 90},
               {
                 "espece": "ombre_gardien",
                 "niveau": 95,
@@ -8794,7 +8794,7 @@
                   }
                 ]
               },
-              {"espece": "echoplume", "niveau": 90}
+              {"espece": "petrolin", "niveau": 90}
             ],
             "renforts": [],
             "boss": true,

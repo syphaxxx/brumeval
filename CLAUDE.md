@@ -567,7 +567,9 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - Créatures chromatiques (2026-10-20) : `Fighter::chroma` (ligne `chromatique` après `membre` dans la sauvegarde),
   tirée dans `Game::encounter` (règle `rencontres.chromatique`, 0,006 ; jamais en Expédition) ; `decoupe.py` fabrique
   `<sprite>_chroma` (teinte tournée de 140°, gris dorés) pour chaque créature ni humaine ni boss ; `drawCreature(…,
-  chroma)` le dessine avec des éclats dorés ; message d'entrée en combat.
+  chroma)` le dessine avec des éclats dorés ; message d'entrée en combat. Alphas (même jour) : une meute de 2 créatures ou
+  plus est parfois menée par un alpha (règle `rencontres.alpha`, 0,06 ; pas en Expédition) : +3 niveaux et `Fighter::boss`
+  (dessiné plus grand, bouclier de boss, attaques annoncées, gains de boss) ; message « Une meute menée par un alpha ».
 - Nouvelle partie + (2026-10-20) : après `aube_fin`, Ilya propose de tout recommencer (action `nouvelle_partie_plus`,
   `Game::startNewGamePlus`) : équipe, équipement, or, Bestiaire et drapeaux `peche:` gardés ; objets importants (prix 0,
   ni équipement ni gemme) rendus ; drapeaux effacés sauf `ngp<k>`, et `ngp<k+1>` posé. `foeLevelBonus` (data.cpp) =

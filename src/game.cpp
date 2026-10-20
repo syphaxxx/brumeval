@@ -707,6 +707,11 @@ void Game::encounter() {
       foes.push_back(makeFighter(pool[irand(0, (int)pool.size() - 1)], irand(z.lo, z.hi) + foeLevelBonus));
       if (!inExpedition() && frand() < rules().chroma) foes.back()->chroma = true;  // couleurs rares
     }
+    if (n >= 2 && !inExpedition() && frand() < rules().alpha) {  // une meute menée par un alpha : plus fort, traité comme un boss
+      bool chroma = foes[0]->chroma;
+      foes[0] = makeFighter(foes[0]->sp, foes[0]->lvl + 3);
+      foes[0]->boss = true, foes[0]->chroma = chroma;
+    }
     startBattle(foes, false, nullptr);
     return;
   }
