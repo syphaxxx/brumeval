@@ -878,7 +878,12 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     changeMap(village, 12, 25, UP);
     for (size_t i = 0; i < M().chests.size(); i++)
       if (M().chests[i].item == "medaillon") chest = (int)i;
-    if (chest >= 0) openChest(chest);
+    if (chest >= 0) {
+      changeMap(village, M().chests[chest].x, M().chests[chest].y + 1, UP);
+      openChest(chest);
+      run(.3f);
+      snap("coffre_ouvert");  // l'éclat de lumière et le médaillon qui sort du coffre
+    }
     answer();
     int markReturn = questMark("quete_medaillon");
     changeMap(mi("vallee_ancien"), 6, 6, UP);

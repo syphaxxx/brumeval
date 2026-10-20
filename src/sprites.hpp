@@ -42,5 +42,5 @@ void drawBuilding(Gfx& g, const Building& b, int sx, int sy);
 // Par-dessus la nuit (2.6) : fenêtres allumées et lueur de la porte (night : 0 jour, 1 nuit) ; fumée de la cheminée
 void drawBuildingLights(Gfx& g, const Building& b, int sx, int sy, float night);
 void drawChimneySmoke(Gfx& g, const Building& b, int sx, int sy, float t);
-void drawChest(Gfx& g, int sx, int sy, bool open);
+void drawChest(Gfx& g, int sx, int sy, bool open, float t = -1);  // t >= 0 : un reflet passe de temps en temps (fermé)
 void drawSign(Gfx& g, int sx, int sy);

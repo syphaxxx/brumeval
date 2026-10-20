@@ -1323,11 +1323,16 @@ void drawChimneySmoke(Gfx& g, const Building& b, int sx, int sy, float t) {
   }
 }
 
-void drawChest(Gfx& g, int sx, int sy, bool open) {
+void drawChest(Gfx& g, int sx, int sy, bool open, float t) {
   g.ellipse(sx + 8, sy + 14, 7, 2, rgb(0, 50));
   if (const SpriteRect* r = findSprite("coffre")) {  // ouvert : assombri, couvercle rabattu
     g.sprite(*r, sx + 8 - r->w / 2, sy + 15 - r->h, false, 1, open ? rgb(0x8a8a9a) : rgb(0xffffff));
     if (open) g.rect(sx + 8 - r->w / 2 + 2, sy + 15 - r->h + 2, r->w - 4, 2, rgb(0x2a1a0a));
+    float k = t < 0 || open ? 1 : std::fmod(t * .45f + sx * .013f + sy * .007f, 1.f) / .12f;  // un éclat toutes les ~2 s
+    if (k < 1) {
+      float cx = sx + 8 - r->w / 2.f + 3 + k * (r->w - 6), cy = sy + 15 - r->h + 3, s2 = 2.5f * std::sin(k * 3.14159f);
+      g.rect(cx - s2, cy, 2 * s2 + 1, 1, rgb(0xffffff, 230)), g.rect(cx, cy - s2, 1, 2 * s2 + 1, rgb(0xffffff, 230));
+    }
     return;
   }
   g.rect(sx + 2, sy + 7, 12, 8, rgb(0x8a5a2a));

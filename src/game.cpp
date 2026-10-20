@@ -796,6 +796,7 @@ void Game::openChest(int i) {
   flags.insert(key);
   audio::play("coffre");
   const Chest& c = M().chests[i];
+  chestFx_ = {c.x, c.y, time, c.item.empty() ? std::string() : item(c.item).icon, mapId};  // lumière et objet qui monte
   if (c.item.empty()) {
     gold += c.qty;
     sc.say(T("Vous trouvez ") + std::to_string(c.qty) + T(" pièces d'or !"));
@@ -1201,7 +1202,7 @@ void Game::drawMap() {
     }
   }
   for (size_t i = 0; i < m.chests.size(); i++)
-    drawChest(g, m.chests[i].x * 16 - camX, m.chests[i].y * 16 - camY, has(chestFlag((int)i)));
+    drawChest(g, m.chests[i].x * 16 - camX, m.chests[i].y * 16 - camY, has(chestFlag((int)i)), time);
   for (auto& s : m.signs) drawSign(g, s.x * 16 - camX, s.y * 16 - camY);
   // Personnages, bâtiments et objets hauts (arbres, réverbères…) triés de haut en bas : on passe derrière un toit
   // ou un arbre plus bas que soi
@@ -1345,6 +1346,18 @@ void Game::drawMap() {
                      }});
   std::sort(actors.begin(), actors.end(), [](const Actor& a, const Actor& b) { return a.y < b.y; });
   for (auto& a : actors) a.draw();
+  if (float a = time - chestFx_.t; chestFx_.map == mapId && a >= 0 && a < 1.4f) {  // un coffre s'ouvre
+    float cx = chestFx_.x * 16 - camX + 8, cy = chestFx_.y * 16 - camY + 4, f = 1 - a / 1.4f;
+    for (int k = 0; k < 8; k++) {  // rayons de lumière
+      float ang = k * .785f + a * 1.5f, len = 6 + 14 * std::min(1.f, a * 3);
+      g.line(cx, cy, cx + std::cos(ang) * len, cy + std::sin(ang) * len * .7f, 1, rgb(0xfff2b0, uint8_t(160 * f)));
+    }
+    g.ellipse(cx, cy, 6 + a * 4, 4 + a * 3, rgb(0xfff6d0, uint8_t(110 * f)));
+    float iy = cy - 6 - std::min(1.f, a * 2.5f) * 12;
+    if (const SpriteRect* r = chestFx_.icon.empty() ? nullptr : findSprite(chestFx_.icon)) g.sprite(*r, cx - r->w / 2.f, iy - r->h / 2.f);
+    else
+      for (int k = 0; k < 3; k++) g.ellipse(cx - 4 + k * 4, iy + (k % 2), 2.5f, 2.5f, rgb(0xffd34d)), g.ellipse(cx - 4.5f + k * 4, iy - .5f + (k % 2), 1, 1, rgb(0xfff6c0));
+  }
   for (auto& p : puffs_) {  // brins d'herbe qui volent, poussière de course
     float a = time - p.t, sx = p.x - camX, sy = p.y - camY;
     if (p.kind == 0 && a < .5f)

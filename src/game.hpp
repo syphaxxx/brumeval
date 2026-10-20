@@ -310,6 +310,12 @@ class Game {
     int kind;       // 0 : herbe, 1 : poussière
   };
   std::vector<Puff> puffs_;
+  struct ChestFx {  // coffre qu'on vient d'ouvrir (dessin seul) : un éclat de lumière et l'icône de l'objet qui monte
+    int x = 0, y = 0;
+    float t = -10;
+    std::string icon;  // vide : de l'or
+    int map = -1;
+  } chestFx_;
   int followDir_ = DOWN;
   float mapFadeT_ = -10;  // moment du dernier changement de carte (fondu depuis le noir, 0,3 s)
   std::unique_ptr<Pilot> pilot_;            // joueur automatique (démo, partie rapide), voir pilot.hpp
