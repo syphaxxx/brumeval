@@ -1351,5 +1351,89 @@
     "couleurs": ["#2a9a9a", "#ffe08a"],
     "apprend": [[1, "vague"], [1, "trombe"], [1, "avalanche"], [1, "carapace"]],
     "talent": "cuirasse"
+  },
+  {
+    "id": "bourrasquin",
+    "nom": "Bourrasquin",
+    "sprite": "bourrasquin",
+    "types": ["vent", "glace"],
+    "base": {"pv": 54, "pm": 14, "attaque": 61, "defense": 51, "magie": 27, "resistance": 39, "vitesse": 78},
+    "forme": "oiseau",
+    "couleurs": ["#c8e0f0", "#ffffff"],
+    "apprend": [[1, "rafale"], [1, "bec"], [1, "poudreuse"], [26, "lame_air"]],
+    "talent": "vif",
+    "limite": "lim_piafouine"
+  },
+  {
+    "id": "givroc",
+    "nom": "Givroc",
+    "sprite": "givroc",
+    "types": ["roche", "glace"],
+    "base": {"pv": 68, "pm": 11, "attaque": 70, "defense": 89, "magie": 27, "resistance": 58, "vitesse": 38},
+    "forme": "rocher",
+    "couleurs": ["#a0c8e0", "#e8f8ff"],
+    "apprend": [[1, "eboul"], [1, "gel"], [1, "carapace"], [28, "avalanche"]],
+    "talent": "carapace",
+    "limite": "lim_rocaillou"
+  },
+  {
+    "id": "lanternelle",
+    "nom": "Lanternelle",
+    "sprite": "lanternelle",
+    "types": ["esprit", "feu"],
+    "base": {"pv": 59, "pm": 36, "attaque": 42, "defense": 56, "magie": 81, "resistance": 78, "vitesse": 73},
+    "forme": "fantome",
+    "couleurs": ["#ffb060", "#fff0c0"],
+    "apprend": [[1, "onde"], [1, "feu"], [1, "cauchemar"], [38, "pyro"]],
+    "talent": "furtif",
+    "limite": "lim_esprillon"
+  },
+  {
+    "id": "fongombre",
+    "nom": "Fongombre",
+    "sprite": "fongombre",
+    "types": ["plante", "ombre"],
+    "base": {"pv": 72, "pm": 26, "attaque": 64, "defense": 72, "magie": 58, "resistance": 65, "vitesse": 52},
+    "forme": "champignon",
+    "couleurs": ["#6a4a8a", "#d0b0f0"],
+    "apprend": [[1, "spore"], [1, "brume"], [1, "pluie_spores"], [38, "eclipse"]],
+    "talent": "regeneration",
+    "limite": "lim_champichou"
+  },
+  {
+    "id": "corailleur",
+    "nom": "Corailleur",
+    "sprite": "corailleur",
+    "types": ["eau", "roche"],
+    "base": {"pv": 77, "pm": 26, "attaque": 74, "defense": 77, "magie": 58, "resistance": 67, "vitesse": 67},
+    "forme": "grenouille",
+    "couleurs": ["#ff8a8a", "#ffe0d8"],
+    "apprend": [[1, "bulle"], [1, "jet_pierres"], [1, "torrent"], [48, "seisme"]],
+    "talent": "carapace",
+    "limite": "lim_grenouillon"
+  },
+  {
+    "id": "perlin",
+    "nom": "Perlin",
+    "sprite": "perlin",
+    "types": ["eau", "lumiere"],
+    "base": {"pv": 60, "pm": 26, "attaque": 65, "defense": 53, "magie": 62, "resistance": 55, "vitesse": 79},
+    "forme": "goutte",
+    "couleurs": ["#f0f0ff", "#ffffff"],
+    "apprend": [[1, "jet"], [1, "lumiere"], [1, "vague"], [48, "rayon"]],
+    "talent": "meditation",
+    "limite": "lim_gouttelin"
+  },
+  {
+    "id": "murenix",
+    "nom": "Murénix",
+    "sprite": "murenix",
+    "types": ["eau", "poison"],
+    "base": {"pv": 77, "pm": 26, "attaque": 86, "defense": 67, "magie": 64, "resistance": 64, "vitesse": 90},
+    "forme": "serpent",
+    "couleurs": ["#2a7a8a", "#a0ffe0"],
+    "apprend": [[1, "venin"], [1, "jet"], [1, "acide"], [48, "trombe"]],
+    "talent": "piquant",
+    "limite": "lim_serpentin"
   }
 ]

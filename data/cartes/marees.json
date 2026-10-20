@@ -68,7 +68,16 @@
       "niveau_min": 44,
       "niveau_max": 48,
       "max_ennemis": 3,
-      "creatures": ["noyelin", "coquillon", "ecumet", "voltanguille", "bastillon"]
+      "creatures": [
+        "noyelin",
+        "coquillon",
+        "ecumet",
+        "voltanguille",
+        "bastillon",
+        "corailleur",
+        "perlin",
+        "murenix"
+      ]
     }
   ],
   "boss": [

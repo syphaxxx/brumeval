@@ -344,6 +344,9 @@ pêche, le grand bestiaire, l'Expédition ni la Nouvelle partie +.
 Cinq quêtes de plus dans les nouveaux lieux (`outils/villes/quetes_lieux.py`) : le chien de la bergère (Col), le
 collier de corail (Corail), le dernier message du pêcheur (Val → Port), le tournoi de Forgeroc (trois manches), les
 créatures d'Aube (montrer trois créatures). 33 quêtes en tout.
+Sept formes régionales de plus (`outils/villes/formes.py` : Bourrasquin, Givroc, Lanternelle, Fongombre, Corailleur,
+Perlin, Murénix) dans le Col, le Val, la Grotte des Marées et les herbes de l'île de Corail. Animations : papillons et
+poissons sur la carte, silhouettes d'élan en combat.
 Prochaines pistes pour approcher 20 h : un acte 4 / une région de plus, une ligue de l'Arène, un donjon d'après la
 fin à étages, la pêche, des captures demandées par plus de quêtes, des combats plus riches à mi-parcours.
 
