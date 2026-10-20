@@ -1029,11 +1029,51 @@ void Game::drawTitle() {
   if (expedition_ && expedition_->onScreen()) return expedition_->draw(g);
   if (online_ && online_->onScreen()) return online_->draw(g);
   float L = g.left(), W = (float)g.fullW;
-  g.gradV(L, 0, W, SCREEN_H, rgb(0x141a3c), rgb(0x3c4278));
-  g.poly({{L, 150}, {L, 120}, {0, 150}, {50, 96}, {100, 136}, {160, 80}, {220, 128}, {270, 100}, {320, 126}, {L + W, 104}, {L + W, 240}, {L, 240}},
-         rgb(0x262a52));
-  g.rect(L, 160, W, 80, rgb(0x1d2148));
-  for (int i = 0; i < 6 * W / SCREEN_W; i++) g.ellipse(L + std::fmod(i * 70 + time * 18, W + 100) - 50, 112 + (i % 6) * 10, 90, 7, rgb(0xe6ebff, 26));
+  // Paysage de nuit (2026-10-20) : ciel, lune, montagnes enneigées, village au loin, brume, prairie au premier plan
+  g.gradV(L, 0, W, 140, rgb(0x0c1230), rgb(0x3a3a70));
+  g.gradV(L, 110, W, 50, rgb(0x3a3a70, 0), rgb(0x7a5a8a, 90));  // lueur à l'horizon
+  float mx = std::max(292.f, L + W - 44), my = 26;                                 // la lune, et son halo
+  g.ellipse(mx, my, 34, 34, rgb(0xfff4c8, 14)), g.ellipse(mx, my, 22, 22, rgb(0xfff4c8, 26));
+  g.ellipse(mx, my, 12, 12, rgb(0xf6f0d6));
+  g.ellipse(mx - 4, my - 3, 2.5f, 2, rgb(0xd8d2b8)), g.ellipse(mx + 4, my + 4, 2, 1.5f, rgb(0xd8d2b8)), g.ellipse(mx + 3, my - 5, 1.2f, 1, rgb(0xd8d2b8));
+  std::vector<Pt> far = {{L, 140}, {L, 104}};  // montagnes lointaines, sommets enneigés
+  for (float x = L, k = 0; x <= L + W + 40; x += 34, k++) {
+    float peak = 70 + std::fmod(k * 37.f, 30.f);
+    far.push_back({x + 17, peak}), far.push_back({x + 34, 100 + std::fmod(k * 13.f, 12.f)});
+    g.tri(x + 17, peak, x + 11, peak + 9, x + 23, peak + 9, rgb(0xc8d0f0, 120));
+  }
+  far.push_back({L + W + 40, 140});
+  g.poly(far, rgb(0x1c2048));
+  for (float x = L, k = 0; x <= L + W + 40; x += 34, k++) {  // neige redessinée par-dessus le massif
+    float peak = 70 + std::fmod(k * 37.f, 30.f);
+    g.tri(x + 17, peak, x + 13, peak + 6, x + 21, peak + 6, rgb(0xdfe6ff, 170));
+  }
+  for (int i = 0; i < 4 * W / SCREEN_W; i++) g.ellipse(L + std::fmod(i * 97 + time * 10, W + 140) - 70, 122 + (i % 3) * 7, 100, 6, rgb(0xe6ebff, 20));
+  g.poly({{L, 160}, {L, 122}, {40, 114}, {110, 124}, {170, 116}, {230, 112}, {290, 110}, {L + W, 116}, {L + W, 160}}, rgb(0x161a3c));  // collines
+  for (int i = 0; i < 6; i++) {  // le village au loin : maisons, fenêtres allumées, fumée
+    float hx = 228 + i * 11 + (i % 2) * 3, hy = 106 - (i % 3);
+    g.rect(hx, hy, 9, 6, rgb(0x0e1130));
+    g.tri(hx - 1, hy, hx + 10, hy, hx + 4.5f, hy - 5, rgb(0x0e1130));
+    if ((i * 7 + int(time * .3f)) % 5) g.rect(hx + 3, hy + 2, 2, 2, rgb(0xffcf6a, 220));
+    if (i % 2 == 0)
+      for (int s = 0; s < 3; s++) {
+        float ph = std::fmod(time * .4f + s / 3.f + i * .2f, 1.f);
+        g.ellipse(hx + 7 + ph * 6, hy - 6 - ph * 16, 1.5f + ph * 3, 1 + ph * 2, rgb(0xb8bcd8, uint8_t(60 * (1 - ph))));
+      }
+  }
+  g.rect(262, 93, 3, 12, rgb(0x0e1130)), g.tri(260, 94, 267, 94, 263.5f, 86, rgb(0x0e1130));  // le clocher
+  g.gradV(L, 156, W, 84, rgb(0x1a2d3a), rgb(0x0e1a22));  // la prairie, où se tiennent les héros
+  for (int i = 0; i < 70 * W / SCREEN_W; i++) {  // herbes qui ondulent
+    uint32_t h = uint32_t(i) * 2246822519u;
+    float x = L + float(h % 997) / 997.f * W, y = 158 + float((h >> 11) % 80), sway = std::sin(time * 1.6f + x * .05f) * 1.2f;
+    g.line(x, y, x + sway, y - 3 - float(h % 3), 1, rgb(i % 3 ? 0x2c4a48 : 0x3a5c50));
+    if (h % 11 == 0) g.rect(x + sway, y - 4, 1, 1, rgb(i % 2 ? 0xe8d0f0 : 0xfff0a0, 200));  // fleurs
+  }
+  for (float x : {L + 6.f, L + 22.f, L + W - 26.f, L + W - 10.f}) {  // sapins sombres sur les bords
+    for (int t = 0; t < 3; t++) g.tri(x - 9 + t * 2, 168 - t * 9, x + 9 - t * 2, 168 - t * 9, x, 150 - t * 9, rgb(0x101a24));
+    g.rect(x - 1, 168, 3, 5, rgb(0x0c141c));
+  }
+  for (int i = 0; i < 6 * W / SCREEN_W; i++) g.ellipse(L + std::fmod(i * 70 + time * 18, W + 100) - 50, 150 + (i % 4) * 12, 90, 6, rgb(0xe6ebff, 18));
   // Étoiles qui scintillent, étoile filante, lucioles (2.7)
   for (int i = 0; i < 40 * W / SCREEN_W; i++) {
     uint32_t h = uint32_t(i) * 2654435761u;

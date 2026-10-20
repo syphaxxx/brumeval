@@ -388,7 +388,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   Dégâts prévus sur la cible visée (`Battle::damageText`, même formule que `applyHit` sans hasard ni critique :
   fourchette de `ecart_min` à 1, chance de toucher) ; l'efficacité d'un type n'est comptée qu'une fois découverte
   (`weakKnown`), sinon neutre : rien ne se devine sans attaquer (Brisure). Ennemi vaincu : il s'efface en 0,6 s (`koT_`). Décor de l'horizon en sprites
-  (arbres, sapins, rochers). Écran titre : les personnages de part et d'autre du menu. Habitants : regards et
+  (arbres, sapins, rochers). Écran titre : les personnages de part et d'autre du menu, dans un paysage de nuit (lune, montagnes enneigées,
+  village aux fenêtres allumées, brume, prairie aux herbes qui ondulent ; `drawTitle`, 2026-10-20). Habitants : regards et
   sautillements (dessin seul). Ordre des tours : portraits (`drawFighterIcon`). Un objet haut juste devant le joueur,
   un coffre, un panneau ou un habitant devient transparent (`behind` dans `drawMap`). Murs de grotte, de glace et
   falaises en `tex_pierre` teintée, dalles au sol des grottes (`texTile` avec teinte). Fontaine `W` dessinée une fois
