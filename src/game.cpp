@@ -1276,6 +1276,27 @@ void Game::drawMap() {
                             } else
                               g.text(bx + 2, by - 1, mk == 2 ? "?" : "!", mk == 2 ? rgb(0x7a4a00) : rgb(0xd2493f), 0, false);
                           }});
+      } else if (n.sight == 0 && (int)i != exclaimNpc_ && (int)i != talkNpc_) {
+        // Bulles d'humeur (2026-10-20, dessin seul) : de temps en temps, un habitant fredonne, rêvasse ou sourit
+        int h = n.x * 7 + n.y * 13;
+        float period = 9.f + h % 7, ph = std::fmod(time + h * 1.3f, period);
+        if (ph < 1.6f) {
+          float bx = nx - camX + 5, by = ny - camY - 17 - std::min(1.f, ph * 4) * 2, a = std::min(1.f, (1.6f - ph) * 3);
+          int kind = h % 3;
+          actors.push_back({1e9f, [&, bx, by, a, kind] {
+                              g.ellipse(bx + 4, by + 4, 6, 5, rgb(0xffffff, uint8_t(220 * a)));
+                              g.rect(bx + 1, by + 9, 2, 2, rgb(0xffffff, uint8_t(220 * a)));
+                              Color ink = rgb(kind == 2 ? 0xd2493f : 0x3a4a6a, uint8_t(255 * a));
+                              if (kind == 0) {  // une note de musique
+                                g.rect(bx + 5, by + 1, 1, 5, ink), g.rect(bx + 5, by + 1, 2, 1, ink), g.ellipse(bx + 4, by + 6, 1.5f, 1.2f, ink);
+                              } else if (kind == 1) {  // « … »
+                                for (int k = 0; k < 3; k++) g.rect(bx + 1 + k * 3, by + 4, 1, 1, ink);
+                              } else {  // un petit cœur
+                                g.ellipse(bx + 3, by + 3, 1.5f, 1.5f, ink), g.ellipse(bx + 5, by + 3, 1.5f, 1.5f, ink);
+                                g.tri(bx + 1.5f, by + 3.5f, bx + 6.5f, by + 3.5f, bx + 4, by + 7, ink);
+                              }
+                            }});
+        }
       }
     }
   for (auto& b : m.bosses)

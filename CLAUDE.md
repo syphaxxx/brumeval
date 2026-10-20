@@ -523,7 +523,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   `BattleSetup::rain` impose la météo d'effet « pluie » si le décor la permet. Ombres de nuages (`drawMap`) ; brins
   d'herbe et poussière de course (`Game::puffs_`, dessin seul, vidé au changement de carte). Coffres : un éclat passe de temps en
   temps sur un coffre fermé (`drawChest(…, t)`), et à l'ouverture des rayons de lumière et l'icône de l'objet qui monte
-  (`Game::chestFx_`).
+  (`Game::chestFx_`). Bulles d'humeur : de temps en temps, un habitant sans bulle de quête (ni dresseur) montre une
+  note de musique, « … » ou un cœur (selon sa case ; dessin seul, `drawMap`).
 - Stratégie 2.7 (FF7, boss en phases) : gemmes `ItemDef::gem` (`gemMove`, `gemBonus` en %, `gemSupport`/`gemValue`),
   `Fighter::gems[emplacement]` (ligne `gemmes <emplacement> id…` après `equipement`, aussi dans les échanges),
   `gemSockets` (règles `gemmes`), `trimGems` (rendues au sac quand l'équipement change), `gemSupport(f, effet)` ;
