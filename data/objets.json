@@ -824,6 +824,78 @@
     "bonus": {"resistance": 12, "defense": 4, "pm": 8}
   },
   {
+    "id": "lame_lueur",
+    "nom": "Lame de lueur",
+    "icone": "ic_epee_4",
+    "prix": 3600,
+    "equipement": "arme",
+    "description": "Une lame forgée dans le Bois des Lueurs. Elle brille faiblement dans le noir.",
+    "bonus": {"attaque": 18, "critique": 5}
+  },
+  {
+    "id": "baton_lueur",
+    "nom": "Bâton de lueur",
+    "icone": "ic_baton_4",
+    "prix": 3600,
+    "equipement": "arme",
+    "description": "Un bâton de bois pâle, coiffé d'un éclat turquoise.",
+    "bonus": {"magie": 18, "pm": 16}
+  },
+  {
+    "id": "armure_nacre",
+    "nom": "Armure de nacre",
+    "icone": "ic_armure_6",
+    "prix": 3300,
+    "equipement": "armure",
+    "description": "Des plaques de nacre cousues sur du cuir. Légère, et plus solide qu'elle n'en a l'air.",
+    "bonus": {"defense": 16, "resistance": 9, "pv": 20}
+  },
+  {
+    "id": "robe_lueur",
+    "nom": "Robe de lueur",
+    "icone": "ic_armure_7",
+    "prix": 3100,
+    "equipement": "armure",
+    "description": "Une robe tissée de fils qui gardent la lumière du jour.",
+    "bonus": {"resistance": 15, "defense": 6, "pm": 12}
+  },
+  {
+    "id": "lame_echo",
+    "nom": "Lame d'écho",
+    "icone": "ic_epee_5",
+    "prix": 6200,
+    "equipement": "arme",
+    "description": "Une lame de pierre grise qui chante quand elle fend l'air.",
+    "bonus": {"attaque": 22, "critique": 6, "vitesse": 2}
+  },
+  {
+    "id": "baton_echo",
+    "nom": "Bâton d'écho",
+    "icone": "ic_baton_5",
+    "prix": 6200,
+    "equipement": "arme",
+    "description": "Un bâton de pierre grise. Les sorts qu'on y murmure reviennent plus forts.",
+    "bonus": {"magie": 22, "pm": 18, "vitesse": 2}
+  },
+  {
+    "id": "armure_petrifiee",
+    "nom": "Armure pétrifiée",
+    "icone": "ic_armure_8",
+    "prix": 5600,
+    "equipement": "armure",
+    "description": "Taillée dans l'écorce d'un arbre de pierre. Lourde, mais rien ne la traverse.",
+    "bonus": {"defense": 20, "resistance": 11, "pv": 30, "vitesse": -1}
+  },
+  {
+    "id": "robe_echo",
+    "nom": "Robe d'écho",
+    "icone": "ic_armure_7",
+    "prix": 5300,
+    "equipement": "armure",
+    "description": "Les coquillages cousus dessus chantent quand on marche.",
+    "bonus": {"resistance": 19, "defense": 8, "pm": 14}
+  },
+  {
     "id": "amulette_maree",
     "nom": "Amulette des marées",
     "icone": "ic_acc_5",

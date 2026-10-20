@@ -3427,7 +3427,11 @@
           "gemme_vol",
           "gemme_briseur",
           "gemme_orage",
-          "gemme_maitre"
+          "gemme_maitre",
+          "lame_lueur",
+          "baton_lueur",
+          "armure_nacre",
+          "robe_lueur"
         ]
       }
     ]
@@ -8566,7 +8570,11 @@
           "gemme_vie",
           "gemme_soin",
           "gemme_force",
-          "gemme_esprit"
+          "gemme_esprit",
+          "lame_echo",
+          "baton_echo",
+          "armure_petrifiee",
+          "robe_echo"
         ]
       }
     ]

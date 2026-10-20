@@ -574,6 +574,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   pierre : champ `arbres` d'une carte (`MapDef::trees`, `propSprite` cherche `<arbre>_<arbres>`) ; aussi `lueur` (Bois
   des Lueurs, arbres turquoise), `pale` (Marais Pâle) et `brume` (Val des Murmures, arbres violets) ;
   le fond des combats sur ces cartes reprend ces arbres.
+- Équipement tardif (2026-10-20, `outils/villes/equipement_tardif.py`) : rangs lueur (boutique de Havre-d'Aube) et
+  écho (Port-Écho), une arme et une armure pour les combattants et pour les mages, forgeables comme les autres.
 - Créatures de la nuit (2026-10-20, `outils/villes/nuit.py`) : champ `nuit` d'une zone (`Zone::night`, écrit par
   `mapToJson` seulement s'il n'est pas vide) ; quand `nightAmount() > 0,5`, une part `rencontres.part_nuit` (0,5) des rencontres en viennent.
   Onze cartes du dehors en ont.
