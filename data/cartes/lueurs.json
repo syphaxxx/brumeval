@@ -3,6 +3,7 @@
   "nom": "Bois des Lueurs",
   "theme": "foret",
   "ambiance": {"effet": "lucioles"},
+  "arbres": "lueur",
   "tuiles": [
     "TTTTTTTTTTTTTTTTTTTTTTT==TTTTTTTTTTTTTTTTTTTTTTT",
     "TTTTTTTTTTTTTTTTTTTTTTT==TTTTTTTTTTTTTTTTTTTTTTT",

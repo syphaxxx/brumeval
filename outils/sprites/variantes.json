@@ -104,5 +104,11 @@
   {"id": "veilleur_phare", "de": "gardien_lueurs", "teintes": [[-1, 360, 44, 1.2, 1.15]]},
   {"id": "sapin_pierre", "de": "sapin", "teintes": [[-1, 360, 40, 0.12, 0.92, 0.06]]},
   {"id": "arbre_pierre", "de": "arbre", "teintes": [[-1, 360, 40, 0.12, 0.92, 0.06]]},
-  {"id": "sapin_petit_pierre", "de": "sapin_petit", "teintes": [[-1, 360, 40, 0.12, 0.92, 0.06]]}
+  {"id": "sapin_petit_pierre", "de": "sapin_petit", "teintes": [[-1, 360, 40, 0.12, 0.92, 0.06]]},
+  {"id": "sapin_lueur", "de": "sapin", "teintes": [[60, 200, 172, 1.15, 1.08]]},
+  {"id": "arbre_lueur", "de": "arbre", "teintes": [[60, 200, 172, 1.15, 1.08]]},
+  {"id": "sapin_petit_lueur", "de": "sapin_petit", "teintes": [[60, 200, 172, 1.15, 1.08]]},
+  {"id": "sapin_pale", "de": "sapin", "teintes": [[60, 200, 95, 0.45, 1.12]]},
+  {"id": "arbre_pale", "de": "arbre", "teintes": [[60, 200, 95, 0.45, 1.12]]},
+  {"id": "sapin_petit_pale", "de": "sapin_petit", "teintes": [[60, 200, 95, 0.45, 1.12]]}
 ]

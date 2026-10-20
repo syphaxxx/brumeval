@@ -3,6 +3,7 @@
   "nom": "Marais Pâle",
   "theme": "foret",
   "ambiance": {"effet": "brume"},
+  "arbres": "pale",
   "tuiles": [
     "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
     "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",

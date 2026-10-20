@@ -567,7 +567,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   (Cratère des Échos, `phenix_echo`), `sanctuaire_echos` (donjon à énigme de cartegen.py ; la porte du nord de la forêt
   demande les deux drapeaux `colosse_echo_vaincu` et `phenix_echo_vaincu`) : Ombre du Premier Gardien (N.95, 3 phases),
   drapeau `echos_fin`, Cœur d'écho, écran de fin. 6 créatures et 3 boss recolorés (variantes.json). La forêt a des arbres de
-  pierre : champ `arbres` d'une carte (`MapDef::trees`, `propSprite` cherche `<arbre>_<arbres>`).
+  pierre : champ `arbres` d'une carte (`MapDef::trees`, `propSprite` cherche `<arbre>_<arbres>`) ; aussi `lueur` (Bois
+  des Lueurs, arbres turquoise) et `pale` (Marais Pâle).
 - Créatures de la nuit (2026-10-20, `outils/villes/nuit.py`) : champ `nuit` d'une zone (`Zone::night`, écrit par
   `mapToJson` seulement s'il n'est pas vide) ; quand `nightAmount() > 0,5`, la moitié des rencontres en viennent.
   Onze cartes du dehors en ont.
