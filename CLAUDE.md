@@ -576,6 +576,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   le fond des combats sur ces cartes reprend ces arbres.
 - Techniques tardives (2026-10-20, `outils/villes/techniques_tardives.py`) : deux techniques de plus par héros, aux
   niveaux 35 et 60 (avant, ils n'apprenaient plus rien après le niveau 27 environ).
+  Les créatures aussi (`outils/villes/apprentissages_tardifs.py`) : deux techniques de leur type aux niveaux 45 et 65
+  (physiques ou magiques selon leur Attaque et leur Magie ; repli sur une technique normale).
 - Équipement tardif (2026-10-20, `outils/villes/equipement_tardif.py`) : rangs lueur (boutique de Havre-d'Aube) et
   écho (Port-Écho), une arme et une armure pour les combattants et pour les mages, forgeables comme les autres.
 - Créatures de la nuit (2026-10-20, `outils/villes/nuit.py`) : champ `nuit` d'une zone (`Zone::night`, écrit par
