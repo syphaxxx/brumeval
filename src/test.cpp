@@ -3659,6 +3659,10 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   // Après la fin (2026-10-20) : l'Orage ancien (Abîme) sert de repère pour l'Ombre du Premier Gardien (acte 4)
   simSetup("Orage ancien (équipe N.100)", {{"lior", 100}, {"maelle", 100}, {"isra", 100}, {"braisenard", 100}, {"gouttelin", 100}, {"ronceau", 100}},
            bossEvent("abime3_boss"), 10);
+  simSetup("Colosse d'écho (équipe N.92)", {{"lior", 92}, {"maelle", 92}, {"isra", 92}, {"braisenard", 92}, {"gouttelin", 92}, {"ronceau", 92}},
+           bossEvent("colosse_echo"), 10);
+  simSetup("Phénix d'écho (équipe N.92)", {{"lior", 92}, {"maelle", 92}, {"isra", 92}, {"braisenard", 92}, {"gouttelin", 92}, {"ronceau", 92}},
+           bossEvent("phenix_echo"), 10);
   simSetup("Ombre du Premier Gardien (équipe N.100)", {{"lior", 100}, {"maelle", 100}, {"isra", 100}, {"braisenard", 100}, {"gouttelin", 100}, {"ronceau", 100}},
            bossEvent("sanctuaire_echos_boss"), 10);
   simSetup("Veilleur du phare (équipe N.110)", {{"lior", 110}, {"maelle", 110}, {"isra", 110}, {"braisenard", 110}, {"gouttelin", 110}, {"ronceau", 110}},

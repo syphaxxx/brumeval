@@ -1529,7 +1529,7 @@
     "immunites": ["sommeil"],
     "forme": "boss",
     "couleurs": ["#e05a1a", "#fff0a0"],
-    "apprend": [[1, "pyro"], [1, "ouragan"], [1, "brasier"], [1, "lame_air"], [1, "soins"]],
+    "apprend": [[1, "pyro"], [1, "lame_air"], [1, "brasier"], [1, "fleche_vent"], [1, "soins"]],
     "talent": "regeneration"
   },
   {

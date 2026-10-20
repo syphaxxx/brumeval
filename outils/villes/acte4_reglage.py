@@ -40,4 +40,10 @@ p['ennemis'][1]['niveau'] = 87                                      # 2e mesure 
 p['ennemis'][1]['phases'][0] = {"pv": 0.6, "message": "Le Phénix bat des ailes : l'air du cratère devient brûlant !", "bonus": {"magie": 1}}
 p['renforts'] = []
 carte.rewrite_events(['sanctuaire_echos_boss', 'phenix_echo'], EV)
+# 4e mesure (simulation N.92 : 60 %, Ouragan sur toute l'équipe à chaque tour) : Phénix sans Ouragan
+ph = next(e for e in ESP if e['id'] == 'phenix_echo')
+ph['apprend'] = [[1, "pyro"], [1, "lame_air"], [1, "brasier"], [1, "fleche_vent"], [1, "soins"]]
+open(D + 'especes.json', 'w', encoding='utf-8', newline='
+').write(carte.pretty(ESP) + '
+')
 print("Acte 4 réglé : Ombre du Premier Gardien et Phénix d'écho")
