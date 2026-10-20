@@ -365,6 +365,10 @@ plus riches), le Vieux Phare (`outils/villes/phare.py` : cinq étages après l'a
 Mesure (20 octobre, tout compris : 4 actes, Ligue, revanches, primes, 5 donjons) : joueur automatique 4 h 56 à 6 h 38
 selon les parties, 11 à 33 défaites ; estimation pour un vrai joueur 11 h à 13 h 40, sans la pêche, les captures
 demandées (éleveuse, chromatiques, bestiaire), l'Expédition ni la Nouvelle partie +.
+Ensuite : arbres des lieux (pierre, lueur, pâle, brume ; aussi au fond des combats), coffres animés, bulles d'humeur,
+étincelles de niveau, Journal > Progression, quiz du conteur, 17 intérieurs pour les nouveaux villages, quête des
+couleurs rares (créatures chromatiques), musiques de la Plaine et du Vieux Phare, une description pour chaque
+créature du Bestiaire ; Phénix et Ombre réglés (plus d'attaque sur toute l'équipe à chaque tour).
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
