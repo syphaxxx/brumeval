@@ -918,6 +918,15 @@
     "bonus": {"pv": 50, "resistance": 10, "vitesse": 4}
   },
   {
+    "id": "medaille_eleveuse",
+    "nom": "Médaille de l'éleveuse",
+    "icone": "ic_acc_4",
+    "prix": 7000,
+    "equipement": "accessoire",
+    "description": "La médaille des grands éleveurs de Forgeroc. Les créatures qui la portent grandissent plus fortes.",
+    "bonus": {"pv": 40, "attaque": 5, "defense": 5, "magie": 5, "resistance": 5, "vitesse": 3}
+  },
+  {
     "id": "couronne_colisee",
     "nom": "Couronne de la Ligue",
     "icone": "ic_acc_8",

@@ -8945,5 +8945,245 @@
         ]
       }
     ]
+  },
+  "eleveuse": {
+    "pages": [
+      {
+        "si": {"drapeau": "eleveuse8"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Éleveuse : Huit créatures évoluées, toutes en pleine santé. Vous êtes les meilleurs éleveurs que j'aie jamais vus."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "eleveuse7", "sans_drapeau": "eleveuse8", "membre": ["prismalin"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Éleveuse : Prismalin ! Regardez-moi ces couleurs… Comme il a bien grandi !"
+          },
+          {"action": "or", "quantite": 8000},
+          {"action": "donner", "objet": "medaille_eleveuse", "quantite": 1},
+          {"action": "drapeau", "nom": "eleveuse8"},
+          {"action": "dire", "texte": "Éleveuse : Voilà ma médaille. Je n'ai plus rien à vous apprendre."},
+          {"action": "quete", "id": "eleveuse", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "eleveuse6", "sans_drapeau": "eleveuse7", "membre": ["carapic"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Éleveuse : Carapic ! Regardez-moi ces couleurs… Comme il a bien grandi !"
+          },
+          {"action": "or", "quantite": 5000},
+          {"action": "donner", "objet": "gemme_esprit", "quantite": 1},
+          {"action": "drapeau", "nom": "eleveuse7"},
+          {
+            "action": "dire",
+            "texte": "Éleveuse : La prochaine fois, je voudrais voir Prismalin, l'évolution de Cristallin."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "eleveuse5", "sans_drapeau": "eleveuse6", "membre": ["noctaile"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Éleveuse : Noctaile ! Regardez-moi ces couleurs… Comme il a bien grandi !"
+          },
+          {"action": "or", "quantite": 4000},
+          {"action": "donner", "objet": "elixir", "quantite": 2},
+          {"action": "drapeau", "nom": "eleveuse6"},
+          {
+            "action": "dire",
+            "texte": "Éleveuse : La prochaine fois, je voudrais voir Carapic, l'évolution de Carapierre."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "eleveuse4", "sans_drapeau": "eleveuse5", "membre": ["serpentox"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Éleveuse : Serpentox ! Regardez-moi ces couleurs… Comme il a bien grandi !"
+          },
+          {"action": "or", "quantite": 3000},
+          {"action": "donner", "objet": "gemme_force", "quantite": 1},
+          {"action": "drapeau", "nom": "eleveuse5"},
+          {
+            "action": "dire",
+            "texte": "Éleveuse : La prochaine fois, je voudrais voir Noctaile, l'évolution de Chauvenuit."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "eleveuse3", "sans_drapeau": "eleveuse4", "membre": ["fournezard"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Éleveuse : Fournézard ! Regardez-moi ces couleurs… Comme il a bien grandi !"
+          },
+          {"action": "or", "quantite": 2200},
+          {"action": "donner", "objet": "elixir", "quantite": 1},
+          {"action": "drapeau", "nom": "eleveuse4"},
+          {
+            "action": "dire",
+            "texte": "Éleveuse : La prochaine fois, je voudrais voir Serpentox, l'évolution de Serpentin."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "eleveuse2", "sans_drapeau": "eleveuse3", "membre": ["fumerole"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Éleveuse : Fumerole ! Regardez-moi ces couleurs… Comme il a bien grandi !"
+          },
+          {"action": "or", "quantite": 1600},
+          {"action": "donner", "objet": "gemme_vie", "quantite": 1},
+          {"action": "drapeau", "nom": "eleveuse3"},
+          {
+            "action": "dire",
+            "texte": "Éleveuse : La prochaine fois, je voudrais voir Fournézard, l'évolution de Tisonnel."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "eleveuse1", "sans_drapeau": "eleveuse2", "membre": ["crapoison"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Éleveuse : Crapoison ! Regardez-moi ces couleurs… Comme il a bien grandi !"
+          },
+          {"action": "or", "quantite": 1200},
+          {"action": "donner", "objet": "ether", "quantite": 3},
+          {"action": "drapeau", "nom": "eleveuse2"},
+          {
+            "action": "dire",
+            "texte": "Éleveuse : La prochaine fois, je voudrais voir Fumerole, l'évolution de Brumelin."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:eleveuse", "sans_drapeau": "eleveuse1", "membre": ["lucifee"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Éleveuse : Lucifée ! Regardez-moi ces couleurs… Comme il a bien grandi !"
+          },
+          {"action": "or", "quantite": 800},
+          {"action": "donner", "objet": "superpotion", "quantite": 3},
+          {"action": "drapeau", "nom": "eleveuse1"},
+          {
+            "action": "dire",
+            "texte": "Éleveuse : La prochaine fois, je voudrais voir Crapoison, l'évolution de Grenouillon."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "eleveuse7"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Éleveuse : Demande 8 sur 8 : Prismalin, l'évolution de Cristallin, dans votre équipe."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "eleveuse6"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Éleveuse : Demande 7 sur 8 : Carapic, l'évolution de Carapierre, dans votre équipe."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "eleveuse5"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Éleveuse : Demande 6 sur 8 : Noctaile, l'évolution de Chauvenuit, dans votre équipe."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "eleveuse4"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Éleveuse : Demande 5 sur 8 : Serpentox, l'évolution de Serpentin, dans votre équipe."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "eleveuse3"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Éleveuse : Demande 4 sur 8 : Fournézard, l'évolution de Tisonnel, dans votre équipe."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "eleveuse2"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Éleveuse : Demande 3 sur 8 : Fumerole, l'évolution de Brumelin, dans votre équipe."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "eleveuse1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Éleveuse : Demande 2 sur 8 : Crapoison, l'évolution de Grenouillon, dans votre équipe."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:eleveuse"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Éleveuse : Demande 1 sur 8 : Lucifée, l'évolution de Lucioline, dans votre équipe."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Éleveuse : Je suis éleveuse. Je ne me bats pas : je regarde les créatures grandir. Et je collectionne celles qui ont évolué."
+          },
+          {
+            "action": "dire",
+            "texte": "Éleveuse : Si vous m'en montrez, une par une, je vous récompenserai. De mieux en mieux."
+          },
+          {
+            "action": "question",
+            "texte": "Aider l'éleveuse dans sa collection ?",
+            "oui": [
+              {"action": "quete", "id": "eleveuse"},
+              {
+                "action": "dire",
+                "texte": "Éleveuse : Pour commencer, je voudrais voir Lucifée, l'évolution de Lucioline."
+              }
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "Éleveuse : Les créatures ne grandissent pas toutes seules, vous savez."
+              }
+            ]
+          }
+        ]
+      }
+    ]
   }
 }

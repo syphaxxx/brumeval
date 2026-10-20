@@ -213,6 +213,14 @@
       "evenement": "route_cendrelune2",
       "vue": 3,
       "vue_jusqua": "route_cendrelune2"
+    },
+    {
+      "x": 22,
+      "y": 40,
+      "apparence": "paysan",
+      "direction": "bas",
+      "evenement": "eleveuse",
+      "si": {"drapeau": "boss1"}
     }
   ],
   "coffres": [

@@ -358,8 +358,10 @@ Sanctuaire), 6 créatures et 3 boss, l'Ombre du Premier Gardien ; deux primes et
 (`outils/villes/echos_annexes.py`). Créatures chromatiques (couleurs rares, environ une rencontre sur 170).
 Cinq quêtes de plus pour les actes 2 et 3 (`outils/villes/quetes_actes.py`) : le phare d'Aube (trois éclats de lueur),
 l'enfant du marais, le spectre du Gouffre, les pages de l'orage (Ruines, Tour, Grotte des Marées), Coquillon et Perlin.
-Prochaines pistes pour approcher 20 h : un acte 4 / une région de plus, une ligue de l'Arène, un donjon d'après la
-fin à étages, la pêche, des captures demandées par plus de quêtes, des combats plus riches à mi-parcours.
+L'éleveuse de Forgeroc (`outils/villes/eleveuse.py`) : huit créatures évoluées à lui montrer, une par une.
+Créatures de la nuit (`outils/villes/nuit.py`), écran titre en paysage de nuit, rafales dans les hautes herbes.
+Faits depuis la liste de pistes : acte 4, Ligue, pêche, captures demandées par des quêtes. Restent : un donjon
+d'après la fin à étages (au-delà de l'Abîme), des combats plus riches à mi-parcours, d'autres animations.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
