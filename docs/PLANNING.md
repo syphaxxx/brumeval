@@ -362,6 +362,9 @@ L'éleveuse de Forgeroc (`outils/villes/eleveuse.py`) : huit créatures évolué
 Créatures de la nuit (`outils/villes/nuit.py`), écran titre en paysage de nuit, rafales dans les hautes herbes.
 Faits depuis la liste de pistes : acte 4, Ligue, pêche, captures demandées par des quêtes, alphas des meutes (combats
 plus riches), le Vieux Phare (`outils/villes/phare.py` : cinq étages après l'acte 4). Restent : d'autres animations.
+Mesure (20 octobre, tout compris : 4 actes, Ligue, revanches, primes, 5 donjons) : joueur automatique 4 h 56 à 6 h 38
+selon les parties, 11 à 33 défaites ; estimation pour un vrai joueur 11 h à 13 h 40, sans la pêche, les captures
+demandées (éleveuse, chromatiques, bestiaire), l'Expédition ni la Nouvelle partie +.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
