@@ -1260,6 +1260,7 @@ void Game::drawMap() {
                      }});
   std::sort(actors.begin(), actors.end(), [](const Actor& a, const Actor& b) { return a.y < b.y; });
   for (auto& a : actors) a.draw();
+  drawMapCritters(g, m, tx0, tx1, ty0, ty0 + SCREEN_H / 16 + 1, camX, camY, time, nightAmount());
   // Jour et nuit : la carte s'assombrit (crépuscule orangé), les fenêtres s'allument, le héros porte une lanterne
   float night = nightAmount();
   if (night > 0) {

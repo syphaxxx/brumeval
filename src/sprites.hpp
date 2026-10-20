@@ -33,6 +33,9 @@ bool hasProp(const MapDef& m, int tx, int ty);
 // Hautes herbes : dessinées (faux s'il n'y en a pas) ; front : le bas des touffes, par-dessus un personnage
 bool tallGrass(Gfx& g, const MapDef& m, int tx, int ty, int sx, int sy, float t, bool front);
 void drawProp(Gfx& g, const MapDef& m, int tx, int ty, int sx, int sy, float t);
+// Petite vie de la carte (2026-10-20) : papillons au-dessus des fleurs le jour, poissons qui sautent dans l'eau
+// (cases de tx0..tx1, ty0..ty1 ; dessin seul, rien d'enregistré)
+void drawMapCritters(Gfx& g, const MapDef& m, int tx0, int tx1, int ty0, int ty1, int camX, int camY, float t, float night);
 // Le même objet réduit pour tenir dans une case (palette de l'éditeur de cartes)
 void drawPropIcon(Gfx& g, const MapDef& m, int tx, int ty, int sx, int sy);
 void drawBuilding(Gfx& g, const Building& b, int sx, int sy);

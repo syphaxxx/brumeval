@@ -1342,3 +1342,35 @@ void drawSign(Gfx& g, int sx, int sy) {
   g.rect(sx + 4, sy + 4, 8, 1, rgb(0x7a5230));
   g.rect(sx + 4, sy + 7, 6, 1, rgb(0x7a5230));
 }
+
+void drawMapCritters(Gfx& g, const MapDef& m, int tx0, int tx1, int ty0, int ty1, int camX, int camY, float t, float night) {
+  if (m.theme == Theme::Interieur || m.theme == Theme::Grotte) return;
+  static const uint32_t WINGS[] = {0xffffff, 0xfff27a, 0x9fd8ff, 0xffb0d8};
+  for (int y = std::max(0, ty0); y <= ty1 && y < m.h(); y++)
+    for (int x = std::max(0, tx0); x <= tx1 && x < m.w(); x++) {
+      char c = m.rows[y][x];
+      int h = hsh(x, y);
+      float cx = x * 16 - camX + 8.f, cy = y * 16 - camY + 8.f;
+      if (c == 'F' && h % 7 == 0 && night < .5f && m.theme != Theme::Neige) {  // un papillon qui butine
+        float ph = h % 100 * .1f;
+        float bx = cx + std::sin(t * .7f + ph) * 10, by = cy - 6 + std::cos(t * .9f + ph * 1.3f) * 5;
+        bool open = std::fmod(t * 7 + ph, 1.f) < .5f;
+        Color w = rgb(WINGS[(h >> 3) % 4]);
+        if (open) g.rect(std::round(bx) - 2, std::round(by), 2, 2, w), g.rect(std::round(bx) + 1, std::round(by), 2, 2, w);
+        else g.rect(std::round(bx) - 1, std::round(by) - 1, 1, 2, w), g.rect(std::round(bx) + 1, std::round(by) - 1, 1, 2, w);
+        g.rect(std::round(bx), std::round(by), 1, 2, rgb(0x3a2a1a));
+      } else if (c == '~' && h % 29 == 0) {  // un poisson saute, puis des ronds dans l'eau
+        float ph = std::fmod(t * .45f + h % 13 * .7f, 5.f);
+        if (ph < .6f) {
+          float u = ph / .6f;
+          float fx = cx - 5 + u * 10, fy = cy - std::sin(u * 3.1416f) * 8;
+          g.rect(std::round(fx) - 1, std::round(fy), 3, 1, rgb(0xd8e8f0));
+          g.rect(std::round(fx) + (u < .5f ? 2 : -2), std::round(fy) - 1, 1, 1, rgb(0xa8c0d0));
+        } else if (ph < 1.4f) {
+          float u = (ph - .6f) / .8f;
+          g.ellipse(cx + 5, cy + 1, 2 + u * 6, 1 + u * 2, rgb(0xffffff, uint8_t(150 * (1 - u))));
+          if (u < .3f) g.rect(cx + 4, cy - 2, 1, 2, rgb(0xffffff, 200)), g.rect(cx + 6, cy - 3, 1, 2, rgb(0xffffff, 200));
+        }
+      }
+    }
+}
