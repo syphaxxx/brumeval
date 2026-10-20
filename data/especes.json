@@ -8,7 +8,16 @@
     "humain": true,
     "apparence": "lior",
     "role": "Apprenti gardien, épéiste",
-    "apprend": [[1, "lame"], [6, "estoc"], [8, "soin"], [10, "cri"], [12, "tourbillon"], [14, "eclair"]],
+    "apprend": [
+      [1, "lame"],
+      [6, "estoc"],
+      [8, "soin"],
+      [10, "cri"],
+      [12, "tourbillon"],
+      [14, "eclair"],
+      [35, "lame_aurore"],
+      [60, "coupe_gardien"]
+    ],
     "limite": "lim_lior",
     "talent": "briseur"
   },
@@ -29,7 +38,9 @@
       [9, "soins"],
       [12, "reveil"],
       [14, "nova"],
-      [17, "rayon"]
+      [17, "rayon"],
+      [35, "aube_soignante"],
+      [60, "lumiere_sacree"]
     ],
     "limite": "lim_maelle",
     "talent": "soigneur"
@@ -44,7 +55,14 @@
     "humain": true,
     "apparence": "brann",
     "role": "Forgeron et guerrier à la hache",
-    "apprend": [[1, "hache"], [10, "onde_choc"], [14, "brise"], [15, "fracas"]],
+    "apprend": [
+      [1, "hache"],
+      [10, "onde_choc"],
+      [14, "brise"],
+      [15, "fracas"],
+      [35, "marteau_seisme"],
+      [60, "coup_forge"]
+    ],
     "limite": "lim_brann",
     "talent": "intimidation"
   },
@@ -67,7 +85,9 @@
       [16, "hate"],
       [17, "pyro"],
       [18, "blizzard"],
-      [19, "orage"]
+      [19, "orage"],
+      [35, "ombre_devorante"],
+      [60, "meteore"]
     ],
     "limite": "lim_isra",
     "talent": "meditation"
@@ -90,7 +110,9 @@
       [8, "salve"],
       [11, "grappin"],
       [14, "oeil"],
-      [18, "pluie_fleches"]
+      [18, "pluie_fleches"],
+      [35, "fleche_percante"],
+      [60, "tempete_fleches"]
     ]
   },
   {
@@ -109,7 +131,9 @@
       [1, "soin"],
       [1, "eclats_acier"],
       [24, "purification"],
-      [27, "charge_heroique"]
+      [27, "charge_heroique"],
+      [35, "egide"],
+      [60, "lance_celeste"]
     ]
   },
   {
