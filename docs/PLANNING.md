@@ -339,6 +339,8 @@ Le Val des Murmures (trois esprits à apaiser) entre le sanctuaire et la Source 
 refaits avec Godot.
 Dernière mesure (Val compris) : joueur automatique 5 h 21, 11 défaites ; estimation pour un vrai joueur 10 h 36.
 Nouvelle partie + : après l'acte 3, recommencer l'histoire avec son équipe, ennemis +12 niveaux par tour.
+Mesure : joueur automatique 6 h 15 (il refuse la Nouvelle partie +) ; estimation pour un vrai joueur 12 h 20, sans la
+pêche, le grand bestiaire, l'Expédition ni la Nouvelle partie +.
 Prochaines pistes pour approcher 20 h : un acte 4 / une région de plus, une ligue de l'Arène, un donjon d'après la
 fin à étages, la pêche, des captures demandées par plus de quêtes, des combats plus riches à mi-parcours.
 
