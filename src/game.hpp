@@ -189,6 +189,11 @@ class Game {
   int forgeStock(const std::string& id) const;               // « trophee » : tous les trophées
   std::string forgeCost(const ItemDef& d, std::string* missing) const;
   void journalMenu();
+  // Nouvelle partie + (2026-10-20) : drapeaux « ngp1 », « ngp2 »… ; chaque tour ajoute NGP_LEVELS niveaux aux ennemis
+  static constexpr int NGP_LEVELS = 12;
+  int newGamePlus() const;
+  void applyNewGamePlus() { foeLevelBonus = newGamePlus() * NGP_LEVELS; }
+  void startNewGamePlus();
   // Primes (chasse.cpp, primes.hpp) : tableau d'annonces (tuile G) ; rang de chasseur selon les primes touchées
   void bountyMenu(int sel = 0);
   void claimBounty(const std::string& id);

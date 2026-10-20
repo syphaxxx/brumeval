@@ -2956,7 +2956,7 @@
             "action": "dire",
             "texte": "Ilya : La brume est partie pour de bon. Les gardiens n'ont plus de prison à garder… seulement des créatures à protéger."
           },
-          {"action": "dire", "texte": "Ilya : Revenez quand vous voulez. Aube sera toujours votre île."}
+          {"action": "dire", "texte": "Ilya : Revenez quand vous voulez. Aube sera toujours votre île."}, {"action": "question", "texte": "Nouvelle partie + : recommencer toute l'aventure avec votre équipe, face à des créatures bien plus fortes ?", "oui": [{"action": "nouvelle_partie_plus"}], "non": [{"action": "dire", "texte": "Ilya : Comme vous voulez. L'archipel a encore bien des secrets."}]}
         ]
       },
       {

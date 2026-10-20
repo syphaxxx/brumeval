@@ -816,7 +816,8 @@ int Pilot::pickItem(const std::string& label) {
 void Pilot::menuStep() {
   Menu& t = G.menus.top();
   if (!G.askText_.empty()) {  // question Oui/Non : toujours Oui (les combats ne sont lancés que quand l'équipe est prête)
-    if (!pickItem(T("Oui"))) G.in.confirm = true;
+    bool restart = G.askText_.find(T("Nouvelle partie +")) != std::string::npos;  // sauf recommencer toute l'histoire
+    if (!pickItem(restart ? T("Non") : T("Oui"))) G.in.confirm = true;
     return;
   }
   if (t.title.rfind(T("Boutique"), 0) == 0) return shopping();

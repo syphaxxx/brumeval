@@ -936,8 +936,9 @@ std::vector<std::string> Fighter::spells() const {
   return v;
 }
 
+int foeLevelBonus = 0;
 FighterP makeFoe(const Json& e, int defaultLevel) {
-  auto f = makeFighter(e.at("espece").get<std::string>(), jget(e, "niveau", defaultLevel));
+  auto f = makeFighter(e.at("espece").get<std::string>(), jget(e, "niveau", defaultLevel) + foeLevelBonus);
   float mult = jget(e, "pv", 1.f);
   if (mult != 1.f) f->mhp = std::max(1, int(f->mhp * mult + 1e-4f));
   f->hp = f->mhp;

@@ -338,6 +338,7 @@ avant l'Orage ancien) ; estimation pour un vrai joueur de 9 h 40 à 12 h. Musiqu
 Le Val des Murmures (trois esprits à apaiser) entre le sanctuaire et la Source des Brumes. Effets Plante et Esprit
 refaits avec Godot.
 Dernière mesure (Val compris) : joueur automatique 5 h 21, 11 défaites ; estimation pour un vrai joueur 10 h 36.
+Nouvelle partie + : après l'acte 3, recommencer l'histoire avec son équipe, ennemis +12 niveaux par tour.
 Prochaines pistes pour approcher 20 h : un acte 4 / une région de plus, une ligue de l'Arène, un donjon d'après la
 fin à étages, la pêche, des captures demandées par plus de quêtes, des combats plus riches à mi-parcours.
 

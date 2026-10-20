@@ -409,8 +409,14 @@ void Game::healAll(bool mpToo) {
   }
 }
 void Game::recruit(const std::string& id, int minLvl) {
-  auto f = makeFighter(id, std::max(minLvl, avgLevel()));
   flags.insert(id);
+  if (hasSpecies(id) && species(id).human) {  // un héros déjà là (Nouvelle partie +) ne revient pas en double
+    for (auto& m : team)
+      if (m->sp == id) return (void)sc.say(m->name() + T(" est déjà dans l'équipe."));
+    for (auto& m : reserve)
+      if (m->sp == id) return (void)sc.say(m->name() + T(" est déjà dans l'équipe."));
+  }
+  auto f = makeFighter(id, std::max(minLvl, avgLevel()));
   team.push_back(f);  // à la suite : il ne prend la place de personne
   auto fr = front();
   bool fights = std::find(fr.begin(), fr.end(), f) != fr.end();
@@ -679,7 +685,8 @@ void Game::encounter() {
     for (int k = n; k < rules().packMax; k++)
       if (frand() < .5f * deep) n++;
     std::vector<FighterP> foes;
-    for (int i = 0; i < n; i++) foes.push_back(makeFighter(z.pool[irand(0, (int)z.pool.size() - 1)], irand(z.lo, z.hi)));
+    for (int i = 0; i < n; i++)
+      foes.push_back(makeFighter(z.pool[irand(0, (int)z.pool.size() - 1)], irand(z.lo, z.hi) + foeLevelBonus));
     startBattle(foes, false, nullptr);
     return;
   }
@@ -809,6 +816,7 @@ void Game::ask(const std::string& q, std::function<void()> yes, std::function<vo
 // ---------------------------------------------------------------------------
 void Game::titleMenu() {
   fishing_.on = false;
+  foeLevelBonus = 0;  // l'Arène, les outils et l'Expédition n'ont pas de bonus
   pilot_.reset();  // fin de la démo : la partie reprend son fichier de sauvegarde habituel
   demoPaused_ = false;
   if (!saveBeforePilot_.empty()) saveName_ = saveBeforePilot_, saveBeforePilot_.clear();
@@ -887,6 +895,40 @@ void Game::starterMenu() {
   menus.push(m);
 }
 
+int Game::newGamePlus() const {
+  int n = 0;
+  while (has("ngp" + std::to_string(n + 1))) n++;
+  return n;
+}
+
+// Nouvelle partie + : l'histoire recommence au départ avec l'équipe, l'équipement, l'or, le Bestiaire et le carnet de
+// pêche ; les objets importants (prix 0, ni équipement ni gemme : clés, lettres, trident…) sont rendus, car ils
+// ouvriraient des passages trop tôt ; tous les drapeaux de l'histoire sont effacés ; les ennemis gagnent des niveaux
+void Game::startNewGamePlus() {
+  const Rules& r = rules();
+  int n = newGamePlus() + 1;
+  std::set<std::string> keep;
+  for (auto& f : flags)
+    if (f.rfind("ngp", 0) == 0 || f.rfind("peche:", 0) == 0) keep.insert(f);
+  keep.insert("ngp" + std::to_string(n));
+  flags = keep;
+  for (auto it = items.begin(); it != items.end();) {
+    const bool key = hasItem(it->first) && item(it->first).price == 0 && item(it->first).slot < 0 && !item(it->first).gem;
+    it = key ? items.erase(it) : std::next(it);
+  }
+  healAll(true);
+  sc.clear();
+  menus.clear();
+  respawnMap = std::max(0, mapIndex(r.respawnMap)), respawnX = r.respawnX, respawnY = r.respawnY;
+  mapId = -1;
+  walkMap_ = -1;
+  applyNewGamePlus();
+  changeMap(std::max(0, mapIndex(r.startMap)), r.startX, r.startY, r.startDir);
+  mode = Mode::Map;
+  sc.say(T("Nouvelle partie + : l'aventure recommence, et les créatures sont plus fortes (+") + std::to_string(n * NGP_LEVELS) +
+         T(" niveaux). Votre équipe, votre équipement et votre Bestiaire vous suivent."));
+}
+
 void Game::newGame(const std::string& starter) {
   const Rules& r = rules();
   menus.clear();
@@ -898,6 +940,7 @@ void Game::newGame(const std::string& starter) {
   for (auto& [id, n] : r.startItems) items[id] = n;
   gold = r.startGold;
   flags.clear();
+  foeLevelBonus = 0;
   respawnMap = std::max(0, mapIndex(r.respawnMap)), respawnX = r.respawnX, respawnY = r.respawnY;
   mapId = -1;
   walkMap_ = -1;  // les habitants repartent de leur place

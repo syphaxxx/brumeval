@@ -2414,6 +2414,38 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       flags = savedFlags;
       items = savedItems;
     }
+    {  // Nouvelle partie + : l'équipe reste, l'histoire recommence, les objets importants sont rendus, ennemis +12
+      auto savedFlags = flags;
+      auto savedItems = items;
+      auto savedTeam = team;
+      std::vector<std::pair<int, int>> savedHp;
+      for (auto& m : team) savedHp.push_back({m->hp, m->mp});
+      int savedMap = mapId, sx = px, sy = py, savedBonus = foeLevelBonus;
+      int rMap = respawnMap, rX = respawnX, rY = respawnY;
+      flags = {"aube_fin", "boss5", "peche:gardon"};
+      items["trident"] = 1;
+      items["potion"] = 3;
+      size_t n = team.size();
+      sc.clear();
+      execAction(Json{{"action", "nouvelle_partie_plus"}});
+      while (sc.busy()) {
+        in.confirm = true;
+        frame();
+      }
+      Json probe = {{"espece", "mulotin"}, {"niveau", 5}};
+      bool ok = has("ngp1") && !has("aube_fin") && has("peche:gardon") && !items.count("trident") && items["potion"] == 3 &&
+                team.size() == n && foeLevelBonus == NGP_LEVELS && makeFoe(probe, 1)->lvl == 5 + NGP_LEVELS &&
+                M().id == rules().startMap;
+      check(ok, "nouvelle partie + : l'histoire recommence avec l'équipe, sans les objets importants, ennemis +" + std::to_string(NGP_LEVELS) + " niveaux");
+      flags = savedFlags;
+      items = savedItems;
+      team = savedTeam;
+      for (size_t i = 0; i < team.size(); i++) team[i]->hp = savedHp[i].first, team[i]->mp = savedHp[i].second;
+      foeLevelBonus = savedBonus;
+      respawnMap = rMap, respawnX = rX, respawnY = rY;
+      changeMap(savedMap, sx, sy, DOWN);
+      sc.clear();
+    }
     {  // Primes : le tableau dans tous ses états, puis une prime de bout en bout
       auto savedFlags = flags;
       auto savedItems = items;

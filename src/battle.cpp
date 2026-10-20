@@ -2052,7 +2052,7 @@ void Battle::checkPhase(const FighterP& f) {
       if (alive(foes).size() >= 6) break;
       int cell = freeCellNear(false, -1);  // dans le camp des ennemis, le plus près de l'avant
       if (cell < 0) break;
-      FighterP n = makeFoe(r, std::max(1, f->lvl - 4));
+      FighterP n = makeFoe(r, std::max(1, f->lvl - 4 - foeLevelBonus));  // le niveau du boss compte déjà le bonus (Nouvelle partie +)
       initFoe(n);
       n->atb = frand() * 30;
       cells_[n.get()] = cell;

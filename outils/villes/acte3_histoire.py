@@ -127,7 +127,10 @@ EV = {
         say("Sur la place du village, une jeune femme en robe bleue vous fait signe.")]},
     "ilya": {"pages": [
         page([say("Ilya : La brume est partie pour de bon. Les gardiens n'ont plus de prison à garder… seulement des créatures à protéger."),
-              say("Ilya : Revenez quand vous voulez. Aube sera toujours votre île.")], {"drapeau": "aube_fin"}),
+              say("Ilya : Revenez quand vous voulez. Aube sera toujours votre île."),
+              {"action": "question", "texte": "Nouvelle partie + : recommencer toute l'aventure avec votre équipe, face à des créatures bien plus fortes ?",
+               "oui": [{"action": "nouvelle_partie_plus"}],
+               "non": [say("Ilya : Comme vous voulez. L'archipel a encore bien des secrets.")]}], {"drapeau": "aube_fin"}),
         page([say("Ilya : Vous avez la Larme d'Aube, et le Gardien vous laisse passer. Le Gouffre, au nord du bois, mène à la Citadelle."),
               say("Ilya : Je vous y attendrai, devant le trône.")], {"drapeau": ["gardien_lueurs", "reine_marais"]}),
         page([say("Ilya : Le Gardien des Lueurs garde le nord du bois. La Reine du Marais, à l'est, garde la Larme d'Aube."),

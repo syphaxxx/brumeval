@@ -138,7 +138,7 @@ static void checkAction(const Json& a, const std::string& where, std::vector<std
   } else if (k == "attendre") need("secondes");
   else if (k == "quete") {
     if (need("id") && !findQuest(a["id"].get<std::string>())) err.push_back(w + T(" : quête inconnue « ") + a["id"].get<std::string>() + " »");
-  } else if (k != "soigner" && k != "reveil" && k != "fin" && k != "forge" && k != "conseil") err.push_back(where + T(" : action inconnue « ") + k + " »");
+  } else if (k != "soigner" && k != "reveil" && k != "fin" && k != "forge" && k != "conseil" && k != "nouvelle_partie_plus") err.push_back(where + T(" : action inconnue « ") + k + " »");
 }
 
 static void checkList(const Json& list, const std::string& where, std::vector<std::string>& err) {
@@ -368,6 +368,8 @@ void Game::execAction(const Json& a) {
     if (m >= 0) changeMap(m, a["x"].get<int>(), a["y"].get<int>(), dirOf(jget<std::string>(a, "direction", "bas")));
   } else if (k == "evenement") {
     runEvent(a["id"].get<std::string>());
+  } else if (k == "nouvelle_partie_plus") {  // tout recommencer avec l'équipe, ennemis plus forts (2026-10-20)
+    startNewGamePlus();
   } else if (k == "fin") {  // écran de fin, avec son texte (vide : texte par défaut)
     endingText_ = fillText(tr(jget<std::string>(a, "texte", "")));
     mode = Mode::Ending;
