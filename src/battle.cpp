@@ -2868,6 +2868,17 @@ void Battle::draw() {
     Pt p = pos(f);
     Pt o = offset(f);
     bool dim = zSide >= 0 && isAlly(f) == (zSide == 1) && !zCells.count(cellOf(f));
+    if (anim_.actor == f && (anim_.fx == Fx::Magic || anim_.fx == Fx::Heal) && t - anim_.t0 >= 0 && t - anim_.t0 < .6f) {
+      // incantation : un cercle de la couleur du sort s'ouvre sous le lanceur, avec des runes qui tournent
+      float u = (t - anim_.t0) / .6f, r = 8 + u * 8, a = std::sin(u * 3.1416f);
+      Color c = anim_.col;
+      c.a = uint8_t(170 * a);
+      g.ellipse(p.x, p.y + 13, r * 1.4f, r * .45f, Color{c.r, c.g, c.b, uint8_t(60 * a)});
+      for (int i = 0; i < 8; i++) {
+        float ang = i * .785f + u * 4;
+        g.rect(std::round(p.x + std::cos(ang) * r * 1.4f), std::round(p.y + 13 + std::sin(ang) * r * .45f), 2, 1, c);
+      }
+    }
     if (std::abs(o.x) > 5 && f->alive() && !(blinking && blink == f)) {  // élan : deux silhouettes pâles derrière l'attaquant
       float s = isAlly(f) ? 1.f : f->boss ? 1.45f : f->sp == "brumelin" ? .85f : 1.f, a0 = g.alpha;
       for (float k : {.3f, .6f}) {
