@@ -8250,7 +8250,8 @@
                             "action": "dire",
                             "texte": "Maîtresse de la Ligue : Vous êtes les champions de la Ligue d'Écume. Le port tout entier va fêter ça !"
                           }
-                        ]
+                        ],
+                        "musique": "boss_final"
                       }
                     ]
                   }
@@ -8333,7 +8334,8 @@
                           },
                           {"action": "or", "quantite": 12000},
                           {"action": "donner", "objet": "couronne_colisee", "quantite": 1}
-                        ]
+                        ],
+                        "musique": "boss"
                       }
                     ]
                   }
@@ -8419,7 +8421,8 @@
                           },
                           {"action": "or", "quantite": 6000},
                           {"action": "donner", "objet": "cape_stratege", "quantite": 1}
-                        ]
+                        ],
+                        "musique": "boss"
                       }
                     ]
                   }
@@ -8510,7 +8513,8 @@
                           },
                           {"action": "or", "quantite": 3000},
                           {"action": "donner", "objet": "echarpe_lutteur", "quantite": 1}
-                        ]
+                        ],
+                        "musique": "boss"
                       }
                     ]
                   }
