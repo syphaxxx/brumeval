@@ -295,7 +295,8 @@ table, `h` lit, `e` étagère (une bibliothèque pour deux cases), `o` comptoir,
   `jusqua` pour la faire disparaître quand un drapeau est posé.
 - `passages` : `condition` (mêmes conditions que `si` dans les événements) et
   `message` pour un passage fermé, par exemple
-  `"condition": {"objet": "cle_givre"}`.
+  `"condition": {"objet": "cle_givre"}`. Un passage vers sa propre case (même carte, `tx`, `ty` = `x`, `y`) est
+  une simple barrière : fermée tant que la condition est fausse, on y marche ensuite (le pont de la Plaine).
 - `enigme` (3.0) : `drapeau` posé quand chaque dalle `P` porte un rocher `O` ; il
   ouvre les grilles `D` de la carte. `x`, `y` : la case de départ de l'énigme
   (« Recommencer l'énigme » y ramène ; le joueur automatique y résout l'énigme).

@@ -1,0 +1,184 @@
+{
+  "id": "plaine",
+  "nom": "Plaine des Moulins",
+  "theme": "vallee",
+  "tuiles": [
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+    "T........,.........,,,,,,,,,.....T..~~~..F.,,,,,,,,,,,.T",
+    "T.....,,,,,,F.....,,,,,,,,,,,.......~~~..,,,,,,,,,,,,,.T",
+    "T..,,,,,,,,,,.T...,,,,,,,,,,,......F~~~.,,,,,,,,,,,,,,,T",
+    "T.,,,,,,,,,,,......,,,.....,,.......~~~.,,,,,,,,,F,,,,.T",
+    "T,,,,,,,,,,,,......,,,.....,,.......~~~.,,,,,,,,,,,,,,.T",
+    "T,,,,,,,,,,,.......,,,.....,,.....T.~~~..,,,,,,,,,,,,..T",
+    "T,,,,,,,,,,,,......,,,.....,,.......~~~...,,,,,,,,,,...T",
+    "T,,,,,,,,,,,....=.,,,,,,=,,,,,,.....~~~....,,,,,,,,....T",
+    "T,,,,,,,,,,,FFLqqqqqqqqqqqqqL,,.....~~~.......,F.......T",
+    "T.,,,,,,,,,...qqqqqqqqqqqqqqq,......~~~................T",
+    "T..,,,,,,,....qqqqqqqYqqqqqqq...T...~~~.......T........T",
+    "T.....,.......qqqMqMqqqqqqGqq.......~~~................T",
+    "T.............qqqqqqqqqqqqqqq.......~~~................T",
+    "T....................=..............~~~................T",
+    "==============.......=........======BBB=================",
+    "==============.......=........======BBB=================",
+    "T...........==.......=........==....~~~................T",
+    "T...........==.......=........==....~~~................T",
+    "T....,,.....====================....~~~................T",
+    "T.,,,F,,,,..====================..F.~~~................T",
+    "T,F,,,,,,,,...=.................F...~~~....F...........T",
+    "T,,,,,,,,,,,..=......F..............~~~.......,........T",
+    "T,,,,,,,,,,,,,=.....................~~~....,,,,,,,.....T",
+    "T,,,,,,,,,,HHH=...........F.........~~~...,,,,,,,,,....T",
+    "T,,,,,,,,,,HHH=,.......F,,,,,.......~~~..,,,,,,,,,,,...T",
+    "T,,,,,,,,,,HHH=,..=.,,,,,,,,,,,..T..~~~..,,,,,,,,,,,,..T",
+    "T,,,,,,,,F,,,,=====,,,,,,,,,,,,,....~~~..,,,,,,,,,,,,..T",
+    "T,,,,,,,,,,,,,,F...,,,,,,,,,,,,,,...~~~..,,,,,,,,,,,,F.T",
+    "T,,,,,,,,,,,,,,,...,,,,,,,,,,,,,,...~~~..,,,,,,,,,,,...T",
+    "T,,,,,,,,,,,,,,...,,,,,,,,,,,,,,,,..~~~...,,,,,,,,.....T",
+    "T.,,,,,F,,,,,,.....,,,,,,,,,,,,,,F..~~~......,,........T",
+    "T....,....,........,,F,,,,,,,,,,,...~~~................T",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+  ],
+  "batiments": [
+    {
+      "x": 14,
+      "y": 5,
+      "l": 5,
+      "h": 4,
+      "genre": "soin",
+      "nom": "Maison de soin",
+      "toit": "#b8483e",
+      "evenement": "soin_plaine"
+    },
+    {
+      "x": 22,
+      "y": 5,
+      "l": 5,
+      "h": 4,
+      "genre": "boutique1",
+      "nom": "Épicerie du moulin",
+      "toit": "#3f6fb0",
+      "evenement": "boutique_plaine"
+    },
+    {
+      "x": 16,
+      "y": 23,
+      "l": 5,
+      "h": 4,
+      "genre": "maison",
+      "nom": "Atelier du charpentier",
+      "toit": "#9a5a2a",
+      "evenement": "atelier_plaine"
+    },
+    {
+      "x": 29,
+      "y": 4,
+      "l": 5,
+      "h": 5,
+      "genre": "decor",
+      "nom": "Moulin",
+      "toit": "#c8a060",
+      "dessin": "moulin"
+    }
+  ],
+  "habitants": [
+    {"x": 22, "y": 12, "apparence": "paysan", "direction": "bas", "evenement": "meunier"},
+    {"x": 32, "y": 18, "apparence": "forgeron", "direction": "gauche", "evenement": "charpentier"},
+    {
+      "x": 18,
+      "y": 12,
+      "apparence": "marchande",
+      "direction": "bas",
+      "dialogue": [
+        "Des légumes frais de la plaine ! Depuis que la brume est partie, tout pousse deux fois plus vite.",
+        "Les Monts Cendrelune ? Il faut passer le pont, à l'est. Enfin… quand il tiendra debout."
+      ]
+    },
+    {
+      "x": 25,
+      "y": 13,
+      "apparence": "enfant",
+      "direction": "bas",
+      "promenade": 2,
+      "dialogue": ["Les Rongecrins ont mangé le pont ! Ils mangent tout, même les cailloux !"]
+    },
+    {
+      "x": 6,
+      "y": 16,
+      "apparence": "villageois",
+      "direction": "droite",
+      "dialogue": [
+        "Bienvenue dans la Plaine des Moulins !",
+        "Le col de Sylvarque est enfin ouvert. On va pouvoir revoir les gens de la Vallée."
+      ]
+    }
+  ],
+  "coffres": [
+    {"x": 46, "y": 6, "objet": "lanterne_argent", "quantite": 2},
+    {"x": 8, "y": 30, "objet": "potion", "quantite": 3},
+    {"x": 48, "y": 28, "objet": "ether", "quantite": 2},
+    {"x": 26, "y": 31, "objet": "gemme_vie", "quantite": 1}
+  ],
+  "panneaux": [],
+  "passages": [
+    {"x": 0, "y": 16, "vers": "vallee", "tx": 62, "ty": 32, "direction": "gauche"},
+    {"x": 0, "y": 17, "vers": "vallee", "tx": 62, "ty": 33, "direction": "gauche"},
+    {"x": 55, "y": 16, "vers": "cendrelune", "tx": 1, "ty": 33, "direction": "droite"},
+    {"x": 55, "y": 17, "vers": "cendrelune", "tx": 1, "ty": 34, "direction": "droite"},
+    {
+      "x": 37,
+      "y": 16,
+      "vers": "plaine",
+      "tx": 37,
+      "ty": 16,
+      "direction": "droite",
+      "condition": {"drapeau": "pont_repare"},
+      "message": "Le pont est rongé de partout : il s'effondrerait sous vos pieds. Le charpentier de Moulinbourg pourrait le réparer."
+    },
+    {
+      "x": 37,
+      "y": 17,
+      "vers": "plaine",
+      "tx": 37,
+      "ty": 17,
+      "direction": "droite",
+      "condition": {"drapeau": "pont_repare"},
+      "message": "Le pont est rongé de partout : il s'effondrerait sous vos pieds. Le charpentier de Moulinbourg pourrait le réparer."
+    }
+  ],
+  "zones": [
+    {
+      "x": 0,
+      "y": 0,
+      "l": 36,
+      "h": 36,
+      "niveau_min": 8,
+      "niveau_max": 12,
+      "max_ennemis": 3,
+      "creatures": ["mulotin", "piafouine", "champichou", "rongecrin", "louvet"]
+    },
+    {
+      "x": 39,
+      "y": 0,
+      "l": 17,
+      "h": 36,
+      "niveau_min": 10,
+      "niveau_max": 13,
+      "max_ennemis": 3,
+      "creatures": ["rongecrin", "louvet", "rocaillou", "lucioline"]
+    }
+  ],
+  "boss": [
+    {
+      "x": 34,
+      "y": 22,
+      "espece": "rongecrin",
+      "drapeau": "rongecrins_chasses",
+      "evenement": "rongecrins",
+      "si": {"drapeau": "quete:pont"}
+    }
+  ],
+  "declencheurs": [{"x": 1, "y": 16, "l": 1, "h": 2, "evenement": "plaine_entree", "jusqua": "plaine_vue"}],
+  "carte_monde": [46, 48]
+}

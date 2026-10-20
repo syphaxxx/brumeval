@@ -565,6 +565,10 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - Val des Murmures (2026-10-20, `outils/villes/val.py`) : carte `val` entre le sanctuaire du Givrecorne et la Source des
   Brumes (les passages des deux cartes y mènent) : hameau de Brumaille, gardienne des lanternes (quête `esprits`), trois
   esprits (`esprit_val_1..3`, un combat chacun) qui ouvrent le chemin de la Source.
+- Plaine des Moulins (2026-10-20, `outils/villes/plaine.py`) : carte `plaine` entre la Vallée et les Monts Cendrelune
+  (les passages des deux cartes y mènent) : village de Moulinbourg (soins, épicerie, meunier, charpentier), pont gardé
+  par des passages sous condition `pont_repare` ; quête `pont` : chasser les Rongecrins (boss de carte `rongecrins`, si
+  `quete:pont`, drapeau `rongecrins_chasses`), puis le charpentier répare le pont.
 - Île de Corail (2026-10-20, `outils/villes/corail.py`) : acte 2, passe à l'est du Récif vers la carte `corail`
   (village : soins, comptoir, doyenne, quête `trident`) et la Grotte des Marées (`marees`, donjon de cartegen.py,
   Gardien des marées, drapeau `marees_boss`, objet `trident`) ; le passage du Récif vers les Ruines demande le trident.

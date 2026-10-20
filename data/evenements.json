@@ -4934,5 +4934,166 @@
         ]
       }
     ]
+  },
+  "plaine_entree": {
+    "actions": [
+      {"action": "drapeau", "nom": "plaine_vue"},
+      {
+        "action": "dire",
+        "texte": "Au-delà du col, une grande plaine dorée. Des moulins tournent au vent, et une rivière brille à l'est."
+      },
+      {"action": "dire", "texte": "Les Monts Cendrelune fument à l'horizon."}
+    ]
+  },
+  "soin_plaine": {
+    "actions": [
+      {"action": "soigner"},
+      {"action": "reveil"},
+      {
+        "action": "dire",
+        "texte": "Guérisseuse : Un bol de soupe et une bonne nuit… Voilà, vous êtes comme neufs !"
+      }
+    ]
+  },
+  "boutique_plaine": {
+    "actions": [
+      {
+        "action": "boutique",
+        "objets": [
+          "potion",
+          "superpotion",
+          "ether",
+          "remede",
+          "plume",
+          "lanterne",
+          "lanterne_argent",
+          "epee_fer",
+          "baton_chene",
+          "tunique_cuir",
+          "amulette_vie",
+          "gemme_vie"
+        ]
+      }
+    ]
+  },
+  "atelier_plaine": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "L'atelier du charpentier. Ça sent la sciure et le vernis. Des planches neuves attendent contre le mur."
+      }
+    ]
+  },
+  "meunier": {
+    "pages": [
+      {
+        "si": {"drapeau": "pont_repare"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Meunier : Le pont tient bon, et la farine repart vers Forgeroc. La plaine revit !"
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Meunier : Bienvenue à Moulinbourg ! Avec la brume, plus personne ne passait le col. Vous êtes les premiers depuis des mois."
+          },
+          {
+            "action": "dire",
+            "texte": "Meunier : Mais si vous allez vers les Monts, ça ne va pas être simple : le pont de l'est est tout rongé."
+          },
+          {
+            "action": "dire",
+            "texte": "Meunier : Allez voir le charpentier, près de la rivière. Il saura quoi faire."
+          }
+        ]
+      }
+    ]
+  },
+  "charpentier": {
+    "pages": [
+      {
+        "si": {"drapeau": "pont_repare"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Charpentier : Un pont tout neuf ! Il tiendra cent ans. Enfin, tant que les Rongecrins restent loin."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "rongecrins_chasses"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Charpentier : Les Rongecrins sont partis ? Parfait ! Laissez-moi une petite heure…"
+          },
+          {
+            "action": "dire",
+            "texte": "Le charpentier scie, cloue et chante. Bientôt, un pont tout neuf enjambe la rivière."
+          },
+          {"action": "drapeau", "nom": "pont_repare"},
+          {"action": "donner", "objet": "superpotion", "quantite": 2},
+          {"action": "dire", "texte": "Charpentier : Voilà ! Et prenez ça, pour la route."},
+          {"action": "quete", "id": "pont", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:pont"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Charpentier : La bande de Rongecrins niche au bord de la rivière, au sud du pont. Chassez-les !"
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Charpentier : Ce pont, je le répare tous les mois. Une bande de Rongecrins le ronge dès que j'ai le dos tourné !"
+          },
+          {
+            "action": "dire",
+            "texte": "Charpentier : Si quelqu'un les chassait de la rivière, je pourrais le refaire pour de bon."
+          },
+          {"action": "quete", "id": "pont"},
+          {
+            "action": "dire",
+            "texte": "Charpentier : Ils nichent au sud du pont. Méfiez-vous du gros : il a des dents comme des burins."
+          }
+        ]
+      }
+    ]
+  },
+  "rongecrins": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Une bande de Rongecrins grignote une poutre. Le plus gros vous montre des dents comme des burins !"
+      },
+      {
+        "action": "combat",
+        "nom": "Les Rongecrins",
+        "ennemis": [
+          {"espece": "rongecrin", "niveau": 11},
+          {"espece": "rongecrin", "niveau": 13, "pv": 3, "boss": true, "bouclier": 3},
+          {"espece": "mulotin", "niveau": 11}
+        ],
+        "renforts": [{"espece": "rongecrin", "niveau": 11}],
+        "fuite": true,
+        "capture": false,
+        "victoire": [
+          {"action": "drapeau", "nom": "rongecrins_chasses"},
+          {
+            "action": "dire",
+            "texte": "Les Rongecrins détalent dans les hautes herbes. Le charpentier va pouvoir travailler."
+          }
+        ]
+      }
+    ]
   }
 }

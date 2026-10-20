@@ -616,7 +616,7 @@ void Game::arrive() {
   steps++;
   if (inExpedition() && expedition_->atExit(px, py)) return expedition_->nextRegion();
   for (auto& w : M().warps)
-    if (w.x == px && w.y == py) {
+    if (w.x == px && w.y == py && !(w.map == M().id && w.tx == px && w.ty == py)) {  // vers sa propre case : une barrière
       int m = mapIndex(w.map);
       if (m >= 0) return changeMap(m, w.tx, w.ty, w.dir);
     }

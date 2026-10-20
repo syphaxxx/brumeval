@@ -220,8 +220,8 @@
     {"x": 14, "y": 1, "texte": "Col du Nord. Au-delà : les Pics Givrés."}
   ],
   "passages": [
-    {"x": 0, "y": 33, "vers": "vallee", "tx": 62, "ty": 32, "direction": "gauche"},
-    {"x": 0, "y": 34, "vers": "vallee", "tx": 62, "ty": 33, "direction": "gauche"},
+    {"x": 0, "y": 33, "vers": "plaine", "tx": 54, "ty": 16, "direction": "gauche"},
+    {"x": 0, "y": 34, "vers": "plaine", "tx": 54, "ty": 17, "direction": "gauche"},
     {"x": 44, "y": 29, "vers": "grotte", "tx": 15, "ty": 21, "direction": "haut"},
     {
       "x": 13,
