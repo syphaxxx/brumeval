@@ -457,6 +457,7 @@ void rebuildData() {
     s.acc = jget(o, "precision", RULES.accBase);
     s.eva = jget(o, "esquive", RULES.evaBase);
     s.crit = jget(o, "critique", RULES.critBase);
+    s.desc = tr(jget<std::string>(o, "description", ""));
     Json resist = o.value("resistances", Json::object());  // variable : la boucle doit la garder en vie
     for (auto& [k, v] : resist.items()) s.resist[k] = v.get<float>();
     s.immune = jget(o, "immunites", std::vector<std::string>{});

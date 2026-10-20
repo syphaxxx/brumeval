@@ -139,6 +139,7 @@ enum Base { B_HP, B_MP, B_ATK, B_DEF, B_MAG, B_RES, B_SPD, N_BASE };
 
 struct Species {
   std::string id, name;
+  std::string desc;          // « description » : quelques mots pour le Bestiaire (montrés une fois l'espèce obtenue)
   Type type;                 // type principal
   Type type2 = -1;           // second type éventuel (-1 : aucun)
   std::array<int, N_BASE> base;  // PV, PM, Attaque, Défense, Magie, Résistance, Vitesse

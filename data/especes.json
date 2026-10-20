@@ -176,6 +176,7 @@
   {
     "id": "braisenard",
     "nom": "Braisenard",
+    "description": "Sa queue de flammes s'allume quand il est content. Il dort roulé autour.",
     "sprite": "braisenard",
     "type": "feu",
     "base": {"pv": 45, "pm": 22, "attaque": 56, "defense": 42, "magie": 40, "resistance": 41, "vitesse": 200},
@@ -190,6 +191,7 @@
   {
     "id": "gouttelin",
     "nom": "Gouttelin",
+    "description": "Une goutte vivante qui adore la pluie. Il rebondit pour dire bonjour.",
     "sprite": "slime",
     "type": "eau",
     "base": {"pv": 50, "pm": 22, "attaque": 50, "defense": 54, "magie": 42, "resistance": 48, "vitesse": 46},
@@ -203,6 +205,7 @@
   {
     "id": "ronceau",
     "nom": "Ronceau",
+    "description": "Un bourgeon têtu. Ses épines repoussent dès qu'on les coupe.",
     "sprite": "ronceau",
     "type": "plante",
     "base": {"pv": 52, "pm": 24, "attaque": 50, "defense": 52, "magie": 44, "resistance": 48, "vitesse": 44},
@@ -216,6 +219,7 @@
   {
     "id": "piafouine",
     "nom": "Piafouine",
+    "description": "Elle siffle au lever du soleil, toujours la même chanson.",
     "sprite": "piafouine",
     "type": "normal",
     "base": {"pv": 40, "pm": 10, "attaque": 45, "defense": 38, "magie": 20, "resistance": 29, "vitesse": 58},
@@ -230,6 +234,7 @@
   {
     "id": "mulotin",
     "nom": "Mulotin",
+    "description": "Il cache des graines partout et oublie toujours où.",
     "sprite": "mulotin",
     "type": "normal",
     "base": {"pv": 38, "pm": 10, "attaque": 50, "defense": 36, "magie": 20, "resistance": 28, "vitesse": 52},
@@ -245,6 +250,7 @@
   {
     "id": "lucioline",
     "nom": "Lucioline",
+    "description": "Sa lumière guide les voyageurs perdus… ou les égare, selon son humeur.",
     "sprite": "lucioline",
     "type": "feu",
     "base": {"pv": 40, "pm": 16, "attaque": 48, "defense": 40, "magie": 40, "resistance": 40, "vitesse": 55},
@@ -259,6 +265,7 @@
   {
     "id": "grenouillon",
     "nom": "Grenouillon",
+    "description": "Il chante sous la pluie, très faux, mais avec beaucoup de cœur.",
     "sprite": "grenouillon",
     "type": "eau",
     "base": {"pv": 48, "pm": 16, "attaque": 46, "defense": 48, "magie": 36, "resistance": 42, "vitesse": 42},
@@ -273,6 +280,7 @@
   {
     "id": "champichou",
     "nom": "Champichou",
+    "description": "Ses spores font éternuer les créatures qui passent trop près.",
     "sprite": "champichou",
     "type": "plante",
     "base": {"pv": 50, "pm": 18, "attaque": 44, "defense": 50, "magie": 40, "resistance": 45, "vitesse": 36},
@@ -287,6 +295,7 @@
   {
     "id": "rocaillou",
     "nom": "Rocaillou",
+    "description": "On le prend souvent pour un caillou. Il en profite pour faire la sieste.",
     "sprite": "elem_terre",
     "type": "roche",
     "base": {"pv": 50, "pm": 8, "attaque": 52, "defense": 66, "magie": 20, "resistance": 43, "vitesse": 28},
@@ -302,6 +311,7 @@
   {
     "id": "brumelin",
     "nom": "Brumelin",
+    "description": "Un petit nuage de brume qui suit les voyageurs en silence.",
     "sprite": "brumelin",
     "type": "ombre",
     "base": {"pv": 40, "pm": 20, "attaque": 44, "defense": 40, "magie": 44, "resistance": 42, "vitesse": 50},
@@ -316,6 +326,7 @@
   {
     "id": "tisonnel",
     "nom": "Tisonnel",
+    "description": "Il lèche les braises comme d'autres lèchent du miel.",
     "sprite": "tisonnel",
     "type": "feu",
     "base": {"pv": 52, "pm": 20, "attaque": 58, "defense": 46, "magie": 40, "resistance": 43, "vitesse": 56},
@@ -329,6 +340,7 @@
   {
     "id": "voltigeon",
     "nom": "Voltigeon",
+    "description": "Ses plumes crépitent avant l'orage. Les bergers s'en servent comme baromètre.",
     "sprite": "voltigeon",
     "types": ["foudre", "vent"],
     "base": {"pv": 46, "pm": 20, "attaque": 52, "defense": 40, "magie": 48, "resistance": 44, "vitesse": 64},
@@ -343,6 +355,7 @@
   {
     "id": "galetor",
     "nom": "Galetor",
+    "description": "Plus il roule, plus il est lisse, plus il est fier.",
     "sprite": "golem_pierre",
     "type": "roche",
     "base": {"pv": 62, "pm": 8, "attaque": 60, "defense": 72, "magie": 22, "resistance": 47, "vitesse": 26},
@@ -358,6 +371,7 @@
   {
     "id": "glaconnet",
     "nom": "Glaçonnet",
+    "description": "Il fond un peu quand on le serre dans ses bras. Il se laisse faire quand même.",
     "sprite": "glaconnet",
     "types": ["glace", "eau"],
     "base": {"pv": 50, "pm": 24, "attaque": 44, "defense": 52, "magie": 52, "resistance": 52, "vitesse": 44},
@@ -371,6 +385,7 @@
   {
     "id": "fumerole",
     "nom": "Fumerole",
+    "description": "Elle sort des fissures du volcan, chaude et un peu toxique.",
     "sprite": "fumerole",
     "types": ["ombre", "poison"],
     "base": {"pv": 44, "pm": 26, "attaque": 40, "defense": 44, "magie": 56, "resistance": 50, "vitesse": 50},
@@ -385,6 +400,7 @@
   {
     "id": "serpentin",
     "nom": "Serpentin",
+    "description": "Il ondule dans les herbes hautes sans un bruit.",
     "sprite": "serpentin",
     "type": "poison",
     "base": {"pv": 48, "pm": 16, "attaque": 54, "defense": 42, "magie": 40, "resistance": 40, "vitesse": 56},
@@ -398,6 +414,7 @@
   {
     "id": "chauvenuit",
     "nom": "Chauvenuit",
+    "description": "Elle ne sort qu'à la nuit tombée et dort la tête en bas.",
     "sprite": "chauve_souris",
     "types": ["ombre", "vent"],
     "base": {"pv": 44, "pm": 18, "attaque": 50, "defense": 38, "magie": 48, "resistance": 44, "vitesse": 66},
@@ -412,6 +429,7 @@
   {
     "id": "louvet",
     "nom": "Louvet",
+    "description": "Un louveteau curieux qui suit les promeneurs à distance.",
     "sprite": "loup",
     "type": "normal",
     "base": {"pv": 56, "pm": 14, "attaque": 62, "defense": 46, "magie": 26, "resistance": 36, "vitesse": 60},
@@ -427,6 +445,7 @@
   {
     "id": "esprillon",
     "nom": "Esprillon",
+    "description": "Un petit esprit perdu. Il cherche quelqu'un, mais ne sait plus qui.",
     "sprite": "fantome",
     "type": "esprit",
     "base": {"pv": 42, "pm": 26, "attaque": 30, "defense": 40, "magie": 58, "resistance": 56, "vitesse": 52},
@@ -442,6 +461,7 @@
   {
     "id": "crapoison",
     "nom": "Crapoison",
+    "description": "Sa peau brille de couleurs vives : un avertissement à ne pas ignorer.",
     "sprite": "crapoison",
     "types": ["poison", "eau"],
     "base": {"pv": 54, "pm": 20, "attaque": 48, "defense": 50, "magie": 46, "resistance": 48, "vitesse": 42},
@@ -463,6 +483,7 @@
   {
     "id": "carapierre",
     "nom": "Carapierre",
+    "description": "Sa carapace pèse plus lourd que lui. Il avance quand même.",
     "sprite": "carapierre",
     "types": ["roche", "eau"],
     "base": {"pv": 60, "pm": 12, "attaque": 50, "defense": 70, "magie": 30, "resistance": 52, "vitesse": 26},
@@ -478,6 +499,7 @@
   {
     "id": "givrelin",
     "nom": "Givrelin",
+    "description": "Là où il passe, l'herbe se couvre de givre en dessinant des étoiles.",
     "sprite": "givrelin",
     "type": "glace",
     "base": {"pv": 50, "pm": 26, "attaque": 52, "defense": 44, "magie": 58, "resistance": 50, "vitesse": 64},
@@ -492,6 +514,7 @@
   {
     "id": "zephyrin",
     "nom": "Zéphyrin",
+    "description": "Il vole si vite qu'on ne voit que le vent qu'il laisse derrière lui.",
     "sprite": "zephyrin",
     "type": "vent",
     "base": {"pv": 46, "pm": 22, "attaque": 56, "defense": 40, "magie": 46, "resistance": 42, "vitesse": 72},
@@ -506,6 +529,7 @@
   {
     "id": "ferrolin",
     "nom": "Ferrolin",
+    "description": "Il mange de la ferraille et rouille quand il est triste.",
     "sprite": "ferrolin",
     "type": "metal",
     "base": {"pv": 58, "pm": 10, "attaque": 60, "defense": 78, "magie": 24, "resistance": 50, "vitesse": 28},
@@ -521,6 +545,7 @@
   {
     "id": "cristallin",
     "nom": "Cristallin",
+    "description": "La lumière qui le traverse se change en arc-en-ciel.",
     "sprite": "cristallin",
     "types": ["roche", "lumiere"],
     "base": {"pv": 52, "pm": 30, "attaque": 40, "defense": 64, "magie": 60, "resistance": 62, "vitesse": 40},
@@ -535,6 +560,7 @@
   {
     "id": "etincelot",
     "nom": "Étincelot",
+    "description": "Il fait des étincelles quand il éternue. Gare aux meules de foin.",
     "sprite": "etincelot",
     "type": "foudre",
     "base": {"pv": 42, "pm": 22, "attaque": 46, "defense": 38, "magie": 58, "resistance": 46, "vitesse": 66},
@@ -549,6 +575,7 @@
   {
     "id": "flammenard",
     "nom": "Flammenard",
+    "description": "Son pelage brûle sans jamais se consumer. Il protège ceux qu'il aime.",
     "sprite": "flammenard",
     "type": "feu",
     "base": {"pv": 50, "pm": 24, "attaque": 62, "defense": 46, "magie": 44, "resistance": 45, "vitesse": 220},
@@ -563,6 +590,7 @@
   {
     "id": "torrentin",
     "nom": "Torrentin",
+    "description": "Il remonte les cascades pour le plaisir.",
     "sprite": "elem_eau",
     "type": "eau",
     "base": {"pv": 55, "pm": 24, "attaque": 55, "defense": 59, "magie": 46, "resistance": 53, "vitesse": 51},
@@ -583,6 +611,7 @@
   {
     "id": "ronceflore",
     "nom": "Ronceflore",
+    "description": "Ses fleurs sentent le miel ; ses ronces, beaucoup moins.",
     "sprite": "ronceflore",
     "type": "plante",
     "base": {"pv": 57, "pm": 26, "attaque": 55, "defense": 57, "magie": 48, "resistance": 53, "vitesse": 48},
@@ -603,6 +632,7 @@
   {
     "id": "rongecrin",
     "nom": "Rongecrin",
+    "description": "Ses dents poussent toute sa vie. Il ronge donc tout, toute sa vie.",
     "sprite": "rongecrin",
     "type": "normal",
     "base": {"pv": 42, "pm": 11, "attaque": 55, "defense": 40, "magie": 22, "resistance": 31, "vitesse": 57},
@@ -618,6 +648,7 @@
   {
     "id": "champignard",
     "nom": "Champignard",
+    "description": "Un champignon géant. La nuit, son chapeau luit doucement.",
     "sprite": "champignard",
     "type": "plante",
     "base": {"pv": 55, "pm": 20, "attaque": 48, "defense": 55, "magie": 44, "resistance": 50, "vitesse": 40},
@@ -632,6 +663,7 @@
   {
     "id": "lucifee",
     "nom": "Lucifée",
+    "description": "Ses ailes lumineuses éclairent les nuits d'été.",
     "sprite": "lucifee",
     "type": "feu",
     "base": {"pv": 44, "pm": 18, "attaque": 53, "defense": 44, "magie": 44, "resistance": 44, "vitesse": 61},
@@ -646,6 +678,7 @@
   {
     "id": "fournezard",
     "nom": "Fournézard",
+    "description": "Son ventre est un four : les mineurs y cuisent leur pain.",
     "sprite": "dragonnet_b",
     "type": "feu",
     "base": {"pv": 57, "pm": 22, "attaque": 64, "defense": 51, "magie": 44, "resistance": 47, "vitesse": 62},
@@ -659,6 +692,7 @@
   {
     "id": "banquisot",
     "nom": "Banquisot",
+    "description": "Il glisse sur le ventre sur la glace, pour aller plus vite.",
     "sprite": "banquisot",
     "types": ["glace", "eau"],
     "base": {"pv": 55, "pm": 26, "attaque": 48, "defense": 57, "magie": 57, "resistance": 57, "vitesse": 48},
@@ -673,6 +707,7 @@
   {
     "id": "serpentox",
     "nom": "Serpentox",
+    "description": "Un seul regard de lui fait frissonner les plus braves.",
     "sprite": "serpentox",
     "type": "poison",
     "base": {"pv": 53, "pm": 18, "attaque": 59, "defense": 46, "magie": 44, "resistance": 44, "vitesse": 62},
@@ -686,6 +721,7 @@
   {
     "id": "noctaile",
     "nom": "Noctaile",
+    "description": "Elle chasse en silence sous la lune, guidée par les échos.",
     "sprite": "noctaile",
     "types": ["ombre", "vent"],
     "base": {"pv": 48, "pm": 20, "attaque": 55, "defense": 42, "magie": 53, "resistance": 48, "vitesse": 73},
@@ -700,6 +736,7 @@
   {
     "id": "orageon",
     "nom": "Orageon",
+    "description": "Il attire la foudre exprès, pour se recharger.",
     "sprite": "orageon",
     "types": ["foudre", "vent"],
     "base": {"pv": 51, "pm": 22, "attaque": 57, "defense": 44, "magie": 53, "resistance": 48, "vitesse": 70},
@@ -714,6 +751,7 @@
   {
     "id": "carapic",
     "nom": "Carapic",
+    "description": "Ses pics de pierre repoussent même les ours.",
     "sprite": "carapic",
     "types": ["roche", "eau"],
     "base": {"pv": 66, "pm": 13, "attaque": 55, "defense": 77, "magie": 33, "resistance": 57, "vitesse": 29},
@@ -736,6 +774,7 @@
   {
     "id": "fulgurin",
     "nom": "Fulgurin",
+    "description": "Il traverse le ciel comme un éclair, et laisse une odeur d'orage.",
     "sprite": "fulgurin",
     "type": "foudre",
     "base": {"pv": 46, "pm": 24, "attaque": 51, "defense": 42, "magie": 64, "resistance": 51, "vitesse": 73},
@@ -750,6 +789,7 @@
   {
     "id": "givrenard",
     "nom": "Givrenard",
+    "description": "Son pelage de glace ne fond jamais, même au soleil.",
     "sprite": "givrenard",
     "type": "glace",
     "base": {"pv": 55, "pm": 29, "attaque": 57, "defense": 48, "magie": 64, "resistance": 55, "vitesse": 70},
@@ -764,6 +804,7 @@
   {
     "id": "ferrogeant",
     "nom": "Ferrogeant",
+    "description": "Un géant d'acier, lent mais inébranlable.",
     "sprite": "ferrogeant",
     "type": "metal",
     "base": {"pv": 64, "pm": 11, "attaque": 66, "defense": 86, "magie": 26, "resistance": 55, "vitesse": 31},
@@ -786,6 +827,7 @@
   {
     "id": "prismalin",
     "nom": "Prismalin",
+    "description": "Il disperse la lumière en mille éclats. Les mages s'en disputent un.",
     "sprite": "prismalin",
     "types": ["roche", "lumiere"],
     "base": {"pv": 57, "pm": 33, "attaque": 44, "defense": 70, "magie": 66, "resistance": 68, "vitesse": 44},
@@ -800,6 +842,7 @@
   {
     "id": "sylvarque",
     "nom": "Sylvarque",
+    "description": "Le gardien de la forêt. La brume l'avait rendu fou ; il dort, à présent.",
     "sprite": "sylvarque",
     "type": "ombre",
     "base": {"pv": 80, "pm": 40, "attaque": 48, "defense": 46, "magie": 46, "resistance": 46, "vitesse": 45},
@@ -812,6 +855,7 @@
   {
     "id": "golem",
     "nom": "Golem de suie",
+    "description": "Fait de suie et de pierre, il gardait la route de Forgeroc.",
     "sprite": "golem_suie",
     "type": "ombre",
     "base": {"pv": 90, "pm": 10, "attaque": 60, "defense": 66, "magie": 30, "resistance": 48, "vitesse": 24},
@@ -826,6 +870,7 @@
   {
     "id": "ronce_mere",
     "nom": "Ronce-Mère",
+    "description": "La mère de toutes les ronces du marais. Elle a des racines partout.",
     "sprite": "ronce_mere",
     "types": ["plante", "poison"],
     "base": {"pv": 90, "pm": 30, "attaque": 56, "defense": 54, "magie": 58, "resistance": 56, "vitesse": 50},
@@ -840,6 +885,7 @@
   {
     "id": "ignarok",
     "nom": "Ignarok",
+    "description": "Le cœur du volcan. Quand il dort, Forgeroc entend les oiseaux.",
     "sprite": "golem_feu_grand",
     "type": "feu",
     "base": {"pv": 95, "pm": 40, "attaque": 60, "defense": 56, "magie": 58, "resistance": 57, "vitesse": 50},
@@ -852,6 +898,7 @@
   {
     "id": "givrecorne",
     "nom": "Givrecorne",
+    "description": "Le gardien des Pics. Sa corne gèle l'air autour de lui.",
     "sprite": "troll_grand",
     "types": ["glace", "roche"],
     "base": {"pv": 100, "pm": 40, "attaque": 66, "defense": 62, "magie": 60, "resistance": 60, "vitesse": 50},
@@ -866,6 +913,7 @@
   {
     "id": "brumeloup",
     "nom": "Brumeloup",
+    "description": "Un loup fait de brume, qui hurle aux lunes qu'on ne voit pas.",
     "sprite": "loup_garou",
     "type": "ombre",
     "base": {"pv": 66, "pm": 20, "attaque": 74, "defense": 54, "magie": 32, "resistance": 46, "vitesse": 68},
@@ -888,6 +936,7 @@
   {
     "id": "nebulis",
     "nom": "Nébulis",
+    "description": "Un esprit de brume qui chante des berceuses oubliées.",
     "sprite": "nebulis",
     "type": "esprit",
     "base": {"pv": 52, "pm": 36, "attaque": 30, "defense": 48, "magie": 74, "resistance": 66, "vitesse": 60},
@@ -903,6 +952,7 @@
   {
     "id": "orbrume",
     "nom": "Orbrume",
+    "description": "Une pierre qui garde la brume prisonnière. Elle pèse plus lourd la nuit.",
     "sprite": "orbrume",
     "types": ["ombre", "roche"],
     "base": {"pv": 64, "pm": 26, "attaque": 56, "defense": 76, "magie": 52, "resistance": 60, "vitesse": 34},
@@ -917,6 +967,7 @@
   {
     "id": "mere_brumes",
     "nom": "Mère des Brumes",
+    "description": "Elle pleurait la brume pour protéger le monde de l'orage.",
     "sprite": "mere_brumes",
     "types": ["ombre", "esprit"],
     "base": {"pv": 110, "pm": 60, "attaque": 64, "defense": 62, "magie": 76, "resistance": 68, "vitesse": 56},
@@ -930,6 +981,7 @@
   {
     "id": "ecumet",
     "nom": "Écumet",
+    "description": "Il naît de l'écume des vagues et disparaît quand la mer se calme.",
     "sprite": "ecumet",
     "type": "eau",
     "base": {"pv": 50, "pm": 22, "attaque": 54, "defense": 44, "magie": 52, "resistance": 46, "vitesse": 66},
@@ -943,6 +995,7 @@
   {
     "id": "coquillon",
     "nom": "Coquillon",
+    "description": "Il se cache dans sa coquille dès qu'on le regarde trop longtemps.",
     "sprite": "coquillon",
     "types": ["eau", "roche"],
     "base": {"pv": 58, "pm": 14, "attaque": 52, "defense": 70, "magie": 30, "resistance": 52, "vitesse": 30},
@@ -957,6 +1010,7 @@
   {
     "id": "bastillon",
     "nom": "Bastillon",
+    "description": "Sa coquille est une forteresse. Des crabes y habitent avec lui.",
     "sprite": "bastillon",
     "types": ["eau", "roche"],
     "base": {"pv": 66, "pm": 15, "attaque": 58, "defense": 80, "magie": 32, "resistance": 58, "vitesse": 32},
@@ -971,6 +1025,7 @@
   {
     "id": "voltanguille",
     "nom": "Voltanguille",
+    "description": "Elle donne de petites décharges aux nageurs trop curieux.",
     "sprite": "voltanguille",
     "types": ["foudre", "eau"],
     "base": {"pv": 50, "pm": 24, "attaque": 58, "defense": 42, "magie": 58, "resistance": 44, "vitesse": 64},
@@ -984,6 +1039,7 @@
   {
     "id": "fulgoray",
     "nom": "Fulgoray",
+    "description": "Une raie qui vole au-dessus des vagues les soirs d'orage.",
     "sprite": "fulgoray",
     "types": ["foudre", "eau"],
     "base": {"pv": 56, "pm": 28, "attaque": 62, "defense": 46, "magie": 66, "resistance": 50, "vitesse": 70},
@@ -997,6 +1053,7 @@
   {
     "id": "nuageon",
     "nom": "Nuageon",
+    "description": "Un petit nuage qui pleure quand on le gronde.",
     "sprite": "nuageon",
     "types": ["vent", "esprit"],
     "base": {"pv": 52, "pm": 34, "attaque": 30, "defense": 48, "magie": 64, "resistance": 62, "vitesse": 58},
@@ -1011,6 +1068,7 @@
   {
     "id": "orageline",
     "nom": "Orageline",
+    "description": "Elle danse dans les éclairs et rit avec le tonnerre.",
     "sprite": "orageline",
     "types": ["vent", "foudre"],
     "base": {"pv": 50, "pm": 22, "attaque": 60, "defense": 42, "magie": 54, "resistance": 44, "vitesse": 72},
@@ -1025,6 +1083,7 @@
   {
     "id": "noyelin",
     "nom": "Noyelin",
+    "description": "L'esprit d'un marin perdu, qui cherche encore la côte.",
     "sprite": "noyelin",
     "types": ["esprit", "eau"],
     "base": {"pv": 48, "pm": 32, "attaque": 40, "defense": 46, "magie": 66, "resistance": 58, "vitesse": 62},
@@ -1038,6 +1097,7 @@
   {
     "id": "kraken",
     "nom": "Kraken des récifs",
+    "description": "Le maître des récifs. Ses bras font chavirer les navires.",
     "sprite": "kraken",
     "types": ["eau", "foudre"],
     "base": {"pv": 90, "pm": 40, "attaque": 62, "defense": 60, "magie": 64, "resistance": 58, "vitesse": 46},
@@ -1051,6 +1111,7 @@
   {
     "id": "griffon",
     "nom": "Griffon tempête",
+    "description": "Il garde le pied de la Tour de l'Orage et ne dort jamais.",
     "sprite": "griffon",
     "types": ["vent", "foudre"],
     "base": {"pv": 84, "pm": 40, "attaque": 68, "defense": 52, "magie": 58, "resistance": 52, "vitesse": 70},
@@ -1064,6 +1125,7 @@
   {
     "id": "seigneur_orage",
     "nom": "Seigneur des Orages",
+    "description": "L'orage vivant que les premiers gardiens avaient enfermé.",
     "sprite": "seigneur_orage",
     "types": ["foudre", "ombre"],
     "base": {"pv": 100, "pm": 60, "attaque": 70, "defense": 64, "magie": 68, "resistance": 70, "vitesse": 60},
@@ -1077,6 +1139,7 @@
   {
     "id": "tisseline",
     "nom": "Tisseline",
+    "description": "Ses toiles brillent dans le noir des grottes comme des étoiles.",
     "sprite": "araignee",
     "types": ["poison", "ombre"],
     "base": {"pv": 50, "pm": 18, "attaque": 56, "defense": 44, "magie": 44, "resistance": 42, "vitesse": 62},
@@ -1089,6 +1152,7 @@
   {
     "id": "osselet",
     "nom": "Osselet",
+    "description": "Un petit squelette farceur qui claque des dents pour faire peur.",
     "sprite": "squelette",
     "types": ["ombre", "esprit"],
     "base": {"pv": 46, "pm": 28, "attaque": 54, "defense": 40, "magie": 60, "resistance": 52, "vitesse": 60},
@@ -1100,6 +1164,7 @@
   {
     "id": "gobelard",
     "nom": "Gobelard",
+    "description": "Il vole tout ce qui brille et le cache au fond des bois.",
     "sprite": "gobelin",
     "type": "normal",
     "base": {"pv": 50, "pm": 10, "attaque": 60, "defense": 42, "magie": 24, "resistance": 34, "vitesse": 64},
@@ -1112,6 +1177,7 @@
   {
     "id": "brutor",
     "nom": "Brutor",
+    "description": "Il frappe d'abord et ne réfléchit jamais ensuite.",
     "sprite": "orc",
     "types": ["normal", "roche"],
     "base": {"pv": 70, "pm": 8, "attaque": 72, "defense": 58, "magie": 20, "resistance": 38, "vitesse": 34},
@@ -1124,6 +1190,7 @@
   {
     "id": "draconnet",
     "nom": "Draconnet",
+    "description": "Un bébé dragon. Il crache plus de fumée que de feu.",
     "sprite": "dragonnet",
     "types": ["feu", "vent"],
     "base": {"pv": 52, "pm": 22, "attaque": 56, "defense": 46, "magie": 52, "resistance": 44, "vitesse": 58},
@@ -1135,6 +1202,7 @@
   {
     "id": "coffrelin",
     "nom": "Coffrelin",
+    "description": "Un coffre qui a des dents. Ne l'ouvrez pas trop vite.",
     "sprite": "mimique",
     "type": "metal",
     "base": {"pv": 80, "pm": 10, "attaque": 78, "defense": 80, "magie": 30, "resistance": 60, "vitesse": 40},
@@ -1146,6 +1214,7 @@
   {
     "id": "lueurine",
     "nom": "Lueurine",
+    "description": "Sa lumière turquoise ne s'éteint qu'au lever du jour.",
     "sprite": "lueurine",
     "types": ["lumiere", "vent"],
     "base": {"pv": 58, "pm": 32, "attaque": 50, "defense": 50, "magie": 76, "resistance": 66, "vitesse": 80},
@@ -1158,6 +1227,7 @@
   {
     "id": "loup_aube",
     "nom": "Loup d'aube",
+    "description": "Il hurle au soleil levant pour réveiller l'île.",
     "sprite": "loup_aube",
     "types": ["lumiere", "normal"],
     "base": {"pv": 76, "pm": 22, "attaque": 82, "defense": 58, "magie": 40, "resistance": 52, "vitesse": 74},
@@ -1172,6 +1242,7 @@
   {
     "id": "crapale",
     "nom": "Crapâle",
+    "description": "Une grenouille pâle qui vit dans la vase et la lumière.",
     "sprite": "crapale",
     "types": ["poison", "eau"],
     "base": {"pv": 74, "pm": 28, "attaque": 54, "defense": 64, "magie": 66, "resistance": 62, "vitesse": 48},
@@ -1183,6 +1254,7 @@
   {
     "id": "aubespectre",
     "nom": "Aubespectre",
+    "description": "Un esprit rose qui soigne ceux qu'il aime… et les autres aussi.",
     "sprite": "aubespectre",
     "types": ["esprit", "lumiere"],
     "base": {"pv": 58, "pm": 40, "attaque": 34, "defense": 50, "magie": 82, "resistance": 74, "vitesse": 66},
@@ -1195,6 +1267,7 @@
   {
     "id": "rocaube",
     "nom": "Rocaube",
+    "description": "Une pierre rose qui garde la chaleur du matin.",
     "sprite": "rocaube",
     "types": ["roche", "lumiere"],
     "base": {"pv": 80, "pm": 14, "attaque": 76, "defense": 92, "magie": 36, "resistance": 62, "vitesse": 30},
@@ -1207,6 +1280,7 @@
   {
     "id": "vasepent",
     "nom": "Vasepent",
+    "description": "Il dort sous la vase du marais, un œil toujours ouvert.",
     "sprite": "vasepent",
     "types": ["poison", "plante"],
     "base": {"pv": 64, "pm": 22, "attaque": 74, "defense": 54, "magie": 58, "resistance": 52, "vitesse": 72},
@@ -1218,6 +1292,7 @@
   {
     "id": "aubelle",
     "nom": "Aubelle",
+    "description": "Elle vole d'île en île en portant la lumière de l'aube.",
     "sprite": "aubelle",
     "types": ["vent", "lumiere"],
     "base": {"pv": 60, "pm": 30, "attaque": 66, "defense": 48, "magie": 62, "resistance": 54, "vitesse": 86},
@@ -1230,6 +1305,7 @@
   {
     "id": "nacrelin",
     "nom": "Nacrelin",
+    "description": "Ses écailles nacrées reflètent la lune comme un miroir.",
     "sprite": "nacrelin",
     "types": ["eau", "lumiere"],
     "base": {"pv": 72, "pm": 36, "attaque": 70, "defense": 64, "magie": 74, "resistance": 70, "vitesse": 68},
@@ -1241,6 +1317,7 @@
   {
     "id": "gardien_lueurs",
     "nom": "Gardien des Lueurs",
+    "description": "Il veillait sur le Bois des Lueurs et chassait tout ce qui sentait la brume.",
     "sprite": "gardien_lueurs",
     "types": ["plante", "lumiere"],
     "base": {"pv": 105, "pm": 44, "attaque": 70, "defense": 72, "magie": 62, "resistance": 64, "vitesse": 44},
@@ -1253,6 +1330,7 @@
   {
     "id": "reine_marais",
     "nom": "Reine du Marais",
+    "description": "Elle gardait la Larme d'Aube au cœur d'une fleur géante.",
     "sprite": "reine_marais",
     "types": ["poison", "eau"],
     "base": {"pv": 110, "pm": 50, "attaque": 60, "defense": 62, "magie": 74, "resistance": 66, "vitesse": 52},
@@ -1265,6 +1343,7 @@
   {
     "id": "brume_noire",
     "nom": "Brume Noire",
+    "description": "Le reste de la brume, devenu colère. Il n'en reste rien.",
     "sprite": "brume_noire",
     "types": ["ombre", "esprit"],
     "base": {"pv": 120, "pm": 70, "attaque": 70, "defense": 66, "magie": 82, "resistance": 74, "vitesse": 60},
@@ -1283,6 +1362,7 @@
   {
     "id": "troll_mines",
     "nom": "Troll des mines",
+    "description": "Il s'était installé au fond des mines, avec ses cailloux préférés.",
     "sprite": "troll_mines",
     "types": ["roche", "normal"],
     "base": {"pv": 96, "pm": 20, "attaque": 66, "defense": 70, "magie": 30, "resistance": 44, "vitesse": 34},
@@ -1295,6 +1375,7 @@
   {
     "id": "colosse_givre",
     "nom": "Colosse de givre",
+    "description": "Il dormait sous le glacier depuis mille hivers.",
     "sprite": "colosse_givre",
     "types": ["glace", "roche"],
     "base": {"pv": 104, "pm": 30, "attaque": 70, "defense": 74, "magie": 50, "resistance": 58, "vitesse": 36},
@@ -1307,6 +1388,7 @@
   {
     "id": "leviathan",
     "nom": "Léviathan",
+    "description": "Le monstre de l'épave. On dit qu'il a coulé le navire par curiosité.",
     "sprite": "leviathan",
     "types": ["eau", "ombre"],
     "base": {"pv": 110, "pm": 50, "attaque": 70, "defense": 62, "magie": 72, "resistance": 64, "vitesse": 56},
@@ -1319,6 +1401,7 @@
   {
     "id": "orage_ancien",
     "nom": "Orage ancien",
+    "description": "Il était là avant les gardiens, avant la brume, avant tout.",
     "sprite": "orage_ancien",
     "types": ["foudre", "feu"],
     "base": {"pv": 130, "pm": 80, "attaque": 80, "defense": 72, "magie": 86, "resistance": 78, "vitesse": 68},
@@ -1331,6 +1414,7 @@
   {
     "id": "harpie_givre",
     "nom": "Harpie de givre",
+    "description": "Elle soufflait le vent glacé sur Givreval, du haut du col.",
     "sprite": "harpie_givre",
     "types": ["vent", "glace"],
     "base": {"pv": 88, "pm": 40, "attaque": 60, "defense": 50, "magie": 62, "resistance": 54, "vitesse": 72},
@@ -1343,6 +1427,7 @@
   {
     "id": "gardien_marees",
     "nom": "Gardien des marées",
+    "description": "Une tortue couverte de corail, qui gardait le trident depuis mille ans.",
     "sprite": "gardien_marees",
     "types": ["eau", "roche"],
     "base": {"pv": 104, "pm": 40, "attaque": 64, "defense": 78, "magie": 58, "resistance": 66, "vitesse": 40},
@@ -1355,6 +1440,7 @@
   {
     "id": "bourrasquin",
     "nom": "Bourrasquin",
+    "description": "Né dans les rafales du col, il ne tient jamais en place.",
     "sprite": "bourrasquin",
     "types": ["vent", "glace"],
     "base": {"pv": 54, "pm": 14, "attaque": 61, "defense": 51, "magie": 27, "resistance": 39, "vitesse": 78},
@@ -1367,6 +1453,7 @@
   {
     "id": "givroc",
     "nom": "Givroc",
+    "description": "Une pierre couverte de givre, qui craque quand on la touche.",
     "sprite": "givroc",
     "types": ["roche", "glace"],
     "base": {"pv": 68, "pm": 11, "attaque": 70, "defense": 89, "magie": 27, "resistance": 58, "vitesse": 38},
@@ -1379,6 +1466,7 @@
   {
     "id": "lanternelle",
     "nom": "Lanternelle",
+    "description": "Une petite flamme qui éclaire le chemin des esprits.",
     "sprite": "lanternelle",
     "types": ["esprit", "feu"],
     "base": {"pv": 59, "pm": 36, "attaque": 42, "defense": 56, "magie": 81, "resistance": 78, "vitesse": 73},
@@ -1391,6 +1479,7 @@
   {
     "id": "fongombre",
     "nom": "Fongombre",
+    "description": "Un champignon d'ombre qui pousse là où personne ne regarde.",
     "sprite": "fongombre",
     "types": ["plante", "ombre"],
     "base": {"pv": 72, "pm": 26, "attaque": 64, "defense": 72, "magie": 58, "resistance": 65, "vitesse": 52},
@@ -1403,6 +1492,7 @@
   {
     "id": "corailleur",
     "nom": "Corailleur",
+    "description": "Il construit des récifs pour les petits poissons.",
     "sprite": "corailleur",
     "types": ["eau", "roche"],
     "base": {"pv": 77, "pm": 26, "attaque": 74, "defense": 77, "magie": 58, "resistance": 67, "vitesse": 67},
@@ -1415,6 +1505,7 @@
   {
     "id": "perlin",
     "nom": "Perlin",
+    "description": "Elle garde une perle sous sa langue et ne la montre jamais.",
     "sprite": "perlin",
     "types": ["eau", "lumiere"],
     "base": {"pv": 60, "pm": 26, "attaque": 65, "defense": 53, "magie": 62, "resistance": 55, "vitesse": 79},
@@ -1427,6 +1518,7 @@
   {
     "id": "murenix",
     "nom": "Murénix",
+    "description": "Une murène qui chante, la nuit, dans les grottes de la mer.",
     "sprite": "murenix",
     "types": ["eau", "poison"],
     "base": {"pv": 77, "pm": 26, "attaque": 86, "defense": 67, "magie": 64, "resistance": 64, "vitesse": 90},
@@ -1439,6 +1531,7 @@
   {
     "id": "petrolin",
     "nom": "Pétrolin",
+    "description": "La mousse grise le couvre peu à peu, jusqu'à ce qu'il devienne pierre.",
     "sprite": "petrolin",
     "types": ["roche", "plante"],
     "base": {"pv": 82, "pm": 18, "attaque": 74, "defense": 90, "magie": 40, "resistance": 64, "vitesse": 32},
@@ -1451,6 +1544,7 @@
   {
     "id": "fossiloup",
     "nom": "Fossiloup",
+    "description": "Un loup de pierre. Sa meute garde la forêt pétrifiée.",
     "sprite": "fossiloup",
     "types": ["roche", "normal"],
     "base": {"pv": 78, "pm": 20, "attaque": 86, "defense": 70, "magie": 34, "resistance": 50, "vitesse": 70},
@@ -1464,6 +1558,7 @@
   {
     "id": "echoplume",
     "nom": "Échoplume",
+    "description": "Chacun de ses cris revient trois fois, de plus en plus doux.",
     "sprite": "echoplume",
     "types": ["vent", "esprit"],
     "base": {"pv": 62, "pm": 34, "attaque": 64, "defense": 50, "magie": 72, "resistance": 62, "vitesse": 88},
@@ -1476,6 +1571,7 @@
   {
     "id": "cendrelys",
     "nom": "Cendrelys",
+    "description": "Sa flamme bleue ne brûle pas : elle chante.",
     "sprite": "cendrelys",
     "types": ["feu", "esprit"],
     "base": {"pv": 64, "pm": 40, "attaque": 52, "defense": 54, "magie": 84, "resistance": 70, "vitesse": 72},
@@ -1487,6 +1583,7 @@
   {
     "id": "braisaure",
     "nom": "Braisaure",
+    "description": "Il nage dans la lave du cratère comme dans un lac.",
     "sprite": "braisaure",
     "types": ["feu", "roche"],
     "base": {"pv": 80, "pm": 24, "attaque": 84, "defense": 76, "magie": 58, "resistance": 56, "vitesse": 58},
@@ -1499,6 +1596,7 @@
   {
     "id": "spectrecho",
     "nom": "Spectrécho",
+    "description": "L'écho d'une voix oubliée, devenu une créature.",
     "sprite": "spectrecho",
     "types": ["esprit", "ombre"],
     "base": {"pv": 60, "pm": 44, "attaque": 40, "defense": 52, "magie": 86, "resistance": 76, "vitesse": 70},
@@ -1511,6 +1609,7 @@
   {
     "id": "colosse_echo",
     "nom": "Colosse d'écho",
+    "description": "On le prenait pour un arbre de pierre. Il attendait qu'on le réveille.",
     "sprite": "colosse_echo",
     "types": ["roche", "esprit"],
     "base": {"pv": 120, "pm": 40, "attaque": 82, "defense": 92, "magie": 60, "resistance": 74, "vitesse": 38},
@@ -1523,6 +1622,7 @@
   {
     "id": "phenix_echo",
     "nom": "Phénix d'écho",
+    "description": "Il renaît de ses cendres, et chante à chaque fois une nouvelle chanson.",
     "sprite": "phenix_echo",
     "types": ["feu", "vent"],
     "base": {"pv": 115, "pm": 60, "attaque": 76, "defense": 64, "magie": 88, "resistance": 72, "vitesse": 80},
@@ -1535,6 +1635,7 @@
   {
     "id": "ombre_gardien",
     "nom": "Ombre du Gardien",
+    "description": "L'écho du Premier Gardien, perdu dans la brume noire, puis apaisé.",
     "sprite": "ombre_gardien",
     "types": ["ombre", "lumiere"],
     "base": {"pv": 135, "pm": 80, "attaque": 86, "defense": 78, "magie": 90, "resistance": 82, "vitesse": 70},
@@ -1547,6 +1648,7 @@
   {
     "id": "veilleur_phare",
     "nom": "Veilleur du phare",
+    "description": "Il garde la lumière du vieux phare depuis mille ans.",
     "sprite": "veilleur_phare",
     "types": ["lumiere", "esprit"],
     "base": {"pv": 130, "pm": 70, "attaque": 80, "defense": 80, "magie": 90, "resistance": 82, "vitesse": 62},

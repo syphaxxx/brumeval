@@ -182,7 +182,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - Bestiaire : `Game::seen` / `caught` (espèces de créatures), lignes `vu` et
   `pris` de la sauvegarde ; `see()` dans `startBattle` et à l'entrée d'un
   renfort, `caught` à la capture, `noteBestiary()` compte l'équipe et la
-  réserve. Menu `bestiaryMenu`, fiche `drawBestiaryPanel` (`panelMode_` 3).
+  réserve. Menu `bestiaryMenu`, fiche `drawBestiaryPanel` (`panelMode_` 3 ; une fois l'espèce obtenue, sa
+  `description` : `Species::desc`, écrites par `outils/villes/descriptions.py`).
   L'Expédition repart d'un bestiaire vide.
 - Vente : boutique > « Vendre… » (`Game::sellMenu`), moitié du prix, sauf les
   objets importants.

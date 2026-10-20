@@ -383,7 +383,15 @@ void Game::drawBestiaryPanel(int x, int y) {
   std::string where;
   for (auto& p : places) where += (where.empty() ? "" : ", ") + p;
   auto lines = Gfx::wrap(T("Lieux : ") + (where.empty() ? std::string("inconnus") : where), w - 16);
-  int h = 104 + (c ? 42 : 0) + (v ? 11 * (int)lines.size() : 0);
+  auto about = c && !s.desc.empty() ? Gfx::wrap(s.desc, w - 16) : std::vector<std::string>{};  // le mot du Bestiaire, une fois obtenue
+  int top = about.empty() ? 104 : 88;  // avec la description : un dessin un peu plus petit
+  int room = (184 - y - top - (c ? 42 : 0) - (about.empty() ? 0 : 6 + 11 * (int)about.size())) / 11;  // au-dessus de l'aide
+  if (room <= 0) lines.clear();  // longue description : pas de place pour les lieux
+  else if ((int)lines.size() > room) {  // trop de lieux : les premiers, puis « … »
+    lines.resize((size_t)room);
+    lines.back() += "…";
+  }
+  int h = top + (c ? 42 : 0) + (v ? 11 * (int)lines.size() : 0) + (about.empty() ? 0 : 6 + 11 * (int)about.size());
   g.window(x, y, w, h);
   if (!v) {
     g.text(x + w / 2, y + 40, "???", MUTED, 1);
@@ -392,9 +400,9 @@ void Game::drawBestiaryPanel(int x, int y) {
   }
   g.text(x + 8, y + 6, s.name, GOLD);
   g.text(x + 8, y + 18, typesName(s), MUTED);
-  float k = creatureFit(s.id, 60);  // les petites créatures deux fois plus grandes
-  drawCreature(g, s.id, x + w / 2, y + 90 - 16 * k * s.size, k, false, time);
-  int ly = y + 96;
+  float k = creatureFit(s.id, top == 104 ? 60 : 46);  // les petites créatures deux fois plus grandes
+  drawCreature(g, s.id, x + w / 2, y + top - 14 - 16 * k * s.size, k, false, time);
+  int ly = y + top - 8;
   if (c) {  // statistiques de base, seulement pour une créature obtenue
     const char* names[] = {"PV", "PM", "Att", "Déf", "Mag", "Rés", "Vit"};
     for (int i = 0; i < N_BASE; i++) g.text(x + 8 + (i % 3) * 50, ly + (i / 3) * 11, std::string(T(names[i])) + " " + std::to_string(s.base[i]), WHITE);
@@ -404,6 +412,8 @@ void Game::drawBestiaryPanel(int x, int y) {
     ly += 12;
   }
   for (size_t i = 0; i < lines.size(); i++) g.text(x + 8, ly + 6 + i * 11, lines[i], MUTED);
+  ly += 6 + 11 * (int)lines.size();
+  for (size_t i = 0; i < about.size(); i++) g.text(x + 8, ly + 6 + i * 11, about[i], rgb(0xd8dcf0));
 }
 
 void Game::swapReserve(FighterP out, FighterP in) {
