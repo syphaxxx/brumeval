@@ -46,4 +46,6 @@ ph['apprend'] = [[1, "pyro"], [1, "lame_air"], [1, "brasier"], [1, "fleche_vent"
 open(D + 'especes.json', 'w', encoding='utf-8', newline='
 ').write(carte.pretty(ESP) + '
 ')
+# 5e mesure (faite à la main dans evenements.json) : le cratère a souvent la météo Canicule (feu +25 %) ; le Phénix est
+# escorté d'un Pétrolin et d'un Fossiloup (N.86) au lieu de deux créatures de feu, son renfort aussi.
 print("Acte 4 réglé : Ombre du Premier Gardien et Phénix d'écho")

@@ -87,6 +87,7 @@ struct Zone {
   int lo, hi, maxN;
   std::vector<std::string> pool;
   std::vector<std::string> night;  // « nuit » : créatures de la nuit (2026-10-20), la moitié des rencontres quand il fait nuit
+  int packCap = 0;                 // « meute_max » : taille maximale d'une meute dans cette zone (0 : la règle générale)
 };
 
 struct BossSpot {

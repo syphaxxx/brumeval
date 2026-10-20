@@ -204,7 +204,7 @@ MapDef mapFromJson(const Json& j) {
   for (auto& o : j.value("zones", Json::array()))
     m.zones.push_back({o.at("x").get<int>(), o.at("y").get<int>(), o.at("l").get<int>(), o.at("h").get<int>(), o.at("niveau_min").get<int>(),
                        o.at("niveau_max").get<int>(), jget(o, "max_ennemis", 3), o.at("creatures").get<std::vector<std::string>>(),
-                       jget(o, "nuit", std::vector<std::string>{})});
+                       jget(o, "nuit", std::vector<std::string>{}), jget(o, "meute_max", 0)});
   if (j.contains("enigme")) {
     const Json& e = j["enigme"];
     m.puzzleFlag = jget<std::string>(e, "drapeau", "");
@@ -286,6 +286,7 @@ Json mapToJson(const MapDef& m) {
   for (auto& x : m.zones) {
     z.push_back({{"x", x.x}, {"y", x.y}, {"l", x.w}, {"h", x.h}, {"niveau_min", x.lo}, {"niveau_max", x.hi}, {"max_ennemis", x.maxN}, {"creatures", x.pool}});
     if (!x.night.empty()) z.back()["nuit"] = x.night;
+    if (x.packCap > 0) z.back()["meute_max"] = x.packCap;
   }
   o["zones"] = z;
   Json bo = Json::array();

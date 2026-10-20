@@ -61,7 +61,8 @@
       "niveau_min": 80,
       "niveau_max": 84,
       "max_ennemis": 3,
-      "creatures": ["rocaube", "aubespectre", "nacrelin", "loup_aube", "brumeloup", "nebulis"]
+      "creatures": ["rocaube", "aubespectre", "nacrelin", "loup_aube", "brumeloup", "nebulis"],
+      "meute_max": 3
     }
   ],
   "boss": []

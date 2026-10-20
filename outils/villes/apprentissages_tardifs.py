@@ -20,7 +20,8 @@ TECH = {t['id']: t for t in json.load(open(D + 'techniques.json', encoding='utf-
 if any(l == 45 for l, _ in next(e for e in ESP if e['id'] == 'mulotin')['apprend']):
     sys.exit('Déjà fait.')
 HEROS = {m for e in ESP if e.get('humain') for _, m in e['apprend']}  # techniques des héros : elles leur restent
-CANDIDATS = [t for t in TECH.values() if t.get('puissance', 0) >= 50 and t.get('genre') in ('physique', 'magique')
+# pas d'attaque sur tous les ennemis : une meute sauvage qui en a plusieurs écrase l'équipe (mesuré : 60 défaites)
+CANDIDATS = [t for t in TECH.values() if t.get('puissance', 0) >= 50 and t.get('genre') in ('physique', 'magique') and t.get('cible') != 'tous_ennemis'
              and not t['id'].startswith(('lim_', 'duo_')) and t['id'] not in HEROS]
 n = 0
 for e in ESP:

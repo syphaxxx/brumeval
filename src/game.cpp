@@ -698,7 +698,7 @@ void Game::encounter() {
     n = std::min(n, z.maxN);
     // Meute : au plus profond de la nature, des créatures en plus
     float deep = std::min(1.f, wildDepth(px, py) / float(std::max(1.0, rules().packDistance)));
-    for (int k = n; k < rules().packMax; k++)
+    for (int k = n; k < (z.packCap > 0 ? z.packCap : rules().packMax); k++)
       if (frand() < .5f * deep) n++;
     std::vector<FighterP> foes;
     bool night = !z.night.empty() && nightAmount() > .5f && frand() < rules().nightShare;  // la nuit, ses créatures à elle

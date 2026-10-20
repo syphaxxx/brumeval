@@ -59,7 +59,8 @@
       "niveau_min": 98,
       "niveau_max": 102,
       "max_ennemis": 3,
-      "creatures": ["echoplume", "fossiloup", "braisaure", "petrolin", "cendrelys"]
+      "creatures": ["echoplume", "fossiloup", "braisaure", "petrolin", "cendrelys"],
+      "meute_max": 3
     }
   ],
   "boss": [

@@ -60,7 +60,8 @@
       "niveau_min": 90,
       "niveau_max": 94,
       "max_ennemis": 3,
-      "creatures": ["spectrecho", "echoplume", "fossiloup", "braisaure", "petrolin"]
+      "creatures": ["spectrecho", "echoplume", "fossiloup", "braisaure", "petrolin"],
+      "meute_max": 3
     }
   ],
   "boss": []

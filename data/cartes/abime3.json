@@ -59,7 +59,8 @@
       "niveau_min": 88,
       "niveau_max": 92,
       "max_ennemis": 3,
-      "creatures": ["rocaube", "aubespectre", "nacrelin", "loup_aube", "brumeloup", "nebulis"]
+      "creatures": ["rocaube", "aubespectre", "nacrelin", "loup_aube", "brumeloup", "nebulis"],
+      "meute_max": 3
     }
   ],
   "boss": [{"x": 32, "y": 23, "espece": "orage_ancien", "drapeau": "abime3_boss", "evenement": "abime3_boss"}]

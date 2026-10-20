@@ -67,7 +67,8 @@
       "niveau_min": 94,
       "niveau_max": 98,
       "max_ennemis": 3,
-      "creatures": ["fossiloup", "braisaure", "petrolin", "cendrelys", "aubespectre"]
+      "creatures": ["fossiloup", "braisaure", "petrolin", "cendrelys", "aubespectre"],
+      "meute_max": 3
     }
   ],
   "boss": []

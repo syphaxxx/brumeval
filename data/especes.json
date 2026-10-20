@@ -340,7 +340,7 @@
     "esquive": 0,
     "forme": "rocher",
     "couleurs": ["#8b8378", "#cfc6b8"],
-    "apprend": [[1, "charge"], [7, "eboul"], [12, "avalanche"], [45, "seisme"], [65, "mordant"]],
+    "apprend": [[1, "charge"], [7, "eboul"], [12, "avalanche"], [45, "mordant"]],
     "limite": "lim_rocaillou",
     "talent": "carapace",
     "role_combat": "protecteur",
@@ -356,7 +356,7 @@
     "esquive": 8,
     "forme": "feu_follet",
     "couleurs": ["#7a6fb0", "#e3dcff"],
-    "apprend": [[1, "griffe"], [8, "voile"], [13, "suie"], [45, "lame_ombre"], [65, "eclipse"]],
+    "apprend": [[1, "griffe"], [8, "voile"], [13, "suie"], [45, "lame_ombre"], [65, "mordant"]],
     "limite": "lim_brumelin",
     "talent": "furtif",
     "evolution": {"espece": "fumerole", "niveau": 18}
@@ -370,7 +370,7 @@
     "base": {"pv": 52, "pm": 20, "attaque": 58, "defense": 46, "magie": 40, "resistance": 43, "vitesse": 56},
     "forme": "lezard",
     "couleurs": ["#d9542b", "#ffc15a"],
-    "apprend": [[1, "flam"], [1, "crocs"], [12, "brasier"], [45, "poing"], [65, "magma"]],
+    "apprend": [[1, "flam"], [1, "crocs"], [12, "brasier"], [45, "poing"], [65, "mordant"]],
     "limite": "lim_tisonnel",
     "talent": "rage",
     "evolution": {"espece": "fournezard", "niveau": 24}
@@ -400,14 +400,7 @@
     "esquive": 0,
     "forme": "rocher",
     "couleurs": ["#6e6560", "#a99f96"],
-    "apprend": [
-      [1, "charge"],
-      [1, "eboul"],
-      [1, "avalanche"],
-      [16, "fracas"],
-      [45, "seisme"],
-      [65, "mordant"]
-    ],
+    "apprend": [[1, "charge"], [1, "eboul"], [1, "avalanche"], [16, "fracas"], [45, "mordant"]],
     "limite": "lim_galetor",
     "talent": "carapace",
     "role_combat": "protecteur",
@@ -422,7 +415,7 @@
     "base": {"pv": 50, "pm": 24, "attaque": 44, "defense": 52, "magie": 52, "resistance": 52, "vitesse": 44},
     "forme": "goutte",
     "couleurs": ["#9fd3ee", "#ffffff"],
-    "apprend": [[1, "bulle"], [1, "gel"], [12, "givre"], [45, "blizzard_eternel"], [65, "trombe"]],
+    "apprend": [[1, "bulle"], [1, "gel"], [12, "givre"], [45, "trombe"], [65, "corne_givre"]],
     "limite": "lim_glaconnet",
     "talent": "ecorce",
     "evolution": {"espece": "banquisot", "niveau": 26}
@@ -437,7 +430,7 @@
     "esquive": 6,
     "forme": "feu_follet",
     "couleurs": ["#8a8592", "#d8d4de"],
-    "apprend": [[1, "griffe"], [1, "voile"], [14, "suie"], [45, "eclipse"], [65, "acide"]],
+    "apprend": [[1, "griffe"], [1, "voile"], [14, "suie"], [45, "acide"], [65, "lame_ombre"]],
     "limite": "lim_fumerole",
     "talent": "furtif",
     "taille": 1.15
@@ -466,7 +459,7 @@
     "esquive": 10,
     "forme": "chauve_souris",
     "couleurs": ["#4a3a6a", "#a890d0"],
-    "apprend": [[1, "griffe"], [1, "rafale"], [14, "lame_air"], [45, "lame_ombre"], [65, "eclipse"]],
+    "apprend": [[1, "griffe"], [1, "rafale"], [14, "lame_air"], [45, "lame_ombre"], [65, "mordant"]],
     "limite": "lim_chauvenuit",
     "talent": "furtif",
     "evolution": {"espece": "noctaile", "niveau": 26}
@@ -560,13 +553,7 @@
     "critique": 8,
     "forme": "renard",
     "couleurs": ["#e6f4ff", "#8fd0ff"],
-    "apprend": [
-      [1, "gel"],
-      [1, "eclat_glace"],
-      [24, "poudreuse"],
-      [45, "blizzard_eternel"],
-      [65, "corne_givre"]
-    ],
+    "apprend": [[1, "gel"], [1, "eclat_glace"], [24, "poudreuse"], [45, "corne_givre"]],
     "limite": "lim_givrelin",
     "talent": "ecorce",
     "evolution": {"espece": "givrenard", "niveau": 32}
@@ -581,15 +568,7 @@
     "esquive": 12,
     "forme": "oiseau",
     "couleurs": ["#9fd8c8", "#ffffff"],
-    "apprend": [
-      [1, "bec"],
-      [1, "rafale"],
-      [6, "charge"],
-      [24, "lame_air"],
-      [26, "tornade"],
-      [45, "ouragan"],
-      [65, "mordant"]
-    ],
+    "apprend": [[1, "bec"], [1, "rafale"], [6, "charge"], [24, "lame_air"], [26, "tornade"], [45, "mordant"]],
     "limite": "lim_zephyrin",
     "talent": "vif",
     "taille": 1.15
@@ -786,8 +765,7 @@
       [12, "brasier"],
       [24, "nuee_braises"],
       [30, "poing"],
-      [45, "magma"],
-      [65, "mordant"]
+      [45, "mordant"]
     ],
     "limite": "lim_fournezard",
     "talent": "rage",
@@ -808,8 +786,8 @@
       [12, "givre"],
       [26, "poudreuse"],
       [32, "glaciation"],
-      [45, "blizzard_eternel"],
-      [65, "trombe"]
+      [45, "trombe"],
+      [65, "corne_givre"]
     ],
     "limite": "lim_banquisot",
     "talent": "ecorce",
@@ -853,8 +831,7 @@
       [14, "lame_air"],
       [26, "tornade"],
       [32, "lame_ombre"],
-      [45, "eclipse"],
-      [65, "ouragan"]
+      [45, "mordant"]
     ],
     "limite": "lim_noctaile",
     "talent": "furtif",
@@ -933,14 +910,7 @@
     "critique": 8,
     "forme": "renard",
     "couleurs": ["#5e61ff", "#c8f8ff"],
-    "apprend": [
-      [1, "gel"],
-      [1, "eclat_glace"],
-      [24, "poudreuse"],
-      [32, "glaciation"],
-      [38, "corne_givre"],
-      [45, "blizzard_eternel"]
-    ],
+    "apprend": [[1, "gel"], [1, "eclat_glace"], [24, "poudreuse"], [32, "glaciation"], [38, "corne_givre"]],
     "limite": "lim_givrenard",
     "talent": "ecorce",
     "taille": 1.15
@@ -1078,8 +1048,7 @@
       [1, "hurlement"],
       [14, "ruee"],
       [16, "coup_bas"],
-      [30, "lame_ombre"],
-      [45, "eclipse"]
+      [30, "lame_ombre"]
     ],
     "limite": "lim_brumeloup",
     "talent": "intimidation",
@@ -1227,14 +1196,7 @@
     "esquive": 8,
     "forme": "feu_follet",
     "couleurs": ["#dfe8ff", "#ffffff"],
-    "apprend": [
-      [1, "onde"],
-      [1, "soin"],
-      [1, "lame_air"],
-      [44, "tornade"],
-      [45, "ouragan"],
-      [65, "cauchemar"]
-    ],
+    "apprend": [[1, "onde"], [1, "soin"], [1, "lame_air"], [44, "tornade"], [45, "cauchemar"]],
     "limite": "lim_zephyrin",
     "talent": "meditation",
     "role_combat": "soigneur"
@@ -1346,7 +1308,7 @@
     "base": {"pv": 46, "pm": 28, "attaque": 54, "defense": 40, "magie": 60, "resistance": 52, "vitesse": 60},
     "forme": "fantome",
     "couleurs": ["#e8e0d0", "#8a7a6a"],
-    "apprend": [[1, "coup_bas"], [1, "onde"], [44, "cauchemar"], [45, "eclipse"], [65, "hurlement_spectral"]],
+    "apprend": [[1, "coup_bas"], [1, "onde"], [44, "cauchemar"], [45, "lame_ombre"], [65, "griffe"]],
     "talent": "furtif"
   },
   {
@@ -1384,7 +1346,7 @@
     "base": {"pv": 52, "pm": 22, "attaque": 56, "defense": 46, "magie": 52, "resistance": 44, "vitesse": 58},
     "forme": "lezard",
     "couleurs": ["#c83a2a", "#ffb050"],
-    "apprend": [[1, "flam"], [1, "crocs"], [14, "brasier"], [45, "poing"], [65, "magma"]],
+    "apprend": [[1, "flam"], [1, "crocs"], [14, "brasier"], [45, "poing"], [65, "lame_air"]],
     "talent": "vif"
   },
   {
@@ -1621,8 +1583,8 @@
       [1, "eclat_glace"],
       [1, "lame_air"],
       [1, "poudreuse"],
-      [45, "ouragan"],
-      [65, "blizzard_eternel"]
+      [45, "corne_givre"],
+      [65, "gel"]
     ],
     "talent": "vif"
   },
@@ -1673,8 +1635,8 @@
       [1, "gel"],
       [1, "carapace"],
       [28, "avalanche"],
-      [45, "seisme"],
-      [65, "corne_givre"]
+      [45, "corne_givre"],
+      [65, "mordant"]
     ],
     "talent": "carapace",
     "limite": "lim_rocaillou"
@@ -1688,14 +1650,7 @@
     "base": {"pv": 59, "pm": 36, "attaque": 42, "defense": 56, "magie": 81, "resistance": 78, "vitesse": 73},
     "forme": "fantome",
     "couleurs": ["#ffb060", "#fff0c0"],
-    "apprend": [
-      [1, "onde"],
-      [1, "feu"],
-      [1, "cauchemar"],
-      [38, "pyro"],
-      [45, "hurlement_spectral"],
-      [65, "magma"]
-    ],
+    "apprend": [[1, "onde"], [1, "feu"], [1, "cauchemar"], [38, "pyro"], [45, "poing"], [65, "brasier"]],
     "talent": "furtif",
     "limite": "lim_esprillon"
   },

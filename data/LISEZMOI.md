@@ -293,6 +293,8 @@ table, `h` lit, `e` étagère (une bibliothèque pour deux cases), `o` comptoir,
   habitant de l'intérieur.
 - `zones` : rencontres (`x`, `y`, `l`, `h`, `niveau_min`, `niveau_max`, `max_ennemis`, `creatures`) ; `nuit`
   (facultatif) : les créatures de la nuit, la moitié des rencontres quand il fait nuit.
+  `meute_max` (facultatif) : la taille maximale d'une meute dans la zone (sinon la règle générale, jusqu'à 6 loin des
+  entrées) ; 3 dans l'Abîme et le Vieux Phare.
 - `arbres` (facultatif) : une autre sorte d'arbres, par exemple `pierre` (arbres pétrifiés : sprites
   `<arbre>_pierre`, recolorés dans `outils/sprites/variantes.json`).
 - `ambiance` : `brume`, `cendres`, `obscurite`, `neige` ou `lucioles`, avec

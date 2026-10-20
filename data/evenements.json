@@ -8718,7 +8718,7 @@
             "action": "combat",
             "musique": "boss",
             "ennemis": [
-              {"espece": "cendrelys", "niveau": 86},
+              {"espece": "petrolin", "niveau": 86},
               {
                 "espece": "phenix_echo",
                 "niveau": 87,
@@ -8735,11 +8735,11 @@
                     "pv": 0.3,
                     "message": "Le Phénix renaît de ses cendres : ses plumes flambent de nouveau !",
                     "bonus": {"magie": 1, "vitesse": 1},
-                    "renforts": [{"espece": "cendrelys", "niveau": 86}]
+                    "renforts": [{"espece": "petrolin", "niveau": 86}]
                   }
                 ]
               },
-              {"espece": "braisaure", "niveau": 86}
+              {"espece": "fossiloup", "niveau": 86}
             ],
             "renforts": [],
             "boss": true,
