@@ -234,8 +234,8 @@
   ],
   "passages": [
     {"x": 30, "y": 3, "vers": "temple", "tx": 20, "ty": 27, "direction": "haut"},
-    {"x": 30, "y": 43, "vers": "cendrelune", "tx": 13, "ty": 1, "direction": "bas"},
-    {"x": 31, "y": 43, "vers": "cendrelune", "tx": 13, "ty": 1, "direction": "bas"},
+    {"x": 30, "y": 43, "vers": "col", "tx": 19, "ty": 1, "direction": "bas"},
+    {"x": 31, "y": 43, "vers": "col", "tx": 20, "ty": 1, "direction": "bas"},
     {
       "x": 83,
       "y": 24,

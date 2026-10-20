@@ -1327,5 +1327,17 @@
     "couleurs": ["#c0402a", "#ffe08a"],
     "apprend": [[1, "foudre_noire"], [1, "pyro"], [1, "orage"], [1, "ouragan"], [1, "eclipse"]],
     "talent": "esprit_clair"
+  },
+  {
+    "id": "harpie_givre",
+    "nom": "Harpie de givre",
+    "sprite": "harpie_givre",
+    "types": ["vent", "glace"],
+    "base": {"pv": 88, "pm": 40, "attaque": 60, "defense": 50, "magie": 62, "resistance": 54, "vitesse": 72},
+    "immunites": ["sommeil"],
+    "forme": "oiseau",
+    "couleurs": ["#c8e8ff", "#ffffff"],
+    "apprend": [[1, "rafale"], [1, "eclat_glace"], [1, "lame_air"], [1, "poudreuse"]],
+    "talent": "vif"
   }
 ]

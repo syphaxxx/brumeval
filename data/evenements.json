@@ -4170,5 +4170,134 @@
         ]
       }
     ]
+  },
+  "col_entree": {
+    "actions": [
+      {"action": "drapeau", "nom": "col_vu"},
+      {
+        "action": "dire",
+        "texte": "Le vent hurle entre les falaises. Des flocons volent, alors que le volcan fume encore en bas."
+      },
+      {
+        "action": "dire",
+        "texte": "Un col étroit monte vers le nord. Quelque part là-haut, quelque chose souffle ce vent glacé."
+      }
+    ]
+  },
+  "soin_col": {
+    "actions": [
+      {"action": "soigner"},
+      {"action": "reveil"},
+      {
+        "action": "dire",
+        "texte": "Guérisseuse : Une tisane chaude, et en route ! Votre équipe est en pleine forme."
+      }
+    ]
+  },
+  "boutique_col": {
+    "actions": [
+      {
+        "action": "boutique",
+        "objets": [
+          "potion",
+          "superpotion",
+          "ether",
+          "remede",
+          "plume",
+          "lanterne_argent",
+          "cotte_mailles",
+          "robe_mage",
+          "bague_vif",
+          "gemme_feu",
+          "gemme_givre",
+          "gemme_force"
+        ]
+      }
+    ]
+  },
+  "berger_col": {
+    "pages": [
+      {
+        "si": {"drapeau": "harpie"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Berger : Le vent est tombé ! Mes moutons broutent de nouveau. Merci, voyageurs."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Berger : Depuis qu'Ignarok est tombé, une Harpie de givre a fait son nid au-dessus du col."
+          },
+          {
+            "action": "dire",
+            "texte": "Berger : Elle souffle le vent glacé sur les Pics. C'est elle qui a gelé Givreval, j'en suis sûr."
+          },
+          {
+            "action": "dire",
+            "texte": "Berger : Reposez-vous au camp avant d'y monter. Elle est rapide comme l'éclair."
+          }
+        ]
+      }
+    ]
+  },
+  "harpie_givre": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Sur un rocher, une immense harpie aux plumes de givre déploie ses ailes. Le vent redouble."
+      },
+      {
+        "action": "dire",
+        "texte": "Harpie de givre : Le volcan s'est tu… Maintenant, le froid règne. Personne ne passera mon col !"
+      },
+      {
+        "action": "question",
+        "texte": "Affronter la Harpie de givre ?",
+        "oui": [
+          {
+            "action": "combat",
+            "ennemis": [
+              {"espece": "zephyrin", "niveau": 29},
+              {
+                "espece": "harpie_givre",
+                "niveau": 31,
+                "pv": 5,
+                "boss": true,
+                "bouclier": 6,
+                "phases": [
+                  {
+                    "pv": 0.5,
+                    "message": "La Harpie déchaîne un blizzard !",
+                    "meteo": "blizzard",
+                    "bonus": {"vitesse": 1}
+                  }
+                ]
+              },
+              {"espece": "glaconnet", "niveau": 29}
+            ],
+            "boss": true,
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "harpie"},
+              {"action": "donner", "objet": "plume_harpie", "quantite": 1},
+              {
+                "action": "dire",
+                "texte": "La Harpie s'envole vers le nord en poussant un dernier cri. Le vent tombe d'un coup."
+              },
+              {
+                "action": "dire",
+                "texte": "Au bout du défilé, on aperçoit les toits enneigés de Givreval."
+              }
+            ]
+          }
+        ],
+        "non": [{"action": "dire", "texte": "La Harpie vous fixe, immobile, au milieu du vent."}]
+      }
+    ]
   }
 }

@@ -549,6 +549,9 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - Épreuves des gardiens (2026-10-20) : après `aube_fin`, la porte du sanctuaire d'Aube (événement `epreuves`) ouvre huit
   combats contre des esprits gardiens (drapeaux `epreuve1`…`epreuve8`, niveaux 70 à 84), puis Ilya (`epreuve9`,
   Insigne des gardiens) ; quête `epreuves`. Script `outils/villes/epreuves.py`.
+- Col des Hurlevents (2026-10-20, `outils/villes/col.py`) : carte `col` de l'histoire entre les Monts Cendrelune et
+  les Pics Givrés (le passage du nord de Cendrelune y mène sous `boss2`, celui des Pics en revient), camp de bergers
+  (soins, boutique), Harpie de givre (boss de carte `harpie_givre`, drapeau `harpie`, conseil) qui ouvre le défilé.
 - Donjons optionnels (2026-10-20, `outils/villes/donjons.py`, salles et couloirs tirés d'une graine fixe, outil
   commun `outils/villes/cartegen.py`) : Mines de Forgeroc (`mines`, entrée à l'ouest de Forgeroc sous `boss1`, énigme),
   Glacier de Givreval (`glacier`, est des Pics, `boss2`, énigme), Épave du Léviathan (`epave`, sud du Récif, `boss4`),

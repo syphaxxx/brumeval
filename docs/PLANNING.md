@@ -330,6 +330,8 @@ Réglage : l'acte 3 était trop dur pour certaines équipes (meutes de 4 à 6 au
 battue au 7e essai) : meutes de 3 au plus, Gouffre N.58-61, Citadelle N.60-64, Brume Noire PV ×6,5 (au lieu de 8).
 Joueur automatique : tout fini (Orage ancien compris) en 6 h 01, 14 défaites ; estimation pour un vrai joueur : 12 h,
 sans compter la pêche ni l'Expédition. Combats : nuages et montagnes au fond de la vallée, stalactites dans les grottes.
+Le chemin de l'histoire s'allonge : le Col des Hurlevents (camp de bergers, Harpie de givre) entre les Monts
+Cendrelune et les Pics Givrés. Le grand bestiaire : la professeure récompense 15, 30, 45 et 60 espèces.
 Prochaines pistes pour approcher 20 h : un acte 4 / une région de plus, une ligue de l'Arène, un donjon d'après la
 fin à étages, la pêche, des captures demandées par plus de quêtes, des combats plus riches à mi-parcours.
 

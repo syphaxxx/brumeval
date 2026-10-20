@@ -263,6 +263,13 @@
     "trophee": true
   },
   {
+    "id": "plume_harpie",
+    "nom": "Plume de harpie",
+    "description": "Trophée : une plume de givre qui ne fond jamais, prise à la Harpie du col.",
+    "prix": 0,
+    "trophee": true
+  },
+  {
     "id": "eclat_gardien",
     "nom": "Éclat du gardien",
     "description": "Un prisme qui chante quand on le tourne.",

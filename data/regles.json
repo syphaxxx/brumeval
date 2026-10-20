@@ -311,6 +311,13 @@
       "texte": "Sa carapace de lave se reforme à 60 % de PV, puis il appelle un tisonnel. Gardez un gros coup pour chaque brisure."
     },
     {
+      "drapeau": "harpie",
+      "boss": "harpie_givre",
+      "lieu": "le défilé du Col des Hurlevents",
+      "gemme": "gemme_feu",
+      "texte": "Très rapide : elle joue souvent deux fois de suite. À mi-vie, son blizzard gèle le terrain."
+    },
+    {
       "drapeau": "cristal_apaise",
       "boss": "cristallin",
       "lieu": "le Temple de cristal",

@@ -218,9 +218,9 @@
     {
       "x": 13,
       "y": 0,
-      "vers": "pics",
-      "tx": 30,
-      "ty": 42,
+      "vers": "col",
+      "tx": 19,
+      "ty": 50,
       "direction": "haut",
       "condition": {"drapeau": "boss2"},
       "message": "Le col du Nord est pris dans les glaces. Un vent glacé souffle depuis que le volcan gronde…"
