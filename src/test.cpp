@@ -2686,6 +2686,32 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       menus.clear();
       flags = savedFlags;
     }
+    {  // Galerie des donjons (graphismes, 2026-10-21) : chaque grotte et lieu de glace vu près de son centre
+      auto savedFlags = flags;
+      float savedTime = time;
+      time = 108;  // en plein jour
+      menus.clear();
+      sc.clear();
+      for (const char* id : {"grotte", "mines", "temple", "glacier", "abime1", "phare3", "citadelle", "epave", "marees", "ruines", "source", "sanctuaire_echos"}) {
+        int mid = mi(id);
+        if (mid < 0) continue;
+        const MapDef& dm = maps()[(size_t)mid];
+        int bx = -1, by = -1, best = 1 << 30;
+        for (int y = 1; y + 1 < dm.h(); y++)
+          for (int x = 1; x + 1 < dm.w(); x++) {
+            char c = dm.rows[(size_t)y][(size_t)x];
+            int d = std::abs(x - dm.w() / 2) + std::abs(y - dm.h() / 2);
+            if ((c == '.' || c == 'c' || c == 'i' || c == 'n') && !blockedOn(dm, x, y) && d < best) best = d, bx = x, by = y;
+          }
+        if (bx < 0) continue;
+        changeMap(mid, bx, by, DOWN);
+        run(.5f);
+        noticeT_ = 0, banner = 0;
+        snap(std::string("donjon_") + id);
+      }
+      time = savedTime;
+      flags = savedFlags;
+    }
     {  // Fête des lanternes : condition « nuit », Lison seulement la nuit, des lanternes dans le ciel une fois la fête faite
       auto savedFlags = flags;
       float savedTime = time;

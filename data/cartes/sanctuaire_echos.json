@@ -80,5 +80,6 @@
       "drapeau": "sanctuaire_echos_boss",
       "evenement": "sanctuaire_echos_boss"
     }
-  ]
+  ],
+  "teinte_murs": "#55605a"
 }

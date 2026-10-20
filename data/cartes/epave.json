@@ -73,5 +73,6 @@
       "creatures": ["noyelin", "coquillon", "voltanguille", "bastillon", "ecumet"]
     }
   ],
-  "boss": [{"x": 25, "y": 7, "espece": "leviathan", "drapeau": "epave_boss", "evenement": "epave_boss"}]
+  "boss": [{"x": 25, "y": 7, "espece": "leviathan", "drapeau": "epave_boss", "evenement": "epave_boss"}],
+  "teinte_murs": "#3a5a58"
 }

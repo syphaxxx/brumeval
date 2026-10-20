@@ -1568,29 +1568,42 @@ void Game::drawMap() {
       g.rect(x, y, 1, 1, rgb(0xcfc6c0, 170));
     }
   if (m.ambiance == "obscurite" && amb) {
+    // La lanterne (2026-10-21) : pleine lumière près du héros, puis un fondu régulier vers le noir (douze anneaux), qui
+    // vacille un peu comme une flamme ; les cristaux brillent dans le noir
     float cx = ppx - camX + 8, cy = ppy - camY + 8;
-    for (int ring = 0; ring < 2; ring++) {
-      float R = ring == 0 ? 92 : 68;
-      Color c = rgb(0x05030a, ring == 0 ? 200 : 90);
-      for (int y = 0; y < SCREEN_H; y++) {
-        float dy = y + .5f - cy;
-        float span = R * R - dy * dy;
-        if (span <= 0) {
-          if (ring == 0) g.rect(g.left(), y, g.fullW, 1, c);
-          continue;
-        }
-        float w = std::sqrt(span);
-        float R0 = ring == 0 ? 0 : 92;
-        float w0 = R0 * R0 - dy * dy > 0 ? std::sqrt(R0 * R0 - dy * dy) : 0;
-        if (ring == 0) {
-          g.rect(g.left(), y, cx - w - g.left(), 1, c);
-          g.rect(cx + w, y, g.right() - cx - w, 1, c);
-        } else {
-          g.rect(cx - w0, y, w0 - w, 1, c);
-          g.rect(cx + w, y, w0 - w, 1, c);
-        }
+    float flick = std::sin(time * 7.3f) * 1.2f + std::sin(time * 12.1f) * .6f;
+    float rin = 44 + flick, rout = 98 + flick;
+    const int N = 12;
+    const uint8_t A = 212;
+    auto half = [](float r, float dy) { float s = r * r - dy * dy; return s > 0 ? std::sqrt(s) : 0.f; };
+    for (int y = 0; y < SCREEN_H; y++) {
+      float dy = y + .5f - cy;
+      float wo = half(rout, dy);
+      if (wo <= 0) {
+        g.rect(g.left(), y, g.fullW, 1, rgb(0x05030a, A));
+        continue;
+      }
+      // bornes entières : les anneaux se touchent sans trou ni recouvrement (sinon un pointillé dessine le cercle)
+      int L = (int)std::lround(cx - wo), Rr = (int)std::lround(cx + wo);
+      g.rect(g.left(), y, L - g.left(), 1, rgb(0x05030a, A));
+      g.rect(Rr, y, g.right() - Rr, 1, rgb(0x05030a, A));
+      for (int k = N - 1; k >= 0; k--) {
+        float w1 = half(rin + (rout - rin) * k / N, dy);
+        int l1 = (int)std::lround(cx - w1), r1 = (int)std::lround(cx + w1);
+        Color c = rgb(0x05030a, uint8_t(A * std::pow((k + .5f) / N, 1.4f)));
+        if (l1 > L) g.rect(L, y, l1 - L, 1, c);
+        if (Rr > r1) g.rect(r1, y, Rr - r1, 1, c);
+        L = std::max(L, l1), Rr = std::min(Rr, r1);
       }
     }
+    g.ellipse(cx, cy, rin, rin * .9f, rgb(0xffb050, 14));  // la lumière chaude de la lanterne
+    for (int y = std::max(0, ty0 - 1); y <= ty0 + SCREEN_H / 16 + 2 && y < m.h(); y++)
+      for (int x = std::max(0, tx0 - 1); x <= tx1 + 1 && x < m.w(); x++)
+        if (m.rows[(size_t)y][(size_t)x] == 'x') {
+          float gx = x * 16 - camX + 8, gy = y * 16 - camY + 9, p = .8f + .2f * std::sin(time * 2 + x);
+          g.ellipse(gx, gy, 22 * p, 18 * p, rgb(0x7fd6ff, 22));
+          g.ellipse(gx, gy, 11 * p, 9 * p, rgb(0x9fe4ff, 40));
+        }
   }
   // Bandeau du nom de la région
   if (float k = (time - mapFadeT_) / .3f; k >= 0 && k < 1)  // changement de carte (3.3) : on sort du noir

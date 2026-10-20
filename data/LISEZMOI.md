@@ -319,6 +319,7 @@ table, `h` lit, `e` étagère (une bibliothèque pour deux cases), `o` comptoir,
   un dresseur).
 - `coffres` : `objet` et `quantite`, ou `or` ; `si` : le coffre n'apparaît que si ces conditions sont vraies (une fois
   ouvert, il reste là) : cartes au trésor de Corbin.
+- `teinte_murs` (carte, thème grotte) : couleur de la roche (`"#6a5040"`) ; les murs et le sol en prennent la teinte.
 - `fete` (carte) : une condition ; vraie, des lanternes montent dans le ciel la nuit (fête des lanternes de la Vallée).
 
 ## Rappels sur le format JSON

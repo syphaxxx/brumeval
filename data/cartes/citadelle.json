@@ -81,5 +81,6 @@
     }
   ],
   "boss": [{"x": 14, "y": 4, "espece": "brume_noire", "drapeau": "aube_fin"}],
-  "carte_monde": [16, 60]
+  "carte_monde": [16, 60],
+  "teinte_murs": "#8a8270"
 }

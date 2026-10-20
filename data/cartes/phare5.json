@@ -65,5 +65,6 @@
   ],
   "boss": [
     {"x": 6, "y": 22, "espece": "veilleur_phare", "drapeau": "phare5_boss", "evenement": "phare5_boss"}
-  ]
+  ],
+  "teinte_murs": "#5e5848"
 }

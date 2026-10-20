@@ -114,5 +114,6 @@
       "si": {"drapeau": "quete:spectre"}
     }
   ],
-  "carte_monde": [6, 62]
+  "carte_monde": [6, 62],
+  "teinte_murs": "#5a4660"
 }

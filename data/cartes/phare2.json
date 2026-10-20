@@ -63,5 +63,6 @@
       "meute_max": 3
     }
   ],
-  "boss": []
+  "boss": [],
+  "teinte_murs": "#6a6458"
 }

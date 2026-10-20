@@ -110,5 +110,6 @@
     }
   ],
   "declencheurs": [{"x": 19, "y": 27, "l": 2, "h": 1, "evenement": "source_entree", "jusqua": "source_vue"}],
-  "carte_monde": [60, 8]
+  "carte_monde": [60, 8],
+  "teinte_murs": "#5a5478"
 }

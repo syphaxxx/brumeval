@@ -527,6 +527,9 @@ static bool texTile(Gfx& g, const char* id, int x, int y, int sx, int sy, Color 
   return true;
 }
 
+// Sol des grottes (2026-10-21) : la teinte des dalles suit la roche de la carte (« teinte_murs »), posée par drawTile
+static uint32_t caveFloor = 0x8a84a0;
+
 static void ground(Gfx& g, Theme th, int sx, int sy, int h, int x, int y) {
   if (th == Theme::Vallee) {
     g.rect(sx, sy, 16, 16, rgb(0x67b35d));
@@ -576,7 +579,7 @@ static void ground(Gfx& g, Theme th, int sx, int sy, int h, int x, int y) {
     }
     g.rect(sx + h % 12 + 2, sy + 1 + (h >> 5) % 2 * 8, 2, 1, rgb(0xc48c58));
   } else {
-    if (texTile(g, (h >> 3) % 3 ? "sol_3_5" : "sol_2_5", x, y, sx, sy, rgb(0x8a84a0))) return;  // grotte (3.3) : dalles sombres
+    if (texTile(g, (h >> 3) % 3 ? "sol_3_5" : "sol_2_5", x, y, sx, sy, rgb(caveFloor))) return;  // grotte (3.3) : dalles sombres
     g.rect(sx, sy, 16, 16, rgb(0x4a4252));
     g.rect(sx + h % 13, sy + (h >> 4) % 13, 2, 1, rgb(0x3f3847));
     g.rect(sx + (h >> 8) % 12 + 2, sy + (h >> 12) % 12 + 2, 1, 1, rgb(0x5a5164));
@@ -685,9 +688,68 @@ void drawProp(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
 // Fenêtre d'un mur d'intérieur (3.3) : la face d'un mur sur deux ou trois, sauf là où pend un cadre
 static bool interiorWindow(int x, int y) { return (x * 7 + y) % 9 != 0 && (x * 5 + y * 3) % 4 == 1; }
 
+// Relief des murs (2026-10-21, graphismes) : dans les grottes, donjons et lieux de glace, un mur n'est plus une dalle
+// vue de dessus. Là où il continue vers le bas, on voit son dessus (sombre, ou enneigé dans la glace), bordé d'une
+// arête claire du côté du sol ; là où il touche le sol par en dessous, on voit sa face, éclairée en haut et dans
+// l'ombre au pied ; le sol au pied d'un mur reçoit son ombre (plus marquée sous une face que sur les côtés).
+static void wallDepth(Gfx& g, const MapDef& m, int x, int y, int sx, int sy) {
+  auto wall = [&](int xx, int yy) {
+    if (xx < 0 || yy < 0 || xx >= m.w() || yy >= m.h()) return true;
+    char c = m.rows[yy][xx];
+    return c == '#' || c == ' ';
+  };
+  bool ice = m.theme == Theme::Neige;
+  int h = hsh(x, y);
+  uint32_t base = ice ? 0 : m.wallTint ? m.wallTint : 0x46405a;  // la roche, en plus sombre (dessus) ou plus clair (arêtes)
+  auto shade = [&](float k) {
+    int r = std::min(255, int(((base >> 16) & 255) * k)), gg = std::min(255, int(((base >> 8) & 255) * k)), b = std::min(255, int((base & 255) * k));
+    return rgb(uint32_t(r << 16 | gg << 8 | b));
+  };
+  if (wall(x, y)) {
+    if (m.rows[y][x] == ' ') return;
+    if (!wall(x, y + 1)) {  // la face du mur, tournée vers nous
+      Color cap = ice ? rgb(0xe6eef8) : shade(.6f), rim = ice ? rgb(0xffffff) : shade(1.3f);
+      g.rect(sx, sy, 16, 4, cap);
+      g.rect(sx, sy + 4, 16, 1, rim);
+      for (int i = 0; i < 11; i++) g.rect(sx, sy + 5 + i, 16, 1, rgb(0x000000, uint8_t(i * (ice ? 5 : 9))));  // l'ombre monte du pied
+      g.rect(sx, sy + 14, 16, 2, rgb(ice ? 0x2a4a6a : 0x0c0910, ice ? 90 : 140));
+      if (ice && (h >> 3) % 3 == 0) g.rect(sx + 3 + (h >> 5) % 9, sy + 6, 1, 6 + (h >> 9) % 3, rgb(0xffffff, 120));  // reflet de glace
+      if (!ice && (h >> 3) % 4 == 0) {  // un éclat de roche
+        Color c = shade(1.9f);
+        c.a = 90;
+        g.rect(sx + 2 + (h >> 5) % 11, sy + 7 + (h >> 9) % 4, 2, 1, c);
+      }
+      if (!wall(x - 1, y)) g.rect(sx, sy, 1, 16, rgb(0x000000, 60));
+      if (!wall(x + 1, y)) g.rect(sx + 15, sy, 1, 16, rgb(0x000000, 80));
+    } else {  // le dessus du mur
+      Color top = ice ? rgb(0xdfe9f5) : shade(.48f);
+      // dessus du mur : la roche (ou la neige) en texture, assombrie ; sinon un aplat
+      if (!texTile(g, ice ? "tex_neige" : "tex_pierre", x, y, sx, sy, ice ? rgb(0xf0f6ff) : shade(.62f))) g.rect(sx, sy, 16, 16, top);
+      if (ice) g.rect(sx + (h % 11), sy + 3 + (h >> 4) % 9, 4, 1, rgb(0xc8d8ec));
+      else g.rect(sx, sy, 16, 16, rgb(0x000000, 35));  // le dessus est moins éclairé que la face
+      Color edge = ice ? rgb(0xa8c4e0) : shade(1.1f);
+      if (!wall(x, y - 1)) g.rect(sx, sy, 16, 1, edge);
+      if (!wall(x - 1, y)) g.rect(sx, sy, 1, 16, edge);
+      if (!wall(x + 1, y)) g.rect(sx + 15, sy, 1, 16, edge);
+    }
+    return;
+  }
+  // Le sol au pied des murs : leur ombre
+  if (wall(x, y - 1))
+    for (int i = 0; i < 6; i++) g.rect(sx, sy + i, 16, 1, rgb(0x000000, uint8_t((6 - i) * (ice ? 9 : 16))));
+  if (wall(x - 1, y)) g.rect(sx, sy, 2, 16, rgb(0x000000, ice ? 30 : 55));
+  if (wall(x + 1, y)) g.rect(sx + 14, sy, 2, 16, rgb(0x000000, ice ? 20 : 40));
+}
+
 static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t);
 void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
+  caveFloor = 0x8a84a0;
+  if (m.wallTint) {  // la roche de la carte, en plus clair pour le sol
+    auto ch = [&](int s) { return uint32_t(std::min(255, ((int(m.wallTint) >> s) & 255) * 2 - 4)); };
+    caveFloor = ch(16) << 16 | ch(8) << 8 | ch(0);
+  }
   drawTileBase(g, m, x, y, sx, sy, t);
+  if (m.theme == Theme::Grotte || m.theme == Theme::Neige) return wallDepth(g, m, x, y, sx, sy);
   if (m.theme != Theme::Interieur || m.rows[y][x] == '#' || m.rows[y][x] == ' ') return;
   // Intérieurs (3.3) : l'ombre des murs sur le sol, et la lumière qui tombe d'une fenêtre
   auto wall = [&](int xx, int yy) { return xx < 0 || yy < 0 || xx >= m.w() || yy >= m.h() || m.rows[yy][xx] == '#'; };
@@ -1006,7 +1068,7 @@ static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, 
         }
       } else if (th == Theme::Neige && texTile(g, "tex_pierre", x, y, sx, sy, rgb(0xb4cdec))) {  // (3.3) pierre glacée
         if (at(x, y - 1) != '#') g.rect(sx, sy, 16, 3, rgb(0xf2f6fb));  // neige sur le haut du mur
-      } else if (th == Theme::Grotte && texTile(g, "tex_pierre", x, y, sx, sy, rgb(0x46405a))) {  // (3.3) roche sombre
+      } else if (th == Theme::Grotte && texTile(g, "tex_pierre", x, y, sx, sy, rgb(m.wallTint ? m.wallTint : 0x46405a))) {  // (3.3) roche sombre
         if (at(x, y + 1) != '#' && at(x, y + 1) != ' ') g.rect(sx, sy + 14, 16, 2, rgb(0x16121c, 160));  // pied du mur dans l'ombre
       } else if (th == Theme::Neige) {
         g.rect(sx, sy, 16, 16, rgb(0x7fa8c8));
