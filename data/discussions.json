@@ -394,5 +394,74 @@
       "Lior : … C'était un compliment ?",
       "Sélène : Le deuxième de l'année. Ne t'habitue pas."
     ]
+  },
+  {
+    "id": "ligue",
+    "titre": "Les champions de l'archipel",
+    "si": {"drapeau": "ligue4"},
+    "membres": ["brann", "kael"],
+    "dialogue": [
+      "Brann : Champions de la Ligue d'Écume. Après le tournoi de Forgeroc. On collectionne les ceintures, maintenant ?",
+      "Kael : Toi, tu les collectionnes. Moi, je les range dans ton sac.",
+      "Brann : C'est pour ça que mon sac pèse une tonne !"
+    ]
+  },
+  {
+    "id": "veilleur",
+    "titre": "Le gardien de la lumière",
+    "si": {"drapeau": "phare5_boss"},
+    "membres": ["maelle", "selene"],
+    "dialogue": [
+      "Maëlle : Mille ans à garder une lanterne, tout seul, au sommet d'un phare…",
+      "Sélène : Il n'était pas seul. Il avait la lumière.",
+      "Maëlle : Ce n'est pas pareil.",
+      "Sélène : Non. Mais pour un gardien, ça suffit presque."
+    ]
+  },
+  {
+    "id": "eleveuse",
+    "titre": "Grandir",
+    "si": {"drapeau": "eleveuse4"},
+    "membres": ["lior", "maelle"],
+    "dialogue": [
+      "Maëlle : Tu as vu l'éleveuse ? Elle parle aux créatures comme à ses enfants.",
+      "Lior : Elle dit qu'elles grandissent mieux quand on croit en elles.",
+      "Maëlle : C'est vrai pour les apprentis gardiens aussi, tu sais.",
+      "Lior : … C'est pour ça que tu te moques toujours de moi ?",
+      "Maëlle : Non, ça, c'est parce que c'est drôle."
+    ]
+  },
+  {
+    "id": "quiz",
+    "titre": "Bonne réponse",
+    "si": {"drapeau": "quiz10"},
+    "membres": ["isra", "kael"],
+    "dialogue": [
+      "Isra : Dix sur dix au quiz du conteur ! Qui a dit que la mémoire des mages s'envolait avec leurs sorts ?",
+      "Kael : Personne n'a dit ça.",
+      "Isra : Alors c'est que je l'ai pensé très fort. Et que j'avais tort."
+    ]
+  },
+  {
+    "id": "chroma",
+    "titre": "Des couleurs bizarres",
+    "si": {"chromatiques_min": 1},
+    "membres": ["kael", "lior"],
+    "dialogue": [
+      "Kael : Cette créature… ses couleurs ne sont pas normales.",
+      "Lior : L'assistant de la professeure dit qu'on en croise une sur cent cinquante.",
+      "Kael : Dans la forêt, on dit qu'elles portent chance. Ou malheur. Ça dépend qui raconte."
+    ]
+  },
+  {
+    "id": "aurore",
+    "titre": "Une lame qui brille",
+    "si": {"drapeau": "aube_fin"},
+    "membres": ["lior", "brann"],
+    "dialogue": [
+      "Brann : Ta lame brille quand tu frappes, maintenant. C'est nouveau, ça.",
+      "Lior : Je crois que c'est l'épée du Premier Gardien qui m'apprend. Un peu chaque jour.",
+      "Brann : Une épée qui apprend à son maître… À Forgeroc, on appellerait ça de la paresse."
+    ]
   }
 ]

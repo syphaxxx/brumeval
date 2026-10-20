@@ -347,7 +347,7 @@ créatures d'Aube (montrer trois créatures). 33 quêtes en tout.
 Sept formes régionales de plus (`outils/villes/formes.py` : Bourrasquin, Givroc, Lanternelle, Fongombre, Corailleur,
 Perlin, Murénix) dans le Col, le Val, la Grotte des Marées et les herbes de l'île de Corail. Animations : papillons et
 poissons sur la carte, silhouettes d'élan en combat.
-Discussions entre les héros (32 saynètes, Échap > Discussions), au fil de l'histoire.
+Discussions entre les héros (38 saynètes, Échap > Discussions), au fil de l'histoire.
 La Plaine des Moulins (`outils/villes/plaine.py`) entre la Vallée et les Monts Cendrelune : village de Moulinbourg,
 pont rongé par une bande de Rongecrins (quête `pont`).
 28 dresseurs le long des routes (`outils/villes/dresseurs.py`), de la Vallée à la Citadelle d'Aube, et des revanches
