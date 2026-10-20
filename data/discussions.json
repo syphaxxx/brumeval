@@ -535,5 +535,77 @@
       "Brann : Et toi, tu sais ?",
       "Sélène : « Garder ceux qui ont froid. » Je crois que je l'ai toujours su."
     ]
+  },
+  {
+    "id": "cartes_pip",
+    "titre": "Une partie de cartes",
+    "si": {"drapeau": "cartes:pip"},
+    "membres": ["lior", "maelle"],
+    "dialogue": [
+      "Maëlle : Tu as battu un enfant aux cartes. Je suis fière de toi.",
+      "Lior : Il était très fort ! Il avait une Lucioline.",
+      "Maëlle : Une Lucioline. La créature la plus douce de la vallée.",
+      "Lior : … Elle avait un 6 à droite. C'est énorme, un 6."
+    ]
+  },
+  {
+    "id": "carte_sylvarque",
+    "titre": "Sylvarque en carte",
+    "si": {"drapeau": "carte:sylvarque"},
+    "membres": ["maelle", "kael"],
+    "dialogue": [
+      "Kael : Le meunier avait une carte de Sylvarque. Et maintenant, c'est nous qui l'avons.",
+      "Maëlle : Ça me fait drôle de le voir sur une carte, après tout ce qu'on a vécu avec lui.",
+      "Kael : Il a l'air plus gentil, en petit.",
+      "Maëlle : Il était gentil. Il avait juste très peur."
+    ]
+  },
+  {
+    "id": "tresors_corbin",
+    "titre": "Le dernier trésor",
+    "si": {"drapeau": "quete:tresors:fin"},
+    "membres": ["isra", "brann"],
+    "dialogue": [
+      "Brann : Huit trésors, et au bout : une boussole. J'espérais un coffre plein d'or.",
+      "Isra : Elle montre ce qu'on cherche, d'après Corbin.",
+      "Brann : Alors elle devrait montrer la taverne. Ça fait trois jours que je cherche une bonne soupe.",
+      "Isra : … Elle tourne vers Forgeroc. C'est inquiétant."
+    ]
+  },
+  {
+    "id": "premiers_echos",
+    "titre": "Des visages connus",
+    "si": {"drapeau": "legende1"},
+    "membres": ["lior", "selene"],
+    "dialogue": [
+      "Sélène : L'écho du Givrecorne… Il avait la même colère dans les yeux qu'au temple.",
+      "Lior : Ce n'est qu'un écho. Le vrai Givrecorne dort en paix.",
+      "Sélène : Je sais. Mais ça fait quelque chose de le combattre une deuxième fois.",
+      "Lior : Au moins, cette fois, on sait comment ça finit."
+    ]
+  },
+  {
+    "id": "maitre_cartes",
+    "titre": "Le nouveau maître",
+    "si": {"drapeau": "cartes:maitre"},
+    "membres": ["kael", "isra"],
+    "dialogue": [
+      "Isra : Le Maître des cartes jouait avec l'Ombre du Premier Gardien. Et il a perdu contre une Lucioline.",
+      "Kael : Contre une Lucioline bien placée.",
+      "Isra : Tu as hurlé de joie dans toute l'auberge.",
+      "Kael : Les archers ne hurlent pas. Ils… célèbrent avec précision."
+    ]
+  },
+  {
+    "id": "tous_les_echos",
+    "titre": "Plus fort que les légendes",
+    "si": {"drapeau": "legende5"},
+    "membres": ["lior", "maelle"],
+    "dialogue": [
+      "Maëlle : Tous les échos sont apaisés. Tous les gardiens de l'histoire, un par un.",
+      "Lior : Tu crois que les premiers gardiens seraient fiers de nous ?",
+      "Maëlle : Je crois qu'ils seraient surtout soulagés de pouvoir dormir.",
+      "Lior : Alors on a bien travaillé. Rentrons à la vallée. L'ancien doit s'inquiéter."
+    ]
   }
 ]

@@ -69,9 +69,22 @@ bool Game::saveGame() {
     for (auto& t : m->tactics) f << "tactique " << t.on << ' ' << t.cond << ' ' << t.value << ' ' << KIND[(int)t.kind] << ' ' << t.act << '\n';
   };
   for (auto& m : team) member(m);
+  if (!inExpedition()) {  // la pension (2026-10-20) : ses nombres, puis ses membres après la ligne « pension » (tout à la fin)
+    if (!pensionLvl_.empty()) {
+      f << "pension_niveaux";
+      for (int l : pensionLvl_) f << ' ' << l;
+      f << '\n';
+    }
+    if (pensionSteps_ || pensionEgg_) f << "pension_pas " << pensionSteps_ << ' ' << pensionEgg_ << '\n';
+    for (auto& e : eggs_) f << "oeuf " << e.first << ' ' << e.second << '\n';
+  }
   if (!reserve.empty()) {  // la réserve après l'équipe : ses lignes « membre » suivent la ligne « reserve »
     f << "reserve\n";
     for (auto& m : reserve) member(m);
+  }
+  if (!inExpedition() && !pension_.empty()) {
+    f << "pension\n";
+    for (auto& m : pension_) member(m);
   }
   return writeUserFile(inExpedition() ? expedition_->saveFile() : saveName_, f.str());
 }
@@ -159,6 +172,9 @@ bool Game::loadGame() {
   seen.clear(), caught.clear(), weak.clear(), tipsSeen.clear();
   visited.clear(), cardHand_.clear();
   bool inReserve = false;                      // après la ligne « reserve »
+  bool inPension = false;                      // après la ligne « pension »
+  pension_.clear(), pensionLvl_.clear(), eggs_.clear();
+  pensionSteps_ = 0, pensionEgg_ = false;
   std::vector<std::pair<size_t, int>> links;  // lignes « compagnon » : reliées à la fin
   items.clear();
   flags.clear();
@@ -217,11 +233,24 @@ bool Game::loadGame() {
       s >> v >> t;
       for (int i = 0; i < (int)types().size(); i++)
         if (types()[i].id == t && hasSpecies(v)) weak.insert(v + ":" + std::to_string(i));
+    } else if (k == "pension_niveaux") {
+      int l;
+      while (s >> l) pensionLvl_.push_back(l);
+    } else if (k == "pension_pas") {
+      s >> pensionSteps_ >> pensionEgg_;
+    } else if (k == "oeuf") {
+      int n = 0;
+      s >> v >> n;
+      if (hasSpecies(v)) eggs_.push_back({v, n});
     } else if (k == "reserve") inReserve = true;
+    else if (k == "pension") inPension = true, inReserve = false;
+    else if (inPension) readMemberLine(k, s, pension_, nullptr);
     else if (inReserve) readMemberLine(k, s, reserve, nullptr);
     else readMemberLine(k, s, team, &links);
   }
   reserve.erase(std::remove(reserve.begin(), reserve.end(), nullptr), reserve.end());
+  pension_.erase(std::remove(pension_.begin(), pension_.end(), nullptr), pension_.end());
+  pensionLvl_.resize(pension_.size(), 1);
   for (auto& m : reserve) m->hp = std::min(m->hp, m->mhp), m->mp = std::min(m->mp, m->mmp);
   noteBestiary();  // anciennes sauvegardes : l'équipe compte déjà
   for (auto& [h, c] : links)  // compagnons : avant de retirer les espèces disparues (les rangs changeraient)

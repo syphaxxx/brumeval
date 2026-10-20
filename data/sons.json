@@ -789,6 +789,49 @@
           "notes": "A2 . . . . . . . | F2 . . . . . . . | D2 . . . . . . . | E2 . . . . . . . | A2 . . . . . . . | F2 . . . . . . . | G2 . . . . . . . | E2 . . . . . . . | F2 . . . . . . . | G2 . . . . . . . | A2 . . . . . . . | A2 . . . . . . . | D2 . . . . . . . | E2 . . . . . . . | A2 . . . . . . . | A2 . . . . . . ."
         }
       ]
+    },
+    "cartes": {
+      "tempo": 126,
+      "voix": [
+        {
+          "onde": "carree",
+          "volume": 0.2,
+          "rapport": 0.5,
+          "vibrato": 0.1,
+          "notes": "C5 . A4 . F4 . A4 . | C5 . F5 . A5 . F5 . | E5 . G5 . Bb5 . G5 . | E5 . C5 . . . - - | A4 . C5 . F5 . A5 . | D5 . F5 . Bb5 . F5 . | G5 . E5 . C5 . Bb4 . | A4 . . . F4 . - - | D5 . F5 . D5 . Bb4 . | F5 . D5 . . . F5 . | C5 . A4 . C5 . F5 . | D5 . A4 . F4 . A4 . | G4 . Bb4 . D5 . G5 . | E5 . G5 . C6 . Bb5 . | A5 . F5 . C5 . A4 . | F4 . . . - - - -"
+        },
+        {
+          "onde": "triangle",
+          "volume": 0.06,
+          "notes": "F4 . A4 . C5 . F4 . | F4 . A4 . C5 . F4 . | C4 . E4 . G4 . C4 . | C4 . E4 . G4 . C4 . | F4 . A4 . C5 . F4 . | A#4 . D5 . F5 . A#4 . | C4 . E4 . G4 . C4 . | F4 . A4 . C5 . F4 . | A#4 . D5 . F5 . A#4 . | A#4 . D5 . F5 . A#4 . | F4 . A4 . C5 . F4 . | D4 . F4 . A4 . D4 . | G4 . A#4 . D5 . G4 . | C4 . E4 . G4 . C4 . | F4 . A4 . C5 . F4 . | F4 . A4 . C5 . F4 ."
+        },
+        {
+          "onde": "triangle",
+          "volume": 0.24,
+          "notes": "F2 . A2 . C3 . E2 . | F2 . A2 . C3 . C#2 . | C2 . E2 . G2 . B1 . | C2 . E2 . G2 . E2 . | F2 . A2 . C3 . A2 . | A#2 . D3 . F3 . C#2 . | C2 . E2 . G2 . E2 . | F2 . A2 . C3 . A2 . | A#2 . D3 . F3 . A2 . | A#2 . D3 . F3 . F#2 . | F2 . A2 . C3 . D#2 . | D2 . F2 . A2 . F#2 . | G2 . A#2 . D3 . C#2 . | C2 . E2 . G2 . E2 . | F2 . A2 . C3 . E2 . | F2 . A2 . C3 . E2 ."
+        },
+        {
+          "onde": "bruit",
+          "volume": 0.06,
+          "frequence": 180,
+          "extinction": 0.08,
+          "notes": "x - - - x - - - | x - - - x - - - | x - - - x - - - | x - - - x - - -"
+        },
+        {
+          "onde": "bruit",
+          "volume": 0.036,
+          "frequence": 1800,
+          "extinction": 0.06,
+          "notes": "- - x - - - x - | - - x - - - x - | - - x - - - x - | - - x - - x x x"
+        },
+        {
+          "onde": "bruit",
+          "volume": 0.014,
+          "frequence": 7000,
+          "extinction": 0.02,
+          "notes": "x x x x x x x x | x x x x x x x x | x x x x x x x x | x x x x x x x x"
+        }
+      ]
     }
   },
   "effets": {

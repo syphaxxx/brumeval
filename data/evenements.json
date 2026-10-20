@@ -10598,5 +10598,593 @@
         ]
       }
     ]
+  },
+  "legendes": {
+    "pages": [
+      {
+        "si": {"drapeau": "legende5"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gardienne des échos : Tous les échos se sont tus. Ils dorment en paix, maintenant. Merci, gardiens."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["legende4", "echos_fin"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gardienne des échos : Le dernier cercle : trois échos d'affilée, sans soin entre eux."
+          },
+          {
+            "action": "question",
+            "texte": "Réveiller les échos du dernier cercle ?",
+            "oui": [
+              {"action": "dire", "texte": "Gardienne des échos : Écho de l'Orage ancien se lève !"},
+              {
+                "action": "combat",
+                "nom": "Écho de l'Orage ancien",
+                "musique": "boss",
+                "ennemis": [
+                  {
+                    "espece": "orage_ancien",
+                    "niveau": 118,
+                    "pv": 5,
+                    "boss": true,
+                    "bouclier": 10,
+                    "phases": [
+                      {"pv": 0.5, "message": "L'écho se renforce !", "bonus": {"attaque": 1, "magie": 1}}
+                    ]
+                  },
+                  {"espece": "fossiloup", "niveau": 114}
+                ],
+                "boss": true,
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "dire", "texte": "Gardienne des échos : Écho du Veilleur se lève !"},
+                  {
+                    "action": "combat",
+                    "nom": "Écho du Veilleur",
+                    "musique": "boss",
+                    "ennemis": [
+                      {
+                        "espece": "veilleur_phare",
+                        "niveau": 119,
+                        "pv": 5,
+                        "boss": true,
+                        "bouclier": 10,
+                        "phases": [
+                          {"pv": 0.5, "message": "L'écho se renforce !", "bonus": {"attaque": 1, "magie": 1}}
+                        ]
+                      },
+                      {"espece": "spectrecho", "niveau": 115}
+                    ],
+                    "boss": true,
+                    "fuite": false,
+                    "capture": false,
+                    "victoire": [
+                      {
+                        "action": "dire",
+                        "texte": "Gardienne des échos : Écho de l'Ombre du Premier Gardien se lève !"
+                      },
+                      {
+                        "action": "combat",
+                        "nom": "Écho de l'Ombre du Premier Gardien",
+                        "musique": "boss_final",
+                        "ennemis": [
+                          {
+                            "espece": "ombre_gardien",
+                            "niveau": 120,
+                            "pv": 5,
+                            "boss": true,
+                            "bouclier": 10,
+                            "phases": [
+                              {
+                                "pv": 0.5,
+                                "message": "L'écho se renforce !",
+                                "bonus": {"attaque": 1, "magie": 1}
+                              }
+                            ]
+                          },
+                          {"espece": "loup_aube", "niveau": 116}
+                        ],
+                        "boss": true,
+                        "fuite": false,
+                        "capture": false,
+                        "victoire": [
+                          {"action": "drapeau", "nom": "legende5"},
+                          {
+                            "action": "dire",
+                            "texte": "Gardienne des échos : Le dernier cercle est apaisé. Les échos se reposent."
+                          },
+                          {"action": "or", "quantite": 50000},
+                          {"action": "donner", "objet": "couronne_echos", "quantite": 1},
+                          {"action": "quete", "id": "legendes", "fin": true},
+                          {
+                            "action": "dire",
+                            "texte": "Gardienne des échos : Vous avez vaincu l'écho de chaque légende. Aucun gardien n'avait jamais fait ça."
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "Gardienne des échos : Les échos attendront. Ils ont tout leur temps."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["legende3", "echos_fin"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gardienne des échos : Le quatrième cercle : trois échos d'affilée, sans soin entre eux."
+          },
+          {
+            "action": "question",
+            "texte": "Réveiller les échos du quatrième cercle ?",
+            "oui": [
+              {"action": "dire", "texte": "Gardienne des échos : Écho de la Brume Noire se lève !"},
+              {
+                "action": "combat",
+                "nom": "Écho de la Brume Noire",
+                "musique": "boss",
+                "ennemis": [
+                  {
+                    "espece": "brume_noire",
+                    "niveau": 113,
+                    "pv": 5,
+                    "boss": true,
+                    "bouclier": 10,
+                    "phases": [
+                      {"pv": 0.5, "message": "L'écho se renforce !", "bonus": {"attaque": 1, "magie": 1}}
+                    ]
+                  },
+                  {"espece": "aubespectre", "niveau": 109}
+                ],
+                "boss": true,
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "dire", "texte": "Gardienne des échos : Écho du Colosse se lève !"},
+                  {
+                    "action": "combat",
+                    "nom": "Écho du Colosse",
+                    "musique": "boss",
+                    "ennemis": [
+                      {
+                        "espece": "colosse_echo",
+                        "niveau": 114,
+                        "pv": 5,
+                        "boss": true,
+                        "bouclier": 10,
+                        "phases": [
+                          {"pv": 0.5, "message": "L'écho se renforce !", "bonus": {"attaque": 1, "magie": 1}}
+                        ]
+                      },
+                      {"espece": "petrolin", "niveau": 110}
+                    ],
+                    "boss": true,
+                    "fuite": false,
+                    "capture": false,
+                    "victoire": [
+                      {"action": "dire", "texte": "Gardienne des échos : Écho du Phénix se lève !"},
+                      {
+                        "action": "combat",
+                        "nom": "Écho du Phénix",
+                        "musique": "boss",
+                        "ennemis": [
+                          {
+                            "espece": "phenix_echo",
+                            "niveau": 115,
+                            "pv": 5,
+                            "boss": true,
+                            "bouclier": 10,
+                            "phases": [
+                              {
+                                "pv": 0.5,
+                                "message": "L'écho se renforce !",
+                                "bonus": {"attaque": 1, "magie": 1}
+                              }
+                            ]
+                          },
+                          {"espece": "echoplume", "niveau": 111}
+                        ],
+                        "boss": true,
+                        "fuite": false,
+                        "capture": false,
+                        "victoire": [
+                          {"action": "drapeau", "nom": "legende4"},
+                          {
+                            "action": "dire",
+                            "texte": "Gardienne des échos : Le quatrième cercle est apaisé. Les échos se reposent."
+                          },
+                          {"action": "or", "quantite": 30000},
+                          {"action": "donner", "objet": "gemme_maitre", "quantite": 2},
+                          {"action": "donner", "objet": "elixir", "quantite": 5}
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "Gardienne des échos : Les échos attendront. Ils ont tout leur temps."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["legende2", "echos_fin"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gardienne des échos : Le troisième cercle : trois échos d'affilée, sans soin entre eux."
+          },
+          {
+            "action": "question",
+            "texte": "Réveiller les échos du troisième cercle ?",
+            "oui": [
+              {"action": "dire", "texte": "Gardienne des échos : Écho du Seigneur des Orages se lève !"},
+              {
+                "action": "combat",
+                "nom": "Écho du Seigneur des Orages",
+                "musique": "boss",
+                "ennemis": [
+                  {
+                    "espece": "seigneur_orage",
+                    "niveau": 108,
+                    "pv": 5,
+                    "boss": true,
+                    "bouclier": 10,
+                    "phases": [
+                      {"pv": 0.5, "message": "L'écho se renforce !", "bonus": {"attaque": 1, "magie": 1}}
+                    ]
+                  },
+                  {"espece": "orageline", "niveau": 104}
+                ],
+                "boss": true,
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "dire", "texte": "Gardienne des échos : Écho du Gardien des Lueurs se lève !"},
+                  {
+                    "action": "combat",
+                    "nom": "Écho du Gardien des Lueurs",
+                    "musique": "boss",
+                    "ennemis": [
+                      {
+                        "espece": "gardien_lueurs",
+                        "niveau": 109,
+                        "pv": 5,
+                        "boss": true,
+                        "bouclier": 10,
+                        "phases": [
+                          {"pv": 0.5, "message": "L'écho se renforce !", "bonus": {"attaque": 1, "magie": 1}}
+                        ]
+                      },
+                      {"espece": "lueurine", "niveau": 105}
+                    ],
+                    "boss": true,
+                    "fuite": false,
+                    "capture": false,
+                    "victoire": [
+                      {
+                        "action": "dire",
+                        "texte": "Gardienne des échos : Écho de la Reine du Marais se lève !"
+                      },
+                      {
+                        "action": "combat",
+                        "nom": "Écho de la Reine du Marais",
+                        "musique": "boss",
+                        "ennemis": [
+                          {
+                            "espece": "reine_marais",
+                            "niveau": 110,
+                            "pv": 5,
+                            "boss": true,
+                            "bouclier": 10,
+                            "phases": [
+                              {
+                                "pv": 0.5,
+                                "message": "L'écho se renforce !",
+                                "bonus": {"attaque": 1, "magie": 1}
+                              }
+                            ]
+                          },
+                          {"espece": "vasepent", "niveau": 106}
+                        ],
+                        "boss": true,
+                        "fuite": false,
+                        "capture": false,
+                        "victoire": [
+                          {"action": "drapeau", "nom": "legende3"},
+                          {
+                            "action": "dire",
+                            "texte": "Gardienne des échos : Le troisième cercle est apaisé. Les échos se reposent."
+                          },
+                          {"action": "or", "quantite": 25000},
+                          {"action": "donner", "objet": "medaillon_legendes", "quantite": 1}
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "Gardienne des échos : Les échos attendront. Ils ont tout leur temps."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["legende1", "echos_fin"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gardienne des échos : Le deuxième cercle : trois échos d'affilée, sans soin entre eux."
+          },
+          {
+            "action": "question",
+            "texte": "Réveiller les échos du deuxième cercle ?",
+            "oui": [
+              {"action": "dire", "texte": "Gardienne des échos : Écho de la Mère des Brumes se lève !"},
+              {
+                "action": "combat",
+                "nom": "Écho de la Mère des Brumes",
+                "musique": "boss",
+                "ennemis": [
+                  {
+                    "espece": "mere_brumes",
+                    "niveau": 103,
+                    "pv": 5,
+                    "boss": true,
+                    "bouclier": 10,
+                    "phases": [
+                      {"pv": 0.5, "message": "L'écho se renforce !", "bonus": {"attaque": 1, "magie": 1}}
+                    ]
+                  },
+                  {"espece": "nebulis", "niveau": 99}
+                ],
+                "boss": true,
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "dire", "texte": "Gardienne des échos : Écho du Kraken se lève !"},
+                  {
+                    "action": "combat",
+                    "nom": "Écho du Kraken",
+                    "musique": "boss",
+                    "ennemis": [
+                      {
+                        "espece": "kraken",
+                        "niveau": 104,
+                        "pv": 5,
+                        "boss": true,
+                        "bouclier": 10,
+                        "phases": [
+                          {"pv": 0.5, "message": "L'écho se renforce !", "bonus": {"attaque": 1, "magie": 1}}
+                        ]
+                      },
+                      {"espece": "murenix", "niveau": 100}
+                    ],
+                    "boss": true,
+                    "fuite": false,
+                    "capture": false,
+                    "victoire": [
+                      {"action": "dire", "texte": "Gardienne des échos : Écho du Griffon se lève !"},
+                      {
+                        "action": "combat",
+                        "nom": "Écho du Griffon",
+                        "musique": "boss",
+                        "ennemis": [
+                          {
+                            "espece": "griffon",
+                            "niveau": 105,
+                            "pv": 5,
+                            "boss": true,
+                            "bouclier": 10,
+                            "phases": [
+                              {
+                                "pv": 0.5,
+                                "message": "L'écho se renforce !",
+                                "bonus": {"attaque": 1, "magie": 1}
+                              }
+                            ]
+                          },
+                          {"espece": "fulgoray", "niveau": 101}
+                        ],
+                        "boss": true,
+                        "fuite": false,
+                        "capture": false,
+                        "victoire": [
+                          {"action": "drapeau", "nom": "legende2"},
+                          {
+                            "action": "dire",
+                            "texte": "Gardienne des échos : Le deuxième cercle est apaisé. Les échos se reposent."
+                          },
+                          {"action": "or", "quantite": 20000},
+                          {"action": "donner", "objet": "gemme_maitre", "quantite": 1},
+                          {"action": "donner", "objet": "elixir", "quantite": 3}
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "Gardienne des échos : Les échos attendront. Ils ont tout leur temps."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "echos_fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gardienne des échos : L'île garde l'écho de tout ce qui s'est passé. Même celui des grandes légendes que vous avez apaisées."
+          },
+          {
+            "action": "dire",
+            "texte": "Gardienne des échos : Je peux les réveiller. Cinq cercles, trois échos chacun. Ils ne vous feront pas de cadeau."
+          },
+          {"action": "quete", "id": "legendes"},
+          {
+            "action": "question",
+            "texte": "Réveiller les échos du premier cercle ?",
+            "oui": [
+              {"action": "dire", "texte": "Gardienne des échos : Écho de Sylvarque se lève !"},
+              {
+                "action": "combat",
+                "nom": "Écho de Sylvarque",
+                "musique": "boss",
+                "ennemis": [
+                  {
+                    "espece": "sylvarque",
+                    "niveau": 98,
+                    "pv": 5,
+                    "boss": true,
+                    "bouclier": 10,
+                    "phases": [
+                      {"pv": 0.5, "message": "L'écho se renforce !", "bonus": {"attaque": 1, "magie": 1}}
+                    ]
+                  },
+                  {"espece": "brumeloup", "niveau": 94}
+                ],
+                "boss": true,
+                "fuite": false,
+                "capture": false,
+                "victoire": [
+                  {"action": "dire", "texte": "Gardienne des échos : Écho d'Ignarok se lève !"},
+                  {
+                    "action": "combat",
+                    "nom": "Écho d'Ignarok",
+                    "musique": "boss",
+                    "ennemis": [
+                      {
+                        "espece": "ignarok",
+                        "niveau": 99,
+                        "pv": 5,
+                        "boss": true,
+                        "bouclier": 10,
+                        "phases": [
+                          {"pv": 0.5, "message": "L'écho se renforce !", "bonus": {"attaque": 1, "magie": 1}}
+                        ]
+                      },
+                      {"espece": "fournezard", "niveau": 95}
+                    ],
+                    "boss": true,
+                    "fuite": false,
+                    "capture": false,
+                    "victoire": [
+                      {"action": "dire", "texte": "Gardienne des échos : Écho du Givrecorne se lève !"},
+                      {
+                        "action": "combat",
+                        "nom": "Écho du Givrecorne",
+                        "musique": "boss",
+                        "ennemis": [
+                          {
+                            "espece": "givrecorne",
+                            "niveau": 100,
+                            "pv": 5,
+                            "boss": true,
+                            "bouclier": 10,
+                            "phases": [
+                              {
+                                "pv": 0.5,
+                                "message": "L'écho se renforce !",
+                                "bonus": {"attaque": 1, "magie": 1}
+                              }
+                            ]
+                          },
+                          {"espece": "givrenard", "niveau": 96}
+                        ],
+                        "boss": true,
+                        "fuite": false,
+                        "capture": false,
+                        "victoire": [
+                          {"action": "drapeau", "nom": "legende1"},
+                          {
+                            "action": "dire",
+                            "texte": "Gardienne des échos : Le premier cercle est apaisé. Les échos se reposent."
+                          },
+                          {"action": "or", "quantite": 15000},
+                          {"action": "donner", "objet": "gemme_maitre", "quantite": 1}
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "Gardienne des échos : Les échos attendront. Ils ont tout leur temps."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gardienne des échos : L'île est encore troublée par l'ombre. Revenez quand elle sera apaisée."
+          }
+        ]
+      }
+    ]
+  },
+  "pension": {
+    "pages": [
+      {
+        "si": {"drapeau": "pension_vue"},
+        "actions": [
+          {"action": "dire", "texte": "Mamie Rose : Bonjour, mon petit ! Tu viens voir tes protégés ?"},
+          {"action": "pension"}
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Mamie Rose : Bienvenue à la pension de Moulinbourg ! Ici, je garde les créatures de ceux qui voyagent."
+          },
+          {
+            "action": "dire",
+            "texte": "Mamie Rose : Laisse-m'en deux, et elles grandiront à chacun de tes pas. Je leur fais courir les champs, tu sais."
+          },
+          {
+            "action": "dire",
+            "texte": "Mamie Rose : Et si elles ont un type en commun… il arrive qu'on trouve un œuf au matin. Ne me demande pas comment !"
+          },
+          {"action": "drapeau", "nom": "pension_vue"},
+          {"action": "pension"}
+        ]
+      }
+    ]
   }
 }

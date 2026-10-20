@@ -65,6 +65,8 @@ maps, before, EV = {}, {}, {}
 doc = {"depart": ["mulotin", "piafouine", "champichou", "grenouillon", "brumelin"], "adversaires": []}
 for fid, mid, look, name, deck, lvl, gold, card, cond in FOES + [MASTER]:
     doc["adversaires"].append({"id": fid, "nom": name, "cartes": deck, "niveau": lvl, "or": gold, "carte": card})
+    if fid in ("voyageuse", "ermite", "maitre"):  # règle « Identique » (ajoutée le même jour)
+        doc["adversaires"][-1]["regles"] = ["identique"]
     if mid not in maps:
         maps[mid] = carte.load(mid)
         before[mid] = pu.reachable(maps[mid])

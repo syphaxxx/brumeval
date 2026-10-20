@@ -59,7 +59,7 @@ std::vector<FighterP> Online::myTeam() const {
     std::istringstream s(line);
     std::string k;
     s >> k;
-    if (k == "reserve" || (k == "membre" && std::count_if(team.begin(), team.end(), [](const FighterP& m) { return m != nullptr; }) >= 3)) break;
+    if (k == "reserve" || k == "pension" || (k == "membre" && std::count_if(team.begin(), team.end(), [](const FighterP& m) { return m != nullptr; }) >= 3)) break;
     readMemberLine(k, s, team);  // même lecture que Game::loadGame
   }
   team.erase(std::remove(team.begin(), team.end(), nullptr), team.end());

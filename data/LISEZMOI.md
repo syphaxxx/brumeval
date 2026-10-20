@@ -27,7 +27,7 @@ toutes les références existent et que chaque lieu des cartes est accessible.
 | `quetes.json` | Quêtes annexes : nom, lieu, étapes affichées dans le journal |
 | `exploits.json` | Exploits (Journal > Exploits) : `id`, `nom`, `description`, `si` (condition) ; atteint, il pose le drapeau `exploit:<id>` et reste acquis |
 | `discussions.json` | Discussions entre héros (Échap > Discussions) : `id`, `titre`, `si` (condition), `membres` (espèces dans l'équipe), `dialogue` (lignes « Nom : texte ») |
-| `cartes_jeu.json` | Cartes des gardiens : `depart` (les cinq cartes données à tous), `adversaires` : `id`, `nom`, `cartes` (cinq espèces), `niveau` (0 à 2 : force de l'ordinateur), `or` et `carte` (espèce) gagnés à la première victoire |
+| `cartes_jeu.json` | Cartes des gardiens : `depart` (les cinq cartes données à tous), `adversaires` : `id`, `nom`, `cartes` (cinq espèces), `niveau` (0 à 2 : force de l'ordinateur), `or` et `carte` (espèce) gagnés à la première victoire, `regles` (`["identique"]` : deux côtés égaux ou plus retournent aussi) |
 | `peche.json` | Poissons de la pêche : `objet` (un objet de objets.json), `eaux` (identifiants de carte, sinon thèmes), `poids` (fréquence), `difficulte` (1 à 5) |
 | `primes.json` | Primes (monstres recherchés) du tableau d'annonces et rangs de chasseur (voir plus bas) |
 
@@ -359,6 +359,7 @@ page dont la condition `si` est vraie.
 | `si` | Condition | `condition`, `alors`, `sinon` |
 | `soigner` | Soigne l'équipe | `pv`, `pm` (true par défaut) |
 | `boutique` | Ouvre une boutique | `objets` |
+| `pension` | Ouvre la pension (laisser, reprendre deux créatures, prendre un œuf) ; règles `pension` de regles.json | — |
 | `cartes` | Propose une partie de Cartes des gardiens (Jouer, Choisir ma main, Règles) ; la suite va dans `victoire`, `defaite`, `egalite` | `adversaire` (un `id` de cartes_jeu.json) |
 | `forge` | Ouvre la forge (renforcer armes et armures : coûts dans `regles.json`, section `forge`) | |
 | `reveil` | Point de réveil après une défaite | |

@@ -427,6 +427,7 @@ void Game::updateMusic() {
   else if (mode == Mode::Map && mapId >= 0 && mapId < (int)maps().size()) {
     t = audio::musicForPlace(M().id);  // « lieux » : une carte peut avoir son morceau (port, tour…), sinon celui de son thème
     if (t.empty()) t = audio::musicForPlace(themeName(M().theme));
+    if (cards_.on) t = "cartes";  // une partie de Cartes des gardiens : l'air de taverne
   }
   audio::music(t);
   // Bruit de pluie : l'averse de la carte, ou en combat la météo du combat (elle ne change plus jusqu'à la fin)
@@ -651,6 +652,7 @@ void Game::tryMove(int d) {
 
 void Game::arrive() {
   steps++;
+  pensionStep();
   if (inExpedition() && expedition_->atExit(px, py)) return expedition_->nextRegion();
   for (auto& w : M().warps)
     if (w.x == px && w.y == py && !(w.map == M().id && w.tx == px && w.ty == py)) {  // vers sa propre case : une barrière
@@ -1026,6 +1028,7 @@ void Game::newGame(const std::string& starter) {
   reserve.clear();
   seen.clear(), caught.clear(), weak.clear(), tipsSeen.clear();
   visited.clear(), cardHand_.clear();
+  pension_.clear(), pensionLvl_.clear(), eggs_.clear(), pensionSteps_ = 0, pensionEgg_ = false;
   items.clear();
   for (auto& [id, n] : r.startItems) items[id] = n;
   gold = r.startGold;

@@ -2975,8 +2975,13 @@ void Battle::draw() {
       g.alpha = 1;
       continue;  // étoiles et « K.O. » : après tous les combattants (jamais cachés)
     }
+    float hop = 0;  // victoire (2026-10-20) : sans pose dessinée, trois petits bonds de joie, décalés d'un allié à l'autre
+    if (summaryOn_ && isAlly(f)) {
+      float a = t - summaryT_ - (p.x + p.y) * .004f;
+      if (a > 0 && a < 1.5f) hop = -std::round(std::abs(std::sin(a * 6.2832f)) * 5);
+    }
     if (!(blinking && blink == f) && !(!pose.empty() && drawFighterPose(g, *f, pose, p.x + o.x, p.y + o.y, facesRight(f))))
-      drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, 1, facesRight(f), t + p.x * .01f);  // vers l'adversaire le plus proche
+      drawFighterSprite(g, *f, p.x + o.x, p.y + o.y + hop, 1, facesRight(f), t + p.x * .01f);  // vers l'adversaire le plus proche
     g.alpha = 1;
     drawStatusTag(*f, p.x - 24, p.y - 16);
     if (actor == f) {  // celui qui choisit son action : une flèche au-dessus de sa tête

@@ -550,5 +550,14 @@
       {"si": "soi_limite", "faire": "limite"},
       {"si": "ennemi", "faire": "attaque"}
     ]
+  },
+  "pension": {
+    "pas_par_niveau": 120,
+    "pas_oeuf": 300,
+    "chance_oeuf": 0.5,
+    "pas_eclosion": 400,
+    "chroma_oeuf": 0.03,
+    "prix_par_niveau": 100,
+    "oeufs_max": 3
   }
 }

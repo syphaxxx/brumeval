@@ -376,7 +376,9 @@ ou une armure qu'il est seul à pouvoir porter, champ `pour`), suivies chacune d
 Cartes au trésor (`outils/villes/tresors.py`) : huit trésors cachés de la Vallée au Récif (coffres « si »), chacun
 contient la carte du suivant ; Corbin, au port.
 Cartes des gardiens (`src/cartes.cpp`, `outils/villes/cartes.py`) : un jeu de cartes à la Triple Triad, neuf joueurs
-de la Vallée à Port-Écho, puis le Maître des cartes ; 30 exploits.
+de la Vallée à Port-Écho, puis le Maître des cartes. Échos des légendes (`outils/villes/legendes.py`) : après l'acte 4,
+cinq cercles de trois grands boss d'affilée (N.98 à 120). Pension de Moulinbourg (`src/pension.cpp`) : élevage et œufs ;
+32 exploits.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 

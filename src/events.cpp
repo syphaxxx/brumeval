@@ -148,7 +148,7 @@ static void checkAction(const Json& a, const std::string& where, std::vector<std
   }
   else if (k == "quete") {
     if (need("id") && !findQuest(a["id"].get<std::string>())) err.push_back(w + T(" : quête inconnue « ") + a["id"].get<std::string>() + " »");
-  } else if (k != "soigner" && k != "reveil" && k != "fin" && k != "forge" && k != "conseil" && k != "nouvelle_partie_plus") err.push_back(where + T(" : action inconnue « ") + k + " »");
+  } else if (k != "soigner" && k != "reveil" && k != "fin" && k != "forge" && k != "conseil" && k != "nouvelle_partie_plus" && k != "pension") err.push_back(where + T(" : action inconnue « ") + k + " »");
 }
 
 static void checkList(const Json& list, const std::string& where, std::vector<std::string>& err) {
@@ -396,6 +396,8 @@ void Game::execAction(const Json& a) {
   } else if (k == "cartes") {  // Cartes des gardiens (cartes.cpp) : ce qui suit va dans victoire, defaite, egalite
     Json win = a.value("victoire", Json::array()), lose = a.value("defaite", Json::array()), draw = a.value("egalite", Json::array());
     cardsMenu(a["adversaire"].get<std::string>(), [this, win, lose, draw](int r) { runActions(r > 0 ? win : r < 0 ? lose : draw); });
+  } else if (k == "pension") {  // la pension de Moulinbourg (pension.cpp)
+    pensionMenu();
   } else if (k == "boutique") {
     shopMenu(names(a["objets"]));
   } else if (k == "forge") {

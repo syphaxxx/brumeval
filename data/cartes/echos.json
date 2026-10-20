@@ -118,7 +118,8 @@
     },
     {"x": 34, "y": 23, "apparence": "montagnard", "direction": "gauche", "evenement": "quete_cloche"},
     {"x": 9, "y": 13, "apparence": "voyageuse", "direction": "droite", "evenement": "etude_oriane"},
-    {"x": 40, "y": 23, "apparence": "garde", "direction": "gauche", "evenement": "phare_sonneur"}
+    {"x": 40, "y": 23, "apparence": "garde", "direction": "gauche", "evenement": "phare_sonneur"},
+    {"x": 28, "y": 16, "apparence": "villageoise", "direction": "bas", "evenement": "legendes"}
   ],
   "coffres": [],
   "panneaux": [],

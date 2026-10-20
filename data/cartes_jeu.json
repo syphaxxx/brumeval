@@ -55,7 +55,8 @@
       "cartes": ["lueurine", "loup_aube", "aubelle", "vasepent", "crapale"],
       "niveau": 2,
       "or": 4000,
-      "carte": "brume_noire"
+      "carte": "brume_noire",
+      "regles": ["identique"]
     },
     {
       "id": "ermite",
@@ -63,7 +64,8 @@
       "cartes": ["petrolin", "fossiloup", "echoplume", "spectrecho", "loup_aube"],
       "niveau": 2,
       "or": 6000,
-      "carte": "ombre_gardien"
+      "carte": "ombre_gardien",
+      "regles": ["identique"]
     },
     {
       "id": "maitre",
@@ -71,7 +73,8 @@
       "cartes": ["mere_brumes", "seigneur_orage", "brume_noire", "ombre_gardien", "veilleur_phare"],
       "niveau": 2,
       "or": 10000,
-      "carte": "veilleur_phare"
+      "carte": "veilleur_phare",
+      "regles": ["identique"]
     }
   ]
 }

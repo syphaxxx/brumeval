@@ -255,16 +255,26 @@ class Game {
   void drawFishing();
   // Cartes des gardiens (cartes.cpp, 2026-10-20) : un jeu de cartes à part, contre les joueurs de data/cartes_jeu.json
   struct CardGame {
-    bool on = false, over = false, abandon = false;
+    bool on = false, over = false, abandon = false, same = false;  // same : règle « Identique »
     std::string foe, foeName;
     int level = 1, turn = 0, phase = 0, sel = 0, cursor = 4;  // phase 0 : choisir la carte, 1 : la case
     std::array<std::string, 9> cell;
     std::array<int, 9> owner{};
     std::array<float, 9> flipT{};
     std::vector<std::string> hand[2];  // 0 : le joueur, 1 : l'adversaire
-    float t = 0, wait = 0;
+    float t = 0, wait = 0, sameT = 0;
     std::function<void(int)> done;  // 1 gagné, 0 égalité, -1 perdu
   } cards_;
+  // Pension de Moulinbourg (pension.cpp, 2026-10-20) : deux créatures gagnent de l'expérience à chaque pas, et parfois un œuf
+  std::vector<FighterP> pension_;
+  std::vector<int> pensionLvl_;                       // leur niveau à l'arrivée (prix pour les reprendre)
+  int pensionSteps_ = 0;                              // pas depuis le dernier tirage d'un œuf
+  bool pensionEgg_ = false;                           // un œuf attend à la pension
+  std::vector<std::pair<std::string, int>> eggs_;     // œufs emportés : espèce, pas avant l'éclosion
+  void pensionStep();
+  void pensionMenu(int sel = 0);
+  void pensionPick();
+  bool pensionCanEgg() const;
   std::vector<std::string> cardHand_;  // la main choisie (ligne « main_cartes ») ; complétée par les meilleures cartes
   int cardGames_ = 0;                  // parties jouées depuis le lancement (le joueur automatique rejoue après une défaite)
   void startCards(const std::string& foe, std::function<void(int)> done);
@@ -400,6 +410,8 @@ std::vector<std::string> checkExploitsData();
 std::vector<std::string> checkCardsData();  // data/cartes_jeu.json
 std::array<int, 4> cardValues(const std::string& sp);  // haut, droite, bas, gauche (1 à 10)
 int cardFoeCount();
+int cardTotal();  // toutes les cartes qu'on peut obtenir
+std::string baseForm(const std::string& sp);  // la forme de base (avant toute évolution)
 bool cardFoeExists(const std::string& id);
 int exploitCount();
 void checkConditionData(const Json& c, const std::string& where, std::vector<std::string>& err);  // une condition « si » bien écrite

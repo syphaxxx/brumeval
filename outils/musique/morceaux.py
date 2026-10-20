@@ -261,6 +261,19 @@ MORCEAUX = {
         'basse': 'pedale', 'volume_basse': .24,
         'echo': {'delai': .5, 'retour': .45, 'melange': .4},
     },
+    # Cartes des gardiens (2026-10-20) : fa majeur, un air de taverne qui sautille, pendant les parties de cartes
+    'cartes': {
+        'tempo': 126, 'onde': 'carree', 'volume': .2, 'vibrato': .1,
+        'accords': 'F F C7 C7 F Bb C7 F | Bb Bb F Dm Gm C7 F F',
+        'melodie': [
+            'C5 . A4 . F4 . A4 .', 'C5 . F5 . A5 . F5 .', 'E5 . G5 . Bb5 . G5 .', 'E5 . C5 . . . - -',
+            'A4 . C5 . F5 . A5 .', 'D5 . F5 . Bb5 . F5 .', 'G5 . E5 . C5 . Bb4 .', 'A4 . . . F4 . - -',
+            'D5 . F5 . D5 . Bb4 .', 'F5 . D5 . . . F5 .', 'C5 . A4 . C5 . F5 .', 'D5 . A4 . F4 . A4 .',
+            'G4 . Bb4 . D5 . G5 .', 'E5 . G5 . C6 . Bb5 .', 'A5 . F5 . C5 . A4 .', 'F4 . . . - - - -',
+        ],
+        'arpege': 'accords', 'octave_arpege': 4, 'onde_arpege': 'triangle', 'volume_arpege': .06,
+        'basse': 'marche', 'volume_basse': .24, 'batterie': 'marche', 'volume_batterie': .4,
+    },
     # Combats de l'archipel (2026-10-20) : mi mineur, houle à 6/8 rapide
     'combat_mer': {
         'tempo': 150, 'mesure': 3, 'onde': 'carree', 'rapport': .25, 'volume': .12, 'vibrato': .15,

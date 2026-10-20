@@ -1008,6 +1008,32 @@
     "bonus": {"pv": 100, "magie": 10, "resistance": 10, "vitesse": 5, "critique": 4}
   },
   {
+    "id": "medaillon_legendes",
+    "nom": "Médaillon des légendes",
+    "icone": "ic_acc_4",
+    "prix": 10000,
+    "equipement": "accessoire",
+    "description": "Un médaillon où dorment les échos de trois légendes. On les entend murmurer pendant les combats.",
+    "bonus": {"pv": 60, "attaque": 8, "magie": 8, "vitesse": 4, "critique": 4}
+  },
+  {
+    "id": "couronne_echos",
+    "nom": "Couronne des échos",
+    "icone": "ic_acc_8",
+    "prix": 15000,
+    "equipement": "accessoire",
+    "description": "La couronne de celui qui a vaincu tous les échos. Tous les gardiens de l'histoire l'ont un jour portée.",
+    "bonus": {
+      "pv": 120,
+      "attaque": 10,
+      "magie": 10,
+      "defense": 8,
+      "resistance": 8,
+      "vitesse": 6,
+      "critique": 5
+    }
+  },
+  {
     "id": "as_gardiens",
     "nom": "As des gardiens",
     "icone": "ic_acc_8",

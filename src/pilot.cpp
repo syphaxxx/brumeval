@@ -226,7 +226,8 @@ void Pilot::inspectList(const Json& list, Info& in, int depth) const {
     if (k == "combat" && jget(a, "entrainement", false) && a.value("victoire", Json::array()).empty()) continue;
     // Cartes des gardiens : il joue tant qu'il n'a pas battu ce joueur (et s'il a cinq cartes)
     if (k == "cartes" && (G.has("cartes:" + jget<std::string>(a, "adversaire", "")) || G.cardCollection().size() < 5)) continue;
-    if (k == "cartes") in.sig += "c" + std::to_string(G.cardGames_);  // perdu : la signature change, il pourra rejouer (6 essais)
+    if (k == "cartes") in.sig += "c" + std::to_string(G.cardGames_);
+    if (k == "pension") continue;  // la pension : il ne s'en sert pas  // perdu : la signature change, il pourra rejouer (6 essais)
     // Seulement parler, attendre ou choisir le point de réveil : aucun effet sur la partie
     if (k != "dire" && k != "attendre" && k != "si" && k != "question" && k != "reveil" && k != "evenement") in.effect = true;
     if (k == "si") {
@@ -1249,7 +1250,7 @@ void Pilot::update(float dt) {
   {  // où passe le temps (rapport)
     bool b = G.mode == Mode::Battle;
     const char* what = b ? (battleWild_ && goal_.kind == Grind ? "combat (entraînement)" : battleWild_ ? "combat (trajet)" : "combat difficile")
-                       : G.menus.active() ? "menus" : G.sc.busy() ? "dialogue" : goal_.kind == Grind ? "entraînement (marche)" : "trajet";
+                       : G.menus.active() ? "menus" : G.cards_.on ? "cartes" : G.sc.busy() ? "dialogue" : goal_.kind == Grind ? "entraînement (marche)" : "trajet";
     timeBy[what] += dt;
     if (!b && G.sc.showingMessage() && G.sc.text() != lastRead_) {  // ce qu'un joueur aurait à lire (estimation)
       lastRead_ = G.sc.text();
@@ -1318,6 +1319,10 @@ void Pilot::update(float dt) {
   if (battle) return battleStep();
   if (G.mode != Mode::Map) return;
   if (G.menus.active()) return menuStep();
+  if (G.cards_.on && !G.sc.busy()) {  // Cartes des gardiens : le jeu joue pour lui (Game::updateCards)
+    status = "cartes";
+    return;
+  }
   if (G.sc.busy()) {  // dialogue
     status = "dialogue";
     if (demo_ && G.sc.showingMessage() && !G.sc.messageDone()) return;

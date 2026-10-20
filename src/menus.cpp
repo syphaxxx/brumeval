@@ -809,7 +809,7 @@ void Game::progressMenu() {
     if (done >= total) it.color = 0xffe066;  // tout est fait : en or
     m.items.push_back(it);
   };
-  int q = 0, qd = 0, b = 0, bd = 0, trn = 0, trd = 0, rv = 0, rvd = 0, ch = 0, chd = 0, sp = 0, cr = 0, talk = 0;
+  int q = 0, qd = 0, b = 0, bd = 0, trn = 0, trd = 0, rv = 0, rvd = 0, ch = 0, chd = 0, hid = 0, hidd = 0, sp = 0, cr = 0, talk = 0;
   for (auto& x : quests()) {
     std::string id = jget<std::string>(x, "id", "");
     q++, qd += has(questFlag(id, true));
@@ -822,7 +822,11 @@ void Game::progressMenu() {
         const Json* ev = findEvent(n.event);
         if (ev && ev->dump().find(n.sightUntil + "_revanche") != std::string::npos) rv++, rvd += has(n.sightUntil + "_revanche");
       }
-    for (auto& c : map.chests) ch++, chd += has("coffre:" + map.id + ":" + std::to_string(c.x) + ":" + std::to_string(c.y));
+    for (auto& c : map.chests) {
+      bool open = has("coffre:" + map.id + ":" + std::to_string(c.x) + ":" + std::to_string(c.y));
+      if (c.cond.is_null()) ch++, chd += open;
+      else hid++, hidd += open;  // trésors cachés (cartes au trésor)
+    }
   }
   for (auto& s : allSpecies()) sp += !s.human && s.shape != Shape::Boss;
   noteBestiary();
@@ -839,6 +843,10 @@ void Game::progressMenu() {
   line(T("Créatures obtenues"), caughtN, sp, T("Le Bestiaire : les créatures capturées ou reçues (sans les humains ni les boss)."));
   line(T("Poissons pêchés"), fishCaught(), fishSpecies(), T("Le carnet du maître pêcheur du port."));
   line(T("Discussions écoutées"), talk, discussionCount(), T("Échap > Discussions : ce que se disent les héros."));
+  line(T("Trésors cachés"), hidd, hid, T("Les trésors des cartes de Corbin, au port : chacun contient la carte du suivant."));
+  line(T("Joueurs de cartes battus"), cardsWon(), cardFoeCount(), T("Les joueurs de Cartes des gardiens, dans les auberges et les maisons."));
+  line(T("Cartes des gardiens"), (int)cardCollection().size(), cardTotal(), T("Chaque créature obtenue donne sa carte ; les cartes des boss se gagnent aux joueurs."));
+  line(T("Exploits"), exploitsDone(), exploitCount(), T("Journal > Exploits : les défis pour ceux qui veulent tout faire."));
   MenuItem c{T("Créatures chromatiques"), std::to_string(cr), T("Les créatures aux couleurs rares de votre équipe et de votre réserve."), true, nullptr};
   m.items.push_back(c);
   m.onCancel = [this] { menus.pop(); };

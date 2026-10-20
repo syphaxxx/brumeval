@@ -94,21 +94,37 @@ int Game::cardsWon() const {
   return n;
 }
 int cardFoeCount() { return (int)cardFoes().size(); }
+int cardTotal() {
+  std::set<std::string> ids;
+  for (auto& s : allSpecies())
+    if (!s.human && s.shape != Shape::Boss) ids.insert(s.id);
+  for (auto& o : cardFoes())
+    if (hasSpecies(jget<std::string>(o, "carte", ""))) ids.insert(jget<std::string>(o, "carte", ""));
+  return (int)ids.size();
+}
 
 // Cartes retournées si `who` pose `sp` en `c` (apply : les retourner vraiment)
 int Game::cardFlips(int c, const std::string& sp, int who, bool apply) {
   CardGame& C = cards_;
   auto mine = cardValues(sp);
   int n = 0;
+  std::vector<int> same;  // règle « Identique » : deux côtés égaux ou plus retournent aussi ces cartes-là
   for (int d = 0; d < 4; d++) {
     int o = neighbor(c, d);
     if (o < 0 || C.cell[o].empty() || C.owner[o] == who) continue;
     int a = mine[d] + (strongAgainst(sp, C.cell[o]) ? 1 : 0), b = cardValues(C.cell[o])[(d + 2) % 4];
+    if (mine[d] == b) same.push_back(o);
     if (a > b) {
       n++;
       if (apply) C.owner[o] = who, C.flipT[o] = .35f;
     }
   }
+  if (C.same && same.size() >= 2)
+    for (int o : same)
+      if (C.owner[o] != who) {  // pas déjà retournée parce que plus faible
+        n++;
+        if (apply) C.owner[o] = who, C.flipT[o] = .35f, C.sameT = 1.2f;
+      }
   return n;
 }
 
@@ -149,6 +165,7 @@ void Game::startCards(const std::string& foe, std::function<void(int)> done) {
   C.foe = foe;
   C.foeName = tr(jget<std::string>(*f, "nom", foe));
   C.level = std::clamp(jget(*f, "niveau", 1), 0, 2);
+  for (auto& r : jget(*f, "regles", std::vector<std::string>{})) C.same = C.same || r == "identique";
   C.hand[0] = deck;
   for (auto& id : jget(*f, "cartes", std::vector<std::string>{}))
     if (hasSpecies(id) && C.hand[1].size() < 5) C.hand[1].push_back(id);
@@ -193,6 +210,7 @@ void Game::updateCards(float dt) {
   CardGame& C = cards_;
   C.t += dt;
   for (auto& f : C.flipT) f = std::max(0.f, f - dt);
+  C.sameT = std::max(0.f, C.sameT - dt);
   int placed = 0;
   for (auto& c : C.cell) placed += !c.empty();
   if (C.over) {  // le score est affiché : Entrée pour finir
@@ -288,8 +306,9 @@ void Game::drawCards() {
   const CardGame& C = cards_;
   g.rect(g.left(), 0, (float)g.fullW, 240, rgb(0x0a0f22, 242));
   g.newLayer();
-  g.window(88, 4, 144, 18);
-  g.text(160, 8, C.foeName, GOLD, 1);
+  g.window(60, 4, 200, 18);
+  g.text(160, 8, C.same ? C.foeName + T(" · Identique") : C.foeName, GOLD, 1);
+  if (C.sameT > 0) g.textBig(160, 100, T("Identique !"), GOLD, 2, 1);
   // Le plateau
   for (int c = 0; c < 9; c++) {
     float x = 88 + (c % 3) * 48, y = 26 + (c / 3) * 56;
@@ -331,7 +350,12 @@ void Game::cardsMenu(const std::string& foe, std::function<void(int)> done) {
   const Json* f = cardFoe(foe);
   m.title = f ? tr(jget<std::string>(*f, "nom", foe)) : foe;
   m.x = 8, m.y = 8, m.w = 200;
-  m.items.push_back({T("Jouer"), has("cartes:" + foe) ? "★" : "", T("Une partie de Cartes des gardiens, avec votre main de cinq cartes."), true, [this, foe, done] {
+  bool same = false;
+  if (f)
+    for (auto& r : jget(*f, "regles", std::vector<std::string>{})) same = same || r == "identique";
+  m.items.push_back({T("Jouer"), has("cartes:" + foe) ? "★" : "",
+                     T("Une partie de Cartes des gardiens, avec votre main de cinq cartes.") + (same ? T(" Règle en plus : Identique.") : std::string()), true,
+                     [this, foe, done] {
                        menus.clear();
                        startCards(foe, done);
                      }});
@@ -343,6 +367,7 @@ void Game::cardsMenu(const std::string& foe, std::function<void(int)> done) {
                        sc.say(T("Chaque carte a quatre valeurs (haut, droite, bas, gauche ; A vaut 10), tirées des statistiques de sa créature."));
                        sc.say(T("Une carte posée retourne chaque carte adverse voisine dont le côté qui la touche est plus faible. Un type efficace contre la voisine donne +1."));
                        sc.say(T("À la fin, on compte les cartes de sa couleur sur le plateau, plus celle restée en main. Le plus grand nombre gagne."));
+                       sc.say(T("Règle Identique (les meilleurs joueurs) : si deux côtés ou plus sont égaux à ceux des cartes adverses qu'ils touchent, ces cartes sont retournées aussi."));
                      }});
   m.items.push_back({T("Partir"), "", "", true, [this] { menus.pop(); }});
   m.onCancel = m.items.back().act;

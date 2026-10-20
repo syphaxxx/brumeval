@@ -130,7 +130,10 @@
       "evenement": "route_plaine2",
       "vue": 3,
       "vue_jusqua": "route_plaine2"
-    }
+    },
+    {"x": 10, "y": 13, "apparence": "villageoise", "direction": "bas", "evenement": "pension"},
+    {"x": 7, "y": 14, "apparence": "vache", "direction": "gauche", "dialogue": ["…"], "promenade": 2},
+    {"x": 13, "y": 14, "apparence": "poule", "direction": "gauche", "dialogue": ["…"], "promenade": 2}
   ],
   "coffres": [
     {"x": 46, "y": 6, "objet": "lanterne_argent", "quantite": 2},

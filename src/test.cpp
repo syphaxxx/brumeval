@@ -2578,6 +2578,64 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       team = savedTeam;
       noticeT_ = 0;
     }
+    {  // Pension : deux créatures d'un même type gagnent des niveaux en marchant, laissent un œuf, qui éclot ; sauvegarde
+      auto savedTeam = team;
+      auto savedReserve = reserve;
+      auto savedFlags = flags;
+      menus.clear();
+      sc.clear();
+      team = {makeFighter("lior", 30), makeFighter("braisenard", 30), makeFighter("braisenard", 10), makeFighter("braisenard", 10)};
+      reserve.clear();
+      pension_.clear(), pensionLvl_.clear(), eggs_.clear(), pensionSteps_ = 0, pensionEgg_ = false;
+      pensionMenu();
+      bool menu = menus.active() && menus.top().items.size() == 2;  // laisser une créature, partir
+      show("pension");
+      menus.top().sel = 0;
+      in.confirm = true;  // Laisser une créature
+      frame();
+      menus.top().sel = 2;  // le premier Braisenard N.10
+      in.confirm = true;
+      frame();
+      pensionPick();
+      menus.top().sel = 1;  // l'autre N.10 (le N.30 reste dans l'équipe)
+      in.confirm = true;
+      frame();
+      menus.clear();
+      bool deposited = pension_.size() == 2 && team.size() == 2 && pensionCanEgg();
+      for (int i = 0; i < 20000 && !pensionEgg_; i++) pensionStep();
+      bool grew = pension_.size() == 2 && pension_[0]->lvl > 10 && pension_[0]->lvl <= 30;
+      bool egg = pensionEgg_;
+      saveGame();
+      pension_.clear(), pensionEgg_ = false;
+      loadGame();
+      bool kept = pension_.size() == 2 && pensionEgg_ && pensionLvl_.size() == 2 && pensionLvl_[0] == 10;
+      pensionMenu();
+      bool take = false;
+      for (size_t i = 0; i < menus.top().items.size(); i++)
+        if (menus.top().items[i].label == T("Prendre l'œuf")) menus.top().sel = (int)i, take = true;
+      in.confirm = true;
+      frame();
+      while (sc.busy()) {
+        in.confirm = true;
+        frame();
+      }
+      bool carried = eggs_.size() == 1 && eggs_[0].first == baseForm("braisenard");
+      size_t members = team.size() + reserve.size();
+      for (int i = 0; i < 1000 && !eggs_.empty(); i++) pensionStep();
+      while (sc.busy()) {
+        in.confirm = true;
+        frame();
+      }
+      bool hatched = eggs_.empty() && team.size() + reserve.size() == members + 1 && has("oeuf_eclos");
+      check(menu && deposited && grew && egg && kept && take && carried && hatched,
+            "pension : deux créatures d'un même type grandissent en marchant, laissent un œuf (gardé par la sauvegarde), qui éclot dans l'équipe");
+      menus.clear();
+      pension_.clear(), pensionLvl_.clear(), eggs_.clear(), pensionSteps_ = 0, pensionEgg_ = false;
+      team = savedTeam;
+      reserve = savedReserve;
+      flags = savedFlags;
+      saveGame();
+    }
     {  // Cartes des gardiens : une carte plus forte retourne sa voisine ; une partie entière jouée aux touches
       auto savedFlags = flags;
       menus.clear();
@@ -2586,6 +2644,19 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       cards_.cell[4] = "mulotin", cards_.owner[4] = 1;  // Mulotin : 3 en haut ; Ombre des galeries (6 en bas) posée au-dessus
       int flips = cardFlips(1, "ombre_galeries", 0, true);
       bool rule = flips == 1 && cards_.owner[4] == 0 && cardValues("mulotin")[0] < cardValues("ombre_galeries")[2];
+      {  // règle Identique : une carte dont le haut et la gauche égalent les côtés de deux cartes adverses les retourne
+        std::string sp;
+        for (auto& e : allSpecies()) {
+          auto v = cardValues(e.id);
+          if (!e.human && v[0] == v[2] && v[1] == v[3] && typeEff(e.type, e.type) <= 1.f && (e.type2 < 0 || typeEff(e.type, e.type2) <= 1.f)) sp = e.id;
+        }
+        cards_ = CardGame{};
+        cards_.same = true;
+        cards_.cell[1] = cards_.cell[3] = sp, cards_.owner[1] = cards_.owner[3] = 1;
+        rule = rule && !sp.empty() && cardFlips(4, sp, 0, true) == 2 && cards_.owner[1] == 0 && cards_.owner[3] == 0;
+        cards_.same = false, cards_.owner[1] = cards_.owner[3] = 1;
+        rule = rule && cardFlips(4, sp, 0, false) == 0;  // sans la règle : rien
+      }
       int result = 99;
       cardsMenu("pip", [&](int r) { result = r; });
       bool menu = menus.active() && menus.top().items[0].label == T("Jouer");
@@ -2605,7 +2676,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         frame();
       }
       bool ended = !cards_.on && result >= -1 && result <= 1 && (result <= 0 || has("cartes:pip"));
-      check(rule && menu && started && shot && ended, "cartes des gardiens : une carte plus forte retourne sa voisine ; une partie se joue jusqu'au bout (" +
+      check(rule && menu && started && shot && ended, "cartes des gardiens : une carte plus forte retourne sa voisine (règle Identique aussi) ; une partie se joue jusqu'au bout (" +
                                                           std::string(result > 0 ? "gagnée" : result < 0 ? "perdue" : "égalité") + ")");
       cardHandMenu();
       show("cartes : main");

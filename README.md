@@ -336,7 +336,11 @@ de niveau 35-40 bien équipée.
 - **Cartes au trésor** : Corbin, au port, a caché huit trésors dans des coins perdus ; chacun contient la carte du suivant.
 - **Cartes des gardiens** : un jeu de cartes (plateau de 3 × 3, comme le Triple Triad) contre neuf joueurs des
   auberges ; chaque créature obtenue donne sa carte, les boss se gagnent.
-- **Exploits** : 30 défis (finir les actes, remplir le Bestiaire, devenir champion…), cochés dans Journal > Exploits.
+- **Échos des légendes** : après l'acte 4, à Port-Écho, les grands boss de l'aventure reviennent, cinq cercles de trois
+  combats d'affilée.
+- **Pension de Moulinbourg** : deux créatures grandissent pendant que vous marchez ; deux d'un même type laissent
+  parfois un œuf, qui éclot dans l'équipe.
+- **Exploits** : 32 défis (finir les actes, remplir le Bestiaire, devenir champion…), cochés dans Journal > Exploits.
 - **Sauvegarde automatique** à chaque passage et porte (Options > Sauvegarde auto pour la couper).
 - **Voyage rapide** : Échap > Carte, choisir un village déjà visité (flèches), Entrée pour y aller.
 - **Créatures de la nuit** : la nuit, d'autres créatures sortent dans les herbes ; parfois, une meute est menée
