@@ -2295,6 +2295,8 @@ void Battle::useItem(FighterP a, const std::string& id, FighterP t) {
         foes.erase(std::find(foes.begin(), foes.end(), t));
         t->tag.clear();
         t->clearBattle();
+        t->boss = false;  // un alpha capturé redevient une créature comme les autres (le statut n'est pas sauvegardé)
+        t->shield = t->shieldMax = 0;
         t->hp = t->mhp;
         t->mp = t->mmp;
         t->lim = 0;

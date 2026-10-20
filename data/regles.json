@@ -20,7 +20,9 @@
     "chance_3e": 0.35,
     "meute_distance": 50,
     "chromatique": 0.006,
-    "alpha": 0.06
+    "alpha": 0.06,
+    "alpha_niveaux": 3,
+    "part_nuit": 0.5
   },
   "combat": {
     "atb_base": 20,

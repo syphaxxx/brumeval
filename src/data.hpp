@@ -221,7 +221,9 @@ struct Rules {
   int packMax = 6;
   double packDistance = 30, packDense = .5;
   double chroma = 0;  // chance qu'une créature sauvage soit chromatique (couleurs rares, sprite « _chroma »)
-  double alpha = 0;   // chance qu'une meute (2 créatures ou plus) soit menée par un alpha (+3 niveaux, comme un boss)
+  double alpha = 0;   // chance qu'une meute (2 créatures ou plus) soit menée par un alpha (comme un boss)
+  int alphaLevels = 3;     // niveaux en plus de l'alpha
+  double nightShare = .5;  // part des rencontres de nuit tirées de la liste « nuit » d'une zone
   // Combat
   double atbBase = 20, atbSpeed = 1.1, flee = .7, limitGain = 110, stab = 1.25, spreadMin = .85, dmgDivisor = 40;
   double critMult = 1.5, stageStep = .25;

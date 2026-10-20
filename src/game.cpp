@@ -701,7 +701,7 @@ void Game::encounter() {
     for (int k = n; k < rules().packMax; k++)
       if (frand() < .5f * deep) n++;
     std::vector<FighterP> foes;
-    bool night = !z.night.empty() && nightAmount() > .5f && frand() < .5f;  // la nuit, ses créatures à elle
+    bool night = !z.night.empty() && nightAmount() > .5f && frand() < rules().nightShare;  // la nuit, ses créatures à elle
     const auto& pool = night ? z.night : z.pool;
     for (int i = 0; i < n; i++) {
       foes.push_back(makeFighter(pool[irand(0, (int)pool.size() - 1)], irand(z.lo, z.hi) + foeLevelBonus));
@@ -709,7 +709,7 @@ void Game::encounter() {
     }
     if (n >= 2 && !inExpedition() && frand() < rules().alpha) {  // une meute menée par un alpha : plus fort, traité comme un boss
       bool chroma = foes[0]->chroma;
-      foes[0] = makeFighter(foes[0]->sp, foes[0]->lvl + 3);
+      foes[0] = makeFighter(foes[0]->sp, foes[0]->lvl + rules().alphaLevels);
       foes[0]->boss = true, foes[0]->chroma = chroma;
     }
     startBattle(foes, false, nullptr);

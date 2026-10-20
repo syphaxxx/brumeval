@@ -189,6 +189,8 @@ std::vector<RuleField> ruleFields(Rules& r) {
       D("rencontres", "nature_dense", "Rencontres en plus au plus profond", r.packDense, 0, 3, .05),
       D("rencontres", "chromatique", "Chance d'une créature chromatique", r.chroma, 0, 1, .001),
       D("rencontres", "alpha", "Chance d'un alpha à la tête d'une meute", r.alpha, 0, 1, .01),
+      I("rencontres", "alpha_niveaux", "Niveaux en plus de l'alpha", r.alphaLevels, 0, 20, 1),
+      D("rencontres", "part_nuit", "Part des rencontres de nuit (liste « nuit »)", r.nightShare, 0, 1, .05),
       D("combat", "atb_base", "Vitesse ATB de base", r.atbBase, 0, 100, 1),
       D("combat", "atb_vitesse", "Multiplicateur de vitesse ATB", r.atbSpeed, .1, 5, .1),
       D("combat", "fuite", "Chance de fuite", r.flee, 0, 1, .05),
