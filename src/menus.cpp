@@ -175,6 +175,10 @@ void Game::pauseMenu() {
   m.items.push_back({T("Tactiques"), "", T("Ce que chaque membre fait tout seul en combat (mode auto : touche Tab)."), true, [this] { tacticsMenu(); }});
   m.items.push_back({T("Équipement"), "", T("Armes, armures et accessoires."), true, [this] { gearMenu(); }});
   m.items.push_back({T("Journal"), "", T("Les quêtes en cours et terminées."), true, [this] { journalMenu(); }});
+  if (!inExpedition()) {
+    int n = newDiscussions();
+    m.items.push_back({T("Discussions"), n ? std::to_string(n) : "", T("Ce que se disent les héros au fil de l'aventure."), true, [this] { discussionsMenu(); }});
+  }
   if (!inExpedition())
     m.items.push_back({T("Carte"), "", T("La carte du monde : les lieux où vous pouvez aller, et où vous êtes."), true, [this] {
                          worldMapOn_ = true;

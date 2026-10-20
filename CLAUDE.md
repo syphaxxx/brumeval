@@ -552,6 +552,10 @@ code) ; `docs/GUIDE.md` les range par domaine.
   ni équipement ni gemme) rendus ; drapeaux effacés sauf `ngp<k>`, et `ngp<k+1>` posé. `foeLevelBonus` (data.cpp) =
   `NGP_LEVELS` (12) × tours, ajouté par `makeFoe` et aux créatures sauvages ; posé par `applyNewGamePlus` (nouvelle
   partie : 0, chargement, écran titre : 0). Le joueur automatique répond Non à cette question.
+- Discussions (2026-10-20, `discussions.cpp`, `data/discussions.json`) : conversations courtes entre héros (comme les
+  saynètes des Tales of) : `id`, `titre`, `si`, `membres` (espèces dans l'équipe), `dialogue` ; Échap > Discussions
+  (nouvelles d'abord), drapeau `discussion:<id>` ; une nouvelle disponible est annoncée sur la carte
+  (`checkDiscussions`, `lastNewTalks_`, remis au chargement). 20 discussions.
 - Épreuves des gardiens (2026-10-20) : après `aube_fin`, la porte du sanctuaire d'Aube (événement `epreuves`) ouvre huit
   combats contre des esprits gardiens (drapeaux `epreuve1`…`epreuve8`, niveaux 70 à 84), puis Ilya (`epreuve9`,
   Insigne des gardiens) ; quête `epreuves`. Script `outils/villes/epreuves.py`.

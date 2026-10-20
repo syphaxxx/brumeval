@@ -73,6 +73,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   report(checkMaps(), std::to_string(maps().size()) + " cartes valides, tous les lieux sont accessibles à pied");
   report(checkEvents(), std::to_string(events().size()) + " événements valides");
   report(checkFishing(), std::to_string(fishSpecies()) + " poissons à pêcher");
+  report(checkDiscussionsData(), std::to_string(discussionCount()) + " discussions entre les héros");
   auto mi = [](const char* id) { return std::max(0, mapIndex(id)); };
   // Relecture : écrire puis relire une carte doit redonner la même carte
   {
@@ -2413,6 +2414,34 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
             "pêche : on lance la ligne face à l'eau, ça mord, on ferre, et le poisson (" + item(fish).name + ") va au sac et au carnet");
       flags = savedFlags;
       items = savedItems;
+    }
+    {  // Discussions : une nouvelle s'annonce, s'écoute depuis le menu et passe en « déjà vue »
+      auto savedFlags = flags;
+      auto savedTeam = team;
+      team = {makeFighter("lior", 20), makeFighter("maelle", 20), makeFighter("brann", 20)};
+      flags = {"boss1", "brann"};
+      menus.clear();
+      sc.clear();
+      lastNewTalks_ = 0;
+      int fresh = newDiscussions();
+      discussionsMenu();
+      show("discussions");
+      snap("discussions");
+      in.confirm = true;
+      frame();
+      bool playing = sc.busy();
+      while (sc.busy()) {
+        in.confirm = true;
+        frame();
+      }
+      bool heard = false;
+      for (auto& f : flags) heard = heard || f.rfind("discussion:", 0) == 0;
+      check(fresh == 2 && playing && heard && newDiscussions() == 1,
+            "discussions : les héros parlent entre eux (Échap > Discussions), une discussion écoutée n'est plus nouvelle");
+      menus.clear();
+      flags = savedFlags;
+      team = savedTeam;
+      noticeT_ = 0;
     }
     {  // Nouvelle partie + : l'équipe reste, l'histoire recommence, les objets importants sont rendus, ennemis +12
       auto savedFlags = flags;

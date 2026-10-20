@@ -25,6 +25,7 @@ toutes les références existent et que chaque lieu des cartes est accessible.
 | `cartes/*.json` | Une carte par fichier : tuiles, bâtiments, habitants, coffres… |
 | `sons.json` | Musiques et bruitages (fabriqués par le jeu, sans fichier audio) |
 | `quetes.json` | Quêtes annexes : nom, lieu, étapes affichées dans le journal |
+| `discussions.json` | Discussions entre héros (Échap > Discussions) : `id`, `titre`, `si` (condition), `membres` (espèces dans l'équipe), `dialogue` (lignes « Nom : texte ») |
 | `peche.json` | Poissons de la pêche : `objet` (un objet de objets.json), `eaux` (identifiants de carte, sinon thèmes), `poids` (fréquence), `difficulte` (1 à 5) |
 | `primes.json` | Primes (monstres recherchés) du tableau d'annonces et rangs de chasseur (voir plus bas) |
 

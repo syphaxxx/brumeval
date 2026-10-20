@@ -246,6 +246,10 @@ void Game::update(float dt) {
   if (pilot_) pilot_->update(dt);    // joueur automatique : il choisit les touches de cette image
   banner -= dt;
   noticeT_ -= dt;
+  if (mode == Mode::Map && !sc.busy() && !menus.active() && (talkCheckT_ -= dt) < 0) {  // une nouvelle discussion ?
+    talkCheckT_ = 1;
+    checkDiscussions();
+  }
   speedT_ -= dt / speed();  // même durée à l'écran quelle que soit la vitesse
   if (worldMapOn_) {  // carte du monde : Entrée, Échap ou un clic la ferme
     if (in.confirm || in.cancel || in.menu || in.mclick[0] || in.mclick[2]) worldMapOn_ = false, audio::play("retour");

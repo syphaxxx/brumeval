@@ -189,6 +189,14 @@ class Game {
   int forgeStock(const std::string& id) const;               // « trophee » : tous les trophées
   std::string forgeCost(const ItemDef& d, std::string* missing) const;
   void journalMenu();
+  // Discussions entre les héros (discussions.cpp, data/discussions.json)
+  void discussionsMenu(int sel = 0);
+  void playDiscussion(const std::string& id);
+  bool discussionOpen(const Json& d) const;
+  int newDiscussions() const;
+  void checkDiscussions();
+  int lastNewTalks_ = 0;
+  float talkCheckT_ = 0;
   // Nouvelle partie + (2026-10-20) : drapeaux « ngp1 », « ngp2 »… ; chaque tour ajoute NGP_LEVELS niveaux aux ennemis
   static constexpr int NGP_LEVELS = 12;
   int newGamePlus() const;
@@ -330,3 +338,7 @@ class Game {
 // Pêche (peche.cpp) : vérification de data/peche.json (mode test) et nombre d'espèces de poissons
 std::vector<std::string> checkFishing();
 int fishSpecies();
+
+// Discussions (discussions.cpp) : vérification de data/discussions.json (mode test) et nombre de discussions
+std::vector<std::string> checkDiscussionsData();
+int discussionCount();

@@ -219,6 +219,7 @@ bool Game::loadGame() {
   steps = 0;
   sc.clear();
   for (auto& m : team) m->hp = std::min(m->hp, m->mhp), m->mp = std::min(m->mp, m->mmp);
+  lastNewTalks_ = newDiscussions();  // pas d'annonce pour les discussions déjà disponibles
   applyNewGamePlus();  // Nouvelle partie + : ennemis plus forts selon les drapeaux « ngp<k> »
   return !team.empty();
 }
