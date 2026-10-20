@@ -49,6 +49,7 @@ static std::vector<HelpPage> helpPages() {
                 ::T("Après l'acte 3 : les épreuves des gardiens, au sanctuaire d'Aube (huit combats puis Ilya)."),
                 ::T("La pêche : le maître pêcheur du port donne une canne. Face à l'eau, Entrée ; dix-huit poissons à trouver."),
                 ::T("Musiques réécrites, et de nouveaux morceaux : le port, les abysses, la tour, le dernier combat."),
+                ::T("Il pleut parfois sur la vallée et les forêts ; un combat sous l'averse a la météo Pluie."),
                 ::T("Un allié K.O. se voit enfin : couché, grisé, avec des étoiles. Les habitants ont des poses de dos et de profil.")}});
   p.push_back({::T("Nouveautés 3.4"), ::T("L'échiquier, les défis, les bottes : ce qui change."),
                {::T("Les deux camps partagent un seul plateau : on peut passer chez l'ennemi (page « Échiquier »)."),

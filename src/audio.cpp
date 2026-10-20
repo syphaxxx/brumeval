@@ -197,6 +197,7 @@ struct VoicePlay {
 class Mixer {
  public:
   float musicGain = .5f, fxGain = .6f;
+  float rainTarget = 0;        // pluie de fond voulue (ambience)
   std::string track, pending;  // morceau en cours ; celui qui le remplacera après le fondu
   bool switching = false;
 
@@ -244,6 +245,14 @@ class Mixer {
           fx += p.osc[k].next(s.wave, f, s.duty) * s.vol * env;
         }
       }
+      rain_ += (rainTarget - rain_) * dt / 1.5f;  // pluie : bruit blanc filtré (aigus doux), qui monte et baisse en douceur
+      if (rain_ > .001f) {
+        seed_ = seed_ * 1664525u + 1013904223u;
+        float w = float(seed_ >> 8) / float(1u << 24) * 2 - 1;
+        rainLo_ += (w - rainLo_) * .35f;
+        rainSlow_ += (rainLo_ - rainSlow_) * .02f;
+        fx += (rainLo_ - rainSlow_ * .8f) * rain_ * .22f;
+      }
       out[i] = std::clamp((m * musicGain + fx * fxGain) * .7f, -1.f, 1.f);
     }
     fx_.erase(std::remove_if(fx_.begin(), fx_.end(), [](const EffectPlay& p) { return p.t > p.e->length; }), fx_.end());
@@ -254,6 +263,7 @@ class Mixer {
   std::vector<VoicePlay> voices_;
   std::vector<EffectPlay> fx_;
   uint32_t seed_ = 12345;
+  float rain_ = 0, rainLo_ = 0, rainSlow_ = 0;  // pluie de fond : niveau actuel, filtres
   int step_ = -1;
   float stepT_ = 0, fade_ = 1;
   std::vector<float> echo_ = std::vector<float>(RATE + 1, 0.f);  // ligne à retard (1 s au plus), allouée une fois :
@@ -392,6 +402,11 @@ void play(const std::string& effect) {
 void music(const std::string& track) {
   Lock lock;
   mixer_.setMusic(track);
+}
+
+void ambience(float rain) {
+  Lock lock;
+  mixer_.rainTarget = std::clamp(rain, 0.f, 1.f);
 }
 
 bool has(const std::string& effect) {

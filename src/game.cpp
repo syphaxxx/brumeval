@@ -400,6 +400,8 @@ void Game::updateMusic() {
     if (t.empty()) t = audio::musicForPlace(themeName(M().theme));
   }
   audio::music(t);
+  // Bruit de pluie : l'averse de la carte, ou en combat la météo du combat (elle ne change plus jusqu'à la fin)
+  audio::ambience(mode == Mode::Battle && battle_ ? (battle_->raining() ? 1.f : 0.f) : mode == Mode::Map ? rainAmount() : 0.f);
 }
 
 // ---------------------------------------------------------------------------
@@ -443,6 +445,7 @@ void Game::startBattle(BattleSetup setup, std::function<void(BattleResult)> afte
   if (setup.training)  // entraînement : l'équipe retrouvera ses PV et PM, quoi qu'il arrive
     for (auto& f : team) trainingHp_.push_back({f->hp, f->mp});
   Theme th = setup.theme >= 0 ? Theme(setup.theme) : M().theme;
+  if (setup.theme < 0 && mode == Mode::Map && rainAmount() > 0) setup.rain = true;
   battle_ = std::make_unique<Battle>(*this, std::move(setup), th);
   mode = Mode::Battle;
   menus.clear();
@@ -607,6 +610,8 @@ void Game::tryMove(int d) {
     footprints_.push_back({px, py, d, time});
     if (footprints_.size() > 40) footprints_.erase(footprints_.begin());
   }
+  if (in.run() && tileWalkable(M().rows[py][px]) && M().rows[py][px] != 'B') puffs_.push_back({px * 16 + 8.f, py * 16 + 14.f, time, 1});  // on court
+  if (puffs_.size() > 24) puffs_.erase(puffs_.begin());
   px = nx, py = ny;
   moving = true;
   moveT = 0;
@@ -627,6 +632,7 @@ void Game::arrive() {
     }
   if (checkSight()) return;
   char c = M().rows[py][px];
+  if (tileEncounter(c)) puffs_.push_back({px * 16 + 8.f, py * 16 + 10.f, time, 0});  // les herbes s'écartent
   double rate = M().encounterRate > 0 ? M().encounterRate : rules().encounterRate;
   if (tileEncounter(c)) rate *= 1 + rules().packDense * std::min(1.0, wildDepth(px, py) / std::max(1.0, rules().packDistance));
   if (tileEncounter(c) && steps > rules().minSteps && frand() < rate) encounter();
@@ -712,6 +718,7 @@ void Game::changeMap(int m, int x, int y, int d) {
   fishing_.on = false;
   trail_.clear();  // le compagnon réapparaît au premier pas
   footprints_.clear();
+  puffs_.clear();
   talkNpc_ = -1;
   mapFadeT_ = time;  // fondu depuis le noir
   bool changed = m != mapId;
@@ -1076,6 +1083,21 @@ float Game::nightAmount() const {
   float c = std::cos(p * 6.2831853f);
   return std::clamp((-c - .15f) / .6f, 0.f, 1.f);
 }
+// Pluie (2026-10-20, dessin et météo des combats) : de temps en temps, sur les cartes de la vallée et de la forêt
+// sans ambiance ; des averses de 210 s choisies d'après leur numéro (jamais la première), arrivée et départ en 15 s
+float Game::rainAmount() const {
+  if (!outdoors()) return 0;
+  const MapDef& m = M();
+  if (m.theme != Theme::Vallee && m.theme != Theme::Foret) return 0;
+  if (!m.ambiance.empty() && (m.ambianceUntil.empty() || !has(m.ambianceUntil))) return 0;
+  const float SEG = 210;
+  int s = int(time / SEG);
+  uint32_t h = uint32_t(s) * 2654435761u;
+  h ^= h >> 15;
+  if (s == 0 || h % 5 != 1) return 0;
+  float t = time - s * SEG;
+  return std::clamp(std::min(t, SEG - t) / 15.f, 0.f, 1.f);
+}
 bool Game::outdoors() const {
   if (mode != Mode::Map && mode != Mode::Battle) return false;
   const MapDef& m = M();
@@ -1270,6 +1292,29 @@ void Game::drawMap() {
                      }});
   std::sort(actors.begin(), actors.end(), [](const Actor& a, const Actor& b) { return a.y < b.y; });
   for (auto& a : actors) a.draw();
+  for (auto& p : puffs_) {  // brins d'herbe qui volent, poussière de course
+    float a = time - p.t, sx = p.x - camX, sy = p.y - camY;
+    if (p.kind == 0 && a < .5f)
+      for (int k = 0; k < 5; k++) {
+        float ang = k * 1.26f + p.x * .13f, vx = std::cos(ang) * 20, vy = -26 + k * 4.f;
+        g.rect(sx + vx * a, sy + vy * a + 70 * a * a, 2, 1, rgb(k % 2 ? 0x6fbf4a : 0x4f9a35, uint8_t(230 * (1 - a / .5f))));
+      }
+    if (p.kind == 1 && a < .4f) {
+      Color c = rgb(m.theme == Theme::Neige ? 0xf4f8ff : 0xd8cbb0, uint8_t(110 * (1 - a / .4f)));
+      g.ellipse(sx - 3 - a * 8, sy - a * 6, 2 + a * 8, 1.5f + a * 5, c), g.ellipse(sx + 3 + a * 8, sy - a * 5, 2 + a * 7, 1.5f + a * 4, c);
+    }
+  }
+  // Ombres de nuages qui glissent sur la campagne, le jour, par beau temps
+  if (outdoors() && (m.theme == Theme::Vallee || m.theme == Theme::Foret || m.theme == Theme::Neige) &&
+      (m.ambiance.empty() || (!m.ambianceUntil.empty() && has(m.ambianceUntil)))) {
+    float clear = (1 - nightAmount()) * (1 - rainAmount());
+    float W = m.w() * 16 + 400.f, H = m.h() * 16 + 200.f;
+    for (int i = 0; clear > 0 && i < 1 + m.w() * m.h() / 500; i++) {
+      float wx = std::fmod(i * 331.f + time * (6 + i % 3), W) - 200 - camX, wy = std::fmod(i * 197.f + i * i * 13.f, H) - 100 - camY;
+      Color c = rgb(0x0a1030, uint8_t(16 * clear));
+      g.ellipse(wx, wy, 64, 30, c), g.ellipse(wx + 40, wy + 10, 46, 24, c), g.ellipse(wx - 36, wy + 8, 40, 20, c);
+    }
+  }
   drawMapCritters(g, m, tx0, tx1, ty0, ty0 + SCREEN_H / 16 + 1, camX, camY, time, nightAmount());
   // Jour et nuit : la carte s'assombrit (crépuscule orangé), les fenêtres s'allument, le héros porte une lanterne
   float night = nightAmount();
@@ -1312,6 +1357,22 @@ void Game::drawMap() {
       Color c = rgb(i % 2 ? 0xffffff : 0xffe066, uint8_t(220 * (1 - night * 2)));
       g.ellipse(x - f / 2 - 1, y, f / 2 + .5f, 1.5f, c), g.ellipse(x + f / 2 + 1, y, f / 2 + .5f, 1.5f, c);
     }
+  // Pluie : ciel assombri, gouttes en biais, éclaboussures au sol
+  if (float rain = rainAmount(); rain > 0) {
+    g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0x2a3450, uint8_t(70 * rain)));
+    for (int i = 0, n = int(90 * rain) * g.fullW / SCREEN_W; i < n; i++) {
+      float x = g.left() + std::fmod(i * 37.f + i * i * .7f + time * 60, g.fullW + 20.f) - 10;
+      float y = std::fmod(i * 53.f + time * (260 + (i % 7) * 20), 260.f) - 10;
+      g.line(x, y, x - 3, y + 11, 1, rgb(0xd8e4f8, uint8_t(175 * rain)));
+    }
+    for (int i = 0, n = int(30 * rain) * g.fullW / SCREEN_W; i < n; i++) {
+      float k = time * 3 + i * .37f, ph = k - std::floor(k);
+      uint32_t h = uint32_t(int(k)) * 7919u + uint32_t(i) * 104729u;
+      h ^= h >> 13, h *= 0x5bd1e995u, h ^= h >> 15;
+      float x = g.left() + float(h % uint32_t(g.fullW)), y = float((h >> 12) % uint32_t(SCREEN_H));
+      g.ellipse(x, y, 1 + ph * 3, .5f + ph * 1.2f, rgb(0xe4eeff, uint8_t(190 * rain * (1 - ph))));
+    }
+  }
   // Ambiance
   bool amb = m.ambianceUntil.empty() || !has(m.ambianceUntil);
   if (m.ambiance == "neige" && amb)

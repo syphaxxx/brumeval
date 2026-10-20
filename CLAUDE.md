@@ -306,7 +306,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   des créatures : condition `membre`), `lettre`, `apprenti`, `caravane` (boss de carte sous condition), `champignons`,
   `oeuf` (donne un Draconnet), `cache_cache`, `bains`, `rival` (Tom, trois combats au fil de l'histoire),
   `capitaine`, `partitions`, `conte` (après la fin), `ruches` ; puis (outils/villes/quetes_lieux.py) `chien`, `collier`,
-  `message`, `tournoi`, `etude_aube`, et celles des nouveaux lieux (`trident`, `esprits`, donjons, `epreuves`, `peche`, `bestiaire`). Habitants et boss de carte peuvent avoir `si` (présents
+  `message`, `tournoi`, `etude_aube`, puis (outils/villes/quetes_actes.py, actes 2 et 3) `phare_aube`, `enfant_marais`,
+  `spectre` (boss de carte sous condition dans le Gouffre), `pages_orage`, `carapace`, et celles des nouveaux lieux (`trident`, `esprits`, donjons, `epreuves`, `peche`, `bestiaire`). Habitants et boss de carte peuvent avoir `si` (présents
   seulement si la condition est vraie : `Npc::cond`, `BossSpot::cond`).
 - Événements : habitants (`evenement`), portes des bâtiments (genre ou
   `evenement`) et boss lancent un événement de `data/evenements.json`. Les
@@ -513,7 +514,11 @@ code) ; `docs/GUIDE.md` les range par domaine.
   avec `duoPartner_` pour le message). IA : `think` les compte × (1 - 0,45 × jauge du partenaire) ; tactiques : action
   « attaque » (`Plan::duo`). Expédition : seuls les duos `humain`/`type:` restent (`Expedition::install`). Jour et nuit
   sur les cartes : `Game::nightAmount` (12 min par jour, dehors seulement), `drawBuildingLights`,
-  `drawChimneySmoke` ; le combat s'assombrit aussi.
+  `drawChimneySmoke` ; le combat s'assombrit aussi. Pluie (2026-10-20) : `Game::rainAmount` (cartes Vallée et Forêt
+  sans ambiance active, averses de 210 s choisies d'après leur numéro, jamais au début), dessinée dans `drawMap`,
+  entendue (`audio::ambience`, bruit filtré du `Mixer`, appelé par `updateMusic` ; en combat : `Battle::raining`), et
+  `BattleSetup::rain` impose la météo d'effet « pluie » si le décor la permet. Ombres de nuages (`drawMap`) ; brins
+  d'herbe et poussière de course (`Game::puffs_`, dessin seul, vidé au changement de carte).
 - Stratégie 2.7 (FF7, boss en phases) : gemmes `ItemDef::gem` (`gemMove`, `gemBonus` en %, `gemSupport`/`gemValue`),
   `Fighter::gems[emplacement]` (ligne `gemmes <emplacement> id…` après `equipement`, aussi dans les échanges),
   `gemSockets` (règles `gemmes`), `trimGems` (rendues au sac quand l'équipement change), `gemSupport(f, effet)` ;
@@ -555,7 +560,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - Discussions (2026-10-20, `discussions.cpp`, `data/discussions.json`) : conversations courtes entre héros (comme les
   saynètes des Tales of) : `id`, `titre`, `si`, `membres` (espèces dans l'équipe), `dialogue` ; Échap > Discussions
   (nouvelles d'abord), drapeau `discussion:<id>` ; une nouvelle disponible est annoncée sur la carte
-  (`checkDiscussions`, `lastNewTalks_`, remis au chargement). 20 discussions.
+  (`checkDiscussions`, `lastNewTalks_`, remis au chargement). 30 discussions.
 - Épreuves des gardiens (2026-10-20) : après `aube_fin`, la porte du sanctuaire d'Aube (événement `epreuves`) ouvre huit
   combats contre des esprits gardiens (drapeaux `epreuve1`…`epreuve8`, niveaux 70 à 84), puis Ilya (`epreuve9`,
   Insigne des gardiens) ; quête `epreuves`. Script `outils/villes/epreuves.py`.

@@ -157,7 +157,18 @@
       "si": {"drapeau": "quete:rival:fin"}
     },
     {"x": 21, "y": 23, "apparence": "voyageuse", "direction": "droite", "evenement": "ysolde_aube"},
-    {"x": 27, "y": 19, "apparence": "voyageuse", "direction": "bas", "evenement": "savante_aube"}
+    {"x": 27, "y": 19, "apparence": "voyageuse", "direction": "bas", "evenement": "savante_aube"},
+    {"x": 33, "y": 20, "apparence": "ermite", "direction": "gauche", "evenement": "quete_phare_aube"},
+    {"x": 7, "y": 20, "apparence": "villageoise", "direction": "droite", "evenement": "quete_enfant_marais"},
+    {
+      "x": 11,
+      "y": 19,
+      "apparence": "enfant",
+      "direction": "gauche",
+      "evenement": "enfant_rentre",
+      "si": {"drapeau": "enfant_retrouve"}
+    },
+    {"x": 28, "y": 22, "apparence": "garde", "direction": "bas", "evenement": "quete_spectre"}
   ],
   "coffres": [],
   "panneaux": [],

@@ -117,7 +117,8 @@
       "evenement": "route_corail2",
       "vue": 3,
       "vue_jusqua": "route_corail2"
-    }
+    },
+    {"x": 13, "y": 23, "apparence": "enfant", "direction": "droite", "evenement": "quete_carapace"}
   ],
   "coffres": [
     {"x": 33, "y": 20, "objet": "perle", "quantite": 1},

@@ -206,6 +206,24 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     time = t0;
     check(night && nightAmount() < .1f, "jour et nuit : la nuit tombe sur la vallée, la partie commence en plein jour");
   }
+  {  // pluie : une averse (la première pleine averse après le début), sinon le temps est sec ; jamais dans la brume
+    float t0 = time, wet = -1;
+    time = 210 * 3 + 105;  // une averse (sans la brume)
+    bool misty = rainAmount() == 0;  // la brume de la vallée (jusqu'à Sylvarque) : pas de pluie
+    bool hadBoss = has("boss1");
+    flags.insert("boss1");
+    for (int s = 1; s < 60 && wet < 0; s++) {
+      time = s * 210.f + 105;
+      if (rainAmount() > .99f) wet = time;
+    }
+    bool rainy = wet > 0;
+    if (rainy) snap("03_village_pluie");
+    time = 10;
+    bool dry = rainAmount() == 0;
+    time = t0;
+    if (!hadBoss) flags.erase("boss1");
+    check(rainy && dry && misty, "pluie : des averses de temps en temps sur la vallée, pas au début de la partie ni dans la brume");
+  }
   check(mode == Mode::Map && team.size() == 2, "nouvelle partie : Lior et son compagnon sur la carte");
   check(audio::currentMusic() == audio::musicForPlace("vallee"), "son : la musique de la vallée joue sur la carte (« " + audio::currentMusic() + " »)");
   check(fillText("Lior part avec {compagnon}.") == "Lior part avec " + species("braisenard").name + ".", "les textes remplacent {compagnon} par son nom");

@@ -248,6 +248,8 @@ float captureChance(const Fighter& f, float mult) {
 }
 
 // ---------------------------------------------------------------------------
+bool Battle::raining() const { return weather_ >= 0 && rules().weathers[(size_t)weather_].fx == "pluie"; }
+
 Battle::Battle(Game& game, BattleSetup s, Theme bg_)
     : G(game), foes(std::move(s.foes)), reserve(std::move(s.reserve)), foeName(std::move(s.foeName)), boss(s.boss), canFlee(s.canFlee),
       canCapture(s.canCapture), bg(bg_) {
@@ -286,6 +288,9 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
     const Rules& R = rules();
     std::string th = themeName(bg);
     float r = frand();
+    for (size_t i = 0; i < R.weathers.size() && s.rain && weather_ < 0; i++)  // la pluie de la carte continue en combat
+      if (R.weathers[i].fx == "pluie" && std::find(R.weathers[i].themes.begin(), R.weathers[i].themes.end(), th) != R.weathers[i].themes.end())
+        weather_ = (int)i;
     for (size_t i = 0; i < R.weathers.size() && weather_ < 0; i++) {
       const auto& w = R.weathers[i];
       if (std::find(w.themes.begin(), w.themes.end(), th) == w.themes.end()) continue;

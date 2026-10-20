@@ -6120,5 +6120,358 @@
         ]
       }
     ]
+  },
+  "quete_phare_aube": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:phare_aube:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gaspard : Le phare brille de nouveau. Les bateaux rentrent au port sans se perdre. Merci, mes enfants."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:phare_aube", "objet_min": {"eclat_lueur": 3}},
+        "actions": [
+          {"action": "retirer", "objet": "eclat_lueur", "quantite": 3},
+          {"action": "dire", "texte": "Gaspard : Trois éclats de lueur ! Regardez comme ils brillent…"},
+          {
+            "action": "dire",
+            "texte": "Gaspard : Le phare d'Aube va se rallumer. Prenez ceci : c'était le cristal du vieux phare. Il n'a plus d'usage, mais il porte bonheur."
+          },
+          {"action": "donner", "objet": "amulette_aube", "quantite": 1},
+          {"action": "or", "quantite": 4000},
+          {"action": "quete", "id": "phare_aube", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:phare_aube"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gaspard : Il me faut trois éclats de lueur. Un dans le Bois des Lueurs, un dans le Marais Pâle, un au fond du Gouffre."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gaspard : Je garde le phare de Havre-d'Aube depuis cinquante ans. Mais son cristal s'est éteint quand la brume noire est montée."
+          },
+          {
+            "action": "dire",
+            "texte": "Gaspard : Avec trois éclats de lueur, je pourrais le rallumer. Mais mes vieilles jambes ne me portent plus si loin."
+          },
+          {
+            "action": "question",
+            "texte": "Chercher trois éclats de lueur ?",
+            "oui": [
+              {"action": "quete", "id": "phare_aube"},
+              {
+                "action": "dire",
+                "texte": "Gaspard : Merci ! On les trouve dans de vieux coffres : au Bois des Lueurs, au Marais Pâle et au Gouffre."
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Gaspard : Le phare attendra. Il a l'habitude."}]
+          }
+        ]
+      }
+    ]
+  },
+  "quete_enfant_marais": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:enfant_marais:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Lise : Nilo ne va plus jamais seul au marais. Il me l'a promis. Enfin… il a promis."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["quete:enfant_marais", "enfant_retrouve"]},
+        "actions": [
+          {"action": "dire", "texte": "Lise : Nilo ! Mon petit Nilo !"},
+          {
+            "action": "dire",
+            "texte": "Lise : Merci, merci… Je n'ai pas grand-chose, mais prenez tout ce que j'ai."
+          },
+          {"action": "donner", "objet": "elixir", "quantite": 3},
+          {"action": "donner", "objet": "gemme_soin", "quantite": 1},
+          {"action": "or", "quantite": 2500},
+          {"action": "quete", "id": "enfant_marais", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:enfant_marais"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Lise : Nilo voulait voir les fleurs pâles du marais. Il est parti vers le sud, j'en suis sûre."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Lise : Mon fils Nilo n'est pas rentré hier soir. Il parlait sans arrêt des fleurs pâles du Marais…"
+          },
+          {
+            "action": "question",
+            "texte": "Chercher Nilo dans le Marais Pâle ?",
+            "oui": [
+              {"action": "quete", "id": "enfant_marais"},
+              {
+                "action": "dire",
+                "texte": "Lise : Merci ! Il a un bonnet rouge. Faites vite, la nuit, le marais est dangereux."
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Lise : Je… je vais attendre encore un peu."}]
+          }
+        ]
+      }
+    ]
+  },
+  "enfant_marais": {
+    "actions": [
+      {"action": "dire", "texte": "Nilo : Au secours ! Ces bêtes ne veulent pas me laisser partir !"},
+      {
+        "action": "combat",
+        "nom": "Les créatures du marais",
+        "ennemis": [
+          {"espece": "crapale", "niveau": 61},
+          {"espece": "vasepent", "niveau": 62},
+          {"espece": "crapale", "niveau": 61}
+        ],
+        "renforts": [{"espece": "aubespectre", "niveau": 61}],
+        "fuite": false,
+        "capture": false,
+        "victoire": [
+          {"action": "drapeau", "nom": "enfant_retrouve"},
+          {"action": "dire", "texte": "Nilo : Merci ! Je rentre tout de suite chez maman, promis !"}
+        ]
+      }
+    ]
+  },
+  "enfant_rentre": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Nilo : Les fleurs pâles brillent la nuit, vous saviez ? Mais je n'y retourne plus. Pas tout seul."
+      }
+    ]
+  },
+  "quete_spectre": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:spectre:fin"},
+        "actions": [
+          {"action": "dire", "texte": "Garde : Les rondes sont calmes, depuis. Je dors enfin la nuit."}
+        ]
+      },
+      {
+        "si": {"drapeau": ["quete:spectre", "spectre_gouffre"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Garde : Le spectre est parti ? Pour de bon ? Alors la garde d'Aube vous doit une fière chandelle."
+          },
+          {"action": "donner", "objet": "gemme_esprit", "quantite": 1},
+          {"action": "or", "quantite": 3500},
+          {"action": "quete", "id": "spectre", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:spectre"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Garde : Le spectre rôde dans le Gouffre, dans la grande salle de l'ouest. Méfiez-vous : il frappe les esprits."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Garde : Chaque nuit, un spectre monte du Gouffre et hante nos rondes. Mes hommes n'osent plus sortir."
+          },
+          {
+            "action": "question",
+            "texte": "Chasser le spectre du Gouffre ?",
+            "oui": [
+              {"action": "quete", "id": "spectre"},
+              {
+                "action": "dire",
+                "texte": "Garde : Vous êtes braves. Il se cache dans la grande salle de l'ouest du Gouffre."
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Garde : Je comprends. Personne ne veut y aller."}]
+          }
+        ]
+      }
+    ]
+  },
+  "spectre_gouffre": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Une forme pâle se lève du sol. Le spectre pousse un cri qui glace le sang !"
+      },
+      {
+        "action": "combat",
+        "nom": "Le spectre du Gouffre",
+        "ennemis": [
+          {
+            "espece": "aubespectre",
+            "niveau": 64,
+            "pv": 4,
+            "boss": true,
+            "bouclier": 8,
+            "phases": [
+              {
+                "pv": 0.5,
+                "message": "Le spectre se dédouble !",
+                "renforts": [{"espece": "aubespectre", "niveau": 60}]
+              }
+            ]
+          },
+          {"espece": "nacrelin", "niveau": 60}
+        ],
+        "boss": true,
+        "fuite": false,
+        "capture": false,
+        "victoire": [
+          {"action": "drapeau", "nom": "spectre_gouffre"},
+          {
+            "action": "dire",
+            "texte": "Le spectre se dissout dans un soupir. Le Gouffre semble plus clair, tout à coup."
+          }
+        ]
+      }
+    ]
+  },
+  "quete_pages_orage": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:pages_orage:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Érudite : Le livre parle d'une île à l'est, où les gardiens sont nés. Je me demande si elle existe vraiment…"
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:pages_orage", "objet_min": {"page_orage": 3}},
+        "actions": [
+          {"action": "retirer", "objet": "page_orage", "quantite": 3},
+          {"action": "dire", "texte": "Érudite : Les trois pages ! Le livre est complet !"},
+          {
+            "action": "dire",
+            "texte": "Érudite : « Quand l'orage sera enfermé, la brume protégera le monde. » Alors c'était ça…"
+          },
+          {
+            "action": "dire",
+            "texte": "Érudite : Gardez le livre. Vous en ferez meilleur usage que moi : sa magie protège encore."
+          },
+          {"action": "donner", "objet": "recueil_orages", "quantite": 1},
+          {"action": "or", "quantite": 2500},
+          {"action": "quete", "id": "pages_orage", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:pages_orage"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Érudite : Trois pages manquent : une ici, dans les Ruines, une dans la Tour de l'Orage, une dans la Grotte des Marées."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Érudite : J'étudie le livre des anciens gardiens. Mais trois pages ont été arrachées et emportées par la mer."
+          },
+          {
+            "action": "question",
+            "texte": "Retrouver les trois pages ?",
+            "oui": [
+              {"action": "quete", "id": "pages_orage"},
+              {
+                "action": "dire",
+                "texte": "Érudite : Merci ! Cherchez dans les Ruines, dans la Tour de l'Orage et dans la Grotte des Marées."
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Érudite : Tant pis. Le livre gardera ses secrets."}]
+          }
+        ]
+      }
+    ]
+  },
+  "quete_carapace": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:carapace:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Pépin : Quand je serai grand, j'aurai un Coquillon. Et un Perlin. Et un bateau !"
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:carapace", "membre": ["coquillon", "perlin"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Pépin : Waouh ! Un vrai Coquillon ! Et un Perlin ! Je peux toucher ? … Ça pique !"
+          },
+          {
+            "action": "dire",
+            "texte": "Pépin : Tiens, c'est mon trésor. Je l'ai trouvé sur la plage. Il est pour toi."
+          },
+          {"action": "donner", "objet": "gemme_rempart", "quantite": 1},
+          {"action": "or", "quantite": 1500},
+          {"action": "quete", "id": "carapace", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:carapace"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Pépin : Tu me montres un Coquillon et un Perlin ? Ensemble dans ton équipe, hein !"
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Pépin : Mon grand frère dit que les Coquillons et les Perlins, ça n'existe pas. Moi je sais que si !"
+          },
+          {
+            "action": "question",
+            "texte": "Montrer un Coquillon et un Perlin à Pépin ?",
+            "oui": [
+              {"action": "quete", "id": "carapace"},
+              {
+                "action": "dire",
+                "texte": "Pépin : Youpi ! On en trouve dans les herbes de l'île et dans la mer, je crois."
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Pépin : Personne ne me croit jamais…"}]
+          }
+        ]
+      }
+    ]
   }
 }

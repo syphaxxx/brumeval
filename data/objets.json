@@ -842,6 +842,40 @@
     "bonus": {"pv": 25, "resistance": 6, "esquive": 3}
   },
   {
+    "id": "eclat_lueur",
+    "nom": "Éclat de lueur",
+    "icone": "ic_gemme_cristal",
+    "description": "Un éclat de cristal qui garde un peu de lumière, même dans le noir. Le gardien du phare d'Aube en cherche.",
+    "prix": 0,
+    "important": true
+  },
+  {
+    "id": "amulette_aube",
+    "nom": "Amulette d'Aube",
+    "icone": "ic_acc_7",
+    "description": "Le cristal du vieux phare, serti d'argent. Il réchauffe le cœur de qui le porte.",
+    "prix": 5000,
+    "equipement": "accessoire",
+    "bonus": {"pv": 60, "magie": 8, "resistance": 6}
+  },
+  {
+    "id": "page_orage",
+    "nom": "Page de l'orage",
+    "icone": "ic_livre",
+    "description": "Une page arrachée, couverte d'une écriture ancienne. L'érudite des Ruines englouties en cherche.",
+    "prix": 0,
+    "important": true
+  },
+  {
+    "id": "recueil_orages",
+    "nom": "Recueil des orages",
+    "icone": "ic_livre",
+    "description": "Le vieux livre des gardiens, enfin complet. Ses pages crépitent sous les doigts.",
+    "prix": 3200,
+    "equipement": "accessoire",
+    "bonus": {"magie": 12, "resistance": 6, "vitesse": 3}
+  },
+  {
     "id": "insigne_chasseur",
     "nom": "Insigne du chasseur",
     "icone": "ic_acc_3",

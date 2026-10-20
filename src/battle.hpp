@@ -46,6 +46,7 @@ struct BattleSetup {
   std::string intro;  // message d'ouverture à la place de « … surgit » (défi : la leçon)
   bool training = false;  // entraînement : ni gains, et une défaite ne coûte rien (Game::startBattle)
   std::string music;      // morceau imposé (« musique » de l'action combat), sinon combat ou boss
+  bool rain = false;      // il pleut sur la carte (Game::rainAmount) : la météo d'effet « pluie », si le décor la permet
 };
 
 // Défi de l'échiquier (data/defis.json) : alliés, ennemis, obstacles et décor imposés (faux : défi inconnu)
@@ -57,6 +58,7 @@ class Battle {
   void update(float dt);
   void draw();
   bool finished() const { return finished_; }
+  bool raining() const;  // météo d'effet « pluie » (bruit de pluie pendant le combat)
   BattleResult result() const { return result_; }
   bool autoPlay = false;    // les alliés jouent tout seuls (mode test, simulations de l'Arène)
   bool simTactics = false;  // avec autoPlay : les alliés suivent d'abord leurs tactiques

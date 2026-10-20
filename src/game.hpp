@@ -272,6 +272,7 @@ class Game {
   // Jour et nuit (2.6) : 0 en plein jour, 1 au cœur de la nuit ; un jour dure 12 minutes de jeu.
   // Seulement dehors (pas les intérieurs ni les grottes obscures)
   float nightAmount() const;
+  float rainAmount() const;  // 0 à 1 : une averse sur la carte (dessin, et météo Pluie des combats)
   bool outdoors() const;
   void drawDialogue();
   void drawEnding();
@@ -302,6 +303,12 @@ class Game {
     float t;
   };
   std::vector<Footprint> footprints_;
+  // Petits effets de pas (2026-10-20, dessin seul) : brins d'herbe qui volent (hautes herbes), poussière (course)
+  struct Puff {
+    float x, y, t;  // pixels de la carte, moment
+    int kind;       // 0 : herbe, 1 : poussière
+  };
+  std::vector<Puff> puffs_;
   int followDir_ = DOWN;
   float mapFadeT_ = -10;  // moment du dernier changement de carte (fondu depuis le noir, 0,3 s)
   std::unique_ptr<Pilot> pilot_;            // joueur automatique (démo, partie rapide), voir pilot.hpp

@@ -26,6 +26,7 @@ void music(const std::string& track);
 std::string currentMusic();
 std::string musicForPlace(const std::string& theme);  // morceau d'un thème de carte (« vallee »…)
 void setVolumes(int music, int effects);  // 0 à 10
+void ambience(float rain);  // bruit de pluie de fond (0 à 1, avec le volume des effets ; il monte et baisse en douceur)
 
 // Mode test : fabrique les échantillons d'un effet ou d'un morceau sans les jouer
 std::vector<float> render(const std::string& name, bool isMusic, float seconds);

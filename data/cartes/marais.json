@@ -70,13 +70,23 @@
       "evenement": "route_marais2",
       "vue": 3,
       "vue_jusqua": "route_marais2"
+    },
+    {
+      "x": 30,
+      "y": 26,
+      "apparence": "enfant",
+      "direction": "bas",
+      "evenement": "enfant_marais",
+      "si": {"drapeau": "quete:enfant_marais"},
+      "cache_si": "enfant_retrouve"
     }
   ],
   "coffres": [
     {"x": 14, "y": 28, "objet": "gemme_vie", "quantite": 1},
     {"x": 28, "y": 4, "objet": "elixir", "quantite": 2},
     {"x": 42, "y": 30, "objet": "gemme_force", "quantite": 1},
-    {"x": 43, "y": 19, "or": 4000}
+    {"x": 43, "y": 19, "or": 4000},
+    {"x": 24, "y": 20, "objet": "eclat_lueur", "quantite": 1}
   ],
   "panneaux": [],
   "passages": [

@@ -246,5 +246,128 @@
       "Isra : Toi, il y a un an ?",
       "Lior : Moi, il y a deux semaines."
     ]
+  },
+  {
+    "id": "moulins",
+    "titre": "Les moulins",
+    "si": {"drapeau": "plaine_vue"},
+    "membres": ["lior", "maelle"],
+    "dialogue": [
+      "Maëlle : Regarde, Lior ! Les moulins tournent. La dernière fois que je suis passée ici, tout était gris.",
+      "Lior : Tu étais déjà venue ?",
+      "Maëlle : Avec ma mère, quand j'étais petite. Elle achetait la farine de Moulinbourg. Le meilleur pain de la vallée.",
+      "Lior : Alors on rapportera de la farine. Pour l'ancien.",
+      "Maëlle : … Et pour moi. Surtout pour moi."
+    ]
+  },
+  {
+    "id": "pont",
+    "titre": "Des dents comme des burins",
+    "si": {"drapeau": "quete:pont:fin"},
+    "membres": ["lior", "maelle"],
+    "dialogue": [
+      "Lior : Tu as vu la taille du gros Rongecrin ? Il a grignoté mon bouclier.",
+      "Maëlle : Tu n'as pas de bouclier.",
+      "Lior : Justement. Il l'a grignoté en entier."
+    ]
+  },
+  {
+    "id": "dresseurs",
+    "titre": "Tout le monde veut se battre",
+    "si": {"drapeau": "route_cendrelune2"},
+    "membres": ["lior", "maelle"],
+    "dialogue": [
+      "Maëlle : C'est moi, ou tout le monde veut se battre contre nous, depuis quelque temps ?",
+      "Lior : On a battu Sylvarque. Les gens en parlent.",
+      "Maëlle : Ils pourraient en parler en nous offrant une tarte, plutôt.",
+      "Lior : Le fermier nous a donné une potion.",
+      "Maëlle : Ce n'est pas une tarte."
+    ]
+  },
+  {
+    "id": "livre",
+    "titre": "Le couvercle",
+    "si": {"drapeau": "quete:pages_orage:fin"},
+    "membres": ["isra", "maelle"],
+    "dialogue": [
+      "Isra : « Quand l'orage sera enfermé, la brume protégera le monde. » Tu te souviens de ce que je disais ? Un couvercle.",
+      "Maëlle : Alors en chassant la brume… c'est nous qui avons ouvert la boîte ?",
+      "Isra : Peut-être. Ou peut-être que la boîte était déjà en train de s'ouvrir, et que la brume ne tenait plus.",
+      "Maëlle : Je préfère la deuxième version.",
+      "Isra : Moi aussi. C'est pour ça que je l'ai dite."
+    ]
+  },
+  {
+    "id": "phare",
+    "titre": "Une lumière pour rentrer",
+    "si": {"drapeau": "quete:phare_aube:fin"},
+    "membres": ["selene", "maelle"],
+    "dialogue": [
+      "Maëlle : Le vieux Gaspard pleurait en rallumant son phare. Tu as vu ?",
+      "Sélène : Cinquante ans à guider des bateaux. Quand la lumière s'éteint, on a l'impression que sa vie s'éteint avec.",
+      "Maëlle : Tu parles comme si tu le connaissais depuis toujours.",
+      "Sélène : Je connais quelqu'un comme lui. Il garde un temple, au-dessus de Givreval."
+    ]
+  },
+  {
+    "id": "nilo",
+    "titre": "Les enfants courageux",
+    "si": {"drapeau": "quete:enfant_marais:fin"},
+    "membres": ["kael", "isra"],
+    "dialogue": [
+      "Isra : Ce petit Nilo… seul dans le marais, pour voir des fleurs. Il est fou.",
+      "Kael : Moi, à son âge, je dormais dans les arbres de Sylve-Noire pour écouter les chouettes.",
+      "Isra : Et ta mère ?",
+      "Kael : Elle dormait dans l'arbre d'à côté. Pour me surveiller.",
+      "Isra : … Je l'aime bien, ta mère."
+    ]
+  },
+  {
+    "id": "spectre",
+    "titre": "Ceux qui restent",
+    "si": {"drapeau": "spectre_gouffre"},
+    "membres": ["selene", "isra"],
+    "dialogue": [
+      "Sélène : Ce spectre… ce n'était pas une créature comme les autres.",
+      "Isra : Un ancien gardien, peut-être. Resté là trop longtemps, à attendre qu'on vienne le relever.",
+      "Sélène : Alors on l'a relevé.",
+      "Isra : On l'a libéré. C'est mieux."
+    ]
+  },
+  {
+    "id": "abime",
+    "titre": "Le fond du monde",
+    "si": {"drapeau": "abime3_boss"},
+    "membres": ["lior", "kael"],
+    "dialogue": [
+      "Kael : L'Orage ancien… Il était là avant les gardiens, avant la brume, avant tout.",
+      "Lior : Et il dort de nouveau.",
+      "Kael : Tu crois qu'il rêve ?",
+      "Lior : J'espère. Et j'espère qu'il rêve de nous. Comme ça, il saura qu'il ne faut pas se réveiller."
+    ]
+  },
+  {
+    "id": "epreuves",
+    "titre": "Digne des premiers",
+    "si": {"drapeau": "epreuve9"},
+    "membres": ["selene", "lior"],
+    "dialogue": [
+      "Sélène : Tu te souviens, à Givreval ? Je t'avais dit que tu te battais mal.",
+      "Lior : Je m'en souviens. Un compliment par an.",
+      "Sélène : Alors voici celui de cette année : tu es digne des premiers gardiens.",
+      "Lior : … On n'est qu'en automne.",
+      "Sélène : J'ai pris de l'avance."
+    ]
+  },
+  {
+    "id": "plaine_tom",
+    "titre": "Le pain de Moulinbourg",
+    "si": {"drapeau": ["tom2", "quete:pont:fin"]},
+    "membres": ["lior", "maelle"],
+    "dialogue": [
+      "Maëlle : Tom est passé par Moulinbourg. Le meunier dit qu'il a mangé trois pains d'un coup.",
+      "Lior : Il essaie de grandir plus vite que moi.",
+      "Maëlle : Avec trois pains par jour, il va surtout grandir en largeur."
+    ]
   }
 ]
