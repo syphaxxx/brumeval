@@ -45,7 +45,8 @@
     {"x": 31, "y": 3, "objet": "gemme_maitre", "quantite": 1},
     {"x": 8, "y": 21, "or": 12000},
     {"x": 26, "y": 11, "objet": "gemme_esprit", "quantite": 1},
-    {"x": 33, "y": 13, "objet": "elixir", "quantite": 2}
+    {"x": 33, "y": 13, "objet": "elixir", "quantite": 2},
+    {"x": 20, "y": 19, "objet": "fragment_cloche", "quantite": 1}
   ],
   "panneaux": [],
   "passages": [

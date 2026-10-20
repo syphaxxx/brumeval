@@ -115,7 +115,9 @@
       "direction": "gauche",
       "promenade": 1,
       "dialogue": ["Le chat de Port-Écho miaule. L'écho miaule aussi."]
-    }
+    },
+    {"x": 34, "y": 23, "apparence": "montagnard", "direction": "gauche", "evenement": "quete_cloche"},
+    {"x": 9, "y": 13, "apparence": "voyageuse", "direction": "droite", "evenement": "etude_oriane"}
   ],
   "coffres": [],
   "panneaux": [],

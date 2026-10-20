@@ -105,6 +105,16 @@
                                             "phases": [{"pv": 0.7, "message": "La brume s'épaissit autour d'elle !", "bonus": {"magie": 1}},
                                                        {"pv": 0.35, "message": "La Mère des Brumes appelle ses enfants !", "bouclier": 10, "renforts": [{"espece": "brumeloup", "niveau": 60}]}]},
                                            {"espece": "esprillon", "niveau": 60}]},
-     "or": 9000, "objets": [{"id": "gemme_maitre"}]}
+     "or": 9000, "objets": [{"id": "gemme_maitre"}]},
+    {"id": "fossiloup_alpha", "nom": "Le Fossiloup alpha", "etoiles": 5, "carte": "pierres", "x": 38, "y": 20, "espece": "fossiloup", "si": {"drapeau": "echos_vue"},
+     "lieu": "Forêt Pétrifiée", "description": "Un loup de pierre deux fois plus grand que les autres. Sa meute garde la forêt comme un trésor.",
+     "arrivee": "Un hurlement fait trembler les arbres de pierre : le Fossiloup alpha et sa meute vous encerclent !",
+     "combat": {"fuite": false, "ennemis": [{"espece": "fossiloup", "niveau": 88}, {"espece": "fossiloup", "niveau": 92, "pv": 5, "boss": true, "bouclier": 10, "phases": [{"pv": 0.5, "message": "L'alpha hurle : la meute accourt !", "renforts": [{"espece": "fossiloup", "niveau": 88}]}]}, {"espece": "petrolin", "niveau": 88}]},
+     "or": 12000, "objets": [{"id": "gemme_force"}, {"id": "elixir", "quantite": 2}]},
+    {"id": "braisaure_ancestrale", "nom": "La Braisaure ancestrale", "etoiles": 5, "carte": "cratere", "x": 30, "y": 22, "espece": "braisaure", "si": {"drapeau": "echos_fin"},
+     "lieu": "Cratère des Échos", "description": "Une Braisaure plus vieille que l'île elle-même. Depuis que l'écho s'est tu, elle sort de la lave pour chasser.",
+     "arrivee": "La lave bouillonne : une Braisaure énorme en sort, couverte de roche en fusion !",
+     "combat": {"fuite": false, "ennemis": [{"espece": "cendrelys", "niveau": 92}, {"espece": "braisaure", "niveau": 98, "pv": 6, "boss": true, "bouclier": 12, "phases": [{"pv": 0.6, "message": "La Braisaure crache de la lave : l'air brûle !", "bonus": {"attaque": 1}}, {"pv": 0.3, "message": "Sa carapace de roche se fend… elle devient furieuse !", "bonus": {"vitesse": 1}}]}, {"espece": "braisaure", "niveau": 92}]},
+     "or": 20000, "objets": [{"id": "gemme_maitre"}, {"id": "elixir", "quantite": 3}]}
   ]
 }

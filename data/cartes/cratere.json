@@ -46,7 +46,8 @@
   "coffres": [
     {"x": 16, "y": 28, "objet": "elixir", "quantite": 2},
     {"x": 35, "y": 7, "objet": "gemme_vie", "quantite": 1},
-    {"x": 28, "y": 22, "or": 9000}
+    {"x": 28, "y": 22, "or": 9000},
+    {"x": 13, "y": 26, "objet": "fragment_cloche", "quantite": 1}
   ],
   "panneaux": [],
   "passages": [

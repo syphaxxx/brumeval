@@ -8828,5 +8828,122 @@
         "non": [{"action": "dire", "texte": "L'Ombre ne bouge pas. Elle attend."}]
       }
     ]
+  },
+  "quete_cloche": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:cloche:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Sonneur : Écoutez… La cloche du vieux phare sonne de nouveau. Les bateaux la suivent dans la brume."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:cloche", "objet_min": {"fragment_cloche": 3}},
+        "actions": [
+          {"action": "retirer", "objet": "fragment_cloche", "quantite": 3},
+          {
+            "action": "dire",
+            "texte": "Sonneur : Les trois fragments ! Je vais refondre la cloche cette nuit."
+          },
+          {
+            "action": "dire",
+            "texte": "Sonneur : Avec le bronze qui reste, j'ai fait cette clochette. Prenez-la : elle porte chance aux voyageurs."
+          },
+          {"action": "donner", "objet": "cloche_echo", "quantite": 1},
+          {"action": "or", "quantite": 5000},
+          {"action": "quete", "id": "cloche", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:cloche"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Sonneur : Il me manque trois fragments : un dans la Forêt Pétrifiée, un dans le Cratère, un dans le Sanctuaire."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Sonneur : Autrefois, la cloche du phare guidait les bateaux. Quand l'écho est devenu une ombre, elle s'est brisée en trois."
+          },
+          {
+            "action": "question",
+            "texte": "Chercher les trois fragments de la cloche ?",
+            "oui": [
+              {"action": "quete", "id": "cloche"},
+              {
+                "action": "dire",
+                "texte": "Sonneur : Merci ! Ils ont roulé jusque dans la forêt, le cratère et le sanctuaire."
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Sonneur : Le phare restera muet, alors."}]
+          }
+        ]
+      }
+    ]
+  },
+  "etude_oriane": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:etude_oriane:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Élève d'Oriane : Le carnet de ma maîtresse est complet. Merci de m'avoir laissée les approcher."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:etude_oriane", "membre": ["petrolin", "echoplume", "spectrecho"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Élève d'Oriane : Un Pétrolin, une Échoplume et un Spectrécho… Ils vous suivent comme de vieux amis."
+          },
+          {
+            "action": "dire",
+            "texte": "Élève d'Oriane : Prenez ceci. C'était la gemme de mon maître ; elle sera mieux entre vos mains."
+          },
+          {"action": "donner", "objet": "gemme_maitre", "quantite": 1},
+          {"action": "or", "quantite": 6000},
+          {"action": "quete", "id": "etude_oriane", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:etude_oriane"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Élève d'Oriane : Montrez-moi un Pétrolin, une Échoplume et un Spectrécho, tous les trois dans votre équipe."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Élève d'Oriane : Les créatures de l'île sont nées de l'écho. Je voudrais les étudier de près, mais elles me fuient."
+          },
+          {
+            "action": "question",
+            "texte": "Aider l'élève d'Oriane ?",
+            "oui": [
+              {"action": "quete", "id": "etude_oriane"},
+              {
+                "action": "dire",
+                "texte": "Élève d'Oriane : Un Pétrolin, une Échoplume et un Spectrécho. Ensemble, dans votre équipe."
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Élève d'Oriane : Une autre fois, peut-être."}]
+          }
+        ]
+      }
+    ]
   }
 }

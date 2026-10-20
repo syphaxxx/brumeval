@@ -901,6 +901,23 @@
     "bonus": {"pv": 80, "attaque": 8, "magie": 8, "vitesse": 4, "critique": 3}
   },
   {
+    "id": "fragment_cloche",
+    "nom": "Fragment de cloche",
+    "icone": "ic_minerai",
+    "prix": 0,
+    "important": true,
+    "description": "Un morceau de bronze vert-de-gris. Quand on le frappe, il sonne encore. Le sonneur de Port-Écho en cherche."
+  },
+  {
+    "id": "cloche_echo",
+    "nom": "Clochette d'écho",
+    "icone": "ic_acc_3",
+    "prix": 6000,
+    "equipement": "accessoire",
+    "description": "Une clochette fondue avec le bronze de la vieille cloche. Son tintement donne du courage à qui la porte.",
+    "bonus": {"pv": 50, "resistance": 10, "vitesse": 4}
+  },
+  {
     "id": "couronne_colisee",
     "nom": "Couronne de la Ligue",
     "icone": "ic_acc_8",

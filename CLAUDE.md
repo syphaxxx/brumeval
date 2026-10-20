@@ -307,7 +307,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   `oeuf` (donne un Draconnet), `cache_cache`, `bains`, `rival` (Tom, trois combats au fil de l'histoire),
   `capitaine`, `partitions`, `conte` (après la fin), `ruches` ; puis (outils/villes/quetes_lieux.py) `chien`, `collier`,
   `message`, `tournoi`, `etude_aube`, puis (outils/villes/quetes_actes.py, actes 2 et 3) `phare_aube`, `enfant_marais`,
-  `spectre` (boss de carte sous condition dans le Gouffre), `pages_orage`, `carapace`, et celles des nouveaux lieux (`trident`, `esprits`, donjons, `epreuves`, `peche`, `bestiaire`). Habitants et boss de carte peuvent avoir `si` (présents
+  `spectre` (boss de carte sous condition dans le Gouffre), `pages_orage`, `carapace`, puis `echos`, `cloche`, `etude_oriane`
+  (acte 4), et celles des nouveaux lieux (`trident`, `esprits`, donjons, `epreuves`, `peche`, `bestiaire`). Habitants et boss de carte peuvent avoir `si` (présents
   seulement si la condition est vraie : `Npc::cond`, `BossSpot::cond`).
 - Événements : habitants (`evenement`), portes des bâtiments (genre ou
   `evenement`) et boss lancent un événement de `data/evenements.json`. Les
@@ -463,8 +464,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   evenements.json), drapeaux `prime:<id>`, `:vaincue`, `:fin` (`bountyFlag`). Tableau d'annonces = tuile `G`
   (`Game::interact` → `bountyMenu`, chasse.cpp ; pas en Expédition) dans la Vallée, à Forgeroc, Sylve-Noire,
   Givreval et au Port ; `claimBounty` (or, objets, rang de chasseur `bountyRanks`, `hunterTitle`). Bulle rouge « ! »
-  au-dessus du monstre ; Journal : primes en cours. 15 primes (12 pendant l'histoire, 3 après la fin : Sylvarque,
-  Ignarok, Mère des Brumes, super-boss). Joueur automatique : `Pilot::bountyWork`/`bountyStep` (prend tout, touche
+  au-dessus du monstre ; Journal : primes en cours. 17 primes (12 pendant l'histoire, 3 après la fin : Sylvarque,
+  Ignarok, Mère des Brumes, super-boss ; 2 sur l'île des Échos, `outils/villes/echos_annexes.py`). Joueur automatique : `Pilot::bountyWork`/`bountyStep` (prend tout, touche
   tout ; chasse comme un boss, quand il est prêt). `checkEvents` vérifie les primes (sauf en Expédition).
 - Attaques annoncées (1.8) : `Battle::bossPlan` ; un boss (pas en duel) annonce
   parfois (`boss_annonce`, 0,35) sa plus forte attaque sur la colonne, croix ou
