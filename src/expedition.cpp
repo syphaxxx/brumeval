@@ -154,7 +154,11 @@ void Expedition::install() {
   if (r.contains("duo")) r["duo"]["liste"] = duoList;
   r["conseils"] = Json::array();  // les conseils parlent des boss de l'histoire (2.8)
   dataDoc(DF_RULES) = r;
-  for (auto f : {DF_TYPES, DF_ITEMS}) dataDoc(f) = docs_[f];
+  dataDoc(DF_TYPES) = docs_[DF_TYPES];
+  Json items = Json::array();  // sans les armes des héros de l'histoire (champ « pour ») : ils n'existent pas ici
+  for (auto& it : docs_[DF_ITEMS])
+    if (jget<std::string>(it, "pour", "").empty()) items.push_back(it);
+  dataDoc(DF_ITEMS) = items;
   rebuildData();
   maps() = {mapFromJson(current_.map)};
   events() = current_.events;

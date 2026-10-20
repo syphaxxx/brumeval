@@ -81,5 +81,15 @@
       "creatures": ["galetor", "rocaillou", "tisseline", "fumerole", "brutor"]
     }
   ],
-  "boss": [{"x": 3, "y": 3, "espece": "troll_mines", "drapeau": "mines_boss", "evenement": "mines_boss"}]
+  "boss": [
+    {"x": 3, "y": 3, "espece": "troll_mines", "drapeau": "mines_boss", "evenement": "mines_boss"},
+    {
+      "espece": "golem_magma",
+      "drapeau": "lien_brann_vaincu",
+      "evenement": "golem_magma",
+      "si": {"drapeau": "quete:lien_brann"},
+      "x": 33,
+      "y": 12
+    }
+  ]
 }

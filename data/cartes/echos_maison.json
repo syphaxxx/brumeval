@@ -22,7 +22,8 @@
       "direction": "bas",
       "dialogue": ["Le chat d'Oriane miaule. Trois fois. Ou alors c'est l'écho."],
       "promenade": 1
-    }
+    },
+    {"x": 3, "y": 6, "apparence": "ermite", "direction": "bas", "evenement": "cartes_ermite"}
   ],
   "coffres": [],
   "panneaux": [],

@@ -1008,6 +1008,156 @@
     "bonus": {"pv": 100, "magie": 10, "resistance": 10, "vitesse": 5, "critique": 4}
   },
   {
+    "id": "as_gardiens",
+    "nom": "As des gardiens",
+    "icone": "ic_acc_8",
+    "prix": 9000,
+    "equipement": "accessoire",
+    "description": "La carte la plus rare du jeu, montée en broche. Le Maître des cartes la donne à celui qui l'a battu.",
+    "bonus": {"pv": 30, "vitesse": 4, "esquive": 4, "critique": 8}
+  },
+  {
+    "id": "carte_tresor_1",
+    "nom": "Carte au trésor n°1",
+    "icone": "ic_livre",
+    "prix": 0,
+    "important": true,
+    "description": "Un vieux parchemin de Corbin. Une croix rouge : Vallée de Brumeval, au sud-ouest de la carte, dans un coin où personne ne va."
+  },
+  {
+    "id": "carte_tresor_2",
+    "nom": "Carte au trésor n°2",
+    "icone": "ic_livre",
+    "prix": 0,
+    "important": true,
+    "description": "Un vieux parchemin de Corbin. Une croix rouge : Sylve-Noire, au nord-est de la carte, dans un coin où personne ne va."
+  },
+  {
+    "id": "carte_tresor_3",
+    "nom": "Carte au trésor n°3",
+    "icone": "ic_livre",
+    "prix": 0,
+    "important": true,
+    "description": "Un vieux parchemin de Corbin. Une croix rouge : Plaine des Moulins, au sud-est de la carte, dans un coin où personne ne va."
+  },
+  {
+    "id": "carte_tresor_4",
+    "nom": "Carte au trésor n°4",
+    "icone": "ic_livre",
+    "prix": 0,
+    "important": true,
+    "description": "Un vieux parchemin de Corbin. Une croix rouge : Monts Cendrelune, à l'est de la carte, dans un coin où personne ne va."
+  },
+  {
+    "id": "carte_tresor_5",
+    "nom": "Carte au trésor n°5",
+    "icone": "ic_livre",
+    "prix": 0,
+    "important": true,
+    "description": "Un vieux parchemin de Corbin. Une croix rouge : Col des Hurlevents, au centre de la carte, dans un coin où personne ne va."
+  },
+  {
+    "id": "carte_tresor_6",
+    "nom": "Carte au trésor n°6",
+    "icone": "ic_livre",
+    "prix": 0,
+    "important": true,
+    "description": "Un vieux parchemin de Corbin. Une croix rouge : Pics Givrés, à l'ouest de la carte, dans un coin où personne ne va."
+  },
+  {
+    "id": "carte_tresor_7",
+    "nom": "Carte au trésor n°7",
+    "icone": "ic_livre",
+    "prix": 0,
+    "important": true,
+    "description": "Un vieux parchemin de Corbin. Une croix rouge : Val des Murmures, au sud-est de la carte, dans un coin où personne ne va."
+  },
+  {
+    "id": "carte_tresor_8",
+    "nom": "Carte au trésor n°8",
+    "icone": "ic_livre",
+    "prix": 0,
+    "important": true,
+    "description": "Un vieux parchemin de Corbin. Une croix rouge : Récif d'Écume, à l'est de la carte, dans un coin où personne ne va."
+  },
+  {
+    "id": "boussole_corbin",
+    "nom": "Boussole de Corbin",
+    "icone": "ic_acc_6",
+    "prix": 9000,
+    "equipement": "accessoire",
+    "description": "La boussole du vieux Corbin. Elle ne montre pas le nord : elle montre ce qu'on cherche.",
+    "bonus": {"pv": 40, "vitesse": 6, "esquive": 6, "critique": 4}
+  },
+  {
+    "id": "lanterne_lame",
+    "nom": "Lanterne-lame",
+    "icone": "ic_epee_5",
+    "prix": 12000,
+    "equipement": "arme",
+    "pour": "lior",
+    "description": "L'épée de l'ancien, quand il était gardien. Une petite flamme brûle dans sa garde, et ne s'éteint jamais.",
+    "bonus": {"attaque": 30, "magie": 10, "vitesse": 3, "critique": 8}
+  },
+  {
+    "id": "baton_aurore",
+    "nom": "Bâton d'Aurore",
+    "icone": "ic_baton_5",
+    "prix": 12000,
+    "equipement": "arme",
+    "pour": "maelle",
+    "description": "Le bâton de la première mage blanche de la vallée. Sa pierre rose s'allume quand quelqu'un souffre, tout près.",
+    "bonus": {"magie": 30, "pm": 30, "resistance": 8, "vitesse": 2}
+  },
+  {
+    "id": "coeur_magma",
+    "nom": "Cœur de magma",
+    "icone": "ic_gemme_feu",
+    "description": "Une pierre rouge, brûlante, qui bat encore comme un cœur. Maître Hrolf en a besoin.",
+    "prix": 0,
+    "important": true
+  },
+  {
+    "id": "hache_hrolf",
+    "nom": "Hache de Hrolf",
+    "icone": "ic_hache_4",
+    "prix": 12000,
+    "equipement": "arme",
+    "pour": "brann",
+    "description": "La dernière hache de maître Hrolf, forgée avec un cœur de magma. Elle chauffe quand Brann se met en colère.",
+    "bonus": {"attaque": 34, "defense": 6, "critique": 8}
+  },
+  {
+    "id": "grimoire_profondeurs",
+    "nom": "Grimoire des profondeurs",
+    "icone": "ic_livre",
+    "prix": 12000,
+    "equipement": "arme",
+    "pour": "isra",
+    "description": "Le livre du maître d'Isra, écrit à la lueur d'une bougie au fond des grottes. Les sorts y attendent dans le noir.",
+    "bonus": {"magie": 32, "pm": 24, "vitesse": 4}
+  },
+  {
+    "id": "arc_sylve",
+    "nom": "Arc de Sylve",
+    "icone": "ic_arc_4",
+    "prix": 12000,
+    "equipement": "arme",
+    "pour": "kael",
+    "description": "Taillé dans le vieux chêne de Sylve-Noire, qui n'avait jamais laissé personne le toucher. Il a laissé Kael.",
+    "bonus": {"attaque": 30, "vitesse": 8, "precision": 10, "critique": 6}
+  },
+  {
+    "id": "armure_serment",
+    "nom": "Armure du serment",
+    "icone": "ic_armure_8",
+    "prix": 12000,
+    "equipement": "armure",
+    "pour": "selene",
+    "description": "L'armure du père de Sélène. Un serment est gravé à l'intérieur : « Garder ceux qui ont froid. »",
+    "bonus": {"pv": 80, "defense": 28, "resistance": 16}
+  },
+  {
     "id": "prisme_chromatique",
     "nom": "Prisme chromatique",
     "icone": "ic_gemme_cristal",

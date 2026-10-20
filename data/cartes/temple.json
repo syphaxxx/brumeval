@@ -90,7 +90,15 @@
     }
   ],
   "boss": [
-    {"x": 37, "y": 4, "espece": "cristallin", "drapeau": "cristal_apaise", "evenement": "gardien_cristal"}
+    {"x": 37, "y": 4, "espece": "cristallin", "drapeau": "cristal_apaise", "evenement": "gardien_cristal"},
+    {
+      "espece": "sentinelle_aurore",
+      "drapeau": "lien_maelle_vaincu",
+      "evenement": "sentinelle_aurore",
+      "si": {"drapeau": "quete:lien_maelle"},
+      "x": 7,
+      "y": 24
+    }
   ],
   "carte_monde": [90, 15]
 }

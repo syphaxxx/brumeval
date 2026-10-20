@@ -60,6 +60,7 @@ struct Chest {
   int x, y;
   std::string item;  // vide si le coffre contient de l'or
   int qty;
+  Json cond;         // champ « si » (2026-10-20, cartes au trésor) : caché tant que la condition est fausse (null : toujours là)
 };
 
 struct Sign {

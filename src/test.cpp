@@ -75,6 +75,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   report(checkFishing(), std::to_string(fishSpecies()) + " poissons à pêcher");
   report(checkDiscussionsData(), std::to_string(discussionCount()) + " discussions entre les héros");
   report(checkExploitsData(), std::to_string(exploitCount()) + " exploits");
+  report(checkCardsData(), std::to_string(cardFoeCount()) + " joueurs de Cartes des gardiens");
   auto mi = [](const char* id) { return std::max(0, mapIndex(id)); };
   // Relecture : écrire puis relire une carte doit redonner la même carte
   {
@@ -302,13 +303,16 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     snap("92_equipement");
     bool equipped = team[0]->gear[G_WEAPON] == "epee_fer" && team[0]->atk == atk0 + 3 && items["epee_fer"] == 0;
     bool noWeapon = !canEquip(*team.at(1), item("epee_fer")) && canEquip(*team.at(1), item("amulette_vie"));
+    bool ownWeapon = canEquip(*makeFighter("lior", 80), item("lanterne_lame")) && !canEquip(*makeFighter("maelle", 80), item("lanterne_lame")) &&
+                     !canEquip(*makeFighter("brann", 80), item(forgedId("lanterne_lame", 2)));  // l'arme d'un héros, même forgée
     menus.clear();
     panelMode_ = 0;
     saveGame();
     team.clear();
     loadGame();
     bool kept = team.at(0)->gear[G_WEAPON] == "epee_fer" && team[0]->atk == atk0 + 3;
-    check(equipped && noWeapon && kept, "équipement : Échap > Équipement, l'épée donne +3 en Attaque, gardée par la sauvegarde ; pas d'arme pour une créature");
+    check(equipped && noWeapon && kept && ownWeapon,
+          "équipement : Échap > Équipement, l'épée donne +3 en Attaque, gardée par la sauvegarde ; pas d'arme pour une créature ; l'arme d'un héros pour lui seul");
     team[0]->gear[G_WEAPON].clear();
     team[0]->recalc();
     items.erase("epee_fer");
@@ -2574,6 +2578,79 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       team = savedTeam;
       noticeT_ = 0;
     }
+    {  // Cartes des gardiens : une carte plus forte retourne sa voisine ; une partie entière jouée aux touches
+      auto savedFlags = flags;
+      menus.clear();
+      sc.clear();
+      cards_ = CardGame{};
+      cards_.cell[4] = "mulotin", cards_.owner[4] = 1;  // Mulotin : 3 en haut ; Ombre des galeries (6 en bas) posée au-dessus
+      int flips = cardFlips(1, "ombre_galeries", 0, true);
+      bool rule = flips == 1 && cards_.owner[4] == 0 && cardValues("mulotin")[0] < cardValues("ombre_galeries")[2];
+      int result = 99;
+      cardsMenu("pip", [&](int r) { result = r; });
+      bool menu = menus.active() && menus.top().items[0].label == T("Jouer");
+      in.confirm = true;  // Jouer
+      frame();
+      bool started = cards_.on && cards_.hand[0].size() == 5;
+      bool shot = false;
+      for (int i = 0; i < 60 * 60 && cards_.on; i++) {
+        int placed = 0;
+        for (auto& c : cards_.cell) placed += !c.empty();
+        if (placed >= 4 && !shot) draw(), snap("cartes"), shot = true;
+        in.confirm = cards_.over || (cards_.turn == 0 && cards_.wait <= 0);  // la carte, la première case libre ; le score
+        frame();
+      }
+      while (sc.busy()) {
+        in.confirm = true;
+        frame();
+      }
+      bool ended = !cards_.on && result >= -1 && result <= 1 && (result <= 0 || has("cartes:pip"));
+      check(rule && menu && started && shot && ended, "cartes des gardiens : une carte plus forte retourne sa voisine ; une partie se joue jusqu'au bout (" +
+                                                          std::string(result > 0 ? "gagnée" : result < 0 ? "perdue" : "égalité") + ")");
+      cardHandMenu();
+      show("cartes : main");
+      menus.clear();
+      flags = savedFlags;
+    }
+    {  // Cartes au trésor : le coffre caché n'apparaît (ni ne bloque) qu'avec sa carte, et contient la carte suivante
+      auto savedItems = items;
+      auto savedFlags = flags;
+      menus.clear();
+      sc.clear();
+      int vi = mi("vallee"), ci = -1;
+      for (size_t i = 0; i < maps()[(size_t)vi].chests.size(); i++)
+        if (!maps()[(size_t)vi].chests[i].cond.is_null()) ci = (int)i;
+      bool ok = ci >= 0;
+      if (ok) {
+        const MapDef& vm = maps()[(size_t)vi];
+        Chest c = vm.chests[(size_t)ci];
+        items.erase("carte_tresor_1");
+        bool hidden = !chestShown(vm, c) && !blockedOn(vm, c.x, c.y);
+        items["carte_tresor_1"] = 1;
+        bool shown = chestShown(vm, c) && blockedOn(vm, c.x, c.y);
+        int sx = c.x, sy = c.y + 1, d = UP;  // une case libre à côté du coffre, tournée vers lui
+        for (auto [dx, dy, dir] : std::vector<std::array<int, 3>>{{0, 1, UP}, {0, -1, DOWN}, {1, 0, LEFT}, {-1, 0, RIGHT}})
+          if (tileWalkable(vm.rows[(size_t)(c.y + dy)][(size_t)(c.x + dx)]) && !blockedOn(vm, c.x + dx, c.y + dy)) {
+            sx = c.x + dx, sy = c.y + dy, d = dir;
+            break;
+          }
+        changeMap(vi, sx, sy, d);
+        run(.5f);  // le fondu de l'arrivée
+        int before = items["carte_tresor_2"];
+        in.confirm = true;
+        frame();
+        while (sc.busy()) {
+          in.confirm = true;
+          frame();
+        }
+        ok = hidden && shown && items["carte_tresor_2"] == before + 1;
+        items.erase("carte_tresor_1");
+        ok = ok && chestShown(vm, c);  // ouvert : il reste là, même sans la carte
+      }
+      check(ok, "cartes au trésor : le trésor caché n'apparaît qu'avec sa carte, s'ouvre et donne la carte suivante");
+      items = savedItems;
+      flags = savedFlags;
+    }
     {  // Exploits : un objectif atteint s'annonce une fois et reste acquis ; Journal > Exploits les liste
       auto savedFlags = flags;
       flags = {"boss1"};
@@ -3754,6 +3831,12 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
            bossEvent("sanctuaire_echos_boss"), 10);
   simSetup("Veilleur du phare (équipe N.110)", {{"lior", 110}, {"maelle", 110}, {"isra", 110}, {"braisenard", 110}, {"gouttelin", 110}, {"ronceau", 110}},
            bossEvent("phare5_boss"), 10);
+  // Quêtes des héros (2026-10-20, outils/villes/liens.py), après l'acte 3
+  for (auto [name, ev, hero] : std::vector<std::array<const char*, 3>>{{"Brumeroi", "brumeroi", "lior"}, {"Sentinelle d'aurore", "sentinelle_aurore", "maelle"},
+                                                                         {"Golem de magma", "golem_magma", "brann"}, {"Ombre des galeries", "ombre_galeries", "isra"},
+                                                                         {"Varn le braconnier", "varn", "kael"}, {"Chevalier de glace", "chevalier_glace", "selene"}})
+    simSetup((std::string(name) + " (équipe N.84)").c_str(), {{"lior", 84}, {"maelle", 84}, {hero == std::string("lior") || hero == std::string("maelle") ? "isra" : hero, 84},
+                                                   {"braisenard", 84}, {"gouttelin", 84}, {"ronceau", 84}}, bossEvent(ev), 10);
   simGear = 0, simForge = 0;
 
   // Expédition : gardien de chaque région contre une équipe générée (héros, créature de départ,

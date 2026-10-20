@@ -23,7 +23,8 @@
       "dialogue": [
         "Petit-fils de la doyenne : Grand-mère dit que la mer se souvient de tout. Même de mes bêtises."
       ]
-    }
+    },
+    {"x": 3, "y": 6, "apparence": "villageois", "direction": "bas", "evenement": "cartes_mousse"}
   ],
   "coffres": [],
   "panneaux": [],

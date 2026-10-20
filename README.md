@@ -332,7 +332,11 @@ de niveau 35-40 bien équipée.
   poissons) et la **Nouvelle partie +**.
 - **Discussions** entre les héros (Échap > Discussions), pluie de temps en temps,
   musiques réécrites.
-- **Exploits** : 28 défis (finir les actes, remplir le Bestiaire, devenir champion…), cochés dans Journal > Exploits.
+- **Quêtes des héros** : après l'acte 3, une quête pour chacun des six héros (son passé, un boss, une arme rien qu'à lui).
+- **Cartes au trésor** : Corbin, au port, a caché huit trésors dans des coins perdus ; chacun contient la carte du suivant.
+- **Cartes des gardiens** : un jeu de cartes (plateau de 3 × 3, comme le Triple Triad) contre neuf joueurs des
+  auberges ; chaque créature obtenue donne sa carte, les boss se gagnent.
+- **Exploits** : 30 défis (finir les actes, remplir le Bestiaire, devenir champion…), cochés dans Journal > Exploits.
 - **Sauvegarde automatique** à chaque passage et porte (Options > Sauvegarde auto pour la couper).
 - **Voyage rapide** : Échap > Carte, choisir un village déjà visité (flèches), Entrée pour y aller.
 - **Créatures de la nuit** : la nuit, d'autres créatures sortent dans les herbes ; parfois, une meute est menée

@@ -52,7 +52,7 @@ static void checkList(const Json& list, const std::string& where, std::vector<st
 
 static void checkCondition(const Json& c, const std::string& where, std::vector<std::string>& err) {
   static const std::vector<std::string> keys = {"drapeau", "sans_drapeau", "objet", "sans_objet", "objet_min", "or_min", "membre", "poissons_min", "especes_min",
-                                                "chromatiques_min", "quetes_min"};
+                                                "chromatiques_min", "quetes_min", "cartes_min"};
   for (auto& [k, v] : c.items()) {
     if (std::find(keys.begin(), keys.end(), k) == keys.end()) err.push_back(where + T(" : condition inconnue « ") + k + " »");
     if (k == "objet" || k == "sans_objet")
@@ -139,6 +139,13 @@ static void checkAction(const Json& a, const std::string& where, std::vector<std
   } else if (k == "evenement") {
     if (need("id") && !findEvent(a["id"].get<std::string>())) err.push_back(w + T(" : événement inconnu « ") + a["id"].get<std::string>() + " »");
   } else if (k == "attendre") need("secondes");
+  else if (k == "cartes") {
+    if (need("adversaire") && !cardFoeExists(a["adversaire"].get<std::string>()))
+      err.push_back(w + T(" : joueur de cartes inconnu « ") + a["adversaire"].get<std::string>() + " »");
+    checkList(a.value("victoire", Json::array()), w + T(" > victoire"), err);
+    checkList(a.value("defaite", Json::array()), w + T(" > défaite"), err);
+    checkList(a.value("egalite", Json::array()), w + T(" > égalité"), err);
+  }
   else if (k == "quete") {
     if (need("id") && !findQuest(a["id"].get<std::string>())) err.push_back(w + T(" : quête inconnue « ") + a["id"].get<std::string>() + " »");
   } else if (k != "soigner" && k != "reveil" && k != "fin" && k != "forge" && k != "conseil" && k != "nouvelle_partie_plus") err.push_back(where + T(" : action inconnue « ") + k + " »");
@@ -176,6 +183,8 @@ std::vector<std::string> checkEvents() {
       if (!w.condition.is_null()) checkCondition(w.condition, m.name + T(", passage (") + std::to_string(w.x) + ", " + std::to_string(w.y) + ")", err);
     for (auto& n : m.npcs)
       if (!n.cond.is_null()) checkCondition(n.cond, m.name + T(", habitant (") + std::to_string(n.x) + ", " + std::to_string(n.y) + ")", err);
+    for (auto& c : m.chests)
+      if (!c.cond.is_null()) checkCondition(c.cond, m.name + T(", coffre (") + std::to_string(c.x) + ", " + std::to_string(c.y) + ")", err);
     for (auto& b : m.bosses)
       if (!b.cond.is_null() && !b.bounty) checkCondition(b.cond, m.name + T(", boss « ") + b.id + " »", err);
     for (auto& b : m.buildings)
@@ -223,6 +232,7 @@ bool Game::checkCond(const Json& c) const {
   if (c.contains("or_min") && gold < c["or_min"].get<int>()) return false;
   if (c.contains("poissons_min") && fishCaught() < c["poissons_min"].get<int>()) return false;  // carnet de pêche
   if (c.contains("especes_min") && (int)caught.size() < c["especes_min"].get<int>()) return false;  // Bestiaire : espèces obtenues
+  if (c.contains("cartes_min") && (int)cardCollection().size() < c["cartes_min"].get<int>()) return false;  // cartes des gardiens
   if (c.contains("quetes_min")) {  // quêtes terminées
     int n = 0;
     for (auto& q : quests()) n += has(questFlag(jget<std::string>(q, "id", ""), true));
@@ -383,6 +393,9 @@ void Game::execAction(const Json& a) {
       if (hp) f->hp = f->mhp;
       if (mp) f->mp = f->mmp;
     }
+  } else if (k == "cartes") {  // Cartes des gardiens (cartes.cpp) : ce qui suit va dans victoire, defaite, egalite
+    Json win = a.value("victoire", Json::array()), lose = a.value("defaite", Json::array()), draw = a.value("egalite", Json::array());
+    cardsMenu(a["adversaire"].get<std::string>(), [this, win, lose, draw](int r) { runActions(r > 0 ? win : r < 0 ? lose : draw); });
   } else if (k == "boutique") {
     shopMenu(names(a["objets"]));
   } else if (k == "forge") {

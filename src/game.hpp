@@ -126,6 +126,7 @@ class Game {
   bool puzzleSolved(const MapDef& m) const { return m.puzzleFlag.empty() || has(m.puzzleFlag); }
   void pushBoulder(int x, int y, int dx, int dy);  // le joueur pousse le rocher de (x, y)  // case occupée sur cette carte
   bool npcVisible(const Npc& n) const;
+  bool chestShown(const MapDef& m, const Chest& c) const;  // ouvert, ou sa condition « si » est vraie
   bool bossAlive(const BossSpot& b) const;
   void tryMove(int d);
   void arrive();
@@ -252,7 +253,33 @@ class Game {
   void updateFishing(float dt);
   void endFishing(const std::string& msg);
   void drawFishing();
+  // Cartes des gardiens (cartes.cpp, 2026-10-20) : un jeu de cartes à part, contre les joueurs de data/cartes_jeu.json
+  struct CardGame {
+    bool on = false, over = false, abandon = false;
+    std::string foe, foeName;
+    int level = 1, turn = 0, phase = 0, sel = 0, cursor = 4;  // phase 0 : choisir la carte, 1 : la case
+    std::array<std::string, 9> cell;
+    std::array<int, 9> owner{};
+    std::array<float, 9> flipT{};
+    std::vector<std::string> hand[2];  // 0 : le joueur, 1 : l'adversaire
+    float t = 0, wait = 0;
+    std::function<void(int)> done;  // 1 gagné, 0 égalité, -1 perdu
+  } cards_;
+  std::vector<std::string> cardHand_;  // la main choisie (ligne « main_cartes ») ; complétée par les meilleures cartes
+  int cardGames_ = 0;                  // parties jouées depuis le lancement (le joueur automatique rejoue après une défaite)
+  void startCards(const std::string& foe, std::function<void(int)> done);
+  void updateCards(float dt);
+  void endCards();
+  void drawCards();
+  void drawCard(float x, float y, float w, float h, const std::string& sp, int who, bool lit, float flip);
+  int cardFlips(int c, const std::string& sp, int who, bool apply);
+  std::pair<int, int> cardChoice(int who, int level);
+  void cardsMenu(const std::string& foe, std::function<void(int)> done);
+  void cardHandMenu(int sel = 0);
  public:
+  std::vector<std::string> cardCollection() const;  // toutes les cartes obtenues, les plus fortes d'abord
+  std::vector<std::string> cardDeck() const;        // les cinq cartes jouées
+  int cardsWon() const;                             // adversaires déjà battus
   int fishCaught() const;  // espèces de poissons du carnet
  private:
   bool worldMapOn_ = false;  // carte du monde ouverte (3.3, menu pause) : le reste du jeu attend
@@ -370,6 +397,10 @@ int fishSpecies();
 // Discussions (discussions.cpp) : vérification de data/discussions.json (mode test) et nombre de discussions
 std::vector<std::string> checkDiscussionsData();
 std::vector<std::string> checkExploitsData();
+std::vector<std::string> checkCardsData();  // data/cartes_jeu.json
+std::array<int, 4> cardValues(const std::string& sp);  // haut, droite, bas, gauche (1 à 10)
+int cardFoeCount();
+bool cardFoeExists(const std::string& id);
 int exploitCount();
 void checkConditionData(const Json& c, const std::string& where, std::vector<std::string>& err);  // une condition « si » bien écrite
 int discussionCount();

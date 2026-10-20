@@ -47,6 +47,15 @@
       "evenement": "route_glacier1",
       "vue": 3,
       "vue_jusqua": "route_glacier1"
+    },
+    {
+      "x": 30,
+      "y": 6,
+      "apparence": "chevalier",
+      "direction": "bas",
+      "evenement": "chevalier_glace",
+      "si": {"drapeau": "quete:lien_selene"},
+      "cache_si": "lien_selene_vaincu"
     }
   ],
   "coffres": [

@@ -14,7 +14,10 @@
     "#####p#####"
   ],
   "batiments": [],
-  "habitants": [{"x": 5, "y": 3, "apparence": "barman", "evenement": "auberge", "direction": "bas"}],
+  "habitants": [
+    {"x": 5, "y": 3, "apparence": "barman", "evenement": "auberge", "direction": "bas"},
+    {"x": 3, "y": 6, "apparence": "voyageuse", "direction": "bas", "evenement": "cartes_voyageuse"}
+  ],
   "coffres": [],
   "panneaux": [],
   "passages": [{"x": 5, "y": 8, "vers": "aube", "tx": 7, "ty": 19, "direction": "bas"}],

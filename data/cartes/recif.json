@@ -79,7 +79,8 @@
     {"x": 40, "y": 4, "objet": "partition", "quantite": 1},
     {"x": 2, "y": 34, "objet": "eclat_brume", "quantite": 1},
     {"x": 45, "y": 34, "objet": "eclat_brume", "quantite": 1},
-    {"x": 45, "y": 2, "objet": "eclat_brume", "quantite": 1}
+    {"x": 45, "y": 2, "objet": "eclat_brume", "quantite": 1},
+    {"x": 45, "y": 20, "objet": "boussole_corbin", "quantite": 1, "si": {"objet": "carte_tresor_8"}}
   ],
   "panneaux": [
     {"x": 22, "y": 33, "texte": "Récif d'Écume. Au nord, par-delà le chenal : les Ruines englouties."}

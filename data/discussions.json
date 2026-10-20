@@ -463,5 +463,77 @@
       "Lior : Je crois que c'est l'épée du Premier Gardien qui m'apprend. Un peu chaque jour.",
       "Brann : Une épée qui apprend à son maître… À Forgeroc, on appellerait ça de la paresse."
     ]
+  },
+  {
+    "id": "lien_lior",
+    "titre": "La Lanterne",
+    "si": {"drapeau": "quete:lien_lior:fin"},
+    "membres": ["lior", "maelle"],
+    "dialogue": [
+      "Maëlle : Elle te va bien, la Lanterne. Ça fait drôle de te voir avec l'épée de l'ancien.",
+      "Lior : Il m'a dit que c'était à moi, maintenant. Je n'arrive pas à y croire.",
+      "Maëlle : Moi si. Il te regardait toujours comme ça, tu sais. Comme s'il attendait ce jour-là.",
+      "Lior : Il aurait pu me le dire plus tôt. J'aurais moins râlé pendant les corvées."
+    ]
+  },
+  {
+    "id": "lien_maelle",
+    "titre": "Digne d'Aurore",
+    "si": {"drapeau": "quete:lien_maelle:fin"},
+    "membres": ["maelle", "isra"],
+    "dialogue": [
+      "Isra : Alors la sentinelle t'a trouvée digne. Félicitations, mage blanche.",
+      "Maëlle : Je crois qu'elle était surtout fatiguée de garder ce bâton.",
+      "Isra : Ne fais pas ça. Accepte le compliment. Je n'en fais pas souvent.",
+      "Maëlle : … Merci, Isra."
+    ]
+  },
+  {
+    "id": "lien_brann",
+    "titre": "La dernière hache",
+    "si": {"drapeau": "quete:lien_brann:fin"},
+    "membres": ["brann", "lior"],
+    "dialogue": [
+      "Lior : Tu n'as rien dit à maître Hrolf, quand il t'a donné la hache.",
+      "Brann : C'est comme ça qu'on fait, à Forgeroc.",
+      "Lior : Tu as les yeux qui brillent.",
+      "Brann : La fumée de la forge. Ça pique. Avance."
+    ]
+  },
+  {
+    "id": "lien_isra",
+    "titre": "L'écriture penchée",
+    "si": {"drapeau": "quete:lien_isra:fin"},
+    "membres": ["isra", "selene"],
+    "dialogue": [
+      "Sélène : Ton maître écrivait dans le noir ? Comment faisait-il ?",
+      "Isra : Il disait que les sorts se lisent mieux sans lumière. Ils n'ont pas peur, comme ça.",
+      "Sélène : Et toi, tu le crois ?",
+      "Isra : Je crois qu'il avait oublié sa bougie. Mais l'idée est jolie."
+    ]
+  },
+  {
+    "id": "lien_kael",
+    "titre": "Le vieux chêne",
+    "si": {"drapeau": "quete:lien_kael:fin"},
+    "membres": ["kael", "maelle"],
+    "dialogue": [
+      "Maëlle : Un arbre qui choisit à qui il donne une branche… Tu y crois, toi ?",
+      "Kael : Quand j'étais petit, je grimpais dans ce chêne. Il me faisait tomber à chaque fois.",
+      "Maëlle : Et maintenant ?",
+      "Kael : Maintenant, il me prête son bois. Je crois qu'on est quittes."
+    ]
+  },
+  {
+    "id": "lien_selene",
+    "titre": "Garder ceux qui ont froid",
+    "si": {"drapeau": "quete:lien_selene:fin"},
+    "membres": ["selene", "brann"],
+    "dialogue": [
+      "Brann : Belle armure. Le travail est vieux, mais solide. Ton père savait choisir ses forgerons.",
+      "Sélène : Il disait que l'armure ne sert à rien si celui qui la porte ne sait pas pourquoi il se bat.",
+      "Brann : Et toi, tu sais ?",
+      "Sélène : « Garder ceux qui ont froid. » Je crois que je l'ai toujours su."
+    ]
   }
 ]

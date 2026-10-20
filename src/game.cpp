@@ -246,7 +246,7 @@ void Game::update(float dt) {
   if (pilot_) pilot_->update(dt);    // joueur automatique : il choisit les touches de cette image
   banner -= dt;
   noticeT_ -= dt;
-  if (mode == Mode::Map && !sc.busy() && !menus.active() && !fishing_.on && (talkCheckT_ -= dt) < 0) {  // une nouvelle discussion ?
+  if (mode == Mode::Map && !sc.busy() && !menus.active() && !fishing_.on && !cards_.on && (talkCheckT_ -= dt) < 0) {  // une nouvelle discussion ?
     talkCheckT_ = 1;
     checkDiscussions();
     checkExploits();
@@ -283,6 +283,12 @@ void Game::update(float dt) {
   if (helpPage_ >= 0) {  // aide ouverte : le reste du jeu attend
     lastHelp_ = helpPage_;
     updateHelp();
+    updateMusic();
+    in.endFrame();
+    return;
+  }
+  if (cards_.on && mode == Mode::Map && !sc.busy() && !menus.active()) {  // cartes des gardiens : le reste du jeu attend
+    updateCards(dt);
     updateMusic();
     in.endFrame();
     return;
@@ -499,6 +505,9 @@ void Game::defeat() {
 // Carte
 // ---------------------------------------------------------------------------
 bool Game::npcVisible(const Npc& n) const { return (n.hideIf.empty() || !has(n.hideIf)) && (n.cond.is_null() || checkCond(n.cond)); }
+bool Game::chestShown(const MapDef& m, const Chest& c) const {
+  return c.cond.is_null() || has("coffre:" + m.id + ":" + std::to_string(c.x) + ":" + std::to_string(c.y)) || checkCond(c.cond);
+}
 bool Game::bossAlive(const BossSpot& b) const { return !has(b.flag) && (b.cond.is_null() || checkCond(b.cond)); }
 
 bool Game::blocked(int x, int y) const { return blockedOn(M(), x, y); }
@@ -517,7 +526,7 @@ bool Game::blockedOn(const MapDef& m, int x, int y) const {
     if (&m == &M() && walkMap_ == mapId && i < walk_.size() && walk_[i].t < 1 && walk_[i].fx == x && walk_[i].fy == y) return true;
   }
   for (auto& c : m.chests)
-    if (c.x == x && c.y == y) return true;
+    if (c.x == x && c.y == y && chestShown(m, c)) return true;
   for (auto& s : m.signs)
     if (s.x == x && s.y == y) return true;
   for (auto& b : m.bosses)
@@ -790,7 +799,7 @@ void Game::interact() {
   for (auto& s : m.signs)
     if (s.x == fx && s.y == fy) return sc.say(s.text);
   for (size_t i = 0; i < m.chests.size(); i++)
-    if (m.chests[i].x == fx && m.chests[i].y == fy) return openChest((int)i);
+    if (m.chests[i].x == fx && m.chests[i].y == fy && chestShown(m, m.chests[i])) return openChest((int)i);
   for (auto& b : m.bosses)
     if (bossAlive(b) && fx >= b.x && fx <= b.x + 1 && fy >= b.y && fy <= b.y + 1) return bossTouched(b);
   for (auto& b : m.buildings)
@@ -1016,7 +1025,7 @@ void Game::newGame(const std::string& starter) {
   team = {makeFighter(r.hero, r.startLevel), makeFighter(starter, r.startLevel)};
   reserve.clear();
   seen.clear(), caught.clear(), weak.clear(), tipsSeen.clear();
-  visited.clear();
+  visited.clear(), cardHand_.clear();
   items.clear();
   for (auto& [id, n] : r.startItems) items[id] = n;
   gold = r.startGold;
@@ -1058,6 +1067,7 @@ void Game::draw() {
       break;
   }
   if (fishing_.on && mode == Mode::Map && !sc.busy() && !menus.active()) drawFishing();
+  if (cards_.on && mode == Mode::Map && !sc.busy() && !menus.active()) drawCards();
   if (!evoTo_.empty()) drawEvolution();
   if (worldMapOn_) drawWorldMap();
   if (helpPage_ >= 0) drawHelp();
@@ -1260,7 +1270,7 @@ void Game::drawMap() {
     }
   }
   for (size_t i = 0; i < m.chests.size(); i++)
-    drawChest(g, m.chests[i].x * 16 - camX, m.chests[i].y * 16 - camY, has(chestFlag((int)i)), time);
+    if (chestShown(m, m.chests[i])) drawChest(g, m.chests[i].x * 16 - camX, m.chests[i].y * 16 - camY, has(chestFlag((int)i)), time);
   for (auto& s : m.signs) drawSign(g, s.x * 16 - camX, s.y * 16 - camY);
   // Personnages, bâtiments et objets hauts (arbres, réverbères…) triés de haut en bas : on passe derrière un toit
   // ou un arbre plus bas que soi
@@ -1275,7 +1285,8 @@ void Game::drawMap() {
                         if (m.theme != Theme::Interieur) drawChimneySmoke(g, b, b.x * 16 - camX, b.y * 16 - camY, time);
                       }});
   std::set<std::pair<int, int>> behind;  // cases qu'un objet haut plus bas ne doit pas cacher
-  for (auto& c : m.chests) behind.insert({c.x, c.y});
+  for (auto& c : m.chests)
+    if (chestShown(m, c)) behind.insert({c.x, c.y});
   for (auto& sg : m.signs) behind.insert({sg.x, sg.y});
   for (size_t i = 0; i < m.npcs.size(); i++)
     if (npcVisible(m.npcs[i])) behind.insert(npcCell(m, i));

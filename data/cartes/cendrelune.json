@@ -165,7 +165,8 @@
       "dialogue": [
         "Le feu de la forge ne s'éteint jamais.",
         "Brann y travaille l'acier des montagnes : demande-lui, à l'enclume."
-      ]
+      ],
+      "evenement": "maitre_hrolf"
     },
     {
       "x": 22,
@@ -237,7 +238,8 @@
     {"x": 86, "y": 2, "objet": "eclat_brume", "quantite": 1},
     {"x": 86, "y": 51, "objet": "eclat_brume", "quantite": 1},
     {"x": 42, "y": 2, "objet": "eclat_brume", "quantite": 1},
-    {"x": 60, "y": 54, "objet": "eclat_brume", "quantite": 1}
+    {"x": 60, "y": 54, "objet": "eclat_brume", "quantite": 1},
+    {"x": 71, "y": 33, "objet": "carte_tresor_5", "quantite": 1, "si": {"objet": "carte_tresor_4"}}
   ],
   "panneaux": [
     {"x": 3, "y": 32, "texte": "Forgeroc, la ville des forges."},

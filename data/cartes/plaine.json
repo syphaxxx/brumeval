@@ -136,7 +136,8 @@
     {"x": 46, "y": 6, "objet": "lanterne_argent", "quantite": 2},
     {"x": 8, "y": 30, "objet": "potion", "quantite": 3},
     {"x": 48, "y": 28, "objet": "ether", "quantite": 2},
-    {"x": 26, "y": 31, "objet": "gemme_vie", "quantite": 1}
+    {"x": 26, "y": 31, "objet": "gemme_vie", "quantite": 1},
+    {"x": 46, "y": 33, "objet": "carte_tresor_4", "quantite": 1, "si": {"objet": "carte_tresor_3"}}
   ],
   "panneaux": [],
   "passages": [

@@ -1842,5 +1842,57 @@
     "couleurs": ["#e0b040", "#fff8d0"],
     "apprend": [[1, "prisme"], [1, "nova"], [1, "cauchemar"], [1, "lame_ombre"], [1, "soins"]],
     "talent": "esprit_clair"
+  },
+  {
+    "id": "brumeroi",
+    "nom": "Brumeroi",
+    "description": "Une bête de brume qui dort à la Source depuis quarante ans, une vieille épée plantée dans le dos.",
+    "sprite": "brumeroi",
+    "types": ["ombre", "esprit"],
+    "base": {"pv": 118, "pm": 60, "attaque": 74, "defense": 70, "magie": 80, "resistance": 72, "vitesse": 58},
+    "immunites": ["sommeil"],
+    "forme": "boss",
+    "couleurs": ["#7a8aa8", "#e8f0ff"],
+    "apprend": [[1, "cauchemar"], [1, "lame_ombre"], [1, "voile"], [1, "suie"], [1, "regard"]],
+    "talent": "esprit_clair"
+  },
+  {
+    "id": "sentinelle_aurore",
+    "nom": "Sentinelle d'aurore",
+    "description": "Elle garde le bâton d'Aurore au fond du Temple gelé, et ne laisse passer que les cœurs purs.",
+    "sprite": "sentinelle_aurore",
+    "types": ["lumiere", "glace"],
+    "base": {"pv": 112, "pm": 60, "attaque": 70, "defense": 76, "magie": 78, "resistance": 76, "vitesse": 50},
+    "immunites": ["sommeil"],
+    "forme": "boss",
+    "couleurs": ["#e8a0c0", "#fff0f8"],
+    "apprend": [[1, "prisme"], [1, "glaciation"], [1, "corne_givre"], [1, "nova"], [1, "rempart"]],
+    "talent": "cuirasse"
+  },
+  {
+    "id": "golem_magma",
+    "nom": "Golem de magma",
+    "description": "Il est né au fond des mines, là où la roche fond. Son cœur bat comme une forge.",
+    "sprite": "golem_magma",
+    "types": ["feu", "roche"],
+    "base": {"pv": 124, "pm": 40, "attaque": 82, "defense": 84, "magie": 60, "resistance": 62, "vitesse": 40},
+    "immunites": ["sommeil"],
+    "forme": "boss",
+    "couleurs": ["#c04020", "#ffd080"],
+    "apprend": [[1, "poing"], [1, "brasier"], [1, "avalanche"], [1, "eboul"], [1, "carapace"]],
+    "talent": "rage"
+  },
+  {
+    "id": "ombre_galeries",
+    "nom": "Ombre des galeries",
+    "description": "Elle vit là où aucune lumière n'arrive, et elle a lu le grimoire avant tout le monde.",
+    "sprite": "ombre_galeries",
+    "types": ["ombre", "eau"],
+    "base": {"pv": 112, "pm": 70, "attaque": 64, "defense": 66, "magie": 86, "resistance": 74, "vitesse": 62},
+    "immunites": ["sommeil"],
+    "forme": "boss",
+    "couleurs": ["#3a4a8a", "#c0d0ff"],
+    "apprend": [[1, "foudre_noire"], [1, "trombe"], [1, "cauchemar"], [1, "voile"], [1, "suie"]],
+    "talent": "esprit_clair"
   }
 ]

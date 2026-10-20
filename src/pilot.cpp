@@ -224,6 +224,9 @@ void Pilot::inspectList(const Json& list, Info& in, int depth) const {
     std::string k = jget<std::string>(a, "action", "");
     // Entraînement sans récompense (à refaire à volonté) : rien à gagner, ni objectif ni effet
     if (k == "combat" && jget(a, "entrainement", false) && a.value("victoire", Json::array()).empty()) continue;
+    // Cartes des gardiens : il joue tant qu'il n'a pas battu ce joueur (et s'il a cinq cartes)
+    if (k == "cartes" && (G.has("cartes:" + jget<std::string>(a, "adversaire", "")) || G.cardCollection().size() < 5)) continue;
+    if (k == "cartes") in.sig += "c" + std::to_string(G.cardGames_);  // perdu : la signature change, il pourra rejouer (6 essais)
     // Seulement parler, attendre ou choisir le point de réveil : aucun effet sur la partie
     if (k != "dire" && k != "attendre" && k != "si" && k != "question" && k != "reveil" && k != "evenement") in.effect = true;
     if (k == "si") {
@@ -421,7 +424,7 @@ std::vector<Pilot::Goal> Pilot::goals() {
     for (auto& c : M.chests) {
       Goal g;
       g.key = "coffre:" + M.id + ":" + std::to_string(c.x) + ":" + std::to_string(c.y);  // comme Game::chestFlag
-      if (G.has(g.key) || tries_[g.key] >= 3) continue;
+      if (G.has(g.key) || tries_[g.key] >= 3 || !G.chestShown(M, c)) continue;
       g.what = "ouvrir un coffre (" + M.name + ")";
       around(g, c.x, c.y, 1, 1);
       out.push_back(g);
@@ -823,6 +826,11 @@ void Pilot::menuStep() {
   if (t.title.rfind(T("Boutique"), 0) == 0) return shopping();
   if (t.title.rfind(T("Forge"), 0) == 0) return forging();
   if (t.title.rfind(T("Primes"), 0) == 0) return bountyStep();
+  if (t.items.size() > 1 && t.items[0].label == T("Jouer") && t.items[1].label == T("Choisir ma main")) {  // Cartes des gardiens
+    pickItem(T("Jouer"));
+    wait_ = .3f;
+    return;
+  }
   status = "menu : " + t.title;
   if (t.cancelable) G.in.cancel = true;
   else G.in.confirm = true;
@@ -1374,7 +1382,7 @@ int Game::autoGame(SDL_Surface* target, const std::string& out) {
   say(P.summary());
   say(P.timeReport());
   say(P.humanEstimate());
-  say("exploits : " + std::to_string(g.exploitsDone()) + "/" + std::to_string(exploitCount()));
+  say("exploits : " + std::to_string(exploitsDone()) + "/" + std::to_string(exploitCount()));
   for (auto& s : g.layoutIssues) say("mise en page : " + s);
   return P.finished && g.layoutIssues.empty() ? 0 : 1;
 }

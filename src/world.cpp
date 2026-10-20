@@ -191,6 +191,7 @@ MapDef mapFromJson(const Json& j) {
   for (auto& o : j.value("coffres", Json::array())) {
     Chest c{o.at("x").get<int>(), o.at("y").get<int>(), jget<std::string>(o, "objet", ""), 0};
     c.qty = c.item.empty() ? jget(o, "or", 0) : jget(o, "quantite", 1);
+    c.cond = o.value("si", Json());
     m.chests.push_back(c);
   }
   for (auto& o : j.value("panneaux", Json::array())) m.signs.push_back({o.at("x").get<int>(), o.at("y").get<int>(), tr(o.at("texte").get<std::string>())});
@@ -262,6 +263,7 @@ Json mapToJson(const MapDef& m) {
     Json p = {{"x", x.x}, {"y", x.y}};
     if (x.item.empty()) p["or"] = x.qty;
     else p["objet"] = x.item, p["quantite"] = x.qty;
+    if (!x.cond.is_null()) p["si"] = x.cond;
     c.push_back(p);
   }
   o["coffres"] = c;

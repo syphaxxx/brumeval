@@ -106,7 +106,8 @@
     {"x": 36, "y": 31, "objet": "superpotion", "quantite": 3},
     {"x": 12, "y": 22, "objet": "gemme_esprit", "quantite": 1},
     {"x": 33, "y": 11, "or": 2500},
-    {"x": 24, "y": 6, "objet": "elixir", "quantite": 1}
+    {"x": 24, "y": 6, "objet": "elixir", "quantite": 1},
+    {"x": 42, "y": 34, "objet": "carte_tresor_8", "quantite": 1, "si": {"objet": "carte_tresor_7"}}
   ],
   "panneaux": [],
   "passages": [

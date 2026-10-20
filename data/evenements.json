@@ -445,11 +445,104 @@
     ]
   },
   "chapelle": {
-    "actions": [
-      {"action": "soigner", "pv": false},
+    "pages": [
       {
-        "action": "dire",
-        "texte": "Une douce lumière emplit la chapelle. Les PM de toute l'équipe sont restaurés."
+        "si": {"drapeau": "quete:lien_lior:fin"},
+        "actions": [
+          {"action": "soigner", "pv": false},
+          {
+            "action": "dire",
+            "texte": "Une douce lumière emplit la chapelle. Les PM de toute l'équipe sont restaurés."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["quete:lien_lior", "lien_lior_vaincu"]},
+        "actions": [
+          {"action": "soigner", "pv": false},
+          {
+            "action": "dire",
+            "texte": "Une douce lumière emplit la chapelle. Les PM de toute l'équipe sont restaurés."
+          },
+          {
+            "action": "dire",
+            "texte": "Ancien : Ma Lanterne… Tu l'as reprise au Brumeroi ? Toi, mon apprenti ?"
+          },
+          {
+            "action": "dire",
+            "texte": "Ancien : Quarante ans que je n'ose plus aller à la Source. Et toi, tu y vas et tu reviens avec le sourire."
+          },
+          {
+            "action": "dire",
+            "texte": "Ancien : Garde-la. Une épée de gardien doit servir à un gardien. Et le gardien, maintenant, c'est toi."
+          },
+          {"action": "dire", "texte": "Lior : Merci, maître. Je ne la laisserai jamais s'éteindre."},
+          {"action": "donner", "objet": "lanterne_lame", "quantite": 1},
+          {"action": "quete", "id": "lien_lior", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:lien_lior"},
+        "actions": [
+          {"action": "soigner", "pv": false},
+          {
+            "action": "dire",
+            "texte": "Une douce lumière emplit la chapelle. Les PM de toute l'équipe sont restaurés."
+          },
+          {
+            "action": "dire",
+            "texte": "Ancien : Le Brumeroi dort au sud-est de la Source des Brumes. Ne le sous-estime pas, Lior."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "aube_fin", "membre": ["lior"]},
+        "actions": [
+          {"action": "soigner", "pv": false},
+          {
+            "action": "dire",
+            "texte": "Une douce lumière emplit la chapelle. Les PM de toute l'équipe sont restaurés."
+          },
+          {
+            "action": "dire",
+            "texte": "Ancien : Lior. Te voilà revenu de l'île d'Aube… Tu as grandi, mon garçon."
+          },
+          {
+            "action": "dire",
+            "texte": "Ancien : Il faut que je te dise. Avant d'être vieux, j'étais gardien, moi aussi. Mon épée s'appelait la Lanterne."
+          },
+          {
+            "action": "dire",
+            "texte": "Ancien : Je l'ai perdue à la Source des Brumes, plantée dans le dos d'une bête que je n'ai jamais pu vaincre : le Brumeroi."
+          },
+          {
+            "action": "dire",
+            "texte": "Ancien : Il dormait depuis quarante ans. La Brume Noire l'a réveillé. Je le sens, d'ici."
+          },
+          {
+            "action": "question",
+            "texte": "Reprendre la Lanterne au Brumeroi ?",
+            "oui": [
+              {"action": "quete", "id": "lien_lior"},
+              {
+                "action": "dire",
+                "texte": "Lior : J'y vais, maître. Vous me l'avez dit cent fois : un gardien finit ce qu'on a commencé."
+              }
+            ],
+            "non": [
+              {"action": "dire", "texte": "Ancien : Prends ton temps. Le Brumeroi attendra. Moi aussi."}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {"action": "soigner", "pv": false},
+          {
+            "action": "dire",
+            "texte": "Une douce lumière emplit la chapelle. Les PM de toute l'équipe sont restaurés."
+          }
+        ]
       }
     ]
   },
@@ -9636,6 +9729,872 @@
             "texte": "Assistant : On en croise une sur cent cinquante, environ. Si vous en capturez une, montrez-la-moi !"
           },
           {"action": "quete", "id": "chroma"}
+        ]
+      }
+    ]
+  },
+  "brumeroi": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "La brume se rassemble en une bête immense. Dans son dos, une vieille épée brille d'une petite flamme."
+      },
+      {"action": "dire", "texte": "Lior : L'épée du maître… Elle brûle encore."},
+      {
+        "action": "combat",
+        "nom": "Le Brumeroi",
+        "ennemis": [
+          {
+            "espece": "brumeroi",
+            "niveau": 88,
+            "pv": 5.5,
+            "boss": true,
+            "bouclier": 8,
+            "phases": [
+              {
+                "pv": 0.5,
+                "message": "Le Brumeroi rugit et la brume s'épaissit !",
+                "renforts": [{"espece": "nebulis", "niveau": 84}, {"espece": "orbrume", "niveau": 84}]
+              }
+            ]
+          },
+          {"espece": "nebulis", "niveau": 84}
+        ],
+        "boss": true,
+        "fuite": false,
+        "capture": false,
+        "victoire": [
+          {"action": "drapeau", "nom": "lien_lior_vaincu"},
+          {
+            "action": "dire",
+            "texte": "Le Brumeroi se dissout. La vieille épée tombe dans l'herbe, toujours allumée."
+          },
+          {"action": "dire", "texte": "Lior : Je la rapporte au maître. Elle est à lui."}
+        ]
+      }
+    ]
+  },
+  "sentinelle_aurore": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Une statue de glace rose s'anime. Un bâton de cristal flotte devant elle."
+      },
+      {"action": "dire", "texte": "Maëlle : Le bâton d'Aurore… Elle le garde depuis tout ce temps ?"},
+      {
+        "action": "combat",
+        "nom": "La Sentinelle d'aurore",
+        "ennemis": [
+          {
+            "espece": "sentinelle_aurore",
+            "niveau": 88,
+            "pv": 5.5,
+            "boss": true,
+            "bouclier": 8,
+            "phases": [
+              {
+                "pv": 0.5,
+                "message": "La Sentinelle se couvre de givre !",
+                "renforts": [{"espece": "cristallin", "niveau": 84}]
+              }
+            ]
+          },
+          {"espece": "givrelin", "niveau": 84},
+          {"espece": "cristallin", "niveau": 84}
+        ],
+        "boss": true,
+        "fuite": false,
+        "capture": false,
+        "victoire": [
+          {"action": "drapeau", "nom": "lien_maelle_vaincu"},
+          {
+            "action": "dire",
+            "texte": "La Sentinelle s'incline et tend le bâton à Maëlle avant de fondre en pluie de lumière."
+          }
+        ]
+      }
+    ]
+  },
+  "soeur_agathe": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:lien_maelle:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Sœur Agathe : Aurore serait fière de toi, Maëlle. Moi, je le suis déjà."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["quete:lien_maelle", "lien_maelle_vaincu"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Sœur Agathe : Le bâton d'Aurore ! Il s'est allumé dès que tu es entrée… Il t'a choisie, Maëlle."
+          },
+          {"action": "dire", "texte": "Maëlle : Je ne suis pas sûre de le mériter, ma sœur."},
+          {
+            "action": "dire",
+            "texte": "Sœur Agathe : C'est justement pour ça que tu le mérites. Aurore disait la même chose."
+          },
+          {"action": "donner", "objet": "baton_aurore", "quantite": 1},
+          {"action": "or", "quantite": 5000},
+          {"action": "quete", "id": "lien_maelle", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:lien_maelle"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Sœur Agathe : Le bâton est au fond du Temple gelé, dans la salle de l'ouest. Que la lumière te garde."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "aube_fin", "membre": ["maelle"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Sœur Agathe : Maëlle ! Je rentre de mon pèlerinage. Tu as tellement changé…"
+          },
+          {
+            "action": "dire",
+            "texte": "Sœur Agathe : Tu connais l'histoire d'Aurore, la première mage blanche de la vallée ? Elle a caché son bâton au Temple gelé, avant de mourir."
+          },
+          {
+            "action": "dire",
+            "texte": "Sœur Agathe : Une sentinelle le garde, et ne le donne qu'à une mage digne d'elle. J'ai essayé, à ton âge. Elle ne m'a pas trouvée digne."
+          },
+          {
+            "action": "question",
+            "texte": "Chercher le bâton d'Aurore au Temple gelé ?",
+            "oui": [
+              {"action": "quete", "id": "lien_maelle"},
+              {"action": "dire", "texte": "Maëlle : J'y vais. Si elle refuse, au moins, j'aurai essayé."}
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "Sœur Agathe : Le bâton a attendu cent ans. Il peut attendre encore un peu."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {"action": "dire", "texte": "Sœur Agathe : Je prie pour vous tous, chaque soir. Même pour Brann."}
+        ]
+      }
+    ]
+  },
+  "golem_magma": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "La roche se fend. Un golem de lave se lève, la poitrine ouverte sur un cœur rouge qui bat."
+      },
+      {
+        "action": "dire",
+        "texte": "Brann : Le voilà, ton cœur de magma, maître. Il ne va pas se laisser prendre gentiment."
+      },
+      {
+        "action": "combat",
+        "nom": "Le Golem de magma",
+        "ennemis": [
+          {
+            "espece": "golem_magma",
+            "niveau": 89,
+            "pv": 5.5,
+            "boss": true,
+            "bouclier": 8,
+            "phases": [
+              {
+                "pv": 0.5,
+                "message": "Le Golem de magma déborde de lave !",
+                "renforts": [{"espece": "fumerole", "niveau": 84}]
+              }
+            ]
+          },
+          {"espece": "galetor", "niveau": 84},
+          {"espece": "fumerole", "niveau": 84}
+        ],
+        "boss": true,
+        "fuite": false,
+        "capture": false,
+        "victoire": [
+          {"action": "drapeau", "nom": "lien_brann_vaincu"},
+          {"action": "donner", "objet": "coeur_magma", "quantite": 1},
+          {
+            "action": "dire",
+            "texte": "Le golem s'effondre en pierres refroidies. Au milieu, le cœur de magma bat encore."
+          }
+        ]
+      }
+    ]
+  },
+  "maitre_hrolf": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:lien_brann:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Maître Hrolf : Elle te va bien, cette hache. Mieux qu'à moi. Va, et reviens me raconter."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:lien_brann", "objet": "coeur_magma"},
+        "actions": [
+          {"action": "retirer", "objet": "coeur_magma", "quantite": 1},
+          {"action": "dire", "texte": "Maître Hrolf : Le cœur de magma ! Donne. Et recule-toi, gamin."},
+          {
+            "action": "dire",
+            "texte": "Le vieux forgeron frappe toute la nuit. Au matin, une hache rouge sombre repose sur l'enclume."
+          },
+          {
+            "action": "dire",
+            "texte": "Maître Hrolf : Ma dernière. Après celle-là, je range le marteau. Prends-en soin, Brann."
+          },
+          {"action": "dire", "texte": "Brann : … Merci, maître. Je ne sais pas quoi dire."},
+          {
+            "action": "dire",
+            "texte": "Maître Hrolf : Alors ne dis rien. C'est comme ça qu'on fait, à Forgeroc."
+          },
+          {"action": "donner", "objet": "hache_hrolf", "quantite": 1},
+          {"action": "quete", "id": "lien_brann", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:lien_brann"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Maître Hrolf : Le golem de magma dort au fond des Mines, à l'est. Rapporte-moi son cœur, et je forge."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "aube_fin", "membre": ["brann"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Maître Hrolf : Brann. Ta hache, c'est moi qui te l'ai forgée quand tu avais quinze ans. Regarde-la : elle a fait son temps."
+          },
+          {
+            "action": "dire",
+            "texte": "Maître Hrolf : Je veux forger une dernière hache avant de ranger le marteau. Une vraie. Mais il me faut un cœur de magma."
+          },
+          {
+            "action": "dire",
+            "texte": "Maître Hrolf : Il y a un golem de lave au fond des Mines. Son cœur bat comme une forge. C'est celui-là qu'il me faut."
+          },
+          {
+            "action": "question",
+            "texte": "Rapporter le cœur du golem de magma ?",
+            "oui": [
+              {"action": "quete", "id": "lien_brann"},
+              {"action": "dire", "texte": "Brann : Un golem de lave ? Ça me va. J'avais froid."}
+            ],
+            "non": [
+              {"action": "dire", "texte": "Maître Hrolf : Pas pressé. Le feu de ma forge ne s'éteint pas."}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Maître Hrolf : J'ai appris le métier à Brann. Enfin, j'ai essayé. Il tape fort, mais il tape partout."
+          }
+        ]
+      }
+    ]
+  },
+  "ombre_galeries": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Au fond de la galerie, l'eau devient noire. Une forme se lève, un grand livre ouvert entre ses mains d'ombre."
+      },
+      {
+        "action": "dire",
+        "texte": "Isra : Le grimoire du maître. Rends-le. Ce n'est pas à toi qu'il l'a écrit."
+      },
+      {
+        "action": "combat",
+        "nom": "L'Ombre des galeries",
+        "ennemis": [
+          {
+            "espece": "ombre_galeries",
+            "niveau": 88,
+            "pv": 5.5,
+            "boss": true,
+            "bouclier": 8,
+            "phases": [
+              {
+                "pv": 0.5,
+                "message": "L'Ombre lit une page du grimoire !",
+                "renforts": [{"espece": "murenix", "niveau": 84}]
+              }
+            ]
+          },
+          {"espece": "bastillon", "niveau": 84},
+          {"espece": "murenix", "niveau": 84}
+        ],
+        "boss": true,
+        "fuite": false,
+        "capture": false,
+        "victoire": [
+          {"action": "drapeau", "nom": "lien_isra_vaincu"},
+          {
+            "action": "dire",
+            "texte": "L'Ombre se disperse comme de l'encre dans l'eau. Le grimoire tombe aux pieds d'Isra."
+          }
+        ]
+      }
+    ]
+  },
+  "nadja": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:lien_isra:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Nadja : Le maître serait content. Il disait toujours que tu étais la meilleure de nous deux. Il avait raison, l'idiot."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["quete:lien_isra", "lien_isra_vaincu"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Nadja : Le grimoire ! Tu l'as retrouvé ! Fais voir… C'est bien son écriture, toute penchée."
+          },
+          {
+            "action": "dire",
+            "texte": "Nadja : Garde-le, Isra. Il l'avait écrit pour toi, tu sais. Moi, je n'ai jamais su lire dans le noir."
+          },
+          {"action": "dire", "texte": "Isra : … Merci, Nadja. On ira boire un verre à sa santé. Un jour."},
+          {"action": "donner", "objet": "grimoire_profondeurs", "quantite": 1},
+          {"action": "or", "quantite": 5000},
+          {"action": "quete", "id": "lien_isra", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:lien_isra"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Nadja : La Grotte des Marées, sur l'île de Corail. Le grimoire est au fond d'une galerie inondée, au nord-ouest."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "aube_fin", "membre": ["isra"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Nadja : Isra ? C'est bien toi ? Ça fait des années ! On explorait les grottes ensemble, avec le vieux maître…"
+          },
+          {"action": "dire", "texte": "Isra : Nadja. Tu es toujours là, à cartographier des trous ?"},
+          {
+            "action": "dire",
+            "texte": "Nadja : Toujours. Écoute : j'ai retrouvé la trace du grimoire du maître. Une ombre l'a emporté au fond de la Grotte des Marées."
+          },
+          {
+            "action": "question",
+            "texte": "Reprendre le grimoire à l'ombre ?",
+            "oui": [
+              {"action": "quete", "id": "lien_isra"},
+              {"action": "dire", "texte": "Isra : Une ombre qui vole des livres. J'aurai tout vu. On y va."}
+            ],
+            "non": [
+              {
+                "action": "dire",
+                "texte": "Nadja : Bon. Il ne va pas s'envoler, ce grimoire. Enfin, j'espère."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Nadja : Cette grotte n'a plus de secrets pour moi. Enfin, presque plus."
+          }
+        ]
+      }
+    ]
+  },
+  "varn": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Varn : Kael ! L'archer qui a fait tomber mon frère. Tu tombes bien : j'ai de nouvelles cages à remplir."
+      },
+      {
+        "action": "dire",
+        "texte": "Kael : Ton frère capturait des créatures pour les vendre. Toi aussi. Ça s'arrête ici."
+      },
+      {
+        "action": "combat",
+        "nom": "Varn le braconnier",
+        "ennemis": [
+          {
+            "espece": "chef_bandit",
+            "niveau": 89,
+            "pv": 9,
+            "boss": true,
+            "bouclier": 8,
+            "phases": [
+              {
+                "pv": 0.5,
+                "message": "Varn siffle : « À moi, les gars ! »",
+                "renforts": [{"espece": "bandit", "niveau": 84}, {"espece": "braconnier", "niveau": 84}]
+              }
+            ]
+          },
+          {"espece": "braconnier", "niveau": 84},
+          {"espece": "crapoison", "niveau": 84},
+          {"espece": "bandit", "niveau": 84}
+        ],
+        "boss": true,
+        "fuite": false,
+        "capture": false,
+        "victoire": [
+          {"action": "drapeau", "nom": "lien_kael_vaincu"},
+          {"action": "dire", "texte": "Varn : D'accord, d'accord ! Je pars ! Et je ne reviens pas !"},
+          {
+            "action": "dire",
+            "texte": "Kael : Les cages sont vides. Les créatures retournent dans la forêt."
+          }
+        ]
+      }
+    ]
+  },
+  "garde_foret": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:lien_kael:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Garde-forestière : Les créatures reviennent près du camp. Elles n'ont plus peur. Grâce à toi, Kael."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["quete:lien_kael", "lien_kael_vaincu"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Garde-forestière : Varn est parti ? Et toutes les cages ouvertes ? Kael, tu es incroyable."
+          },
+          {
+            "action": "dire",
+            "texte": "Garde-forestière : Le vieux chêne t'a laissé une branche. Je l'ai taillée en arc. Il n'avait jamais laissé personne le toucher."
+          },
+          {"action": "dire", "texte": "Kael : … Il m'a laissé, moi ? Alors je ferai attention à lui."},
+          {"action": "donner", "objet": "arc_sylve", "quantite": 1},
+          {"action": "or", "quantite": 5000},
+          {"action": "quete", "id": "lien_kael", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:lien_kael"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Garde-forestière : Varn a installé son camp au sud-est de la forêt, près des cages. Sois prudent, Kael."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "aube_fin", "membre": ["kael"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Garde-forestière : Kael ! Enfin. Les braconniers sont revenus. Leur nouveau chef s'appelle Varn : le frère de celui que tu as chassé."
+          },
+          {"action": "dire", "texte": "Kael : Varn… Je m'en doutais. Il ne pardonne jamais rien."},
+          {
+            "action": "dire",
+            "texte": "Garde-forestière : Il remplit des cages de créatures, au sud-est. Seul, je ne peux rien faire."
+          },
+          {
+            "action": "question",
+            "texte": "Chasser Varn de Sylve-Noire ?",
+            "oui": [
+              {"action": "quete", "id": "lien_kael"},
+              {
+                "action": "dire",
+                "texte": "Kael : Cette forêt m'a vu naître. Personne ne la vide de ses créatures."
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Garde-forestière : Je comprends. Mais ne tarde pas trop."}]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Garde-forestière : Je garde la forêt. Les arbres, les bêtes, et même les promeneurs perdus."
+          }
+        ]
+      }
+    ]
+  },
+  "chevalier_glace": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Un chevalier se tient immobile, couvert de givre. Une armure ancienne est posée à ses pieds."
+      },
+      {
+        "action": "dire",
+        "texte": "Chevalier de glace : Nul ne touchera l'armure du serment. Je l'ai juré à son maître."
+      },
+      {"action": "dire", "texte": "Sélène : Son maître était mon père. Je viens la reprendre."},
+      {
+        "action": "combat",
+        "nom": "Le Chevalier de glace",
+        "ennemis": [
+          {
+            "espece": "chevalier",
+            "niveau": 89,
+            "pv": 9,
+            "boss": true,
+            "bouclier": 8,
+            "phases": [
+              {
+                "pv": 0.5,
+                "message": "Le Chevalier de glace lève son bouclier !",
+                "renforts": [{"espece": "mage_givre", "niveau": 84}]
+              }
+            ]
+          },
+          {"espece": "mage_givre", "niveau": 84},
+          {"espece": "cristallin", "niveau": 84}
+        ],
+        "boss": true,
+        "fuite": false,
+        "capture": false,
+        "victoire": [
+          {"action": "drapeau", "nom": "lien_selene_vaincu"},
+          {
+            "action": "dire",
+            "texte": "Chevalier de glace : Tu frappes comme lui… Prends-la. Mon serment est tenu."
+          },
+          {
+            "action": "dire",
+            "texte": "Le givre fond sur le chevalier. Il s'incline, puis disparaît dans un souffle froid."
+          }
+        ]
+      }
+    ]
+  },
+  "aldric": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:lien_selene:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Aldric : Ton père serait fier, Sélène. Non : il EST fier. J'en suis sûr."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["quete:lien_selene", "lien_selene_vaincu"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Aldric : L'armure de Théodric… Je la reconnaîtrais entre mille. Elle est à toi, Sélène. Elle l'a toujours été."
+          },
+          {
+            "action": "dire",
+            "texte": "Sélène : « Garder ceux qui ont froid. » C'est ce qu'il me disait le soir."
+          },
+          {"action": "dire", "texte": "Aldric : C'était son serment. Maintenant, c'est le tien."},
+          {"action": "donner", "objet": "armure_serment", "quantite": 1},
+          {"action": "or", "quantite": 5000},
+          {"action": "quete", "id": "lien_selene", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:lien_selene"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Aldric : Le Glacier, à l'est des Pics. Le chevalier de glace garde l'armure dans la grande salle du nord."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "aube_fin", "membre": ["selene"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Aldric : Sélène. J'ai servi avec ton père, Théodric. Il ne t'a jamais parlé de son armure ?"
+          },
+          {
+            "action": "dire",
+            "texte": "Sélène : Il disait l'avoir laissée « là où elle servait encore ». Je n'ai jamais compris."
+          },
+          {
+            "action": "dire",
+            "texte": "Aldric : Au fond du Glacier. Il y a laissé un chevalier de glace pour la garder, en attendant que quelqu'un soit digne de la porter."
+          },
+          {
+            "action": "question",
+            "texte": "Reprendre l'armure du père de Sélène ?",
+            "oui": [
+              {"action": "quete", "id": "lien_selene"},
+              {"action": "dire", "texte": "Sélène : Alors je vais lui montrer que j'en suis digne."}
+            ],
+            "non": [{"action": "dire", "texte": "Aldric : Le Glacier ne fond pas. L'armure t'attendra."}]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Aldric : Les Pics sont plus doux, depuis que le Givrecorne dort. On en profite, nous, les vieux."
+          }
+        ]
+      }
+    ]
+  },
+  "corbin": {
+    "pages": [
+      {
+        "si": {"drapeau": "quete:tresors:fin"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Corbin : Ma boussole te va bien. Moi, je n'ai plus besoin de chercher : j'ai trouvé quelqu'un pour le faire à ma place."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": ["quete:tresors", "coffre:recif:45:20"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Corbin : Tu as trouvé le dernier ! Ma boussole ! Quarante ans que je l'avais cachée là, pour être sûr que personne ne la trouve…"
+          },
+          {
+            "action": "dire",
+            "texte": "Corbin : … y compris moi, apparemment. Garde-la. Et prends ça : tu l'as bien mérité."
+          },
+          {"action": "or", "quantite": 12000},
+          {"action": "donner", "objet": "gemme_maitre", "quantite": 1},
+          {"action": "quete", "id": "tresors", "fin": true}
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:tresors", "sans_drapeau": "tresor_mi", "objet": "carte_tresor_5"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Corbin : La carte n°5 ! Tu vas plus vite que moi, à ton âge. Tiens, pour la route."
+          },
+          {"action": "donner", "objet": "elixir", "quantite": 3},
+          {"action": "or", "quantite": 5000},
+          {"action": "drapeau", "nom": "tresor_mi"},
+          {
+            "action": "dire",
+            "texte": "Corbin : Continue : chaque trésor contient la carte du suivant. Le dernier est le plus beau."
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "quete:tresors"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Corbin : Lis bien la carte que tu as (dans le sac) : la croix dit où creuser. Le trésor ne se voit que si tu as la carte."
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Corbin : Hé, toi ! Tu as l'air d'aimer les coins où personne ne va. Moi aussi, à ton âge."
+          },
+          {
+            "action": "dire",
+            "texte": "Corbin : J'ai caché des trésors partout, autrefois. Chacun contient la carte du suivant. Mais mes jambes ne me portent plus."
+          },
+          {
+            "action": "question",
+            "texte": "Partir à la chasse aux trésors de Corbin ?",
+            "oui": [
+              {"action": "quete", "id": "tresors"},
+              {"action": "donner", "objet": "carte_tresor_1", "quantite": 1},
+              {
+                "action": "dire",
+                "texte": "Corbin : Voilà la première carte. La croix dit où chercher. Bonne chasse !"
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Corbin : Les trésors attendront. Ils ont l'habitude."}]
+          }
+        ]
+      }
+    ]
+  },
+  "cartes_pip": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Pip : Tu joues aux Cartes des gardiens ? Moi, je suis le meilleur de la vallée ! Enfin, de la boutique."
+      },
+      {"action": "quete", "id": "cartes"},
+      {
+        "action": "dire",
+        "texte": "Pip : Chaque créature que tu obtiens te donne sa carte. Et voilà cinq cartes pour commencer !"
+      },
+      {
+        "action": "cartes",
+        "adversaire": "pip",
+        "victoire": [
+          {"action": "dire", "texte": "Pip : Tu as triché ! … Non ? Bon. Je m'entraîne et on rejoue."}
+        ],
+        "defaite": [{"action": "dire", "texte": "Pip : Gagné ! Reviens quand tu veux perdre encore."}]
+      }
+    ]
+  },
+  "cartes_meunier": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Le meunier : Une partie, entre deux sacs de farine ? Je ne dis jamais non."
+      },
+      {
+        "action": "cartes",
+        "adversaire": "meunier",
+        "victoire": [
+          {"action": "dire", "texte": "Le meunier : Bien joué. Le vent tourne, comme les ailes du moulin."}
+        ],
+        "defaite": [{"action": "dire", "texte": "Le meunier : Hé hé. La farine rend malin."}]
+      }
+    ]
+  },
+  "cartes_mineur": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Gunnar : À Forgeroc, on joue aux cartes avec des créatures de feu. Ça chauffe, je te préviens."
+      },
+      {
+        "action": "cartes",
+        "adversaire": "mineur",
+        "victoire": [{"action": "dire", "texte": "Gunnar : Par ma pioche ! Tu as la main chaude."}],
+        "defaite": [
+          {"action": "dire", "texte": "Gunnar : Tu reviendras quand tu auras de meilleures cartes."}
+        ]
+      }
+    ]
+  },
+  "cartes_chevaliere": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Dame Elwen : Un chevalier doit savoir manier l'épée… et les cartes. En garde !"
+      },
+      {
+        "action": "cartes",
+        "adversaire": "chevaliere",
+        "victoire": [{"action": "dire", "texte": "Dame Elwen : Une belle victoire. Je m'incline."}],
+        "defaite": [{"action": "dire", "texte": "Dame Elwen : La glace ne pardonne pas. Ni moi."}]
+      }
+    ]
+  },
+  "cartes_matelot": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Bastien : Les marins jouent pendant les longues nuits en mer. Tu veux essayer ?"
+      },
+      {
+        "action": "cartes",
+        "adversaire": "matelot",
+        "victoire": [{"action": "dire", "texte": "Bastien : Coulé ! Tu joues comme un vieux loup de mer."}],
+        "defaite": [{"action": "dire", "texte": "Bastien : La mer a gagné. Comme toujours."}]
+      }
+    ]
+  },
+  "cartes_mousse": {
+    "actions": [
+      {"action": "dire", "texte": "Lou : Personne ne veut jouer avec moi sur l'île. Toi, tu veux bien ?"},
+      {
+        "action": "cartes",
+        "adversaire": "mousse",
+        "victoire": [{"action": "dire", "texte": "Lou : Tu es fort ! Tu m'apprendras ?"}],
+        "defaite": [{"action": "dire", "texte": "Lou : J'ai gagné ! J'ai gagné ! Encore !"}]
+      }
+    ]
+  },
+  "cartes_voyageuse": {
+    "actions": [
+      {"action": "dire", "texte": "Mira : J'ai joué dans tout l'archipel. Voyons ce que tu vaux."},
+      {
+        "action": "cartes",
+        "adversaire": "voyageuse",
+        "victoire": [
+          {"action": "dire", "texte": "Mira : Rares sont ceux qui me battent. Je retiens ton nom."}
+        ],
+        "defaite": [{"action": "dire", "texte": "Mira : Pas mal. Mais pas assez."}]
+      }
+    ]
+  },
+  "cartes_ermite": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "L'ermite : Les échos m'apprennent à jouer. Ils répètent chacun de tes coups… avant que tu les joues."
+      },
+      {
+        "action": "cartes",
+        "adversaire": "ermite",
+        "victoire": [{"action": "dire", "texte": "L'ermite : Les échos se sont tus. Tu as joué juste."}],
+        "defaite": [{"action": "dire", "texte": "L'ermite : Les échos avaient raison."}]
+      }
+    ]
+  },
+  "cartes_maitre": {
+    "actions": [
+      {
+        "action": "dire",
+        "texte": "Le Maître des cartes : Tu as battu les huit joueurs de l'archipel. Il ne reste que moi. Mes cartes sont celles des gardiens eux-mêmes."
+      },
+      {
+        "action": "cartes",
+        "adversaire": "maitre",
+        "victoire": [
+          {
+            "action": "dire",
+            "texte": "Le Maître des cartes : … Le titre est à toi. Le jeu a un nouveau maître."
+          },
+          {"action": "donner", "objet": "as_gardiens", "quantite": 1},
+          {"action": "quete", "id": "cartes", "fin": true}
+        ],
+        "defaite": [
+          {
+            "action": "dire",
+            "texte": "Le Maître des cartes : Les gardiens ne se laissent pas battre si facilement."
+          }
         ]
       }
     ]

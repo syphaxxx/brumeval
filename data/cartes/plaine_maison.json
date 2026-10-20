@@ -24,7 +24,8 @@
         "Apprenti : Le patron dit que je serai charpentier dans dix ans. Ou vingt.",
         "Apprenti : Les Rongecrins ? Ils ont même mangé mon marteau. Le manche, en tout cas."
       ]
-    }
+    },
+    {"x": 3, "y": 6, "apparence": "villageois", "direction": "bas", "evenement": "cartes_meunier"}
   ],
   "coffres": [],
   "panneaux": [],

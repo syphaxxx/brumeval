@@ -14,7 +14,17 @@
     "#####p#####"
   ],
   "batiments": [],
-  "habitants": [{"x": 5, "y": 3, "apparence": "ancien", "evenement": "chapelle", "direction": "bas"}],
+  "habitants": [
+    {"x": 5, "y": 3, "apparence": "ancien", "evenement": "chapelle", "direction": "bas"},
+    {
+      "x": 5,
+      "y": 5,
+      "apparence": "villageoise",
+      "direction": "gauche",
+      "evenement": "soeur_agathe",
+      "si": {"drapeau": "aube_fin"}
+    }
+  ],
   "coffres": [],
   "panneaux": [],
   "passages": [{"x": 5, "y": 8, "vers": "vallee", "tx": 4, "ty": 16, "direction": "bas"}],

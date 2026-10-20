@@ -605,11 +605,28 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - Discussions (2026-10-20, `discussions.cpp`, `data/discussions.json`) : conversations courtes entre héros (comme les
   saynètes des Tales of) : `id`, `titre`, `si`, `membres` (espèces dans l'équipe), `dialogue` ; Échap > Discussions
   (nouvelles d'abord), drapeau `discussion:<id>` ; une nouvelle disponible est annoncée sur la carte
-  (`checkDiscussions`, `lastNewTalks_`, remis au chargement). 38 discussions.
+  (`checkDiscussions`, `lastNewTalks_`, remis au chargement). 44 discussions.
 - Exploits (2026-10-20, `exploits.cpp`, `data/exploits.json`) : des succès (`id`, `nom`, `description`, `si`) ;
   `checkExploits` (toutes les secondes sur la carte, avec `checkDiscussions` ; pas en Expédition ni pendant la pêche)
-  pose `exploit:<id>` (acquis pour de bon) et l'annonce ; Journal > Exploits (`exploitsMenu`, à faire d'abord). 28
+  pose `exploit:<id>` (acquis pour de bon) et l'annonce ; Journal > Exploits (`exploitsMenu`, à faire d'abord). 30
   exploits ; condition `quetes_min` (quêtes terminées) ajoutée pour eux.
+- Quêtes des héros (2026-10-20, `outils/villes/liens.py`) : après `aube_fin`, une par héros (`lien_lior`…, le héros doit
+  être dans l'équipe : condition `membre`), un boss (4 recolorés : Brumeroi, Sentinelle d'aurore, Golem de magma, Ombre
+  des galeries ; Varn et le Chevalier de glace sont des habitants qui lancent le combat) et une arme ou armure à lui seul :
+  champ `pour` des objets (`ItemDef::owner`, `canEquip` ; « (pour Lior seulement) » dans `itemDetails` ; retirées des
+  données en Expédition). L'événement `chapelle` garde son soin sur chaque page.
+- Cartes au trésor (2026-10-20, `outils/villes/tresors.py`) : `Chest::cond` (champ `si` d'un coffre, `Game::chestShown` :
+  caché tant que la condition est fausse, sauf déjà ouvert ; collision, dessin, Entrée, joueur automatique). Corbin, au
+  port (quête `tresors`), donne la carte n°1 ; la description de chaque carte dit où est la cache (case la plus éloignée
+  à pied des passages), et chaque trésor contient la carte suivante ; huit, puis la Boussole de Corbin.
+- Cartes des gardiens (2026-10-20, `cartes.cpp`, `data/cartes_jeu.json`, `outils/villes/cartes.py`) : jeu de cartes à la
+  Triple Triad. Carte = espèce (`cardValues` : Attaque, Vitesse, Défense, Magie de base ramenées de 1 à 10) ; collection
+  (`cardCollection`) : cartes de départ, espèces obtenues (pas les humains ni les boss), drapeaux `carte:<espèce>` ; main
+  (`cardHand_`, ligne `main_cartes`, complétée par les meilleures : `cardDeck`). `cards_` (comme la pêche : le jeu attend
+  dans `update`, dessin `drawCards` par-dessus) ; règle `cardFlips` (+1 si le type est efficace), ordinateur `cardChoice`
+  (niveaux 0 à 2 ; le joueur automatique joue avec le niveau 2). Action `cartes` (menu `cardsMenu` : Jouer, Choisir ma
+  main, Règles), première victoire : drapeau `cartes:<id>`, or et une carte de boss. Neuf joueurs (auberges, maisons),
+  le Maître des cartes au port après les huit autres ; quête `cartes`, condition `cartes_min`.
 - Épreuves des gardiens (2026-10-20) : après `aube_fin`, la porte du sanctuaire d'Aube (événement `epreuves`) ouvre huit
   combats contre des esprits gardiens (drapeaux `epreuve1`…`epreuve8`, niveaux 70 à 84), puis Ilya (`epreuve9`,
   Insigne des gardiens) ; quête `epreuves`. Script `outils/villes/epreuves.py` ; une phase à mi-vie pour chaque gardien,

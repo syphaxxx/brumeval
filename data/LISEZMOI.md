@@ -17,7 +17,7 @@ toutes les références existent et que chaque lieu des cartes est accessible.
 | `types.json` | Les 13 types (Feu, Eau, Glace, Roche, Vent, Poison, Métal, Esprit…), leur couleur, leurs immunités et la table d'efficacité |
 | `techniques.json` | Techniques, sorts et Limites |
 | `especes.json` | Héros, créatures et boss : statistiques de base, techniques apprises, `evolution` (`espece` et `niveau` : la forme qu'elle peut prendre), `taille` (dessin agrandi, 1.15 pour les formes évoluées), `sprite` (son dessin : un nom de `sprites.json`), `talent` (identifiant d'un talent de `regles.json`), `bouclier` (bouclier de Brisure en ennemi ; absent : valeur des règles), `description` (le mot du Bestiaire, montré une fois l'espèce obtenue) |
-| `objets.json` | Objets : prix, effets (soin, PM, réanimation, capture), équipement (`equipement` : `arme`, `armure` ou `accessoire`, et `bonus` : `pv`, `pm`, `attaque`, `defense`, `magie`, `resistance`, `vitesse`, `precision`, `esquive`, `critique`) ; `"trophee": true` pour un trophée de boss (forge) ; `icone` : son icône dans les menus (un nom de `sprites.json`). Les armes et armures forgées (`epee_fer+1`…) sont créées par le jeu, pas écrites ici |
+| `objets.json` | Objets : prix, effets (soin, PM, réanimation, capture), équipement (`equipement` : `arme`, `armure` ou `accessoire`, et `bonus` : `pv`, `pm`, `attaque`, `defense`, `magie`, `resistance`, `vitesse`, `precision`, `esquive`, `critique`) ; `"trophee": true` pour un trophée de boss (forge) ; `pour` : l'identifiant du seul héros qui peut le porter (armes des quêtes des héros) ; `icone` : son icône dans les menus (un nom de `sprites.json`). Les armes et armures forgées (`epee_fer+1`…) sont créées par le jeu, pas écrites ici |
 | `apparences.json` | Couleurs et accessoires des personnages ; `sprite` : le début du nom de ses sprites (`lior` → `lior_bas_0`…) |
 | `sprites.png`, `sprites.json` | L'atlas des sprites et la place de chacun, fabriqués par `outils/sprites/decoupe.py` (ne pas modifier à la main) |
 | `regles.json` | Départ de la partie, rencontres, formules de combat, récompenses (dont `butin_type` : matériaux selon le type de la créature vaincue), forge, tactiques de départ… |
@@ -27,6 +27,7 @@ toutes les références existent et que chaque lieu des cartes est accessible.
 | `quetes.json` | Quêtes annexes : nom, lieu, étapes affichées dans le journal |
 | `exploits.json` | Exploits (Journal > Exploits) : `id`, `nom`, `description`, `si` (condition) ; atteint, il pose le drapeau `exploit:<id>` et reste acquis |
 | `discussions.json` | Discussions entre héros (Échap > Discussions) : `id`, `titre`, `si` (condition), `membres` (espèces dans l'équipe), `dialogue` (lignes « Nom : texte ») |
+| `cartes_jeu.json` | Cartes des gardiens : `depart` (les cinq cartes données à tous), `adversaires` : `id`, `nom`, `cartes` (cinq espèces), `niveau` (0 à 2 : force de l'ordinateur), `or` et `carte` (espèce) gagnés à la première victoire |
 | `peche.json` | Poissons de la pêche : `objet` (un objet de objets.json), `eaux` (identifiants de carte, sinon thèmes), `poids` (fréquence), `difficulte` (1 à 5) |
 | `primes.json` | Primes (monstres recherchés) du tableau d'annonces et rangs de chasseur (voir plus bas) |
 
@@ -316,6 +317,8 @@ table, `h` lit, `e` étagère (une bibliothèque pour deux cases), `o` comptoir,
   aussi pour un `boss` de carte), `vue` et `vue_jusqua` pour les dresseurs,
   `promenade` (un promeneur marche jusqu'à cette distance de sa place ; jamais
   un dresseur).
+- `coffres` : `objet` et `quantite`, ou `or` ; `si` : le coffre n'apparaît que si ces conditions sont vraies (une fois
+  ouvert, il reste là) : cartes au trésor de Corbin.
 
 ## Rappels sur le format JSON
 
@@ -356,6 +359,7 @@ page dont la condition `si` est vraie.
 | `si` | Condition | `condition`, `alors`, `sinon` |
 | `soigner` | Soigne l'équipe | `pv`, `pm` (true par défaut) |
 | `boutique` | Ouvre une boutique | `objets` |
+| `cartes` | Propose une partie de Cartes des gardiens (Jouer, Choisir ma main, Règles) ; la suite va dans `victoire`, `defaite`, `egalite` | `adversaire` (un `id` de cartes_jeu.json) |
 | `forge` | Ouvre la forge (renforcer armes et armures : coûts dans `regles.json`, section `forge`) | |
 | `reveil` | Point de réveil après une défaite | |
 | `teleporter` | Change de carte | `carte`, `x`, `y`, `direction` |
@@ -373,7 +377,7 @@ vraie. Une quête commencée pose le drapeau `quete:<id>`, une quête terminée
 
 Conditions possibles (toutes doivent être vraies) : `drapeau`, `sans_drapeau`,
 `objet`, `sans_objet`, `objet_min`, `or_min`, `membre` (une espèce présente dans l'équipe), `poissons_min`
-(espèces de poissons pêchées, carnet de pêche), `especes_min` (espèces obtenues du Bestiaire), `chromatiques_min` (créatures chromatiques dans l'équipe et la réserve), `quetes_min` (quêtes terminées).
+(espèces de poissons pêchées, carnet de pêche), `especes_min` (espèces obtenues du Bestiaire), `chromatiques_min` (créatures chromatiques dans l'équipe et la réserve), `quetes_min` (quêtes terminées), `cartes_min` (cartes des gardiens obtenues).
 
 ## primes.json (primes, 2026-10-19)
 

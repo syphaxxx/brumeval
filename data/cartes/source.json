@@ -98,7 +98,17 @@
       ]
     }
   ],
-  "boss": [{"x": 19, "y": 2, "espece": "mere_brumes", "drapeau": "boss4", "evenement": "mere_brumes"}],
+  "boss": [
+    {"x": 19, "y": 2, "espece": "mere_brumes", "drapeau": "boss4", "evenement": "mere_brumes"},
+    {
+      "espece": "brumeroi",
+      "drapeau": "lien_lior_vaincu",
+      "evenement": "brumeroi",
+      "si": {"drapeau": "quete:lien_lior"},
+      "x": 23,
+      "y": 25
+    }
+  ],
   "declencheurs": [{"x": 19, "y": 27, "l": 2, "h": 1, "evenement": "source_entree", "jusqua": "source_vue"}],
   "carte_monde": [60, 8]
 }

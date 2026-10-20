@@ -220,6 +220,14 @@
       "evenement": "route_pics1",
       "vue": 3,
       "vue_jusqua": "route_pics1"
+    },
+    {
+      "x": 44,
+      "y": 36,
+      "apparence": "chevalier",
+      "direction": "gauche",
+      "evenement": "aldric",
+      "si": {"drapeau": "aube_fin"}
     }
   ],
   "coffres": [
@@ -235,7 +243,8 @@
     {"x": 82, "y": 4, "objet": "eclat_brume", "quantite": 1},
     {"x": 4, "y": 4, "objet": "eclat_brume", "quantite": 1},
     {"x": 82, "y": 40, "objet": "eclat_brume", "quantite": 1},
-    {"x": 4, "y": 40, "objet": "eclat_brume", "quantite": 1}
+    {"x": 4, "y": 40, "objet": "eclat_brume", "quantite": 1},
+    {"x": 2, "y": 27, "objet": "carte_tresor_7", "quantite": 1, "si": {"objet": "carte_tresor_6"}}
   ],
   "panneaux": [
     {"x": 28, "y": 40, "texte": "Givreval, le village au pied des Pics."},

@@ -146,6 +146,23 @@
       "evenement": "route_sylvenoire1",
       "vue": 3,
       "vue_jusqua": "route_sylvenoire1"
+    },
+    {
+      "x": 40,
+      "y": 30,
+      "apparence": "voyageuse",
+      "direction": "gauche",
+      "evenement": "garde_foret",
+      "si": {"drapeau": "aube_fin"}
+    },
+    {
+      "x": 46,
+      "y": 44,
+      "apparence": "chef_bandit",
+      "direction": "gauche",
+      "evenement": "varn",
+      "si": {"drapeau": "quete:lien_kael"},
+      "cache_si": "lien_kael_vaincu"
     }
   ],
   "coffres": [
@@ -165,7 +182,8 @@
     {"x": 53, "y": 2, "objet": "eclat_brume", "quantite": 1},
     {"x": 2, "y": 54, "objet": "eclat_brume", "quantite": 1},
     {"x": 54, "y": 54, "objet": "eclat_brume", "quantite": 1},
-    {"x": 2, "y": 11, "objet": "eclat_brume", "quantite": 1}
+    {"x": 2, "y": 11, "objet": "eclat_brume", "quantite": 1},
+    {"x": 53, "y": 6, "objet": "carte_tresor_3", "quantite": 1, "si": {"objet": "carte_tresor_2"}}
   ],
   "panneaux": [
     {"x": 52, "y": 19, "texte": "Forêt de Sylve-Noire. Des bandits y rôdent : restez sur les chemins."},

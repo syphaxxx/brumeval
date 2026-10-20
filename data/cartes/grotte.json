@@ -41,6 +41,14 @@
       "evenement": "route_grotte1",
       "vue": 3,
       "vue_jusqua": "route_grotte1"
+    },
+    {
+      "x": 15,
+      "y": 19,
+      "apparence": "voyageuse",
+      "direction": "haut",
+      "evenement": "nadja",
+      "si": {"drapeau": "aube_fin"}
     }
   ],
   "coffres": [

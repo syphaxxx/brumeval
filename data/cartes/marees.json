@@ -92,6 +92,14 @@
     }
   ],
   "boss": [
-    {"x": 32, "y": 3, "espece": "gardien_marees", "drapeau": "marees_boss", "evenement": "marees_boss"}
+    {"x": 32, "y": 3, "espece": "gardien_marees", "drapeau": "marees_boss", "evenement": "marees_boss"},
+    {
+      "espece": "ombre_galeries",
+      "drapeau": "lien_isra_vaincu",
+      "evenement": "ombre_galeries",
+      "si": {"drapeau": "quete:lien_isra"},
+      "x": 12,
+      "y": 7
+    }
   ]
 }

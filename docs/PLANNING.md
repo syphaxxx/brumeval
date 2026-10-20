@@ -371,6 +371,12 @@ couleurs rares (créatures chromatiques), musiques de la Plaine et du Vieux Phar
 créature du Bestiaire ; Phénix et Ombre réglés (plus d'attaque sur toute l'équipe à chaque tour).
 Puis : pluie sur la vallée et les forêts (météo des combats), alphas des meutes, sauvegarde automatique, voyage
 rapide (Échap > Carte), et 28 exploits (Journal > Exploits : fin des actes, Bestiaire, pêche, quêtes, Ligue…).
+Quêtes des héros (`outils/villes/liens.py`) : après l'acte 3, une par héros (quelqu'un de son passé, un boss, une arme
+ou une armure qu'il est seul à pouvoir porter, champ `pour`), suivies chacune d'une discussion (44 en tout).
+Cartes au trésor (`outils/villes/tresors.py`) : huit trésors cachés de la Vallée au Récif (coffres « si »), chacun
+contient la carte du suivant ; Corbin, au port.
+Cartes des gardiens (`src/cartes.cpp`, `outils/villes/cartes.py`) : un jeu de cartes à la Triple Triad, neuf joueurs
+de la Vallée à Port-Écho, puis le Maître des cartes ; 30 exploits.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 

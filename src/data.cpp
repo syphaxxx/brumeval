@@ -521,6 +521,7 @@ void rebuildData() {
       }
       d.moveBonus = jget(o, "mouvement", 0);
     }
+    d.owner = jget<std::string>(o, "pour", "");
     if (o.contains("gemme")) {
       const Json& g = o["gemme"];
       static const char* STATS[] = {"pv", "pm", "attaque", "defense", "magie", "resistance", "vitesse", "precision", "esquive", "critique"};
@@ -593,6 +594,9 @@ std::vector<std::string> checkData() {
         err.push_back(s.name + " : immunité à un état inconnu « " + st + " »");
     for (auto& e : checkTactics(s.tactics, s.name)) err.push_back(e);
   }
+  for (auto& d : ITEMS)
+    if (!d.owner.empty() && (!hasSpecies(d.owner) || d.slot < 0))
+      err.push_back("Objet « " + d.id + " » : « pour » une espèce inconnue ou un objet qui ne s'équipe pas : " + d.owner);
   for (auto& t : TYPES)
     for (auto& st : t.immune)
       if (std::find(std::begin(STATUSES) + 1, std::end(STATUSES), st) == std::end(STATUSES))
@@ -794,7 +798,10 @@ std::vector<std::string> trimGems(Fighter& f) {
   return out;
 }
 
-bool canEquip(const Fighter& f, const ItemDef& d) { return d.slot == G_ACCESSORY || (d.slot >= 0 && f.S().human); }
+bool canEquip(const Fighter& f, const ItemDef& d) {
+  if (!d.owner.empty() && f.sp != d.owner) return false;  // l'arme d'un héros (champ « pour »)
+  return d.slot == G_ACCESSORY || (d.slot >= 0 && f.S().human);
+}
 
 // Héros ? (faux pour une espèce disparue : monde d'une expédition déjà remis en place)
 static bool hero(const FighterP& f) { return f && hasSpecies(f->sp) && f->S().human; }

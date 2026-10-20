@@ -103,7 +103,8 @@
       "y": 12,
       "apparence": "montagnard",
       "direction": "gauche",
-      "dialogue": ["Le Kraken garde les ruines englouties. Il ne craint pas l'eau, ça c'est sûr."]
+      "dialogue": ["Le Kraken garde les ruines englouties. Il ne craint pas l'eau, ça c'est sûr."],
+      "evenement": "corbin"
     },
     {
       "x": 15,

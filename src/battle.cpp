@@ -160,7 +160,9 @@ std::string itemDetails(const ItemDef& d) {
   }
   if (d.slot >= 0) {
     std::string b = d.bonusText();
-    v.push_back(std::string(gearSlotName(d.slot)) + (b.empty() ? "" : " : " + b) + (d.slot != G_ACCESSORY ? T(" (héros seulement)") : ""));
+    bool mine = !d.owner.empty() && hasSpecies(d.owner);
+    v.push_back(std::string(gearSlotName(d.slot)) + (b.empty() ? "" : " : " + b) +
+                (mine ? T(" (pour ") + species(d.owner).name + T(" seulement)") : d.slot != G_ACCESSORY ? T(" (héros seulement)") : ""));
     if (d.moveBonus > 0) v.push_back(T("Échiquier : se déplace de ") + std::to_string(d.moveBonus) + T(" case de plus"));
   }
   if (d.healHp) v.push_back(d.healHp >= 999 ? T("Rend tous les PV") : T("Rend ") + std::to_string(d.healHp) + T(" PV"));
