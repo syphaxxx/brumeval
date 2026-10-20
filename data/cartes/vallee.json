@@ -349,7 +349,8 @@
       "niveau_min": 2,
       "niveau_max": 4,
       "max_ennemis": 2,
-      "creatures": ["piafouine", "mulotin", "champichou"]
+      "creatures": ["piafouine", "mulotin", "champichou"],
+      "nuit": ["chauvenuit", "brumelin"]
     },
     {
       "x": 41,
@@ -359,7 +360,8 @@
       "niveau_min": 4,
       "niveau_max": 7,
       "max_ennemis": 3,
-      "creatures": ["lucioline", "grenouillon", "piafouine", "champichou"]
+      "creatures": ["lucioline", "grenouillon", "piafouine", "champichou"],
+      "nuit": ["chauvenuit", "brumelin"]
     },
     {
       "x": 1,
@@ -369,7 +371,8 @@
       "niveau_min": 4,
       "niveau_max": 7,
       "max_ennemis": 3,
-      "creatures": ["champichou", "mulotin", "lucioline", "piafouine"]
+      "creatures": ["champichou", "mulotin", "lucioline", "piafouine"],
+      "nuit": ["chauvenuit", "brumelin"]
     },
     {
       "x": 41,
@@ -379,7 +382,8 @@
       "niveau_min": 7,
       "niveau_max": 10,
       "max_ennemis": 3,
-      "creatures": ["rocaillou", "grenouillon", "lucioline", "brumelin"]
+      "creatures": ["rocaillou", "grenouillon", "lucioline", "brumelin"],
+      "nuit": ["chauvenuit", "brumelin"]
     },
     {
       "x": 0,
@@ -389,7 +393,8 @@
       "niveau_min": 3,
       "niveau_max": 6,
       "max_ennemis": 2,
-      "creatures": ["piafouine", "grenouillon", "mulotin"]
+      "creatures": ["piafouine", "grenouillon", "mulotin"],
+      "nuit": ["chauvenuit", "brumelin"]
     },
     {
       "x": 0,
@@ -408,7 +413,8 @@
         "rocaillou",
         "brumelin",
         "louvet"
-      ]
+      ],
+      "nuit": ["chauvenuit", "brumelin"]
     }
   ],
   "boss": [

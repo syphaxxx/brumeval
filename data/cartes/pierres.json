@@ -88,7 +88,8 @@
       "niveau_min": 84,
       "niveau_max": 88,
       "max_ennemis": 3,
-      "creatures": ["petrolin", "fossiloup", "echoplume", "spectrecho", "loup_aube"]
+      "creatures": ["petrolin", "fossiloup", "echoplume", "spectrecho", "loup_aube"],
+      "nuit": ["spectrecho", "noctaile"]
     }
   ],
   "boss": [{"x": 5, "y": 12, "espece": "colosse_echo", "drapeau": "colosse_echo_vaincu"}]

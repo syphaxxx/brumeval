@@ -271,7 +271,8 @@
       "niveau_min": 11,
       "niveau_max": 14,
       "max_ennemis": 3,
-      "creatures": ["tisonnel", "galetor", "voltigeon"]
+      "creatures": ["tisonnel", "galetor", "voltigeon"],
+      "nuit": ["fumerole", "osselet"]
     },
     {
       "x": 32,
@@ -281,7 +282,8 @@
       "niveau_min": 14,
       "niveau_max": 17,
       "max_ennemis": 3,
-      "creatures": ["voltigeon", "glaconnet", "fumerole", "tisonnel"]
+      "creatures": ["voltigeon", "glaconnet", "fumerole", "tisonnel"],
+      "nuit": ["fumerole", "osselet"]
     },
     {
       "x": 28,
@@ -291,7 +293,8 @@
       "niveau_min": 12,
       "niveau_max": 15,
       "max_ennemis": 3,
-      "creatures": ["galetor", "tisonnel", "voltigeon", "glaconnet"]
+      "creatures": ["galetor", "tisonnel", "voltigeon", "glaconnet"],
+      "nuit": ["fumerole", "osselet"]
     },
     {
       "x": 0,
@@ -301,7 +304,8 @@
       "niveau_min": 12,
       "niveau_max": 15,
       "max_ennemis": 3,
-      "creatures": ["tisonnel", "galetor"]
+      "creatures": ["tisonnel", "galetor"],
+      "nuit": ["fumerole", "osselet"]
     },
     {
       "x": 64,
@@ -311,7 +315,8 @@
       "niveau_min": 15,
       "niveau_max": 19,
       "max_ennemis": 3,
-      "creatures": ["tisonnel", "galetor", "voltigeon", "glaconnet", "fumerole", "draconnet"]
+      "creatures": ["tisonnel", "galetor", "voltigeon", "glaconnet", "fumerole", "draconnet"],
+      "nuit": ["fumerole", "osselet"]
     },
     {
       "x": 0,
@@ -321,7 +326,8 @@
       "niveau_min": 15,
       "niveau_max": 19,
       "max_ennemis": 3,
-      "creatures": ["tisonnel", "galetor", "voltigeon", "glaconnet", "fumerole", "draconnet"]
+      "creatures": ["tisonnel", "galetor", "voltigeon", "glaconnet", "fumerole", "draconnet"],
+      "nuit": ["fumerole", "osselet"]
     }
   ],
   "boss": [

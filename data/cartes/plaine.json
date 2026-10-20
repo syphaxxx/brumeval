@@ -174,7 +174,8 @@
       "niveau_min": 8,
       "niveau_max": 12,
       "max_ennemis": 3,
-      "creatures": ["mulotin", "piafouine", "champichou", "rongecrin", "louvet"]
+      "creatures": ["mulotin", "piafouine", "champichou", "rongecrin", "louvet"],
+      "nuit": ["chauvenuit", "esprillon"]
     },
     {
       "x": 39,
@@ -184,7 +185,8 @@
       "niveau_min": 10,
       "niveau_max": 13,
       "max_ennemis": 3,
-      "creatures": ["rongecrin", "louvet", "rocaillou", "lucioline"]
+      "creatures": ["rongecrin", "louvet", "rocaillou", "lucioline"],
+      "nuit": ["chauvenuit", "esprillon"]
     }
   ],
   "boss": [

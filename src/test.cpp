@@ -205,6 +205,9 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     snap("03_village_nuit");
     time = t0;
     check(night && nightAmount() < .1f, "jour et nuit : la nuit tombe sur la vallée, la partie commence en plein jour");
+    bool nightPool = false;
+    for (auto& z : M().zones) nightPool = nightPool || std::find(z.night.begin(), z.night.end(), "chauvenuit") != z.night.end();
+    check(nightPool, "créatures de la nuit : la vallée a ses rencontres de nuit (champ « nuit » des zones)");
   }
   {  // pluie : une averse (la première pleine averse après le début), sinon le temps est sec ; jamais dans la brume
     float t0 = time, wet = -1;

@@ -160,7 +160,8 @@
       "niveau_min": 22,
       "niveau_max": 26,
       "max_ennemis": 3,
-      "creatures": ["voltigeon", "glaconnet", "zephyrin", "galetor", "givrelin", "bourrasquin", "givroc"]
+      "creatures": ["voltigeon", "glaconnet", "zephyrin", "galetor", "givrelin", "bourrasquin", "givroc"],
+      "nuit": ["noctaile", "esprillon"]
     }
   ],
   "boss": [{"x": 19, "y": 4, "espece": "harpie_givre", "drapeau": "harpie"}],

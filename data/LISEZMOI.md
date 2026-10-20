@@ -291,6 +291,8 @@ table, `h` lit, `e` étagère (une bibliothèque pour deux cases), `o` comptoir,
   village, sur la case de sa porte (souvent un tapis `p`) ; on arrive juste
   au-dessus. Le service (soins, boutique…) est alors l'`evenement` d'un
   habitant de l'intérieur.
+- `zones` : rencontres (`x`, `y`, `l`, `h`, `niveau_min`, `niveau_max`, `max_ennemis`, `creatures`) ; `nuit`
+  (facultatif) : les créatures de la nuit, la moitié des rencontres quand il fait nuit.
 - `ambiance` : `brume`, `cendres`, `obscurite`, `neige` ou `lucioles`, avec
   `jusqua` pour la faire disparaître quand un drapeau est posé.
 - `passages` : `condition` (mêmes conditions que `si` dans les événements) et

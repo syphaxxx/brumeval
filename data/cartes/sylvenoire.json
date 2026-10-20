@@ -186,7 +186,8 @@
       "niveau_min": 11,
       "niveau_max": 14,
       "max_ennemis": 3,
-      "creatures": ["crapoison", "serpentin", "carapierre", "grenouillon"]
+      "creatures": ["crapoison", "serpentin", "carapierre", "grenouillon"],
+      "nuit": ["brumelin", "esprillon", "chauvenuit"]
     },
     {
       "x": 0,
@@ -196,7 +197,8 @@
       "niveau_min": 10,
       "niveau_max": 13,
       "max_ennemis": 3,
-      "creatures": ["louvet", "serpentin", "chauvenuit", "esprillon", "champichou", "gobelard"]
+      "creatures": ["louvet", "serpentin", "chauvenuit", "esprillon", "champichou", "gobelard"],
+      "nuit": ["brumelin", "esprillon", "chauvenuit"]
     },
     {
       "x": 0,
@@ -217,7 +219,8 @@
         "champichou",
         "gobelard",
         "brutor"
-      ]
+      ],
+      "nuit": ["brumelin", "esprillon", "chauvenuit"]
     }
   ],
   "boss": [

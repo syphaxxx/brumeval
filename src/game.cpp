@@ -701,8 +701,10 @@ void Game::encounter() {
     for (int k = n; k < rules().packMax; k++)
       if (frand() < .5f * deep) n++;
     std::vector<FighterP> foes;
+    bool night = !z.night.empty() && nightAmount() > .5f && frand() < .5f;  // la nuit, ses créatures à elle
+    const auto& pool = night ? z.night : z.pool;
     for (int i = 0; i < n; i++) {
-      foes.push_back(makeFighter(z.pool[irand(0, (int)z.pool.size() - 1)], irand(z.lo, z.hi) + foeLevelBonus));
+      foes.push_back(makeFighter(pool[irand(0, (int)pool.size() - 1)], irand(z.lo, z.hi) + foeLevelBonus));
       if (!inExpedition() && frand() < rules().chroma) foes.back()->chroma = true;  // couleurs rares
     }
     startBattle(foes, false, nullptr);

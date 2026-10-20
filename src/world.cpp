@@ -202,7 +202,8 @@ MapDef mapFromJson(const Json& j) {
                           jget<std::string>(o, "jusqua", "")});
   for (auto& o : j.value("zones", Json::array()))
     m.zones.push_back({o.at("x").get<int>(), o.at("y").get<int>(), o.at("l").get<int>(), o.at("h").get<int>(), o.at("niveau_min").get<int>(),
-                       o.at("niveau_max").get<int>(), jget(o, "max_ennemis", 3), o.at("creatures").get<std::vector<std::string>>()});
+                       o.at("niveau_max").get<int>(), jget(o, "max_ennemis", 3), o.at("creatures").get<std::vector<std::string>>(),
+                       jget(o, "nuit", std::vector<std::string>{})});
   if (j.contains("enigme")) {
     const Json& e = j["enigme"];
     m.puzzleFlag = jget<std::string>(e, "drapeau", "");
@@ -280,8 +281,10 @@ Json mapToJson(const MapDef& m) {
     if (!m.puzzleMsg.empty()) o["enigme"]["message"] = m.puzzleMsg;
   }
   Json z = Json::array();
-  for (auto& x : m.zones)
+  for (auto& x : m.zones) {
     z.push_back({{"x", x.x}, {"y", x.y}, {"l", x.w}, {"h", x.h}, {"niveau_min", x.lo}, {"niveau_max", x.hi}, {"max_ennemis", x.maxN}, {"creatures", x.pool}});
+    if (!x.night.empty()) z.back()["nuit"] = x.night;
+  }
   o["zones"] = z;
   Json bo = Json::array();
   for (auto& x : m.bosses) {
@@ -344,9 +347,12 @@ std::vector<std::string> checkMaps() {
     auto at = [&](int x, int y) { return "(" + std::to_string(x) + ", " + std::to_string(y) + ")"; };
     auto E = [&](const std::string& s) { err.push_back(m.name + " : " + s); };
     auto inside = [&](int x, int y) { return x >= 0 && y >= 0 && x < m.w() && y < m.h(); };
-    for (auto& z : m.zones)
+    for (auto& z : m.zones) {
       for (auto& p : z.pool)
         if (!hasSpecies(p)) E("créature inconnue dans une zone : " + p);
+      for (auto& p : z.night)
+        if (!hasSpecies(p)) E("créature de nuit inconnue dans une zone : " + p);
+    }
     for (auto& c : m.chests)
       if (!c.item.empty() && !hasItem(c.item)) E("objet inconnu dans un coffre " + at(c.x, c.y) + " : " + c.item);
     for (auto& b : m.bosses)

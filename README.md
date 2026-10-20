@@ -332,6 +332,7 @@ de niveau 35-40 bien équipée.
   poissons) et la **Nouvelle partie +**.
 - **Discussions** entre les héros (Échap > Discussions), pluie de temps en temps,
   musiques réécrites.
+- **Créatures de la nuit** : la nuit, d'autres créatures sortent dans les herbes.
 - **Créatures chromatiques** : très rarement, une créature sauvage a des couleurs
   rares (et brille) : à capturer pour les collectionneurs.
 

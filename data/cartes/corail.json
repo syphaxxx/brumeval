@@ -140,7 +140,8 @@
       "niveau_min": 42,
       "niveau_max": 46,
       "max_ennemis": 3,
-      "creatures": ["corailleur", "perlin", "ecumet", "coquillon"]
+      "creatures": ["corailleur", "perlin", "ecumet", "coquillon"],
+      "nuit": ["noyelin", "nuageon"]
     }
   ],
   "boss": [],

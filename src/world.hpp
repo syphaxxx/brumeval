@@ -86,6 +86,7 @@ struct Zone {
   int x, y, w, h;
   int lo, hi, maxN;
   std::vector<std::string> pool;
+  std::vector<std::string> night;  // « nuit » : créatures de la nuit (2026-10-20), la moitié des rencontres quand il fait nuit
 };
 
 struct BossSpot {

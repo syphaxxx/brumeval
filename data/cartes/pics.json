@@ -265,7 +265,8 @@
       "niveau_min": 20,
       "niveau_max": 23,
       "max_ennemis": 2,
-      "creatures": ["givrelin", "glaconnet", "zephyrin"]
+      "creatures": ["givrelin", "glaconnet", "zephyrin"],
+      "nuit": ["noctaile", "brumeloup"]
     },
     {
       "x": 0,
@@ -275,7 +276,8 @@
       "niveau_min": 21,
       "niveau_max": 24,
       "max_ennemis": 3,
-      "creatures": ["givrelin", "zephyrin", "ferrolin", "cristallin", "etincelot"]
+      "creatures": ["givrelin", "zephyrin", "ferrolin", "cristallin", "etincelot"],
+      "nuit": ["noctaile", "brumeloup"]
     },
     {
       "x": 60,
@@ -285,7 +287,8 @@
       "niveau_min": 23,
       "niveau_max": 27,
       "max_ennemis": 3,
-      "creatures": ["givrelin", "glaconnet", "zephyrin", "ferrolin", "cristallin", "etincelot", "banquisot"]
+      "creatures": ["givrelin", "glaconnet", "zephyrin", "ferrolin", "cristallin", "etincelot", "banquisot"],
+      "nuit": ["noctaile", "brumeloup"]
     }
   ],
   "boss": [],

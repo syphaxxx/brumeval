@@ -141,7 +141,8 @@
       "niveau_min": 34,
       "niveau_max": 38,
       "max_ennemis": 3,
-      "creatures": ["esprillon", "nebulis", "brumeloup", "chauvenuit", "orbrume", "lanternelle", "fongombre"]
+      "creatures": ["esprillon", "nebulis", "brumeloup", "chauvenuit", "orbrume", "lanternelle", "fongombre"],
+      "nuit": ["osselet", "noctaile"]
     }
   ],
   "boss": [],

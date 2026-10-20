@@ -137,7 +137,8 @@
       "niveau_min": 55,
       "niveau_max": 59,
       "max_ennemis": 3,
-      "creatures": ["lueurine", "loup_aube", "aubelle", "aubespectre"]
+      "creatures": ["lueurine", "loup_aube", "aubelle", "aubespectre"],
+      "nuit": ["noctaile", "aubespectre"]
     },
     {
       "x": 0,
@@ -147,7 +148,8 @@
       "niveau_min": 57,
       "niveau_max": 60,
       "max_ennemis": 3,
-      "creatures": ["lueurine", "loup_aube", "aubespectre", "rocaube"]
+      "creatures": ["lueurine", "loup_aube", "aubespectre", "rocaube"],
+      "nuit": ["noctaile", "aubespectre"]
     }
   ],
   "boss": [{"x": 23, "y": 5, "espece": "gardien_lueurs", "drapeau": "gardien_lueurs"}],
