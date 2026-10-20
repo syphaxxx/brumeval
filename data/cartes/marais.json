@@ -52,6 +52,24 @@
         "Le marais avale les imprudents. Restez sur le chemin !",
         "La Reine vit sur l'îlot, tout à l'est. Elle ne laisse personne approcher de sa larme."
       ]
+    },
+    {
+      "x": 38,
+      "y": 13,
+      "apparence": "docteur",
+      "direction": "bas",
+      "evenement": "route_marais1",
+      "vue": 3,
+      "vue_jusqua": "route_marais1"
+    },
+    {
+      "x": 17,
+      "y": 10,
+      "apparence": "pecheur",
+      "direction": "bas",
+      "evenement": "route_marais2",
+      "vue": 3,
+      "vue_jusqua": "route_marais2"
     }
   ],
   "coffres": [

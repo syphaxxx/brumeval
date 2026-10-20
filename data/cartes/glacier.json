@@ -38,7 +38,17 @@
     "############################ii##########"
   ],
   "batiments": [],
-  "habitants": [],
+  "habitants": [
+    {
+      "x": 8,
+      "y": 6,
+      "apparence": "garde",
+      "direction": "bas",
+      "evenement": "route_glacier1",
+      "vue": 3,
+      "vue_jusqua": "route_glacier1"
+    }
+  ],
   "coffres": [
     {"x": 20, "y": 18, "objet": "gemme_maitre", "quantite": 1},
     {"x": 28, "y": 11, "objet": "cristal_givre", "quantite": 2},

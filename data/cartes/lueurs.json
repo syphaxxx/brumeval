@@ -64,6 +64,24 @@
       "direction": "gauche",
       "evenement": "ilya_abime",
       "si": {"drapeau": "aube_fin"}
+    },
+    {
+      "x": 30,
+      "y": 16,
+      "apparence": "ermite",
+      "direction": "bas",
+      "evenement": "route_lueurs1",
+      "vue": 3,
+      "vue_jusqua": "route_lueurs1"
+    },
+    {
+      "x": 12,
+      "y": 31,
+      "apparence": "voyageuse",
+      "direction": "droite",
+      "evenement": "route_lueurs2",
+      "vue": 3,
+      "vue_jusqua": "route_lueurs2"
     }
   ],
   "coffres": [

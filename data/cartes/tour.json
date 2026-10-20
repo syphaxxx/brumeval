@@ -48,7 +48,26 @@
   "batiments": [
     {"x": 4, "y": 22, "l": 8, "h": 4, "genre": "decor", "nom": "Tour", "toit": "#7a8a4a", "dessin": "chateau"}
   ],
-  "habitants": [],
+  "habitants": [
+    {
+      "x": 22,
+      "y": 27,
+      "apparence": "mage_givre",
+      "direction": "bas",
+      "evenement": "route_tour1",
+      "vue": 3,
+      "vue_jusqua": "route_tour1"
+    },
+    {
+      "x": 5,
+      "y": 31,
+      "apparence": "chevalier",
+      "direction": "bas",
+      "evenement": "route_tour2",
+      "vue": 3,
+      "vue_jusqua": "route_tour2"
+    }
+  ],
   "coffres": [
     {"x": 5, "y": 27, "objet": "elixir", "quantite": 2},
     {"x": 24, "y": 27, "objet": "gemme_orage", "quantite": 1},

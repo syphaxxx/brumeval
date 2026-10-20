@@ -195,6 +195,24 @@
       "direction": "bas",
       "evenement": "tournoi",
       "si": {"drapeau": "boss2"}
+    },
+    {
+      "x": 70,
+      "y": 11,
+      "apparence": "montagnard",
+      "direction": "bas",
+      "evenement": "route_cendrelune1",
+      "vue": 3,
+      "vue_jusqua": "route_cendrelune1"
+    },
+    {
+      "x": 30,
+      "y": 46,
+      "apparence": "garde",
+      "direction": "droite",
+      "evenement": "route_cendrelune2",
+      "vue": 3,
+      "vue_jusqua": "route_cendrelune2"
     }
   ],
   "coffres": [

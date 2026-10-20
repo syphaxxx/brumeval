@@ -36,7 +36,17 @@
     "#################cc#################"
   ],
   "batiments": [],
-  "habitants": [],
+  "habitants": [
+    {
+      "x": 9,
+      "y": 15,
+      "apparence": "chevalier",
+      "direction": "bas",
+      "evenement": "route_gouffre1",
+      "vue": 3,
+      "vue_jusqua": "route_gouffre1"
+    }
+  ],
   "coffres": [
     {"x": 34, "y": 10, "objet": "gemme_maitre", "quantite": 1},
     {"x": 4, "y": 8, "objet": "elixir", "quantite": 2},

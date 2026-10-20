@@ -46,7 +46,16 @@
   ],
   "batiments": [],
   "habitants": [
-    {"x": 16, "y": 14, "apparence": "mage_givre", "direction": "bas", "evenement": "ilya_citadelle"}
+    {"x": 16, "y": 14, "apparence": "mage_givre", "direction": "bas", "evenement": "ilya_citadelle"},
+    {
+      "x": 11,
+      "y": 3,
+      "apparence": "mage_givre",
+      "direction": "bas",
+      "evenement": "route_citadelle1",
+      "vue": 3,
+      "vue_jusqua": "route_citadelle1"
+    }
   ],
   "coffres": [
     {"x": 4, "y": 16, "objet": "gemme_orage", "quantite": 1},

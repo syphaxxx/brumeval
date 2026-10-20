@@ -112,6 +112,24 @@
         "Bienvenue dans la Plaine des Moulins !",
         "Le col de Sylvarque est enfin ouvert. On va pouvoir revoir les gens de la Vallée."
       ]
+    },
+    {
+      "x": 15,
+      "y": 30,
+      "apparence": "paysan",
+      "direction": "haut",
+      "evenement": "route_plaine1",
+      "vue": 3,
+      "vue_jusqua": "route_plaine1"
+    },
+    {
+      "x": 20,
+      "y": 15,
+      "apparence": "voyageuse",
+      "direction": "droite",
+      "evenement": "route_plaine2",
+      "vue": 3,
+      "vue_jusqua": "route_plaine2"
     }
   ],
   "coffres": [

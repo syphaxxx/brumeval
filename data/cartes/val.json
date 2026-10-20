@@ -81,6 +81,24 @@
       "direction": "bas",
       "evenement": "esprit_val_3",
       "cache_si": "esprit_val_3"
+    },
+    {
+      "x": 33,
+      "y": 17,
+      "apparence": "ermite",
+      "direction": "haut",
+      "evenement": "route_val1",
+      "vue": 3,
+      "vue_jusqua": "route_val1"
+    },
+    {
+      "x": 13,
+      "y": 23,
+      "apparence": "villageoise",
+      "direction": "bas",
+      "evenement": "route_val2",
+      "vue": 3,
+      "vue_jusqua": "route_val2"
     }
   ],
   "coffres": [

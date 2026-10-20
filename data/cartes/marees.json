@@ -38,7 +38,17 @@
     "##################..####################"
   ],
   "batiments": [],
-  "habitants": [],
+  "habitants": [
+    {
+      "x": 4,
+      "y": 14,
+      "apparence": "pecheur",
+      "direction": "bas",
+      "evenement": "route_marees1",
+      "vue": 3,
+      "vue_jusqua": "route_marees1"
+    }
+  ],
   "coffres": [
     {"x": 14, "y": 20, "objet": "gemme_maitre", "quantite": 1},
     {"x": 15, "y": 7, "objet": "perle", "quantite": 1},

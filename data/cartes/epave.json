@@ -38,7 +38,17 @@
     "######################..################"
   ],
   "batiments": [],
-  "habitants": [],
+  "habitants": [
+    {
+      "x": 7,
+      "y": 8,
+      "apparence": "bandit",
+      "direction": "bas",
+      "evenement": "route_epave1",
+      "vue": 3,
+      "vue_jusqua": "route_epave1"
+    }
+  ],
   "coffres": [
     {"x": 11, "y": 8, "objet": "perle", "quantite": 1},
     {"x": 13, "y": 15, "objet": "gemme_vol", "quantite": 1},

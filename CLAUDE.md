@@ -569,6 +569,10 @@ code) ; `docs/GUIDE.md` les range par domaine.
   (les passages des deux cartes y mènent) : village de Moulinbourg (soins, épicerie, meunier, charpentier), pont gardé
   par des passages sous condition `pont_repare` ; quête `pont` : chasser les Rongecrins (boss de carte `rongecrins`, si
   `quete:pont`, drapeau `rongecrins_chasses`), puis le charpentier répare le pont.
+- Dresseurs des routes (2026-10-20, `outils/villes/dresseurs.py`) : 28 habitants avec `vue` 3 (événements et drapeaux
+  `route_<carte><n>`) de la Vallée à la Citadelle : case choisie par le script (près d'un chemin, rien de bouché, loin
+  des passages, bâtiments et énigmes ; accessibilité vérifiée), équipe tirée des créatures de leur zone (évoluées selon
+  le niveau), or et parfois un objet.
 - Île de Corail (2026-10-20, `outils/villes/corail.py`) : acte 2, passe à l'est du Récif vers la carte `corail`
   (village : soins, comptoir, doyenne, quête `trident`) et la Grotte des Marées (`marees`, donjon de cartegen.py,
   Gardien des marées, drapeau `marees_boss`, objet `trident`) ; le passage du Récif vers les Ruines demande le trident.

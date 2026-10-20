@@ -38,10 +38,11 @@ static std::vector<HelpPage> helpPages() {
   std::vector<HelpPage> p;
   p.push_back({::T("Nouveautés 3.5"), ::T("Primes, quêtes, éclats de brume, l'île d'Aube, musiques."),
                {::T("Primes : les tableaux d'annonces des villages affichent des monstres recherchés. Acceptez, chassez, touchez la prime, et montez en rang de chasseur."),
-                ::T("Quêtes : vingt quêtes en tout (Échap > Journal), dont un rival qui revient vous défier et une quête qui donne un compagnon."),
+                ::T("Quêtes : plus de trente quêtes (Échap > Journal), dont un rival qui revient vous défier et une quête qui donne un compagnon."),
                 ::T("Éclats de brume : trente éclats cachés dans de vieux coffres, aux quatre coins du monde. Une collectionneuse de la Vallée les récompense."),
                 ::T("Après le Seigneur des Orages : une navigatrice du port vous emmène sur l'île d'Aube, pour un troisième acte."),
-                ::T("L'histoire passe par de nouveaux lieux : le Col des Hurlevents, le Val des Murmures, l'île de Corail."),
+                ::T("L'histoire passe par de nouveaux lieux : la Plaine des Moulins, le Col des Hurlevents, le Val des Murmures, l'île de Corail."),
+                ::T("Des dresseurs vous défient le long des routes : vingt-huit combats de plus, de l'or et des objets à la clé."),
                 ::T("Quatre donjons optionnels (Mines, Glacier, Épave, Abîme) et le grand bestiaire de la professeure de la Vallée."),
                 ::T("Discussions : les héros se parlent au fil de l'aventure (Échap > Discussions)."),
                 ::T("Nouvelle partie + : après l'acte 3, Ilya propose de tout recommencer avec votre équipe, contre des créatures plus fortes."),

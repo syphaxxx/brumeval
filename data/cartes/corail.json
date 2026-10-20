@@ -99,7 +99,25 @@
         "Depuis que la brume est partie, les bateaux reviennent un peu."
       ]
     },
-    {"x": 30, "y": 15, "apparence": "villageoise", "direction": "gauche", "evenement": "quete_collier"}
+    {"x": 30, "y": 15, "apparence": "villageoise", "direction": "gauche", "evenement": "quete_collier"},
+    {
+      "x": 17,
+      "y": 25,
+      "apparence": "pecheur",
+      "direction": "haut",
+      "evenement": "route_corail1",
+      "vue": 3,
+      "vue_jusqua": "route_corail1"
+    },
+    {
+      "x": 28,
+      "y": 18,
+      "apparence": "villageoise",
+      "direction": "haut",
+      "evenement": "route_corail2",
+      "vue": 3,
+      "vue_jusqua": "route_corail2"
+    }
   ],
   "coffres": [
     {"x": 33, "y": 20, "objet": "perle", "quantite": 1},

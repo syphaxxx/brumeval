@@ -57,7 +57,17 @@
       "dessin": "ruines"
     }
   ],
-  "habitants": [],
+  "habitants": [
+    {
+      "x": 24,
+      "y": 19,
+      "apparence": "ermite",
+      "direction": "bas",
+      "evenement": "route_ruines1",
+      "vue": 3,
+      "vue_jusqua": "route_ruines1"
+    }
+  ],
   "coffres": [
     {"x": 5, "y": 15, "objet": "perle", "quantite": 1},
     {"x": 31, "y": 15, "objet": "gemme_maitre", "quantite": 1},

@@ -38,7 +38,17 @@
     "#########..#############################"
   ],
   "batiments": [],
-  "habitants": [],
+  "habitants": [
+    {
+      "x": 34,
+      "y": 8,
+      "apparence": "montagnard",
+      "direction": "bas",
+      "evenement": "route_mines1",
+      "vue": 3,
+      "vue_jusqua": "route_mines1"
+    }
+  ],
   "coffres": [
     {"x": 20, "y": 9, "objet": "gemme_esprit", "quantite": 1},
     {"x": 25, "y": 11, "objet": "minerai", "quantite": 1},

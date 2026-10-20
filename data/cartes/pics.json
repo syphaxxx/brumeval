@@ -211,7 +211,16 @@
       "si": {"drapeau": ["tom1", "boss3"]},
       "cache_si": "tom2"
     },
-    {"x": 81, "y": 22, "apparence": "chevalier", "direction": "droite", "evenement": "garde_glacier"}
+    {"x": 81, "y": 22, "apparence": "chevalier", "direction": "droite", "evenement": "garde_glacier"},
+    {
+      "x": 61,
+      "y": 9,
+      "apparence": "mage_givre",
+      "direction": "bas",
+      "evenement": "route_pics1",
+      "vue": 3,
+      "vue_jusqua": "route_pics1"
+    }
   ],
   "coffres": [
     {"x": 57, "y": 23, "objet": "fleur_givre", "quantite": 1},

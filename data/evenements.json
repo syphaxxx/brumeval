@@ -5095,5 +5095,1030 @@
         ]
       }
     ]
+  },
+  "route_vallee1": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_vallee1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Petit dresseur : Hé ! Toi aussi tu as des créatures ? On se bat ? Allez, s'il te plaît !"
+          },
+          {
+            "action": "combat",
+            "nom": "Petit dresseur",
+            "ennemis": [{"espece": "champichou", "niveau": 8}, {"espece": "lucioline", "niveau": 7}],
+            "renforts": [{"espece": "grenouillon", "niveau": 7}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_vallee1"},
+              {"action": "dire", "texte": "Petit dresseur : Ouin… Mon Mulotin a fait de son mieux."},
+              {"action": "or", "quantite": 180}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {"action": "dire", "texte": "Petit dresseur : Quand je serai grand, je serai gardien, comme toi !"}
+        ]
+      }
+    ]
+  },
+  "route_plaine1": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_plaine1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Fermier : Mes bêtes gardent les champs mieux que n'importe quel épouvantail. Voyons voir ce que valent les tiennes !"
+          },
+          {
+            "action": "combat",
+            "nom": "Fermier",
+            "ennemis": [{"espece": "piafouine", "niveau": 13}, {"espece": "champichou", "niveau": 12}],
+            "renforts": [{"espece": "rongecrin", "niveau": 12}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_plaine1"},
+              {"action": "dire", "texte": "Fermier : Ça alors ! Tu ferais un sacré fermier."},
+              {"action": "or", "quantite": 280},
+              {"action": "donner", "objet": "potion", "quantite": 1}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Fermier : Les Rongecrins, eux, ne respectent ni les champs ni les ponts."
+          }
+        ]
+      }
+    ]
+  },
+  "route_plaine2": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_plaine2"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Randonneuse : La plaine est si belle depuis que la brume est partie ! Un petit combat pour fêter ça ?"
+          },
+          {
+            "action": "combat",
+            "nom": "Randonneuse",
+            "ennemis": [{"espece": "louvet", "niveau": 13}, {"espece": "mulotin", "niveau": 12}],
+            "renforts": [{"espece": "piafouine", "niveau": 12}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_plaine2"},
+              {"action": "dire", "texte": "Randonneuse : Quelle énergie ! Je vais m'asseoir un moment."},
+              {"action": "or", "quantite": 280}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Randonneuse : D'ici, on voit fumer les Monts Cendrelune. On dit qu'un volcan y dort."
+          }
+        ]
+      }
+    ]
+  },
+  "route_grotte1": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_grotte1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Spéléologue : Chut ! L'écho réveille les chauves-souris… Trop tard, on se bat !"
+          },
+          {
+            "action": "combat",
+            "nom": "Spéléologue",
+            "ennemis": [{"espece": "glaconnet", "niveau": 17}, {"espece": "tisonnel", "niveau": 16}],
+            "renforts": [{"espece": "tisseline", "niveau": 16}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_grotte1"},
+              {
+                "action": "dire",
+                "texte": "Spéléologue : Mon casque m'a sauvé la tête, mais pas le combat."
+              },
+              {"action": "or", "quantite": 360},
+              {"action": "donner", "objet": "ether", "quantite": 1}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Spéléologue : Les cristaux de cette grotte chantent quand on les frappe. Écoutez !"
+          }
+        ]
+      }
+    ]
+  },
+  "route_cendrelune1": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_cendrelune1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Mineur : Ici, on cogne la roche toute la journée. Toi, je vais te cogner aussi !"
+          },
+          {
+            "action": "combat",
+            "nom": "Mineur",
+            "ennemis": [{"espece": "glaconnet", "niveau": 20}, {"espece": "fumerole", "niveau": 19}],
+            "renforts": [{"espece": "draconnet", "niveau": 19}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_cendrelune1"},
+              {"action": "dire", "texte": "Mineur : Ouf. Tu as la tête plus dure que le granit."},
+              {"action": "or", "quantite": 420},
+              {"action": "donner", "objet": "minerai", "quantite": 1}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Mineur : Forgeroc est juste au nord. Le meilleur forgeron du monde y travaille."
+          }
+        ]
+      }
+    ]
+  },
+  "route_cendrelune2": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_cendrelune2"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Garde de la route : Halte ! Personne ne monte vers Forgeroc sans montrer sa force."
+          },
+          {
+            "action": "combat",
+            "nom": "Garde de la route",
+            "ennemis": [{"espece": "tisonnel", "niveau": 20}, {"espece": "galetor", "niveau": 19}],
+            "renforts": [{"espece": "voltigeon", "niveau": 19}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_cendrelune2"},
+              {"action": "dire", "texte": "Garde de la route : Passez. Et pardon pour le dérangement."},
+              {"action": "or", "quantite": 420}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Garde de la route : Faites attention aux coulées de cendres, plus haut."
+          }
+        ]
+      }
+    ]
+  },
+  "route_sylvenoire1": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_sylvenoire1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Herboriste : Ces champignons sont à moi ! Enfin… à mes créatures. Et elles ont faim !"
+          },
+          {
+            "action": "combat",
+            "nom": "Herboriste",
+            "ennemis": [{"espece": "serpentin", "niveau": 18}, {"espece": "carapierre", "niveau": 17}],
+            "renforts": [{"espece": "grenouillon", "niveau": 17}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_sylvenoire1"},
+              {"action": "dire", "texte": "Herboriste : Bon, bon. Prenez quelques herbes, au moins."},
+              {"action": "or", "quantite": 380},
+              {"action": "donner", "objet": "remede", "quantite": 1}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Herboriste : La forêt est plus calme depuis que les bandits sont partis."
+          }
+        ]
+      }
+    ]
+  },
+  "route_mines1": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_mines1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Contremaître : Les mines sont fermées ! Et ceux qui insistent passent par mes créatures."
+          },
+          {
+            "action": "combat",
+            "nom": "Contremaître",
+            "ennemis": [{"espece": "brutor", "niveau": 21}, {"espece": "galetor", "niveau": 20}],
+            "renforts": [{"espece": "galetor", "niveau": 20}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_mines1"},
+              {
+                "action": "dire",
+                "texte": "Contremaître : D'accord, d'accord. Mais ne touchez pas aux étais !"
+              },
+              {"action": "or", "quantite": 440},
+              {"action": "donner", "objet": "minerai", "quantite": 1}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Contremaître : Un troll s'est installé au fond. Personne n'ose plus y descendre."
+          }
+        ]
+      }
+    ]
+  },
+  "route_col1": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_col1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Berger : Mes bêtes n'aiment pas les inconnus. Moi non plus, d'ailleurs."
+          },
+          {
+            "action": "combat",
+            "nom": "Berger",
+            "ennemis": [{"espece": "givroc", "niveau": 27}, {"espece": "voltigeon", "niveau": 26}],
+            "renforts": [{"espece": "banquisot", "niveau": 26}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_col1"},
+              {"action": "dire", "texte": "Berger : Hmpf. Tu as du cran, je te l'accorde."},
+              {"action": "or", "quantite": 560}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Berger : La Harpie de givre fond sur les troupeaux. Méfiance, là-haut."
+          }
+        ]
+      }
+    ]
+  },
+  "route_col2": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_col2"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Alpiniste : J'ai gravi tous les sommets de Brumeval ! Il me manque juste… un bon combat."
+          },
+          {
+            "action": "combat",
+            "nom": "Alpiniste",
+            "ennemis": [{"espece": "zephyrin", "niveau": 27}, {"espece": "galetor", "niveau": 26}],
+            "renforts": [{"espece": "givrelin", "niveau": 26}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_col2"},
+              {"action": "dire", "texte": "Alpiniste : Le vent m'a déconcentrée. Si, si, c'est le vent."},
+              {"action": "or", "quantite": 560},
+              {"action": "donner", "objet": "superpotion", "quantite": 1}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {"action": "dire", "texte": "Alpiniste : Au-delà du col, les Pics Givrés. Couvrez-vous bien."}
+        ]
+      }
+    ]
+  },
+  "route_pics1": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_pics1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Apprentie du givre : Mon maître dit que je dois m'entraîner sur des voyageurs. Désolée !"
+          },
+          {
+            "action": "combat",
+            "nom": "Apprentie du givre",
+            "ennemis": [{"espece": "mage_givre", "niveau": 28}, {"espece": "banquisot", "niveau": 27}],
+            "renforts": [{"espece": "givrelin", "niveau": 27}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_pics1"},
+              {"action": "dire", "texte": "Apprentie du givre : Je vais devoir relire mes leçons…"},
+              {"action": "or", "quantite": 580}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Apprentie du givre : Le temple est tout en haut. Les chevaliers le gardent jour et nuit."
+          }
+        ]
+      }
+    ]
+  },
+  "route_glacier1": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_glacier1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Chasseur de glace : Je taille la glace pour les tavernes de Givreval. Et je taille aussi les intrus !"
+          },
+          {
+            "action": "combat",
+            "nom": "Chasseur de glace",
+            "ennemis": [
+              {"espece": "banquisot", "niveau": 32},
+              {"espece": "banquisot", "niveau": 31},
+              {"espece": "givrenard", "niveau": 31}
+            ],
+            "renforts": [{"espece": "givrenard", "niveau": 31}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_glacier1"},
+              {"action": "dire", "texte": "Chasseur de glace : Glacé. Je suis glacé."},
+              {"action": "or", "quantite": 660},
+              {"action": "donner", "objet": "ether", "quantite": 1}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Chasseur de glace : Un colosse dort sous le glacier. Ne faites pas trop de bruit."
+          }
+        ]
+      }
+    ]
+  },
+  "route_val1": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_val1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ermite : Les esprits me parlent la nuit. Ils disent que tu dois te battre. Maintenant."
+          },
+          {
+            "action": "combat",
+            "nom": "Ermite",
+            "ennemis": [
+              {"espece": "orbrume", "niveau": 39},
+              {"espece": "lanternelle", "niveau": 38},
+              {"espece": "fongombre", "niveau": 38}
+            ],
+            "renforts": [{"espece": "fongombre", "niveau": 38}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_val1"},
+              {"action": "dire", "texte": "Ermite : Les esprits se sont trompés. Ça arrive."},
+              {"action": "or", "quantite": 800}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {"action": "dire", "texte": "Ermite : Allumez les lanternes, et les esprits trouveront le chemin."}
+        ]
+      }
+    ]
+  },
+  "route_val2": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_val2"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Veilleuse : Je garde les lanternes du Val. Qui s'approche doit montrer patte blanche !"
+          },
+          {
+            "action": "combat",
+            "nom": "Veilleuse",
+            "ennemis": [
+              {"espece": "nebulis", "niveau": 39},
+              {"espece": "nebulis", "niveau": 38},
+              {"espece": "brumeloup", "niveau": 38}
+            ],
+            "renforts": [{"espece": "brumeloup", "niveau": 38}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_val2"},
+              {"action": "dire", "texte": "Veilleuse : Pardon. On n'est jamais trop prudents, ici."},
+              {"action": "or", "quantite": 800},
+              {"action": "donner", "objet": "superpotion", "quantite": 1}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {"action": "dire", "texte": "Veilleuse : La nuit, les murmures du Val deviennent des chants."}
+        ]
+      }
+    ]
+  },
+  "route_recif1": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_recif1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Pêcheur de crevettes : Ma pêche a été mauvaise. Alors je me défoule sur les passants !"
+          },
+          {
+            "action": "combat",
+            "nom": "Pêcheur de crevettes",
+            "ennemis": [
+              {"espece": "fulgoray", "niveau": 48},
+              {"espece": "orageline", "niveau": 47},
+              {"espece": "noyelin", "niveau": 47}
+            ],
+            "renforts": [{"espece": "noyelin", "niveau": 47}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_recif1"},
+              {
+                "action": "dire",
+                "texte": "Pêcheur de crevettes : Même les crevettes se moquent de moi, maintenant."
+              },
+              {"action": "or", "quantite": 980}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Pêcheur de crevettes : La mer se calme quand le vent tourne à l'ouest."
+          }
+        ]
+      }
+    ]
+  },
+  "route_corail1": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_corail1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Plongeur : Je plonge chercher des perles. Et toi, tu vas plonger… dans la défaite !"
+          },
+          {
+            "action": "combat",
+            "nom": "Plongeur",
+            "ennemis": [
+              {"espece": "corailleur", "niveau": 47},
+              {"espece": "perlin", "niveau": 46},
+              {"espece": "ecumet", "niveau": 46}
+            ],
+            "renforts": [{"espece": "ecumet", "niveau": 46}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_corail1"},
+              {"action": "dire", "texte": "Plongeur : Glouglou. Je reprends mon souffle."},
+              {"action": "or", "quantite": 960},
+              {"action": "donner", "objet": "superpotion", "quantite": 1}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Plongeur : Au fond de la Grotte des Marées dort un gardien très ancien."
+          }
+        ]
+      }
+    ]
+  },
+  "route_corail2": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_corail2"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ramasseuse de coquillages : Ne marche pas sur mes coquillages ! Mes créatures vont te le faire comprendre."
+          },
+          {
+            "action": "combat",
+            "nom": "Ramasseuse de coquillages",
+            "ennemis": [
+              {"espece": "bastillon", "niveau": 47},
+              {"espece": "corailleur", "niveau": 46},
+              {"espece": "perlin", "niveau": 46}
+            ],
+            "renforts": [{"espece": "perlin", "niveau": 46}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_corail2"},
+              {
+                "action": "dire",
+                "texte": "Ramasseuse de coquillages : Bon. Fais juste attention où tu mets les pieds."
+              },
+              {"action": "or", "quantite": 960}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ramasseuse de coquillages : Les plus beaux coquillages sont du côté de la grotte."
+          }
+        ]
+      }
+    ]
+  },
+  "route_marees1": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_marees1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Chercheur de trésors : Ce trésor est à moi ! Personne ne passera avant moi !"
+          },
+          {
+            "action": "combat",
+            "nom": "Chercheur de trésors",
+            "ennemis": [
+              {"espece": "perlin", "niveau": 49},
+              {"espece": "murenix", "niveau": 48},
+              {"espece": "noyelin", "niveau": 48}
+            ],
+            "renforts": [{"espece": "noyelin", "niveau": 48}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_marees1"},
+              {
+                "action": "dire",
+                "texte": "Chercheur de trésors : Bah… De toute façon, je n'ai trouvé que des algues."
+              },
+              {"action": "or", "quantite": 1000},
+              {"action": "donner", "objet": "ether", "quantite": 1}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {"action": "dire", "texte": "Chercheur de trésors : La marée monte vite, ici. Ne traînez pas."}
+        ]
+      }
+    ]
+  },
+  "route_ruines1": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_ruines1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Archéologue : Ne touchez à rien ! Ces ruines sont plus vieilles que Brumeval elle-même !"
+          },
+          {
+            "action": "combat",
+            "nom": "Archéologue",
+            "ennemis": [
+              {"espece": "fulgoray", "niveau": 49},
+              {"espece": "bastillon", "niveau": 48},
+              {"espece": "osselet", "niveau": 48}
+            ],
+            "renforts": [{"espece": "osselet", "niveau": 48}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_ruines1"},
+              {"action": "dire", "texte": "Archéologue : Pardon… L'excitation de la découverte."},
+              {"action": "or", "quantite": 1000},
+              {"action": "donner", "objet": "elixir", "quantite": 1}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Archéologue : Les inscriptions parlent d'un orage enfermé dans une tour."
+          }
+        ]
+      }
+    ]
+  },
+  "route_epave1": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_epave1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Pilleur d'épaves : Cette épave est à nous ! Va chercher ton or ailleurs !"
+          },
+          {
+            "action": "combat",
+            "nom": "Pilleur d'épaves",
+            "ennemis": [
+              {"espece": "bandit", "niveau": 51},
+              {"espece": "bastillon", "niveau": 50},
+              {"espece": "noyelin", "niveau": 50}
+            ],
+            "renforts": [{"espece": "fulgoray", "niveau": 50}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_epave1"},
+              {"action": "dire", "texte": "Pilleur d'épaves : Aïe ! Bon, il en reste assez pour deux…"},
+              {"action": "or", "quantite": 1040}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Pilleur d'épaves : On dit que le Léviathan dort encore dans la cale."
+          }
+        ]
+      }
+    ]
+  },
+  "route_tour1": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_tour1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Mage de l'orage : L'orage m'a appelée ici. Il veut que je t'arrête !"
+          },
+          {
+            "action": "combat",
+            "nom": "Mage de l'orage",
+            "ennemis": [
+              {"espece": "mage_givre", "niveau": 53},
+              {"espece": "nuageon", "niveau": 52},
+              {"espece": "bastillon", "niveau": 52}
+            ],
+            "renforts": [{"espece": "osselet", "niveau": 52}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_tour1"},
+              {"action": "dire", "texte": "Mage de l'orage : L'orage… s'est tu, dans ma tête. Merci."},
+              {"action": "or", "quantite": 1080},
+              {"action": "donner", "objet": "elixir", "quantite": 1}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Mage de l'orage : Le Seigneur des Orages attend au sommet. Soyez prêts."
+          }
+        ]
+      }
+    ]
+  },
+  "route_tour2": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_tour2"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Chevalier foudroyé : Ma lame a été frappée par la foudre. Elle a soif de combat !"
+          },
+          {
+            "action": "combat",
+            "nom": "Chevalier foudroyé",
+            "ennemis": [
+              {"espece": "chevalier", "niveau": 53},
+              {"espece": "fulgoray", "niveau": 52},
+              {"espece": "orageline", "niveau": 52}
+            ],
+            "renforts": [{"espece": "noyelin", "niveau": 52}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_tour2"},
+              {"action": "dire", "texte": "Chevalier foudroyé : Ma lame… se calme enfin."},
+              {"action": "or", "quantite": 1080}
+            ]
+          }
+        ]
+      },
+      {"actions": [{"action": "dire", "texte": "Chevalier foudroyé : Montez. Et ne regardez pas en bas."}]}
+    ]
+  },
+  "route_lueurs1": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_lueurs1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gardien des lueurs : Les lueurs ont peur de vous. Je dois vous mettre à l'épreuve."
+          },
+          {
+            "action": "combat",
+            "nom": "Gardien des lueurs",
+            "ennemis": [
+              {"espece": "loup_aube", "niveau": 61},
+              {"espece": "aubespectre", "niveau": 60},
+              {"espece": "rocaube", "niveau": 60}
+            ],
+            "renforts": [{"espece": "rocaube", "niveau": 60}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_lueurs1"},
+              {"action": "dire", "texte": "Gardien des lueurs : Elles n'ont plus peur. Moi non plus."},
+              {"action": "or", "quantite": 1240}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Gardien des lueurs : La nuit, les lueurs dansent au-dessus des étangs."
+          }
+        ]
+      }
+    ]
+  },
+  "route_lueurs2": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_lueurs2"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Cartographe : Je dessine la carte d'Aube. Il me manque un combat pour la légende !"
+          },
+          {
+            "action": "combat",
+            "nom": "Cartographe",
+            "ennemis": [
+              {"espece": "lueurine", "niveau": 60},
+              {"espece": "loup_aube", "niveau": 59},
+              {"espece": "aubelle", "niveau": 59}
+            ],
+            "renforts": [{"espece": "aubelle", "niveau": 59}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_lueurs2"},
+              {"action": "dire", "texte": "Cartographe : Je noterai : « Ici, une défaite mémorable »."},
+              {"action": "or", "quantite": 1220},
+              {"action": "donner", "objet": "elixir", "quantite": 1}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {"action": "dire", "texte": "Cartographe : Le Marais Pâle est au nord. Prenez des remèdes."}
+        ]
+      }
+    ]
+  },
+  "route_marais1": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_marais1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Botaniste : Ces fleurs pâles soignent tout. Sauf la défaite. Défendez-vous !"
+          },
+          {
+            "action": "combat",
+            "nom": "Botaniste",
+            "ennemis": [
+              {"espece": "crapale", "niveau": 63},
+              {"espece": "vasepent", "niveau": 62},
+              {"espece": "rocaube", "niveau": 62}
+            ],
+            "renforts": [{"espece": "rocaube", "niveau": 62}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_marais1"},
+              {"action": "dire", "texte": "Botaniste : Je vais devoir me soigner moi-même."},
+              {"action": "or", "quantite": 1280},
+              {"action": "donner", "objet": "elixir", "quantite": 1}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {"action": "dire", "texte": "Botaniste : La reine du marais garde une larme de lumière."}
+        ]
+      }
+    ]
+  },
+  "route_marais2": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_marais2"},
+        "actions": [
+          {"action": "dire", "texte": "Pêcheur du marais : Rien ne mord, ici. À part mes créatures !"},
+          {
+            "action": "combat",
+            "nom": "Pêcheur du marais",
+            "ennemis": [
+              {"espece": "aubespectre", "niveau": 62},
+              {"espece": "lueurine", "niveau": 61},
+              {"espece": "crapale", "niveau": 61}
+            ],
+            "renforts": [{"espece": "crapale", "niveau": 61}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_marais2"},
+              {"action": "dire", "texte": "Pêcheur du marais : Ça mord pas, ça mord pas… Même pas toi."},
+              {"action": "or", "quantite": 1260}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Pêcheur du marais : Les poissons d'Aube ont des écailles qui brillent la nuit."
+          }
+        ]
+      }
+    ]
+  },
+  "route_gouffre1": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_gouffre1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Sentinelle d'Aube : Le gouffre est interdit ! Ilya l'a ordonné… je crois."
+          },
+          {
+            "action": "combat",
+            "nom": "Sentinelle d'Aube",
+            "ennemis": [
+              {"espece": "chevalier", "niveau": 62},
+              {"espece": "vasepent", "niveau": 61},
+              {"espece": "aubespectre", "niveau": 61}
+            ],
+            "renforts": [{"espece": "nacrelin", "niveau": 61}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_gouffre1"},
+              {
+                "action": "dire",
+                "texte": "Sentinelle d'Aube : Peut-être qu'elle vous attendait, finalement."
+              },
+              {"action": "or", "quantite": 1260},
+              {"action": "donner", "objet": "elixir", "quantite": 1}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Sentinelle d'Aube : Les rochers du gouffre cachent une porte de lumière."
+          }
+        ]
+      }
+    ]
+  },
+  "route_citadelle1": {
+    "pages": [
+      {
+        "si": {"sans_drapeau": "route_citadelle1"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Dernière apprentie : Je suis la dernière apprentie des gardiens. Je ne reculerai pas !"
+          },
+          {
+            "action": "combat",
+            "nom": "Dernière apprentie",
+            "ennemis": [
+              {"espece": "mage_givre", "niveau": 65},
+              {"espece": "aubespectre", "niveau": 64},
+              {"espece": "rocaube", "niveau": 64}
+            ],
+            "renforts": [{"espece": "nacrelin", "niveau": 64}],
+            "fuite": false,
+            "capture": false,
+            "victoire": [
+              {"action": "drapeau", "nom": "route_citadelle1"},
+              {
+                "action": "dire",
+                "texte": "Dernière apprentie : Vous êtes ceux qu'on attendait, n'est-ce pas ?"
+              },
+              {"action": "or", "quantite": 1320}
+            ]
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Dernière apprentie : La Brume Noire attend au cœur de la citadelle. Que la lumière vous guide."
+          }
+        ]
+      }
+    ]
   }
 }

@@ -137,7 +137,16 @@
       "vue_jusqua": "bandit2"
     },
     {"x": 15, "y": 23, "apparence": "marchande", "direction": "bas", "evenement": "quete_caravane"},
-    {"x": 20, "y": 25, "apparence": "docteur", "direction": "bas", "evenement": "quete_champignons"}
+    {"x": 20, "y": 25, "apparence": "docteur", "direction": "bas", "evenement": "quete_champignons"},
+    {
+      "x": 10,
+      "y": 45,
+      "apparence": "voyageuse",
+      "direction": "droite",
+      "evenement": "route_sylvenoire1",
+      "vue": 3,
+      "vue_jusqua": "route_sylvenoire1"
+    }
   ],
   "coffres": [
     {"x": 3, "y": 32, "objet": "elixir", "quantite": 1},

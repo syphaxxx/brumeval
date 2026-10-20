@@ -280,6 +280,15 @@
       "direction": "bas",
       "evenement": "professeure",
       "si": {"drapeau": "nat3"}
+    },
+    {
+      "x": 41,
+      "y": 10,
+      "apparence": "enfant",
+      "direction": "haut",
+      "evenement": "route_vallee1",
+      "vue": 3,
+      "vue_jusqua": "route_vallee1"
     }
   ],
   "coffres": [

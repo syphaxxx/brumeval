@@ -350,6 +350,7 @@ poissons sur la carte, silhouettes d'élan en combat.
 Discussions entre les héros (20 saynètes, Échap > Discussions), au fil de l'histoire.
 La Plaine des Moulins (`outils/villes/plaine.py`) entre la Vallée et les Monts Cendrelune : village de Moulinbourg,
 pont rongé par une bande de Rongecrins (quête `pont`).
+28 dresseurs le long des routes (`outils/villes/dresseurs.py`), de la Vallée à la Citadelle d'Aube.
 Prochaines pistes pour approcher 20 h : un acte 4 / une région de plus, une ligue de l'Arène, un donjon d'après la
 fin à étages, la pêche, des captures demandées par plus de quêtes, des combats plus riches à mi-parcours.
 

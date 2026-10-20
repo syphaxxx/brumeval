@@ -99,6 +99,24 @@
       "evenement": "chien_col",
       "si": {"drapeau": "quete:chien"},
       "cache_si": "chien_trouve"
+    },
+    {
+      "x": 27,
+      "y": 29,
+      "apparence": "montagnard",
+      "direction": "gauche",
+      "evenement": "route_col1",
+      "vue": 3,
+      "vue_jusqua": "route_col1"
+    },
+    {
+      "x": 30,
+      "y": 11,
+      "apparence": "voyageuse",
+      "direction": "gauche",
+      "evenement": "route_col2",
+      "vue": 3,
+      "vue_jusqua": "route_col2"
     }
   ],
   "coffres": [

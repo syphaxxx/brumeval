@@ -59,6 +59,15 @@
       "evenement": "dresseur_recif2",
       "vue": 4,
       "vue_jusqua": "recif_dresseur2"
+    },
+    {
+      "x": 21,
+      "y": 15,
+      "apparence": "pecheur",
+      "direction": "droite",
+      "evenement": "route_recif1",
+      "vue": 3,
+      "vue_jusqua": "route_recif1"
     }
   ],
   "coffres": [
