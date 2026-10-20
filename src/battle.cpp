@@ -2868,6 +2868,14 @@ void Battle::draw() {
     Pt p = pos(f);
     Pt o = offset(f);
     bool dim = zSide >= 0 && isAlly(f) == (zSide == 1) && !zCells.count(cellOf(f));
+    if (std::abs(o.x) > 5 && f->alive() && !(blinking && blink == f)) {  // élan : deux silhouettes pâles derrière l'attaquant
+      float s = isAlly(f) ? 1.f : f->boss ? 1.45f : f->sp == "brumelin" ? .85f : 1.f, a0 = g.alpha;
+      for (float k : {.3f, .6f}) {
+        g.alpha = a0 * (.12f + .18f * k);
+        drawFighterSprite(g, *f, p.x + o.x * k, p.y + o.y * k, s, facesRight(f), t);
+      }
+      g.alpha = a0;
+    }
     if (!isAlly(f)) {  // ennemi : barre de PV au-dessus, nom sous le curseur
       float s = f->boss ? 1.45f : f->sp == "brumelin" ? .85f : 1.f;
       if (dim) g.alpha = .45f;
