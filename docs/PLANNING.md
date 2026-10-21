@@ -380,6 +380,19 @@ de la Vallée à Port-Écho, puis le Maître des cartes. Échos des légendes (`
 cinq cercles de trois grands boss d'affilée (N.98 à 120). Pension de Moulinbourg (`src/pension.cpp`) : élevage et œufs ; fête des lanternes de la Vallée (la nuit) ;
 32 exploits.
 
+## Étape 2 octies — Graphismes sans limite (demandé le 2026-10-21)
+
+« Améliore les graphismes sans limite », mêmes règles de travail (sans arrêt, captures vérifiées). Fait, dans l'ordre :
+relief des murs des grottes et des lieux de glace (`wallDepth`), roche propre à chaque donjon (`teinte_murs`), lanterne
+des lieux obscurs en fondu, cristaux qui brillent ; sol des combats en perspective, brume d'horizon, vignette ; carte du
+monde illustrée ; sol volcanique et lave qui rougeoit ; nom des lieux en ruban, titre doré (`textBigFancy`) ; fenêtres
+(ombre, coins arrondis) ; nombres des combats cernés ; fontaine, mouettes, Expédition étoilée ; éclair d'orage,
+éclaboussures, flocons ; combats au bord de la mer (`Game::coastal`) et aux couleurs du donjon ; flaques sous la pluie ;
+neige ondulée ; ponts ; rochers, plaques, herses et escaliers des énigmes ; cristaux à facettes ; coffres ouverts ;
+traînée de l'élan ; intérieurs selon le bâtiment (`style`), fenêtres sombres et bougies la nuit, halo autour des pièces ;
+panneau des combats et jauges. Captures du mode test : `donjon_<carte>`, `carte_monde_fin`, `combat_port`,
+`combat_mines`, `meteo_orage`, `interieur_nuit`. Pistes : poses d'attaque des héros, effets de sorts, décors des cartes.
+
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
 - Fait en 1.6 : **réserve de créatures** (au-delà de 8 membres) et

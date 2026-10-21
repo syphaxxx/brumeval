@@ -187,6 +187,16 @@ connectent pas. Un message mal formé ne peut pas faire planter le jeu
 les plus longs : y ajouter tout nouvel écran pour que la mise en page soit
 vérifiée.
 
+### Graphismes (2026-10-21)
+
+- **Une grotte, un donjon** : donner à sa carte `teinte_murs` (la couleur de la roche) ; murs, sol et décor des
+  combats en prennent la teinte. Les murs (`#`) des thèmes grotte et neige ont leur relief tout seuls (`wallDepth`).
+- **Un intérieur** : `style` = `chapelle`, `auberge`, `boutique` ou `soin` (rien : une maison).
+- **Un lieu au bord de la mer** (plus de 15 % d'eau, `Game::coastal`) : mouettes, et la mer au fond des combats.
+- **Une fête la nuit** : champ `fete` (une condition) ; des lanternes montent dans le ciel.
+- Les captures `donjon_<carte>`, `carte_monde_fin`, `combat_port`, `combat_mines`, `meteo_orage`, `interieur_nuit` du
+  mode test servent à comparer avant et après.
+
 ## 5. Tester
 
 Le mode test (`--test DOSSIER`) tourne sans fenêtre ni son :
@@ -231,6 +241,10 @@ détaillé d'un combat simulé), `BRUMEVAL_MONDE=brume` (monde d'une graine).
   LF) ; garder 0 avertissement de compilation.
 - **Équilibrage** : ne pas retoucher les boss sans demander (choix du
   2026-10-07) ; comparer avec `BRUMEVAL_SIMULATIONS=5`.
+
+- Ne jamais modifier un `.hpp` pendant qu'une compilation tourne : certains fichiers compilés gardent l'ancienne
+  version tout en paraissant à jour, et le jeu plante au lancement. Remède : `touch src/*.hpp`, puis recompiler.
+- Une démo ouverte bloque `build-dev/Release/brumeval.exe` : compiler alors dans un second dossier (`build-gfx`).
 
 ## 7. Carte du code (graphify)
 

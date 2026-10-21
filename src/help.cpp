@@ -60,6 +60,7 @@ static std::vector<HelpPage> helpPages() {
                 ::T("Cartes des gardiens : un jeu de cartes contre les joueurs des auberges. Chaque créature obtenue donne sa carte."),
                 ::T("Après l'acte 4 : les Échos des légendes, à Port-Écho. Cinq cercles de trois grands boss d'affilée."),
                 ::T("La pension de Moulinbourg : deux créatures y grandissent pendant que vous marchez, et laissent parfois un œuf."),
+                ::T("Nouveaux graphismes : donjons en relief, carte du monde illustrée, intérieurs, météo, combats au bord de la mer."),
                 ::T("Nouvelle partie + : après l'acte 3, Ilya propose de tout recommencer avec votre équipe, contre des créatures plus fortes."),
                 ::T("Après l'acte 3 : les épreuves des gardiens, au sanctuaire d'Aube (huit combats puis Ilya)."),
                 ::T("La pêche : le maître pêcheur du port donne une canne. Face à l'eau, Entrée ; dix-huit poissons à trouver."),

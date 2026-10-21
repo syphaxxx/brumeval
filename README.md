@@ -310,7 +310,7 @@ Le Givrecorne vaincu, une faille s'ouvre au fond de son sanctuaire : la
 Nouvelles créatures, gardiens et un dernier boss facultatif, pour une équipe
 de niveau 35-40 bien équipée.
 
-## Une aventure bien plus longue (3.5, en préparation)
+## Une aventure bien plus longue (3.5)
 
 - **Nouveaux lieux sur le chemin** : la Plaine des Moulins (un pont rongé par des
   Rongecrins), le Col des Hurlevents (la Harpie de givre), le Val des Murmures
@@ -349,6 +349,19 @@ de niveau 35-40 bien équipée.
   par un **alpha** qui se bat comme un boss.
 - **Créatures chromatiques** : très rarement, une créature sauvage a des couleurs
   rares (et brille) : à capturer pour les collectionneurs.
+
+## De nouveaux graphismes (3.5)
+
+- **Grottes et donjons** : les murs ont du relief (le dessus, la face éclairée, l'ombre au pied) et chaque donjon a
+  la couleur de sa roche ; dans le noir, la lanterne éclaire en fondu et vacille, les cristaux brillent ; rochers,
+  plaques à runes, herses et escaliers des énigmes redessinés.
+- **Carte du monde illustrée** : parchemin, rose des vents, un petit dessin pour chaque lieu découvert.
+- **Combats** : la mer à l'horizon au port et sur les îles, la roche du donjon sous terre, un vrai éclair pendant
+  l'orage, des nombres de dégâts lisibles, une traînée derrière celui qui frappe, un nouveau panneau du bas.
+- **Le monde** : ponts, fontaine, flaques sous la pluie, mouettes au bord de la mer, terres volcaniques, neige.
+- **Intérieurs** : chapelle à vitraux, auberge, boutique et maison de soin ont chacune leur style ; la nuit, les
+  fenêtres sont sombres et la pièce prend la lumière des bougies.
+- **Interface** : titre doré, nom des lieux en ruban à l'arrivée, fenêtres aux coins arrondis.
 
 ## Mode Expédition (roguelite)
 
