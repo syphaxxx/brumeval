@@ -204,6 +204,7 @@ class Game {
   void checkDiscussions();
   // Exploits (exploits.cpp, data/exploits.json) : objectifs à atteindre, drapeaux « exploit:<id> »
   void checkExploits();
+  bool exploitsOff_ = false;  // mode test : pas de vérification des exploits (sauf dans leur test)
   void exploitsMenu();
   int exploitsDone() const;
   int lastNewTalks_ = 0;

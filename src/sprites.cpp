@@ -541,9 +541,19 @@ static void ground(Gfx& g, Theme th, int sx, int sy, int h, int x, int y) {
     }
     if (h % 17 == 0) g.rect(sx + 2 + (h >> 5) % 11, sy + 2 + (h >> 9) % 11, 1, 1, rgb((h >> 2) % 2 ? 0xfff2a0 : 0xffffff));  // fleurette
   } else if (th == Theme::Cendres) {
-    g.rect(sx, sy, 16, 16, rgb(0x6e625c));
+    // (2026-10-21) la roche volcanique n'est plus un aplat : nuance par case, plaques de cendre claire, fissures,
+    // gravier ; rarement une braise qui rougeoit encore
+    int v = hsh(x / 3, y / 3) % 3 - 1;  // nuance par grandes plaques (une case seule ferait un damier)
+    g.rect(sx, sy, 16, 16, rgb(uint32_t((0x6e + v * 2) << 16 | (0x62 + v * 2) << 8 | (0x5c + v * 2))));
+    if (h % 7 == 0) g.ellipse(sx + 5 + (h >> 3) % 7, sy + 6 + (h >> 6) % 5, 5, 2.5f, rgb(0x8a7e76, 120));  // cendre claire
+    if (h % 5 == 1) {  // une fissure
+      int fx = sx + 2 + (h >> 7) % 9, fy = sy + 3 + (h >> 10) % 9;
+      g.rect(fx, fy, 3, 1, rgb(0x4a403c)), g.rect(fx + 3, fy + 1, 2, 1, rgb(0x4a403c)), g.rect(fx + 4, fy + 2, 1, 2, rgb(0x4a403c));
+    }
     g.rect(sx + h % 13, sy + (h >> 4) % 13, 2, 1, rgb(0x5f544f));
     g.rect(sx + (h >> 8) % 12 + 2, sy + (h >> 12) % 12 + 2, 1, 1, rgb(0x857770));
+    g.rect(sx + (h >> 11) % 13 + 1, sy + (h >> 2) % 12 + 2, 1, 1, rgb(0x8f8278));
+    if (h % 61 == 0) g.rect(sx + 4 + (h >> 4) % 8, sy + 5 + (h >> 9) % 8, 2, 1, rgb(0xd9541e));  // une braise
   } else if (th == Theme::Foret) {
     g.rect(sx, sy, 16, 16, rgb(0x3f7d45));
     g.rect(sx + h % 13, sy + (h >> 4) % 13, 2, 1, rgb(0x34693a));

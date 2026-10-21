@@ -35,6 +35,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   g.checkLayout = true;                // chaque image dessinée vérifie la mise en page (gfx.cpp)
   offerEvolve_ = false;                // les évolutions ne sont proposées que dans leur propre test
   tipsOff_ = true;                     // les astuces aussi (2.8)
+  exploitsOff_ = true;                 // et les exploits (sinon leur annonce passe sur les captures), sauf dans leur test
   g.spotFrench = translating();        // en anglais : repérer ce qui reste en français (3.1)
   int fails = 0;
   auto check = [&](bool ok, const std::string& what) {
@@ -2804,6 +2805,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       menus.clear();
       sc.clear();
       noticeT_ = 0;
+      exploitsOff_ = false;
       checkExploits();
       bool got = has("exploit:gardien") && noticeT_ > 0 && notice_.find(tr("Apprenti gardien")) != std::string::npos;
       for (int i = 0; i < exploitCount() && noticeT_ > 0; i++) noticeT_ = 0, checkExploits();  // d'autres, selon l'équipe du test
@@ -2818,6 +2820,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       show("exploits");
       snap("exploits");
       menus.clear();
+      exploitsOff_ = true;
       check(got && once && kept && listed, "exploits : un objectif atteint s'annonce une seule fois, reste acquis et se coche dans Journal > Exploits");
       flags = savedFlags;
     }
