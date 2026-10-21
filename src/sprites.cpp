@@ -963,18 +963,20 @@ static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, 
       }
       if (c == 'B') {
         bool horiz = at(x - 1, y) == '=' || at(x + 1, y) == '=' || at(x - 1, y) == 'B' || at(x + 1, y) == 'B';
-        g.rect(sx, sy, 16, 16, rgb(0xa0703f));
+        // (2026-10-21) un vrai pont : son ombre sur l'eau, des planches éclairées et clouées, deux poutres et leurs poteaux
+        // (dessiné dans un repère « horizontal » : u le long du pont, v en travers ; tourné pour un pont vertical)
+        auto R = [&](float u, float v, float w, float hh, Color c) { horiz ? g.rect(sx + u, sy + v, w, hh, c) : g.rect(sx + v, sy + u, hh, w, c); };
+        R(0, 13, 16, 3, rgb(0x0e2a4a, 120));  // l'ombre sur l'eau
+        R(0, 2, 16, 11, rgb(0xa0703f));
         for (int i = 0; i < 16; i += 4) {
-          if (horiz) g.rect(sx + i, sy, 1, 16, rgb(0x7a5230));
-          else g.rect(sx, sy + i, 16, 1, rgb(0x7a5230));
+          R(i, 2, 1, 11, rgb(0x7a5230));
+          R(i + 1, 3, 3, 1, rgb(0xc08a52));  // le bord éclairé de la planche
+          R(i + 2, 5, 1, 1, rgb(0x4a3420)), R(i + 2, 10, 1, 1, rgb(0x4a3420));  // les clous
         }
-        if (horiz) {
-          g.rect(sx, sy, 16, 2, rgb(0x6b4a2f));
-          g.rect(sx, sy + 14, 16, 2, rgb(0x6b4a2f));
-        } else {
-          g.rect(sx, sy, 2, 16, rgb(0x6b4a2f));
-          g.rect(sx + 14, sy, 2, 16, rgb(0x6b4a2f));
-        }
+        R(0, 1, 16, 2, rgb(0x6b4a2f)), R(0, 12, 16, 2, rgb(0x5a3e26));  // les poutres
+        R(1, -1, 2, 4, rgb(0x5a3e26)), R(9, -1, 2, 4, rgb(0x5a3e26));     // les poteaux
+        R(1, 11, 2, 4, rgb(0x4a321e)), R(9, 11, 2, 4, rgb(0x4a321e));
+        R(1, -1, 2, 1, rgb(0x8a6440)), R(9, -1, 2, 1, rgb(0x8a6440));
       }
       break;
     }
