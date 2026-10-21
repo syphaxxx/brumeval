@@ -1269,11 +1269,20 @@ void Game::drawMap() {
     bool open = puzzleSolved(m);
     for (auto& [x, y] : puzzleTiles(m, 'D')) {
       float sx = x * 16 - camX, sy = y * 16 - camY;
-      if (open) g.rect(sx + 1, sy + 13, 14, 2, rgb(0x5a5048, 120));
-      else {
-        g.rect(sx, sy, 16, 16, rgb(0x3a3430));
-        for (int i = 0; i < 4; i++) g.rect(sx + 1 + i * 4, sy, 2, 16, rgb(0x8a8078));
-        g.rect(sx, sy + 3, 16, 2, rgb(0x6a6058));
+      if (open) {  // (2026-10-21) la herse relevée : on n'en voit que les pointes en haut
+        g.rect(sx, sy, 16, 3, rgb(0x2a2420));
+        for (int i = 0; i < 4; i++) g.tri(sx + 1 + i * 4, sy + 3, sx + 3 + i * 4, sy + 3, sx + 2 + i * 4, sy + 6, rgb(0x8a8078));
+      } else {  // une herse de fer : barreaux éclairés d'un côté, deux traverses rivetées, des pointes en bas
+        g.rect(sx, sy, 16, 16, rgb(0x1a1612));
+        for (int i = 0; i < 4; i++) {
+          float bx = sx + 1 + i * 4;
+          g.rect(bx, sy, 2, 14, rgb(0x6a6058)), g.rect(bx, sy, 1, 14, rgb(0xa89e94));
+          g.tri(bx, sy + 14, bx + 2, sy + 14, bx + 1, sy + 16, rgb(0x8a8078));
+        }
+        for (float ty : {sy + 3.f, sy + 10.f}) {
+          g.rect(sx, ty, 16, 2, rgb(0x4a4038)), g.rect(sx, ty, 16, 1, rgb(0x7a7068));
+          for (int i = 0; i < 4; i++) g.rect(sx + 1.5f + i * 4, ty, 1, 1, rgb(0xc8beb4));  // les rivets
+        }
       }
     }
     for (auto& [x, y] : puzzleTiles(m, 'P'))

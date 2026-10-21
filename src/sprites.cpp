@@ -1173,11 +1173,16 @@ static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, 
       g.tri(sx + 8, sy - 1, sx + 17, sy + 16, sx + 10, sy + 16, rgb(0x4a3c37));
       g.tri(sx + 5, sy + 5, sx + 8, sy - 1, sx + 10, sy + 4, rgb(0x8a7a72));
       break;
-    case 'k':
+    case 'k':  // escalier qui descend (2026-10-21) : un cadre de pierre, des marches qui s'enfoncent dans le noir
       ground(g, th, sx, sy, h, x, y);
-      g.tri(sx - 1, sy + 16, sx + 8, sy - 2, sx + 17, sy + 16, rgb(0x5a4a44));
-      g.ellipse(sx + 8, sy + 13, 5, 7, rgb(0x120e18));
-      g.rect(sx + 3, sy + 13, 10, 3, rgb(0x120e18));
+      g.rect(sx + 1, sy + 1, 14, 15, rgb(0x5a4a44));
+      g.rect(sx + 1, sy + 1, 14, 1, rgb(0x8a7a70)), g.rect(sx + 1, sy + 1, 1, 15, rgb(0x7a6a60));
+      g.rect(sx + 3, sy + 3, 10, 13, rgb(0x0c0a10));
+      for (int i = 0; i < 4; i++) {  // de plus en plus sombres et étroites
+        uint8_t v = uint8_t(150 - i * 32);
+        g.rect(sx + 3 + i, sy + 13 - i * 3, 10 - i * 2, 2, rgb(uint32_t(v << 16 | (v - 10) << 8 | (v - 20))));
+        g.rect(sx + 3 + i, sy + 13 - i * 3, 10 - i * 2, 1, rgb(uint32_t((v + 30) << 16 | (v + 20) << 8 | (v + 10))));
+      }
       break;
     case 'c':
       if (th == Theme::Neige) {  // dalles de glace (3.3, Temple) : joints, reflet en biais, fêlures
