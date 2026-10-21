@@ -1647,8 +1647,8 @@ void Game::drawMap() {
       }
     }
     g.alpha = a;
-    if (big) g.textBig(160, cy - 7, bannerText, GOLD, 2, 1);
-    else g.text(160, cy - 4, bannerText, GOLD, 1);
+    if (big) g.textBig(160, cy - 11, bannerText, GOLD, 2, 1);  // le corps des lettres (lignes 2 à 8) au milieu du ruban
+    else g.text(160, cy - 5, bannerText, GOLD, 1);
     g.alpha = 1;
   }
   // Fenêtres
