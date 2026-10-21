@@ -10630,14 +10630,14 @@
                   {
                     "espece": "orage_ancien",
                     "niveau": 118,
-                    "pv": 5,
+                    "pv": 4,
                     "boss": true,
                     "bouclier": 10,
                     "phases": [
                       {"pv": 0.5, "message": "L'écho se renforce !", "bonus": {"attaque": 1, "magie": 1}}
                     ]
                   },
-                  {"espece": "fossiloup", "niveau": 114}
+                  {"espece": "fossiloup", "niveau": 112}
                 ],
                 "boss": true,
                 "fuite": false,
@@ -10652,14 +10652,14 @@
                       {
                         "espece": "veilleur_phare",
                         "niveau": 119,
-                        "pv": 5,
+                        "pv": 4,
                         "boss": true,
                         "bouclier": 10,
                         "phases": [
                           {"pv": 0.5, "message": "L'écho se renforce !", "bonus": {"attaque": 1, "magie": 1}}
                         ]
                       },
-                      {"espece": "spectrecho", "niveau": 115}
+                      {"espece": "spectrecho", "niveau": 113}
                     ],
                     "boss": true,
                     "fuite": false,
@@ -10677,7 +10677,7 @@
                           {
                             "espece": "ombre_gardien",
                             "niveau": 120,
-                            "pv": 5,
+                            "pv": 4,
                             "boss": true,
                             "bouclier": 10,
                             "phases": [
@@ -10688,7 +10688,7 @@
                               }
                             ]
                           },
-                          {"espece": "loup_aube", "niveau": 116}
+                          {"espece": "loup_aube", "niveau": 114}
                         ],
                         "boss": true,
                         "fuite": false,
@@ -10742,14 +10742,14 @@
                   {
                     "espece": "brume_noire",
                     "niveau": 113,
-                    "pv": 5,
+                    "pv": 4,
                     "boss": true,
                     "bouclier": 10,
                     "phases": [
                       {"pv": 0.5, "message": "L'écho se renforce !", "bonus": {"attaque": 1, "magie": 1}}
                     ]
                   },
-                  {"espece": "aubespectre", "niveau": 109}
+                  {"espece": "aubespectre", "niveau": 107}
                 ],
                 "boss": true,
                 "fuite": false,
@@ -10764,14 +10764,14 @@
                       {
                         "espece": "colosse_echo",
                         "niveau": 114,
-                        "pv": 5,
+                        "pv": 4,
                         "boss": true,
                         "bouclier": 10,
                         "phases": [
                           {"pv": 0.5, "message": "L'écho se renforce !", "bonus": {"attaque": 1, "magie": 1}}
                         ]
                       },
-                      {"espece": "petrolin", "niveau": 110}
+                      {"espece": "petrolin", "niveau": 108}
                     ],
                     "boss": true,
                     "fuite": false,
@@ -10786,7 +10786,7 @@
                           {
                             "espece": "phenix_echo",
                             "niveau": 115,
-                            "pv": 5,
+                            "pv": 4,
                             "boss": true,
                             "bouclier": 10,
                             "phases": [
@@ -10797,7 +10797,7 @@
                               }
                             ]
                           },
-                          {"espece": "echoplume", "niveau": 111}
+                          {"espece": "echoplume", "niveau": 109}
                         ],
                         "boss": true,
                         "fuite": false,
@@ -10847,14 +10847,14 @@
                   {
                     "espece": "seigneur_orage",
                     "niveau": 108,
-                    "pv": 5,
+                    "pv": 4,
                     "boss": true,
                     "bouclier": 10,
                     "phases": [
                       {"pv": 0.5, "message": "L'écho se renforce !", "bonus": {"attaque": 1, "magie": 1}}
                     ]
                   },
-                  {"espece": "orageline", "niveau": 104}
+                  {"espece": "orageline", "niveau": 102}
                 ],
                 "boss": true,
                 "fuite": false,
@@ -10869,14 +10869,14 @@
                       {
                         "espece": "gardien_lueurs",
                         "niveau": 109,
-                        "pv": 5,
+                        "pv": 4,
                         "boss": true,
                         "bouclier": 10,
                         "phases": [
                           {"pv": 0.5, "message": "L'écho se renforce !", "bonus": {"attaque": 1, "magie": 1}}
                         ]
                       },
-                      {"espece": "lueurine", "niveau": 105}
+                      {"espece": "lueurine", "niveau": 103}
                     ],
                     "boss": true,
                     "fuite": false,
@@ -10894,7 +10894,7 @@
                           {
                             "espece": "reine_marais",
                             "niveau": 110,
-                            "pv": 5,
+                            "pv": 4,
                             "boss": true,
                             "bouclier": 10,
                             "phases": [
@@ -10905,7 +10905,7 @@
                               }
                             ]
                           },
-                          {"espece": "vasepent", "niveau": 106}
+                          {"espece": "vasepent", "niveau": 104}
                         ],
                         "boss": true,
                         "fuite": false,
@@ -10954,14 +10954,14 @@
                   {
                     "espece": "mere_brumes",
                     "niveau": 103,
-                    "pv": 5,
+                    "pv": 4,
                     "boss": true,
                     "bouclier": 10,
                     "phases": [
                       {"pv": 0.5, "message": "L'écho se renforce !", "bonus": {"attaque": 1, "magie": 1}}
                     ]
                   },
-                  {"espece": "nebulis", "niveau": 99}
+                  {"espece": "nebulis", "niveau": 97}
                 ],
                 "boss": true,
                 "fuite": false,
@@ -10976,14 +10976,14 @@
                       {
                         "espece": "kraken",
                         "niveau": 104,
-                        "pv": 5,
+                        "pv": 4,
                         "boss": true,
                         "bouclier": 10,
                         "phases": [
                           {"pv": 0.5, "message": "L'écho se renforce !", "bonus": {"attaque": 1, "magie": 1}}
                         ]
                       },
-                      {"espece": "murenix", "niveau": 100}
+                      {"espece": "murenix", "niveau": 98}
                     ],
                     "boss": true,
                     "fuite": false,
@@ -10998,7 +10998,7 @@
                           {
                             "espece": "griffon",
                             "niveau": 105,
-                            "pv": 5,
+                            "pv": 4,
                             "boss": true,
                             "bouclier": 10,
                             "phases": [
@@ -11009,7 +11009,7 @@
                               }
                             ]
                           },
-                          {"espece": "fulgoray", "niveau": 101}
+                          {"espece": "fulgoray", "niveau": 99}
                         ],
                         "boss": true,
                         "fuite": false,
@@ -11064,14 +11064,14 @@
                   {
                     "espece": "sylvarque",
                     "niveau": 98,
-                    "pv": 5,
+                    "pv": 4,
                     "boss": true,
                     "bouclier": 10,
                     "phases": [
                       {"pv": 0.5, "message": "L'écho se renforce !", "bonus": {"attaque": 1, "magie": 1}}
                     ]
                   },
-                  {"espece": "brumeloup", "niveau": 94}
+                  {"espece": "brumeloup", "niveau": 92}
                 ],
                 "boss": true,
                 "fuite": false,
@@ -11086,14 +11086,14 @@
                       {
                         "espece": "ignarok",
                         "niveau": 99,
-                        "pv": 5,
+                        "pv": 4,
                         "boss": true,
                         "bouclier": 10,
                         "phases": [
                           {"pv": 0.5, "message": "L'écho se renforce !", "bonus": {"attaque": 1, "magie": 1}}
                         ]
                       },
-                      {"espece": "fournezard", "niveau": 95}
+                      {"espece": "fournezard", "niveau": 93}
                     ],
                     "boss": true,
                     "fuite": false,
@@ -11108,7 +11108,7 @@
                           {
                             "espece": "givrecorne",
                             "niveau": 100,
-                            "pv": 5,
+                            "pv": 4,
                             "boss": true,
                             "bouclier": 10,
                             "phases": [
@@ -11119,7 +11119,7 @@
                               }
                             ]
                           },
-                          {"espece": "givrenard", "niveau": 96}
+                          {"espece": "givrenard", "niveau": 94}
                         ],
                         "boss": true,
                         "fuite": false,

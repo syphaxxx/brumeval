@@ -76,9 +76,9 @@ for k in range(len(CERCLES), 0, -1):
         lv = lvl + j
         chain = [say("Gardienne des échos : %s se lève !" % label),
                  {"action": "combat", "nom": label, "musique": "boss_final" if k == len(CERCLES) and j == len(fights) - 1 else "boss",
-                  "ennemis": [{"espece": boss, "niveau": lv, "pv": 5, "boss": True, "bouclier": 10,
+                  "ennemis": [{"espece": boss, "niveau": lv, "pv": 4, "boss": True, "bouclier": 10,
                                "phases": [{"pv": 0.5, "message": "L'écho se renforce !", "bonus": {"attaque": 1, "magie": 1}}]},
-                              {"espece": evolved(escort, lv), "niveau": lv - 4}],
+                              {"espece": evolved(escort, lv), "niveau": lv - 6}],
                   "boss": True, "fuite": False, "capture": False, "victoire": chain}]
     intro = [say("Gardienne des échos : Le %s cercle : trois échos d'affilée, sans soin entre eux." % nom)]
     if k == 1:
