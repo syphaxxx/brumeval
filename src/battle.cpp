@@ -2650,8 +2650,21 @@ void Battle::drawHud(float t) {
   Color lab = rgb(0xaab3d8);
   size_t n = std::min<size_t>(allies.size(), 6);
   const float hx = 104, rowH = 10, hy = SCREEN_H - 2 - rowH * n;
-  g.rect(hx - 4, hy - 13, g.right() - hx + 4, SCREEN_H - hy + 13, rgb(0x060a24, 190));
-  g.rect(hx - 4, hy - 13, g.right() - hx + 4, 1, rgb(0x8090c8, 120));
+  // (2026-10-21) le panneau dans le style des fenêtres : dégradé bleu nuit, double filet clair en haut
+  g.gradV(hx - 4, hy - 13, g.right() - hx + 4, SCREEN_H - hy + 13, rgb(0x22348a, 240), rgb(0x0a1040, 245));
+  g.rect(hx - 4, hy - 13, g.right() - hx + 4, 1, rgb(0xd8def2, 170));
+  g.rect(hx - 4, hy - 12, g.right() - hx + 4, 1, rgb(0x5a6aa8, 120));
+  g.rect(hx - 4, hy - 13, 1, SCREEN_H - hy + 13, rgb(0xd8def2, 120));
+  // une jauge : cadre sombre, remplissage avec un liseré clair en haut et plus sombre en bas
+  auto gauge = [&](float x, float y, float w, float k, Color c) {
+    g.rect(x - 1, y - 1, w + 2, 6, rgb(0x03051a));
+    g.rect(x, y, w, 4, rgb(0x1a2050));
+    float f = std::round(w * std::clamp(k, 0.f, 1.f));
+    if (f <= 0) return;
+    g.rect(x, y, f, 4, c);
+    g.rect(x, y, f, 1, shade(c, -.35f));
+    g.rect(x, y + 3, f, 1, shade(c, .25f));
+  };
   bool flash = t - toggledT_ < 1.2f && int(t * 8) % 2;  // Tab : mode auto activé ou coupé
   g.text(hx, hy - 12, G.tacticsAuto ? T("Auto") : T("Manuel"), flash ? WHITE : G.tacticsAuto ? GOLD : lab);
   g.text(hx + 92, hy - 12, T("PV"), lab, 2);
@@ -2673,19 +2686,15 @@ void Battle::drawHud(float t) {
     float r = a->mhp ? float(a->hp) / a->mhp : 0;
     Color hc = r > .5f ? GREEN : r > .25f ? GOLD : RED;
     g.text(hx + 92, y - 2, std::to_string(std::max(0, a->hp)), a->alive() ? (r <= .25f ? hc : WHITE) : rgb(0xff7b6b), 2);
-    g.rect(hx + 95, y + 2, 34, 4, rgb(0x1a2050));
-    g.rect(hx + 95, y + 2, 34 * std::clamp(r, 0.f, 1.f), 4, hc);
-    g.rect(hx + 95, y + 2, 34 * std::clamp(r, 0.f, 1.f), 1, shade(hc, -.35f));
+    gauge(hx + 95, y + 2, 34, r, hc);
     g.text(hx + 152, y - 2, std::to_string(a->mp), rgb(0x9fd0ff), 2);
     // Jauge ATB
     float bx = hx + 158, bw = 34;
-    g.rect(bx, y + 2, bw, 4, rgb(0x1a2050));
-    if (a->alive() && a->atb < 0) g.rect(bx, y + 2, bw * std::clamp(-a->atb / 100, 0.f, 1.f), 4, RED);
-    else if (a->alive()) g.rect(bx, y + 2, bw * std::clamp(a->atb / 100, 0.f, 1.f), 4, a->atb >= 100 ? GOLD : rgb(0xe8ecff));
+    if (a->alive() && a->atb < 0) gauge(bx, y + 2, bw, -a->atb / 100, RED);
+    else gauge(bx, y + 2, bw, a->alive() ? a->atb / 100 : 0, a->atb >= 100 ? GOLD : rgb(0xe8ecff));
     // Limite
     float lx = hx + 196, lw = 14, lr = std::clamp(a->lim / 100, 0.f, 1.f);
-    g.rect(lx, y + 2, lw, 4, rgb(0x1a2050));
-    g.rect(lx, y + 2, lw * lr, 4, lr >= 1 && int(t * 5) % 2 ? WHITE : rgb(0xff6fb0));
+    gauge(lx, y + 2, lw, lr, lr >= 1 && int(t * 5) % 2 ? WHITE : rgb(0xff6fb0));
   }
 
 }
