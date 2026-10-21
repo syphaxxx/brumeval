@@ -638,7 +638,7 @@ void Online::draw(Gfx& g) {
   float L = g.left(), W = (float)g.fullW;
   g.gradV(L, 0, W, SCREEN_H, rgb(0x16123a), rgb(0x3a2c6e));
   g.poly({{L, 176}, {50, 150}, {120, 168}, {190, 136}, {260, 160}, {L + W, 140}, {L + W, 240}, {L, 240}}, rgb(0x241e50));
-  g.text(160, 10, T("MULTIJOUEUR"), GOLD, 1);
+  g.textBigFancy(160, 5, T("MULTIJOUEUR"), rgb(0xfff0a0), rgb(0xe8902a), rgb(0x2a1606), 2, 1);
   // Panneau de droite : ce qu'il faut savoir à cette étape
   if (G.menus.maxRight() <= 158) {
     std::vector<std::pair<std::string, Color>> lines;

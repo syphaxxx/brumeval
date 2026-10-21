@@ -679,7 +679,7 @@ void Arena::draw() {
   g.gradV(g.left(), 0, g.fullW, SCREEN_H, rgb(0x231638), rgb(0x47305e));
   g.ellipse(160, 250, 210 + g.ox, 60, rgb(0x2d1f46));
   g.ellipse(160, 250, 170 + g.ox, 40, rgb(0x3a2a52));
-  g.text(160, 4, T("ARÈNE DE COMBAT"), GOLD, 1);
+  g.textBigFancy(160, 4, T("ARÈNE DE COMBAT"), rgb(0xfff0a0), rgb(0xe8902a), rgb(0x2a1606), 1, 1);
   if (simRunning_) {
     g.window(60, 90, 200, 60);
     g.text(160, 98, T("Simulation en cours…"), WHITE, 1);
