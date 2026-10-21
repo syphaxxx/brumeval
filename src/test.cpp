@@ -1329,6 +1329,16 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     B.sc.clear();
     run(.8f);
     snap("99_meteo_terrain");
+    {  // Orage (graphismes, 2026-10-21) : l'éclair, pris au moment où il tombe
+      int keep = B.weather_;
+      float keepT = time;
+      for (size_t i = 0; i < rules().weathers.size(); i++)
+        if (rules().weathers[i].fx == "orage") B.weather_ = (int)i;
+      time = 4.3f * 20 + .05f;
+      draw();
+      snap("meteo_orage");
+      B.weather_ = keep, time = keepT;
+    }
     check(clash && pushed && pulled && edge && boss, "pousser / tirer : choc sur une case prise et contre le bord, une case de plus, boss inébranlable");
     check(burnt && slowed && onArrival && rain, "terrain et météo : braises (fin du tour, arrivée), verglas plus lent, pluie qui renforce l'Eau");
     battle_.reset();

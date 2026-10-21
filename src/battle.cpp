@@ -768,12 +768,31 @@ void Battle::drawWeather() {
       float x = L + std::fmod(hash(i) * W + t * 40, W), y = std::fmod(hash(i + 99) * SCREEN_H + t * 260, (float)SCREEN_H);
       g.line(x, y, x - 2, y + 7, 1, rgb(0xb8d8ff, 150));
     }
-    if (fx == "orage" && std::fmod(t, 4.3f) < .12f) g.rect(L, 0, W, SCREEN_H, rgb(0xffffff, 120));  // éclair
+    for (int i = 0; i < 22; i++) {  // (2026-10-21) les gouttes éclaboussent le sol
+      float k = std::fmod(t * 2.5f + hash(i + 300), 1.f);
+      float x = L + hash(i + 400 + int(t * 2.5f + hash(i + 300)) * 37) * W, y = 70 + hash(i + 500 + int(t * 2.5f + hash(i + 300)) * 13) * 120;
+      g.ellipse(x, y, 1 + k * 3, .5f + k, rgb(0xd8e8ff, uint8_t(150 * (1 - k))));
+    }
+    if (fx == "orage") {  // l'éclair : un trait brisé du ciel à l'horizon, sa lueur, puis l'écran blanchit et s'efface
+      float ph = std::fmod(t, 4.3f);
+      if (ph < .35f) {
+        int n = int(t / 4.3f);
+        float a = 1 - ph / .35f, x = L + hash(n * 7 + 1) * W, y = 0;
+        g.rect(L, 0, W, SCREEN_H, rgb(0xffffff, uint8_t(110 * a * a)));
+        for (int s = 0; s < 7; s++) {
+          float nx = x + (hash(n * 31 + s) - .5f) * 16, ny = y + 8 + hash(n * 17 + s) * 4;
+          g.line(x, y, nx, ny, 3, rgb(0xb8d0ff, uint8_t(120 * a)));
+          g.line(x, y, nx, ny, 1, rgb(0xffffff, uint8_t(255 * a)));
+          x = nx, y = ny;
+        }
+      }
+    }
   } else if (fx == "neige") {
     g.rect(L, 0, W, SCREEN_H, rgb(0xe8f4ff, 30));
-    for (int i = 0; i < 80; i++) {
-      float x = L + std::fmod(hash(i) * W + std::sin(t + i) * 6 + t * 25, W), y = std::fmod(hash(i + 7) * SCREEN_H + t * 45, (float)SCREEN_H);
-      g.ellipse(x, y, 1.2f, 1.2f, rgb(0xffffff, 210));
+    for (int i = 0; i < 90; i++) {  // flocons de tailles différentes : les petits, plus pâles et plus lents, sont plus loin
+      float d = .5f + hash(i + 13) * .8f;
+      float x = L + std::fmod(hash(i) * W + std::sin(t + i) * 6 * d + t * 25 * d, W), y = std::fmod(hash(i + 7) * SCREEN_H + t * 45 * d, (float)SCREEN_H);
+      g.ellipse(x, y, .7f + d * .8f, .7f + d * .8f, rgb(0xffffff, uint8_t(120 + 100 * d / 1.3f)));
     }
   } else if (fx == "chaleur") {
     g.rect(L, 0, W, SCREEN_H, rgb(0xff8a3a, 28));
