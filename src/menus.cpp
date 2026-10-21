@@ -1202,24 +1202,87 @@ std::vector<int> Game::travelTargets() const {
 }
 
 void Game::drawWorldMap() {
-  // Le lieu de départ : la carte où l'on est, ou celle où mène la sortie d'un intérieur
+  // Carte illustrée (2026-10-21) : parchemin taché et bordé, rose des vents ; sous chaque lieu découvert, un petit
+  // dessin de son paysage (arbres, sommets, neige, entrée de grotte, vagues pour un lieu au bord de l'eau) ; les
+  // chemins en pointillés ; les noms des villages, du lieu où l'on est et de la destination choisie, placés sans se
+  // chevaucher (les autres lieux n'ont que leur dessin).
   int here = mapId;
   if (M().theme == Theme::Interieur)
     for (auto& w : M().warps)
       if (int t = mapIndex(w.map); t >= 0 && maps()[t].worldX >= 0) here = t;
   auto targets = travelTargets();
   auto open = worldOpen();  // passage fermé : on ne voit pas encore ce qu'il y a derrière
-  const float X0 = 18, Y0 = 34, WW = 284, HH = 176;
+  const float X0 = 22, Y0 = 34, WW = 276, HH = 168;
   auto P = [&](const MapDef& m) { return Pt{X0 + m.worldX / 100 * WW, Y0 + m.worldY / 100 * HH}; };
+  static std::vector<float> wet;  // part d'eau de chaque carte (calculée une fois)
+  if (wet.size() != maps().size()) {
+    wet.assign(maps().size(), 0.f);
+    for (size_t i = 0; i < maps().size(); i++) {
+      int n = 0, tot = 0;
+      for (auto& r : maps()[i].rows)
+        for (char c : r) n += c == '~', tot++;
+      wet[i] = tot ? float(n) / tot : 0.f;
+    }
+  }
+  const Color INK = rgb(0x4a321c), INK2 = rgb(0x6a4a2a);
   g.newLayer();
   g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0x050816, 200));
   g.rect(8, 8, 304, 224, rgb(0x3a2a1a));
-  g.gradV(10, 10, 300, 220, rgb(0xeee0bc), rgb(0xd8c28e));  // parchemin
-  g.text(160, 13, T("Carte du monde"), rgb(0x4a321c), 1, false);
-  g.ellipse(X0 + .40f * WW, Y0 + .66f * HH, 46, 11, rgb(0x7fb0d8, 160));  // le lac, entre la vallée et l'archipel
-  for (int i = 0; i < 4; i++)                                             // les montagnes du nord-est
-    g.tri(X0 + (.70f + i * .07f) * WW - 9, Y0 + .24f * HH, X0 + (.70f + i * .07f) * WW, Y0 + .14f * HH, X0 + (.70f + i * .07f) * WW + 9,
-          Y0 + .24f * HH, rgb(0xa89878, 150));
+  g.gradV(10, 10, 300, 220, rgb(0xf0e4c4), rgb(0xd6bf8a));  // parchemin
+  for (int i = 0; i < 9; i++) {                              // taches et usure
+    float x = 20 + (i * 97) % 270, y = 22 + (i * 61) % 190;
+    g.ellipse(x, y, 10 + i % 4 * 6, 6 + i % 3 * 4, rgb(0xb89a64, 26));
+  }
+  g.frame(13, 13, 294, 214, rgb(0x8a6a44));  // double filet
+  g.frame(15, 15, 290, 210, rgb(0xa8885a));
+  for (float cx : {15.f, 305.f})
+    for (float cy : {15.f, 225.f}) g.ellipse(cx, cy, 3, 3, rgb(0x8a6a44));  // coins
+  g.text(160, 18, T("Carte du monde"), INK, 1, false);
+  // Rose des vents (en bas à droite)
+  {
+    float cx = 284, cy = 196;
+    g.ellipse(cx, cy, 11, 11, rgb(0xb89a64, 90));
+    g.poly({{cx, cy - 13}, {cx + 3, cy}, {cx, cy + 13}, {cx - 3, cy}}, INK2);
+    g.poly({{cx - 13, cy}, {cx, cy - 3}, {cx + 13, cy}, {cx, cy + 3}}, rgb(0x8a6a44));
+    g.poly({{cx, cy - 13}, {cx + 3, cy}, {cx - 3, cy}}, rgb(0xb8402a));
+    g.text(cx, cy - 23, "N", INK, 1, false);
+  }
+  // Paysages des lieux découverts
+  for (size_t i = 0; i < maps().size(); i++) {
+    if (!open[i]) continue;
+    const MapDef& m = maps()[i];
+    Pt p = P(m);
+    int h = int(i * 37 + 11);
+    if (wet[i] > .12f)  // au bord de l'eau : une tache bleue et des vaguelettes
+      for (int k = 0; k < 3; k++) {
+        float wx = p.x + (k - 1) * 9 + (h >> k) % 5 - 2, wy = p.y + 7 + (k % 2) * 3;
+        g.ellipse(wx, wy, 11, 5, rgb(0x7fb0d8, 120));
+        g.rect(wx - 3, wy - 1, 3, 1, rgb(0x4a80b0, 200)), g.rect(wx, wy, 3, 1, rgb(0x4a80b0, 200));
+      }
+    if (m.theme == Theme::Foret)  // de petits arbres
+      for (int k = 0; k < 5; k++) {
+        float tx = p.x - 12 + k * 6, ty = p.y - 3 + (k % 2) * 4 - (k == 2) * 2;
+        g.rect(tx, ty + 2, 1, 3, rgb(0x5a3a1a));
+        g.ellipse(tx + .5f, ty, 3, 3.5f, rgb(k % 2 ? 0x2f6a3a : 0x3e7f44));
+      }
+    else if (m.theme == Theme::Cendres || m.theme == Theme::Neige) {  // des sommets (enneigés dans le froid)
+      bool snow = m.theme == Theme::Neige;
+      for (int k = 0; k < 3; k++) {
+        float mx = p.x - 10 + k * 10, my = p.y + 2 - (k == 1) * 3, s = k == 1 ? 9.f : 7.f;
+        g.tri(mx - s, my, mx, my - s * 1.3f, mx + s, my, rgb(snow ? 0x9ab4cc : 0xa08468));
+        g.tri(mx, my, mx, my - s * 1.3f, mx + s, my, rgb(snow ? 0x7a94b0 : 0x806448));  // le versant à l'ombre
+        g.tri(mx - s * .35f, my - s * .85f, mx, my - s * 1.3f, mx + s * .35f, my - s * .85f, rgb(snow ? 0xffffff : 0xc8b090));
+      }
+      if (m.id == "cendrelune" || m.id == "cratere") g.ellipse(p.x, p.y - 13, 3, 2, rgb(0xd9541e, 200));  // le volcan fume
+    } else if (m.theme == Theme::Grotte) {  // l'entrée d'une grotte
+      g.ellipse(p.x, p.y - 1, 9, 7, rgb(0x8a7a66));
+      g.ellipse(p.x, p.y + 1, 5, 5, rgb(0x2a2018));
+    } else if (wet[i] <= .12f)  // prairie : des touffes d'herbe
+      for (int k = 0; k < 4; k++) {
+        float gx = p.x - 10 + k * 7, gy = p.y + 5 + (k % 2) * 3;
+        g.rect(gx, gy, 1, 2, rgb(0x5f9a52)), g.rect(gx + 2, gy - 1, 1, 3, rgb(0x5f9a52));
+      }
+  }
   // Chemins entre les lieux ouverts : des pointillés
   for (size_t i = 0; i < maps().size(); i++) {
     if (!open[i]) continue;
@@ -1228,35 +1291,71 @@ void Game::drawWorldMap() {
       if (t <= (int)i || !open[(size_t)t]) continue;
       Pt a = P(maps()[i]), b = P(maps()[(size_t)t]);
       float d = std::hypot(b.x - a.x, b.y - a.y);
-      for (float k = 0; k < d; k += 5) g.rect(a.x + (b.x - a.x) * k / d - .5f, a.y + (b.y - a.y) * k / d - .5f, 2, 2, rgb(0x8a6a44));
+      for (float k = 6; k < d - 6; k += 4) g.rect(std::round(a.x + (b.x - a.x) * k / d), std::round(a.y + (b.y - a.y) * k / d), 2, 1, rgb(0x8a6a44));
     }
   }
+  // Les lieux, puis leurs noms (sans chevauchement : sous le point, sinon au-dessus, à droite ou à gauche)
+  std::vector<std::array<float, 4>> taken;  // rectangles déjà occupés par un nom
   for (size_t i = 0; i < maps().size(); i++) {
     if (!open[i]) continue;
     const MapDef& m = maps()[i];
     Pt p = P(m);
     uint32_t col = m.theme == Theme::Foret ? 0x2f6a3a : m.theme == Theme::Cendres ? 0xc0502a : m.theme == Theme::Neige ? 0x8ab8e0
                    : m.theme == Theme::Grotte ? 0x6a5a8a : 0x5fa84f;
-    g.ellipse(p.x, p.y + 1, 6, 5, rgb(0x000000, 60));
-    g.ellipse(p.x, p.y, 6, 5, rgb(0x3a2a1a));
-    g.ellipse(p.x, p.y, 4.5f, 3.5f, rgb(col));
-    if ((int)i == here) {  // vous êtes ici : un anneau doré qui pulse, et Lior au-dessus
-      float k = .5f + .5f * std::sin(time * 5);
-      g.ellipse(p.x, p.y, 8 + k * 2, 7 + k * 2, rgb(0xffd34d, uint8_t(90 + 80 * k)));
-      g.ellipse(p.x, p.y, 4.5f, 3.5f, rgb(col));
-      if (const SpriteRect* r = findSprite("lior_bas_0")) g.sprite(*r, std::round(p.x - 10 - r->w * .7f), std::round(p.y + 3 - r->h * .7f), false, .7f);  // à gauche du point
+    bool village = false;
+    for (auto& b : m.buildings) village = village || b.kind == "soin";
+    g.ellipse(p.x, p.y + 1, 5, 4, rgb(0x000000, 60));
+    if (village) {  // un village : une petite maison
+      g.rect(p.x - 4, p.y - 2, 8, 5, rgb(0xe8d8b0));
+      g.tri(p.x - 5, p.y - 2, p.x, p.y - 6, p.x + 5, p.y - 2, rgb(0xb8402a));
+      g.rect(p.x - 1, p.y, 2, 3, rgb(0x5a3a1a));
+    } else {
+      g.ellipse(p.x, p.y, 4, 3.5f, rgb(0x3a2a1a));
+      g.ellipse(p.x, p.y, 3, 2.5f, rgb(col));
     }
+    if ((int)i == here) {  // vous êtes ici : un anneau doré qui pulse, et Lior à côté
+      float k = .5f + .5f * std::sin(time * 5);
+      g.ellipse(p.x, p.y, 8 + k * 2, 7 + k * 2, rgb(0xffd34d, uint8_t(70 + 70 * k)));
+      if (const SpriteRect* r = findSprite("lior_bas_0")) {  // Lior, debout au-dessus du lieu
+        g.sprite(*r, std::round(p.x - r->w * .35f), std::round(p.y - 6 - r->h * .7f), false, .7f);
+        taken.push_back({p.x - r->w * .35f, p.y - 6 - r->h * .7f, r->w * .7f, r->h * .7f});
+      }
+    }
+    taken.push_back({p.x - 8, p.y - 7, 16, 13});  // le dessin du lieu : aucun nom par-dessus
     bool sel = (int)i == worldSel_, can = std::find(targets.begin(), targets.end(), (int)i) != targets.end();
-    if (sel) {  // la destination choisie : un anneau bleu
+    if (sel) {
       float k = .5f + .5f * std::sin(time * 6);
-      g.ellipse(p.x, p.y, 9 + k * 2, 8 + k * 2, rgb(0x2a7ad8, uint8_t(120 + 80 * k)));
-      g.ellipse(p.x, p.y, 4.5f, 3.5f, rgb(col));
+      g.ellipse(p.x, p.y, 9 + k * 2, 8 + k * 2, rgb(0x2a7ad8, uint8_t(110 + 80 * k)));
     } else if (can)
-      g.ellipse(p.x + 5, p.y - 4, 1.5f, 1.5f, rgb(0x2a7ad8));  // un village où l'on peut aller
-    std::string name = m.name;
-    g.text(p.x, p.y + 6, name, sel ? rgb(0x1a4a9a) : (int)i == here ? rgb(0x8a2a10) : rgb(0x4a321c), 1, false);
+      g.ellipse(p.x + 6, p.y - 5, 1.5f, 1.5f, rgb(0x2a7ad8));
   }
-  g.text(160, 218, targets.empty() ? T("Entrée ou Échap : fermer")
+  for (int pass = 0; pass < 2; pass++)  // d'abord la destination et le lieu actuel (leur nom passe avant les autres)
+    for (size_t i = 0; i < maps().size(); i++) {
+      if (!open[i]) continue;
+      const MapDef& m = maps()[i];
+      bool village = false;
+      for (auto& b : m.buildings) village = village || b.kind == "soin";
+      bool sel = (int)i == worldSel_, me = (int)i == here;
+      if ((pass == 0) != (sel || me) || !(village || sel || me)) continue;
+      Pt p = P(m);
+      float w = (float)Gfx::textW(m.name), hgt = 9;
+      std::array<std::array<float, 2>, 4> spots = {{{p.x - w / 2, p.y + 6}, {p.x - w / 2, p.y - 17}, {p.x + 9, p.y - 4}, {p.x - 9 - w, p.y - 4}}};
+      std::array<float, 2> at = spots[0];
+      float best = 1e9f;  // la place la moins encombrée (surface recouverte)
+      for (auto& sp : spots) {
+        float cost = (sp[0] < 16 || sp[0] + w > 304 || sp[1] < 26 || sp[1] + hgt > 210) ? 1e6f : 0.f;
+        for (auto& r : taken)
+          cost += std::max(0.f, std::min(sp[0] + w + 2, r[0] + r[2]) - std::max(sp[0] - 2, r[0])) *
+                  std::max(0.f, std::min(sp[1] + hgt, r[1] + r[3]) - std::max(sp[1], r[1]));
+        if (cost < best - .5f) best = cost, at = sp;
+      }
+      taken.push_back({at[0], at[1], w, hgt});
+      g.rect(at[0] - 2, at[1] - 1, w + 4, hgt + 1, rgb(0xf2e6c6, 215));  // une petite étiquette de parchemin
+      g.text(at[0], at[1], m.name, sel ? rgb(0x1a4a9a) : me ? rgb(0x8a2a10) : INK, 0, false);
+    }
+  g.text(160, 213, targets.empty() ? T("Entrée ou Échap : fermer")
                    : worldSel_ >= 0 ? T("Entrée : y aller · Échap : fermer") : T("Flèches : choisir un village · Échap : fermer"),
-         rgb(0x6a4a2a), 1, false);
+         INK2, 1, false);
 }
+
+

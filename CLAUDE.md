@@ -644,7 +644,9 @@ code) ; `docs/GUIDE.md` les range par domaine.
   dessus en texture sombre ou enneigé, face éclairée là où le mur touche le sol par en dessous, ombre au pied) ; roche
   propre à chaque donjon (`teinte_murs`, `MapDef::wallTint`, sol plus clair de la même teinte : `caveFloor`) ; lanterne
   des lieux obscurs en fondu de douze anneaux qui vacille, cristaux `x` qui brillent dans le noir. Captures
-  `donjon_<carte>` du mode test. Second dossier de compilation `build-gfx` quand `build-dev` est occupé (démo ouverte).
+  `donjon_<carte>` du mode test. Combats : sol en perspective, brume d'horizon, vignette. Carte du monde illustrée (`drawWorldMap` :
+  parchemin, rose des vents, paysage de chaque lieu découvert, noms des villages placés au moins encombré ;
+  capture `carte_monde_fin`). Second dossier de compilation `build-gfx` quand `build-dev` est occupé (démo ouverte).
 - Épreuves des gardiens (2026-10-20) : après `aube_fin`, la porte du sanctuaire d'Aube (événement `epreuves`) ouvre huit
   combats contre des esprits gardiens (drapeaux `epreuve1`…`epreuve8`, niveaux 70 à 84), puis Ilya (`epreuve9`,
   Insigne des gardiens) ; quête `epreuves`. Script `outils/villes/epreuves.py` ; une phase à mi-vie pour chaque gardien,

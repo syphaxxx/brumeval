@@ -2686,6 +2686,33 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       menus.clear();
       flags = savedFlags;
     }
+    {  // Carte du monde de fin de partie : tous les passages ouverts, tous les lieux dessinés et nommés sans se chevaucher
+      auto savedFlags = flags;
+      auto savedItems = items;
+      for (auto& mp : maps())
+        for (auto& w : mp.warps) {
+          if (w.condition.is_null()) continue;
+          auto list = [](const Json& j) {  // une chaîne ou une liste de chaînes
+            std::vector<std::string> v;
+            if (j.is_string()) v.push_back(j.get<std::string>());
+            if (j.is_array())
+              for (auto& e : j)
+                if (e.is_string()) v.push_back(e.get<std::string>());
+            return v;
+          };
+          for (auto& f : list(w.condition.value("drapeau", Json()))) flags.insert(f);
+          for (auto& it : list(w.condition.value("objet", Json()))) items[it] = 1;
+        }
+      menus.clear();
+      sc.clear();
+      changeMap(mi("vallee"), 16, 12, DOWN);
+      worldMapOn_ = true;
+      draw();
+      snap("carte_monde_fin");
+      worldMapOn_ = false;
+      flags = savedFlags;
+      items = savedItems;
+    }
     {  // Galerie des donjons (graphismes, 2026-10-21) : chaque grotte et lieu de glace vu près de son centre
       auto savedFlags = flags;
       float savedTime = time;
