@@ -2783,15 +2783,21 @@ void Battle::draw() {
     for (int i = 0; i < 18 * more / 100; i++)
       g.rect(L + std::fmod(i * 41 + t * 6, W), std::fmod(i * 23 + t * 14, 180.f), 1, 1, rgb(0xffb347, 160));
   } else {
-    g.gradV(L, 0, W, HZ, rgb(0x120e18), rgb(0x2e2838));
+    // (2026-10-21) la roche du donjon où l'on se bat (« teinte_murs » de la carte) colore la grotte du combat
+    uint32_t rock = G.mapId >= 0 && G.mapId < (int)maps().size() && G.M().theme == Theme::Grotte && G.M().wallTint ? G.M().wallTint : 0x46405a;
+    auto tone = [&](float k) {
+      auto c = [&](int sh) { return uint32_t(std::min(255, int(((rock >> sh) & 255) * k))); };
+      return c(16) << 16 | c(8) << 8 | c(0);
+    };
+    g.gradV(L, 0, W, HZ, rgb(tone(.28f)), rgb(tone(.65f)));
     for (int i = L < 0 ? (int)std::floor(L / 23) - 1 : 0; i * 23.f < R; i++) {  // stalactites, et une goutte qui tombe de temps en temps
       float x = i * 23.f + (i * 7) % 9, len = 8 + (i * 13) % 14;
-      g.tri(x - 4, 0, x + 4, 0, x, len, rgb(0x241e30));
-      g.tri(x - 2, 0, x + 1, 0, x - 1, len - 3, rgb(0x3a3248));
+      g.tri(x - 4, 0, x + 4, 0, x, len, rgb(tone(.52f)));
+      g.tri(x - 2, 0, x + 1, 0, x - 1, len - 3, rgb(tone(.8f)));
       float ph = std::fmod(t * .7f + i * .37f, 3.f);
       if (ph < 1) g.rect(x, len + ph * (HZ - len), 1, 2, rgb(0x9fd8ff, 160));
     }
-    ground(0x3a3444, 0x585060);
+    ground(tone(.82f), tone(1.25f));
     for (int i = L < 0 ? (int)std::floor((L - 20) / 70) : 0; 20 + i * 70.f < R; i++) {
       float x = 20 + i * 70.f;
       g.ellipse(x, HZ - 4, 9, 6, rgb(0x7fd6ff, uint8_t(40 + 30 * std::sin(t * 2 + i))));

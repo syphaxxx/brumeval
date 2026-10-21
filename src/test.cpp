@@ -2710,6 +2710,14 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       draw();
       snap("combat_port");
       battle_.reset();
+      changeMap(mi("mines"), 20, 16, DOWN);
+      startBattle({makeFighter("galetor", 20)}, false, nullptr);
+      run(1.5f);
+      menus.clear();
+      if (battle_) battle_->sc.clear();
+      draw();
+      snap("combat_mines");
+      battle_.reset();
       mode = Mode::Map;
       menus.clear();
       time = keepT;
