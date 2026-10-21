@@ -563,6 +563,10 @@ static void ground(Gfx& g, Theme th, int sx, int sy, int h, int x, int y) {
   } else if (th == Theme::Neige) {
     // Neige (3.3) : des rides de vent, des congères avec leur ombre, des brins secs qui dépassent et des cristaux
     g.rect(sx, sy, 16, 16, rgb(0xe8eef6));
+    // (2026-10-21) de grandes ondulations de la neige : par endroits un peu bleutée, par endroits plus claire
+    int dune = hsh(x / 3, y / 2) % 5;
+    if (dune == 0) g.rect(sx, sy, 16, 16, rgb(0xb8cce6, 16));
+    else if (dune == 1) g.rect(sx, sy, 16, 16, rgb(0xffffff, 28));
     g.rect(sx + h % 13, sy + (h >> 4) % 13, 2, 1, rgb(0xcdd8e8));
     g.rect(sx + (h >> 8) % 12 + 2, sy + (h >> 12) % 12 + 2, 1, 1, rgb(0xffffff));
     int k = (h >> 5) % 13;
