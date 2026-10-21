@@ -3055,7 +3055,10 @@ void Battle::draw() {
           if (std::abs(px - p->x) < w + 10 && std::abs(py - y) < 9) y = py - 9, moved = true;
       }
       placed.push_back({p->x, y});
-      g.text(p->x, y, p->text, p->col, 1);
+      // (2026-10-21) contour sombre et dégradé (clair en haut) : lisible sur tous les décors
+      Color light = mix(p->col, rgb(0xffffff), .55f), dark = rgb(0x10081a);
+      light.a = p->col.a, dark.a = p->col.a;
+      g.textBigFancy(p->x, y, p->text, light, p->col, dark, 1, 1);
     }
   }
   if (flashT >= 0 && t - flashT < .5f) {
