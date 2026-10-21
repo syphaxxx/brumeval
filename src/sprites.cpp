@@ -1462,8 +1462,14 @@ void drawChimneySmoke(Gfx& g, const Building& b, int sx, int sy, float t) {
 void drawChest(Gfx& g, int sx, int sy, bool open, float t) {
   g.ellipse(sx + 8, sy + 14, 7, 2, rgb(0, 50));
   if (const SpriteRect* r = findSprite("coffre")) {  // ouvert : assombri, couvercle rabattu
-    g.sprite(*r, sx + 8 - r->w / 2, sy + 15 - r->h, false, 1, open ? rgb(0x8a8a9a) : rgb(0xffffff));
-    if (open) g.rect(sx + 8 - r->w / 2 + 2, sy + 15 - r->h + 2, r->w - 4, 2, rgb(0x2a1a0a));
+    float x0 = sx + 8 - r->w / 2, y0 = sy + 15 - r->h;
+    if (open) {  // (2026-10-21) vraiment ouvert : le couvercle relevé derrière, l'intérieur sombre, la caisse devant
+      int lid = r->h * 2 / 5;
+      g.sprite(r->sub(0, 0, r->w, lid), x0, y0 - lid + 2, false, 1, rgb(0x9a8a7a));
+      g.sprite(r->sub(0, lid, r->w, r->h - lid), x0, y0 + lid, false, 1, rgb(0xd8d0c8));
+      g.rect(x0 + 2, y0 + lid, r->w - 4, 2, rgb(0x1a1008));
+    } else
+      g.sprite(*r, x0, y0);
     float k = t < 0 || open ? 1 : std::fmod(t * .45f + sx * .013f + sy * .007f, 1.f) / .12f;  // un éclat toutes les ~2 s
     if (k < 1) {
       float cx = sx + 8 - r->w / 2.f + 3 + k * (r->w - 6), cy = sy + 15 - r->h + 3, s2 = 2.5f * std::sin(k * 3.14159f);
