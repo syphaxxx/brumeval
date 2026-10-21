@@ -2697,6 +2697,23 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       menus.clear();
       flags = savedFlags;
     }
+    {  // Combat au bord de la mer (graphismes, 2026-10-21) : la mer à l'horizon au lieu des arbres
+      float keepT = time;
+      time = 108;
+      menus.clear();
+      sc.clear();
+      changeMap(mi("port"), 10, 12, DOWN);
+      startBattle({makeFighter("ecumet", 20)}, false, nullptr);
+      run(1.5f);
+      menus.clear();
+      if (battle_) battle_->sc.clear();
+      draw();
+      snap("combat_port");
+      battle_.reset();
+      mode = Mode::Map;
+      menus.clear();
+      time = keepT;
+    }
     {  // Carte du monde de fin de partie : tous les passages ouverts, tous les lieux dessinés et nommés sans se chevaucher
       auto savedFlags = flags;
       auto savedItems = items;

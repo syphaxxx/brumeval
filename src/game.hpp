@@ -325,8 +325,8 @@ class Game {
   // Jour et nuit (2.6) : 0 en plein jour, 1 au cœur de la nuit ; un jour dure 12 minutes de jeu.
   // Seulement dehors (pas les intérieurs ni les grottes obscures)
   float nightAmount() const;
-  bool isNight() const;
-  bool coastal(const MapDef& m) const;  // beaucoup d'eau : mouettes au-dessus  // l'heure du jeu (condition « nuit »), même dans un intérieur
+  bool isNight() const;  // l'heure du jeu (condition « nuit »), même dans un intérieur
+  bool coastal(const MapDef& m) const;  // beaucoup d'eau : mouettes au-dessus, la mer au fond des combats
   float rainAmount() const;  // 0 à 1 : une averse sur la carte (dessin, et météo Pluie des combats)
   bool outdoors() const;
   void drawDialogue();

@@ -2720,6 +2720,8 @@ void Battle::draw() {
     return p;
   };
   auto ground = [&](uint32_t far, uint32_t nearC) { g.gradV(L, HZ - 2, W, SCREEN_H - HZ + 2, rgb(far), rgb(nearC)); };
+  // un combat dans un lieu au bord de la mer (le port, les îles) : la mer remplace les collines et les arbres du fond
+  bool seaside = bg == Theme::Vallee && !boss && G.mapId >= 0 && G.mapId < (int)maps().size() && G.M().theme == Theme::Vallee && G.coastal(G.M());
   if (bg == Theme::Vallee && !boss) {
     g.gradV(L, 0, W, HZ, rgb(0x8fc0db), rgb(0xdfeac0));
     // montagnes lointaines (bleutées par la distance) et nuages qui passent lentement
@@ -2729,10 +2731,26 @@ void Battle::draw() {
       float cx = L + std::fmod(i * 97.f + t * 4, W + 140) - 70, cy = 7 + (i % 3) * 8.f;
       g.ellipse(cx, cy, 16, 4, rgb(0xffffff, 190)), g.ellipse(cx - 9, cy + 1, 9, 3, rgb(0xffffff, 170)), g.ellipse(cx + 8, cy - 2, 9, 4, rgb(0xffffff, 200));
     }
-    if (L < 0) g.ellipse(L + 10, HZ, 70, 9, rgb(0xaed08c)), g.ellipse(R - 10, HZ, 70, 10, rgb(0xbcd89a));
-    g.ellipse(70, HZ, 120, 11, rgb(0xbcd89a));
-    g.ellipse(260, HZ + 1, 110, 9, rgb(0xaed08c));
-    ground(0x8cba6c, 0xa8d488);
+    if (seaside) {  // (2026-10-21) au bord de la mer : la mer à l'horizon, ses vagues, une voile au loin
+      g.gradV(L, HZ - 16, W, 16, rgb(0x5a9ad0), rgb(0x3a78b8));
+      for (int i = 0; i < 26 * more / 100; i++) {
+        float x = L + std::fmod(i * 47.f + t * (6 + i % 3 * 3), W + 20) - 10, y = HZ - 14 + (i * 7) % 12;
+        g.rect(x, y, 4 + i % 3 * 2, 1, rgb(0xd8ecff, uint8_t(120 + 60 * std::sin(t * 2 + i))));
+      }
+      float bx = L + std::fmod(t * 3 + 90, W + 60) - 30, by = HZ - 9;
+      g.poly({{bx - 6, by + 2}, {bx + 6, by + 2}, {bx + 4, by + 4}, {bx - 4, by + 4}}, rgb(0x6a4a2a));  // la coque
+      g.tri(bx, by - 9, bx, by + 1, bx + 6, by + 1, rgb(0xf4f0e6));                                // la voile
+      g.rect(bx, by - 9, 1, 11, rgb(0x5a3a1a));
+      float gx = L + std::fmod(t * 11 + 40, W + 40) - 20, gy = 14 + std::sin(t * .9f) * 4, f = std::sin(t * 9) * 2;
+      g.line(gx - 4, gy - f, gx, gy, 1, rgb(0xffffff)), g.line(gx, gy, gx + 4, gy - f, 1, rgb(0xffffff));
+      g.rect(L, HZ - 2, W, 2, rgb(0xe8f4ff, 160));  // l'écume du rivage
+      ground(0xd8c690, 0xa8d488);  // le sable, puis l'herbe
+    } else {
+      if (L < 0) g.ellipse(L + 10, HZ, 70, 9, rgb(0xaed08c)), g.ellipse(R - 10, HZ, 70, 10, rgb(0xbcd89a));
+      g.ellipse(70, HZ, 120, 11, rgb(0xbcd89a));
+      g.ellipse(260, HZ + 1, 110, 9, rgb(0xaed08c));
+      ground(0x8cba6c, 0xa8d488);
+    }
     for (int i = 0; i < 22 * more / 100; i++) g.rect(L + std::fmod(i * 53 + 11.f, W), HZ + 6 + (i * 13) % 120, 8, 2, rgb(0xb6dc94));
   } else if (bg == Theme::Vallee) {
     g.gradV(L, 0, W, HZ, rgb(0x1d1838), rgb(0x5a4d80));
@@ -2791,7 +2809,8 @@ void Battle::draw() {
   }
   {  // Décor de l'horizon (3.3) : arbres, sapins ou rochers de la planche, en rang au fond et quelques-uns plus près
     std::vector<const char*> back, near;
-    if (bg == Theme::Vallee && !boss) back = {"arbre", "arbre_petit", "arbre", "buisson", "arbre_automne"}, near = {"touffe_1", "fleurette_1", "touffe_3"};
+    if (bg == Theme::Vallee && !boss && seaside) near = {"touffe_1", "caillou", "touffe_3"};  // pas d'arbres devant la mer
+    else if (bg == Theme::Vallee && !boss) back = {"arbre", "arbre_petit", "arbre", "buisson", "arbre_automne"}, near = {"touffe_1", "fleurette_1", "touffe_3"};
     else if (bg == Theme::Foret) back = {"sapin", "arbre", "sapin_petit", "sapin"}, near = {"touffe_2", "touffe_4", "fleurette_2"};
     else if (bg == Theme::Neige && !boss) back = {"sapin_neige", "sapin_neige_petit"}, near = {};
     else if (bg == Theme::Cendres) back = {"rochers", "rocher"}, near = {"caillou", "cailloux"};
