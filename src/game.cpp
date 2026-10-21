@@ -1169,7 +1169,7 @@ void Game::drawTitle() {
     float x = L + std::fmod(i * 61.f + std::sin(time * .7f + i) * 20 + 40, W), y = 150 + std::fmod(i * 23.f + std::cos(time * .5f + i * 2) * 10, 60.f);
     g.ellipse(x, y, 1.5f, 1.5f, rgb(0xe8ff9a, uint8_t(90 + 80 * std::sin(time * 3 + i))));
   }
-  g.textBig(160, 26, T("BRUMEVAL"), GOLD, 4, 1);
+  g.textBigFancy(160, 26, T("BRUMEVAL"), rgb(0xfff0a0), rgb(0xe8902a), rgb(0x3a1e08), 4, 1);  // or, de clair à ambré
   {  // reflet qui passe sur le titre
     float k = std::fmod(time, 4.f) / 1.2f;
     if (k < 1) {
@@ -1609,11 +1609,21 @@ void Game::drawMap() {
   if (float k = (time - mapFadeT_) / .3f; k >= 0 && k < 1)  // changement de carte (3.3) : on sort du noir
     g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0x000000, uint8_t(255 * (1 - k) * (1 - k))));
   if (banner > 0 && !menus.active()) {  // le nom de la région s'efface quand un menu s'ouvre
+    // (2026-10-21) un ruban : bande sombre qui s'efface vers les bords, deux filets dorés, le nom en grand s'il tient
     float a = std::min(1.f, banner / .5f);
+    bool big = Gfx::textW(bannerText) * 2 <= 280;
+    float tw = float(big ? Gfx::textW(bannerText) * 2 : Gfx::textW(bannerText)), half = tw / 2 + 36, cy = 22;
+    for (int i = 0; i < (int)half; i++) {
+      float f = 1 - float(i) / half;
+      Color band = rgb(0x0a0c1e, uint8_t(a * 205 * std::min(1.f, f * 1.7f))), line = rgb(0xffd34d, uint8_t(a * 210 * f));
+      for (float x : {159.f - i, 160.f + i}) {
+        g.rect(x, cy - 11, 1, 22, band);
+        g.rect(x, cy - 12, 1, 1, line), g.rect(x, cy + 11, 1, 1, line);
+      }
+    }
     g.alpha = a;
-    int w = Gfx::textW(bannerText) + 24;
-    g.window(160 - w / 2, 10, w, 20);
-    g.text(160, 14, bannerText, GOLD, 1);
+    if (big) g.textBig(160, cy - 7, bannerText, GOLD, 2, 1);
+    else g.text(160, cy - 4, bannerText, GOLD, 1);
     g.alpha = 1;
   }
   // Fenêtres

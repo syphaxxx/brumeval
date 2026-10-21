@@ -425,6 +425,10 @@ void Gfx::textBig(float x, float y, const std::string& s, Color c, int k, int al
     set(pass == 0 ? Color{0, 0, 0, uint8_t(c.a * .85f)} : c);
     int cx = X + (pass == 0 ? k : 0), cy = Y + (pass == 0 ? k : 0);
     for (auto cp : cps) {
+      if (cp == ' ') {  // une espace : rien à dessiner (elle n'a pas de glyphe)
+        cx += 6 * k;
+        continue;
+      }
       auto it = F.find(cp);
       if (it == F.end()) it = F.find('?');
       for (int r = 0; r < 11; r++)
@@ -433,6 +437,35 @@ void Gfx::textBig(float x, float y, const std::string& s, Color c, int k, int al
             SDL_Rect rc{cx + q * k + ox, cy + r * k, k, k};
             SDL_RenderFillRect(r_, &rc);
           }
+      cx += 6 * k;
+    }
+  }
+}
+
+void Gfx::textBigFancy(float x, float y, const std::string& s, Color top, Color bot, Color outline, int k, int align) {
+  auto cps = decode(s);
+  int w = int(cps.size()) * 6 * k;
+  int X = (int)std::lround(x - (align == 1 ? w / 2 : align == 2 ? w : 0)), Y = (int)std::lround(y);
+  auto& F = font();
+  for (int pass = 0; pass < 3; pass++) {  // 0 : ombre portée, 1 : contour, 2 : lettres en dégradé
+    int cx = X + (pass == 0 ? k : 0), cy = Y + (pass == 0 ? k + 1 : 0);
+    for (auto cp : cps) {
+      if (cp == ' ') {
+        cx += 6 * k;
+        continue;
+      }
+      auto it = F.find(cp);
+      if (it == F.end()) it = F.find('?');
+      for (int r = 0; r < 11; r++) {
+        if (pass == 0) set(Color{0, 0, 0, uint8_t(outline.a * .6f)});
+        else if (pass == 1) set(outline);
+        else set(mix(top, bot, std::clamp((r - 2) / 7.f, 0.f, 1.f)));
+        for (int q = 0; q < 5; q++)
+          if (it->second.rows[r] & (1 << (4 - q))) {
+            SDL_Rect rc = pass == 1 ? SDL_Rect{cx + q * k + ox - 1, cy + r * k - 1, k + 2, k + 2} : SDL_Rect{cx + q * k + ox, cy + r * k, k, k};
+            SDL_RenderFillRect(r_, &rc);
+          }
+      }
       cx += 6 * k;
     }
   }

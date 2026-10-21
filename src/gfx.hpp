@@ -73,6 +73,8 @@ class Gfx {
   // Texte (police pixel intégrée, accents français compris)
   void text(float x, float y, const std::string& s, Color c, int align = 0, bool shadow = true);  // align : 0 gauche, 1 centre, 2 droite
   void textBig(float x, float y, const std::string& s, Color c, int scale, int align = 0);
+  // Grand titre (2026-10-21) : contour, ombre portée et dégradé de haut en bas (top -> bottom)
+  void textBigFancy(float x, float y, const std::string& s, Color top, Color bottom, Color outline, int scale, int align = 0);
   static int textW(const std::string& s);
   static std::vector<std::string> wrap(const std::string& s, int width);
   static constexpr int LINE_H = 12;
