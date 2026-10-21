@@ -27,6 +27,7 @@ bool drawFighterIcon(Gfx& g, const Fighter& f, float cx, float cy, float w, floa
 bool drawFighterPose(Gfx& g, const Fighter& f, const std::string& pose, float x, float y, bool faceRight);
 
 void drawTile(Gfx& g, const MapDef& m, int tx, int ty, int sx, int sy, float t);
+void setTileNight(bool night);  // (2026-10-21) la nuit, les fenêtres des intérieurs sont sombres et ne font plus de lumière
 // Objet haut posé sur une case (arbre, réverbère, puits, étal…) : dessiné avec les personnages, triés de haut en
 // bas, pour passer devant ou derrière eux. Faux si la case n'en a pas (drawTile dessine alors tout).
 bool hasProp(const MapDef& m, int tx, int ty);

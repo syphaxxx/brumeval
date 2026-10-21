@@ -2773,6 +2773,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         noticeT_ = 0, banner = 0;
         snap(std::string("donjon_") + id);
       }
+      time = 468;  // la nuit : fenêtres sombres, pas de soleil au sol
+      changeMap(mi("vallee_soin"), 5, 5, DOWN);
+      run(.5f);
+      noticeT_ = 0, banner = 0;
+      snap("interieur_nuit");
       time = savedTime;
       flags = savedFlags;
     }

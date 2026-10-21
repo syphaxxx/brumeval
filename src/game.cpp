@@ -1252,6 +1252,7 @@ void Game::drawMap() {
   int camY = vhi >= 0 ? (int)std::clamp(ppy - SCREEN_H / 2 + 8, 0.f, vhi) : (int)(vhi / 2);
   camX_ = camX, camY_ = camY;
   int tx0 = std::max(0, (int)std::floor((camX + g.left()) / 16)), tx1 = (int)((camX + g.right()) / 16), ty0 = std::max(0, camY / 16);
+  setTileNight(m.theme == Theme::Interieur && isNight());  // fenêtres des intérieurs sombres la nuit
   for (int y = ty0; y <= ty0 + SCREEN_H / 16 && y < m.h(); y++)
     for (int x = tx0; x <= tx1 && x < m.w(); x++) drawTile(g, m, x, y, x * 16 - camX, y * 16 - camY, time);
   for (auto& f : footprints_) {  // empreintes dans la neige : deux pas par case, qui s'effacent en 30 s
@@ -1507,6 +1508,8 @@ void Game::drawMap() {
   drawMapCritters(g, m, tx0, tx1, ty0, ty0 + SCREEN_H / 16 + 1, camX, camY, time, nightAmount());
   // Jour et nuit : la carte s'assombrit (crépuscule orangé), les fenêtres s'allument, le héros porte une lanterne
   float night = nightAmount();
+  if (m.theme == Theme::Interieur && isNight())  // (2026-10-21) la nuit, dedans : la lumière chaude des bougies
+    g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0x4a2a08, 46));
   if (night > 0) {
     g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0x0a1440, uint8_t(155 * night)));
     float dusk = night * (1 - night) * 4;

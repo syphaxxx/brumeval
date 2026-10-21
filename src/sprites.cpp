@@ -530,7 +530,9 @@ static bool texTile(Gfx& g, const char* id, int x, int y, int sx, int sy, Color 
 
 // Sol des grottes (2026-10-21) : la teinte des dalles suit la roche de la carte (« teinte_murs »), posée par drawTile
 static uint32_t caveFloor = 0x8a84a0;
-static int roomStyle = 0;  // intérieurs (2026-10-21) : 0 maison, 1 chapelle, 2 auberge, 3 boutique, 4 soin
+static int roomStyle = 0;
+static bool tileNight = false;
+void setTileNight(bool night) { tileNight = night; }  // intérieurs (2026-10-21) : 0 maison, 1 chapelle, 2 auberge, 3 boutique, 4 soin
 
 static void ground(Gfx& g, Theme th, int sx, int sy, int h, int x, int y) {
   if (th == Theme::Vallee) {
@@ -795,7 +797,7 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
   // Intérieurs (3.3) : l'ombre des murs sur le sol, et la lumière qui tombe d'une fenêtre
   auto wall = [&](int xx, int yy) { return xx < 0 || yy < 0 || xx >= m.w() || yy >= m.h() || m.rows[yy][xx] == '#'; };
   if (wall(x, y - 1)) {
-    if (interiorWindow(x, y - 1))
+    if (interiorWindow(x, y - 1) && !tileNight)  // le soleil entre par la fenêtre (pas la nuit)
       g.poly({{sx + 4.f, sy + 0.f}, {sx + 12.f, sy + 0.f}, {sx + 15.f, sy + 14.f}, {sx + 3.f, sy + 14.f}}, rgb(0xfff2c0, 34));
     g.rect(sx, sy, 16, 3, rgb(0x1a0e06, 70)), g.rect(sx, sy + 3, 16, 2, rgb(0x1a0e06, 30));
   }
@@ -1143,7 +1145,11 @@ static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, 
             g.rect(sx + 5, sy + 6, 6, 2, rgb(0x5f9a52));
           } else if (interiorWindow(x, y)) {  // une fenêtre (3.3) : ciel, croisillon, rebord ; la lumière tombe au sol
             g.rect(sx + 3, sy + 1, 10, 10, rgb(0x6b4a2f));
-            g.gradV(sx + 4, sy + 2, 8, 8, rgb(0xbfe4ff), rgb(0x86c0ea));
+            if (tileNight) {  // la nuit : un ciel sombre et une étoile
+              g.gradV(sx + 4, sy + 2, 8, 8, rgb(0x0e1638), rgb(0x24305e));
+              g.rect(sx + 10, sy + 3, 1, 1, rgb(0xffffff));
+            } else
+              g.gradV(sx + 4, sy + 2, 8, 8, rgb(0xbfe4ff), rgb(0x86c0ea));
             g.rect(sx + 7, sy + 2, 2, 8, rgb(0x6b4a2f)), g.rect(sx + 4, sy + 5, 8, 1, rgb(0x6b4a2f));
             g.rect(sx + 5, sy + 3, 1, 2, rgb(0xffffff, 200));  // reflet
             g.rect(sx + 2, sy + 10, 12, 1, rgb(0xa8743f));      // rebord
