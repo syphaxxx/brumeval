@@ -1198,6 +1198,16 @@ void Game::drawTitle() {
   }
 }
 
+// Un lieu au bord de la mer : beaucoup d'eau sur la carte (calculé une fois par carte)
+bool Game::coastal(const MapDef& m) const {
+  static std::map<std::string, bool> known;
+  auto it = known.find(m.id);
+  if (it != known.end()) return it->second;
+  int n = 0, tot = 0;
+  for (auto& r : m.rows)
+    for (char c : r) n += c == '~', tot++;
+  return known[m.id] = tot > 0 && n * 100 > tot * 15;
+}
 bool Game::isNight() const {
   float p = std::fmod(time / 720.f + .85f, 1.f);
   return -std::cos(p * 6.2831853f) - .15f > .3f;  // nightAmount() > 0,5
@@ -1515,6 +1525,21 @@ void Game::drawMap() {
       g.ellipse(x, y, 6, 6, rgb(0xffb04a, uint8_t(a / 6)));
       g.rect(x - 2, y - 3, 5, 6, rgb(0xff9a3a, a));
       g.rect(x - 1, y - 2, 3, 4, rgb(0xffe08a, a));
+    }
+  // Mouettes (2026-10-21) : le jour, au-dessus des lieux au bord de la mer, elles planent et battent des ailes de temps
+  // en temps ; leur ombre glisse sur le sol, plus bas
+  if (m.ambiance.empty() && m.theme == Theme::Vallee && night < .4f && coastal(m))
+    for (int i = 0; i < 4 * g.fullW / SCREEN_W; i++) {
+      float sp = 14 + i % 3 * 5, x = g.left() + std::fmod(i * 131.f + time * sp, g.fullW + 60.f) - 30;
+      float y = 30 + std::fmod(i * 67.f, 120.f) + std::sin(time * .8f + i * 2) * 6;
+      float flap = std::fmod(time * 1.3f + i * .7f, 3.f) < .9f ? std::sin(time * 14 + i) : .25f;  // bat des ailes, puis plane
+      Color c = rgb(0xffffff, uint8_t(230 * (1 - night * 2)));
+      g.ellipse(x + 10, y + 34, 4, 1.5f, rgb(0x000000, 40));  // l'ombre
+      Color under = rgb(0x8a96a4, c.a);  // le dessous des ailes, plus sombre : deux pixels d'épaisseur
+      g.line(x - 7, y - flap * 4 + 1, x, y + 1, 1, under), g.line(x, y + 1, x + 7, y - flap * 4 + 1, 1, under);
+      g.line(x - 7, y - flap * 4, x, y, 1, c), g.line(x, y, x + 7, y - flap * 4, 1, c);
+      g.rect(x - 1, y, 3, 2, c);
+      g.rect(x - 7, y - flap * 4, 1, 1, rgb(0x3a3a44, c.a)), g.rect(x + 7, y - flap * 4, 1, 1, rgb(0x3a3a44, c.a));  // bouts noirs
     }
   // Feuilles qui tombent en forêt, papillons dans la vallée le jour
   if (m.ambiance.empty() && m.theme == Theme::Foret)
