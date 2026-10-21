@@ -1557,6 +1557,18 @@ void Game::drawMap() {
     }
   // Pluie : ciel assombri, gouttes en biais, éclaboussures au sol
   if (float rain = rainAmount(); rain > 0) {
+    // (2026-10-21) des flaques sur les chemins et les pavés, où les gouttes font des ronds
+    for (int y = ty0; y <= ty0 + SCREEN_H / 16 + 1 && y < m.h(); y++)
+      for (int x = std::max(0, tx0); x <= tx1 && x < m.w(); x++) {
+        char c = m.rows[(size_t)y][(size_t)x];
+        uint32_t h = uint32_t(x) * 73856093u ^ uint32_t(y) * 19349663u;
+        if ((c != '=' && c != 'q') || h % 9) continue;
+        float px0 = x * 16 - camX + 3 + (h >> 5) % 6, py0 = y * 16 - camY + 6 + (h >> 9) % 6, w = 4 + (h >> 13) % 3;
+        g.ellipse(px0 + w, py0 + 2, w + 1, 2.5f, rgb(0x4a5a78, uint8_t(120 * rain)));
+        g.rect(px0 + 2, py0 + 1, 2, 1, rgb(0xd8e4f8, uint8_t(110 * rain)));  // le reflet du ciel
+        float k = std::fmod(time * 1.8f + (h >> 3) % 10 * .1f, 1.f);
+        g.ellipse(px0 + w, py0 + 2, 1 + k * w, .5f + k * 2, rgb(0xd8e4f8, uint8_t(150 * rain * (1 - k))));
+      }
     g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0x2a3450, uint8_t(70 * rain)));
     for (int i = 0, n = int(90 * rain) * g.fullW / SCREEN_W; i < n; i++) {
       float x = g.left() + std::fmod(i * 37.f + i * i * .7f + time * 60, g.fullW + 20.f) - 10;
