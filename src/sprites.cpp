@@ -1037,11 +1037,17 @@ static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, 
         g.rect(sx + 3 + (y % 2) * 6, sy + 8, 1, 8, rgb(0x786d66));
       }
       break;
-    case 'P':  // plaque de l'énigme (3.0) : une dalle gravée
+    case 'P':  // plaque de l'énigme (3.0) : une dalle gravée ; (2026-10-21) biseautée, avec un cercle de runes
       ground(g, th, sx, sy, h, x, y);
-      g.rect(sx + 2, sy + 2, 12, 12, rgb(0x8a8270));
-      g.rect(sx + 3, sy + 3, 10, 10, rgb(0xa89e88));
-      g.rect(sx + 6, sy + 6, 4, 4, rgb(0x6a6252));
+      g.rect(sx + 1, sy + 2, 14, 13, rgb(0x000000, 50));                                   // son ombre
+      g.rect(sx + 1, sy + 1, 14, 13, rgb(0x8a8270));
+      g.rect(sx + 1, sy + 1, 14, 1, rgb(0xc8bea4)), g.rect(sx + 1, sy + 1, 1, 13, rgb(0xb8ae94));  // arêtes éclairées
+      g.rect(sx + 1, sy + 13, 14, 1, rgb(0x5a5242)), g.rect(sx + 14, sy + 1, 1, 13, rgb(0x6a6252));
+      g.rect(sx + 3, sy + 3, 10, 9, rgb(0xa89e88));
+      g.ellipse(sx + 8, sy + 7.5f, 4, 3.5f, rgb(0x6a6252));                                 // le cercle gravé
+      g.ellipse(sx + 8, sy + 7.5f, 2.6f, 2.2f, rgb(0xa89e88));
+      g.rect(sx + 7, sy + 4, 2, 1, rgb(0x6a6252)), g.rect(sx + 7, sy + 11, 2, 1, rgb(0x6a6252));
+      g.rect(sx + 4, sy + 7, 1, 2, rgb(0x6a6252)), g.rect(sx + 11, sy + 7, 1, 2, rgb(0x6a6252));
       break;
     case 'R':
       ground(g, th, sx, sy, h, x, y);

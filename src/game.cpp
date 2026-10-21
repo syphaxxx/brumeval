@@ -1277,13 +1277,20 @@ void Game::drawMap() {
       }
     }
     for (auto& [x, y] : puzzleTiles(m, 'P'))
-      if (boulderAt(x, y)) g.rect(x * 16 - camX + 2, y * 16 - camY + 13, 12, 2, rgb(0xffd34d, 200));
-    for (auto& [x, y] : boulders_) {
+      if (boulderAt(x, y)) {  // une plaque enfoncée : ses runes s'allument
+        float sx = x * 16 - camX, sy = y * 16 - camY, k = .7f + .3f * std::sin(time * 3 + x);
+        g.ellipse(sx + 8, sy + 8, 9, 8, rgb(0xffd34d, uint8_t(60 * k)));
+        g.rect(sx + 1, sy + 13, 14, 2, rgb(0xffd34d, uint8_t(200 * k)));
+      }
+    for (auto& [x, y] : boulders_) {  // (2026-10-21) un rocher rond et ombré, fendu, un peu de mousse
       float sx = x * 16 - camX, sy = y * 16 - camY;
-      g.ellipse(sx + 8, sy + 13, 7, 3, rgb(0x000000, 60));
-      g.ellipse(sx + 8, sy + 8, 7, 7, rgb(0x6e6a72));
-      g.ellipse(sx + 7, sy + 6, 5, 4, rgb(0x8e8a94));
-      g.rect(sx + 9, sy + 9, 3, 1, rgb(0x504c56));
+      g.ellipse(sx + 8, sy + 14, 7.5f, 2.5f, rgb(0x000000, 70));
+      g.ellipse(sx + 8, sy + 8.5f, 7.5f, 7, rgb(0x4e4a54));
+      g.ellipse(sx + 7.5f, sy + 7.5f, 6.5f, 6, rgb(0x76727c));
+      g.ellipse(sx + 6.5f, sy + 6, 4.5f, 3.5f, rgb(0x96929c));
+      g.ellipse(sx + 5.5f, sy + 4.5f, 2, 1.5f, rgb(0xc4c0ca));                           // le reflet
+      g.rect(sx + 9, sy + 8, 1, 3, rgb(0x3e3a44)), g.rect(sx + 10, sy + 10, 2, 1, rgb(0x3e3a44));  // une fente
+      g.ellipse(sx + 11, sy + 4.5f, 2.5f, 1.2f, rgb(0x5f8a46));                           // la mousse
     }
   }
   for (size_t i = 0; i < m.chests.size(); i++)
