@@ -530,6 +530,7 @@ static bool texTile(Gfx& g, const char* id, int x, int y, int sx, int sy, Color 
 
 // Sol des grottes (2026-10-21) : la teinte des dalles suit la roche de la carte (« teinte_murs »), posée par drawTile
 static uint32_t caveFloor = 0x8a84a0;
+static int roomStyle = 0;  // intérieurs (2026-10-21) : 0 maison, 1 chapelle, 2 auberge, 3 boutique, 4 soin
 
 static void ground(Gfx& g, Theme th, int sx, int sy, int h, int x, int y) {
   if (th == Theme::Vallee) {
@@ -586,8 +587,20 @@ static void ground(Gfx& g, Theme th, int sx, int sy, int h, int x, int y) {
       int gx = sx + 3 + (h >> 9) % 10, gy = sy + 3 + (h >> 12) % 10;
       g.rect(gx, gy, 1, 1, rgb(0xffffff)), g.rect(gx - 1, gy, 3, 1, rgb(0xc4e4ff, 170)), g.rect(gx, gy - 1, 1, 3, rgb(0xc4e4ff, 170));
     }
-  } else if (th == Theme::Interieur) {  // parquet : quatre lames par case, joints décalés
-    g.rect(sx, sy, 16, 16, rgb(0xb07a48));
+  } else if (th == Theme::Interieur && roomStyle == 1) {  // chapelle : grandes dalles de pierre
+    g.rect(sx, sy, 16, 16, rgb((x + y) % 2 ? 0xa8a296 : 0xb2ac9f));
+    g.rect(sx, sy + 15, 16, 1, rgb(0x857f74)), g.rect(sx + 15, sy, 1, 16, rgb(0x857f74));
+    g.rect(sx, sy, 16, 1, rgb(0xc8c2b4));
+    if (h % 7 == 0) g.rect(sx + 3 + (h >> 4) % 8, sy + 5 + (h >> 7) % 6, 3, 1, rgb(0x938d80));  // une fêlure
+  } else if (th == Theme::Interieur && (roomStyle == 3 || roomStyle == 4)) {  // boutique, soin : un carrelage en damier
+    bool odd = (x + y) % 2;
+    uint32_t a = roomStyle == 3 ? 0xc8b48a : 0xe4ecf2, b = roomStyle == 3 ? 0x9a7e56 : 0xa8c4dc;
+    g.rect(sx, sy, 16, 16, rgb(odd ? a : b));
+    g.rect(sx, sy, 16, 1, rgb(0xffffff, 40)), g.rect(sx, sy, 1, 16, rgb(0xffffff, 30));
+    g.rect(sx, sy + 15, 16, 1, rgb(0x000000, 30));
+    if (!odd) g.rect(sx + 3, sy + 3, 2, 1, rgb(0xffffff, 60));  // un reflet sur le carreau
+  } else if (th == Theme::Interieur) {  // parquet : quatre lames par case, joints décalés ; plus sombre à l'auberge
+    g.rect(sx, sy, 16, 16, rgb(roomStyle == 2 ? 0x8e5a34 : 0xb07a48));
     for (int i = 0; i < 4; i++) {
       g.rect(sx, sy + i * 4 + 3, 16, 1, rgb(0x8f5f36));
       g.rect(sx + (h >> (i * 3)) % 14 + 1, sy + i * 4, 1, 3, rgb(0x8f5f36));
@@ -759,6 +772,7 @@ static void wallDepth(Gfx& g, const MapDef& m, int x, int y, int sx, int sy) {
 static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t);
 void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
   caveFloor = 0x8a84a0;
+  roomStyle = m.style == "chapelle" ? 1 : m.style == "auberge" ? 2 : m.style == "boutique" ? 3 : m.style == "soin" ? 4 : 0;
   if (m.wallTint) {  // la roche de la carte, en plus clair pour le sol
     auto ch = [&](int s) { return uint32_t(std::min(255, ((int(m.wallTint) >> s) & 255) * 2 - 4)); };
     caveFloor = ch(16) << 16 | ch(8) << 8 | ch(0);
@@ -1103,11 +1117,26 @@ static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, 
         if (at(x, y + 1) == '#' || at(x, y + 1) == ' ') {  // dessus du mur, vu d'en haut
           g.rect(sx, sy, 16, 16, rgb(0x3a2a22));
           if (at(x, y + 1) == '#' && at(x, y + 2) != '#' && at(x, y + 2) != ' ') g.rect(sx, sy + 14, 16, 2, rgb(0x5a4232));
-        } else {  // face du mur : papier peint rayé et lambris
-          g.rect(sx, sy, 16, 16, rgb(0xe8d8b0));
-          for (int i = 2; i < 16; i += 5) g.rect(sx + i, sy, 1, 11, rgb(0xd6c294));
-          g.rect(sx, sy + 11, 16, 5, rgb(0x8a5a32));
-          g.rect(sx, sy + 11, 16, 1, rgb(0xa8743f));
+        } else if (roomStyle == 1) {  // chapelle : pierre claire et vitraux en ogive
+          g.rect(sx, sy, 16, 16, rgb(0xd2ccbe));
+          g.rect(sx, sy + 5, 16, 1, rgb(0xb8b2a4)), g.rect(sx, sy + 10, 16, 1, rgb(0xb8b2a4));
+          g.rect(sx + (y % 2 ? 4 : 11), sy, 1, 5, rgb(0xb8b2a4)), g.rect(sx + (y % 2 ? 11 : 4), sy + 5, 1, 5, rgb(0xb8b2a4));
+          g.rect(sx, sy + 13, 16, 3, rgb(0x8a8476));
+          if (interiorWindow(x, y)) {  // un vitrail : rouge, bleu, or, dans une ogive de plomb
+            g.rect(sx + 4, sy + 3, 8, 10, rgb(0x3a3430));
+            g.tri(sx + 4, sy + 3, sx + 8, sy - 1, sx + 12, sy + 3, rgb(0x3a3430));
+            g.rect(sx + 5, sy + 3, 3, 4, rgb(0xd04a4a)), g.rect(sx + 8, sy + 3, 3, 4, rgb(0x4a7ad0));
+            g.rect(sx + 5, sy + 7, 3, 5, rgb(0xe8c040)), g.rect(sx + 8, sy + 7, 3, 5, rgb(0x5aa85a));
+            g.tri(sx + 5, sy + 3, sx + 8, sy + .5f, sx + 11, sy + 3, rgb(0xb070d0));
+            g.rect(sx + 5, sy + 4, 1, 1, rgb(0xffffff, 160));
+          }
+        } else {  // face du mur : papier peint rayé et lambris (couleurs selon le style de la pièce)
+          uint32_t paper = roomStyle == 2 ? 0xb8705a : roomStyle == 3 ? 0xb8c89a : roomStyle == 4 ? 0xeef2f6 : 0xe8d8b0;
+          uint32_t stripe = roomStyle == 2 ? 0xa45e4a : roomStyle == 3 ? 0xa4b486 : roomStyle == 4 ? 0xc8dcec : 0xd6c294;
+          g.rect(sx, sy, 16, 16, rgb(paper));
+          for (int i = 2; i < 16; i += 5) g.rect(sx + i, sy, 1, 11, rgb(stripe));
+          g.rect(sx, sy + 11, 16, 5, rgb(roomStyle == 4 ? 0x6a9ac8 : 0x8a5a32));
+          g.rect(sx, sy + 11, 16, 1, rgb(roomStyle == 4 ? 0x8ab4dc : 0xa8743f));
           if ((x * 7 + y) % 9 == 0) {  // un cadre de temps en temps
             g.rect(sx + 4, sy + 2, 8, 7, rgb(0x7a5230));
             g.rect(sx + 5, sy + 3, 6, 5, rgb(0x7fb0d8));

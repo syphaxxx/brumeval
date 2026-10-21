@@ -29,5 +29,6 @@
   "panneaux": [],
   "passages": [{"x": 5, "y": 8, "vers": "vallee", "tx": 4, "ty": 16, "direction": "bas"}],
   "zones": [],
-  "boss": []
+  "boss": [],
+  "style": "chapelle"
 }

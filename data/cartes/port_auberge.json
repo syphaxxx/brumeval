@@ -41,5 +41,6 @@
   "panneaux": [],
   "passages": [{"x": 5, "y": 8, "vers": "port", "tx": 26, "ty": 11, "direction": "bas"}],
   "zones": [],
-  "boss": []
+  "boss": [],
+  "style": "auberge"
 }

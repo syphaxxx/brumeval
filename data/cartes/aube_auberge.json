@@ -22,5 +22,6 @@
   "panneaux": [],
   "passages": [{"x": 5, "y": 8, "vers": "aube", "tx": 7, "ty": 19, "direction": "bas"}],
   "zones": [],
-  "boss": []
+  "boss": [],
+  "style": "auberge"
 }

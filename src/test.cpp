@@ -2755,7 +2755,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       time = 108;  // en plein jour
       menus.clear();
       sc.clear();
-      for (const char* id : {"grotte", "mines", "temple", "glacier", "abime1", "phare3", "citadelle", "epave", "marees", "ruines", "source", "sanctuaire_echos"}) {
+      for (const char* id : {"grotte", "mines", "temple", "glacier", "abime1", "phare3", "citadelle", "epave", "marees", "ruines", "source", "sanctuaire_echos",
+                         "vallee_chapelle", "cendrelune_auberge", "port_boutique", "aube_maison", "pics_auberge", "vallee_ancien"}) {
         int mid = mi(id);
         if (mid < 0) continue;
         const MapDef& dm = maps()[(size_t)mid];

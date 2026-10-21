@@ -19,5 +19,6 @@
   "panneaux": [],
   "passages": [{"x": 5, "y": 8, "vers": "echos", "tx": 6, "ty": 10, "direction": "bas"}],
   "zones": [],
-  "boss": []
+  "boss": [],
+  "style": "soin"
 }

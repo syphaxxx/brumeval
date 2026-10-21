@@ -159,6 +159,7 @@ MapDef mapFromJson(const Json& j) {
   }
   m.trees = jget<std::string>(j, "arbres", "");
   m.festival = j.value("fete", Json());
+  m.style = jget<std::string>(j, "style", "");
   m.wallTint = j.contains("teinte_murs") ? parseColor(j["teinte_murs"]) : 0;
   m.rows = j.at("tuiles").get<std::vector<std::string>>();
   for (auto& r : m.rows)
@@ -236,6 +237,7 @@ Json mapToJson(const MapDef& m) {
   }
   if (!m.trees.empty()) o["arbres"] = m.trees;
   if (!m.festival.is_null()) o["fete"] = m.festival;
+  if (!m.style.empty()) o["style"] = m.style;
   if (m.wallTint) {
     char buf[8];
     std::snprintf(buf, sizeof buf, "#%06x", (unsigned)m.wallTint);

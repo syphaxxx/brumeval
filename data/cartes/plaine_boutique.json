@@ -21,5 +21,6 @@
   "panneaux": [],
   "passages": [{"x": 5, "y": 8, "vers": "plaine", "tx": 24, "ty": 9, "direction": "bas"}],
   "zones": [],
-  "boss": []
+  "boss": [],
+  "style": "boutique"
 }
