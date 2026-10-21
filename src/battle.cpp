@@ -3037,6 +3037,14 @@ void Battle::draw() {
       float a = t - summaryT_ - (p.x + p.y) * .004f;
       if (a > 0 && a < 1.5f) hop = -std::round(std::abs(std::sin(a * 6.2832f)) * 5);
     }
+    if (std::abs(o.x) > 3 && pose.empty() && !(blinking && blink == f)) {  // (2026-10-21) l'élan laisse deux traînées
+      float keepA = g.alpha;
+      for (float k : {.35f, .65f}) {
+        g.alpha = keepA * (k < .5f ? .18f : .3f);
+        drawFighterSprite(g, *f, p.x + o.x * k, p.y + o.y * k + hop, 1, facesRight(f), t + p.x * .01f);
+      }
+      g.alpha = keepA;
+    }
     if (!(blinking && blink == f) && !(!pose.empty() && drawFighterPose(g, *f, pose, p.x + o.x, p.y + o.y, facesRight(f))))
       drawFighterSprite(g, *f, p.x + o.x, p.y + o.y + hop, 1, facesRight(f), t + p.x * .01f);  // vers l'adversaire le plus proche
     g.alpha = 1;
