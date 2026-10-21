@@ -355,7 +355,8 @@ static bool humanSprite(Gfx& g, const Look& lk, float x, float y, float s, int d
     hop = step ? -1.f * s : 0.f;
   }
   if (!r) return false;
-  g.ellipse(x + 8 * s, y + 15 * s, 6 * s, 2 * s, rgb(0, 50));
+  g.ellipse(x + 8 * s, y + 15 * s, 7 * s, 2.5f * s, rgb(0, 34));  // ombre douce (2026-10-21) : un halo, puis le cœur
+  g.ellipse(x + 8 * s, y + 15 * s, 5 * s, 1.6f * s, rgb(0, 52));
   g.sprite(*r, std::round(x + (16 * s - r->w * s) / 2), std::round(y + 16 * s - r->h * s + hop), flip, s, tint);
   return true;
 }
@@ -1051,18 +1052,34 @@ static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, 
       while (at(x, y - bh / 16) == 'W') bh += 16;
       float ox0 = sx + 16 - bw, oy0 = sy + 16 - bh;
       float cx = ox0 + bw / 2.f, cy = oy0 + bh / 2.f + 1, rx = bw / 2.f - 1, ry = bh / 2.f - 2;
-      g.ellipse(cx, cy + 2, rx, ry, rgb(0x000000, 50));                 // ombre
-      g.ellipse(cx, cy, rx, ry, rgb(0x8a8a96));                          // margelle de pierre
-      g.ellipse(cx, cy - 1, rx - 1, ry - 1, rgb(0xb4b4c0));
-      g.ellipse(cx, cy, rx - 3, ry - 3, rgb(0x3f7fc0));                  // l'eau
-      g.ellipse(cx - 2, cy - 1, rx - 6, ry - 5, rgb(0x5ea0dc));
-      float ring = std::fmod(t * .8f, 1.f);                              // ronds dans l'eau
-      g.ellipse(cx, cy, 3 + ring * (rx - 6), 1.5f + ring * (ry - 5), rgb(0xcfeaff, uint8_t(120 * (1 - ring))));
-      g.rect(cx - 2, cy - 6, 4, 6, rgb(0x9a9aa6));                       // colonne centrale
-      g.rect(cx - 1, cy - 12 + std::sin(t * 6), 2, 7, rgb(0xcfeaff, 210));  // le jet
-      for (int i = 0; i < 4; i++) {                                      // gouttes qui retombent
-        float k = std::fmod(t * 1.6f + i * .25f, 1.f), dx = (i % 2 ? 1 : -1) * (2 + k * 6);
-        g.rect(cx + dx, cy - 11 + k * k * 12, 1, 1, rgb(0xe6f6ff, uint8_t(220 * (1 - k))));
+      // (2026-10-21) un bassin qui a de l'épaisseur, une vasque sur sa colonne, un jet qui retombe en gerbe
+      g.ellipse(cx, cy + 3, rx, ry, rgb(0x000000, 50));                  // ombre
+      g.ellipse(cx, cy + 2, rx, ry, rgb(0x6e6e7c));                      // la paroi du bassin, vue de face
+      g.ellipse(cx, cy, rx, ry, rgb(0x9a9aa8));                          // margelle
+      g.ellipse(cx, cy - 1, rx - 1, ry - 1, rgb(0xc8c8d4));              // son dessus, éclairé
+      g.ellipse(cx, cy, rx - 3, ry - 3, rgb(0x2f6aa8));                  // l'eau
+      g.ellipse(cx - 1, cy - 1, rx - 5, ry - 4.5f, rgb(0x4a8fd0));
+      for (int i = 0; i < 2; i++) {                                      // ronds dans l'eau
+        float ring = std::fmod(t * .8f + i * .5f, 1.f);
+        g.ellipse(cx, cy, 3 + ring * (rx - 5), 1.5f + ring * (ry - 4.5f), rgb(0xcfeaff, uint8_t(110 * (1 - ring))));
+      }
+      for (int i = 0; i < 3; i++)                                        // reflets qui scintillent
+        if (std::fmod(t * 1.7f + i * .37f, 1.f) < .35f)
+          g.rect(cx - rx * .5f + i * rx * .45f, cy - ry * .2f + (i % 2) * 2, 1, 1, rgb(0xffffff, 230));
+      g.rect(cx - 2, cy - 7, 4, 7, rgb(0x8a8a98));                       // la colonne
+      g.rect(cx - 2, cy - 7, 1, 7, rgb(0xb4b4c0));
+      g.ellipse(cx, cy - 8, 5, 2, rgb(0x9a9aa8));                        // la vasque
+      g.ellipse(cx, cy - 8.5f, 3.5f, 1.2f, rgb(0x6aaee8));
+      float jh = 12 + std::sin(t * 5) * 2, top = cy - 8 - jh;
+      g.rect(cx - 1, top, 3, jh, rgb(0xd8f0ff, 210));                    // le jet
+      g.rect(cx, top, 1, jh, rgb(0xffffff, 230));
+      g.ellipse(cx + .5f, top, 3, 2, rgb(0xffffff, 230));
+      for (int i = 0; i < 10; i++) {                                     // la gerbe : des gouttes en arc qui retombent
+        float k = std::fmod(t * 1.1f + i * .1f, 1.f), dir = (i % 2 ? 1 : -1) * (.45f + (i % 5) * .12f);
+        float dx = dir * k * (rx - 3), dy = -k * 5 + k * k * (jh + 13);
+        g.rect(cx + dx, top + dy, 2, 1, rgb(0xf0faff, uint8_t(240 * (1 - k * .5f))));
+        g.rect(cx + dx, top + dy + 1, 1, 1, rgb(0xbfe0ff, uint8_t(200 * (1 - k * .5f))));
+        if (k > .9f) g.ellipse(cx + dx, top + dy + 1, 1.5f, .8f, rgb(0xffffff, 120));  // elle touche l'eau
       }
       break;
     }
