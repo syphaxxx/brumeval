@@ -519,9 +519,16 @@ void Gfx::window(float x, float y, float w, float h) {
     }
     wins_.push_back(b);
   }
-  gradV(x + 1, y + 1, w - 2, h - 2, rgb(0x3048b0), rgb(0x0c1452));
-  frame(x, y, w, h, rgb(0xd8def2));
-  frame(x + 1, y + 1, w - 2, h - 2, rgb(0x5a6aa8, 160));
+  // (2026-10-21) ombre portée, coins arrondis, reflet en haut ; toujours le bleu des jeux du genre
+  rect(x + 2, y + h, w - 2, 2, rgb(0x000000, 70)), rect(x + w, y + 2, 2, h - 2, rgb(0x000000, 70));
+  gradV(x + 1, y + 1, w - 2, h - 2, rgb(0x3450b8), rgb(0x0c1452));
+  rect(x + 2, y + 2, w - 4, 1, rgb(0xffffff, 46));                                   // reflet du haut
+  rect(x + 2, y + 3, w - 4, std::min(6.f, h / 3), rgb(0xffffff, 10));
+  rect(x + 1, y, w - 2, 1, rgb(0xd8def2)), rect(x + 1, y + h - 1, w - 2, 1, rgb(0xb8c0dc));  // bord clair, sans les coins
+  rect(x, y + 1, 1, h - 2, rgb(0xd8def2)), rect(x + w - 1, y + 1, 1, h - 2, rgb(0xb8c0dc));
+  for (float cx : {x + 1, x + w - 2})
+    for (float cy : {y + 1, y + h - 2}) rect(cx, cy, 1, 1, rgb(0xa8b2d8));  // coins arrondis
+  frame(x + 2, y + 2, w - 4, h - 4, rgb(0x5a6aa8, 110));
 }
 void Gfx::cursor(float x, float y) {
   tri(x, y, x, y + 8, x + 6, y + 4, rgb(0x2a1e00));
