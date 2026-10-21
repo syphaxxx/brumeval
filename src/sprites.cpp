@@ -760,6 +760,18 @@ void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
   }
   drawTileBase(g, m, x, y, sx, sy, t);
   if (m.theme == Theme::Grotte || m.theme == Theme::Neige) return wallDepth(g, m, x, y, sx, sy);
+  if (m.theme == Theme::Cendres && m.rows[y][x] != 'l') {  // (2026-10-21) le sol qui borde la lave rougeoit, en pulsant
+    auto lava = [&](int xx, int yy) { return xx >= 0 && yy >= 0 && xx < m.w() && yy < m.h() && m.rows[yy][xx] == 'l'; };
+    float k = .75f + .25f * std::sin(t * 2.2f + x * .7f + y * .5f);
+    for (int i = 0; i < 6; i++) {
+      uint8_t a = uint8_t((6 - i) * 13 * k);
+      Color c = rgb(0xff7a2a, a);
+      if (lava(x, y - 1)) g.rect(sx, sy + i, 16, 1, c);
+      if (lava(x, y + 1)) g.rect(sx, sy + 15 - i, 16, 1, c);
+      if (lava(x - 1, y)) g.rect(sx + i, sy, 1, 16, c);
+      if (lava(x + 1, y)) g.rect(sx + 15 - i, sy, 1, 16, c);
+    }
+  }
   if (m.theme != Theme::Interieur || m.rows[y][x] == '#' || m.rows[y][x] == ' ') return;
   // Intérieurs (3.3) : l'ombre des murs sur le sol, et la lumière qui tombe d'une fenêtre
   auto wall = [&](int xx, int yy) { return xx < 0 || yy < 0 || xx >= m.w() || yy >= m.h() || m.rows[yy][xx] == '#'; };
