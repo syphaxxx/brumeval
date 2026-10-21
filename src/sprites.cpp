@@ -1049,10 +1049,13 @@ static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, 
       g.rect(sx + 7, sy + 4, 2, 1, rgb(0x6a6252)), g.rect(sx + 7, sy + 11, 2, 1, rgb(0x6a6252));
       g.rect(sx + 4, sy + 7, 1, 2, rgb(0x6a6252)), g.rect(sx + 11, sy + 7, 1, 2, rgb(0x6a6252));
       break;
-    case 'R':
+    case 'R':  // (2026-10-21) un rocher ombré, avec son reflet et une fente
       ground(g, th, sx, sy, h, x, y);
-      g.ellipse(sx + 8, sy + 10, 6, 5, rgb(0x8a8a92));
-      g.ellipse(sx + 7, sy + 8, 4, 3, rgb(0xa9a9b3));
+      g.ellipse(sx + 8, sy + 14, 6.5f, 2, rgb(0x000000, 60));
+      g.ellipse(sx + 8, sy + 10, 6.5f, 5.5f, rgb(0x5e5a66));
+      g.ellipse(sx + 7.5f, sy + 9, 5.5f, 4.5f, rgb(0x8a8692));
+      g.ellipse(sx + 6.5f, sy + 7.5f, 3, 2, rgb(0xb0acb8));
+      g.rect(sx + 9 + (h >> 4) % 2, sy + 9, 1, 3, rgb(0x46424e));
       break;
     case 'W': {
       bool paved = at(x - 1, y) == 'q' || at(x + 1, y) == 'q' || at(x, y - 1) == 'q' || at(x, y + 1) == 'q';
@@ -1200,8 +1203,21 @@ static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, 
       ground(g, th, sx, sy, h, x, y);
       Color glow = rgb(0x7fd6ff, uint8_t(60 + 40 * std::sin(t * 2 + x)));
       g.ellipse(sx + 8, sy + 9, 8, 7, glow);
-      g.poly({{sx + 5.f, sy + 15.f}, {sx + 4.f, sy + 6.f}, {sx + 7.f, sy + 1.f}, {sx + 9.f, sy + 7.f}, {sx + 8.f, sy + 15.f}}, rgb(0x7fd6ff));
-      g.poly({{sx + 9.f, sy + 15.f}, {sx + 10.f, sy + 7.f}, {sx + 13.f, sy + 4.f}, {sx + 13.f, sy + 15.f}}, rgb(0xa8e6ff));
+      // (2026-10-21) une grappe de trois cristaux à facettes (côté clair, côté sombre), et un éclat qui passe
+      g.ellipse(sx + 8, sy + 15, 6, 1.5f, rgb(0x000000, 60));
+      auto shard = [&](float bx, float w, float hgt, float lean) {
+        float base = sy + 15.f, top = base - hgt;
+        g.poly({{bx, base}, {bx + lean, top}, {bx + w / 2 + lean, top - 2}, {bx + w / 2, base}}, rgb(0xa8e6ff));
+        g.poly({{bx + w / 2, base}, {bx + w / 2 + lean, top - 2}, {bx + w + lean, top}, {bx + w, base}}, rgb(0x4aa8e0));
+        g.line(bx + lean + .5f, top + 1, bx + .5f, sy + 14, 1, rgb(0xe8f8ff, 200));
+      };
+      shard(sx + 2, 5, 8, -1);
+      shard(sx + 9, 5, 9, 1);
+      shard(sx + 5, 6, 13, 0);
+      if (std::fmod(t * .8f + x * .37f + y * .21f, 3.f) < .25f) {
+        float px0 = sx + 8, py0 = sy + 4;
+        g.rect(px0 - 2, py0, 5, 1, rgb(0xffffff, 220)), g.rect(px0, py0 - 2, 1, 5, rgb(0xffffff, 220));
+      }
       break;
     }
     // Meubles des intérieurs
