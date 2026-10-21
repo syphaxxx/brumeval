@@ -1253,6 +1253,13 @@ void Game::drawMap() {
   camX_ = camX, camY_ = camY;
   int tx0 = std::max(0, (int)std::floor((camX + g.left()) / 16)), tx1 = (int)((camX + g.right()) / 16), ty0 = std::max(0, camY / 16);
   setTileNight(m.theme == Theme::Interieur && isNight());  // fenêtres des intérieurs sombres la nuit
+  if (m.theme == Theme::Interieur) {  // (2026-10-21) autour d'une petite pièce : un halo sombre au lieu d'un noir plat
+    float rx = -camX, ry = -camY, rw = m.w() * 16.f, rh = m.h() * 16.f;
+    for (int i = 10; i >= 1; i--) {
+      float d = i * 6.f;
+      g.rect(rx - d, ry - d, rw + 2 * d, rh + 2 * d, rgb(0x2a2040, uint8_t(14)));
+    }
+  }
   for (int y = ty0; y <= ty0 + SCREEN_H / 16 && y < m.h(); y++)
     for (int x = tx0; x <= tx1 && x < m.w(); x++) drawTile(g, m, x, y, x * 16 - camX, y * 16 - camY, time);
   for (auto& f : footprints_) {  // empreintes dans la neige : deux pas par case, qui s'effacent en 30 s
