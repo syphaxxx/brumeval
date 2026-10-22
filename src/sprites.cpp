@@ -532,6 +532,7 @@ static bool texTile(Gfx& g, const char* id, int x, int y, int sx, int sy, Color 
 static uint32_t caveFloor = 0x8a84a0;
 static int roomStyle = 0;
 static bool tileNight = false;
+static bool murky = false;  // eau de marais (champ « eau » de la carte)
 void setTileNight(bool night) { tileNight = night; }  // intérieurs (2026-10-21) : 0 maison, 1 chapelle, 2 auberge, 3 boutique, 4 soin
 
 static void ground(Gfx& g, Theme th, int sx, int sy, int h, int x, int y) {
@@ -774,6 +775,7 @@ static void wallDepth(Gfx& g, const MapDef& m, int x, int y, int sx, int sy) {
 static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t);
 void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
   caveFloor = 0x8a84a0;
+  murky = m.water == "marais";
   roomStyle = m.style == "chapelle" ? 1 : m.style == "auberge" ? 2 : m.style == "boutique" ? 3 : m.style == "soin" ? 4 : 0;
   if (m.wallTint) {  // la roche de la carte, en plus clair pour le sol
     auto ch = [&](int s) { return uint32_t(std::min(255, ((int(m.wallTint) >> s) & 255) * 2 - 4)); };
@@ -895,14 +897,23 @@ static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, 
       g.rect(sx + (h >> 6) % 12, sy + 13, 3, 1, rgb(0x8ac0e0));
       break;
     }
-    case 'z': {  // marais
-      g.rect(sx, sy, 16, 16, rgb(0x4a6a4a));
-      float ph = t * 1.2f + x * .9f + y * .5f;
-      g.ellipse(sx + 5 + std::sin(ph) * 1.5f, sy + 6, 3, 1.5f, rgb(0x6a8a5a));
-      g.ellipse(sx + 11, sy + 12, 3, 1.5f, rgb(0x3a5a3a));
-      g.rect(sx + 3 + h % 4, sy + 2, 1, 6, rgb(0x6a8a3a));
-      g.rect(sx + 12, sy + 6 + (h >> 3) % 3, 1, 6, rgb(0x6a8a3a));
-      g.rect(sx + 12, sy + 5 + (h >> 3) % 3, 1, 2, rgb(0x8a5a32));
+    case 'z': {  // marais ; (2026-10-22) boue et flaques, quenouilles, bords qui se fondent dans l'herbe voisine
+      ground(g, th, sx, sy, h, x, y);
+      auto bog = [&](int xx, int yy) { char n = at(xx, yy); return n == 'z' || n == '~' || n == ' '; };
+      int ix = bog(x - 1, y) ? 0 : 3, iy = bog(x, y - 1) ? 0 : 3, ex = bog(x + 1, y) ? 16 : 13, ey = bog(x, y + 1) ? 16 : 13;
+      g.rect(sx + ix, sy + iy, ex - ix, ey - iy, rgb(0x4e6248));                       // la boue
+      if (h % 3 != 0) {  // une flaque, pas partout
+        g.ellipse(sx + 5 + h % 6, sy + 6 + (h >> 4) % 5, 3 + (h >> 9) % 3, 2, rgb(0x3e5a4a));
+        float ph = t * 1.2f + x * .9f + y * .5f;
+        g.ellipse(sx + 5 + h % 6 + std::sin(ph), sy + 5.5f + (h >> 4) % 5, 1.5f, .6f, rgb(0x8aa87a, 140));  // son reflet
+      }
+      if (h % 4 == 1) g.rect(sx + 9 + (h >> 7) % 4, sy + 10, 3, 1, rgb(0x3a4a34));
+      int reeds = (h >> 11) % 5 == 0 ? 3 : (h >> 11) % 5 < 3 ? 1 : 0;  // des touffes de quenouilles éparses
+      for (int k = 0; k < reeds; k++) {  // quenouilles : une tige qui ondule, un épi brun
+        float qx = sx + 2 + (h >> (k * 3 + 2)) % 12, qy = sy + 3 + (h >> (5 + k)) % 5, sw = std::sin(t * 1.5f + x + k) * .6f;
+        g.line(qx, qy + 9, qx + sw, qy + 1, 1, rgb(0x6a8a3a));
+        g.rect(qx + sw - .5f, qy, 2, 3, rgb(0x7a4a28));
+      }
       break;
     }
     case 'T':
@@ -935,13 +946,13 @@ static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, 
       break;
     case '~':
     case 'B': {
-      g.rect(sx, sy, 16, 16, rgb(0x3576bd));
+      g.rect(sx, sy, 16, 16, rgb(murky ? 0x3e6a52 : 0x3576bd));
       if (c == '~') {
         // Eau (3.3) : plus claire près des berges (peu profonde), ombre de la berge en haut, écume en tirets qui
         // ondule, vaguelettes qui dérivent et reflets qui scintillent
         auto water = [&](char n) { return n == '~' || n == 'B' || n == ' '; };
         bool up = !water(at(x, y - 1)), dn = !water(at(x, y + 1)), lf = !water(at(x - 1, y)), rt = !water(at(x + 1, y));
-        Color sh = rgb(0x6fb2e6, 120), sh2 = rgb(0x6fb2e6, 60);
+        Color sh = rgb(murky ? 0x7a9a6a : 0x6fb2e6, 120), sh2 = rgb(murky ? 0x7a9a6a : 0x6fb2e6, 60);
         if (up) g.rect(sx, sy, 16, 4, sh), g.rect(sx, sy + 4, 16, 2, sh2);
         if (dn) g.rect(sx, sy + 12, 16, 4, sh), g.rect(sx, sy + 10, 16, 2, sh2);
         if (lf) g.rect(sx, sy, 4, 16, sh), g.rect(sx + 4, sy, 2, 16, sh2);
@@ -957,8 +968,15 @@ static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, 
           int wy = 4 + k * 6 + int(h >> (4 + k * 3)) % 3;
           int wx = int(t * 3 + (h >> (k * 5)) % 16 + k * 7) % 14;
           if (wx > 11) continue;  // l'arc passe dans la case voisine : il réapparaît de l'autre côté
-          g.rect(sx + wx + 1, sy + wy, 3, 1, rgb(0x8cc4ee, 190));
-          g.rect(sx + wx, sy + wy + 1, 1, 1, rgb(0x8cc4ee, 120)), g.rect(sx + wx + 4, sy + wy + 1, 1, 1, rgb(0x8cc4ee, 120));
+          uint32_t wv = murky ? 0x8aa87a : 0x8cc4ee;
+          g.rect(sx + wx + 1, sy + wy, 3, 1, rgb(wv, 190));
+          g.rect(sx + wx, sy + wy + 1, 1, 1, rgb(wv, 120)), g.rect(sx + wx + 4, sy + wy + 1, 1, 1, rgb(wv, 120));
+        }
+        if (murky && h % 5 == 0) {  // un nénuphar, parfois en fleur
+          float lx = sx + 4 + (h >> 4) % 7, ly = sy + 5 + (h >> 8) % 6;
+          g.ellipse(lx, ly, 3.5f, 2.2f, rgb(0x4e8a3e));
+          g.tri(lx, ly, lx + 3.5f, ly - 1, lx + 3.5f, ly + 1, rgb(0x3e6a52));  // l'encoche
+          if (h % 3 == 0) g.ellipse(lx - 1, ly - 1, 1.2f, 1, rgb(0xf0b8d0));
         }
         // reflet qui scintille de temps en temps
         if (std::sin(t * 1.7f + h % 97) > .93f) {
