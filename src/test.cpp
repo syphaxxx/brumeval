@@ -1197,6 +1197,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   battle_->foes[1]->boss = true;
   run(.3f);
   snap("98_entree_boss");  // transition d'entrée et bandeau du boss
+  run(.4f);
+  snap("98b_nom_du_boss");  // le nom du boss en grand, dans son bandeau
   for (int i = 0; i < 1500 && !menus.active(); i++) frame();
   snap("18_boss_ignarok");
   check(audio::currentMusic() == "boss", "son : musique du boss");

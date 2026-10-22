@@ -3211,11 +3211,19 @@ void Battle::draw() {
     if (bossName.empty() && f->boss) bossName = f->name();
   if (boss && kb < 1 && !bossName.empty()) {
     float a = std::min({1.f, kb * 6, (1 - kb) * 5});
-    float y = 80, h = 22 * a;
-    g.rect(g.left(), y - h / 2, g.fullW, h, rgb(0x1a0610, uint8_t(220 * a)));
+    // (2026-10-22) un bandeau plus large, et le nom en grandes lettres rouge et or qui glissent en place
+    bool big = Gfx::textW(bossName) * 2 <= 290;
+    float y = 80, h = (big ? 32 : 22) * a;
+    g.rect(g.left(), y - h / 2, g.fullW, h, rgb(0x1a0610, uint8_t(225 * a)));
     g.rect(g.left(), y - h / 2, g.fullW, 1, rgb(0xffe066, uint8_t(255 * a)));
+    g.rect(g.left(), y - h / 2 + 2, g.fullW, 1, rgb(0xb8402a, uint8_t(200 * a)));
+    g.rect(g.left(), y + h / 2 - 3, g.fullW, 1, rgb(0xb8402a, uint8_t(200 * a)));
     g.rect(g.left(), y + h / 2 - 1, g.fullW, 1, rgb(0xffe066, uint8_t(255 * a)));
-    if (a > .5f) g.text(160 + (1 - std::min(1.f, kb * 4)) * 60, y - 4, bossName, rgb(0xffe066), 1);
+    float slide = (1 - std::min(1.f, kb * 4)) * 60;
+    if (a > .5f) {
+      if (big) g.textBigFancy(160 + slide, y - 11, bossName, rgb(0xffe880), rgb(0xd8402a), rgb(0x200408), 2, 1);
+      else g.text(160 + slide, y - 4, bossName, rgb(0xffe066), 1);
+    }
   }
 }
 
