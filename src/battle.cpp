@@ -3189,6 +3189,18 @@ void Battle::draw() {
     int x = std::max(4, 316 - w), h = 36 + 11 * (int)summary_.size(), y = std::max(26, 92 - h / 2);
     g.window(x, y, w, h);
     g.text(x + w / 2, y + 5, T("Victoire !"), GOLD, 1);
+    {  // (2026-10-22) en grand, à gauche de la fenêtre : « Victoire ! » qui tombe en place, avec deux éclats
+      std::string v = T("Victoire !");
+      float vw = Gfx::textW(v) * 2.f, cx = (4 + x) / 2.f, age = t - summaryT_;
+      if (vw <= x - 8) {
+        float drop = std::max(0.f, 1 - age * 4) * 18;
+        g.textBigFancy(cx, 36 - drop, v, rgb(0xfff0a0), rgb(0xe8902a), rgb(0x2a1606), 2, 1);
+        for (int k = 0; k < 2; k++) {
+          float ph = std::fmod(age * 1.3f + k * .5f, 1.f), sx2 = cx + (k ? vw / 2 - 4 : -vw / 2 + 4), sy2 = 40.f, r = 3 * std::sin(ph * 3.14159f);
+          g.rect(sx2 - r, sy2, 2 * r + 1, 1, rgb(0xffffff, 220)), g.rect(sx2, sy2 - r, 1, 2 * r + 1, rgb(0xffffff, 220));
+        }
+      }
+    }
     for (size_t i = 0; i < summary_.size(); i++) g.text(x + 8, y + 19 + i * 11, summary_[i], WHITE);
     g.text(x + w / 2, y + h - 12, T("Entrée : continuer"), rgb(0xaab3d8), 1);
   }
