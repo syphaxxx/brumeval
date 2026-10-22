@@ -420,6 +420,9 @@ std::vector<Pilot::Goal> Pilot::goals() {
       g.what = (n.event.empty() ? "parler à un habitant" : "parler : " + n.event) + " (" + M.name + ")";
       auto [nx, ny] = G.npcCell(M, i);  // un promeneur : là où il est maintenant
       around(g, nx, ny, 1, 1);
+      // Les Échos des légendes (après l'acte 4) : le joueur automatique les laisse de côté pour l'instant, leur difficulté
+      // est en cours de réglage (2026-10-22 : il butait sur le quatrième cercle)
+      if (n.event == "legendes") continue;
       if (!n.event.empty()) byEvent(g, n.event);  // un simple dialogue (n.lines) n'a aucun effet : il n'y va pas
     }
     for (auto& c : M.chests) {
