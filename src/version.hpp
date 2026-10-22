@@ -2,4 +2,4 @@
 // joueurs doivent avoir la même). À augmenter à chaque nouvelle version publiée.
 #pragma once
 
-#define BRUMEVAL_VERSION "3.3"
+#define BRUMEVAL_VERSION "3.5"

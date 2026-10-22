@@ -71,6 +71,7 @@ void loadOptions() {
     else if (k == "vitesse") o.speed = std::clamp(v, 1, 3);
     else if (k == "astuces") o.tips = v != 0;
     else if (k == "anglais") o.english = v != 0;
+    else if (k == "sauvegarde_auto") o.autosave = v != 0;
     else
       for (int a = 0; a < N_KEYS; a++)
         if (k == std::string("touche_") + KEY_IDS[a] && v > 0 && v < SDL_NUM_SCANCODES) o.keys[a] = SDL_Scancode(v);
@@ -81,7 +82,8 @@ void loadOptions() {
 void saveOptions() {
   const Options& o = options();
   std::ostringstream f;
-  f << "plein_ecran " << (o.fullscreen ? 1 : 0) << "\nmusique " << o.music << "\neffets " << o.effects << "\nvitesse " << o.speed << "\nastuces " << (o.tips ? 1 : 0) << "\nanglais " << (o.english ? 1 : 0) << '\n';
+  f << "plein_ecran " << (o.fullscreen ? 1 : 0) << "\nmusique " << o.music << "\neffets " << o.effects << "\nvitesse " << o.speed << "\nastuces " << (o.tips ? 1 : 0) << "\nanglais " << (o.english ? 1 : 0)
+    << "\nsauvegarde_auto " << (o.autosave ? 1 : 0) << '\n';
   for (int a = 0; a < N_KEYS; a++) f << "touche_" << KEY_IDS[a] << ' ' << (int)o.keys[a] << '\n';
   writeUserFile(optionsFile, f.str());
 }

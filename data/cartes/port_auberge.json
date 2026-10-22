@@ -1,0 +1,46 @@
+{
+  "id": "port_auberge",
+  "nom": "Auberge de l'Écume",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#hh.e.e.hh#",
+    "#.........#",
+    "#jt....jt.#",
+    "#.........#",
+    "#vv.....vv#",
+    "#.........#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [
+    {"x": 5, "y": 3, "apparence": "barman", "evenement": "auberge", "direction": "bas"},
+    {"x": 3, "y": 6, "apparence": "pecheur", "direction": "bas", "evenement": "cartes_matelot"},
+    {
+      "x": 8,
+      "y": 5,
+      "apparence": "ancien",
+      "direction": "bas",
+      "evenement": "cartes_maitre",
+      "si": {
+        "drapeau": [
+          "cartes:pip",
+          "cartes:meunier",
+          "cartes:mineur",
+          "cartes:chevaliere",
+          "cartes:matelot",
+          "cartes:mousse",
+          "cartes:voyageuse",
+          "cartes:ermite"
+        ]
+      }
+    }
+  ],
+  "coffres": [],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "port", "tx": 26, "ty": 11, "direction": "bas"}],
+  "zones": [],
+  "boss": [],
+  "style": "auberge"
+}

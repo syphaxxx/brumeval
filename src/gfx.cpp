@@ -131,14 +131,14 @@ void Gfx::sprite(const SpriteRect& s, float x, float y, bool flip, float scale, 
   SDL_FRect dst{float(std::lround(x) + ox), float(std::lround(y)), s.w * scale, s.h * scale};
   SDL_RendererFlip fl = flip && tex == atlas_ ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
   SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
-  SDL_SetTextureColorMod(tex, tint.r, tint.g, tint.b);
+  SDL_SetTextureColorMod(tex, uint8_t(tint.r * spriteTint.r / 255), uint8_t(tint.g * spriteTint.g / 255), uint8_t(tint.b * spriteTint.b / 255));
   SDL_SetTextureAlphaMod(tex, uint8_t(tint.a * std::clamp(alpha, 0.f, 1.f)));
-  SDL_RenderCopyExF(r_, tex, &src, &dst, 0, nullptr, fl);
+  SDL_RenderCopyExF(r_, tex, &src, &dst, spriteAngle, nullptr, fl);
   if (flash > 0) {  // éclat blanc : le sprite rajouté en mode additif
     SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_ADD);
     SDL_SetTextureColorMod(tex, 255, 255, 255);
     SDL_SetTextureAlphaMod(tex, uint8_t(255 * std::clamp(flash, 0.f, 1.f) * std::clamp(alpha, 0.f, 1.f)));
-    SDL_RenderCopyExF(r_, tex, &src, &dst, 0, nullptr, fl);
+    SDL_RenderCopyExF(r_, tex, &src, &dst, spriteAngle, nullptr, fl);
     SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
   }
 }
@@ -425,6 +425,10 @@ void Gfx::textBig(float x, float y, const std::string& s, Color c, int k, int al
     set(pass == 0 ? Color{0, 0, 0, uint8_t(c.a * .85f)} : c);
     int cx = X + (pass == 0 ? k : 0), cy = Y + (pass == 0 ? k : 0);
     for (auto cp : cps) {
+      if (cp == ' ') {  // une espace : rien à dessiner (elle n'a pas de glyphe)
+        cx += 6 * k;
+        continue;
+      }
       auto it = F.find(cp);
       if (it == F.end()) it = F.find('?');
       for (int r = 0; r < 11; r++)
@@ -433,6 +437,35 @@ void Gfx::textBig(float x, float y, const std::string& s, Color c, int k, int al
             SDL_Rect rc{cx + q * k + ox, cy + r * k, k, k};
             SDL_RenderFillRect(r_, &rc);
           }
+      cx += 6 * k;
+    }
+  }
+}
+
+void Gfx::textBigFancy(float x, float y, const std::string& s, Color top, Color bot, Color outline, int k, int align) {
+  auto cps = decode(s);
+  int w = int(cps.size()) * 6 * k;
+  int X = (int)std::lround(x - (align == 1 ? w / 2 : align == 2 ? w : 0)), Y = (int)std::lround(y);
+  auto& F = font();
+  for (int pass = 0; pass < 3; pass++) {  // 0 : ombre portée, 1 : contour, 2 : lettres en dégradé
+    int cx = X + (pass == 0 ? k : 0), cy = Y + (pass == 0 ? k + 1 : 0);
+    for (auto cp : cps) {
+      if (cp == ' ') {
+        cx += 6 * k;
+        continue;
+      }
+      auto it = F.find(cp);
+      if (it == F.end()) it = F.find('?');
+      for (int r = 0; r < 11; r++) {
+        if (pass == 0) set(Color{0, 0, 0, uint8_t(outline.a * .6f)});
+        else if (pass == 1) set(outline);
+        else set(mix(top, bot, std::clamp((r - 2) / 7.f, 0.f, 1.f)));
+        for (int q = 0; q < 5; q++)
+          if (it->second.rows[r] & (1 << (4 - q))) {
+            SDL_Rect rc = pass == 1 ? SDL_Rect{cx + q * k + ox - 1, cy + r * k - 1, k + 2, k + 2} : SDL_Rect{cx + q * k + ox, cy + r * k, k, k};
+            SDL_RenderFillRect(r_, &rc);
+          }
+      }
       cx += 6 * k;
     }
   }
@@ -486,9 +519,16 @@ void Gfx::window(float x, float y, float w, float h) {
     }
     wins_.push_back(b);
   }
-  gradV(x + 1, y + 1, w - 2, h - 2, rgb(0x3048b0), rgb(0x0c1452));
-  frame(x, y, w, h, rgb(0xd8def2));
-  frame(x + 1, y + 1, w - 2, h - 2, rgb(0x5a6aa8, 160));
+  // (2026-10-21) ombre portée, coins arrondis, reflet en haut ; toujours le bleu des jeux du genre
+  rect(x + 2, y + h, w - 2, 2, rgb(0x000000, 70)), rect(x + w, y + 2, 2, h - 2, rgb(0x000000, 70));
+  gradV(x + 1, y + 1, w - 2, h - 2, rgb(0x3450b8), rgb(0x0c1452));
+  rect(x + 2, y + 2, w - 4, 1, rgb(0xffffff, 46));                                   // reflet du haut
+  rect(x + 2, y + 3, w - 4, std::min(6.f, h / 3), rgb(0xffffff, 10));
+  rect(x + 1, y, w - 2, 1, rgb(0xd8def2)), rect(x + 1, y + h - 1, w - 2, 1, rgb(0xb8c0dc));  // bord clair, sans les coins
+  rect(x, y + 1, 1, h - 2, rgb(0xd8def2)), rect(x + w - 1, y + 1, 1, h - 2, rgb(0xb8c0dc));
+  for (float cx : {x + 1, x + w - 2})
+    for (float cy : {y + 1, y + h - 2}) rect(cx, cy, 1, 1, rgb(0xa8b2d8));  // coins arrondis
+  frame(x + 2, y + 2, w - 4, h - 4, rgb(0x5a6aa8, 110));
 }
 void Gfx::cursor(float x, float y) {
   tri(x, y, x, y + 8, x + 6, y + 4, rgb(0x2a1e00));

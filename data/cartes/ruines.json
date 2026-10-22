@@ -57,10 +57,25 @@
       "dessin": "ruines"
     }
   ],
-  "habitants": [],
+  "habitants": [
+    {
+      "x": 24,
+      "y": 19,
+      "apparence": "ermite",
+      "direction": "bas",
+      "evenement": "route_ruines1",
+      "vue": 3,
+      "vue_jusqua": "route_ruines1"
+    },
+    {"x": 9, "y": 22, "apparence": "docteur", "direction": "droite", "evenement": "quete_pages_orage"}
+  ],
   "coffres": [
     {"x": 5, "y": 15, "objet": "perle", "quantite": 1},
-    {"x": 31, "y": 15, "objet": "gemme_maitre", "quantite": 1}
+    {"x": 31, "y": 15, "objet": "gemme_maitre", "quantite": 1},
+    {"x": 6, "y": 22, "objet": "partition", "quantite": 1},
+    {"x": 4, "y": 23, "objet": "eclat_brume", "quantite": 1},
+    {"x": 22, "y": 2, "objet": "eclat_brume", "quantite": 1},
+    {"x": 24, "y": 11, "objet": "page_orage", "quantite": 1}
   ],
   "panneaux": [
     {
@@ -116,5 +131,6 @@
     {"x": 17, "y": 3, "espece": "kraken", "drapeau": "kraken", "evenement": "kraken"},
     {"x": 30, "y": 18, "espece": "coffrelin", "drapeau": "coffrelin_ruines", "evenement": "coffrelin"}
   ],
-  "carte_monde": [72, 76]
+  "carte_monde": [72, 76],
+  "teinte_murs": "#456a62"
 }

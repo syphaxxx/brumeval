@@ -9,6 +9,7 @@
 
 #include "data.hpp"
 #include "i18n.hpp"
+#include "primes.hpp"
 
 bool tileWalkable(char c) {
   if (c == 'O' || c == 'P' || c == 'D') return true;  // rochers, plaques et grilles de l'énigme : gérés par Game::blockedOn
@@ -156,6 +157,10 @@ MapDef mapFromJson(const Json& j) {
     m.ambiance = jget<std::string>(j["ambiance"], "effet", "");
     m.ambianceUntil = jget<std::string>(j["ambiance"], "jusqua", "");
   }
+  m.trees = jget<std::string>(j, "arbres", "");
+  m.festival = j.value("fete", Json());
+  m.style = jget<std::string>(j, "style", "");
+  m.wallTint = j.contains("teinte_murs") ? parseColor(j["teinte_murs"]) : 0;
   m.rows = j.at("tuiles").get<std::vector<std::string>>();
   for (auto& r : m.rows)
     if (r.size() != m.rows[0].size()) throw std::runtime_error("toutes les lignes de « tuiles » doivent avoir la même longueur");
@@ -180,6 +185,7 @@ MapDef mapFromJson(const Json& j) {
     n.event = jget<std::string>(o, "evenement", "");
     for (auto& l : jget(o, "dialogue", std::vector<std::string>{})) n.lines.push_back(tr(l));
     n.hideIf = jget<std::string>(o, "cache_si", "");
+    n.cond = o.value("si", Json());
     n.sight = jget(o, "vue", 0);
     n.sightUntil = jget<std::string>(o, "vue_jusqua", "");
     n.roam = n.sight > 0 ? 0 : jget(o, "promenade", 0);  // un dresseur garde sa place : son regard compte
@@ -188,6 +194,7 @@ MapDef mapFromJson(const Json& j) {
   for (auto& o : j.value("coffres", Json::array())) {
     Chest c{o.at("x").get<int>(), o.at("y").get<int>(), jget<std::string>(o, "objet", ""), 0};
     c.qty = c.item.empty() ? jget(o, "or", 0) : jget(o, "quantite", 1);
+    c.cond = o.value("si", Json());
     m.chests.push_back(c);
   }
   for (auto& o : j.value("panneaux", Json::array())) m.signs.push_back({o.at("x").get<int>(), o.at("y").get<int>(), tr(o.at("texte").get<std::string>())});
@@ -200,7 +207,8 @@ MapDef mapFromJson(const Json& j) {
                           jget<std::string>(o, "jusqua", "")});
   for (auto& o : j.value("zones", Json::array()))
     m.zones.push_back({o.at("x").get<int>(), o.at("y").get<int>(), o.at("l").get<int>(), o.at("h").get<int>(), o.at("niveau_min").get<int>(),
-                       o.at("niveau_max").get<int>(), jget(o, "max_ennemis", 3), o.at("creatures").get<std::vector<std::string>>()});
+                       o.at("niveau_max").get<int>(), jget(o, "max_ennemis", 3), o.at("creatures").get<std::vector<std::string>>(),
+                       jget(o, "nuit", std::vector<std::string>{}), jget(o, "meute_max", 0)});
   if (j.contains("enigme")) {
     const Json& e = j["enigme"];
     m.puzzleFlag = jget<std::string>(e, "drapeau", "");
@@ -214,8 +222,10 @@ MapDef mapFromJson(const Json& j) {
   for (auto& o : j.value("boss", Json::array())) {
     BossSpot b{o.at("x").get<int>(), o.at("y").get<int>(), o.at("espece").get<std::string>(), o.at("drapeau").get<std::string>(), ""};
     b.event = jget<std::string>(o, "evenement", b.id);
+    b.cond = o.value("si", Json());
     m.bosses.push_back(b);
   }
+  addBountySpots(m);  // primes (jamais écrites par mapToJson : la carte relue les retrouve)
   return m;
 }
 
@@ -224,6 +234,14 @@ Json mapToJson(const MapDef& m) {
   if (!m.ambiance.empty()) {
     o["ambiance"] = {{"effet", m.ambiance}};
     if (!m.ambianceUntil.empty()) o["ambiance"]["jusqua"] = m.ambianceUntil;
+  }
+  if (!m.trees.empty()) o["arbres"] = m.trees;
+  if (!m.festival.is_null()) o["fete"] = m.festival;
+  if (!m.style.empty()) o["style"] = m.style;
+  if (m.wallTint) {
+    char buf[8];
+    std::snprintf(buf, sizeof buf, "#%06x", (unsigned)m.wallTint);
+    o["teinte_murs"] = buf;
   }
   if (m.encounterRate > 0) o["taux_rencontre"] = (double)m.encounterRate;
   o["tuiles"] = m.rows;
@@ -242,6 +260,7 @@ Json mapToJson(const MapDef& m) {
     Json p = {{"x", x.x}, {"y", x.y}, {"apparence", look(x.look).id}, {"direction", dirName(x.dir)}};
     if (!x.event.empty()) p["evenement"] = x.event;
     if (!x.hideIf.empty()) p["cache_si"] = x.hideIf;
+    if (!x.cond.is_null()) p["si"] = x.cond;
     if (x.sight > 0) p["vue"] = x.sight;
     if (!x.sightUntil.empty()) p["vue_jusqua"] = x.sightUntil;
     if (x.roam > 0) p["promenade"] = x.roam;
@@ -254,6 +273,7 @@ Json mapToJson(const MapDef& m) {
     Json p = {{"x", x.x}, {"y", x.y}};
     if (x.item.empty()) p["or"] = x.qty;
     else p["objet"] = x.item, p["quantite"] = x.qty;
+    if (!x.cond.is_null()) p["si"] = x.cond;
     c.push_back(p);
   }
   o["coffres"] = c;
@@ -275,13 +295,18 @@ Json mapToJson(const MapDef& m) {
     if (!m.puzzleMsg.empty()) o["enigme"]["message"] = m.puzzleMsg;
   }
   Json z = Json::array();
-  for (auto& x : m.zones)
+  for (auto& x : m.zones) {
     z.push_back({{"x", x.x}, {"y", x.y}, {"l", x.w}, {"h", x.h}, {"niveau_min", x.lo}, {"niveau_max", x.hi}, {"max_ennemis", x.maxN}, {"creatures", x.pool}});
+    if (!x.night.empty()) z.back()["nuit"] = x.night;
+    if (x.packCap > 0) z.back()["meute_max"] = x.packCap;
+  }
   o["zones"] = z;
   Json bo = Json::array();
   for (auto& x : m.bosses) {
+    if (x.bounty) continue;  // ajouté par addBountySpots
     Json p = {{"x", x.x}, {"y", x.y}, {"espece", x.id}, {"drapeau", x.flag}};
     if (x.event != x.id) p["evenement"] = x.event;
+    if (!x.cond.is_null()) p["si"] = x.cond;
     bo.push_back(p);
   }
   o["boss"] = bo;
@@ -299,6 +324,7 @@ Json mapToJson(const MapDef& m) {
 
 void loadMaps() {
   MAPS.clear();
+  loadBounties();  // avant les cartes : mapFromJson y ajoute le monstre de chaque prime
   for (auto& f : listJson("cartes")) {
     try {
       MAPS.push_back(mapFromJson(readJson("cartes/" + f + ".json")));
@@ -336,9 +362,12 @@ std::vector<std::string> checkMaps() {
     auto at = [&](int x, int y) { return "(" + std::to_string(x) + ", " + std::to_string(y) + ")"; };
     auto E = [&](const std::string& s) { err.push_back(m.name + " : " + s); };
     auto inside = [&](int x, int y) { return x >= 0 && y >= 0 && x < m.w() && y < m.h(); };
-    for (auto& z : m.zones)
+    for (auto& z : m.zones) {
       for (auto& p : z.pool)
         if (!hasSpecies(p)) E("créature inconnue dans une zone : " + p);
+      for (auto& p : z.night)
+        if (!hasSpecies(p)) E("créature de nuit inconnue dans une zone : " + p);
+    }
     for (auto& c : m.chests)
       if (!c.item.empty() && !hasItem(c.item)) E("objet inconnu dans un coffre " + at(c.x, c.y) + " : " + c.item);
     for (auto& b : m.bosses)

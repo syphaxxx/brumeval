@@ -1,0 +1,86 @@
+{
+  "id": "citadelle",
+  "nom": "Citadelle des gardiens",
+  "theme": "grotte",
+  "tuiles": [
+    "##############################",
+    "##############################",
+    "########..............########",
+    "########.x..........x.########",
+    "########..............########",
+    "########..x........x..########",
+    "########..............########",
+    "########..x........x..########",
+    "########..............########",
+    "########..x........x..########",
+    "########..............########",
+    "########..x........x..########",
+    "########.x..........x.########",
+    "########..............########",
+    "############......############",
+    "###ccccccc##......##ccccccc###",
+    "###xcccccc##......##ccccccx###",
+    "###ccccccc##......##ccccccc###",
+    "###cccccccccc....cccccccccc###",
+    "###ccccccc##......##ccccccc###",
+    "###xcccccc##......##ccccccx###",
+    "###ccccccc##......##ccccccc###",
+    "############......############",
+    "############......############",
+    "#####ccccccc......ccccccc#####",
+    "#####xccccccccccccccccccx#####",
+    "#####cccccccccccccccccccc#####",
+    "#####cccccccccccccccccccc#####",
+    "#####cccccccccccccccccccc#####",
+    "#####xccccccccccccccccccx#####",
+    "#####cccccccccccccccccccc#####",
+    "##############..##############",
+    "##############..##############",
+    "##############..##############",
+    "##############..##############",
+    "##############..##############",
+    "##############..##############",
+    "##############..##############",
+    "##############..##############",
+    "##############..##############"
+  ],
+  "batiments": [],
+  "habitants": [
+    {"x": 16, "y": 14, "apparence": "mage_givre", "direction": "bas", "evenement": "ilya_citadelle"},
+    {
+      "x": 11,
+      "y": 3,
+      "apparence": "mage_givre",
+      "direction": "bas",
+      "evenement": "route_citadelle1",
+      "vue": 3,
+      "vue_jusqua": "route_citadelle1"
+    }
+  ],
+  "coffres": [
+    {"x": 4, "y": 16, "objet": "gemme_orage", "quantite": 1},
+    {"x": 25, "y": 16, "objet": "gemme_maitre", "quantite": 1},
+    {"x": 6, "y": 29, "objet": "elixir", "quantite": 3},
+    {"x": 23, "y": 29, "objet": "plume", "quantite": 3}
+  ],
+  "panneaux": [],
+  "passages": [
+    {"x": 14, "y": 39, "vers": "gouffre", "tx": 17, "ty": 1, "direction": "bas"},
+    {"x": 15, "y": 39, "vers": "gouffre", "tx": 18, "ty": 1, "direction": "bas"}
+  ],
+  "zones": [
+    {
+      "x": 0,
+      "y": 14,
+      "l": 30,
+      "h": 26,
+      "niveau_min": 60,
+      "niveau_max": 64,
+      "max_ennemis": 3,
+      "creatures": ["rocaube", "aubespectre", "nacrelin", "loup_aube"]
+    }
+  ],
+  "boss": [{"x": 14, "y": 4, "espece": "brume_noire", "drapeau": "aube_fin"}],
+  "carte_monde": [16, 60],
+  "teinte_murs": "#8a8270"
+}

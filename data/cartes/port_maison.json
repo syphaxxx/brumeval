@@ -1,0 +1,33 @@
+{
+  "id": "port_maison",
+  "nom": "Maison de la gardienne du phare",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#hh.e..e..#",
+    "#.........#",
+    "#.jtt.....#",
+    "#.jtt.....#",
+    "#........v#",
+    "#.........#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [
+    {
+      "x": 8,
+      "y": 4,
+      "apparence": "chat",
+      "direction": "bas",
+      "dialogue": ["Le chat de la gardienne du phare ronronne sur le rebord de la fenêtre."],
+      "promenade": 1
+    }
+  ],
+  "coffres": [],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "port", "tx": 25, "ty": 19, "direction": "bas"}],
+  "zones": [],
+  "boss": [],
+  "declencheurs": [{"x": 5, "y": 6, "l": 1, "h": 1, "evenement": "port_maison"}]
+}

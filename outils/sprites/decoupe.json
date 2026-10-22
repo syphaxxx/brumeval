@@ -5339,5 +5339,933 @@
 ],
 "h": 24,
 "miroir": true
+},
+{
+"id": "homme_droite_0",
+"planche": "decor",
+"boite": [
+744,
+74,
+780,
+144
+],
+"h": 24,
+"tourner": "droite",
+"pas": 0
+},
+{
+"id": "homme_droite_1",
+"planche": "decor",
+"boite": [
+744,
+74,
+780,
+144
+],
+"h": 24,
+"tourner": "droite",
+"pas": 1
+},
+{
+"id": "homme_droite_2",
+"planche": "decor",
+"boite": [
+744,
+74,
+780,
+144
+],
+"h": 24,
+"tourner": "droite",
+"pas": 2
+},
+{
+"id": "homme_droite_3",
+"planche": "decor",
+"boite": [
+744,
+74,
+780,
+144
+],
+"h": 24,
+"tourner": "droite",
+"pas": 3
+},
+{
+"id": "homme_haut_0",
+"planche": "decor",
+"boite": [
+744,
+74,
+780,
+144
+],
+"h": 24,
+"tourner": "haut",
+"pas": 0
+},
+{
+"id": "homme_haut_1",
+"planche": "decor",
+"boite": [
+744,
+74,
+780,
+144
+],
+"h": 24,
+"tourner": "haut",
+"pas": 1
+},
+{
+"id": "homme_haut_2",
+"planche": "decor",
+"boite": [
+744,
+74,
+780,
+144
+],
+"h": 24,
+"tourner": "haut",
+"pas": 2
+},
+{
+"id": "homme_haut_3",
+"planche": "decor",
+"boite": [
+744,
+74,
+780,
+144
+],
+"h": 24,
+"tourner": "haut",
+"pas": 3
+},
+{
+"id": "enfant_droite_0",
+"planche": "decor",
+"boite": [
+638,
+87,
+671,
+145
+],
+"h": 22,
+"tourner": "droite",
+"pas": 0
+},
+{
+"id": "enfant_droite_1",
+"planche": "decor",
+"boite": [
+638,
+87,
+671,
+145
+],
+"h": 22,
+"tourner": "droite",
+"pas": 1
+},
+{
+"id": "enfant_droite_2",
+"planche": "decor",
+"boite": [
+638,
+87,
+671,
+145
+],
+"h": 22,
+"tourner": "droite",
+"pas": 2
+},
+{
+"id": "enfant_droite_3",
+"planche": "decor",
+"boite": [
+638,
+87,
+671,
+145
+],
+"h": 22,
+"tourner": "droite",
+"pas": 3
+},
+{
+"id": "enfant_haut_0",
+"planche": "decor",
+"boite": [
+638,
+87,
+671,
+145
+],
+"h": 22,
+"tourner": "haut",
+"pas": 0
+},
+{
+"id": "enfant_haut_1",
+"planche": "decor",
+"boite": [
+638,
+87,
+671,
+145
+],
+"h": 22,
+"tourner": "haut",
+"pas": 1
+},
+{
+"id": "enfant_haut_2",
+"planche": "decor",
+"boite": [
+638,
+87,
+671,
+145
+],
+"h": 22,
+"tourner": "haut",
+"pas": 2
+},
+{
+"id": "enfant_haut_3",
+"planche": "decor",
+"boite": [
+638,
+87,
+671,
+145
+],
+"h": 22,
+"tourner": "haut",
+"pas": 3
+},
+{
+"id": "femme_droite_0",
+"planche": "decor",
+"boite": [
+688,
+77,
+724,
+145
+],
+"h": 24,
+"tourner": "droite",
+"pas": 0,
+"tablier": true
+},
+{
+"id": "femme_droite_1",
+"planche": "decor",
+"boite": [
+688,
+77,
+724,
+145
+],
+"h": 24,
+"tourner": "droite",
+"pas": 1,
+"tablier": true
+},
+{
+"id": "femme_droite_2",
+"planche": "decor",
+"boite": [
+688,
+77,
+724,
+145
+],
+"h": 24,
+"tourner": "droite",
+"pas": 2,
+"tablier": true
+},
+{
+"id": "femme_droite_3",
+"planche": "decor",
+"boite": [
+688,
+77,
+724,
+145
+],
+"h": 24,
+"tourner": "droite",
+"pas": 3,
+"tablier": true
+},
+{
+"id": "femme_haut_0",
+"planche": "decor",
+"boite": [
+688,
+77,
+724,
+145
+],
+"h": 24,
+"tourner": "haut",
+"pas": 0,
+"tablier": true
+},
+{
+"id": "femme_haut_1",
+"planche": "decor",
+"boite": [
+688,
+77,
+724,
+145
+],
+"h": 24,
+"tourner": "haut",
+"pas": 1,
+"tablier": true
+},
+{
+"id": "femme_haut_2",
+"planche": "decor",
+"boite": [
+688,
+77,
+724,
+145
+],
+"h": 24,
+"tourner": "haut",
+"pas": 2,
+"tablier": true
+},
+{
+"id": "femme_haut_3",
+"planche": "decor",
+"boite": [
+688,
+77,
+724,
+145
+],
+"h": 24,
+"tourner": "haut",
+"pas": 3,
+"tablier": true
+},
+{
+"id": "pecheur_droite_0",
+"planche": "decor",
+"boite": [
+691,
+284,
+730,
+352
+],
+"h": 24,
+"tourner": "droite",
+"pas": 0,
+"tourne": true,
+"chapeau": 0.3
+},
+{
+"id": "pecheur_droite_1",
+"planche": "decor",
+"boite": [
+691,
+284,
+730,
+352
+],
+"h": 24,
+"tourner": "droite",
+"pas": 1,
+"tourne": true,
+"chapeau": 0.3
+},
+{
+"id": "pecheur_droite_2",
+"planche": "decor",
+"boite": [
+691,
+284,
+730,
+352
+],
+"h": 24,
+"tourner": "droite",
+"pas": 2,
+"tourne": true,
+"chapeau": 0.3
+},
+{
+"id": "pecheur_droite_3",
+"planche": "decor",
+"boite": [
+691,
+284,
+730,
+352
+],
+"h": 24,
+"tourner": "droite",
+"pas": 3,
+"tourne": true,
+"chapeau": 0.3
+},
+{
+"id": "pecheur_haut_0",
+"planche": "decor",
+"boite": [
+693,
+200,
+736,
+269
+],
+"h": 24,
+"tourner": "haut",
+"pas": 0,
+"chapeau": 0.3
+},
+{
+"id": "pecheur_haut_1",
+"planche": "decor",
+"boite": [
+693,
+200,
+736,
+269
+],
+"h": 24,
+"tourner": "haut",
+"pas": 1,
+"chapeau": 0.3
+},
+{
+"id": "pecheur_haut_2",
+"planche": "decor",
+"boite": [
+693,
+200,
+736,
+269
+],
+"h": 24,
+"tourner": "haut",
+"pas": 2,
+"chapeau": 0.3
+},
+{
+"id": "pecheur_haut_3",
+"planche": "decor",
+"boite": [
+693,
+200,
+736,
+269
+],
+"h": 24,
+"tourner": "haut",
+"pas": 3,
+"chapeau": 0.3
+},
+{
+"id": "barman_droite_0",
+"planche": "decor",
+"boite": [
+801,
+73,
+845,
+145
+],
+"h": 24,
+"tourner": "droite",
+"pas": 0
+},
+{
+"id": "barman_droite_1",
+"planche": "decor",
+"boite": [
+801,
+73,
+845,
+145
+],
+"h": 24,
+"tourner": "droite",
+"pas": 1
+},
+{
+"id": "barman_droite_2",
+"planche": "decor",
+"boite": [
+801,
+73,
+845,
+145
+],
+"h": 24,
+"tourner": "droite",
+"pas": 2
+},
+{
+"id": "barman_droite_3",
+"planche": "decor",
+"boite": [
+801,
+73,
+845,
+145
+],
+"h": 24,
+"tourner": "droite",
+"pas": 3
+},
+{
+"id": "barman_haut_0",
+"planche": "decor",
+"boite": [
+801,
+73,
+845,
+145
+],
+"h": 24,
+"tourner": "haut",
+"pas": 0
+},
+{
+"id": "barman_haut_1",
+"planche": "decor",
+"boite": [
+801,
+73,
+845,
+145
+],
+"h": 24,
+"tourner": "haut",
+"pas": 1
+},
+{
+"id": "barman_haut_2",
+"planche": "decor",
+"boite": [
+801,
+73,
+845,
+145
+],
+"h": 24,
+"tourner": "haut",
+"pas": 2
+},
+{
+"id": "barman_haut_3",
+"planche": "decor",
+"boite": [
+801,
+73,
+845,
+145
+],
+"h": 24,
+"tourner": "haut",
+"pas": 3
+},
+{
+"id": "docteur_droite_0",
+"planche": "decor",
+"boite": [
+816,
+288,
+853,
+352
+],
+"h": 24,
+"tourner": "droite",
+"pas": 0,
+"tourne": true,
+"chapeau": 0.22
+},
+{
+"id": "docteur_droite_1",
+"planche": "decor",
+"boite": [
+816,
+288,
+853,
+352
+],
+"h": 24,
+"tourner": "droite",
+"pas": 1,
+"tourne": true,
+"chapeau": 0.22
+},
+{
+"id": "docteur_droite_2",
+"planche": "decor",
+"boite": [
+816,
+288,
+853,
+352
+],
+"h": 24,
+"tourner": "droite",
+"pas": 2,
+"tourne": true,
+"chapeau": 0.22
+},
+{
+"id": "docteur_droite_3",
+"planche": "decor",
+"boite": [
+816,
+288,
+853,
+352
+],
+"h": 24,
+"tourner": "droite",
+"pas": 3,
+"tourne": true,
+"chapeau": 0.22
+},
+{
+"id": "docteur_haut_0",
+"planche": "decor",
+"boite": [
+811,
+198,
+848,
+276
+],
+"h": 24,
+"tourner": "haut",
+"pas": 0,
+"chapeau": 0.22
+},
+{
+"id": "docteur_haut_1",
+"planche": "decor",
+"boite": [
+811,
+198,
+848,
+276
+],
+"h": 24,
+"tourner": "haut",
+"pas": 1,
+"chapeau": 0.22
+},
+{
+"id": "docteur_haut_2",
+"planche": "decor",
+"boite": [
+811,
+198,
+848,
+276
+],
+"h": 24,
+"tourner": "haut",
+"pas": 2,
+"chapeau": 0.22
+},
+{
+"id": "docteur_haut_3",
+"planche": "decor",
+"boite": [
+811,
+198,
+848,
+276
+],
+"h": 24,
+"tourner": "haut",
+"pas": 3,
+"chapeau": 0.22
+},
+{
+"id": "forgeron_droite_0",
+"planche": "decor",
+"boite": [
+752,
+284,
+790,
+352
+],
+"h": 24,
+"tourner": "droite",
+"pas": 0,
+"tourne": true,
+"chapeau": 0.2,
+"cheveux": [
+74,
+48,
+32
+]
+},
+{
+"id": "forgeron_droite_1",
+"planche": "decor",
+"boite": [
+752,
+284,
+790,
+352
+],
+"h": 24,
+"tourner": "droite",
+"pas": 1,
+"tourne": true,
+"chapeau": 0.2,
+"cheveux": [
+74,
+48,
+32
+]
+},
+{
+"id": "forgeron_droite_2",
+"planche": "decor",
+"boite": [
+752,
+284,
+790,
+352
+],
+"h": 24,
+"tourner": "droite",
+"pas": 2,
+"tourne": true,
+"chapeau": 0.2,
+"cheveux": [
+74,
+48,
+32
+]
+},
+{
+"id": "forgeron_droite_3",
+"planche": "decor",
+"boite": [
+752,
+284,
+790,
+352
+],
+"h": 24,
+"tourner": "droite",
+"pas": 3,
+"tourne": true,
+"chapeau": 0.2,
+"cheveux": [
+74,
+48,
+32
+]
+},
+{
+"id": "forgeron_haut_0",
+"planche": "decor",
+"boite": [
+752,
+198,
+793,
+274
+],
+"h": 24,
+"tourner": "haut",
+"pas": 0,
+"chapeau": 0.2,
+"cheveux": [
+74,
+48,
+32
+]
+},
+{
+"id": "forgeron_haut_1",
+"planche": "decor",
+"boite": [
+752,
+198,
+793,
+274
+],
+"h": 24,
+"tourner": "haut",
+"pas": 1,
+"chapeau": 0.2,
+"cheveux": [
+74,
+48,
+32
+]
+},
+{
+"id": "forgeron_haut_2",
+"planche": "decor",
+"boite": [
+752,
+198,
+793,
+274
+],
+"h": 24,
+"tourner": "haut",
+"pas": 2,
+"chapeau": 0.2,
+"cheveux": [
+74,
+48,
+32
+]
+},
+{
+"id": "forgeron_haut_3",
+"planche": "decor",
+"boite": [
+752,
+198,
+793,
+274
+],
+"h": 24,
+"tourner": "haut",
+"pas": 3,
+"chapeau": 0.2,
+"cheveux": [
+74,
+48,
+32
+]
+},
+{
+"id": "paysan_droite_0",
+"planche": "decor",
+"boite": [
+639,
+287,
+677,
+352
+],
+"h": 24,
+"tourner": "droite",
+"pas": 0,
+"tourne": true,
+"chapeau": 0.3
+},
+{
+"id": "paysan_droite_1",
+"planche": "decor",
+"boite": [
+639,
+287,
+677,
+352
+],
+"h": 24,
+"tourner": "droite",
+"pas": 1,
+"tourne": true,
+"chapeau": 0.3
+},
+{
+"id": "paysan_droite_2",
+"planche": "decor",
+"boite": [
+639,
+287,
+677,
+352
+],
+"h": 24,
+"tourner": "droite",
+"pas": 2,
+"tourne": true,
+"chapeau": 0.3
+},
+{
+"id": "paysan_droite_3",
+"planche": "decor",
+"boite": [
+639,
+287,
+677,
+352
+],
+"h": 24,
+"tourner": "droite",
+"pas": 3,
+"tourne": true,
+"chapeau": 0.3
+},
+{
+"id": "paysan_haut_0",
+"planche": "decor",
+"boite": [
+638,
+200,
+681,
+272
+],
+"h": 24,
+"tourner": "haut",
+"pas": 0,
+"chapeau": 0.3
+},
+{
+"id": "paysan_haut_1",
+"planche": "decor",
+"boite": [
+638,
+200,
+681,
+272
+],
+"h": 24,
+"tourner": "haut",
+"pas": 1,
+"chapeau": 0.3
+},
+{
+"id": "paysan_haut_2",
+"planche": "decor",
+"boite": [
+638,
+200,
+681,
+272
+],
+"h": 24,
+"tourner": "haut",
+"pas": 2,
+"chapeau": 0.3
+},
+{
+"id": "paysan_haut_3",
+"planche": "decor",
+"boite": [
+638,
+200,
+681,
+272
+],
+"h": 24,
+"tourner": "haut",
+"pas": 3,
+"chapeau": 0.3
 }
 ]

@@ -6,7 +6,7 @@
     "TT#################==###########..~~~~~~",
     "TT.................==.............~~~~~~",
     "TT.................==.............~~~~~~",
-    "TT.F...............qq........F...R~~~~~~",
+    "TT.F...............qq.......JF..JR~~~~~~",
     "TT.................qq.............~~~~~~",
     "TT.................qq.............~~~~~~",
     "TT.................qq............R~~~~~~",
@@ -17,13 +17,13 @@
     "TTL......L.......L.qq.L......L....~~~~~~",
     "TT.qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq~~~~~~",
     "TT.qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq~~~~~~",
-    "TT.......L==.......==L........Q...~~~~~~",
+    "TT.......L==.......==LG.......Q...~~~~~~",
     "TTT.......==.......==............R~~~~~~",
     "TT........==..M..M.==.............~~~~~~",
     "TT..F.....==.......==.............~~~~~~",
     "TT........==.......==............R~~~~~~",
     "TT........==..F....==.............~~~~~~",
-    "TT.Q...F..==.......==....F........~~~~~~",
+    "TT.Q...F..==.......==....F........BBB~~~",
     "TT........==.CCv.................R~~~~~~",
     "TT.....vCC==.............Cv.......~~~~~~",
     "~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
@@ -41,7 +41,7 @@
       "genre": "soin",
       "nom": "Maison de soin",
       "toit": "#b8483e",
-      "evenement": "port_soin"
+      "interieur": "port_soin"
     },
     {
       "x": 12,
@@ -51,7 +51,7 @@
       "genre": "boutique2",
       "nom": "Boutique du port",
       "toit": "#3f6fb0",
-      "evenement": "boutique_port"
+      "interieur": "port_boutique"
     },
     {
       "x": 23,
@@ -61,7 +61,7 @@
       "genre": "auberge",
       "nom": "Auberge de l'Écume",
       "toit": "#9a5a2a",
-      "evenement": "auberge"
+      "interieur": "port_auberge"
     },
     {
       "x": 23,
@@ -71,7 +71,7 @@
       "genre": "maison",
       "nom": "Maison de la gardienne du phare",
       "toit": "#5a6a9a",
-      "evenement": "port_maison"
+      "interieur": "port_maison"
     }
   ],
   "habitants": [
@@ -103,7 +103,8 @@
       "y": 12,
       "apparence": "montagnard",
       "direction": "gauche",
-      "dialogue": ["Le Kraken garde les ruines englouties. Il ne craint pas l'eau, ça c'est sûr."]
+      "dialogue": ["Le Kraken garde les ruines englouties. Il ne craint pas l'eau, ça c'est sûr."],
+      "evenement": "corbin"
     },
     {
       "x": 15,
@@ -126,7 +127,21 @@
       "direction": "droite",
       "dialogue": ["Le chat du port guette les barques."],
       "promenade": 1
-    }
+    },
+    {
+      "x": 28,
+      "y": 13,
+      "apparence": "villageois",
+      "direction": "bas",
+      "evenement": "tom_3",
+      "si": {"drapeau": "tom2"}
+    },
+    {"x": 30, "y": 19, "apparence": "pecheur", "direction": "gauche", "evenement": "quete_capitaine"},
+    {"x": 12, "y": 16, "apparence": "barman", "direction": "droite", "evenement": "quete_partitions"},
+    {"x": 32, "y": 19, "apparence": "voyageuse", "direction": "bas", "evenement": "ysolde"},
+    {"x": 6, "y": 21, "apparence": "pecheur", "direction": "droite", "evenement": "maitre_pecheur"},
+    {"x": 18, "y": 19, "apparence": "villageoise", "direction": "bas", "evenement": "fille_pecheur"},
+    {"x": 30, "y": 4, "apparence": "garde", "direction": "bas", "evenement": "ligue"}
   ],
   "coffres": [{"x": 3, "y": 21, "objet": "superpotion", "quantite": 3}],
   "panneaux": [
@@ -140,7 +155,17 @@
     {"x": 19, "y": 0, "vers": "recif", "tx": 23, "ty": 34, "direction": "haut"},
     {"x": 20, "y": 0, "vers": "recif", "tx": 24, "ty": 34, "direction": "haut"},
     {"x": 10, "y": 25, "vers": "vallee", "tx": 24, "ty": 38, "direction": "gauche"},
-    {"x": 11, "y": 25, "vers": "vallee", "tx": 24, "ty": 38, "direction": "gauche"}
+    {"x": 11, "y": 25, "vers": "vallee", "tx": 24, "ty": 38, "direction": "gauche"},
+    {
+      "x": 36,
+      "y": 20,
+      "vers": "aube",
+      "tx": 20,
+      "ty": 23,
+      "direction": "haut",
+      "condition": {"drapeau": "boss5"},
+      "message": "Au-delà de la jetée, l'orage tourne encore. Aucun bateau ne passerait."
+    }
   ],
   "zones": [],
   "boss": [],

@@ -8,7 +8,7 @@
 #include "world.hpp"
 
 // Créature centrée sur (x, y). flip = tournée vers la droite.
-void drawCreature(Gfx& g, const std::string& sp, float x, float y, float s, bool flip, float t);
+void drawCreature(Gfx& g, const std::string& sp, float x, float y, float s, bool flip, float t, bool chroma = false);  // chroma : couleurs rares
 // Humain : (x, y) = coin haut-gauche d'une case de 16x16, mise à l'échelle par s.
 // dir : 0 haut, 1 bas, 2 gauche, 3 droite. step : 0, 1 ou 2 (pas de marche).
 void drawHuman(Gfx& g, const Look& lk, float x, float y, float s, int dir, int step, bool weapon, bool run = false);
@@ -27,17 +27,21 @@ bool drawFighterIcon(Gfx& g, const Fighter& f, float cx, float cy, float w, floa
 bool drawFighterPose(Gfx& g, const Fighter& f, const std::string& pose, float x, float y, bool faceRight);
 
 void drawTile(Gfx& g, const MapDef& m, int tx, int ty, int sx, int sy, float t);
+void setTileNight(bool night);  // (2026-10-21) la nuit, les fenêtres des intérieurs sont sombres et ne font plus de lumière
 // Objet haut posé sur une case (arbre, réverbère, puits, étal…) : dessiné avec les personnages, triés de haut en
 // bas, pour passer devant ou derrière eux. Faux si la case n'en a pas (drawTile dessine alors tout).
 bool hasProp(const MapDef& m, int tx, int ty);
 // Hautes herbes : dessinées (faux s'il n'y en a pas) ; front : le bas des touffes, par-dessus un personnage
 bool tallGrass(Gfx& g, const MapDef& m, int tx, int ty, int sx, int sy, float t, bool front);
 void drawProp(Gfx& g, const MapDef& m, int tx, int ty, int sx, int sy, float t);
+// Petite vie de la carte (2026-10-20) : papillons au-dessus des fleurs le jour, poissons qui sautent dans l'eau
+// (cases de tx0..tx1, ty0..ty1 ; dessin seul, rien d'enregistré)
+void drawMapCritters(Gfx& g, const MapDef& m, int tx0, int tx1, int ty0, int ty1, int camX, int camY, float t, float night);
 // Le même objet réduit pour tenir dans une case (palette de l'éditeur de cartes)
 void drawPropIcon(Gfx& g, const MapDef& m, int tx, int ty, int sx, int sy);
 void drawBuilding(Gfx& g, const Building& b, int sx, int sy);
 // Par-dessus la nuit (2.6) : fenêtres allumées et lueur de la porte (night : 0 jour, 1 nuit) ; fumée de la cheminée
 void drawBuildingLights(Gfx& g, const Building& b, int sx, int sy, float night);
 void drawChimneySmoke(Gfx& g, const Building& b, int sx, int sy, float t);
-void drawChest(Gfx& g, int sx, int sy, bool open);
+void drawChest(Gfx& g, int sx, int sy, bool open, float t = -1);  // t >= 0 : un reflet passe de temps en temps (fermé)
 void drawSign(Gfx& g, int sx, int sy);

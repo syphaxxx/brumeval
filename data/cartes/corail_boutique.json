@@ -1,0 +1,26 @@
+{
+  "id": "corail_boutique",
+  "nom": "Comptoir des coraux",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#eeeeeeeee#",
+    "#C.......C#",
+    "#ooo...ooo#",
+    "#.........#",
+    "#v.......v#",
+    "#.........#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [
+    {"x": 5, "y": 3, "apparence": "marchande", "evenement": "boutique_corail", "direction": "bas"}
+  ],
+  "coffres": [],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "corail", "tx": 29, "ty": 12, "direction": "bas"}],
+  "zones": [],
+  "boss": [],
+  "style": "boutique"
+}

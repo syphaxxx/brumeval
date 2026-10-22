@@ -28,7 +28,7 @@
     "##.T...T.......T...nnnnnnnnnnn=nnnnnnnnnnn..T.....~iii~TT........nnnnnnnnn...nnnnn##",
     "##.........T..T....nnnnnnnnnnn=nnnnnnnnnnn..T....~iiiii~....========nnnnn.....nnnn##",
     "##.....TT....T....Tnnnnnnnnnnn=nnnnnnnnnnn.......~iiiii~T.......n....n...n.......n.#",
-    "##.T................nnnnnnnnn.=TnnnnnnnnnT...T.T~iiiiiii~.##nnnnnnnnn...nnn........#",
+    "##.T................nnnnnnnnn.=TnnnnnnnnnT...T.T~iiiiiii~.##nnnnnnnnn...nnn........k",
     "##.T.T.~~~.T.T......TTnnnnn...=...nnnnn.......T.~iiiiiii~T##nnnnnnnnnnnn#####nn....#",
     "##...~~~~~~~.T................==............=====iiiiiii~.##nnnnnnnnnnnnn#nnnnnn...#",
     "##.T.~~iii~~..................==................~iiiiiii~.##.Tnn##nnnnn#####nnnnn..#",
@@ -37,7 +37,7 @@
     "##..~~iiiii~~.................==........C........~iiiii~.T##.nnnn######n.nnn.....nn#",
     "##..~~iiiii~~T...U......U.....==........v........T~iii~.....nnnnnnn#nnnnnnnn.....nn#",
     "##..~~iiiii~~T......=.....LqqqqqqqqL.=.........T...~~~T.....========#nnnnnnn.n..nnn#",
-    "##TT.~~iii~~T......L=......qqqqqqqq..=...L..T...T...........nnnnnnn###TTnnnnnnnn.nn#",
+    "##TT.~~iii~~T......L=.....Gqqqqqqqq..=...L..T...T...........nnnnnnn###TTnnnnnnnn.nn#",
     "##..T~~~BBBB===...qqqqqqqqqqqqqqqqqqqqqqqqq.............T.##.nnnnn#####Tn#nnnnnnnnn#",
     "##.....~~~T..T.T..........LqqqqqqqqL..........T.........T.##...n.n.###nnn#nnnnnnn.n#",
     "##.T..TT..TT..................==........................T.##nnnnnnnn#nnnn#nnnnnnnn.#",
@@ -103,6 +103,7 @@
     }
   ],
   "habitants": [
+    {"x": 38, "y": 36, "apparence": "garde", "direction": "bas", "evenement": "instructeur_givreval"},
     {
       "x": 41,
       "y": 35,
@@ -171,6 +172,62 @@
       "direction": "gauche",
       "dialogue": ["Le chien a de la neige plein les moustaches."],
       "promenade": 2
+    },
+    {"x": 22, "y": 34, "apparence": "villageoise", "direction": "bas", "evenement": "quete_cache_cache"},
+    {
+      "x": 62,
+      "y": 13,
+      "apparence": "enfant",
+      "direction": "bas",
+      "evenement": "enfant_cache_1",
+      "si": {"drapeau": "quete:cache_cache"},
+      "cache_si": "enfant_1_trouve"
+    },
+    {
+      "x": 9,
+      "y": 8,
+      "apparence": "enfant",
+      "direction": "bas",
+      "evenement": "enfant_cache_2",
+      "si": {"drapeau": "quete:cache_cache"},
+      "cache_si": "enfant_2_trouve"
+    },
+    {
+      "x": 75,
+      "y": 37,
+      "apparence": "enfant",
+      "direction": "bas",
+      "evenement": "enfant_cache_3",
+      "si": {"drapeau": "quete:cache_cache"},
+      "cache_si": "enfant_3_trouve"
+    },
+    {"x": 10, "y": 38, "apparence": "ancien", "direction": "droite", "evenement": "quete_bains"},
+    {
+      "x": 28,
+      "y": 35,
+      "apparence": "villageois",
+      "direction": "bas",
+      "evenement": "tom_2",
+      "si": {"drapeau": ["tom1", "boss3"]},
+      "cache_si": "tom2"
+    },
+    {"x": 81, "y": 22, "apparence": "chevalier", "direction": "droite", "evenement": "garde_glacier"},
+    {
+      "x": 61,
+      "y": 9,
+      "apparence": "mage_givre",
+      "direction": "bas",
+      "evenement": "route_pics1",
+      "vue": 3,
+      "vue_jusqua": "route_pics1"
+    },
+    {
+      "x": 44,
+      "y": 36,
+      "apparence": "chevalier",
+      "direction": "gauche",
+      "evenement": "aldric",
+      "si": {"drapeau": "aube_fin"}
     }
   ],
   "coffres": [
@@ -182,7 +239,12 @@
     {"x": 12, "y": 19, "objet": "cristal_givre", "quantite": 2},
     {"x": 72, "y": 30, "objet": "lanterne_or", "quantite": 2},
     {"x": 81, "y": 16, "objet": "elixir", "quantite": 2},
-    {"x": 78, "y": 39, "or": 2500}
+    {"x": 78, "y": 39, "or": 2500},
+    {"x": 82, "y": 4, "objet": "eclat_brume", "quantite": 1},
+    {"x": 4, "y": 4, "objet": "eclat_brume", "quantite": 1},
+    {"x": 82, "y": 40, "objet": "eclat_brume", "quantite": 1},
+    {"x": 4, "y": 40, "objet": "eclat_brume", "quantite": 1},
+    {"x": 2, "y": 27, "objet": "carte_tresor_7", "quantite": 1, "si": {"objet": "carte_tresor_6"}}
   ],
   "panneaux": [
     {"x": 28, "y": 40, "texte": "Givreval, le village au pied des Pics."},
@@ -190,8 +252,18 @@
   ],
   "passages": [
     {"x": 30, "y": 3, "vers": "temple", "tx": 20, "ty": 27, "direction": "haut"},
-    {"x": 30, "y": 43, "vers": "cendrelune", "tx": 13, "ty": 1, "direction": "bas"},
-    {"x": 31, "y": 43, "vers": "cendrelune", "tx": 13, "ty": 1, "direction": "bas"}
+    {"x": 30, "y": 43, "vers": "col", "tx": 19, "ty": 1, "direction": "bas"},
+    {"x": 31, "y": 43, "vers": "col", "tx": 20, "ty": 1, "direction": "bas"},
+    {
+      "x": 83,
+      "y": 24,
+      "vers": "glacier",
+      "tx": 28,
+      "ty": 30,
+      "direction": "droite",
+      "condition": {"drapeau": "boss2"},
+      "message": "Un mur de glace ferme le passage."
+    }
   ],
   "zones": [
     {
@@ -202,7 +274,8 @@
       "niveau_min": 20,
       "niveau_max": 23,
       "max_ennemis": 2,
-      "creatures": ["givrelin", "glaconnet", "zephyrin"]
+      "creatures": ["givrelin", "glaconnet", "zephyrin"],
+      "nuit": ["noctaile", "brumeloup"]
     },
     {
       "x": 0,
@@ -212,7 +285,8 @@
       "niveau_min": 21,
       "niveau_max": 24,
       "max_ennemis": 3,
-      "creatures": ["givrelin", "zephyrin", "ferrolin", "cristallin", "etincelot"]
+      "creatures": ["givrelin", "zephyrin", "ferrolin", "cristallin", "etincelot"],
+      "nuit": ["noctaile", "brumeloup"]
     },
     {
       "x": 60,
@@ -222,7 +296,8 @@
       "niveau_min": 23,
       "niveau_max": 27,
       "max_ennemis": 3,
-      "creatures": ["givrelin", "glaconnet", "zephyrin", "ferrolin", "cristallin", "etincelot", "banquisot"]
+      "creatures": ["givrelin", "glaconnet", "zephyrin", "ferrolin", "cristallin", "etincelot", "banquisot"],
+      "nuit": ["noctaile", "brumeloup"]
     }
   ],
   "boss": [],

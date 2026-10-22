@@ -40,11 +40,15 @@ struct Note {
 struct Voice {
   Wave wave = SQUARE;
   float vol = .2f, duty = .5f, decay = 0;  // decay > 0 : son pincé qui s'éteint (secondes)
+  float vibrato = 0, vibRate = 5.5f;       // vibrato (demi-tons, Hz), après un court instant sur une note tenue
+  float attack = .005f;                    // montée du son (secondes) : douce pour les nappes
+  float sweep = 0;                         // « rapport » qui ondule (carrée) : timbre vivant, comme sur les vieilles consoles
   std::vector<Note> notes;
 };
 struct Track {
   float step = .25f;  // durée d'une case (secondes)
   std::vector<Voice> voices;
+  float echoDelay = 0, echoFeedback = 0, echoMix = 0;  // écho de toute la musique (« echo » : delai, retour, melange)
 };
 
 std::map<std::string, Effect> effects_;
@@ -115,6 +119,12 @@ Track readTrack(const std::string& id, const Json& j) {
   float tempo = std::clamp(jget(j, "tempo", 120.f), 20.f, 400.f);
   int perBeat = std::clamp(jget(j, "pas_par_temps", 2), 1, 8);
   tr.step = 60.f / tempo / perBeat;
+  if (j.contains("echo")) {  // écho : la musique se répète, plus faible, après « delai » secondes
+    const Json& e = j["echo"];
+    tr.echoDelay = std::clamp(jget(e, "delai", .3f), .02f, 1.f);
+    tr.echoFeedback = std::clamp(jget(e, "retour", .3f), 0.f, .8f);
+    tr.echoMix = std::clamp(jget(e, "melange", .3f), 0.f, 1.f);
+  }
   Json voices = j.value("voix", Json::array());
   for (auto& v : voices) {
     Voice vo;
@@ -123,6 +133,10 @@ Track readTrack(const std::string& id, const Json& j) {
     vo.vol = std::clamp(jget(v, "volume", .2f), 0.f, 1.f);
     vo.duty = std::clamp(jget(v, "rapport", .5f), .05f, .95f);
     vo.decay = std::max(0.f, jget(v, "extinction", vo.wave == NOISE ? .06f : 0.f));
+    vo.vibrato = std::clamp(jget(v, "vibrato", 0.f), 0.f, 2.f);
+    vo.vibRate = std::clamp(jget(v, "vitesse_vibrato", 5.5f), .5f, 20.f);
+    vo.attack = std::clamp(jget(v, "attaque", .005f), .001f, 2.f);
+    vo.sweep = std::clamp(jget(v, "ondulation", 0.f), 0.f, .4f);
     float hitFreq = v.contains("frequence") ? freqOf(v["frequence"], where) : 4000.f;
     std::istringstream in(jget<std::string>(v, "notes", ""));
     std::string tok;
@@ -183,6 +197,7 @@ struct VoicePlay {
 class Mixer {
  public:
   float musicGain = .5f, fxGain = .6f;
+  float rainTarget = 0;        // pluie de fond voulue (ambience)
   std::string track, pending;  // morceau en cours ; celui qui le remplacera après le fondu
   bool switching = false;
 
@@ -209,7 +224,16 @@ class Mixer {
         fade_ -= dt / .35f;
         if (fade_ <= 0) start(pending);
       }
-      if (tr_) m = musicSample(dt) * fade_;
+      if (tr_) {
+        m = musicSample(dt);
+        if (tr_->echoMix > 0 && echoLen_ > 0) {  // écho : ligne à retard sur la musique seule
+          float d = echo_[echoPos_];
+          echo_[echoPos_] = m + d * tr_->echoFeedback;
+          echoPos_ = (echoPos_ + 1) % echoLen_;
+          m += d * tr_->echoMix;
+        }
+        m *= fade_;
+      }
       for (auto& p : fx_) {
         p.t += dt;
         for (size_t k = 0; k < p.e->segs.size(); k++) {
@@ -221,6 +245,14 @@ class Mixer {
           fx += p.osc[k].next(s.wave, f, s.duty) * s.vol * env;
         }
       }
+      rain_ += (rainTarget - rain_) * dt / 1.5f;  // pluie : bruit blanc filtré (aigus doux), qui monte et baisse en douceur
+      if (rain_ > .001f) {
+        seed_ = seed_ * 1664525u + 1013904223u;
+        float w = float(seed_ >> 8) / float(1u << 24) * 2 - 1;
+        rainLo_ += (w - rainLo_) * .35f;
+        rainSlow_ += (rainLo_ - rainSlow_) * .02f;
+        fx += (rainLo_ - rainSlow_ * .8f) * rain_ * .22f;
+      }
       out[i] = std::clamp((m * musicGain + fx * fxGain) * .7f, -1.f, 1.f);
     }
     fx_.erase(std::remove_if(fx_.begin(), fx_.end(), [](const EffectPlay& p) { return p.t > p.e->length; }), fx_.end());
@@ -231,8 +263,11 @@ class Mixer {
   std::vector<VoicePlay> voices_;
   std::vector<EffectPlay> fx_;
   uint32_t seed_ = 12345;
+  float rain_ = 0, rainLo_ = 0, rainSlow_ = 0;  // pluie de fond : niveau actuel, filtres
   int step_ = -1;
   float stepT_ = 0, fade_ = 1;
+  std::vector<float> echo_ = std::vector<float>(RATE + 1, 0.f);  // ligne à retard (1 s au plus), allouée une fois :
+  size_t echoPos_ = 0, echoLen_ = 0;                               // jamais d'allocation dans le fil du son
 
   void start(std::string id) {  // par valeur : id vient souvent de « pending », vidé ci-dessous
     track = id;
@@ -242,6 +277,9 @@ class Mixer {
     auto it = tracks_.find(id);
     tr_ = it == tracks_.end() ? nullptr : &it->second;
     voices_.assign(tr_ ? tr_->voices.size() : 0, VoicePlay{});
+    echoLen_ = tr_ && tr_->echoMix > 0 ? std::min(echo_.size(), std::max<size_t>(1, size_t(tr_->echoDelay * RATE))) : 0;
+    std::fill(echo_.begin(), echo_.begin() + echoLen_, 0.f);
+    echoPos_ = 0;
     step_ = -1;
     stepT_ = tr_ ? tr_->step : 0;  // la première case commence tout de suite
   }
@@ -265,12 +303,16 @@ class Mixer {
       VoicePlay& p = voices_[v];
       if (!p.on) continue;
       p.t += dt;
-      float env = std::min(1.f, p.t / .005f);
+      float env = std::min(1.f, p.t / V.attack);
       env *= V.decay > 0 ? std::exp(-p.t / V.decay) : .7f + .3f * std::exp(-p.t / .08f);
       // Fin de la note (la case suivante n'est pas une prolongation) : extinction rapide
       const Note& next = V.notes[(size_t)(step_ + 1) % V.notes.size()];
       if (!next.tie) env *= std::min(1.f, (T.step - stepT_) / .02f);
-      s += p.osc.next(V.wave, p.freq, V.duty) * V.vol * env;
+      float f = p.freq;
+      if (V.vibrato > 0 && p.t > .18f)  // vibrato : seulement sur une note tenue, et qui s'installe doucement
+        f *= std::pow(2.f, V.vibrato / 12.f * std::min(1.f, (p.t - .18f) / .25f) * std::sin(6.2831853f * V.vibRate * p.t));
+      float duty = V.sweep > 0 ? std::clamp(V.duty + V.sweep * std::sin(6.2831853f * .7f * p.t), .05f, .95f) : V.duty;
+      s += p.osc.next(V.wave, f, duty) * V.vol * env;
     }
     return s;
   }
@@ -296,7 +338,7 @@ struct Lock {
 // Effets que le jeu demande (le mode test vérifie qu'ils existent tous)
 static const char* REQUIRED_EFFECTS[] = {"curseur", "valider", "retour", "refus", "coup", "critique", "sort", "soin", "rate", "ko",
                                          "statut", "bonus", "malus", "lancer", "capture", "capture_rate", "niveau", "victoire",
-                                         "defaite", "rencontre", "fuite", "coffre", "achat", "porte", "limite"};
+                                         "defaite", "rencontre", "fuite", "coffre", "achat", "porte", "limite", "pas", "bond", "echange"};
 static const char* REQUIRED_TRACKS[] = {"titre", "combat", "boss"};
 
 void loadSounds() {
@@ -360,6 +402,11 @@ void play(const std::string& effect) {
 void music(const std::string& track) {
   Lock lock;
   mixer_.setMusic(track);
+}
+
+void ambience(float rain) {
+  Lock lock;
+  mixer_.rainTarget = std::clamp(rain, 0.f, 1.f);
 }
 
 bool has(const std::string& effect) {

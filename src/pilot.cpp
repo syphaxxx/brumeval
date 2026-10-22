@@ -13,6 +13,7 @@
 
 #include "battle.hpp"
 #include "events.hpp"
+#include "primes.hpp"
 #include "game.hpp"
 #include "world.hpp"
 
@@ -221,6 +222,12 @@ static std::vector<std::string> nameList(const Json& v) {
 void Pilot::inspectList(const Json& list, Info& in, int depth) const {
   for (auto& a : list) {
     std::string k = jget<std::string>(a, "action", "");
+    // Entraînement sans récompense (à refaire à volonté) : rien à gagner, ni objectif ni effet
+    if (k == "combat" && jget(a, "entrainement", false) && a.value("victoire", Json::array()).empty()) continue;
+    // Cartes des gardiens : il joue tant qu'il n'a pas battu ce joueur (et s'il a cinq cartes)
+    if (k == "cartes" && (G.has("cartes:" + jget<std::string>(a, "adversaire", "")) || G.cardCollection().size() < 5)) continue;
+    if (k == "cartes") in.sig += "c" + std::to_string(G.cardGames_);
+    if (k == "pension") continue;  // la pension : il ne s'en sert pas  // perdu : la signature change, il pourra rejouer (6 essais)
     // Seulement parler, attendre ou choisir le point de réveil : aucun effet sur la partie
     if (k != "dire" && k != "attendre" && k != "si" && k != "question" && k != "reveil" && k != "evenement") in.effect = true;
     if (k == "si") {
@@ -232,7 +239,8 @@ void Pilot::inspectList(const Json& list, Info& in, int depth) const {
       if (!in.combat) in.fight = a;
       in.combat = true;
       in.boss = in.boss || jget(a, "boss", false);
-      for (auto& e : a["ennemis"]) in.lvl = std::max(in.lvl, jget(e, "niveau", G.avgLevel()));
+      Json foes = a.value("ennemis", Json::array());  // un défi (« defi ») n'a pas de liste d'ennemis
+      for (auto& e : foes) in.lvl = std::max(in.lvl, jget(e, "niveau", G.avgLevel()));
     } else if (k == "boutique") {
       for (auto& id : nameList(a["objets"])) in.shop.push_back(id);
     } else if (k == "forge") in.forge = true;
@@ -330,9 +338,13 @@ float Pilot::rehearse(const Json& fight, int n, bool fullHealth) {
     G.team = team, G.reserve.clear(), G.items = keepItems, G.gold = keepGold;
     BattleSetup s;
     auto make = [&](const Json& e) { return makeFoe(e, G.avgLevel()); };
+    if (fight.contains("defi") && fight["defi"].is_string()) challengeSetup(fight["defi"].get<std::string>(), s);  // ses combattants
     for (auto& e : fight.value("ennemis", Json::array())) s.foes.push_back(make(e));
     for (auto& e : fight.value("renforts", Json::array())) s.reserve.push_back(make(e));
-    if (s.foes.empty()) return 1;
+    if (s.foes.empty()) {  // rien à combattre : gagné d'avance (l'équipe est remise en place après la boucle)
+      wins = n;
+      break;
+    }
     s.boss = jget(fight, "boss", false);
     s.canFlee = false, s.canCapture = false;
     Battle b(G, std::move(s), maps()[G.mapId].theme);
@@ -413,12 +425,23 @@ std::vector<Pilot::Goal> Pilot::goals() {
     for (auto& c : M.chests) {
       Goal g;
       g.key = "coffre:" + M.id + ":" + std::to_string(c.x) + ":" + std::to_string(c.y);  // comme Game::chestFlag
-      if (G.has(g.key) || tries_[g.key] >= 3) continue;
+      if (G.has(g.key) || tries_[g.key] >= 3 || !G.chestShown(M, c)) continue;
       g.what = "ouvrir un coffre (" + M.name + ")";
       around(g, c.x, c.y, 1, 1);
       out.push_back(g);
     }
     // Les panneaux ne font que donner un texte : il ne va pas les lire
+    if (!G.inExpedition() && bountyWork())  // primes à prendre ou à toucher : au tableau d'annonces le plus proche
+      for (int y = 0; y < M.h(); y++)
+        for (int x = 0; x < M.w(); x++)
+          if (M.rows[y][x] == 'G') {
+            Goal g;
+            g.key = "primes:" + M.id + ":" + std::to_string(x) + ":" + std::to_string(y);
+            if (tries_[g.key] >= 30) continue;
+            g.what = "tableau des primes (" + M.name + ")";
+            around(g, x, y, 1, 1);
+            out.push_back(g);
+          }
     for (auto& b : M.buildings) {
       if (!b.interior.empty() || b.event.empty() || b.decor()) continue;  // une maison avec un intérieur : c'est un passage
       Goal g;
@@ -797,11 +820,18 @@ int Pilot::pickItem(const std::string& label) {
 void Pilot::menuStep() {
   Menu& t = G.menus.top();
   if (!G.askText_.empty()) {  // question Oui/Non : toujours Oui (les combats ne sont lancés que quand l'équipe est prête)
-    if (!pickItem(T("Oui"))) G.in.confirm = true;
+    bool restart = G.askText_.find(T("Nouvelle partie +")) != std::string::npos;  // sauf recommencer toute l'histoire
+    if (!pickItem(restart ? T("Non") : T("Oui"))) G.in.confirm = true;
     return;
   }
   if (t.title.rfind(T("Boutique"), 0) == 0) return shopping();
   if (t.title.rfind(T("Forge"), 0) == 0) return forging();
+  if (t.title.rfind(T("Primes"), 0) == 0) return bountyStep();
+  if (t.items.size() > 1 && t.items[0].label == T("Jouer") && t.items[1].label == T("Choisir ma main")) {  // Cartes des gardiens
+    pickItem(T("Jouer"));
+    wait_ = .3f;
+    return;
+  }
   status = "menu : " + t.title;
   if (t.cancelable) G.in.cancel = true;
   else G.in.confirm = true;
@@ -974,6 +1004,29 @@ bool Pilot::forgeWanted() const {
   return false;
 }
 
+// Primes : il y a une prime à prendre (offerte) ou à toucher (vaincue)
+bool Pilot::bountyWork() const {
+  for (auto& b : bounties()) {
+    std::string id = jget<std::string>(b, "id", "");
+    if (G.has(bountyFlag(id, 1)) && !G.has(bountyFlag(id, 2))) return true;
+    if (!G.has(bountyFlag(id, 0)) && (!b.contains("si") || G.checkCond(b["si"]))) return true;
+  }
+  return false;
+}
+
+// Au tableau : il touche les primes vaincues et prend toutes les autres (il n'ira les chasser que prêt, comme un boss)
+void Pilot::bountyStep() {
+  status = "primes";
+  Menu& t = G.menus.top();
+  for (auto& it : t.items)
+    if (it.enabled && (it.right == T("Prime !") || it.right == T("à prendre"))) {
+      if (pickItem(it.label) == 2) note("Prime : " + it.label + " (" + it.right + ")");
+      return;
+    }
+  G.in.cancel = true;
+  wait_ = .3f;
+}
+
 void Pilot::forging() {
   status = "forge";
   Menu& t = G.menus.top();
@@ -1097,6 +1150,23 @@ std::string Pilot::timeReport() const {
   return s;
 }
 
+// Durée pour un vrai joueur, très approximative (étape « 20 heures ») : le joueur automatique sait toujours où
+// aller, ne lit rien et combat avec ses tactiques. Hypothèses : il faut deux fois plus de marche pour trouver son
+// chemin, 1,4 fois plus de temps en combat (choisir ses ordres), 12 caractères lus par seconde, +10 % de menus
+std::string Pilot::humanEstimate() const {
+  auto get = [&](const char* k) {
+    auto it = timeBy.find(k);
+    return it == timeBy.end() ? 0.f : it->second;
+  };
+  float walk = get("trajet") * 2 + get("entraînement (marche)") * 1.5f;
+  float fight = (get("combat (trajet)") + get("combat difficile") + get("combat (entraînement)")) * 1.4f;
+  float read = readChars_ / 12.f;
+  float total = (walk + fight + read + get("menus") + get("dialogue")) * 1.1f;
+  int m = int(total / 60);
+  return "estimation pour un joueur (très approximative) : " + std::to_string(m / 60) + " h " + std::to_string(m % 60) + " min (lecture " +
+         std::to_string(int(read / 60)) + " min, marche ×2, combats ×1,4, menus +10 %)";
+}
+
 std::string Pilot::summary() const {
   std::string t;
   for (auto& f : G.team) t += (t.empty() ? "" : ", ") + f->name() + " N." + std::to_string(f->lvl);
@@ -1180,8 +1250,12 @@ void Pilot::update(float dt) {
   {  // où passe le temps (rapport)
     bool b = G.mode == Mode::Battle;
     const char* what = b ? (battleWild_ && goal_.kind == Grind ? "combat (entraînement)" : battleWild_ ? "combat (trajet)" : "combat difficile")
-                       : G.menus.active() ? "menus" : G.sc.busy() ? "dialogue" : goal_.kind == Grind ? "entraînement (marche)" : "trajet";
+                       : G.menus.active() ? "menus" : G.cards_.on ? "cartes" : G.sc.busy() ? "dialogue" : goal_.kind == Grind ? "entraînement (marche)" : "trajet";
     timeBy[what] += dt;
+    if (!b && G.sc.showingMessage() && G.sc.text() != lastRead_) {  // ce qu'un joueur aurait à lire (estimation)
+      lastRead_ = G.sc.text();
+      for (unsigned char c : lastRead_) readChars_ += (c & 0xC0) != 0x80;
+    }
   }
   watch();
   if (stuck) return;
@@ -1245,6 +1319,10 @@ void Pilot::update(float dt) {
   if (battle) return battleStep();
   if (G.mode != Mode::Map) return;
   if (G.menus.active()) return menuStep();
+  if (G.cards_.on && !G.sc.busy()) {  // Cartes des gardiens : le jeu joue pour lui (Game::updateCards)
+    status = "cartes";
+    return;
+  }
   if (G.sc.busy()) {  // dialogue
     status = "dialogue";
     if (demo_ && G.sc.showingMessage() && !G.sc.messageDone()) return;
@@ -1308,6 +1386,8 @@ int Game::autoGame(SDL_Surface* target, const std::string& out) {
   say(P.finished ? "RÉSULTAT : histoire terminée" : "RÉSULTAT : histoire NON terminée");
   say(P.summary());
   say(P.timeReport());
+  say(P.humanEstimate());
+  say("exploits : " + std::to_string(exploitsDone()) + "/" + std::to_string(exploitCount()));
   for (auto& s : g.layoutIssues) say("mise en page : " + s);
   return P.finished && g.layoutIssues.empty() ? 0 : 1;
 }

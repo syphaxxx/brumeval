@@ -1,0 +1,36 @@
+{
+  "id": "plaine_maison",
+  "nom": "Atelier du charpentier",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#hh.e..e..#",
+    "#.........#",
+    "#.jtt.....#",
+    "#.jtt.....#",
+    "#........v#",
+    "#.........#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [
+    {
+      "x": 8,
+      "y": 4,
+      "apparence": "villageois",
+      "direction": "bas",
+      "dialogue": [
+        "Apprenti : Le patron dit que je serai charpentier dans dix ans. Ou vingt.",
+        "Apprenti : Les Rongecrins ? Ils ont même mangé mon marteau. Le manche, en tout cas."
+      ]
+    },
+    {"x": 3, "y": 6, "apparence": "villageois", "direction": "bas", "evenement": "cartes_meunier"}
+  ],
+  "coffres": [],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "plaine", "tx": 18, "ty": 27, "direction": "bas"}],
+  "zones": [],
+  "boss": [],
+  "declencheurs": [{"x": 5, "y": 6, "l": 1, "h": 1, "evenement": "atelier_plaine"}]
+}

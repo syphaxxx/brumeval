@@ -11,5 +11,8 @@ pkg/
 graphify-out/
 
 # Outil des sprites : fichiers fabriqués
-outils/sprites/__pycache__/
+__pycache__/
 outils/sprites/apercu.png
+outils/blender/rendus/
+outils/godot/effets/rendus/
+outils/godot/effets/.godot/

@@ -1,0 +1,24 @@
+{
+  "id": "echos_boutique",
+  "nom": "Comptoir des Échos",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#eeeeeeeee#",
+    "#C.......C#",
+    "#ooo...ooo#",
+    "#.........#",
+    "#v.......v#",
+    "#.........#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [{"x": 5, "y": 3, "apparence": "marchande", "evenement": "echos_boutique", "direction": "bas"}],
+  "coffres": [],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "echos", "tx": 36, "ty": 10, "direction": "bas"}],
+  "zones": [],
+  "boss": [],
+  "style": "boutique"
+}

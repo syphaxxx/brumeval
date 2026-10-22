@@ -10,11 +10,14 @@ outils/sprites/decoupe.json donne sa planche, sa boîte (en pixels de la planche
      comptent plus, sinon ils disparaissent) ;
   3. range tous les sprites dans une seule image (atlas).
 Options d'un sprite : rot (pivoté de n degrés), cadre ([largeur, hauteur] maximales), seul (garde seulement le plus gros morceau), fragments (garde toutes les particules : effets),
-plein (pas de fond à retirer : textures), couleurs (taille de la palette), miroir (retourné gauche-droite).
+plein (pas de fond à retirer : textures), couleurs (taille de la palette), miroir (retourné gauche-droite),
+tourner ("haut" ou "droite" : pose de dos ou de trois quarts tirée du dessin de face, voir tourner.py).
 Les variantes (outils/sprites/variantes.json) recolorent un sprite déjà découpé : {"id", "de", "teintes": [[teinte
 min, teinte max, nouvelle teinte, saturation x, luminosité x, saturation minimale], ...]} (teintes en degrés ;
 teinte min -1 = toutes les couleurs ; nouvelle teinte -1 = garder ; la saturation minimale colore aussi les gris).
 (« miroir » : true la retourne aussi). {"prefixe", "de", "teintes"} recolore tous les sprites d'un personnage (mage_bas_0 -> maelle_bas_0…).
+Les images de outils/sprites/rendus/ (déjà à la finesse de l'atlas : rendus de Blender, outils/blender/) sont ajoutées
+telles quelles, sous le nom de leur fichier.
 Nécessite Pillow, numpy et scipy (pip install pillow numpy scipy).
 """
 import colorsys
@@ -25,6 +28,8 @@ import sys
 import numpy as np
 from PIL import Image, ImageDraw, ImageEnhance
 from scipy import ndimage as nd
+
+from tourner import tourner
 
 ICI = os.path.dirname(os.path.abspath(__file__))
 RACINE = os.path.dirname(os.path.dirname(ICI))
@@ -120,6 +125,8 @@ def reduire_plein(s, W, H, couleurs):
 
 def sprite(e):
     s, masque = decouper(e)
+    if e.get('tourner'):  # pose de dos ou de profil tirée du dessin de face (tourner.py)
+        s, masque = tourner(s, masque, e)
     if e.get('rot'):  # pivoté (armes longues en diagonale : icônes carrées)
         im = Image.fromarray(np.dstack([s.astype(np.uint8), (masque * 255).astype(np.uint8)]), 'RGBA')
         im = im.rotate(e['rot'], resample=Image.NEAREST, expand=True)
@@ -183,6 +190,22 @@ def recolorer_couleur(r, g, b, teintes):
     return [round(r2 * 255), round(g2 * 255), round(b2 * 255)]
 
 
+def chromatique(px):
+    """Couleurs d'une créature chromatique : teinte tournée de 140 degrés, un peu plus vive ; les gris deviennent dorés."""
+    out = px.copy()
+    vis = px[..., 3] > 0
+    for r, g, b in np.unique(px[vis][:, :3], axis=0):
+        m = vis & (px[..., 0] == r) & (px[..., 1] == g) & (px[..., 2] == b)
+        hh, ss, vv = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+        if ss >= 0.15:
+            hh, ss = (hh + 140 / 360) % 1, min(1, ss * 1.1)
+        elif 0.15 < vv < 0.97:
+            hh, ss = 45 / 360, 0.35
+        r2, g2, b2 = colorsys.hsv_to_rgb(hh, ss, vv)
+        out[m, :3] = [round(r2 * 255), round(g2 * 255), round(b2 * 255)]
+    return out
+
+
 def ranger(sprites, largeur=2048):
     """Rangement en étagères (du plus haut au plus bas) ; 1 px d'écart entre les sprites."""
     ordre = sorted(sprites, key=lambda k: -sprites[k].shape[0])
@@ -234,6 +257,12 @@ def main():
     sprites = {}
     for e in spec:
         sprites[e['id']] = sprite(e)
+    # Sprites déjà prêts (outils/sprites/rendus/*.png, à la finesse de l'atlas) : rendus de Blender (pixeliser.py)
+    rdir = os.path.join(ICI, 'rendus')
+    if os.path.isdir(rdir):
+        for f in sorted(os.listdir(rdir)):
+            if f.endswith('.png'):
+                sprites[f[:-4]] = np.asarray(Image.open(os.path.join(rdir, f)).convert('RGBA')).copy()
     vpath = os.path.join(ICI, 'variantes.json')
     if os.path.exists(vpath):
         for v in json.load(open(vpath, encoding='utf-8')):
@@ -246,6 +275,11 @@ def main():
                 sprites[v['id']] = recolorer(sprites[v['de']], v['teintes'])
                 if v.get('miroir'):  # retourné gauche-droite (regard vers la gauche, comme les autres)
                     sprites[v['id']] = sprites[v['id']][:, ::-1].copy()
+    # Créatures chromatiques (2026-10-20) : pour chaque créature (ni humain ni boss), « <sprite>_chroma », teinte tournée
+    for e in json.load(open(os.path.join(RACINE, 'data', 'especes.json'), encoding='utf-8')):
+        k = e.get('sprite', '')
+        if k in sprites and not e.get('humain') and e.get('forme') != 'boss':
+            sprites[k + '_chroma'] = chromatique(sprites[k])
     if seuls:  # aperçu des seuls sprites dont le nom commence par un des arguments
         apercu({k: v for k, v in sprites.items() if any(k.startswith(p) for p in seuls)}, os.path.join(ICI, 'apercu.png'))
         print(len(sprites), 'sprites (aperçu seulement)')

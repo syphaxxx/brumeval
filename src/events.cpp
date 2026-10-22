@@ -7,6 +7,7 @@
 #include "audio.hpp"
 #include "data.hpp"
 #include "game.hpp"
+#include "primes.hpp"
 #include "world.hpp"
 
 static Json EVENTS = Json::object();
@@ -21,7 +22,7 @@ std::string questFlag(const std::string& id, bool done) { return "quete:" + id +
 Json& events() { return EVENTS; }
 const Json* findEvent(const std::string& id) {
   auto it = EVENTS.find(id);
-  return it == EVENTS.end() ? nullptr : &*it;
+  return it == EVENTS.end() ? bountyEvent(id) : &*it;  // « prime:<id> » : combat d'une prime (primes.hpp)
 }
 void loadEvents() {
   EVENTS = readJson("evenements.json");
@@ -50,7 +51,8 @@ static std::vector<std::string> names(const Json& v) {
 static void checkList(const Json& list, const std::string& where, std::vector<std::string>& err);
 
 static void checkCondition(const Json& c, const std::string& where, std::vector<std::string>& err) {
-  static const std::vector<std::string> keys = {"drapeau", "sans_drapeau", "objet", "sans_objet", "objet_min", "or_min", "membre"};
+  static const std::vector<std::string> keys = {"drapeau", "sans_drapeau", "objet", "sans_objet", "objet_min", "or_min", "membre", "poissons_min", "especes_min",
+                                                "chromatiques_min", "quetes_min", "cartes_min", "nuit"};
   for (auto& [k, v] : c.items()) {
     if (std::find(keys.begin(), keys.end(), k) == keys.end()) err.push_back(where + T(" : condition inconnue « ") + k + " »");
     if (k == "objet" || k == "sans_objet")
@@ -61,6 +63,8 @@ static void checkCondition(const Json& c, const std::string& where, std::vector<
         if (!hasSpecies(id)) err.push_back(where + T(" : espèce inconnue « ") + id + " »");
   }
 }
+
+void checkConditionData(const Json& c, const std::string& where, std::vector<std::string>& err) { checkCondition(c, where, err); }
 
 static void checkAction(const Json& a, const std::string& where, std::vector<std::string>& err) {
   if (!a.is_object() || !a.contains("action")) {
@@ -81,7 +85,11 @@ static void checkAction(const Json& a, const std::string& where, std::vector<std
   else if (k == "recruter") {
     if (need("espece") && !hasSpecies(a["espece"].get<std::string>())) err.push_back(w + T(" : espèce inconnue « ") + a["espece"].get<std::string>() + " »");
   } else if (k == "combat") {
-    if (need("ennemis")) {
+    if (a.contains("defi")) {  // défi de l'échiquier (data/defis.json)
+      BattleSetup probe;
+      if (!a["defi"].is_string() || !challengeSetup(a["defi"].get<std::string>(), probe))
+        err.push_back(w + T(" : défi inconnu « ") + (a["defi"].is_string() ? a["defi"].get<std::string>() : std::string("?")) + " »");
+    } else if (need("ennemis")) {
       if (a["ennemis"].empty() || a["ennemis"].size() > 6) err.push_back(w + T(" : il faut entre 1 et 6 ennemis"));
       for (auto& e : a["ennemis"]) {
         if (!hasSpecies(jget<std::string>(e, "espece", ""))) err.push_back(w + T(" : espèce inconnue « ") + jget<std::string>(e, "espece", "") + " »");
@@ -106,6 +114,11 @@ static void checkAction(const Json& a, const std::string& where, std::vector<std
     }
     for (auto& e : a.value("renforts", Json::array()))
       if (!hasSpecies(jget<std::string>(e, "espece", ""))) err.push_back(w + T(" : espèce inconnue en renfort « ") + jget<std::string>(e, "espece", "") + " »");
+    if (a.contains("musique")) {
+      auto names = audio::trackNames();
+      if (std::find(names.begin(), names.end(), jget<std::string>(a, "musique", "")) == names.end())
+        err.push_back(w + T(" : musique inconnue « ") + jget<std::string>(a, "musique", "") + " »");
+    }
     checkList(a.value("victoire", Json::array()), w + T(" > victoire"), err);
     checkList(a.value("defaite", Json::array()), w + T(" > défaite"), err);
   } else if (k == "question") {
@@ -126,9 +139,16 @@ static void checkAction(const Json& a, const std::string& where, std::vector<std
   } else if (k == "evenement") {
     if (need("id") && !findEvent(a["id"].get<std::string>())) err.push_back(w + T(" : événement inconnu « ") + a["id"].get<std::string>() + " »");
   } else if (k == "attendre") need("secondes");
+  else if (k == "cartes") {
+    if (need("adversaire") && !cardFoeExists(a["adversaire"].get<std::string>()))
+      err.push_back(w + T(" : joueur de cartes inconnu « ") + a["adversaire"].get<std::string>() + " »");
+    checkList(a.value("victoire", Json::array()), w + T(" > victoire"), err);
+    checkList(a.value("defaite", Json::array()), w + T(" > défaite"), err);
+    checkList(a.value("egalite", Json::array()), w + T(" > égalité"), err);
+  }
   else if (k == "quete") {
     if (need("id") && !findQuest(a["id"].get<std::string>())) err.push_back(w + T(" : quête inconnue « ") + a["id"].get<std::string>() + " »");
-  } else if (k != "soigner" && k != "reveil" && k != "fin" && k != "forge" && k != "conseil") err.push_back(where + T(" : action inconnue « ") + k + " »");
+  } else if (k != "soigner" && k != "reveil" && k != "fin" && k != "forge" && k != "conseil" && k != "nouvelle_partie_plus" && k != "pension") err.push_back(where + T(" : action inconnue « ") + k + " »");
 }
 
 static void checkList(const Json& list, const std::string& where, std::vector<std::string>& err) {
@@ -145,6 +165,15 @@ std::vector<std::string> checkEvents() {
       checkList(pages[p].value("actions", Json::array()), where, err);
     }
   }
+  bool storyWorld = false;  // en Expédition, seule la région générée est chargée (« expedition_<k> ») : pas de primes
+  for (auto& m : maps()) storyWorld = storyWorld || m.id.rfind("expedition_", 0) != 0;
+  for (auto& b : storyWorld ? bounties() : Json::array()) {  // primes : leur condition et leur combat
+    std::string id = jget<std::string>(b, "id", ""), where = T("Prime « ") + id + " »";
+    if (b.contains("si")) checkCondition(b["si"], where, err);
+    if (const Json* ev = bountyEvent("prime:" + id)) checkList(ev->value("actions", Json::array()), where, err);
+  }
+  if (storyWorld)
+    for (auto& e : checkBounties()) err.push_back(e);
   auto ref = [&](const std::string& id, const std::string& who) {
     if (!id.empty() && !findEvent(id)) err.push_back(who + T(" : événement inconnu « ") + id + " »");
   };
@@ -152,6 +181,12 @@ std::vector<std::string> checkEvents() {
     for (auto& t : m.triggers) ref(t.event, m.name + T(", déclencheur (") + std::to_string(t.x) + ", " + std::to_string(t.y) + ")");
     for (auto& w : m.warps)
       if (!w.condition.is_null()) checkCondition(w.condition, m.name + T(", passage (") + std::to_string(w.x) + ", " + std::to_string(w.y) + ")", err);
+    for (auto& n : m.npcs)
+      if (!n.cond.is_null()) checkCondition(n.cond, m.name + T(", habitant (") + std::to_string(n.x) + ", " + std::to_string(n.y) + ")", err);
+    for (auto& c : m.chests)
+      if (!c.cond.is_null()) checkCondition(c.cond, m.name + T(", coffre (") + std::to_string(c.x) + ", " + std::to_string(c.y) + ")", err);
+    for (auto& b : m.bosses)
+      if (!b.cond.is_null() && !b.bounty) checkCondition(b.cond, m.name + T(", boss « ") + b.id + " »", err);
     for (auto& b : m.buildings)
       if (!b.decor()) ref(b.event, m.name + T(", bâtiment « ") + b.name + " »");
     for (auto& b : m.bosses) ref(b.event, m.name + T(", boss « ") + b.id + " »");
@@ -195,6 +230,21 @@ bool Game::checkCond(const Json& c) const {
       if (count(id) < n.get<int>()) return false;
   }
   if (c.contains("or_min") && gold < c["or_min"].get<int>()) return false;
+  if (c.contains("nuit") && c["nuit"].is_boolean() && isNight() != c["nuit"].get<bool>()) return false;  // la nuit (true) ou le jour
+  if (c.contains("poissons_min") && fishCaught() < c["poissons_min"].get<int>()) return false;  // carnet de pêche
+  if (c.contains("especes_min") && (int)caught.size() < c["especes_min"].get<int>()) return false;  // Bestiaire : espèces obtenues
+  if (c.contains("cartes_min") && (int)cardCollection().size() < c["cartes_min"].get<int>()) return false;  // cartes des gardiens
+  if (c.contains("quetes_min")) {  // quêtes terminées
+    int n = 0;
+    for (auto& q : quests()) n += has(questFlag(jget<std::string>(q, "id", ""), true));
+    if (n < c["quetes_min"].get<int>()) return false;
+  }
+  if (c.contains("chromatiques_min")) {  // créatures chromatiques dans l'équipe et la réserve
+    int n = 0;
+    for (auto* v : {&team, &reserve})
+      for (auto& f : *v) n += f->chroma;
+    if (n < c["chromatiques_min"].get<int>()) return false;
+  }
   for (auto& id : names(c.value("membre", Json()))) {
     bool found = false;
     for (auto& f : team) found = found || f->sp == id;
@@ -242,13 +292,25 @@ int Game::questMark(const std::string& id) const {
   } else if (ev->contains("actions")) acts = &(*ev)["actions"];
   if (!acts) return 0;
   int mark = 0;
+  bool offer = false;  // un combat proposé (question) dont la victoire pose un drapeau pas encore posé : une revanche…
+  int asked = 0;       // dans la réponse « oui » d'une question
   std::function<void(const Json&)> scan = [&](const Json& j) {  // aussi dans les réponses d'une question (« oui »)
     if (j.is_array())
       for (auto& x : j) scan(x);
     else if (j.is_object()) {
       std::string k = jget<std::string>(j, "action", "");
       if (k == "si") return scan(j.contains("condition") && checkCond(j["condition"]) ? j.value("alors", Json::array()) : j.value("sinon", Json::array()));
-      if (k == "combat") return;  // ce qui suit une victoire n'est pas disponible tout de suite
+      if (k == "question") {
+        asked++;
+        scan(j.value("oui", Json::array()));
+        asked--;
+        return scan(j.value("non", Json::array()));
+      }
+      if (k == "combat") {  // ce qui suit une victoire n'est pas disponible tout de suite
+        for (auto& v : asked ? j.value("victoire", Json::array()) : Json::array())
+          if (jget<std::string>(v, "action", "") == "drapeau" && !has(jget<std::string>(v, "nom", ""))) offer = true;
+        return;
+      }
       if (k == "quete" && j.contains("id") && j["id"].is_string()) {
         bool fin = jget(j, "fin", false);
         if (!has(questFlag(j["id"].get<std::string>(), fin))) mark = std::max(mark, fin ? 2 : 1);
@@ -258,7 +320,7 @@ int Game::questMark(const std::string& id) const {
     }
   };
   scan(*acts);
-  return mark;
+  return mark ? mark : offer ? 3 : 0;
 }
 
 void Game::runActions(const Json& list) {
@@ -307,12 +369,15 @@ void Game::execAction(const Json& a) {
   } else if (k == "combat") {
     auto make = [&](const Json& e) { return makeFoe(e, avgLevel()); };
     BattleSetup setup;
-    for (auto& e : a["ennemis"]) setup.foes.push_back(make(e));
+    if (a.contains("defi") && !challengeSetup(a["defi"].get<std::string>(), setup)) return;  // défi de l'échiquier (3.4)
+    setup.training = jget(a, "entrainement", false);
+    for (auto& e : a.value("ennemis", Json::array())) setup.foes.push_back(make(e));
     for (auto& e : a.value("renforts", Json::array())) setup.reserve.push_back(make(e));
     setup.foeName = fillText(tr(jget<std::string>(a, "nom", "")));
     setup.boss = jget(a, "boss", false);
+    setup.music = jget<std::string>(a, "musique", "");
     setup.canFlee = jget(a, "fuite", true);
-    setup.canCapture = jget(a, "capture", true);
+    setup.canCapture = jget(a, "capture", true) && !setup.fixedBoard;
     Json win = a.value("victoire", Json::array()), lose = a.value("defaite", Json::array());
     startBattle(std::move(setup), [this, win, lose](BattleResult r) {
       if (r == BattleResult::Win) runActions(win);
@@ -329,6 +394,11 @@ void Game::execAction(const Json& a) {
       if (hp) f->hp = f->mhp;
       if (mp) f->mp = f->mmp;
     }
+  } else if (k == "cartes") {  // Cartes des gardiens (cartes.cpp) : ce qui suit va dans victoire, defaite, egalite
+    Json win = a.value("victoire", Json::array()), lose = a.value("defaite", Json::array()), draw = a.value("egalite", Json::array());
+    cardsMenu(a["adversaire"].get<std::string>(), [this, win, lose, draw](int r) { runActions(r > 0 ? win : r < 0 ? lose : draw); });
+  } else if (k == "pension") {  // la pension de Moulinbourg (pension.cpp)
+    pensionMenu();
   } else if (k == "boutique") {
     shopMenu(names(a["objets"]));
   } else if (k == "forge") {
@@ -340,6 +410,8 @@ void Game::execAction(const Json& a) {
     if (m >= 0) changeMap(m, a["x"].get<int>(), a["y"].get<int>(), dirOf(jget<std::string>(a, "direction", "bas")));
   } else if (k == "evenement") {
     runEvent(a["id"].get<std::string>());
+  } else if (k == "nouvelle_partie_plus") {  // tout recommencer avec l'équipe, ennemis plus forts (2026-10-20)
+    startNewGamePlus();
   } else if (k == "fin") {  // écran de fin, avec son texte (vide : texte par défaut)
     endingText_ = fillText(tr(jget<std::string>(a, "texte", "")));
     mode = Mode::Ending;

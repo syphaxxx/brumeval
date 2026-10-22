@@ -16,8 +16,8 @@ toutes les références existent et que chaque lieu des cartes est accessible.
 |---|---|
 | `types.json` | Les 13 types (Feu, Eau, Glace, Roche, Vent, Poison, Métal, Esprit…), leur couleur, leurs immunités et la table d'efficacité |
 | `techniques.json` | Techniques, sorts et Limites |
-| `especes.json` | Héros, créatures et boss : statistiques de base, techniques apprises, `evolution` (`espece` et `niveau` : la forme qu'elle peut prendre), `taille` (dessin agrandi, 1.15 pour les formes évoluées), `sprite` (son dessin : un nom de `sprites.json`), `talent` (identifiant d'un talent de `regles.json`), `bouclier` (bouclier de Brisure en ennemi ; absent : valeur des règles) |
-| `objets.json` | Objets : prix, effets (soin, PM, réanimation, capture), équipement (`equipement` : `arme`, `armure` ou `accessoire`, et `bonus` : `pv`, `pm`, `attaque`, `defense`, `magie`, `resistance`, `vitesse`, `precision`, `esquive`, `critique`) ; `"trophee": true` pour un trophée de boss (forge) ; `icone` : son icône dans les menus (un nom de `sprites.json`). Les armes et armures forgées (`epee_fer+1`…) sont créées par le jeu, pas écrites ici |
+| `especes.json` | Héros, créatures et boss : statistiques de base, techniques apprises, `evolution` (`espece` et `niveau` : la forme qu'elle peut prendre), `taille` (dessin agrandi, 1.15 pour les formes évoluées), `sprite` (son dessin : un nom de `sprites.json`), `talent` (identifiant d'un talent de `regles.json`), `bouclier` (bouclier de Brisure en ennemi ; absent : valeur des règles), `description` (le mot du Bestiaire, montré une fois l'espèce obtenue) |
+| `objets.json` | Objets : prix, effets (soin, PM, réanimation, capture), équipement (`equipement` : `arme`, `armure` ou `accessoire`, et `bonus` : `pv`, `pm`, `attaque`, `defense`, `magie`, `resistance`, `vitesse`, `precision`, `esquive`, `critique`) ; `"trophee": true` pour un trophée de boss (forge) ; `pour` : l'identifiant du seul héros qui peut le porter (armes des quêtes des héros) ; `icone` : son icône dans les menus (un nom de `sprites.json`). Les armes et armures forgées (`epee_fer+1`…) sont créées par le jeu, pas écrites ici |
 | `apparences.json` | Couleurs et accessoires des personnages ; `sprite` : le début du nom de ses sprites (`lior` → `lior_bas_0`…) |
 | `sprites.png`, `sprites.json` | L'atlas des sprites et la place de chacun, fabriqués par `outils/sprites/decoupe.py` (ne pas modifier à la main) |
 | `regles.json` | Départ de la partie, rencontres, formules de combat, récompenses (dont `butin_type` : matériaux selon le type de la créature vaincue), forge, tactiques de départ… |
@@ -25,6 +25,11 @@ toutes les références existent et que chaque lieu des cartes est accessible.
 | `cartes/*.json` | Une carte par fichier : tuiles, bâtiments, habitants, coffres… |
 | `sons.json` | Musiques et bruitages (fabriqués par le jeu, sans fichier audio) |
 | `quetes.json` | Quêtes annexes : nom, lieu, étapes affichées dans le journal |
+| `exploits.json` | Exploits (Journal > Exploits) : `id`, `nom`, `description`, `si` (condition) ; atteint, il pose le drapeau `exploit:<id>` et reste acquis |
+| `discussions.json` | Discussions entre héros (Échap > Discussions) : `id`, `titre`, `si` (condition), `membres` (espèces dans l'équipe), `dialogue` (lignes « Nom : texte ») |
+| `cartes_jeu.json` | Cartes des gardiens : `depart` (les cinq cartes données à tous), `adversaires` : `id`, `nom`, `cartes` (cinq espèces), `niveau` (0 à 2 : force de l'ordinateur), `or` et `carte` (espèce) gagnés à la première victoire, `regles` (`["identique"]` : deux côtés égaux ou plus retournent aussi) |
+| `peche.json` | Poissons de la pêche : `objet` (un objet de objets.json), `eaux` (identifiants de carte, sinon thèmes), `poids` (fréquence), `difficulte` (1 à 5) |
+| `primes.json` | Primes (monstres recherchés) du tableau d'annonces et rangs de chasseur (voir plus bas) |
 
 ## Le son (`sons.json`)
 
@@ -52,9 +57,20 @@ rend le morceau moins répétitif. Garder des longueurs multiples l'une de
 l'autre. `extinction` (en secondes) fait s'éteindre chaque note toute seule,
 comme une corde pincée.
 
+Options d'une voix (2026-10-19) : `vibrato` (en demi-tons, 0.1 à 0.3 ; il s'installe sur
+les notes tenues), `vitesse_vibrato` (Hz, 5.5 par défaut), `attaque` (secondes de montée
+du son : 0.2 pour une nappe douce), `ondulation` (le `rapport` d'une onde carrée ondule :
+timbre vivant). Option d'un morceau : `echo` (`delai` en secondes, `retour` 0 à 0.8,
+`melange` 0 à 1) : la musique se répète plus faiblement, comme dans une grotte.
+Les morceaux sont écrits par `python outils/musique/compose.py` à partir des partitions
+de `outils/musique/morceaux.py` (accords, mélodie, accompagnement fabriqué d'après les
+accords) : modifier plutôt ce fichier, puis relancer le script.
+
 **Lieux** (`lieux`) : la musique de chaque thème de carte (`vallee`, `foret`,
-`cendres`, `grotte`, `neige`, `interieur`). Les morceaux `titre`, `combat` et
-`boss` sont joués à l'écran titre et en combat.
+`cendres`, `grotte`, `neige`, `interieur`), et d'une carte précise par son identifiant
+(`port`, `recif`, `ruines`, `tour`), qui passe avant son thème. Les morceaux `titre`,
+`combat` et `boss` sont joués à l'écran titre et en combat ; l'action `combat` peut
+imposer le sien (`"musique": "boss_final"`).
 
 **Effets** (`effets`) : une liste de sons simples joués l'un après l'autre
 (ou `{"variation": 0.1, "sons": [...]}` : la hauteur change un peu, au hasard,
@@ -277,11 +293,18 @@ table, `h` lit, `e` étagère (une bibliothèque pour deux cases), `o` comptoir,
   village, sur la case de sa porte (souvent un tapis `p`) ; on arrive juste
   au-dessus. Le service (soins, boutique…) est alors l'`evenement` d'un
   habitant de l'intérieur.
+- `zones` : rencontres (`x`, `y`, `l`, `h`, `niveau_min`, `niveau_max`, `max_ennemis`, `creatures`) ; `nuit`
+  (facultatif) : les créatures de la nuit, la moitié des rencontres quand il fait nuit.
+  `meute_max` (facultatif) : la taille maximale d'une meute dans la zone (sinon la règle générale, jusqu'à 6 loin des
+  entrées) ; 3 dans l'Abîme et le Vieux Phare.
+- `arbres` (facultatif) : une autre sorte d'arbres, par exemple `pierre` (arbres pétrifiés : sprites
+  `<arbre>_pierre`, recolorés dans `outils/sprites/variantes.json`).
 - `ambiance` : `brume`, `cendres`, `obscurite`, `neige` ou `lucioles`, avec
   `jusqua` pour la faire disparaître quand un drapeau est posé.
 - `passages` : `condition` (mêmes conditions que `si` dans les événements) et
   `message` pour un passage fermé, par exemple
-  `"condition": {"objet": "cle_givre"}`.
+  `"condition": {"objet": "cle_givre"}`. Un passage vers sa propre case (même carte, `tx`, `ty` = `x`, `y`) est
+  une simple barrière : fermée tant que la condition est fausse, on y marche ensuite (le pont de la Plaine).
 - `enigme` (3.0) : `drapeau` posé quand chaque dalle `P` porte un rocher `O` ; il
   ouvre les grilles `D` de la carte. `x`, `y` : la case de départ de l'énigme
   (« Recommencer l'énigme » y ramène ; le joueur automatique y résout l'énigme).
@@ -290,9 +313,15 @@ table, `h` lit, `e` étagère (une bibliothèque pour deux cases), `o` comptoir,
 - `declencheurs` : une zone (`x`, `y`, `l`, `h`) qui lance un `evenement` quand
   on y entre, tant que le drapeau `jusqua` n'est pas posé.
 - `habitants` : `dialogue` (phrases simples) ou `evenement`, `cache_si` (disparaît
-  quand le drapeau est posé), `vue` et `vue_jusqua` pour les dresseurs,
+  quand le drapeau est posé), `si` (présent seulement si ces conditions sont vraies, comme le `si` des événements ;
+  aussi pour un `boss` de carte), `vue` et `vue_jusqua` pour les dresseurs,
   `promenade` (un promeneur marche jusqu'à cette distance de sa place ; jamais
   un dresseur).
+- `coffres` : `objet` et `quantite`, ou `or` ; `si` : le coffre n'apparaît que si ces conditions sont vraies (une fois
+  ouvert, il reste là) : cartes au trésor de Corbin.
+- `style` (intérieur) : `chapelle` (dalles, vitraux), `auberge`, `boutique`, `soin` (carrelage) ; vide : une maison.
+- `teinte_murs` (carte, thème grotte) : couleur de la roche (`"#6a5040"`) ; les murs et le sol en prennent la teinte.
+- `fete` (carte) : une condition ; vraie, des lanternes montent dans le ciel la nuit (fête des lanternes de la Vallée).
 
 ## Rappels sur le format JSON
 
@@ -333,6 +362,8 @@ page dont la condition `si` est vraie.
 | `si` | Condition | `condition`, `alors`, `sinon` |
 | `soigner` | Soigne l'équipe | `pv`, `pm` (true par défaut) |
 | `boutique` | Ouvre une boutique | `objets` |
+| `pension` | Ouvre la pension (laisser, reprendre deux créatures, prendre un œuf) ; règles `pension` de regles.json | — |
+| `cartes` | Propose une partie de Cartes des gardiens (Jouer, Choisir ma main, Règles) ; la suite va dans `victoire`, `defaite`, `egalite` | `adversaire` (un `id` de cartes_jeu.json) |
 | `forge` | Ouvre la forge (renforcer armes et armures : coûts dans `regles.json`, section `forge`) | |
 | `reveil` | Point de réveil après une défaite | |
 | `teleporter` | Change de carte | `carte`, `x`, `y`, `direction` |
@@ -349,4 +380,22 @@ vraie. Une quête commencée pose le drapeau `quete:<id>`, une quête terminée
 `quete_medaillon` dans `evenements.json`).
 
 Conditions possibles (toutes doivent être vraies) : `drapeau`, `sans_drapeau`,
-`objet`, `sans_objet`, `or_min`, `membre` (une espèce présente dans l'équipe).
+`objet`, `sans_objet`, `objet_min`, `or_min`, `membre` (une espèce présente dans l'équipe), `poissons_min`
+(espèces de poissons pêchées, carnet de pêche), `especes_min` (espèces obtenues du Bestiaire), `chromatiques_min` (créatures chromatiques dans l'équipe et la réserve), `quetes_min` (quêtes terminées), `cartes_min` (cartes des gardiens obtenues), `nuit` (`true` : seulement la nuit, `false` : le jour ; l'heure du jeu).
+
+## primes.json (primes, 2026-10-19)
+
+Le tableau d'annonces (tuile `G` d'une carte) montre les primes. `rangs` : `primes` (nombre de primes touchées),
+`titre`, `objets` (donnés en atteignant ce rang). Chaque prime de `primes` : `id`, `nom`, `etoiles` (1 à 5),
+`carte`, `x`, `y` (coin haut-gauche du monstre, un bloc de 2×2 cases libres), `espece` (dessin sur la carte),
+`lieu`, `description`, `arrivee` (phrase au début du combat), `si` (condition pour qu'elle soit offerte), `combat`
+(comme l'action `combat` : `ennemis` avec `pv`, `boss`, `bouclier`, `phases`…, `renforts`, `fuite`), `or`, `objets`
+(liste de `{id, quantite}`). Drapeaux : `prime:<id>` (acceptée : le monstre apparaît), `prime:<id>:vaincue`,
+`prime:<id>:fin` (touchée). Le mode test vérifie que chaque monstre est accessible à pied.
+
+## defis.json (3.4)
+
+Les défis de l'échiquier (Arène > Défis de l'échiquier…). Chaque défi : `id`, `nom`, `description` (la leçon, montrée
+dans le menu), `decor` (vallee, foret, neige, cendres, grotte), `allies` et `ennemis` (comme les ennemis d'un combat :
+`espece`, `niveau`, `pv`, `boss`…, plus `case` : [ligne 0-3, colonne 0-7] du plateau ; les alliés partent à gauche,
+colonnes 0 à 3), `obstacles` : liste de [ligne, colonne].

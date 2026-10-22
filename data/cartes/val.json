@@ -1,0 +1,153 @@
+{
+  "id": "val",
+  "nom": "Val des Murmures",
+  "theme": "foret",
+  "ambiance": {"effet": "brume"},
+  "arbres": "brume",
+  "tuiles": [
+    "TTTTTTTTTTTTTTTTTTTTTTT==TTTTTTTTTTTTTTTTTTTTTTT",
+    "TTTTTTTTTTTTTTTTTTTTTTT==TTTTTTTTTTTTTTTTTTTTTTT",
+    "TTTTTTTTTTTT,TTTTTTTTT,==TTTTTTTTTTTTTTTTTTTTTTT",
+    "TTTTTTTTTF,,,,,,TTTT,,,==TTTTTTTTTTTTTTTTTTTTTTT",
+    "TTTTTTTT,,,,,,,,,TT,,,,==,TTTTTTTTTTTTTTTTTTTTTT",
+    "TTTTTT,,,,,,,,,,~,T,,,,==,,TTTTTTTTTTTTTTTTTTTTT",
+    "TTTTT,,,,,,,,,~~~~~,,,,==,,FTTTTTTTTTTTTTTTTTTTT",
+    "TTTTT,,,,,,,,,~~~~~~,,,==,,,TTTTTTT,TTTTTTTTTTTT",
+    "TTTTT,,,,,d,,F~~~~~~,,,==,,,TTTT,,,,,,,TTTTTTTTT",
+    "TTTTT,,,F,,,,,,~~~~~TT,==,,TTTT,,,,,,,,,TTTTTTTT",
+    "TTTTT,,,,,.......B......=TTTTTT,,,,,,,,,TTTTTTTT",
+    "TTTTT,,,,,,,,,,,TTTTTTT==TTTT,,,,,,,,,F,TTTTTTTT",
+    "TTTTTT,,,,,,,TTTTTTTTTT==TTT,,,,,,,,,,,,TTTTTTTT",
+    "TTTTTTTTT,TTTTTTTTTTTTT==TTT,,,,,.,,,,,,TTTTTTTT",
+    "TTTTTTTTTTTTTTTTTTTTTTT=============,,,TTTTTTTTT",
+    "TTTTTTTTTTTTTTTTTTTTTTT=============,TTTTT,TTTTT",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTT,,,...==.TTT,,,,,TTT",
+    "TTTTTTTTTTT,,TTTTTTTTTTTTTTTT,,,..==.T,,,,,,,,TT",
+    "TTTTTTTT,,,,,,,TTTTTTTTTTTTTTTTT..==.,,,,,,,,,TT",
+    "TTTTTTT,,,,,,,,,TTTTTTTTTTTTTTTTTT==,,,,F,,,,,TT",
+    "TTTTTTT,,,,,,,,,TTTTTTTTTTTTTTTTTT==,,,,.,,,,TTT",
+    "TTTTTTT,,,,.,,,,TTTTTTTTTTTTTTTTTT==TT,,.,,,,TTT",
+    "TTTTTTT,,.....,,TTTTTTTTTTTTTTTTTT==TT,,.,,,,TTT",
+    "TTTTTTT,,.......TTTTTTTTTTTTTTTTTT==TT,,.,,,,TTT",
+    "TTTTTTTT,...======================.......,,,TTTT",
+    "TTTTTTTTT,T.========================TTTTT,TTTTTT",
+    "TTTTTT,,,,,,==TTTTTTTTTTTTTTTTTTTT,TTTTTTTTTTTTT",
+    "TTTTT,,,,,,,==TTTTTTTTTTTTTTTTTT,,,,,TTTTTTTTTTT",
+    "TTTTT,,,,,,,==TTTTTTTTTTTTTT~~T~,,,,,,,TTTTTTTTT",
+    "TTTT,,,,,,,,==TTTTTTTTTTTT~~~~~~~~,,,,,,,,TTTTTT",
+    "TTT,,,,,.....=,TTTTTT.TT,~~~~~~~~~~,,d,,,,,TTTTT",
+    "TTT,,,,,,,,,==,TTTT.....,~~~~~~~~~~,,,,,,,,TTTTT",
+    "TTT,,,,,,,,,==,TTT.......~~~~~~~~~~,,,,,,,,TTTTT",
+    "TTT,,,,,,,,,=============,~~~~~~~~~,,,,,,,,TTTTT",
+    "TTT,,,,,,,,,=============..,~~~~~~,,,,,,,,,TTTTT",
+    "TTTT,,,,,,,,,,TTTT,L.......L.TT~TTT,,,,,,,TTTTTT",
+    "TTTTTTT,TT,TTTTTTT,.X........TTTTTTTTT,TTTTTTTTT",
+    "TTTTTTTTTTTTTTTTTTT..........TTTTTTTTTTTTTTTTTTT",
+    "TTTTTTTTTTTTTTTTTTTTT..==.TTTTTTTTTTTTTTTTTTTTTT",
+    "TTTTTTTTTTTTTTTTTTTTTTT==TTTTTTTTTTTTTTTTTTTTTTT"
+  ],
+  "batiments": [],
+  "habitants": [
+    {"x": 24, "y": 35, "apparence": "ancien", "direction": "bas", "evenement": "gardienne_lanternes"},
+    {
+      "x": 21,
+      "y": 37,
+      "apparence": "villageoise",
+      "direction": "droite",
+      "dialogue": [
+        "Brumaille était un village joyeux, avant que la brume ne prenne nos morts.",
+        "Leurs esprits errent dans le val. Ils ne savent plus rentrer."
+      ]
+    },
+    {
+      "x": 7,
+      "y": 30,
+      "apparence": "ermite",
+      "direction": "bas",
+      "evenement": "esprit_val_1",
+      "cache_si": "esprit_val_1"
+    },
+    {
+      "x": 41,
+      "y": 19,
+      "apparence": "ermite",
+      "direction": "bas",
+      "evenement": "esprit_val_2",
+      "cache_si": "esprit_val_2"
+    },
+    {
+      "x": 9,
+      "y": 9,
+      "apparence": "ermite",
+      "direction": "bas",
+      "evenement": "esprit_val_3",
+      "cache_si": "esprit_val_3"
+    },
+    {
+      "x": 33,
+      "y": 17,
+      "apparence": "ermite",
+      "direction": "haut",
+      "evenement": "route_val1",
+      "vue": 3,
+      "vue_jusqua": "route_val1"
+    },
+    {
+      "x": 13,
+      "y": 23,
+      "apparence": "villageoise",
+      "direction": "bas",
+      "evenement": "route_val2",
+      "vue": 3,
+      "vue_jusqua": "route_val2"
+    }
+  ],
+  "coffres": [
+    {"x": 36, "y": 31, "objet": "superpotion", "quantite": 3},
+    {"x": 12, "y": 22, "objet": "gemme_esprit", "quantite": 1},
+    {"x": 33, "y": 11, "or": 2500},
+    {"x": 24, "y": 6, "objet": "elixir", "quantite": 1},
+    {"x": 42, "y": 34, "objet": "carte_tresor_8", "quantite": 1, "si": {"objet": "carte_tresor_7"}}
+  ],
+  "panneaux": [],
+  "passages": [
+    {"x": 23, "y": 39, "vers": "sanctuaire", "tx": 9, "ty": 2, "direction": "bas"},
+    {"x": 24, "y": 39, "vers": "sanctuaire", "tx": 9, "ty": 2, "direction": "bas"},
+    {
+      "x": 23,
+      "y": 0,
+      "vers": "source",
+      "tx": 19,
+      "ty": 28,
+      "direction": "haut",
+      "condition": {"drapeau": ["esprit_val_1", "esprit_val_2", "esprit_val_3"]},
+      "message": "Une brume épaisse comme un mur ferme le chemin. Elle chuchote des noms…"
+    },
+    {
+      "x": 24,
+      "y": 0,
+      "vers": "source",
+      "tx": 20,
+      "ty": 28,
+      "direction": "haut",
+      "condition": {"drapeau": ["esprit_val_1", "esprit_val_2", "esprit_val_3"]},
+      "message": "Une brume épaisse comme un mur ferme le chemin. Elle chuchote des noms…"
+    }
+  ],
+  "zones": [
+    {
+      "x": 0,
+      "y": 0,
+      "l": 48,
+      "h": 40,
+      "niveau_min": 34,
+      "niveau_max": 38,
+      "max_ennemis": 3,
+      "creatures": ["esprillon", "nebulis", "brumeloup", "chauvenuit", "orbrume", "lanternelle", "fongombre"],
+      "nuit": ["osselet", "noctaile"]
+    }
+  ],
+  "boss": [],
+  "declencheurs": [{"x": 23, "y": 38, "l": 2, "h": 1, "evenement": "val_entree", "jusqua": "val_vu"}],
+  "carte_monde": [66, 18]
+}

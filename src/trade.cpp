@@ -22,7 +22,7 @@ static Json creatureJson(const Fighter& f) {
   Json gems = Json::array();  // gemmes serties (2.7) : elles partent avec leur équipement
   for (auto& slot : f.gems) gems.push_back(slot);
   return Json{{"sp", f.sp}, {"lvl", f.lvl}, {"xp", f.xp}, {"hp", f.hp}, {"mp", f.mp}, {"lim", (int)f.lim}, {"auto", f.tacticsOn}, {"tac", tac},
-              {"equipement", gear}, {"gemmes", gems}};
+              {"equipement", gear}, {"gemmes", gems}, {"chroma", f.chroma}};
 }
 
 // Une créature reçue, vérifiée : espèce connue ici (à plusieurs, une créature d'une région pas
@@ -49,6 +49,7 @@ static FighterP creatureFrom(const Json& j) {
   f->mp = std::clamp(jget(j, "mp", f->mmp), 0, f->mmp);
   f->lim = (float)std::clamp(jget(j, "lim", 0), 0, 100);
   f->tacticsOn = jget(j, "auto", true);
+  f->chroma = jget(j, "chroma", false);  // créature chromatique (absent d'un ancien message : ordinaire)
   Json tac = j.value("tac", Json());
   if (tac.is_array()) {
     f->tactics.clear();

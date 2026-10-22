@@ -39,7 +39,7 @@ for f in sorted(glob.glob(os.path.join(ROOT, 'src', '*.cpp'))):
             for s in re.findall(LIT, m.group(1)): add(unescape(s))
 
 # 2. Les données
-KEYS = {'nom', 'description', 'texte', 'message', 'dialogue', 'lieu', 'fin_texte', 'aide', 'role', 'aussi'}
+KEYS = {'nom', 'description', 'texte', 'message', 'dialogue', 'lieu', 'fin_texte', 'aide', 'role', 'aussi', 'arrivee', 'titre'}
 SKIP_FILES = {'sons.json'}
 def walk(j):
     if isinstance(j, dict):

@@ -32,7 +32,7 @@ void Game::evolveMember(const FighterP& f) {
   if (!f || !canEvolve(*f)) return;
   std::string before = f->name();
   sc.call([this, f] {
-    evoFrom_ = f->sp, evoTo_ = f->S().evolveTo, evoT_ = time;
+    evoFrom_ = f->sp, evoTo_ = f->S().evolveTo, evoT_ = time, evoChroma_ = f->chroma;
     audio::play("statut");
   });
   sc.wait(1.8f);
@@ -80,7 +80,7 @@ void Game::drawEvolution() {
   g.ellipse(160, 100, 34 + 6 * std::sin(k * 6), 30, rgb(0xfff2b0, uint8_t(60 + 40 * std::min(1.f, k))));
   // Ancienne et nouvelle forme qui alternent de plus en plus vite ; ensuite la nouvelle seule
   bool after = k >= 1.8f || std::fmod(k * k * 4, 1.f) > .5f;
-  drawCreature(g, after ? evoTo_ : evoFrom_, 160, 100, 1.6f, false, time);
+  drawCreature(g, after ? evoTo_ : evoFrom_, 160, 100, 1.6f, false, time, evoChroma_);
   if (k > 1.6f && k < 2.1f) g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0xffffff, uint8_t(220 * (1 - std::abs(k - 1.85f) / .25f))));
   drawDialogue();  // le message « … a évolué » par-dessus la lumière
 }

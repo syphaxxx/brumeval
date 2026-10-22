@@ -1,0 +1,611 @@
+[
+  {
+    "id": "premiers_pas",
+    "titre": "Un drôle d'apprenti",
+    "si": {"drapeau": "boss1"},
+    "membres": ["lior", "maelle"],
+    "dialogue": [
+      "Maëlle : Tu as vu la tête de Sylvarque quand la brume s'est levée ? On aurait dit qu'il se réveillait d'un cauchemar.",
+      "Lior : L'ancien dit que les gardiens étaient là pour ça : protéger les créatures, pas les combattre.",
+      "Maëlle : Alors tu es un drôle d'apprenti gardien. Tu passes ton temps à te battre !",
+      "Lior : … Je me bats pour qu'on n'ait plus à se battre. Ce n'est pas pareil.",
+      "Maëlle : Hmm. On en reparlera quand tu sauras faire un soin sans te brûler les doigts."
+    ]
+  },
+  {
+    "id": "forgeron",
+    "titre": "L'épée de Lior",
+    "si": {"drapeau": "brann"},
+    "membres": ["lior", "brann"],
+    "dialogue": [
+      "Brann : Dis donc, petit. Ton épée, là. Qui te l'a forgée ?",
+      "Lior : Mon maître, à la vallée. Elle était déjà vieille quand il me l'a donnée.",
+      "Brann : Ça se voit. Le fil est usé, la garde branle… Passe à la forge un de ces jours. Gratuitement. Enfin, presque.",
+      "Lior : « Presque » ?",
+      "Brann : Tu me raconteras comment tu as battu Sylvarque. Les histoires, ça paie bien, à Forgeroc."
+    ]
+  },
+  {
+    "id": "elements",
+    "titre": "Magie sage, magie bruyante",
+    "si": {"drapeau": "isra"},
+    "membres": ["isra", "maelle"],
+    "dialogue": [
+      "Isra : Lumière, soins… Ta magie est bien sage, Maëlle.",
+      "Maëlle : Et la tienne bien bruyante. Tu as fait fondre la moitié de la grotte, tout à l'heure.",
+      "Isra : La moitié seulement ? Je dois me ramollir.",
+      "Maëlle : … Tu sais que tu as le droit de dire merci quand on te soigne ?",
+      "Isra : Merci. Voilà. Contente ?",
+      "Maëlle : Ravie."
+    ]
+  },
+  {
+    "id": "chasseur",
+    "titre": "Ce que la forêt aime",
+    "si": {"drapeau": "kael"},
+    "membres": ["kael", "lior"],
+    "dialogue": [
+      "Kael : Ces bandits vendaient les créatures de la forêt comme du bétail. Je les traquais depuis l'hiver.",
+      "Lior : Tout seul ?",
+      "Kael : La forêt n'aime pas les grands groupes. Elle aime ceux qui savent se taire.",
+      "Lior : … D'accord. Je me tais.",
+      "Kael : Ce n'était pas un reproche. Enfin, pas seulement."
+    ]
+  },
+  {
+    "id": "apres_ignarok",
+    "titre": "Les oiseaux de Forgeroc",
+    "si": {"drapeau": "boss2"},
+    "membres": ["lior", "brann"],
+    "dialogue": [
+      "Brann : Le volcan s'est tu. Pour la première fois depuis que je suis gamin, on entend les oiseaux à Forgeroc.",
+      "Lior : Tu vas rester, maintenant que c'est fini ?",
+      "Brann : Rester ? Et laisser un apprenti gardien se faire écraser par le premier glaçon venu ? Jamais de la vie."
+    ]
+  },
+  {
+    "id": "froid",
+    "titre": "Le froid du col",
+    "si": {"drapeau": "harpie"},
+    "membres": ["isra", "brann"],
+    "dialogue": [
+      "Isra : Brr. J'ai horreur du froid. Le givre, c'est fait pour être lancé, pas pour être porté.",
+      "Brann : Tu n'as qu'à te réchauffer près de ma forge portative. (Il montre son poing.)",
+      "Isra : … C'était une blague ?",
+      "Brann : Les gens de Forgeroc ne font jamais de blagues.",
+      "Isra : Ça se voit."
+    ]
+  },
+  {
+    "id": "chevaliere",
+    "titre": "Un compliment par an",
+    "si": {"drapeau": "selene"},
+    "membres": ["selene", "lior"],
+    "dialogue": [
+      "Sélène : Pardon de t'avoir défié, à Givreval. Je devais savoir si tu étais digne.",
+      "Lior : Et alors ?",
+      "Sélène : Tu te bats mal. Mais tu ne recules jamais. C'est rare.",
+      "Lior : … Merci ? Je crois.",
+      "Sélène : C'était un compliment. Les chevaliers de Givreval n'en font qu'un par an."
+    ]
+  },
+  {
+    "id": "givrecorne",
+    "titre": "La peur des gardiens",
+    "si": {"drapeau": "boss3"},
+    "membres": ["selene", "maelle"],
+    "dialogue": [
+      "Maëlle : Il n'était pas méchant, le Givrecorne. Il avait peur.",
+      "Sélène : Comme nous tous, quand la brume tombe. Mon père disait : un gardien qui a peur, c'est un gardien qui a compris.",
+      "Maëlle : Ton père était gardien ?",
+      "Sélène : Chevalier. Mais il aurait aimé l'être. Le soir, il me racontait les histoires des premiers gardiens."
+    ]
+  },
+  {
+    "id": "esprits_val",
+    "titre": "Rentrer chez soi",
+    "si": {"drapeau": "esprit_val_3"},
+    "membres": ["maelle", "selene"],
+    "dialogue": [
+      "Maëlle : Ces esprits voulaient juste rentrer chez eux.",
+      "Sélène : On a tous un chez-soi qui nous appelle. Le mien, c'est le temple, au-dessus de Givreval.",
+      "Maëlle : Le mien, c'est la chapelle. Et toi, Lior ? … Il dort.",
+      "Sélène : Laisse-le. Il a apaisé trois fantômes aujourd'hui."
+    ]
+  },
+  {
+    "id": "mere_brumes",
+    "titre": "Les larmes de la brume",
+    "si": {"drapeau": "boss4"},
+    "membres": ["lior", "maelle"],
+    "dialogue": [
+      "Lior : Elle n'était pas en colère. Elle était triste.",
+      "Maëlle : Toute cette brume… c'étaient ses larmes, tu crois ?",
+      "Lior : Je crois qu'elle protégeait quelque chose. Ou qu'elle gardait quelque chose enfermé.",
+      "Maëlle : Tu parles comme l'ancien, maintenant. Ça me fait un peu peur."
+    ]
+  },
+  {
+    "id": "la_mer",
+    "titre": "La mer",
+    "si": {"drapeau": "boss4"},
+    "membres": ["kael", "isra"],
+    "dialogue": [
+      "Kael : La mer. Je ne l'avais jamais vue.",
+      "Isra : Sérieusement ? Toute ta vie dans la forêt ?",
+      "Kael : Les arbres ne bougent pas. La mer, elle, ne s'arrête jamais. Ça me donne le vertige.",
+      "Isra : Tu vas adorer le bateau, alors."
+    ]
+  },
+  {
+    "id": "ruines",
+    "titre": "Un couvercle",
+    "si": {"drapeau": "kraken"},
+    "membres": ["selene", "isra"],
+    "dialogue": [
+      "Isra : Ces ruines… Les inscriptions parlent d'une tour, et d'un orage enfermé.",
+      "Sélène : Tu lis l'ancienne langue ?",
+      "Isra : Un peu. Ma grand-mère était mage, elle aussi. Elle disait que la brume n'était pas une malédiction.",
+      "Sélène : Une protection ?",
+      "Isra : Un couvercle. Et nous sommes en train de le soulever."
+    ]
+  },
+  {
+    "id": "plan",
+    "titre": "Le plan",
+    "si": {"drapeau": "griffon"},
+    "membres": ["lior", "maelle", "brann"],
+    "dialogue": [
+      "Brann : Bon. Là-haut, il y a un orage vivant qui veut recouvrir le monde. Quelqu'un a un plan ?",
+      "Maëlle : Le frapper très fort ?",
+      "Brann : J'aime ce plan.",
+      "Lior : On reste ensemble. C'est tout le plan.",
+      "Maëlle : … C'est un bon plan aussi."
+    ]
+  },
+  {
+    "id": "apres_orage",
+    "titre": "L'île à l'horizon",
+    "si": {"drapeau": "boss5"},
+    "membres": ["lior", "selene"],
+    "dialogue": [
+      "Sélène : C'est fini. Le ciel est bleu partout. Qu'est-ce que tu vas faire, maintenant ?",
+      "Lior : Je ne sais pas. Rentrer à la vallée, peut-être. Dire à l'ancien que son apprenti a tenu bon.",
+      "Sélène : Et après ?",
+      "Lior : Après… il y a cette île, à l'horizon. Tu la vois aussi ?"
+    ]
+  },
+  {
+    "id": "ilya",
+    "titre": "La dernière gardienne",
+    "si": {"drapeau": "ilya_parle"},
+    "membres": ["maelle", "isra"],
+    "dialogue": [
+      "Isra : Ilya. La dernière gardienne d'Aube. Tu crois qu'elle dit la vérité ?",
+      "Maëlle : Elle a les mêmes yeux que l'ancien quand il parle des premiers gardiens. Tristes et fiers à la fois.",
+      "Isra : Ça ne répond pas à ma question.",
+      "Maëlle : Si. Je crois qu'elle dit vrai."
+    ]
+  },
+  {
+    "id": "epee_gardien",
+    "titre": "L'épée du Premier Gardien",
+    "si": {"drapeau": "aube_fin"},
+    "membres": ["lior", "maelle"],
+    "dialogue": [
+      "Maëlle : Lior… Le Premier Gardien t'a donné son épée. Tu te rends compte ?",
+      "Lior : J'ai encore du mal à la soulever.",
+      "Maëlle : Tu vas y arriver. Tu as toujours fini par y arriver.",
+      "Lior : Grâce à vous. Tout seul, je serais encore dans la vallée à chasser des Mulotins.",
+      "Maëlle : Ils sont très dangereux, les Mulotins."
+    ]
+  },
+  {
+    "id": "tournoi",
+    "titre": "Champions",
+    "si": {"drapeau": "quete:tournoi:fin"},
+    "membres": ["brann", "kael"],
+    "dialogue": [
+      "Brann : Champions de Forgeroc ! Mon vieux père n'a jamais gagné ce tournoi, tu sais.",
+      "Kael : Il n'avait peut-être pas un archer dans son équipe.",
+      "Brann : … Ni un archer aussi modeste, ça c'est sûr."
+    ]
+  },
+  {
+    "id": "peche",
+    "titre": "Patience",
+    "si": {"drapeau": "quete:peche"},
+    "membres": ["kael", "lior"],
+    "dialogue": [
+      "Kael : Tu tiens ta canne comme une épée.",
+      "Lior : C'est la seule chose que je sais tenir.",
+      "Kael : Détends le poignet. Le poisson sent quand on est pressé. Comme le gibier.",
+      "Lior : Tu pêches aussi ?",
+      "Kael : Dans la forêt, on fait tout soi-même. Même la patience."
+    ]
+  },
+  {
+    "id": "croc_gris",
+    "titre": "Un vieux rival",
+    "si": {"drapeau": "prime:croc_gris:vaincue"},
+    "membres": ["kael", "brann"],
+    "dialogue": [
+      "Kael : Croc-Gris… Je l'avais déjà croisé. Il chassait mieux que moi.",
+      "Brann : Et maintenant ?",
+      "Kael : Maintenant il chasse ailleurs, loin des voyageurs. C'est mieux comme ça."
+    ]
+  },
+  {
+    "id": "tom",
+    "titre": "Il me rappelle quelqu'un",
+    "si": {"drapeau": "tom2"},
+    "membres": ["lior", "isra"],
+    "dialogue": [
+      "Isra : Ce Tom, il a quel âge ? Douze ans ?",
+      "Lior : Il me rappelle quelqu'un.",
+      "Isra : Toi, il y a un an ?",
+      "Lior : Moi, il y a deux semaines."
+    ]
+  },
+  {
+    "id": "moulins",
+    "titre": "Les moulins",
+    "si": {"drapeau": "plaine_vue"},
+    "membres": ["lior", "maelle"],
+    "dialogue": [
+      "Maëlle : Regarde, Lior ! Les moulins tournent. La dernière fois que je suis passée ici, tout était gris.",
+      "Lior : Tu étais déjà venue ?",
+      "Maëlle : Avec ma mère, quand j'étais petite. Elle achetait la farine de Moulinbourg. Le meilleur pain de la vallée.",
+      "Lior : Alors on rapportera de la farine. Pour l'ancien.",
+      "Maëlle : … Et pour moi. Surtout pour moi."
+    ]
+  },
+  {
+    "id": "pont",
+    "titre": "Des dents comme des burins",
+    "si": {"drapeau": "quete:pont:fin"},
+    "membres": ["lior", "maelle"],
+    "dialogue": [
+      "Lior : Tu as vu la taille du gros Rongecrin ? Il a grignoté mon bouclier.",
+      "Maëlle : Tu n'as pas de bouclier.",
+      "Lior : Justement. Il l'a grignoté en entier."
+    ]
+  },
+  {
+    "id": "dresseurs",
+    "titre": "Tout le monde veut se battre",
+    "si": {"drapeau": "route_cendrelune2"},
+    "membres": ["lior", "maelle"],
+    "dialogue": [
+      "Maëlle : C'est moi, ou tout le monde veut se battre contre nous, depuis quelque temps ?",
+      "Lior : On a battu Sylvarque. Les gens en parlent.",
+      "Maëlle : Ils pourraient en parler en nous offrant une tarte, plutôt.",
+      "Lior : Le fermier nous a donné une potion.",
+      "Maëlle : Ce n'est pas une tarte."
+    ]
+  },
+  {
+    "id": "livre",
+    "titre": "Le couvercle",
+    "si": {"drapeau": "quete:pages_orage:fin"},
+    "membres": ["isra", "maelle"],
+    "dialogue": [
+      "Isra : « Quand l'orage sera enfermé, la brume protégera le monde. » Tu te souviens de ce que je disais ? Un couvercle.",
+      "Maëlle : Alors en chassant la brume… c'est nous qui avons ouvert la boîte ?",
+      "Isra : Peut-être. Ou peut-être que la boîte était déjà en train de s'ouvrir, et que la brume ne tenait plus.",
+      "Maëlle : Je préfère la deuxième version.",
+      "Isra : Moi aussi. C'est pour ça que je l'ai dite."
+    ]
+  },
+  {
+    "id": "phare",
+    "titre": "Une lumière pour rentrer",
+    "si": {"drapeau": "quete:phare_aube:fin"},
+    "membres": ["selene", "maelle"],
+    "dialogue": [
+      "Maëlle : Le vieux Gaspard pleurait en rallumant son phare. Tu as vu ?",
+      "Sélène : Cinquante ans à guider des bateaux. Quand la lumière s'éteint, on a l'impression que sa vie s'éteint avec.",
+      "Maëlle : Tu parles comme si tu le connaissais depuis toujours.",
+      "Sélène : Je connais quelqu'un comme lui. Il garde un temple, au-dessus de Givreval."
+    ]
+  },
+  {
+    "id": "nilo",
+    "titre": "Les enfants courageux",
+    "si": {"drapeau": "quete:enfant_marais:fin"},
+    "membres": ["kael", "isra"],
+    "dialogue": [
+      "Isra : Ce petit Nilo… seul dans le marais, pour voir des fleurs. Il est fou.",
+      "Kael : Moi, à son âge, je dormais dans les arbres de Sylve-Noire pour écouter les chouettes.",
+      "Isra : Et ta mère ?",
+      "Kael : Elle dormait dans l'arbre d'à côté. Pour me surveiller.",
+      "Isra : … Je l'aime bien, ta mère."
+    ]
+  },
+  {
+    "id": "spectre",
+    "titre": "Ceux qui restent",
+    "si": {"drapeau": "spectre_gouffre"},
+    "membres": ["selene", "isra"],
+    "dialogue": [
+      "Sélène : Ce spectre… ce n'était pas une créature comme les autres.",
+      "Isra : Un ancien gardien, peut-être. Resté là trop longtemps, à attendre qu'on vienne le relever.",
+      "Sélène : Alors on l'a relevé.",
+      "Isra : On l'a libéré. C'est mieux."
+    ]
+  },
+  {
+    "id": "abime",
+    "titre": "Le fond du monde",
+    "si": {"drapeau": "abime3_boss"},
+    "membres": ["lior", "kael"],
+    "dialogue": [
+      "Kael : L'Orage ancien… Il était là avant les gardiens, avant la brume, avant tout.",
+      "Lior : Et il dort de nouveau.",
+      "Kael : Tu crois qu'il rêve ?",
+      "Lior : J'espère. Et j'espère qu'il rêve de nous. Comme ça, il saura qu'il ne faut pas se réveiller."
+    ]
+  },
+  {
+    "id": "epreuves",
+    "titre": "Digne des premiers",
+    "si": {"drapeau": "epreuve9"},
+    "membres": ["selene", "lior"],
+    "dialogue": [
+      "Sélène : Tu te souviens, à Givreval ? Je t'avais dit que tu te battais mal.",
+      "Lior : Je m'en souviens. Un compliment par an.",
+      "Sélène : Alors voici celui de cette année : tu es digne des premiers gardiens.",
+      "Lior : … On n'est qu'en automne.",
+      "Sélène : J'ai pris de l'avance."
+    ]
+  },
+  {
+    "id": "plaine_tom",
+    "titre": "Le pain de Moulinbourg",
+    "si": {"drapeau": ["tom2", "quete:pont:fin"]},
+    "membres": ["lior", "maelle"],
+    "dialogue": [
+      "Maëlle : Tom est passé par Moulinbourg. Le meunier dit qu'il a mangé trois pains d'un coup.",
+      "Lior : Il essaie de grandir plus vite que moi.",
+      "Maëlle : Avec trois pains par jour, il va surtout grandir en largeur."
+    ]
+  },
+  {
+    "id": "echos",
+    "titre": "Trois fois",
+    "si": {"drapeau": "echos_vue"},
+    "membres": ["lior", "maelle"],
+    "dialogue": [
+      "Maëlle : Ohé ! … Ohé ! … Ohé !",
+      "Lior : Maëlle…",
+      "Maëlle : Quoi ? L'île répond ! C'est la première fois qu'une île me répond.",
+      "Lior : Elle répond trois fois. Ça veut dire qu'elle a beaucoup de choses à dire."
+    ]
+  },
+  {
+    "id": "premier_gardien",
+    "titre": "Mal, et sans jamais la lâcher",
+    "si": {"drapeau": "echos_fin"},
+    "membres": ["lior", "selene"],
+    "dialogue": [
+      "Sélène : « Mal, et sans jamais la lâcher. » C'est exactement ce que je t'avais dit, à Givreval.",
+      "Lior : Tu crois que le Premier Gardien était aussi mauvais que moi, au début ?",
+      "Sélène : Je crois que tous les gardiens commencent mal. Ce qui compte, c'est de ne jamais lâcher.",
+      "Lior : … C'était un compliment ?",
+      "Sélène : Le deuxième de l'année. Ne t'habitue pas."
+    ]
+  },
+  {
+    "id": "ligue",
+    "titre": "Les champions de l'archipel",
+    "si": {"drapeau": "ligue4"},
+    "membres": ["brann", "kael"],
+    "dialogue": [
+      "Brann : Champions de la Ligue d'Écume. Après le tournoi de Forgeroc. On collectionne les ceintures, maintenant ?",
+      "Kael : Toi, tu les collectionnes. Moi, je les range dans ton sac.",
+      "Brann : C'est pour ça que mon sac pèse une tonne !"
+    ]
+  },
+  {
+    "id": "veilleur",
+    "titre": "Le gardien de la lumière",
+    "si": {"drapeau": "phare5_boss"},
+    "membres": ["maelle", "selene"],
+    "dialogue": [
+      "Maëlle : Mille ans à garder une lanterne, tout seul, au sommet d'un phare…",
+      "Sélène : Il n'était pas seul. Il avait la lumière.",
+      "Maëlle : Ce n'est pas pareil.",
+      "Sélène : Non. Mais pour un gardien, ça suffit presque."
+    ]
+  },
+  {
+    "id": "eleveuse",
+    "titre": "Grandir",
+    "si": {"drapeau": "eleveuse4"},
+    "membres": ["lior", "maelle"],
+    "dialogue": [
+      "Maëlle : Tu as vu l'éleveuse ? Elle parle aux créatures comme à ses enfants.",
+      "Lior : Elle dit qu'elles grandissent mieux quand on croit en elles.",
+      "Maëlle : C'est vrai pour les apprentis gardiens aussi, tu sais.",
+      "Lior : … C'est pour ça que tu te moques toujours de moi ?",
+      "Maëlle : Non, ça, c'est parce que c'est drôle."
+    ]
+  },
+  {
+    "id": "quiz",
+    "titre": "Bonne réponse",
+    "si": {"drapeau": "quiz10"},
+    "membres": ["isra", "kael"],
+    "dialogue": [
+      "Isra : Dix sur dix au quiz du conteur ! Qui a dit que la mémoire des mages s'envolait avec leurs sorts ?",
+      "Kael : Personne n'a dit ça.",
+      "Isra : Alors c'est que je l'ai pensé très fort. Et que j'avais tort."
+    ]
+  },
+  {
+    "id": "chroma",
+    "titre": "Des couleurs bizarres",
+    "si": {"chromatiques_min": 1},
+    "membres": ["kael", "lior"],
+    "dialogue": [
+      "Kael : Cette créature… ses couleurs ne sont pas normales.",
+      "Lior : L'assistant de la professeure dit qu'on en croise une sur cent cinquante.",
+      "Kael : Dans la forêt, on dit qu'elles portent chance. Ou malheur. Ça dépend qui raconte."
+    ]
+  },
+  {
+    "id": "aurore",
+    "titre": "Une lame qui brille",
+    "si": {"drapeau": "aube_fin"},
+    "membres": ["lior", "brann"],
+    "dialogue": [
+      "Brann : Ta lame brille quand tu frappes, maintenant. C'est nouveau, ça.",
+      "Lior : Je crois que c'est l'épée du Premier Gardien qui m'apprend. Un peu chaque jour.",
+      "Brann : Une épée qui apprend à son maître… À Forgeroc, on appellerait ça de la paresse."
+    ]
+  },
+  {
+    "id": "lien_lior",
+    "titre": "La Lanterne",
+    "si": {"drapeau": "quete:lien_lior:fin"},
+    "membres": ["lior", "maelle"],
+    "dialogue": [
+      "Maëlle : Elle te va bien, la Lanterne. Ça fait drôle de te voir avec l'épée de l'ancien.",
+      "Lior : Il m'a dit que c'était à moi, maintenant. Je n'arrive pas à y croire.",
+      "Maëlle : Moi si. Il te regardait toujours comme ça, tu sais. Comme s'il attendait ce jour-là.",
+      "Lior : Il aurait pu me le dire plus tôt. J'aurais moins râlé pendant les corvées."
+    ]
+  },
+  {
+    "id": "lien_maelle",
+    "titre": "Digne d'Aurore",
+    "si": {"drapeau": "quete:lien_maelle:fin"},
+    "membres": ["maelle", "isra"],
+    "dialogue": [
+      "Isra : Alors la sentinelle t'a trouvée digne. Félicitations, mage blanche.",
+      "Maëlle : Je crois qu'elle était surtout fatiguée de garder ce bâton.",
+      "Isra : Ne fais pas ça. Accepte le compliment. Je n'en fais pas souvent.",
+      "Maëlle : … Merci, Isra."
+    ]
+  },
+  {
+    "id": "lien_brann",
+    "titre": "La dernière hache",
+    "si": {"drapeau": "quete:lien_brann:fin"},
+    "membres": ["brann", "lior"],
+    "dialogue": [
+      "Lior : Tu n'as rien dit à maître Hrolf, quand il t'a donné la hache.",
+      "Brann : C'est comme ça qu'on fait, à Forgeroc.",
+      "Lior : Tu as les yeux qui brillent.",
+      "Brann : La fumée de la forge. Ça pique. Avance."
+    ]
+  },
+  {
+    "id": "lien_isra",
+    "titre": "L'écriture penchée",
+    "si": {"drapeau": "quete:lien_isra:fin"},
+    "membres": ["isra", "selene"],
+    "dialogue": [
+      "Sélène : Ton maître écrivait dans le noir ? Comment faisait-il ?",
+      "Isra : Il disait que les sorts se lisent mieux sans lumière. Ils n'ont pas peur, comme ça.",
+      "Sélène : Et toi, tu le crois ?",
+      "Isra : Je crois qu'il avait oublié sa bougie. Mais l'idée est jolie."
+    ]
+  },
+  {
+    "id": "lien_kael",
+    "titre": "Le vieux chêne",
+    "si": {"drapeau": "quete:lien_kael:fin"},
+    "membres": ["kael", "maelle"],
+    "dialogue": [
+      "Maëlle : Un arbre qui choisit à qui il donne une branche… Tu y crois, toi ?",
+      "Kael : Quand j'étais petit, je grimpais dans ce chêne. Il me faisait tomber à chaque fois.",
+      "Maëlle : Et maintenant ?",
+      "Kael : Maintenant, il me prête son bois. Je crois qu'on est quittes."
+    ]
+  },
+  {
+    "id": "lien_selene",
+    "titre": "Garder ceux qui ont froid",
+    "si": {"drapeau": "quete:lien_selene:fin"},
+    "membres": ["selene", "brann"],
+    "dialogue": [
+      "Brann : Belle armure. Le travail est vieux, mais solide. Ton père savait choisir ses forgerons.",
+      "Sélène : Il disait que l'armure ne sert à rien si celui qui la porte ne sait pas pourquoi il se bat.",
+      "Brann : Et toi, tu sais ?",
+      "Sélène : « Garder ceux qui ont froid. » Je crois que je l'ai toujours su."
+    ]
+  },
+  {
+    "id": "cartes_pip",
+    "titre": "Une partie de cartes",
+    "si": {"drapeau": "cartes:pip"},
+    "membres": ["lior", "maelle"],
+    "dialogue": [
+      "Maëlle : Tu as battu un enfant aux cartes. Je suis fière de toi.",
+      "Lior : Il était très fort ! Il avait une Lucioline.",
+      "Maëlle : Une Lucioline. La créature la plus douce de la vallée.",
+      "Lior : … Elle avait un 6 à droite. C'est énorme, un 6."
+    ]
+  },
+  {
+    "id": "carte_sylvarque",
+    "titre": "Sylvarque en carte",
+    "si": {"drapeau": "carte:sylvarque"},
+    "membres": ["maelle", "kael"],
+    "dialogue": [
+      "Kael : Le meunier avait une carte de Sylvarque. Et maintenant, c'est nous qui l'avons.",
+      "Maëlle : Ça me fait drôle de le voir sur une carte, après tout ce qu'on a vécu avec lui.",
+      "Kael : Il a l'air plus gentil, en petit.",
+      "Maëlle : Il était gentil. Il avait juste très peur."
+    ]
+  },
+  {
+    "id": "tresors_corbin",
+    "titre": "Le dernier trésor",
+    "si": {"drapeau": "quete:tresors:fin"},
+    "membres": ["isra", "brann"],
+    "dialogue": [
+      "Brann : Huit trésors, et au bout : une boussole. J'espérais un coffre plein d'or.",
+      "Isra : Elle montre ce qu'on cherche, d'après Corbin.",
+      "Brann : Alors elle devrait montrer la taverne. Ça fait trois jours que je cherche une bonne soupe.",
+      "Isra : … Elle tourne vers Forgeroc. C'est inquiétant."
+    ]
+  },
+  {
+    "id": "premiers_echos",
+    "titre": "Des visages connus",
+    "si": {"drapeau": "legende1"},
+    "membres": ["lior", "selene"],
+    "dialogue": [
+      "Sélène : L'écho du Givrecorne… Il avait la même colère dans les yeux qu'au temple.",
+      "Lior : Ce n'est qu'un écho. Le vrai Givrecorne dort en paix.",
+      "Sélène : Je sais. Mais ça fait quelque chose de le combattre une deuxième fois.",
+      "Lior : Au moins, cette fois, on sait comment ça finit."
+    ]
+  },
+  {
+    "id": "maitre_cartes",
+    "titre": "Le nouveau maître",
+    "si": {"drapeau": "cartes:maitre"},
+    "membres": ["kael", "isra"],
+    "dialogue": [
+      "Isra : Le Maître des cartes jouait avec l'Ombre du Premier Gardien. Et il a perdu contre une Lucioline.",
+      "Kael : Contre une Lucioline bien placée.",
+      "Isra : Tu as hurlé de joie dans toute l'auberge.",
+      "Kael : Les archers ne hurlent pas. Ils… célèbrent avec précision."
+    ]
+  },
+  {
+    "id": "tous_les_echos",
+    "titre": "Plus fort que les légendes",
+    "si": {"drapeau": "legende5"},
+    "membres": ["lior", "maelle"],
+    "dialogue": [
+      "Maëlle : Tous les échos sont apaisés. Tous les gardiens de l'histoire, un par un.",
+      "Lior : Tu crois que les premiers gardiens seraient fiers de nous ?",
+      "Maëlle : Je crois qu'ils seraient surtout soulagés de pouvoir dormir.",
+      "Lior : Alors on a bien travaillé. Rentrons à la vallée. L'ancien doit s'inquiéter."
+    ]
+  }
+]

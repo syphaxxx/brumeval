@@ -42,6 +42,8 @@ class Gfx {
   SDL_Renderer* renderer() const { return r_; }
 
   float alpha = 1.f;  // opacité globale appliquée à tout ce qui est dessiné
+  float spriteAngle = 0;                       // rotation des sprites (degrés, autour de leur centre) : combattant K.O. couché
+  Color spriteTint = {255, 255, 255, 255};     // teinte multipliée à tous les sprites (K.O. : grisé)
 
   // Écran plus large que le jeu (16:9, 16:10…) : l'image fait fullW pixels de large (320 au
   // moins) et tout se place dans la zone de 320 pixels du milieu, décalée de ox pixels. Un
@@ -71,6 +73,8 @@ class Gfx {
   // Texte (police pixel intégrée, accents français compris)
   void text(float x, float y, const std::string& s, Color c, int align = 0, bool shadow = true);  // align : 0 gauche, 1 centre, 2 droite
   void textBig(float x, float y, const std::string& s, Color c, int scale, int align = 0);
+  // Grand titre (2026-10-21) : contour, ombre portée et dégradé de haut en bas (top -> bottom)
+  void textBigFancy(float x, float y, const std::string& s, Color top, Color bottom, Color outline, int scale, int align = 0);
   static int textW(const std::string& s);
   static std::vector<std::string> wrap(const std::string& s, int width);
   static constexpr int LINE_H = 12;

@@ -18,8 +18,8 @@
     "TT..,,,,,,,,,,,,,,,....==.R.,,,,,,,,,,,,,,,...TT",
     "TT..,,,,,,,,,,,,,,,....==...,,,,,,,,,,,,,,,...TT",
     "TT..,,,,,,,,,,,,,,,....==...,,,,,,,,,,,,,,,...TT",
-    "TT.....................==.....................TT",
-    "TT.....................==.....................TT",
+    "TT.....................==.......................",
+    "TT.....................==.......................",
     "TT~~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~~~~TT",
     "TT~~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~~~~TT",
     "TT~~~~~~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~~~~TT",
@@ -38,7 +38,7 @@
     "TT.....................==.....................TT",
     "TT.R...................==.....................TT",
     "TT.....................==.....................TT",
-    "TTTTTTTTTTTTTTTTTTTTTTT==TTTTTTTTTTTTTTTTTTTTTTT"
+    "TTTTTTTTTTTTTTTTTTTTTTT==TTT=TTTTTTTTTTTTTTTTTTT"
   ],
   "batiments": [],
   "habitants": [
@@ -59,6 +59,15 @@
       "evenement": "dresseur_recif2",
       "vue": 4,
       "vue_jusqua": "recif_dresseur2"
+    },
+    {
+      "x": 21,
+      "y": 15,
+      "apparence": "pecheur",
+      "direction": "droite",
+      "evenement": "route_recif1",
+      "vue": 3,
+      "vue_jusqua": "route_recif1"
     }
   ],
   "coffres": [
@@ -66,7 +75,12 @@
     {"x": 44, "y": 24, "objet": "perle", "quantite": 1},
     {"x": 3, "y": 4, "objet": "perle", "quantite": 1},
     {"x": 44, "y": 4, "objet": "elixir", "quantite": 2},
-    {"x": 15, "y": 33, "or": 600}
+    {"x": 15, "y": 33, "or": 600},
+    {"x": 40, "y": 4, "objet": "partition", "quantite": 1},
+    {"x": 2, "y": 34, "objet": "eclat_brume", "quantite": 1},
+    {"x": 45, "y": 34, "objet": "eclat_brume", "quantite": 1},
+    {"x": 45, "y": 2, "objet": "eclat_brume", "quantite": 1},
+    {"x": 45, "y": 20, "objet": "boussole_corbin", "quantite": 1, "si": {"objet": "carte_tresor_8"}}
   ],
   "panneaux": [
     {"x": 22, "y": 33, "texte": "Récif d'Écume. Au nord, par-delà le chenal : les Ruines englouties."}
@@ -74,8 +88,38 @@
   "passages": [
     {"x": 23, "y": 35, "vers": "port", "tx": 19, "ty": 1, "direction": "bas"},
     {"x": 24, "y": 35, "vers": "port", "tx": 20, "ty": 1, "direction": "bas"},
-    {"x": 23, "y": 0, "vers": "ruines", "tx": 17, "ty": 28, "direction": "haut"},
-    {"x": 24, "y": 0, "vers": "ruines", "tx": 18, "ty": 28, "direction": "haut"}
+    {
+      "x": 23,
+      "y": 0,
+      "vers": "ruines",
+      "tx": 17,
+      "ty": 28,
+      "direction": "haut",
+      "condition": {"objet": "trident"},
+      "message": "Une porte de corail scelle les Ruines. On dit que seul le Trident d'écume peut l'ouvrir."
+    },
+    {
+      "x": 24,
+      "y": 0,
+      "vers": "ruines",
+      "tx": 18,
+      "ty": 28,
+      "direction": "haut",
+      "condition": {"objet": "trident"},
+      "message": "Une porte de corail scelle les Ruines. On dit que seul le Trident d'écume peut l'ouvrir."
+    },
+    {
+      "x": 28,
+      "y": 35,
+      "vers": "epave",
+      "tx": 22,
+      "ty": 30,
+      "direction": "bas",
+      "condition": {"drapeau": "boss4"},
+      "message": "La marée est trop haute pour atteindre l'épave."
+    },
+    {"x": 47, "y": 15, "vers": "corail", "tx": 1, "ty": 14, "direction": "droite"},
+    {"x": 47, "y": 16, "vers": "corail", "tx": 1, "ty": 15, "direction": "droite"}
   ],
   "zones": [
     {

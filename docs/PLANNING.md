@@ -1,6 +1,6 @@
 # Planning de la suite de Brumeval
 
-État au 13 octobre 2026 : version **2.4** publiée (joueur automatique plus malin, commandes de la démo) ; avant elle 2.3 (code de partie) et **2.2** (les 1.7 à 2.2 en une fois : damier 4x4, zones, vitesse, Aide,
+État au 19 octobre 2026 : version **3.3** publiée ; la **3.4** (échiquier, personnages rendus avec Blender, effets faits avec Godot) est prête sur la branche `echiquier`, pas encore publiée. Historique : 2.4 (joueur automatique plus malin, commandes de la démo), 2.3 (code de partie), **2.2** (les 1.7 à 2.2 en une fois : damier 4x4, zones, vitesse, Aide,
 forge, évolution, graphismes). Avant elle : 1.6 (réserve, bestiaire, Source des Brumes), 1.5 (boss renforcés, compagnons).
 Avant elle : 1.3 (son, options, manette, animations d'attaque, Ignarok
 redessiné, intérieurs, équipement, quêtes annexes), 1.3.1 (musique) et 1.4
@@ -170,6 +170,228 @@ profil et de dos. Police : guillemets anglais “ ” ‘ (47 phrases anglaises 
 10. Menus : fiche des créatures avec le grand sprite, écran titre avec les sprites.
 11. Équilibrage des nouveautés (Coffrelin, nouvelles créatures), mesuré.
 12. Tests du choix sur le damier et des nouvelles tuiles ; documentation et traduction anglaise à jour.
+
+## Étape 2 quinquies — Échiquier, Blender et Godot (demandé le 2026-10-18)
+
+Demande : « améliorer encore le jeu à tous les niveaux ; que le combat marche comme un échiquier, que les combattants
+puissent passer du côté adverse et que les déplacements deviennent importants pour tous ; apprendre à utiliser
+Blender et Godot pour créer des sprites et des animations ». Ordre laissé à Claude (« dans l'ordre le plus rentable »).
+Branche `echiquier` (version 3.4), pas encore publiée.
+
+1. **Échiquier** (fait) : un seul plateau de 8 × 4 cases pour les deux camps ; « Se déplacer » (2 cases, une fois par
+   tour) ne finit plus le tour ; « Attendre » ; corps à corps au contact (on s'approche d'abord si on peut) ; coup
+   dans le dos ×1,3 ; encerclé +10 % par adversaire en plus ; distance au contact ×0,75 ; Percée au bord adverse
+   (+1 Attaque, Magie, Vitesse) ; poussée dans l'axe du lanceur ; Vent et Esprit volent, Vent et Foudre vont plus
+   loin. IA (ennemis, alliés en auto, joueur automatique) qui choisit sa case avant d'agir. Duel en ligne en miroir.
+   Aide, astuces (échiquier, dans le dos, Percée), traduction anglaise, tests.
+2. **Équilibrage** (fait, mesuré) : les boss étaient trop faciles (encerclés par toute l'équipe) ; ils ne sont plus
+   encerclés ni gênés au contact, encerclement 15 → 10 %, trois boss +1 niveau. Joueur automatique : histoire
+   finie (actes 1 et 2, 1 h 32, 1 défaite).
+3. **Blender** (fait) : personnages chibi en 3D rendus en pixel art ; les 8 habitants qui n'avaient qu'une pose de
+   face (homme, enfant, femme, pêcheur, barman, docteur, forgeron, paysan) ont maintenant dos et profil, en 4 images
+   de marche : ils se tournent et marchent. Jugés trop différents du reste du jeu (19 octobre au soir) : refaits
+   d'après leur dessin de face (`outils/sprites/tourner.py`), même style que les planches.
+4. **Godot** (fait) : effets en particules rendus image par image : types Métal et Normal, éclats de la Percée et de
+   la Brisure.
+5. Pistes suivantes : poses de combat rendues avec Blender (attaque, garde) pour les héros qui n'en ont pas ; plus
+   d'effets Godot si l'utilisateur veut remplacer ou compléter ceux de sa planche ; obstacles sur l'échiquier
+   (rochers, arbres) ; techniques qui font bondir ou échanger de case.
+
+## Étape 2 sexies — Carte blanche du 19 octobre (7 h → 19 h, l'utilisateur absent)
+
+« Fais la même chose que la dernière fois que je suis parti » : améliorer le jeu à tous les niveaux, sans questions,
+tout permis sauf fusionner. Suite de la branche `echiquier` (3.4). Plan, dans l'ordre :
+
+1. Compilation Windows / Mac / Linux vérifiée par une demande de fusion en brouillon (à ne pas fusionner).
+2. Échiquier : obstacles sur le plateau selon le décor (rochers, souches, cristaux : on ne peut ni s'y arrêter ni les
+   traverser, sauf en volant).
+3. Échiquier : en mode auto (tactiques), les alliés choisissent aussi leur case avant d'agir, comme l'ordinateur.
+4. Échiquier : en choisissant sa case, les cases où un ennemi pourra frapper au prochain tour sont marquées (danger).
+5. Techniques de mouvement : des bonds (frapper puis sauter derrière la cible) et des échanges de place, pour des
+   créatures agiles et des héros ; l'IA et l'aide les connaissent.
+6. Graphismes : obstacles et nouvelles poses ; petits défauts vus sur les captures (étiquette d'état sur un nombre).
+7. Équilibrage mesuré, joueur automatique, tests en français et en anglais, revue Codex, documentation.
+8. Page de bilan pour le retour de l'utilisateur.
+
+Avancement : 1 impossible (envoi sur GitHub refusé par les permissions de Claude Code : tout est resté en local, compilé
+et testé sous Windows seulement) ; 2 fait (obstacles) ; 3 fait (placement auto en mode tactiques) ; 4 fait (losanges
+rouges, aide « Danger ») ; 5 fait (bond : Dague, Coup de bec, Piqué tonnerre, Lame d'ombre ; échange : Coup bas ;
+le duo « Percée » renommé « Assaut perçant ») ; 6 : effets Godot de poussière (bond) et d'échange.
+Revue Codex : 3 remarques justes corrigées (colonne bouchée par les obstacles, terrain à l'arrivée d'un échange,
+menace en diagonale). Mesuré (BRUMEVAL_SIMULATIONS=2) : difficulté dans le bruit de la 3.3 ; joueur automatique :
+histoire finie (1 h 26, 3 défaites).
+
+Deuxième série (7 h 35) :
+9. Portée visible : quand un allié choisit son action, les cases où il peut aller ce tour s'allument doucement.
+10. Sons : un pas quand on change de case, un souffle pour le bond, un son pour l'échange.
+11. Tactiques de l'échiquier : actions « S'approcher », « Protéger un allié » (se placer devant le plus blessé) et
+    « Contourner » (passer dans le dos de la cible), dans l'éditeur de tactiques et pour le joueur automatique.
+12. Formation : choisir la case de chacun sur un dessin du plateau (flèches et souris), comme en combat.
+Avancement : 9 à 12 faits (portée en bleu ; sons « pas », « bond », « echange » ; tactiques S'approcher, Contourner,
+Protéger ; formation choisie sur le dessin, flèches dans les quatre directions et souris).
+
+Troisième série (7 h 50) :
+13. En choisissant sa case, le chemin s'affiche (pointillés le long des pas).
+14. « Revenir » : annuler son déplacement tant qu'on n'a pas agi (pas en ligne).
+15. Animaux des villes (chien, chat, poule, vache, cheval) : marche animée, rendue avec Blender.
+16. Mesures, joueur automatique, revue, bilan.
+Avancement : 13 et 14 faits (chemin en pointillés dorés ; « Revenir », pas en ligne ni après une Percée).
+15 abandonné : des animaux rendus en 3D seraient bien moins beaux que leurs sprites dessinés (très détaillés) ; à la
+place, ils trottinent en marchant (petit bond à chaque pas, dessin seul).
+En plus : bottes qui font avancer d'une case de plus (Bottes de vent à Forgeroc, Bottes ailées à Givreval) ; défis
+de l'échiquier dans l'Arène (data/defis.json : Dans le dos, La Percée, Les ailes, Le mur, Bousculade) ; maître d'armes dans la
+Vallée (premier défi en entraînement, Bottes de vent) ; cercle d'invocation des Limites (Godot) ; fiches : « Pas ».
+Point ouvert du 16 octobre résolu : le plantage rare du mode test venait du test de l'énigme, qui appelait l'action de
+« Recommencer l'énigme » alors qu'elle détruit son propre menu (relu ensuite en mémoire libérée) ; trouvé avec cdb.
+Aussi corrigé : le joueur automatique lisait la liste « ennemis » d'un combat sans vérifier qu'elle existe, et
+remplaçait l'équipe par des copies quand un combat n'avait pas d'ennemis.
+Après-midi : IA qui ne s'attend plus sans fin (test de non-blocage), cinquième défi « Les ailes » ; relecture Codex :
+3 remarques justes corrigées (un défi est toujours un entraînement, pas d'objets du sac, PV et PM remis). Mesuré
+(BRUMEVAL_SIMULATIONS=2) : difficulté des boss dans le bruit de la 3.3 ; joueur automatique : histoire finie (1 h 32,
+2 défaites), bottes du maître d'armes gagnées une fois.
+
+Cinquième série (soir du 19, « continue comme ça ») :
+17. Ménage : le code de l'échiquier sort de battle.cpp (plus de 3 400 lignes) dans src/echiquier.cpp, sans rien
+    changer au jeu ; relecture Codex.
+18. Défis dans l'histoire : un instructeur à Forgeroc (« Bousculade ») et un à Givreval (« Le mur »), en entraînement,
+    avec une récompense la première fois.
+19. Aide : une page « Nouveautés 3.4 » pour les joueurs qui reprennent une partie.
+20. Vérifications, mesures, page de bilan.
+Avancement : 17 fait (src/echiquier.cpp, 391 lignes déplacées à l'identique, vérifié ligne à ligne) ; 18 fait
+(instructeurs à Forgeroc et Givreval ; le joueur automatique les fait une fois chacun) ; 19 fait (page « Nouveautés
+3.4 » en tête de l'Aide). En plus : dans les dialogues, une 4e ligne longue ne passe plus sous la flèche « ▼ ».
+Joueur automatique : 5 puis 6 défaites (meutes du début) avec le réglage « s'approcher deux fois plus vite sans
+cible » de l'après-midi ; ce réglage retiré (le compteur de 40 s sans dégâts suffit contre les blocages, test de
+non-blocage toujours vert) : deux parties finies avec 0 et 1 défaite (1 h 20 et 1 h 34).
+Relecture Codex de la série : 2 remarques justes corrigées (Protéger avec une condition « Soi », « Revenir » gardé
+après un remplacement). Page de bilan : https://claude.ai/artifact/KbjqopS4iS7eXWjgjLL5my
+
+## Étape 2 septies — 20 heures de jeu (demandé le 2026-10-19 au soir)
+
+« Améliore tout sans exception » : au moins **20 heures** de durée de vie, meilleurs graphismes, animations, sprites,
+gameplay et musiques ; liberté totale d'inspiration ; étudier d'autres jeux du genre ; travailler sans arrêt, sans
+demander d'avis. Petits détails d'abord : allié K.O. visible (fait : couché, grisé, étoiles et « K.O. ») ; habitants
+de dos et de profil trop différents du reste du jeu (fait : tirés de leur dessin de face, `outils/sprites/tourner.py`).
+
+Ce qu'apprennent les jeux du genre (recherches du 19 au soir) :
+- Cassette Beasts (capture de créatures, indépendant) : ~20 h pour l'histoire, 27 h avec les à-côtés ; son
+  après-histoire (quêtes, boss, tableau de quêtes tirées au hasard) sert aussi à compléter la collection.
+- Sea of Stars : beaucoup de joueurs sautent les à-côtés, la récompense doit donc compter (objet unique, coquillages
+  à collectionner, chaque quête allume un pilier utile pour la fin).
+- Chained Echoes : quêtes annexes ouvertes au début de chaque acte ; une quête qui donne un équipier vaut le détour.
+- Dragon Fantasy, Ni no Kuni : des **primes** (monstres recherchés, mini-boss) ; les dernières, après la fin, mènent
+  à un super-boss. Super Mario RPG : trésors cachés à collectionner, super-boss (Culex).
+- Pixel art (Slynyrd) : 4 images de marche par direction ; le dos montre ce qui reconnaît le personnage (cheveux,
+  sac) ; un pied posé, le passage, l'autre pied.
+
+Durée actuelle : le joueur automatique finit l'histoire en ~1 h 30 de jeu (il ne lit rien, ne se perd jamais, ne fait
+que l'utile) ; un joueur, à peu près 4 à 6 h avec les à-côtés. Pour 20 h, il faut environ quatre fois plus de contenu
+**qui vaut la peine**, pas du remplissage. Plan, dans l'ordre (chaque morceau testé, joueur automatique, bilan) :
+
+1. **Primes** : tableau d'annonces dans chaque village ; monstres recherchés (variantes plus fortes, talents, phases)
+   placés sur les cartes déjà visitées ; on accepte, on chasse, on touche la prime ; rang de chasseur et récompenses
+   uniques ; les dernières après la fin.
+2. **Quêtes annexes** : de 6 à 20 au moins, dans les villages et les intérieurs, avec des personnages qui reviennent ;
+   certaines donnent un équipier, une évolution rare, une technique.
+3. **Collection** : éclats de brume cachés sur toutes les cartes (coins, énigmes), échangés contre des objets uniques ;
+   Bestiaire complété = récompense.
+4. **Acte 3** : nouvelle région (îles ou terres d'au-delà de la tempête), nouveaux villages, créatures, boss, et une
+   vraie fin ; histoire des héros approfondie (passé de Lior, de Maëlle, d'Isra).
+5. **Après la fin** : donjon des Abysses de brume (étages, de plus en plus durs), super-boss, primes d'élite, ligue de
+   l'Arène.
+6. **Musiques** : morceaux plus riches (mélodie, contre-chant, basse, percussions ; un thème par région), étudiés sur
+   les musiques du genre.
+7. **Graphismes et animations** : poses d'attaque des héros, effets, décors des nouvelles régions, en gardant le style
+   des planches de l'utilisateur.
+8. Équilibrage de la progression sur la nouvelle longueur (niveaux, prix, butin), mesures, documentation.
+
+Branches : `echiquier` (3.4) puis la suite sur la même branche ; jamais de fusion ni de publication sans demande.
+
+Avancement (nuit du 19 au 20) : 1 fait (15 primes, tableaux dans 5 villages, rangs et récompenses uniques, 3 super-boss
+après la fin) ; 2 fait (20 quêtes : 14 nouvelles, dont un rival en trois combats, une quête qui donne un Draconnet,
+un naturaliste qui demande de montrer des créatures, un conte qui explique la brume après la fin) ; 3 fait (30 éclats
+de brume dans des coffres reculés, collectionneuse de la Vallée : récompenses à 5, 10, 20, 30) ; 6 fait (13 morceaux
+réécrits ou nouveaux avec `outils/musique/compose.py` : vibrato, écho, contre-chants ; port, abysses, orage, dernier
+combat). Le rapport du joueur automatique donne maintenant une estimation pour un vrai joueur (très approximative).
+Joueur automatique : 2 h 07 (au lieu de 1 h 30), 19 quêtes sur 20 (le naturaliste demande des captures précises),
+toutes les primes, 30 éclats.
+4 fait (20 octobre) : l'île d'Aube après le Seigneur des Orages : Havre-d'Aube, Bois des Lueurs, Marais Pâle, Gouffre
+d'Aube (énigme), Citadelle des gardiens ; 8 créatures et 3 boss d'Aube (recolorés), Ilya, le Premier Gardien et une
+vraie fin (le passé des gardiens et de la brume). Scripts `outils/villes/acte3.py` et `acte3_histoire.py`. Joueur
+automatique : tout fini en 2 h 14 ; estimation pour un vrai joueur : environ 5 h (lecture 1 h 05). Relecture Codex :
+3 remarques justes corrigées (drapeaux des déclencheurs d'arrivée, champ « evenement » des boss en double, enlevé des
+nouvelles cartes ; écho de la musique alloué une fois hors du fil du son).
+Ensuite : 5 en partie (les épreuves des gardiens : huit combats puis Ilya, au sanctuaire d'Aube) ; la pêche (18 poissons,
+carnet et maître pêcheur au port). Joueur automatique : 3 h 34 avec les épreuves (Ilya demande trois essais) ;
+estimation pour un vrai joueur : 7 h 30, sans compter la pêche.
+Puis quatre donjons optionnels, un par moment de l'histoire : Mines de Forgeroc, Glacier de Givreval, Épave du
+Léviathan, et l'Abîme (trois étages, super-boss) après l'acte 3.
+Réglage : l'acte 3 était trop dur pour certaines équipes (meutes de 4 à 6 au Gouffre et à la Citadelle, Brume Noire
+battue au 7e essai) : meutes de 3 au plus, Gouffre N.58-61, Citadelle N.60-64, Brume Noire PV ×6,5 (au lieu de 8).
+Joueur automatique : tout fini (Orage ancien compris) en 6 h 01, 14 défaites ; estimation pour un vrai joueur : 12 h,
+sans compter la pêche ni l'Expédition. Combats : nuages et montagnes au fond de la vallée, stalactites dans les grottes.
+Le chemin de l'histoire s'allonge : le Col des Hurlevents (camp de bergers, Harpie de givre) entre les Monts
+Cendrelune et les Pics Givrés. Le grand bestiaire : la professeure récompense 15, 30, 45 et 60 espèces.
+Acte 2 plus long : l'île de Corail et la Grotte des Marées (le Trident d'écume ouvre les Ruines englouties).
+Mesures : d'une partie à l'autre, le joueur automatique met de 4 h 50 à 6 h (surtout le temps passé à s'entraîner
+avant l'Orage ancien) ; estimation pour un vrai joueur de 9 h 40 à 12 h. Musique propre à l'île d'Aube.
+Le Val des Murmures (trois esprits à apaiser) entre le sanctuaire et la Source des Brumes. Effets Plante et Esprit
+refaits avec Godot.
+Dernière mesure (Val compris) : joueur automatique 5 h 21, 11 défaites ; estimation pour un vrai joueur 10 h 36.
+Nouvelle partie + : après l'acte 3, recommencer l'histoire avec son équipe, ennemis +12 niveaux par tour.
+Mesure : joueur automatique 6 h 15 (il refuse la Nouvelle partie +) ; estimation pour un vrai joueur 12 h 20, sans la
+pêche, le grand bestiaire, l'Expédition ni la Nouvelle partie +.
+Cinq quêtes de plus dans les nouveaux lieux (`outils/villes/quetes_lieux.py`) : le chien de la bergère (Col), le
+collier de corail (Corail), le dernier message du pêcheur (Val → Port), le tournoi de Forgeroc (trois manches), les
+créatures d'Aube (montrer trois créatures). 33 quêtes en tout.
+Sept formes régionales de plus (`outils/villes/formes.py` : Bourrasquin, Givroc, Lanternelle, Fongombre, Corailleur,
+Perlin, Murénix) dans le Col, le Val, la Grotte des Marées et les herbes de l'île de Corail. Animations : papillons et
+poissons sur la carte, silhouettes d'élan en combat.
+Discussions entre les héros (38 saynètes, Échap > Discussions), au fil de l'histoire.
+La Plaine des Moulins (`outils/villes/plaine.py`) entre la Vallée et les Monts Cendrelune : village de Moulinbourg,
+pont rongé par une bande de Rongecrins (quête `pont`).
+28 dresseurs le long des routes (`outils/villes/dresseurs.py`), de la Vallée à la Citadelle d'Aube, et des revanches
+(`outils/villes/revanches.py`) après le Seigneur des Orages et après l'acte 3. La Ligue d'Écume au port
+(`outils/villes/ligue.py`) : quatre rangs de trois combats d'affilée, du début de l'acte 2 à l'après-fin.
+Acte 4 (`outils/villes/acte4.py`) : l'île des Échos après la Brume Noire (Port-Écho, Forêt Pétrifiée, Cratère,
+Sanctuaire), 6 créatures et 3 boss, l'Ombre du Premier Gardien ; deux primes et deux quêtes de plus sur l'île
+(`outils/villes/echos_annexes.py`). Créatures chromatiques (couleurs rares, environ une rencontre sur 170).
+Cinq quêtes de plus pour les actes 2 et 3 (`outils/villes/quetes_actes.py`) : le phare d'Aube (trois éclats de lueur),
+l'enfant du marais, le spectre du Gouffre, les pages de l'orage (Ruines, Tour, Grotte des Marées), Coquillon et Perlin.
+L'éleveuse de Forgeroc (`outils/villes/eleveuse.py`) : huit créatures évoluées à lui montrer, une par une.
+Créatures de la nuit (`outils/villes/nuit.py`), écran titre en paysage de nuit, rafales dans les hautes herbes.
+Faits depuis la liste de pistes : acte 4, Ligue, pêche, captures demandées par des quêtes, alphas des meutes (combats
+plus riches), le Vieux Phare (`outils/villes/phare.py` : cinq étages après l'acte 4). Restent : d'autres animations.
+Mesure (20 octobre, tout compris : 4 actes, Ligue, revanches, primes, 5 donjons) : joueur automatique 4 h 56 à 6 h 38
+selon les parties, 11 à 33 défaites ; estimation pour un vrai joueur 11 h à 13 h 40, sans la pêche, les captures
+demandées (éleveuse, chromatiques, bestiaire), l'Expédition ni la Nouvelle partie +.
+Ensuite : arbres des lieux (pierre, lueur, pâle, brume ; aussi au fond des combats), coffres animés, bulles d'humeur,
+étincelles de niveau, Journal > Progression, quiz du conteur, 17 intérieurs pour les nouveaux villages, quête des
+couleurs rares (créatures chromatiques), musiques de la Plaine et du Vieux Phare, une description pour chaque
+créature du Bestiaire ; Phénix et Ombre réglés (plus d'attaque sur toute l'équipe à chaque tour).
+Puis : pluie sur la vallée et les forêts (météo des combats), alphas des meutes, sauvegarde automatique, voyage
+rapide (Échap > Carte), et 28 exploits (Journal > Exploits : fin des actes, Bestiaire, pêche, quêtes, Ligue…).
+Quêtes des héros (`outils/villes/liens.py`) : après l'acte 3, une par héros (quelqu'un de son passé, un boss, une arme
+ou une armure qu'il est seul à pouvoir porter, champ `pour`), suivies chacune d'une discussion (44 en tout).
+Cartes au trésor (`outils/villes/tresors.py`) : huit trésors cachés de la Vallée au Récif (coffres « si »), chacun
+contient la carte du suivant ; Corbin, au port.
+Cartes des gardiens (`src/cartes.cpp`, `outils/villes/cartes.py`) : un jeu de cartes à la Triple Triad, neuf joueurs
+de la Vallée à Port-Écho, puis le Maître des cartes. Échos des légendes (`outils/villes/legendes.py`) : après l'acte 4,
+cinq cercles de trois grands boss d'affilée (N.98 à 120). Pension de Moulinbourg (`src/pension.cpp`) : élevage et œufs ; fête des lanternes de la Vallée (la nuit) ;
+32 exploits.
+
+## Étape 2 octies — Graphismes sans limite (demandé le 2026-10-21)
+
+« Améliore les graphismes sans limite », mêmes règles de travail (sans arrêt, captures vérifiées). Fait, dans l'ordre :
+relief des murs des grottes et des lieux de glace (`wallDepth`), roche propre à chaque donjon (`teinte_murs`), lanterne
+des lieux obscurs en fondu, cristaux qui brillent ; sol des combats en perspective, brume d'horizon, vignette ; carte du
+monde illustrée ; sol volcanique et lave qui rougeoit ; nom des lieux en ruban, titre doré (`textBigFancy`) ; fenêtres
+(ombre, coins arrondis) ; nombres des combats cernés ; fontaine, mouettes, Expédition étoilée ; éclair d'orage,
+éclaboussures, flocons ; combats au bord de la mer (`Game::coastal`) et aux couleurs du donjon ; flaques sous la pluie ;
+neige ondulée ; ponts ; rochers, plaques, herses et escaliers des énigmes ; cristaux à facettes ; coffres ouverts ;
+traînée de l'élan ; intérieurs selon le bâtiment (`style`), fenêtres sombres et bougies la nuit, halo autour des pièces ;
+panneau des combats et jauges. Captures du mode test : `donjon_<carte>`, `carte_monde_fin`, `combat_port`,
+`combat_mines`, `meteo_orage`, `interieur_nuit`. Pistes : poses d'attaque des héros, effets de sorts, décors des cartes.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 

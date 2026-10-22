@@ -1,0 +1,171 @@
+{
+  "id": "col",
+  "nom": "Col des Hurlevents",
+  "theme": "cendres",
+  "ambiance": {"effet": "neige"},
+  "tuiles": [
+    "mmmmmmmmmmmmmmmmmmm==mmmmmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmmmmmm==mmmmmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmmmmmm==mmmmmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmmmmmm==mmmmmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmmmmmm==mmmmmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmmmmmm==mmmmmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmmmmmm==mmmmmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmmmmmm==mmmmmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmmmmmm==mmmmmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmgmmmmmmmm==mmmmmmmmmmgmmgmmmmm",
+    "mmmmmmmgggggggmmmmm==mmmmmmmmggggggggmmm",
+    "mmmmmmgggggggggmmmm==========ggggggggmmm",
+    "mmmmmggggggggggmmmm==========ggggggggmmm",
+    "mmmmgggggggggggmmmmmmmmmmmm==gggggggmmmm",
+    "mmmgggggaggggggmmmmmmmmmmmm==gggggggmmmm",
+    "mmmgggggagRggggmmmmmmmmmmmm==gggggggmmmm",
+    "mmmgggggagggggmmmmmmmmmmmmm==ggggggmmmmm",
+    "mmmmggggagggggmmmmammmmmmmm==mmggmmmmmmm",
+    "mmmmmgggaaaaaaa============aaaaaammmmmmm",
+    "mmmmmmmggmgmmm===============mmmammmmmmm",
+    "mmmmmgggggmmmm==aaaaaaammmmmmmmmammmmmmm",
+    "mmmmgggggggmmm==aaaaaaaammmmmmmgammmmmmm",
+    "mmmmgggggggmmm==aaaaaaaammmmmgggagmmmmmm",
+    "mmmmgggggggggm==aaaaaaaammmmmgggagggmmmm",
+    "mmmmmggggagggm==maaaaaammmmmmgggggggmmmm",
+    "mmmmmmmggagggm==mmmaammmmmmmmgggggggmmmm",
+    "mmmmmmmmmagmmm==mmmmmmmmmmmmmmgggggmmmmm",
+    "mmmmmmmmmaaaaaa===========mmgggggggmmmmm",
+    "mmmmmmmmmmmmmmaaaaaaaaaaa=agggggggggmmmm",
+    "mmmmgmmmmmmmmmaCCaaaaaava=agggRgggggmmmm",
+    "mggggggggmmmmmaaaaaaaaaaa=ggggggggggmmmm",
+    "gggggggggggmmmaaaaaXaaaaa=ggggggggggmmmm",
+    "gggggggggggmmmaaaaaaaaaaa=ggggagggggmmmm",
+    "gggggggggggmmmaaaaaaaaaaa=ggggaggggmmmmm",
+    "gggggggggggmmmaaaaaaaaaaa=ggggaggggmmmmm",
+    "gggggggggggmmmmmmmmmmmmm==ggggagggmmmmmm",
+    "mgggggggggg=============aaaaaaagggmmmmmm",
+    "mmmmgmmmgmm===============gggggggmmmmmmm",
+    "mmmmmmmmmmm==mmmmaaaaaaammmmmgmmmmmmmmmm",
+    "mmmmmmmmmmm==mmaaaaaaaaaammmmmmmmmmmmmmm",
+    "mmmmmmmmmmm==maaaadaaaaaammmmgmmmmmmmmmm",
+    "mmmmmmmmmmm==maaaaaaaaaaammgggggmmmmmmmm",
+    "mmmmmmggmmm==maaaaaaaaaaamgggggggmmmmmmm",
+    "mmmmggggggg==maaaaaaaaaaamgggggggmmmmmmm",
+    "mmmgggggaaaa=========aaammgggggggmmmmmmm",
+    "mmmgggggagg==========ammmmggggggmmmmmmmm",
+    "mmmgggggaggggmmmmma==mmmmmgggggmmmmmmmmm",
+    "mmmggggggggggmmmmmm==mmmmmmmgmmmmmmmmmmm",
+    "mmmggggggggggmmmmmm==mmmmmmmmmmmmmmmmmmm",
+    "mmmmggggggggmmmmmmm==mmmmmmmmmmmmmmmmmmm",
+    "mmmmmmmgmgmmmmmmmmm==mmmmmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmmmmmm==mmmmmmmmmmmmmmmmmmm"
+  ],
+  "batiments": [],
+  "habitants": [
+    {"x": 17, "y": 30, "apparence": "docteur", "direction": "droite", "evenement": "soin_col"},
+    {"x": 22, "y": 32, "apparence": "marchande", "direction": "gauche", "evenement": "boutique_col"},
+    {"x": 20, "y": 34, "apparence": "paysan", "direction": "haut", "evenement": "berger_col"},
+    {
+      "x": 18,
+      "y": 33,
+      "apparence": "enfant",
+      "direction": "droite",
+      "dialogue": [
+        "Les moutons ne sortent plus : le vent les emporterait !",
+        "Papa dit que c'est la Harpie qui souffle."
+      ]
+    },
+    {
+      "x": 21,
+      "y": 10,
+      "apparence": "chevalier",
+      "direction": "bas",
+      "dialogue": [
+        "La Harpie de givre niche juste au-dessus. Tant qu'elle souffle, personne ne passe.",
+        "Sélène, de Givreval, est venue jusqu'ici avant de rebrousser chemin."
+      ]
+    },
+    {"x": 21, "y": 37, "apparence": "paysan", "direction": "gauche", "evenement": "quete_chien"},
+    {
+      "x": 25,
+      "y": 36,
+      "apparence": "chien",
+      "direction": "gauche",
+      "evenement": "chien_rentre",
+      "si": {"drapeau": "chien_trouve"}
+    },
+    {
+      "x": 31,
+      "y": 37,
+      "apparence": "chien",
+      "direction": "bas",
+      "evenement": "chien_col",
+      "si": {"drapeau": "quete:chien"},
+      "cache_si": "chien_trouve"
+    },
+    {
+      "x": 27,
+      "y": 29,
+      "apparence": "montagnard",
+      "direction": "gauche",
+      "evenement": "route_col1",
+      "vue": 3,
+      "vue_jusqua": "route_col1"
+    },
+    {
+      "x": 30,
+      "y": 11,
+      "apparence": "voyageuse",
+      "direction": "gauche",
+      "evenement": "route_col2",
+      "vue": 3,
+      "vue_jusqua": "route_col2"
+    }
+  ],
+  "coffres": [
+    {"x": 8, "y": 45, "objet": "superpotion", "quantite": 2},
+    {"x": 31, "y": 32, "objet": "cristal_givre", "quantite": 1},
+    {"x": 9, "y": 23, "objet": "gemme_vie", "quantite": 1},
+    {"x": 32, "y": 22, "or": 1500},
+    {"x": 8, "y": 13, "objet": "elixir", "quantite": 1},
+    {"x": 19, "y": 19, "objet": "carte_tresor_6", "quantite": 1, "si": {"objet": "carte_tresor_5"}}
+  ],
+  "panneaux": [],
+  "passages": [
+    {"x": 19, "y": 51, "vers": "cendrelune", "tx": 13, "ty": 1, "direction": "bas"},
+    {"x": 20, "y": 51, "vers": "cendrelune", "tx": 13, "ty": 1, "direction": "bas"},
+    {
+      "x": 19,
+      "y": 0,
+      "vers": "pics",
+      "tx": 30,
+      "ty": 42,
+      "direction": "haut",
+      "condition": {"drapeau": "harpie"},
+      "message": "La Harpie de givre barre le défilé."
+    },
+    {
+      "x": 20,
+      "y": 0,
+      "vers": "pics",
+      "tx": 31,
+      "ty": 42,
+      "direction": "haut",
+      "condition": {"drapeau": "harpie"},
+      "message": "La Harpie de givre barre le défilé."
+    }
+  ],
+  "zones": [
+    {
+      "x": 0,
+      "y": 0,
+      "l": 40,
+      "h": 52,
+      "niveau_min": 22,
+      "niveau_max": 26,
+      "max_ennemis": 3,
+      "creatures": ["voltigeon", "glaconnet", "zephyrin", "galetor", "givrelin", "bourrasquin", "givroc"],
+      "nuit": ["noctaile", "esprillon"]
+    }
+  ],
+  "boss": [{"x": 19, "y": 4, "espece": "harpie_givre", "drapeau": "harpie"}],
+  "declencheurs": [{"x": 19, "y": 48, "l": 2, "h": 2, "evenement": "col_entree", "jusqua": "col_vu"}],
+  "carte_monde": [68, 38]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "port_boutique",
+  "nom": "Boutique du port",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#eeeeeeeee#",
+    "#C.......C#",
+    "#ooo...ooo#",
+    "#.........#",
+    "#v.......v#",
+    "#.........#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [{"x": 5, "y": 3, "apparence": "marchande", "evenement": "boutique_port", "direction": "bas"}],
+  "coffres": [],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "port", "tx": 14, "ty": 11, "direction": "bas"}],
+  "zones": [],
+  "boss": [],
+  "style": "boutique"
+}

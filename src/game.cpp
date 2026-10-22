@@ -13,6 +13,7 @@
 #include "mapedit.hpp"
 #include "online.hpp"
 #include "pilot.hpp"
+#include "primes.hpp"
 #include "options.hpp"
 #include "settings.hpp"
 #include "storyedit.hpp"
@@ -245,9 +246,36 @@ void Game::update(float dt) {
   if (pilot_) pilot_->update(dt);    // joueur automatique : il choisit les touches de cette image
   banner -= dt;
   noticeT_ -= dt;
+  if (mode == Mode::Map && !sc.busy() && !menus.active() && !fishing_.on && !cards_.on && (talkCheckT_ -= dt) < 0) {  // une nouvelle discussion ?
+    talkCheckT_ = 1;
+    checkDiscussions();
+    checkExploits();
+  }
   speedT_ -= dt / speed();  // même durée à l'écran quelle que soit la vitesse
-  if (worldMapOn_) {  // carte du monde : Entrée, Échap ou un clic la ferme
-    if (in.confirm || in.cancel || in.menu || in.mclick[0] || in.mclick[2]) worldMapOn_ = false, audio::play("retour");
+  if (worldMapOn_) {  // carte du monde : flèches pour choisir où aller (voyage rapide), Entrée pour y aller, Échap pour fermer
+    auto targets = travelTargets();
+    if (!targets.empty() && (in.press[UP] || in.press[DOWN] || in.press[LEFT] || in.press[RIGHT])) {
+      auto it = std::find(targets.begin(), targets.end(), worldSel_);
+      int k = it == targets.end() ? -1 : int(it - targets.begin());
+      k = (in.press[UP] || in.press[LEFT]) ? (k <= 0 ? (int)targets.size() - 1 : k - 1) : (k + 1) % (int)targets.size();
+      worldSel_ = targets[(size_t)k];
+      audio::play("curseur");
+    }
+    bool go = in.confirm && std::find(targets.begin(), targets.end(), worldSel_) != targets.end();
+    if (go) {  // devant la maison de soin du village choisi
+      worldMapOn_ = false;
+      menus.clear();
+      panelMode_ = 0;
+      for (auto& b : maps()[(size_t)worldSel_].buildings)
+        if (b.kind == "soin") {
+          audio::play("valider");
+          changeMap(worldSel_, b.doorX(), b.doorY() + 1, DOWN);
+          autoSave();
+          break;
+        }
+      worldSel_ = -1;
+    } else if (in.confirm || in.cancel || in.menu || in.mclick[0] || in.mclick[2])
+      worldMapOn_ = false, worldSel_ = -1, audio::play("retour");
     updateMusic();
     in.endFrame();
     return;
@@ -255,6 +283,18 @@ void Game::update(float dt) {
   if (helpPage_ >= 0) {  // aide ouverte : le reste du jeu attend
     lastHelp_ = helpPage_;
     updateHelp();
+    updateMusic();
+    in.endFrame();
+    return;
+  }
+  if (cards_.on && mode == Mode::Map && !sc.busy() && !menus.active()) {  // cartes des gardiens : le reste du jeu attend
+    updateCards(dt);
+    updateMusic();
+    in.endFrame();
+    return;
+  }
+  if (fishing_.on && mode == Mode::Map && !sc.busy() && !menus.active()) {  // pêche : le reste du jeu attend
+    updateFishing(dt);
     updateMusic();
     in.endFrame();
     return;
@@ -299,25 +339,39 @@ void Game::update(float dt) {
           arena_->onBattleEnd(r, log);
           break;
         }
+        bool training = battle_->training_;
         battle_.reset();
         mode = Mode::Map;
         menus.clear();
         steps = 0;
         auto after = afterBattle_;
         afterBattle_ = nullptr;
-        if (r == BattleResult::Lose) {
+        if (training && trainingHp_.size() == team.size())
+          for (size_t i = 0; i < team.size(); i++) team[i]->hp = trainingHp_[i].first, team[i]->mp = trainingHp_[i].second;
+        trainingHp_.clear();
+        if (r == BattleResult::Lose && !training) {
           sc.clear();  // la défaite interrompt l'événement en cours
           defeat();
         }
         groupBattle_ = false;
         if (after) sc.runNow([&] { after(r); });
-        if (r == BattleResult::Win && !inExpedition()) sc.call([this] { offerEvolutions(); });
+        if (r == BattleResult::Win && !inExpedition() && !training) sc.call([this] { offerEvolutions(); });
       }
       break;
     }
     case Mode::Map: {
       if (menus.active()) {
+        if (formationPick_ && panelMode_ == 4 && in.mouseOn) {  // Formation : la souris sur le dessin du plateau
+          int c = formationCellAt(in.mx, in.my);
+          if (c >= 0) {
+            int idx = (BACK_COL - cellCol(c)) * GRID + cellRow(c);
+            Menu& fm = menus.top();
+            if (in.moved && idx < (int)fm.items.size()) fm.sel = idx, formationCell_ = c, fm.top = std::clamp(fm.top, std::max(0, idx - fm.rows + 1), idx);
+            if (in.mclick[0] && idx < (int)fm.items.size()) in.mclick[0] = false, fm.sel = idx, in.confirm = true;
+          }
+        }
         menus.update(in);
+        if (!menus.active()) formationPick_ = false;
         if (!menus.active()) panelMode_ = 0;
         break;
       }
@@ -363,9 +417,21 @@ void Game::update(float dt) {
 // pendant la fin d'un combat (la fanfare de victoire ou de défaite se joue seule)
 void Game::updateMusic() {
   std::string t = "titre";
-  if (mode == Mode::Battle && battle_) t = battle_->ending_ ? "" : battle_->boss ? "boss" : "combat";
-  else if (mode == Mode::Map && mapId >= 0 && mapId < (int)maps().size()) t = audio::musicForPlace(themeName(M().theme));
+  if (mode == Mode::Battle && battle_) {
+    t = battle_->ending_ ? "" : !battle_->music.empty() ? battle_->music : battle_->boss ? "boss" : "combat";
+    if (t == "combat" && mapId >= 0 && mapId < (int)maps().size()) {  // « lieux » : « combat:<carte> » change la musique des combats
+      std::string c = audio::musicForPlace("combat:" + M().id);
+      if (!c.empty()) t = c;
+    }
+  }
+  else if (mode == Mode::Map && mapId >= 0 && mapId < (int)maps().size()) {
+    t = audio::musicForPlace(M().id);  // « lieux » : une carte peut avoir son morceau (port, tour…), sinon celui de son thème
+    if (t.empty()) t = audio::musicForPlace(themeName(M().theme));
+    if (cards_.on) t = "cartes";  // une partie de Cartes des gardiens : l'air de taverne
+  }
   audio::music(t);
+  // Bruit de pluie : l'averse de la carte, ou en combat la météo du combat (elle ne change plus jusqu'à la fin)
+  audio::ambience(mode == Mode::Battle && battle_ ? (battle_->raining() ? 1.f : 0.f) : mode == Mode::Map ? rainAmount() : 0.f);
 }
 
 // ---------------------------------------------------------------------------
@@ -385,8 +451,14 @@ void Game::healAll(bool mpToo) {
   }
 }
 void Game::recruit(const std::string& id, int minLvl) {
-  auto f = makeFighter(id, std::max(minLvl, avgLevel()));
   flags.insert(id);
+  if (hasSpecies(id) && species(id).human) {  // un héros déjà là (Nouvelle partie +) ne revient pas en double
+    for (auto& m : team)
+      if (m->sp == id) return (void)sc.say(m->name() + T(" est déjà dans l'équipe."));
+    for (auto& m : reserve)
+      if (m->sp == id) return (void)sc.say(m->name() + T(" est déjà dans l'équipe."));
+  }
+  auto f = makeFighter(id, std::max(minLvl, avgLevel()));
   team.push_back(f);  // à la suite : il ne prend la place de personne
   auto fr = front();
   bool fights = std::find(fr.begin(), fr.end(), f) != fr.end();
@@ -395,10 +467,15 @@ void Game::recruit(const std::string& id, int minLvl) {
 }
 
 void Game::startBattle(BattleSetup setup, std::function<void(BattleResult)> after) {
+  fishing_.on = false;  // une pêche en cours s'arrête (sans rien perdre)
   for (auto& f : setup.foes) see(*f);  // bestiaire (les renforts : quand ils entrent, battle.cpp)
   afterBattle_ = std::move(after);
   arenaBattle_ = mode == Mode::Arena;
+  trainingHp_.clear();
+  if (setup.training)  // entraînement : l'équipe retrouvera ses PV et PM, quoi qu'il arrive
+    for (auto& f : team) trainingHp_.push_back({f->hp, f->mp});
   Theme th = setup.theme >= 0 ? Theme(setup.theme) : M().theme;
+  if (setup.theme < 0 && mode == Mode::Map && rainAmount() > 0) setup.rain = true;
   battle_ = std::make_unique<Battle>(*this, std::move(setup), th);
   mode = Mode::Battle;
   menus.clear();
@@ -428,8 +505,11 @@ void Game::defeat() {
 // ---------------------------------------------------------------------------
 // Carte
 // ---------------------------------------------------------------------------
-bool Game::npcVisible(const Npc& n) const { return n.hideIf.empty() || !has(n.hideIf); }
-bool Game::bossAlive(const BossSpot& b) const { return !has(b.flag); }
+bool Game::npcVisible(const Npc& n) const { return (n.hideIf.empty() || !has(n.hideIf)) && (n.cond.is_null() || checkCond(n.cond)); }
+bool Game::chestShown(const MapDef& m, const Chest& c) const {
+  return c.cond.is_null() || has("coffre:" + m.id + ":" + std::to_string(c.x) + ":" + std::to_string(c.y)) || checkCond(c.cond);
+}
+bool Game::bossAlive(const BossSpot& b) const { return !has(b.flag) && (b.cond.is_null() || checkCond(b.cond)); }
 
 bool Game::blocked(int x, int y) const { return blockedOn(M(), x, y); }
 bool Game::blockedOn(const MapDef& m, int x, int y) const {
@@ -447,7 +527,7 @@ bool Game::blockedOn(const MapDef& m, int x, int y) const {
     if (&m == &M() && walkMap_ == mapId && i < walk_.size() && walk_[i].t < 1 && walk_[i].fx == x && walk_[i].fy == y) return true;
   }
   for (auto& c : m.chests)
-    if (c.x == x && c.y == y) return true;
+    if (c.x == x && c.y == y && chestShown(m, c)) return true;
   for (auto& s : m.signs)
     if (s.x == x && s.y == y) return true;
   for (auto& b : m.bosses)
@@ -563,6 +643,8 @@ void Game::tryMove(int d) {
     footprints_.push_back({px, py, d, time});
     if (footprints_.size() > 40) footprints_.erase(footprints_.begin());
   }
+  if (in.run() && tileWalkable(M().rows[py][px]) && M().rows[py][px] != 'B') puffs_.push_back({px * 16 + 8.f, py * 16 + 14.f, time, 1});  // on court
+  if (puffs_.size() > 24) puffs_.erase(puffs_.begin());
   px = nx, py = ny;
   moving = true;
   moveT = 0;
@@ -570,11 +652,15 @@ void Game::tryMove(int d) {
 
 void Game::arrive() {
   steps++;
+  pensionStep();
   if (inExpedition() && expedition_->atExit(px, py)) return expedition_->nextRegion();
   for (auto& w : M().warps)
-    if (w.x == px && w.y == py) {
+    if (w.x == px && w.y == py && !(w.map == M().id && w.tx == px && w.ty == py)) {  // vers sa propre case : une barrière
       int m = mapIndex(w.map);
-      if (m >= 0) return changeMap(m, w.tx, w.ty, w.dir);
+      if (m >= 0) {
+        changeMap(m, w.tx, w.ty, w.dir);
+        return autoSave();
+      }
     }
   for (auto& t : M().triggers)
     if (px >= t.x && py >= t.y && px < t.x + t.w && py < t.y + t.h && (t.until.empty() || !has(t.until))) {
@@ -583,6 +669,7 @@ void Game::arrive() {
     }
   if (checkSight()) return;
   char c = M().rows[py][px];
+  if (tileEncounter(c)) puffs_.push_back({px * 16 + 8.f, py * 16 + 10.f, time, 0});  // les herbes s'écartent
   double rate = M().encounterRate > 0 ? M().encounterRate : rules().encounterRate;
   if (tileEncounter(c)) rate *= 1 + rules().packDense * std::min(1.0, wildDepth(px, py) / std::max(1.0, rules().packDistance));
   if (tileEncounter(c) && steps > rules().minSteps && frand() < rate) encounter();
@@ -648,10 +735,20 @@ void Game::encounter() {
     n = std::min(n, z.maxN);
     // Meute : au plus profond de la nature, des créatures en plus
     float deep = std::min(1.f, wildDepth(px, py) / float(std::max(1.0, rules().packDistance)));
-    for (int k = n; k < rules().packMax; k++)
+    for (int k = n; k < (z.packCap > 0 ? z.packCap : rules().packMax); k++)
       if (frand() < .5f * deep) n++;
     std::vector<FighterP> foes;
-    for (int i = 0; i < n; i++) foes.push_back(makeFighter(z.pool[irand(0, (int)z.pool.size() - 1)], irand(z.lo, z.hi)));
+    bool night = !z.night.empty() && nightAmount() > .5f && frand() < rules().nightShare;  // la nuit, ses créatures à elle
+    const auto& pool = night ? z.night : z.pool;
+    for (int i = 0; i < n; i++) {
+      foes.push_back(makeFighter(pool[irand(0, (int)pool.size() - 1)], irand(z.lo, z.hi) + foeLevelBonus));
+      if (!inExpedition() && frand() < rules().chroma) foes.back()->chroma = true;  // couleurs rares
+    }
+    if (n >= 2 && !inExpedition() && frand() < rules().alpha) {  // une meute menée par un alpha : plus fort, traité comme un boss
+      bool chroma = foes[0]->chroma;
+      foes[0] = makeFighter(foes[0]->sp, foes[0]->lvl + rules().alphaLevels);
+      foes[0]->boss = true, foes[0]->chroma = chroma;
+    }
     startBattle(foes, false, nullptr);
     return;
   }
@@ -664,13 +761,16 @@ void Game::bossTouched(const BossSpot& b) {
 }
 
 void Game::changeMap(int m, int x, int y, int d) {
+  fishing_.on = false;
   trail_.clear();  // le compagnon réapparaît au premier pas
   footprints_.clear();
+  puffs_.clear();
   talkNpc_ = -1;
   mapFadeT_ = time;  // fondu depuis le noir
   bool changed = m != mapId;
   mapId = m;
   if (changed) resetBoulders();
+  if (!inExpedition() && M().worldX >= 0) visited.insert(M().id);  // voyage rapide
   px = x, py = y, dir = d;
   moving = false;
   steps = 0;
@@ -701,11 +801,16 @@ void Game::interact() {
   for (auto& s : m.signs)
     if (s.x == fx && s.y == fy) return sc.say(s.text);
   for (size_t i = 0; i < m.chests.size(); i++)
-    if (m.chests[i].x == fx && m.chests[i].y == fy) return openChest((int)i);
+    if (m.chests[i].x == fx && m.chests[i].y == fy && chestShown(m, m.chests[i])) return openChest((int)i);
   for (auto& b : m.bosses)
     if (bossAlive(b) && fx >= b.x && fx <= b.x + 1 && fy >= b.y && fy <= b.y + 1) return bossTouched(b);
   for (auto& b : m.buildings)
     if (fx == b.doorX() && fy == b.doorY()) return enterDoor(b);
+  if (fx >= 0 && fy >= 0 && fx < m.w() && fy < m.h() && m.rows[fy][fx] == 'G' && !inExpedition() && !bounties().empty())
+    return bountyMenu();  // tableau d'annonces : les primes
+  if (fx >= 0 && fy >= 0 && fx < m.w() && fy < m.h() && m.rows[fy][fx] == '~' && items.count("canne") && items.at("canne") > 0 &&
+      !inExpedition() && hasItem("canne"))
+    return startFishing(fx, fy);  // face à l'eau, avec la canne : pêcher
 }
 
 // Porte d'un bâtiment (Entrée devant elle ou marcher dedans) : on entre s'il a un intérieur, sinon son événement
@@ -713,8 +818,20 @@ void Game::enterDoor(const Building& b) {
   if (b.decor()) return;  // décor : pas de porte
   audio::play("porte");
   int in = mapIndex(b.interior), ex, ey;
-  if (in >= 0 && interiorEntry(maps()[in], M().id, ex, ey)) return changeMap(in, ex, ey, UP);
+  if (in >= 0 && interiorEntry(maps()[in], M().id, ex, ey)) {
+    changeMap(in, ex, ey, UP);
+    return autoSave();
+  }
   runEvent(b.event);
+}
+
+// Sauvegarde automatique (2026-10-20) : à chaque passage et porte, dans l'histoire seulement (ni Expédition, ni en ligne,
+// ni mode test ou démo, qui ont leur propre fichier), si l'option est active
+void Game::autoSave() {
+  if (!options().autosave || inExpedition() || (online_ && online_->connected()) || saveName_ != autoSaveFile_ || pilot_ ||
+      editorTest_ || storyTest_ || mode != Mode::Map || team.empty())
+    return;
+  if (saveGame()) autoSaveT_ = time;
 }
 
 // Drapeau d'un coffre ouvert : carte et position (reste valable si on ajoute des coffres)
@@ -729,6 +846,7 @@ void Game::openChest(int i) {
   flags.insert(key);
   audio::play("coffre");
   const Chest& c = M().chests[i];
+  chestFx_ = {c.x, c.y, time, c.item.empty() ? std::string() : item(c.item).icon, mapId};  // lumière et objet qui monte
   if (c.item.empty()) {
     gold += c.qty;
     sc.say(T("Vous trouvez ") + std::to_string(c.qty) + T(" pièces d'or !"));
@@ -774,6 +892,8 @@ void Game::ask(const std::string& q, std::function<void()> yes, std::function<vo
 // Menus
 // ---------------------------------------------------------------------------
 void Game::titleMenu() {
+  fishing_.on = false;
+  foeLevelBonus = 0;  // l'Arène, les outils et l'Expédition n'ont pas de bonus
   pilot_.reset();  // fin de la démo : la partie reprend son fichier de sauvegarde habituel
   demoPaused_ = false;
   if (!saveBeforePilot_.empty()) saveName_ = saveBeforePilot_, saveBeforePilot_.clear();
@@ -784,8 +904,21 @@ void Game::titleMenu() {
   menus.clear();
   Menu m;
   m.x = 102, m.y = 110, m.w = 116, m.rows = 8, m.cancelable = false;
-  m.items.push_back({T("Nouvelle partie"), "", "", true, [this] { starterMenu(); }});
   bool can = saveExists();
+  m.items.push_back({T("Nouvelle partie"), "", "", true, [this, can] {
+                       if (!can) return starterMenu();
+                       Menu c;  // une partie existe : la sauvegarde automatique la remplacerait
+                       c.title = T("Nouvelle partie ?");
+                       c.x = 70, c.y = 120, c.w = 180, c.rows = 2;
+                       c.items.push_back({T("Annuler"), "", T("Garder la partie en cours."), true, [this] { menus.pop(); }});
+                       c.items.push_back({T("Commencer"), "", T("Une partie est déjà sauvegardée : elle sera remplacée dès la première sauvegarde."), true,
+                                          [this] {
+                                            menus.pop();
+                                            starterMenu();
+                                          }});
+                       c.onCancel = [this] { menus.pop(); };
+                       menus.push(c);
+                     }});
   m.items.push_back({T("Continuer"), "", "", can, [this] {
                        if (loadGame()) {
                          menus.clear();
@@ -852,6 +985,41 @@ void Game::starterMenu() {
   menus.push(m);
 }
 
+int Game::newGamePlus() const {
+  int n = 0;
+  while (has("ngp" + std::to_string(n + 1))) n++;
+  return n;
+}
+
+// Nouvelle partie + : l'histoire recommence au départ avec l'équipe, l'équipement, l'or, le Bestiaire et le carnet de
+// pêche ; les objets importants (prix 0, ni équipement ni gemme : clés, lettres, trident…) sont rendus, car ils
+// ouvriraient des passages trop tôt ; tous les drapeaux de l'histoire sont effacés ; les ennemis gagnent des niveaux
+void Game::startNewGamePlus() {
+  const Rules& r = rules();
+  int n = newGamePlus() + 1;
+  std::set<std::string> keep;
+  for (auto& f : flags)
+    if (f.rfind("ngp", 0) == 0 || f.rfind("peche:", 0) == 0) keep.insert(f);
+  keep.insert("ngp" + std::to_string(n));
+  flags = keep;
+  visited.clear();  // le voyage rapide repart de zéro : les passages (pont, bateaux…) sont refermés
+  for (auto it = items.begin(); it != items.end();) {
+    const bool key = hasItem(it->first) && item(it->first).price == 0 && item(it->first).slot < 0 && !item(it->first).gem;
+    it = key ? items.erase(it) : std::next(it);
+  }
+  healAll(true);
+  sc.clear();
+  menus.clear();
+  respawnMap = std::max(0, mapIndex(r.respawnMap)), respawnX = r.respawnX, respawnY = r.respawnY;
+  mapId = -1;
+  walkMap_ = -1;
+  applyNewGamePlus();
+  changeMap(std::max(0, mapIndex(r.startMap)), r.startX, r.startY, r.startDir);
+  mode = Mode::Map;
+  sc.say(T("Nouvelle partie + : l'aventure recommence, et les créatures sont plus fortes (+") + std::to_string(n * NGP_LEVELS) +
+         T(" niveaux). Votre équipe, votre équipement et votre Bestiaire vous suivent."));
+}
+
 void Game::newGame(const std::string& starter) {
   const Rules& r = rules();
   menus.clear();
@@ -859,10 +1027,13 @@ void Game::newGame(const std::string& starter) {
   team = {makeFighter(r.hero, r.startLevel), makeFighter(starter, r.startLevel)};
   reserve.clear();
   seen.clear(), caught.clear(), weak.clear(), tipsSeen.clear();
+  visited.clear(), cardHand_.clear();
+  pension_.clear(), pensionLvl_.clear(), eggs_.clear(), pensionSteps_ = 0, pensionEgg_ = false;
   items.clear();
   for (auto& [id, n] : r.startItems) items[id] = n;
   gold = r.startGold;
   flags.clear();
+  foeLevelBonus = 0;
   respawnMap = std::max(0, mapIndex(r.respawnMap)), respawnX = r.respawnX, respawnY = r.respawnY;
   mapId = -1;
   walkMap_ = -1;  // les habitants repartent de leur place
@@ -878,7 +1049,11 @@ void Game::draw() {
   g.clear(rgb(0x070a1c));
   switch (mode) {
     case Mode::Title: drawTitle(); break;
-    case Mode::Map: drawMap(); break;
+    case Mode::Map:
+      drawMap();
+      if (float a = time - autoSaveT_; a >= 0 && a < 1.6f && !sc.busy() && !menus.active())  // « Sauvegarde… » en bas à droite
+        g.text(g.right() - 6, SCREEN_H - 14, T("Sauvegarde…"), rgb(0xe8ecff, uint8_t(220 * std::min(1.f, (1.6f - a) * 2))), 2, false);
+      break;
     case Mode::Battle: battle_->draw(); break;
     case Mode::Ending: drawEnding(); break;
     case Mode::Arena:
@@ -894,6 +1069,8 @@ void Game::draw() {
       if (story_) story_->draw();
       break;
   }
+  if (fishing_.on && mode == Mode::Map && !sc.busy() && !menus.active()) drawFishing();
+  if (cards_.on && mode == Mode::Map && !sc.busy() && !menus.active()) drawCards();
   if (!evoTo_.empty()) drawEvolution();
   if (worldMapOn_) drawWorldMap();
   if (helpPage_ >= 0) drawHelp();
@@ -931,11 +1108,51 @@ void Game::drawTitle() {
   if (expedition_ && expedition_->onScreen()) return expedition_->draw(g);
   if (online_ && online_->onScreen()) return online_->draw(g);
   float L = g.left(), W = (float)g.fullW;
-  g.gradV(L, 0, W, SCREEN_H, rgb(0x141a3c), rgb(0x3c4278));
-  g.poly({{L, 150}, {L, 120}, {0, 150}, {50, 96}, {100, 136}, {160, 80}, {220, 128}, {270, 100}, {320, 126}, {L + W, 104}, {L + W, 240}, {L, 240}},
-         rgb(0x262a52));
-  g.rect(L, 160, W, 80, rgb(0x1d2148));
-  for (int i = 0; i < 6 * W / SCREEN_W; i++) g.ellipse(L + std::fmod(i * 70 + time * 18, W + 100) - 50, 112 + (i % 6) * 10, 90, 7, rgb(0xe6ebff, 26));
+  // Paysage de nuit (2026-10-20) : ciel, lune, montagnes enneigées, village au loin, brume, prairie au premier plan
+  g.gradV(L, 0, W, 140, rgb(0x0c1230), rgb(0x3a3a70));
+  g.gradV(L, 110, W, 50, rgb(0x3a3a70, 0), rgb(0x7a5a8a, 90));  // lueur à l'horizon
+  float mx = std::max(292.f, L + W - 44), my = 26;                                 // la lune, et son halo
+  g.ellipse(mx, my, 34, 34, rgb(0xfff4c8, 14)), g.ellipse(mx, my, 22, 22, rgb(0xfff4c8, 26));
+  g.ellipse(mx, my, 12, 12, rgb(0xf6f0d6));
+  g.ellipse(mx - 4, my - 3, 2.5f, 2, rgb(0xd8d2b8)), g.ellipse(mx + 4, my + 4, 2, 1.5f, rgb(0xd8d2b8)), g.ellipse(mx + 3, my - 5, 1.2f, 1, rgb(0xd8d2b8));
+  std::vector<Pt> far = {{L, 140}, {L, 104}};  // montagnes lointaines, sommets enneigés
+  for (float x = L, k = 0; x <= L + W + 40; x += 34, k++) {
+    float peak = 70 + std::fmod(k * 37.f, 30.f);
+    far.push_back({x + 17, peak}), far.push_back({x + 34, 100 + std::fmod(k * 13.f, 12.f)});
+    g.tri(x + 17, peak, x + 11, peak + 9, x + 23, peak + 9, rgb(0xc8d0f0, 120));
+  }
+  far.push_back({L + W + 40, 140});
+  g.poly(far, rgb(0x1c2048));
+  for (float x = L, k = 0; x <= L + W + 40; x += 34, k++) {  // neige redessinée par-dessus le massif
+    float peak = 70 + std::fmod(k * 37.f, 30.f);
+    g.tri(x + 17, peak, x + 13, peak + 6, x + 21, peak + 6, rgb(0xdfe6ff, 170));
+  }
+  for (int i = 0; i < 4 * W / SCREEN_W; i++) g.ellipse(L + std::fmod(i * 97 + time * 10, W + 140) - 70, 122 + (i % 3) * 7, 100, 6, rgb(0xe6ebff, 20));
+  g.poly({{L, 160}, {L, 122}, {40, 114}, {110, 124}, {170, 116}, {230, 112}, {290, 110}, {L + W, 116}, {L + W, 160}}, rgb(0x161a3c));  // collines
+  for (int i = 0; i < 6; i++) {  // le village au loin : maisons, fenêtres allumées, fumée
+    float hx = 228 + i * 11 + (i % 2) * 3, hy = 106 - (i % 3);
+    g.rect(hx, hy, 9, 6, rgb(0x0e1130));
+    g.tri(hx - 1, hy, hx + 10, hy, hx + 4.5f, hy - 5, rgb(0x0e1130));
+    if ((i * 7 + int(time * .3f)) % 5) g.rect(hx + 3, hy + 2, 2, 2, rgb(0xffcf6a, 220));
+    if (i % 2 == 0)
+      for (int s = 0; s < 3; s++) {
+        float ph = std::fmod(time * .4f + s / 3.f + i * .2f, 1.f);
+        g.ellipse(hx + 7 + ph * 6, hy - 6 - ph * 16, 1.5f + ph * 3, 1 + ph * 2, rgb(0xb8bcd8, uint8_t(60 * (1 - ph))));
+      }
+  }
+  g.rect(262, 93, 3, 12, rgb(0x0e1130)), g.tri(260, 94, 267, 94, 263.5f, 86, rgb(0x0e1130));  // le clocher
+  g.gradV(L, 156, W, 84, rgb(0x1a2d3a), rgb(0x0e1a22));  // la prairie, où se tiennent les héros
+  for (int i = 0; i < 70 * W / SCREEN_W; i++) {  // herbes qui ondulent
+    uint32_t h = uint32_t(i) * 2246822519u;
+    float x = L + float(h % 997) / 997.f * W, y = 158 + float((h >> 11) % 80), sway = std::sin(time * 1.6f + x * .05f) * 1.2f;
+    g.line(x, y, x + sway, y - 3 - float(h % 3), 1, rgb(i % 3 ? 0x2c4a48 : 0x3a5c50));
+    if (h % 11 == 0) g.rect(x + sway, y - 4, 1, 1, rgb(i % 2 ? 0xe8d0f0 : 0xfff0a0, 200));  // fleurs
+  }
+  for (float x : {L + 6.f, L + 22.f, L + W - 26.f, L + W - 10.f}) {  // sapins sombres sur les bords
+    for (int t = 0; t < 3; t++) g.tri(x - 9 + t * 2, 168 - t * 9, x + 9 - t * 2, 168 - t * 9, x, 150 - t * 9, rgb(0x101a24));
+    g.rect(x - 1, 168, 3, 5, rgb(0x0c141c));
+  }
+  for (int i = 0; i < 6 * W / SCREEN_W; i++) g.ellipse(L + std::fmod(i * 70 + time * 18, W + 100) - 50, 150 + (i % 4) * 12, 90, 6, rgb(0xe6ebff, 18));
   // Étoiles qui scintillent, étoile filante, lucioles (2.7)
   for (int i = 0; i < 40 * W / SCREEN_W; i++) {
     uint32_t h = uint32_t(i) * 2654435761u;
@@ -952,7 +1169,7 @@ void Game::drawTitle() {
     float x = L + std::fmod(i * 61.f + std::sin(time * .7f + i) * 20 + 40, W), y = 150 + std::fmod(i * 23.f + std::cos(time * .5f + i * 2) * 10, 60.f);
     g.ellipse(x, y, 1.5f, 1.5f, rgb(0xe8ff9a, uint8_t(90 + 80 * std::sin(time * 3 + i))));
   }
-  g.textBig(160, 26, T("BRUMEVAL"), GOLD, 4, 1);
+  g.textBigFancy(160, 26, T("BRUMEVAL"), rgb(0xfff0a0), rgb(0xe8902a), rgb(0x3a1e08), 4, 1);  // or, de clair à ambré
   {  // reflet qui passe sur le titre
     float k = std::fmod(time, 4.f) / 1.2f;
     if (k < 1) {
@@ -981,11 +1198,40 @@ void Game::drawTitle() {
   }
 }
 
+// Un lieu au bord de la mer : beaucoup d'eau sur la carte (calculé une fois par carte)
+bool Game::coastal(const MapDef& m) const {
+  static std::map<std::string, bool> known;
+  auto it = known.find(m.id);
+  if (it != known.end()) return it->second;
+  int n = 0, tot = 0;
+  for (auto& r : m.rows)
+    for (char c : r) n += c == '~', tot++;
+  return known[m.id] = tot > 0 && n * 100 > tot * 15;
+}
+bool Game::isNight() const {
+  float p = std::fmod(time / 720.f + .85f, 1.f);
+  return -std::cos(p * 6.2831853f) - .15f > .3f;  // nightAmount() > 0,5
+}
 float Game::nightAmount() const {
   if (!outdoors()) return 0;
   float p = std::fmod(time / 720.f + .85f, 1.f);  // 0 : midi ; la partie commence en matinée
   float c = std::cos(p * 6.2831853f);
   return std::clamp((-c - .15f) / .6f, 0.f, 1.f);
+}
+// Pluie (2026-10-20, dessin et météo des combats) : de temps en temps, sur les cartes de la vallée et de la forêt
+// sans ambiance ; des averses de 210 s choisies d'après leur numéro (jamais la première), arrivée et départ en 15 s
+float Game::rainAmount() const {
+  if (!outdoors()) return 0;
+  const MapDef& m = M();
+  if (m.theme != Theme::Vallee && m.theme != Theme::Foret) return 0;
+  if (!m.ambiance.empty() && (m.ambianceUntil.empty() || !has(m.ambianceUntil))) return 0;
+  const float SEG = 210;
+  int s = int(time / SEG);
+  uint32_t h = uint32_t(s) * 2654435761u;
+  h ^= h >> 15;
+  if (s == 0 || h % 5 != 1) return 0;
+  float t = time - s * SEG;
+  return std::clamp(std::min(t, SEG - t) / 15.f, 0.f, 1.f);
 }
 bool Game::outdoors() const {
   if (mode != Mode::Map && mode != Mode::Battle) return false;
@@ -1004,7 +1250,16 @@ void Game::drawMap() {
   // Carte moins haute que l'écran (intérieur) : centrée, comme une carte trop étroite
   float vhi = float(m.h() * 16 - SCREEN_H);
   int camY = vhi >= 0 ? (int)std::clamp(ppy - SCREEN_H / 2 + 8, 0.f, vhi) : (int)(vhi / 2);
+  camX_ = camX, camY_ = camY;
   int tx0 = std::max(0, (int)std::floor((camX + g.left()) / 16)), tx1 = (int)((camX + g.right()) / 16), ty0 = std::max(0, camY / 16);
+  setTileNight(m.theme == Theme::Interieur && isNight());  // fenêtres des intérieurs sombres la nuit
+  if (m.theme == Theme::Interieur) {  // (2026-10-21) autour d'une petite pièce : un halo sombre au lieu d'un noir plat
+    float rx = -camX, ry = -camY, rw = m.w() * 16.f, rh = m.h() * 16.f;
+    for (int i = 10; i >= 1; i--) {
+      float d = i * 6.f;
+      g.rect(rx - d, ry - d, rw + 2 * d, rh + 2 * d, rgb(0x2a2040, uint8_t(14)));
+    }
+  }
   for (int y = ty0; y <= ty0 + SCREEN_H / 16 && y < m.h(); y++)
     for (int x = tx0; x <= tx1 && x < m.w(); x++) drawTile(g, m, x, y, x * 16 - camX, y * 16 - camY, time);
   for (auto& f : footprints_) {  // empreintes dans la neige : deux pas par case, qui s'effacent en 30 s
@@ -1022,25 +1277,41 @@ void Game::drawMap() {
     bool open = puzzleSolved(m);
     for (auto& [x, y] : puzzleTiles(m, 'D')) {
       float sx = x * 16 - camX, sy = y * 16 - camY;
-      if (open) g.rect(sx + 1, sy + 13, 14, 2, rgb(0x5a5048, 120));
-      else {
-        g.rect(sx, sy, 16, 16, rgb(0x3a3430));
-        for (int i = 0; i < 4; i++) g.rect(sx + 1 + i * 4, sy, 2, 16, rgb(0x8a8078));
-        g.rect(sx, sy + 3, 16, 2, rgb(0x6a6058));
+      if (open) {  // (2026-10-21) la herse relevée : on n'en voit que les pointes en haut
+        g.rect(sx, sy, 16, 3, rgb(0x2a2420));
+        for (int i = 0; i < 4; i++) g.tri(sx + 1 + i * 4, sy + 3, sx + 3 + i * 4, sy + 3, sx + 2 + i * 4, sy + 6, rgb(0x8a8078));
+      } else {  // une herse de fer : barreaux éclairés d'un côté, deux traverses rivetées, des pointes en bas
+        g.rect(sx, sy, 16, 16, rgb(0x1a1612));
+        for (int i = 0; i < 4; i++) {
+          float bx = sx + 1 + i * 4;
+          g.rect(bx, sy, 2, 14, rgb(0x6a6058)), g.rect(bx, sy, 1, 14, rgb(0xa89e94));
+          g.tri(bx, sy + 14, bx + 2, sy + 14, bx + 1, sy + 16, rgb(0x8a8078));
+        }
+        for (float ty : {sy + 3.f, sy + 10.f}) {
+          g.rect(sx, ty, 16, 2, rgb(0x4a4038)), g.rect(sx, ty, 16, 1, rgb(0x7a7068));
+          for (int i = 0; i < 4; i++) g.rect(sx + 1.5f + i * 4, ty, 1, 1, rgb(0xc8beb4));  // les rivets
+        }
       }
     }
     for (auto& [x, y] : puzzleTiles(m, 'P'))
-      if (boulderAt(x, y)) g.rect(x * 16 - camX + 2, y * 16 - camY + 13, 12, 2, rgb(0xffd34d, 200));
-    for (auto& [x, y] : boulders_) {
+      if (boulderAt(x, y)) {  // une plaque enfoncée : ses runes s'allument
+        float sx = x * 16 - camX, sy = y * 16 - camY, k = .7f + .3f * std::sin(time * 3 + x);
+        g.ellipse(sx + 8, sy + 8, 9, 8, rgb(0xffd34d, uint8_t(60 * k)));
+        g.rect(sx + 1, sy + 13, 14, 2, rgb(0xffd34d, uint8_t(200 * k)));
+      }
+    for (auto& [x, y] : boulders_) {  // (2026-10-21) un rocher rond et ombré, fendu, un peu de mousse
       float sx = x * 16 - camX, sy = y * 16 - camY;
-      g.ellipse(sx + 8, sy + 13, 7, 3, rgb(0x000000, 60));
-      g.ellipse(sx + 8, sy + 8, 7, 7, rgb(0x6e6a72));
-      g.ellipse(sx + 7, sy + 6, 5, 4, rgb(0x8e8a94));
-      g.rect(sx + 9, sy + 9, 3, 1, rgb(0x504c56));
+      g.ellipse(sx + 8, sy + 14, 7.5f, 2.5f, rgb(0x000000, 70));
+      g.ellipse(sx + 8, sy + 8.5f, 7.5f, 7, rgb(0x4e4a54));
+      g.ellipse(sx + 7.5f, sy + 7.5f, 6.5f, 6, rgb(0x76727c));
+      g.ellipse(sx + 6.5f, sy + 6, 4.5f, 3.5f, rgb(0x96929c));
+      g.ellipse(sx + 5.5f, sy + 4.5f, 2, 1.5f, rgb(0xc4c0ca));                           // le reflet
+      g.rect(sx + 9, sy + 8, 1, 3, rgb(0x3e3a44)), g.rect(sx + 10, sy + 10, 2, 1, rgb(0x3e3a44));  // une fente
+      g.ellipse(sx + 11, sy + 4.5f, 2.5f, 1.2f, rgb(0x5f8a46));                           // la mousse
     }
   }
   for (size_t i = 0; i < m.chests.size(); i++)
-    drawChest(g, m.chests[i].x * 16 - camX, m.chests[i].y * 16 - camY, has(chestFlag((int)i)));
+    if (chestShown(m, m.chests[i])) drawChest(g, m.chests[i].x * 16 - camX, m.chests[i].y * 16 - camY, has(chestFlag((int)i)), time);
   for (auto& s : m.signs) drawSign(g, s.x * 16 - camX, s.y * 16 - camY);
   // Personnages, bâtiments et objets hauts (arbres, réverbères…) triés de haut en bas : on passe derrière un toit
   // ou un arbre plus bas que soi
@@ -1055,7 +1326,8 @@ void Game::drawMap() {
                         if (m.theme != Theme::Interieur) drawChimneySmoke(g, b, b.x * 16 - camX, b.y * 16 - camY, time);
                       }});
   std::set<std::pair<int, int>> behind;  // cases qu'un objet haut plus bas ne doit pas cacher
-  for (auto& c : m.chests) behind.insert({c.x, c.y});
+  for (auto& c : m.chests)
+    if (chestShown(m, c)) behind.insert({c.x, c.y});
   for (auto& sg : m.signs) behind.insert({sg.x, sg.y});
   for (size_t i = 0; i < m.npcs.size(); i++)
     if (npcVisible(m.npcs[i])) behind.insert(npcCell(m, i));
@@ -1108,13 +1380,46 @@ void Game::drawMap() {
                             g.rect(bx, by, 9, 11, c);
                             g.frame(bx, by, 9, 11, rgb(0x1a1a24));
                             g.rect(bx + 3, by + 11, 3, 1, rgb(0x1a1a24)), g.rect(bx + 4, by + 12, 1, 1, rgb(0x1a1a24));  // pointe
-                            g.text(bx + 2, by - 1, mk == 2 ? "?" : "!", mk == 2 ? rgb(0x7a4a00) : rgb(0xd2493f), 0, false);
+                            if (mk == 3) {  // combat proposé (revanche, défi) : deux épées croisées
+                              g.line(bx + 2, by + 2, bx + 7, by + 8, 1, rgb(0x3a4a6a)), g.line(bx + 7, by + 2, bx + 2, by + 8, 1, rgb(0x3a4a6a));
+                              g.rect(bx + 1, by + 7, 3, 1, rgb(0x9a6a2a)), g.rect(bx + 6, by + 7, 3, 1, rgb(0x9a6a2a));
+                            } else
+                              g.text(bx + 2, by - 1, mk == 2 ? "?" : "!", mk == 2 ? rgb(0x7a4a00) : rgb(0xd2493f), 0, false);
                           }});
+      } else if (n.sight == 0 && (int)i != exclaimNpc_ && (int)i != talkNpc_) {
+        // Bulles d'humeur (2026-10-20, dessin seul) : de temps en temps, un habitant fredonne, rêvasse ou sourit
+        int h = n.x * 7 + n.y * 13;
+        float period = 9.f + h % 7, ph = std::fmod(time + h * 1.3f, period);
+        if (ph < 1.6f) {
+          float bx = nx - camX + 5, by = ny - camY - 17 - std::min(1.f, ph * 4) * 2, a = std::min(1.f, (1.6f - ph) * 3);
+          int kind = h % 3;
+          actors.push_back({1e9f, [&, bx, by, a, kind] {
+                              g.ellipse(bx + 4, by + 4, 6, 5, rgb(0xffffff, uint8_t(220 * a)));
+                              g.rect(bx + 1, by + 9, 2, 2, rgb(0xffffff, uint8_t(220 * a)));
+                              Color ink = rgb(kind == 2 ? 0xd2493f : 0x3a4a6a, uint8_t(255 * a));
+                              if (kind == 0) {  // une note de musique
+                                g.rect(bx + 5, by + 1, 1, 5, ink), g.rect(bx + 5, by + 1, 2, 1, ink), g.ellipse(bx + 4, by + 6, 1.5f, 1.2f, ink);
+                              } else if (kind == 1) {  // « … »
+                                for (int k = 0; k < 3; k++) g.rect(bx + 1 + k * 3, by + 4, 1, 1, ink);
+                              } else {  // un petit cœur
+                                g.ellipse(bx + 3, by + 3, 1.5f, 1.5f, ink), g.ellipse(bx + 5, by + 3, 1.5f, 1.5f, ink);
+                                g.tri(bx + 1.5f, by + 3.5f, bx + 6.5f, by + 3.5f, bx + 4, by + 7, ink);
+                              }
+                            }});
+        }
       }
     }
   for (auto& b : m.bosses)
     if (bossAlive(b))
-      actors.push_back({float(b.y * 16 + 16), [&, b] { drawCreature(g, b.id, (b.x + 1) * 16 - camX, (b.y + 1) * 16 - camY - 2, .6f, false, time); }});
+      actors.push_back({float(b.y * 16 + 16), [&, b] {
+                          drawCreature(g, b.id, (b.x + 1) * 16 - camX, (b.y + 1) * 16 - camY - 2, .6f, false, time);
+                          if (b.bounty) {  // monstre d'une prime : bulle rouge « ! » au-dessus
+                            float bx = (b.x + 1) * 16 - camX - 4, by = b.y * 16 - camY - 14 + std::sin(time * 4) * 1.5f;
+                            g.rect(bx - 1, by - 1, 10, 11, rgb(0x2a1010));
+                            g.rect(bx, by, 8, 9, rgb(0xd2493f));
+                            g.text(bx + 2, by - 1, "!", WHITE, 0, false);
+                          }
+                        }});
   // Expédition à plusieurs : les autres joueurs de la région, avec leur pseudo (doré : prêt devant le gardien)
   if (online_ && online_->inGroup())
     for (auto& a : online_->avatars())
@@ -1158,11 +1463,11 @@ void Game::drawMap() {
     if (to.first != from.first) followDir_ = to.first > from.first ? RIGHT : LEFT;
     if (!(bx == ppx && by == ppy)) {  // pas sur le joueur (premier pas après un changement de carte)
       std::string sp = buddy->sp;
-      bool right = followDir_ == RIGHT;
+      bool right = followDir_ == RIGHT, chroma = buddy->chroma;
       // il trottine : un petit bond à chaque pas (deux par case en courant), sinon il respire sur place
       float hop = moving && from != to ? -std::fabs(std::sin(moveT * 3.14159f * (running_ ? 2 : 1))) * 3.5f : 0;
-      actors.push_back({by - .5f, [&, bx, by, sp, right, hop] {
-                          drawCreature(g, sp, bx - camX + 8, by - camY + 4 + std::round(hop), .62f, right, time);
+      actors.push_back({by - .5f, [&, bx, by, sp, right, hop, chroma] {
+                          drawCreature(g, sp, bx - camX + 8, by - camY + 4 + std::round(hop), .62f, right, time, chroma);
                         }});
     }
   }
@@ -1172,8 +1477,46 @@ void Game::drawMap() {
                      }});
   std::sort(actors.begin(), actors.end(), [](const Actor& a, const Actor& b) { return a.y < b.y; });
   for (auto& a : actors) a.draw();
+  if (float a = time - chestFx_.t; chestFx_.map == mapId && a >= 0 && a < 1.4f) {  // un coffre s'ouvre
+    float cx = chestFx_.x * 16 - camX + 8, cy = chestFx_.y * 16 - camY + 4, f = 1 - a / 1.4f;
+    for (int k = 0; k < 8; k++) {  // rayons de lumière
+      float ang = k * .785f + a * 1.5f, len = 6 + 14 * std::min(1.f, a * 3);
+      g.line(cx, cy, cx + std::cos(ang) * len, cy + std::sin(ang) * len * .7f, 1, rgb(0xfff2b0, uint8_t(160 * f)));
+    }
+    g.ellipse(cx, cy, 6 + a * 4, 4 + a * 3, rgb(0xfff6d0, uint8_t(110 * f)));
+    float iy = cy - 6 - std::min(1.f, a * 2.5f) * 12;
+    if (const SpriteRect* r = chestFx_.icon.empty() ? nullptr : findSprite(chestFx_.icon)) g.sprite(*r, cx - r->w / 2.f, iy - r->h / 2.f);
+    else
+      for (int k = 0; k < 3; k++) g.ellipse(cx - 4 + k * 4, iy + (k % 2), 2.5f, 2.5f, rgb(0xffd34d)), g.ellipse(cx - 4.5f + k * 4, iy - .5f + (k % 2), 1, 1, rgb(0xfff6c0));
+  }
+  for (auto& p : puffs_) {  // brins d'herbe qui volent, poussière de course
+    float a = time - p.t, sx = p.x - camX, sy = p.y - camY;
+    if (p.kind == 0 && a < .5f)
+      for (int k = 0; k < 5; k++) {
+        float ang = k * 1.26f + p.x * .13f, vx = std::cos(ang) * 20, vy = -26 + k * 4.f;
+        g.rect(sx + vx * a, sy + vy * a + 70 * a * a, 2, 1, rgb(k % 2 ? 0x6fbf4a : 0x4f9a35, uint8_t(230 * (1 - a / .5f))));
+      }
+    if (p.kind == 1 && a < .4f) {
+      Color c = rgb(m.theme == Theme::Neige ? 0xf4f8ff : 0xd8cbb0, uint8_t(110 * (1 - a / .4f)));
+      g.ellipse(sx - 3 - a * 8, sy - a * 6, 2 + a * 8, 1.5f + a * 5, c), g.ellipse(sx + 3 + a * 8, sy - a * 5, 2 + a * 7, 1.5f + a * 4, c);
+    }
+  }
+  // Ombres de nuages qui glissent sur la campagne, le jour, par beau temps
+  if (outdoors() && (m.theme == Theme::Vallee || m.theme == Theme::Foret || m.theme == Theme::Neige) &&
+      (m.ambiance.empty() || (!m.ambianceUntil.empty() && has(m.ambianceUntil)))) {
+    float clear = (1 - nightAmount()) * (1 - rainAmount());
+    float W = m.w() * 16 + 400.f, H = m.h() * 16 + 200.f;
+    for (int i = 0; clear > 0 && i < 1 + m.w() * m.h() / 500; i++) {
+      float wx = std::fmod(i * 331.f + time * (6 + i % 3), W) - 200 - camX, wy = std::fmod(i * 197.f + i * i * 13.f, H) - 100 - camY;
+      Color c = rgb(0x0a1030, uint8_t(16 * clear));
+      g.ellipse(wx, wy, 64, 30, c), g.ellipse(wx + 40, wy + 10, 46, 24, c), g.ellipse(wx - 36, wy + 8, 40, 20, c);
+    }
+  }
+  drawMapCritters(g, m, tx0, tx1, ty0, ty0 + SCREEN_H / 16 + 1, camX, camY, time, nightAmount());
   // Jour et nuit : la carte s'assombrit (crépuscule orangé), les fenêtres s'allument, le héros porte une lanterne
   float night = nightAmount();
+  if (m.theme == Theme::Interieur && isNight())  // (2026-10-21) la nuit, dedans : la lumière chaude des bougies
+    g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0x4a2a08, 46));
   if (night > 0) {
     g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0x0a1440, uint8_t(155 * night)));
     float dusk = night * (1 - night) * 4;
@@ -1199,6 +1542,31 @@ void Game::drawMap() {
         g.ellipse(x, y, 1.5f, 1.5f, rgb(0xe8ff9a, uint8_t(night * (90 + 80 * std::sin(time * 3 + i)))));
       }
   }
+  // Fête des lanternes (champ « fete » de la carte) : la nuit, des lanternes de papier montent doucement dans le ciel
+  if (night > .3f && !m.festival.is_null() && checkCond(m.festival))
+    for (int i = 0; i < 14 * g.fullW / SCREEN_W; i++) {
+      float sp = 6 + i % 5 * 1.5f, y = 250 - std::fmod(time * sp + i * 71.f, 270.f);
+      float x = g.left() + std::fmod(i * 83.f + std::sin(time * .5f + i) * 8, (float)g.fullW);
+      uint8_t a = uint8_t(std::min(1.f, (night - .3f) * 2) * 255 * std::clamp(y / 60.f, 0.f, 1.f));
+      g.ellipse(x, y, 6, 6, rgb(0xffb04a, uint8_t(a / 6)));
+      g.rect(x - 2, y - 3, 5, 6, rgb(0xff9a3a, a));
+      g.rect(x - 1, y - 2, 3, 4, rgb(0xffe08a, a));
+    }
+  // Mouettes (2026-10-21) : le jour, au-dessus des lieux au bord de la mer, elles planent et battent des ailes de temps
+  // en temps ; leur ombre glisse sur le sol, plus bas
+  if (m.ambiance.empty() && m.theme == Theme::Vallee && night < .4f && coastal(m))
+    for (int i = 0; i < 4 * g.fullW / SCREEN_W; i++) {
+      float sp = 14 + i % 3 * 5, x = g.left() + std::fmod(i * 131.f + time * sp, g.fullW + 60.f) - 30;
+      float y = 30 + std::fmod(i * 67.f, 120.f) + std::sin(time * .8f + i * 2) * 6;
+      float flap = std::fmod(time * 1.3f + i * .7f, 3.f) < .9f ? std::sin(time * 14 + i) : .25f;  // bat des ailes, puis plane
+      Color c = rgb(0xffffff, uint8_t(230 * (1 - night * 2)));
+      g.ellipse(x + 10, y + 34, 4, 1.5f, rgb(0x000000, 40));  // l'ombre
+      Color under = rgb(0x8a96a4, c.a);  // le dessous des ailes, plus sombre : deux pixels d'épaisseur
+      g.line(x - 7, y - flap * 4 + 1, x, y + 1, 1, under), g.line(x, y + 1, x + 7, y - flap * 4 + 1, 1, under);
+      g.line(x - 7, y - flap * 4, x, y, 1, c), g.line(x, y, x + 7, y - flap * 4, 1, c);
+      g.rect(x - 1, y, 3, 2, c);
+      g.rect(x - 7, y - flap * 4, 1, 1, rgb(0x3a3a44, c.a)), g.rect(x + 7, y - flap * 4, 1, 1, rgb(0x3a3a44, c.a));  // bouts noirs
+    }
   // Feuilles qui tombent en forêt, papillons dans la vallée le jour
   if (m.ambiance.empty() && m.theme == Theme::Foret)
     for (int i = 0; i < 10 * g.fullW / SCREEN_W; i++) {
@@ -1213,6 +1581,34 @@ void Game::drawMap() {
       Color c = rgb(i % 2 ? 0xffffff : 0xffe066, uint8_t(220 * (1 - night * 2)));
       g.ellipse(x - f / 2 - 1, y, f / 2 + .5f, 1.5f, c), g.ellipse(x + f / 2 + 1, y, f / 2 + .5f, 1.5f, c);
     }
+  // Pluie : ciel assombri, gouttes en biais, éclaboussures au sol
+  if (float rain = rainAmount(); rain > 0) {
+    // (2026-10-21) des flaques sur les chemins et les pavés, où les gouttes font des ronds
+    for (int y = ty0; y <= ty0 + SCREEN_H / 16 + 1 && y < m.h(); y++)
+      for (int x = std::max(0, tx0); x <= tx1 && x < m.w(); x++) {
+        char c = m.rows[(size_t)y][(size_t)x];
+        uint32_t h = uint32_t(x) * 73856093u ^ uint32_t(y) * 19349663u;
+        if ((c != '=' && c != 'q') || h % 9) continue;
+        float px0 = x * 16 - camX + 3 + (h >> 5) % 6, py0 = y * 16 - camY + 6 + (h >> 9) % 6, w = 4 + (h >> 13) % 3;
+        g.ellipse(px0 + w, py0 + 2, w + 1, 2.5f, rgb(0x4a5a78, uint8_t(120 * rain)));
+        g.rect(px0 + 2, py0 + 1, 2, 1, rgb(0xd8e4f8, uint8_t(110 * rain)));  // le reflet du ciel
+        float k = std::fmod(time * 1.8f + (h >> 3) % 10 * .1f, 1.f);
+        g.ellipse(px0 + w, py0 + 2, 1 + k * w, .5f + k * 2, rgb(0xd8e4f8, uint8_t(150 * rain * (1 - k))));
+      }
+    g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0x2a3450, uint8_t(70 * rain)));
+    for (int i = 0, n = int(90 * rain) * g.fullW / SCREEN_W; i < n; i++) {
+      float x = g.left() + std::fmod(i * 37.f + i * i * .7f + time * 60, g.fullW + 20.f) - 10;
+      float y = std::fmod(i * 53.f + time * (260 + (i % 7) * 20), 260.f) - 10;
+      g.line(x, y, x - 3, y + 11, 1, rgb(0xd8e4f8, uint8_t(175 * rain)));
+    }
+    for (int i = 0, n = int(30 * rain) * g.fullW / SCREEN_W; i < n; i++) {
+      float k = time * 3 + i * .37f, ph = k - std::floor(k);
+      uint32_t h = uint32_t(int(k)) * 7919u + uint32_t(i) * 104729u;
+      h ^= h >> 13, h *= 0x5bd1e995u, h ^= h >> 15;
+      float x = g.left() + float(h % uint32_t(g.fullW)), y = float((h >> 12) % uint32_t(SCREEN_H));
+      g.ellipse(x, y, 1 + ph * 3, .5f + ph * 1.2f, rgb(0xe4eeff, uint8_t(190 * rain * (1 - ph))));
+    }
+  }
   // Ambiance
   bool amb = m.ambianceUntil.empty() || !has(m.ambianceUntil);
   if (m.ambiance == "neige" && amb)
@@ -1235,39 +1631,62 @@ void Game::drawMap() {
       g.rect(x, y, 1, 1, rgb(0xcfc6c0, 170));
     }
   if (m.ambiance == "obscurite" && amb) {
+    // La lanterne (2026-10-21) : pleine lumière près du héros, puis un fondu régulier vers le noir (douze anneaux), qui
+    // vacille un peu comme une flamme ; les cristaux brillent dans le noir
     float cx = ppx - camX + 8, cy = ppy - camY + 8;
-    for (int ring = 0; ring < 2; ring++) {
-      float R = ring == 0 ? 92 : 68;
-      Color c = rgb(0x05030a, ring == 0 ? 200 : 90);
-      for (int y = 0; y < SCREEN_H; y++) {
-        float dy = y + .5f - cy;
-        float span = R * R - dy * dy;
-        if (span <= 0) {
-          if (ring == 0) g.rect(g.left(), y, g.fullW, 1, c);
-          continue;
-        }
-        float w = std::sqrt(span);
-        float R0 = ring == 0 ? 0 : 92;
-        float w0 = R0 * R0 - dy * dy > 0 ? std::sqrt(R0 * R0 - dy * dy) : 0;
-        if (ring == 0) {
-          g.rect(g.left(), y, cx - w - g.left(), 1, c);
-          g.rect(cx + w, y, g.right() - cx - w, 1, c);
-        } else {
-          g.rect(cx - w0, y, w0 - w, 1, c);
-          g.rect(cx + w, y, w0 - w, 1, c);
-        }
+    float flick = std::sin(time * 7.3f) * 1.2f + std::sin(time * 12.1f) * .6f;
+    float rin = 44 + flick, rout = 98 + flick;
+    const int N = 12;
+    const uint8_t A = 212;
+    auto half = [](float r, float dy) { float s = r * r - dy * dy; return s > 0 ? std::sqrt(s) : 0.f; };
+    for (int y = 0; y < SCREEN_H; y++) {
+      float dy = y + .5f - cy;
+      float wo = half(rout, dy);
+      if (wo <= 0) {
+        g.rect(g.left(), y, g.fullW, 1, rgb(0x05030a, A));
+        continue;
+      }
+      // bornes entières : les anneaux se touchent sans trou ni recouvrement (sinon un pointillé dessine le cercle)
+      int L = (int)std::lround(cx - wo), Rr = (int)std::lround(cx + wo);
+      g.rect(g.left(), y, L - g.left(), 1, rgb(0x05030a, A));
+      g.rect(Rr, y, g.right() - Rr, 1, rgb(0x05030a, A));
+      for (int k = N - 1; k >= 0; k--) {
+        float w1 = half(rin + (rout - rin) * k / N, dy);
+        int l1 = (int)std::lround(cx - w1), r1 = (int)std::lround(cx + w1);
+        Color c = rgb(0x05030a, uint8_t(A * std::pow((k + .5f) / N, 1.4f)));
+        if (l1 > L) g.rect(L, y, l1 - L, 1, c);
+        if (Rr > r1) g.rect(r1, y, Rr - r1, 1, c);
+        L = std::max(L, l1), Rr = std::min(Rr, r1);
       }
     }
+    g.ellipse(cx, cy, rin, rin * .9f, rgb(0xffb050, 14));  // la lumière chaude de la lanterne
+    for (int y = std::max(0, ty0 - 1); y <= ty0 + SCREEN_H / 16 + 2 && y < m.h(); y++)
+      for (int x = std::max(0, tx0 - 1); x <= tx1 + 1 && x < m.w(); x++)
+        if (m.rows[(size_t)y][(size_t)x] == 'x') {
+          float gx = x * 16 - camX + 8, gy = y * 16 - camY + 9, p = .8f + .2f * std::sin(time * 2 + x);
+          g.ellipse(gx, gy, 22 * p, 18 * p, rgb(0x7fd6ff, 22));
+          g.ellipse(gx, gy, 11 * p, 9 * p, rgb(0x9fe4ff, 40));
+        }
   }
   // Bandeau du nom de la région
   if (float k = (time - mapFadeT_) / .3f; k >= 0 && k < 1)  // changement de carte (3.3) : on sort du noir
     g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0x000000, uint8_t(255 * (1 - k) * (1 - k))));
   if (banner > 0 && !menus.active()) {  // le nom de la région s'efface quand un menu s'ouvre
+    // (2026-10-21) un ruban : bande sombre qui s'efface vers les bords, deux filets dorés, le nom en grand s'il tient
     float a = std::min(1.f, banner / .5f);
+    bool big = Gfx::textW(bannerText) * 2 <= 280;
+    float tw = float(big ? Gfx::textW(bannerText) * 2 : Gfx::textW(bannerText)), half = tw / 2 + 36, cy = 22;
+    for (int i = 0; i < (int)half; i++) {
+      float f = 1 - float(i) / half;
+      Color band = rgb(0x0a0c1e, uint8_t(a * 205 * std::min(1.f, f * 1.7f))), line = rgb(0xffd34d, uint8_t(a * 210 * f));
+      for (float x : {159.f - i, 160.f + i}) {
+        g.rect(x, cy - 11, 1, 22, band);
+        g.rect(x, cy - 12, 1, 1, line), g.rect(x, cy + 11, 1, 1, line);
+      }
+    }
     g.alpha = a;
-    int w = Gfx::textW(bannerText) + 24;
-    g.window(160 - w / 2, 10, w, 20);
-    g.text(160, 14, bannerText, GOLD, 1);
+    if (big) g.textBig(160, cy - 11, bannerText, GOLD, 2, 1);  // le corps des lettres (lignes 2 à 8) au milieu du ruban
+    else g.text(160, cy - 5, bannerText, GOLD, 1);
     g.alpha = 1;
   }
   // Fenêtres
@@ -1337,6 +1756,8 @@ void Game::drawDialogue() {
   }
   g.window(4, y, 312, 66);
   auto full = Gfx::wrap(askText_.empty() ? sc.text() : askText_, 296);
+  if (full.size() >= 4 && Gfx::textW(full[3]) > 284)  // la 4e ligne irait sous la flèche « ▼ » : lignes un peu plus courtes
+    full = Gfx::wrap(askText_.empty() ? sc.text() : askText_, 284);
   // Découpe le texte visible selon les mêmes lignes que le texte complet
   int remaining = 0;
   for (unsigned char c : text)

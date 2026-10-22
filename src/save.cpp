@@ -34,6 +34,13 @@ bool Game::saveGame() {
   for (auto& sp : caught)
     if (hasSpecies(sp)) f << "pris " << sp << '\n';
   for (auto& t : tipsSeen) f << "astuce " << t << '\n';  // astuces déjà montrées (2.8)
+  if (!inExpedition())
+    for (auto& v : visited) f << "lieu " << v << '\n';  // lieux visités (voyage rapide)
+  if (!inExpedition() && !cardHand_.empty()) {  // la main des Cartes des gardiens
+    f << "main_cartes";
+    for (auto& c : cardHand_) f << ' ' << c;
+    f << '\n';
+  }
   for (auto& w : weak) {  // « espèce:numéro du type » : écrit avec l'identifiant du type (stable si on en ajoute)
     auto c = w.find(':');
     int t = std::atoi(w.c_str() + c + 1);
@@ -55,15 +62,29 @@ bool Game::saveGame() {
       }
     if (m->cell >= 0) f << "case4 " << m->cell << '\n';  // formation sur le damier 4x4
     if (m->evolveLater) f << "evolution_plus_tard\n";       // évolution refusée (Échap > Évolution)
+    if (m->chroma) f << "chromatique\n";                    // couleurs rares (2026-10-20)
     auto c = std::find(team.begin(), team.end(), m->companion.lock());
     if (c != team.end() && hasSpecies(m->sp) && m->S().human) f << "compagnon " << (c - team.begin()) << '\n';
     f << "tactiques " << m->tacticsOn << '\n';
     for (auto& t : m->tactics) f << "tactique " << t.on << ' ' << t.cond << ' ' << t.value << ' ' << KIND[(int)t.kind] << ' ' << t.act << '\n';
   };
   for (auto& m : team) member(m);
+  if (!inExpedition()) {  // la pension (2026-10-20) : ses nombres, puis ses membres après la ligne « pension » (tout à la fin)
+    if (!pensionLvl_.empty()) {
+      f << "pension_niveaux";
+      for (int l : pensionLvl_) f << ' ' << l;
+      f << '\n';
+    }
+    if (pensionSteps_ || pensionEgg_) f << "pension_pas " << pensionSteps_ << ' ' << pensionEgg_ << '\n';
+    for (auto& e : eggs_) f << "oeuf " << e.first << ' ' << e.second << '\n';
+  }
   if (!reserve.empty()) {  // la réserve après l'équipe : ses lignes « membre » suivent la ligne « reserve »
     f << "reserve\n";
     for (auto& m : reserve) member(m);
+  }
+  if (!inExpedition() && !pension_.empty()) {
+    f << "pension\n";
+    for (auto& m : pension_) member(m);
   }
   return writeUserFile(inExpedition() ? expedition_->saveFile() : saveName_, f.str());
 }
@@ -86,12 +107,16 @@ bool readMemberLine(const std::string& k, std::istream& s, std::vector<FighterP>
     return true;
   }
   if (k != "equipement" && k != "gemmes" && k != "tactiques" && k != "tactique" && k != "compagnon" && k != "case" && k != "case4" &&
-      k != "evolution_plus_tard")
+      k != "evolution_plus_tard" && k != "chromatique")
     return false;
   if (team.empty() || !team.back()) return true;
   Fighter& m = *team.back();
   if (k == "evolution_plus_tard") {
     m.evolveLater = true;
+    return true;
+  }
+  if (k == "chromatique") {
+    m.chroma = true;
     return true;
   }
   if (k == "case4" || k == "case") {  // formation : sa case sur le damier (« case » : ancien damier 3x3, avant la 2.0)
@@ -145,7 +170,11 @@ bool Game::loadGame() {
   team.clear();
   reserve.clear();
   seen.clear(), caught.clear(), weak.clear(), tipsSeen.clear();
+  visited.clear(), cardHand_.clear();
   bool inReserve = false;                      // après la ligne « reserve »
+  bool inPension = false;                      // après la ligne « pension »
+  pension_.clear(), pensionLvl_.clear(), eggs_.clear();
+  pensionSteps_ = 0, pensionEgg_ = false;
   std::vector<std::pair<size_t, int>> links;  // lignes « compagnon » : reliées à la fin
   items.clear();
   flags.clear();
@@ -192,16 +221,36 @@ bool Game::loadGame() {
     } else if (k == "astuce") {
       s >> v;
       tipsSeen.insert(v);
+    } else if (k == "lieu") {
+      s >> v;
+      if (mapIndex(v) >= 0) visited.insert(v);
+    } else if (k == "main_cartes") {
+      cardHand_.clear();
+      while (s >> v)
+        if (hasSpecies(v)) cardHand_.push_back(v);
     } else if (k == "faible") {
       std::string t;
       s >> v >> t;
       for (int i = 0; i < (int)types().size(); i++)
         if (types()[i].id == t && hasSpecies(v)) weak.insert(v + ":" + std::to_string(i));
+    } else if (k == "pension_niveaux") {
+      int l;
+      while (s >> l) pensionLvl_.push_back(l);
+    } else if (k == "pension_pas") {
+      s >> pensionSteps_ >> pensionEgg_;
+    } else if (k == "oeuf") {
+      int n = 0;
+      s >> v >> n;
+      if (hasSpecies(v)) eggs_.push_back({v, n});
     } else if (k == "reserve") inReserve = true;
+    else if (k == "pension") inPension = true, inReserve = false;
+    else if (inPension) readMemberLine(k, s, pension_, nullptr);
     else if (inReserve) readMemberLine(k, s, reserve, nullptr);
     else readMemberLine(k, s, team, &links);
   }
   reserve.erase(std::remove(reserve.begin(), reserve.end(), nullptr), reserve.end());
+  pension_.erase(std::remove(pension_.begin(), pension_.end(), nullptr), pension_.end());
+  pensionLvl_.resize(pension_.size(), 1);
   for (auto& m : reserve) m->hp = std::min(m->hp, m->mhp), m->mp = std::min(m->mp, m->mmp);
   noteBestiary();  // anciennes sauvegardes : l'équipe compte déjà
   for (auto& [h, c] : links)  // compagnons : avant de retirer les espèces disparues (les rangs changeraient)
@@ -219,5 +268,12 @@ bool Game::loadGame() {
   steps = 0;
   sc.clear();
   for (auto& m : team) m->hp = std::min(m->hp, m->mhp), m->mp = std::min(m->mp, m->mmp);
+  lastNewTalks_ = newDiscussions();  // pas d'annonce pour les discussions déjà disponibles
+  applyNewGamePlus();  // Nouvelle partie + : ennemis plus forts selon les drapeaux « ngp<k> »
+  if (!inExpedition() && mapId >= 0 && mapId < (int)maps().size()) {  // le lieu où l'on est (une ancienne sauvegarde n'a pas de « lieu »)
+    if (M().worldX >= 0) visited.insert(M().id);
+    for (auto& w : M().warps)  // dans un intérieur : son village
+      if (int t = mapIndex(w.map); M().theme == Theme::Interieur && t >= 0 && maps()[t].worldX >= 0) visited.insert(maps()[t].id);
+  }
   return !team.empty();
 }

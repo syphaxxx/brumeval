@@ -218,7 +218,51 @@ void Arena::onBattleEnd(BattleResult r, const std::vector<std::string>& log) {
   lastResult = std::string(r == BattleResult::Win ? T("Victoire") : r == BattleResult::Lose ? T("Défaite") : T("Fuite")) + T(" en ") + std::to_string(s) + T(" s");
   lastLog = log;
   G.menus.clear();
+  if (challenge_ >= 0) {  // défi : retour à la liste des défis (réussi : coché)
+    int i = challenge_;
+    challenge_ = -1;
+    Json d = readJson("defis.json");
+    if (r == BattleResult::Win && i < (int)d.size()) challengesWon_.insert(jget<std::string>(d[(size_t)i], "id", ""));
+    menuMain(I_FIGHT);
+    menuChallenges(i);
+    return;
+  }
   menuMain(I_FIGHT);
+}
+
+int Arena::challengeCount() const {
+  Json d = readJson("defis.json");
+  return d.is_array() ? (int)d.size() : 0;
+}
+
+void Arena::menuChallenges(int sel) {
+  Json d = readJson("defis.json");
+  Menu m;
+  m.title = T("Défis de l'échiquier");
+  m.x = 4, m.y = 18, m.w = 236, m.rows = 10;
+  for (size_t i = 0; i < d.size(); i++) {
+    std::string id = jget<std::string>(d[i], "id", "");
+    std::string help = tr(jget<std::string>(d[i], "description", ""));
+    m.items.push_back({tr(jget<std::string>(d[i], "nom", id)), challengesWon_.count(id) ? T("réussi") : "", help, true,
+                       [this, i] { startChallenge((int)i); }});
+  }
+  m.items.push_back({T("Retour"), "", "", true, [this] { G.menus.pop(); }});
+  m.sel = std::clamp(sel, 0, (int)m.items.size() - 1);
+  G.menus.push(m);
+}
+
+void Arena::startChallenge(int i) {
+  Json d = readJson("defis.json");
+  if (i < 0 || i >= (int)d.size()) return;
+  BattleSetup s;
+  if (!challengeSetup(jget<std::string>(d[(size_t)i], "id", ""), s)) return;
+  G.team = s.allies;  // personne en réserve, pas d'objets : la position fait tout
+  teamSlot_.clear();
+  G.items.clear();
+  challenge_ = i;
+  G.menus.clear();
+  t0_ = G.time;
+  G.startBattle(std::move(s), nullptr);
 }
 
 // ---------------------------------------------------------------------------
@@ -379,6 +423,8 @@ void Arena::menuMain(int sel) {
   }
   m.items.push_back({T("Combattre !"), "", T("Vous jouez l'équipe, l'ordinateur joue les adversaires."), ready(), [this] { startManual(); }, unhover});
   m.items.push_back({T("Modèles…"), "", T("Reprendre un combat de l'histoire ou une zone de rencontres."), true, [this] { menuPresets(); }, unhover});
+  m.items.push_back({T("Défis de l'échiquier…"), "", T("Des positions imposées, une leçon chacune : dans le dos, Percée, tenir une ligne, pousser."),
+                     challengeCount() > 0, [this] { menuChallenges(); }, unhover});
   m.items.push_back({T("Journal"), "", T("Détail du dernier combat : coups, dégâts, critiques, états."), !lastLog.empty(), [this] { menuLog(); }, unhover});
   m.items.push_back({T("Quitter l'arène"), "", "", true, [this] {
                        restore();
@@ -584,6 +630,7 @@ void drawFighterCard(Gfx& g, const Fighter& f, int x, int y, int w, int h, float
   if (!strong.empty()) para(T("Résiste : ") + strong, GREEN);
   if (!cat.empty()) para(T("Dégâts reçus : ") + cat, MUTED);
   if (!imm.empty()) para(T("Insensible : ") + imm, MUTED);
+  para(T("Échiquier : ") + std::to_string(fighterMoveRange(f)) + T(" cases par tour") + (speciesFlies(s) ? T(", vole") : ""), MUTED);
   std::string tech;
   for (auto& id : f.techs()) tech += (tech.empty() ? "" : ", ") + moveInfo(id).name;
   for (auto& id : f.spells()) tech += (tech.empty() ? "" : ", ") + moveInfo(id).name;
@@ -632,7 +679,7 @@ void Arena::draw() {
   g.gradV(g.left(), 0, g.fullW, SCREEN_H, rgb(0x231638), rgb(0x47305e));
   g.ellipse(160, 250, 210 + g.ox, 60, rgb(0x2d1f46));
   g.ellipse(160, 250, 170 + g.ox, 40, rgb(0x3a2a52));
-  g.text(160, 4, T("ARÈNE DE COMBAT"), GOLD, 1);
+  g.textBigFancy(160, 4, T("ARÈNE DE COMBAT"), rgb(0xfff0a0), rgb(0xe8902a), rgb(0x2a1606), 1, 1);
   if (simRunning_) {
     g.window(60, 90, 200, 60);
     g.text(160, 98, T("Simulation en cours…"), WHITE, 1);

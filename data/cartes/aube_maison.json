@@ -1,0 +1,33 @@
+{
+  "id": "aube_maison",
+  "nom": "Maison d'Ilya",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#hh.e..e..#",
+    "#.........#",
+    "#.jtt.....#",
+    "#.jtt.....#",
+    "#........v#",
+    "#.........#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [
+    {
+      "x": 8,
+      "y": 4,
+      "apparence": "chat",
+      "direction": "bas",
+      "dialogue": ["Le chat d'Ilya vous regarde comme s'il savait tout de vous."],
+      "promenade": 1
+    }
+  ],
+  "coffres": [],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "aube", "tx": 33, "ty": 19, "direction": "bas"}],
+  "zones": [],
+  "boss": [],
+  "declencheurs": [{"x": 5, "y": 6, "l": 1, "h": 1, "evenement": "aube_maison"}]
+}

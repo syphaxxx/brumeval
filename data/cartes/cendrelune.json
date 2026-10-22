@@ -52,7 +52,7 @@
     "mgggggaaaaRagg=ggggggggaaaaamaa=aggRRRRRggggggag=dddddgggggmmmgmmmgggdddddaaaaaaaaaaammm",
     "maagaaaaRRRRRg=ggggggggaaaaamaa=gggggggggggggggg=ggdggggggggggggmagdddddaaaaaaaaaaaaaamm",
     "maaaaaaaaaRagg=ggggggggaaaaaaaa=gggggggggggggggg=gggggggggggggggmgaaadaaaaagaaaaaaaaaaam",
-    "maaaaaaaaaaaaa=ggggggggaaaaaaaa=gggggggggggggggg=gggggaaaagggggggaaaaaadaagggaaaagaaaaam",
+    "kaaaaaaaaaaaaa=ggggggggaaaaaaaa=gggggggggggggggg=gggggaaaagggggggaaaaaadaagggaaaagaaaaam",
     "maaaaaaaaaaaga=aggggggggamaaaag=gggggggggggggggg=gggggaaaaagggggaaaaaadddggggggggggggaam",
     "maaaaaagggggggRgggggggggmmmaaaagmggggmggmggggagggggggaaaagdgggggggaaadddddgggdgggggggggm",
     "maaaaaggggggggggggggggggamaaaammmmmmmmmmmmggaadggggggaggmgdgggggggggRmdddgggdddgmggggdgm",
@@ -105,6 +105,7 @@
     }
   ],
   "habitants": [
+    {"x": 18, "y": 36, "apparence": "garde", "direction": "bas", "evenement": "instructeur_forgeroc"},
     {
       "x": 4,
       "y": 35,
@@ -164,7 +165,8 @@
       "dialogue": [
         "Le feu de la forge ne s'éteint jamais.",
         "Brann y travaille l'acier des montagnes : demande-lui, à l'enclume."
-      ]
+      ],
+      "evenement": "maitre_hrolf"
     },
     {
       "x": 22,
@@ -173,6 +175,53 @@
       "direction": "gauche",
       "dialogue": ["Le chat de l'auberge se chauffe sur les pavés tièdes."],
       "promenade": 1
+    },
+    {"x": 9, "y": 33, "apparence": "villageois", "direction": "bas", "evenement": "aldo"},
+    {"x": 9, "y": 41, "apparence": "forgeron", "direction": "droite", "evenement": "quete_apprenti"},
+    {"x": 26, "y": 36, "apparence": "enfant", "direction": "bas", "evenement": "quete_oeuf"},
+    {
+      "x": 22,
+      "y": 25,
+      "apparence": "villageois",
+      "direction": "gauche",
+      "evenement": "tom_1",
+      "si": {"drapeau": "boss1"},
+      "cache_si": "tom1"
+    },
+    {"x": 2, "y": 47, "apparence": "montagnard", "direction": "gauche", "evenement": "mineur"},
+    {
+      "x": 28,
+      "y": 37,
+      "apparence": "chevalier",
+      "direction": "bas",
+      "evenement": "tournoi",
+      "si": {"drapeau": "boss2"}
+    },
+    {
+      "x": 70,
+      "y": 11,
+      "apparence": "montagnard",
+      "direction": "bas",
+      "evenement": "route_cendrelune1",
+      "vue": 3,
+      "vue_jusqua": "route_cendrelune1"
+    },
+    {
+      "x": 30,
+      "y": 46,
+      "apparence": "garde",
+      "direction": "droite",
+      "evenement": "route_cendrelune2",
+      "vue": 3,
+      "vue_jusqua": "route_cendrelune2"
+    },
+    {
+      "x": 22,
+      "y": 40,
+      "apparence": "paysan",
+      "direction": "bas",
+      "evenement": "eleveuse",
+      "si": {"drapeau": "boss1"}
     }
   ],
   "coffres": [
@@ -185,7 +234,12 @@
     {"x": 24, "y": 2, "objet": "coeur_braise", "quantite": 1},
     {"x": 59, "y": 52, "objet": "lanterne_or", "quantite": 1},
     {"x": 82, "y": 54, "objet": "elixir", "quantite": 1},
-    {"x": 23, "y": 48, "or": 1200}
+    {"x": 23, "y": 48, "or": 1200},
+    {"x": 86, "y": 2, "objet": "eclat_brume", "quantite": 1},
+    {"x": 86, "y": 51, "objet": "eclat_brume", "quantite": 1},
+    {"x": 42, "y": 2, "objet": "eclat_brume", "quantite": 1},
+    {"x": 60, "y": 54, "objet": "eclat_brume", "quantite": 1},
+    {"x": 71, "y": 33, "objet": "carte_tresor_5", "quantite": 1, "si": {"objet": "carte_tresor_4"}}
   ],
   "panneaux": [
     {"x": 3, "y": 32, "texte": "Forgeroc, la ville des forges."},
@@ -194,18 +248,28 @@
     {"x": 14, "y": 1, "texte": "Col du Nord. Au-delà : les Pics Givrés."}
   ],
   "passages": [
-    {"x": 0, "y": 33, "vers": "vallee", "tx": 62, "ty": 32, "direction": "gauche"},
-    {"x": 0, "y": 34, "vers": "vallee", "tx": 62, "ty": 33, "direction": "gauche"},
+    {"x": 0, "y": 33, "vers": "plaine", "tx": 54, "ty": 16, "direction": "gauche"},
+    {"x": 0, "y": 34, "vers": "plaine", "tx": 54, "ty": 17, "direction": "gauche"},
     {"x": 44, "y": 29, "vers": "grotte", "tx": 15, "ty": 21, "direction": "haut"},
     {
       "x": 13,
       "y": 0,
-      "vers": "pics",
-      "tx": 30,
-      "ty": 42,
+      "vers": "col",
+      "tx": 19,
+      "ty": 50,
       "direction": "haut",
       "condition": {"drapeau": "boss2"},
       "message": "Le col du Nord est pris dans les glaces. Un vent glacé souffle depuis que le volcan gronde…"
+    },
+    {
+      "x": 0,
+      "y": 48,
+      "vers": "mines",
+      "tx": 9,
+      "ty": 30,
+      "direction": "gauche",
+      "condition": {"drapeau": "boss1"},
+      "message": "Des planches clouées ferment la vieille mine."
     }
   ],
   "zones": [
@@ -217,7 +281,8 @@
       "niveau_min": 11,
       "niveau_max": 14,
       "max_ennemis": 3,
-      "creatures": ["tisonnel", "galetor", "voltigeon"]
+      "creatures": ["tisonnel", "galetor", "voltigeon"],
+      "nuit": ["fumerole", "osselet"]
     },
     {
       "x": 32,
@@ -227,7 +292,8 @@
       "niveau_min": 14,
       "niveau_max": 17,
       "max_ennemis": 3,
-      "creatures": ["voltigeon", "glaconnet", "fumerole", "tisonnel"]
+      "creatures": ["voltigeon", "glaconnet", "fumerole", "tisonnel"],
+      "nuit": ["fumerole", "osselet"]
     },
     {
       "x": 28,
@@ -237,7 +303,8 @@
       "niveau_min": 12,
       "niveau_max": 15,
       "max_ennemis": 3,
-      "creatures": ["galetor", "tisonnel", "voltigeon", "glaconnet"]
+      "creatures": ["galetor", "tisonnel", "voltigeon", "glaconnet"],
+      "nuit": ["fumerole", "osselet"]
     },
     {
       "x": 0,
@@ -247,7 +314,8 @@
       "niveau_min": 12,
       "niveau_max": 15,
       "max_ennemis": 3,
-      "creatures": ["tisonnel", "galetor"]
+      "creatures": ["tisonnel", "galetor"],
+      "nuit": ["fumerole", "osselet"]
     },
     {
       "x": 64,
@@ -257,7 +325,8 @@
       "niveau_min": 15,
       "niveau_max": 19,
       "max_ennemis": 3,
-      "creatures": ["tisonnel", "galetor", "voltigeon", "glaconnet", "fumerole", "draconnet"]
+      "creatures": ["tisonnel", "galetor", "voltigeon", "glaconnet", "fumerole", "draconnet"],
+      "nuit": ["fumerole", "osselet"]
     },
     {
       "x": 0,
@@ -267,7 +336,8 @@
       "niveau_min": 15,
       "niveau_max": 19,
       "max_ennemis": 3,
-      "creatures": ["tisonnel", "galetor", "voltigeon", "glaconnet", "fumerole", "draconnet"]
+      "creatures": ["tisonnel", "galetor", "voltigeon", "glaconnet", "fumerole", "draconnet"],
+      "nuit": ["fumerole", "osselet"]
     }
   ],
   "boss": [

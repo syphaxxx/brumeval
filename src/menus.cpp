@@ -12,6 +12,7 @@
 #include "mapedit.hpp"
 #include "online.hpp"
 #include "options.hpp"
+#include "primes.hpp"
 #include "sprites.hpp"
 #include "storyedit.hpp"
 #include "tactics.hpp"
@@ -82,6 +83,16 @@ void Game::optionsMenu(int sel) {
     tp.adjust = [flip](int) { flip(); };
     tp.rightFn = [] { return std::string(options().tips ? T("Oui") : T("Non")); };
     m.items.push_back(tp);
+  }
+  {
+    auto flip = [] {
+      options().autosave = !options().autosave;
+      saveOptions();
+    };
+    MenuItem as{T("Sauvegarde auto"), "", T("Sauvegarder la partie à chaque passage d'une carte à l'autre et à chaque porte."), true, flip};
+    as.adjust = [flip](int) { flip(); };
+    as.rightFn = [] { return std::string(options().autosave ? T("Oui") : T("Non")); };
+    m.items.push_back(as);
   }
   m.items.push_back({T("Touches"), "", T("Changer les touches du clavier. La manette se branche toute seule."), true, [this] { keysMenu(); }});
   m.items.push_back({T("Retour"), "", "", true, [this, panel] {
@@ -174,6 +185,10 @@ void Game::pauseMenu() {
   m.items.push_back({T("Tactiques"), "", T("Ce que chaque membre fait tout seul en combat (mode auto : touche Tab)."), true, [this] { tacticsMenu(); }});
   m.items.push_back({T("Équipement"), "", T("Armes, armures et accessoires."), true, [this] { gearMenu(); }});
   m.items.push_back({T("Journal"), "", T("Les quêtes en cours et terminées."), true, [this] { journalMenu(); }});
+  if (!inExpedition()) {
+    int n = newDiscussions();
+    m.items.push_back({T("Discussions"), n ? std::to_string(n) : "", T("Ce que se disent les héros au fil de l'aventure."), true, [this] { discussionsMenu(); }});
+  }
   if (!inExpedition())
     m.items.push_back({T("Carte"), "", T("La carte du monde : les lieux où vous pouvez aller, et où vous êtes."), true, [this] {
                          worldMapOn_ = true;
@@ -378,7 +393,15 @@ void Game::drawBestiaryPanel(int x, int y) {
   std::string where;
   for (auto& p : places) where += (where.empty() ? "" : ", ") + p;
   auto lines = Gfx::wrap(T("Lieux : ") + (where.empty() ? std::string("inconnus") : where), w - 16);
-  int h = 104 + (c ? 42 : 0) + (v ? 11 * (int)lines.size() : 0);
+  auto about = c && !s.desc.empty() ? Gfx::wrap(s.desc, w - 16) : std::vector<std::string>{};  // le mot du Bestiaire, une fois obtenue
+  int top = about.empty() ? 104 : 88;  // avec la description : un dessin un peu plus petit
+  int room = (184 - y - top - (c ? 42 : 0) - (about.empty() ? 0 : 6 + 11 * (int)about.size())) / 11;  // au-dessus de l'aide
+  if (room <= 0) lines.clear();  // longue description : pas de place pour les lieux
+  else if ((int)lines.size() > room) {  // trop de lieux : les premiers, puis « … »
+    lines.resize((size_t)room);
+    lines.back() += "…";
+  }
+  int h = top + (c ? 42 : 0) + (v ? 11 * (int)lines.size() : 0) + (about.empty() ? 0 : 6 + 11 * (int)about.size());
   g.window(x, y, w, h);
   if (!v) {
     g.text(x + w / 2, y + 40, "???", MUTED, 1);
@@ -387,9 +410,9 @@ void Game::drawBestiaryPanel(int x, int y) {
   }
   g.text(x + 8, y + 6, s.name, GOLD);
   g.text(x + 8, y + 18, typesName(s), MUTED);
-  float k = creatureFit(s.id, 60);  // les petites créatures deux fois plus grandes
-  drawCreature(g, s.id, x + w / 2, y + 90 - 16 * k * s.size, k, false, time);
-  int ly = y + 96;
+  float k = creatureFit(s.id, top == 104 ? 60 : 46);  // les petites créatures deux fois plus grandes
+  drawCreature(g, s.id, x + w / 2, y + top - 14 - 16 * k * s.size, k, false, time);
+  int ly = y + top - 8;
   if (c) {  // statistiques de base, seulement pour une créature obtenue
     const char* names[] = {"PV", "PM", "Att", "Déf", "Mag", "Rés", "Vit"};
     for (int i = 0; i < N_BASE; i++) g.text(x + 8 + (i % 3) * 50, ly + (i / 3) * 11, std::string(T(names[i])) + " " + std::to_string(s.base[i]), WHITE);
@@ -399,6 +422,8 @@ void Game::drawBestiaryPanel(int x, int y) {
     ly += 12;
   }
   for (size_t i = 0; i < lines.size(); i++) g.text(x + 8, ly + 6 + i * 11, lines[i], MUTED);
+  ly += 6 + 11 * (int)lines.size();
+  for (size_t i = 0; i < about.size(); i++) g.text(x + 8, ly + 6 + i * 11, about[i], rgb(0xd8dcf0));
 }
 
 void Game::swapReserve(FighterP out, FighterP in) {
@@ -417,9 +442,8 @@ void Game::swapReserve(FighterP out, FighterP in) {
   if (in) reserve.erase(std::remove(reserve.begin(), reserve.end(), in), reserve.end());
 }
 
-// Formation : la case de chaque combattant sur le damier (data.hpp), gardée dans la sauvegarde.
-// L'avant frappe et reçoit plus fort au corps à corps ; l'arrière est protégé (et seules les
-// attaques à distance l'atteignent tant que l'avant tient).
+// Formation : la case de départ de chaque combattant dans notre moitié de l'échiquier (data.hpp), gardée dans la
+// sauvegarde. Devant, on arrive vite au contact ; derrière, une ligne d'alliés protège des ennemis qui avancent.
 void Game::formationMenu(int sel) {
   panelMode_ = 4;
   auto fr = front();
@@ -435,7 +459,16 @@ void Game::formationMenu(int sel) {
                   Menu p;
                   p.title = T("Case de ") + utf8Prefix(f->name(), 10);
                   p.x = 8, p.y = 24, p.w = 132, p.rows = 9;  // à gauche du dessin du damier
-                  for (int c = 0; c < N_CELLS; c++) {
+                  // Dans l'ordre du dessin (3.4) : colonne par colonne de gauche à droite, de haut en bas ; Haut et Bas
+                  // changent de ligne, Gauche et Droite de colonne (adjust), la souris choisit sur le dessin
+                  formationPick_ = true;
+                  p.onCancel = [this] {
+                    formationPick_ = false;
+                    menus.pop();
+                  };
+                  for (int vx = 0; vx < GRID; vx++)
+                    for (int row = 0; row < GRID; row++) {
+                    int c = cellAt(row, BACK_COL - vx);
                     std::string who;
                     for (auto& o : front())
                       if (o != f && o->cell == c) who = o->name();
@@ -444,15 +477,23 @@ void Game::formationMenu(int sel) {
                                   for (auto& o : front())
                                     if (o != f && o->cell == c) o->cell = f->cell;  // échange de cases
                                   f->cell = c;
+                                  formationPick_ = false;
                                   menus.pop();
                                   menus.pop();
                                   formationMenu(at);
                                 },
                                 [this, c] { formationCell_ = c; }};
                     ci.shrink = true;
+                    ci.adjust = [this, vx, row](int d) {  // Gauche / Droite : la colonne voisine sur le dessin
+                      int nx = std::clamp(vx + d, 0, GRID - 1);
+                      Menu& mm = menus.top();
+                      mm.sel = nx * GRID + row;
+                      mm.top = std::clamp(mm.top, std::max(0, mm.sel - mm.rows + 1), mm.sel);  // la ligne reste visible
+                      formationCell_ = cellAt(row, BACK_COL - nx);
+                    };
                     p.items.push_back(ci);
                   }
-                  p.sel = std::clamp(f->cell, 0, N_CELLS - 1);
+                  p.sel = std::clamp((BACK_COL - cellCol(std::max(0, f->cell))) * GRID + cellRow(std::max(0, f->cell)), 0, N_CELLS - 1);
                   menus.push(p);
                 },
                 [this, f] { formationCell_ = f->cell; }};
@@ -464,15 +505,23 @@ void Game::formationMenu(int sel) {
   menus.push(m);
 }
 
-// Dessin du damier de la formation : l'avant à gauche, face aux ennemis (comme en combat)
+// Géométrie du dessin de la formation (drawFormationPanel, posé en 146, 8)
+int Game::formationCellAt(int mx, int my) const {
+  const int x = 146, y = 8, w = 320 - x - 8, cw = (w - 16) / GRID, ch = 26;
+  int vx = (mx - x - 8) / cw, row = (my - y - 20) / ch;
+  if (mx < x + 8 || my < y + 20 || vx < 0 || vx >= GRID || row < 0 || row >= GRID) return -1;
+  return cellAt(row, BACK_COL - vx);
+}
+
+// Dessin de notre moitié de l'échiquier : l'avant à droite, face aux ennemis (comme en combat, 3.4)
 void Game::drawFormationPanel(int x, int y) {
   int w = 320 - x - 8, cw = (w - 16) / GRID, ch = 26, h = 34 + GRID * ch + 16;
   g.window(x, y, w, h);
-  g.text(x + 8, y + 5, T("Damier"), GOLD);
-  g.text(x + w - 8, y + 5, T("ennemis à gauche"), MUTED, 2);
+  g.text(x + 8, y + 5, T("Notre camp"), GOLD);
+  g.text(x + w - 8, y + 5, T("avant à droite"), MUTED, 2);
   auto fr = front();
   for (int c = 0; c < N_CELLS; c++) {
-    int rx = x + 8 + cellCol(c) * cw, ry = y + 20 + cellRow(c) * ch;
+    int rx = x + 8 + (BACK_COL - cellCol(c)) * cw, ry = y + 20 + cellRow(c) * ch;
     bool lit = c == formationCell_;
     g.rect(rx + 1, ry + 1, cw - 2, ch - 2, lit ? rgb(0xffd34d, 70) : rgb(0x000010, 60));
     for (auto& f : fr)
@@ -481,7 +530,7 @@ void Game::drawFormationPanel(int x, int y) {
         g.text(rx + cw / 2, ry + 17, T("N.") + std::to_string(f->lvl), MUTED, 1);
       }
   }
-  const char* COLS[GRID] = {T("Avant"), "", "", T("Arrière")};
+  const char* COLS[GRID] = {T("Arrière"), "", "", T("Avant")};
   for (int k = 0; k < GRID; k++) g.text(x + 8 + k * cw + cw / 2, y + 22 + GRID * ch, COLS[k], MUTED, 1);
 }
 
@@ -709,6 +758,12 @@ void Game::journalMenu() {
   m.title = T("Journal");
   m.x = 8, m.y = 8, m.w = 220, m.rows = 9;
   if (std::string adv = adviceText(); !adv.empty()) m.items.push_back({T("Prochain gardien"), "", adv, true, nullptr});  // conseil (2.8)
+  if (!inExpedition())
+    m.items.push_back({T("Progression"), "", T("Ce que vous avez déjà accompli : quêtes, primes, dresseurs, coffres, Bestiaire…"), true, [this] { progressMenu(); }});
+  if (!inExpedition())
+    m.items.push_back({T("Exploits"), std::to_string(exploitsDone()) + "/" + std::to_string(exploitCount()),
+                       T("Des défis pour ceux qui veulent tout faire : finir les actes, remplir le Bestiaire, devenir champion…"), true,
+                       [this] { exploitsMenu(); }});
   for (auto& q : quests()) {
     std::string id = jget<std::string>(q, "id", "");
     if (!has(questFlag(id))) continue;
@@ -724,11 +779,77 @@ void Game::journalMenu() {
     it.shrink = true;
     m.items.push_back(it);
   }
+  for (auto& b : bounties()) {  // primes acceptées, pas encore touchées
+    std::string id = jget<std::string>(b, "id", "");
+    if (!has(bountyFlag(id, 0)) || has(bountyFlag(id, 2))) continue;
+    bool beaten = has(bountyFlag(id, 1));
+    MenuItem it{T("Prime : ") + tr(jget<std::string>(b, "nom", id)), beaten ? T("Prime !") : T("en chasse"),
+                tr(jget<std::string>(b, "lieu", "")) + " — " +
+                    (beaten ? std::string(T("Vaincu : toucher la prime à un tableau d'annonces.")) : tr(jget<std::string>(b, "description", ""))),
+                true, nullptr};
+    it.shrink = true;
+    m.items.push_back(it);
+  }
   if (m.items.empty()) m.items.push_back({T("(aucune quête)"), "", T("Parlez aux habitants : certains ont besoin d'aide."), false, nullptr});
   m.onCancel = [this] {
     panelMode_ = 1;
     menus.pop();
   };
+  menus.push(m);
+}
+
+// Progression (2026-10-20) : des compteurs, tous calculés d'après les données et les drapeaux (rien d'enregistré en plus)
+void Game::progressMenu() {
+  Menu m;
+  m.title = T("Progression");
+  m.x = 8, m.y = 8, m.w = 230, m.rows = 10;
+  auto line = [&](const char* name, int done, int total, const char* help) {
+    if (total <= 0) return;
+    MenuItem it{name, std::to_string(done) + " / " + std::to_string(total), help, true, nullptr};
+    if (done >= total) it.color = 0xffe066;  // tout est fait : en or
+    m.items.push_back(it);
+  };
+  int q = 0, qd = 0, b = 0, bd = 0, trn = 0, trd = 0, rv = 0, rvd = 0, ch = 0, chd = 0, hid = 0, hidd = 0, sp = 0, cr = 0, talk = 0;
+  for (auto& x : quests()) {
+    std::string id = jget<std::string>(x, "id", "");
+    q++, qd += has(questFlag(id, true));
+  }
+  for (auto& x : bounties()) b++, bd += has(bountyFlag(jget<std::string>(x, "id", ""), 2));
+  for (auto& map : maps()) {
+    for (auto& n : map.npcs)
+      if (n.sight > 0 && !n.sightUntil.empty()) {
+        trn++, trd += has(n.sightUntil);
+        const Json* ev = findEvent(n.event);
+        if (ev && ev->dump().find(n.sightUntil + "_revanche") != std::string::npos) rv++, rvd += has(n.sightUntil + "_revanche");
+      }
+    for (auto& c : map.chests) {
+      bool open = has("coffre:" + map.id + ":" + std::to_string(c.x) + ":" + std::to_string(c.y));
+      if (c.cond.is_null()) ch++, chd += open;
+      else hid++, hidd += open;  // trésors cachés (cartes au trésor)
+    }
+  }
+  for (auto& s : allSpecies()) sp += !s.human && s.shape != Shape::Boss;
+  noteBestiary();
+  int caughtN = 0;
+  for (auto& id : caught) caughtN += hasSpecies(id) && !species(id).human && species(id).shape != Shape::Boss;
+  for (auto* v : {&team, &reserve})
+    for (auto& f : *v) cr += f->chroma;
+  for (auto& f : flags) talk += f.rfind("discussion:", 0) == 0;
+  line(T("Quêtes terminées"), qd, q, T("Les quêtes du Journal, rendues à ceux qui les ont données."));
+  line(T("Primes touchées"), bd, b, T("Les monstres des tableaux d'annonces, vaincus et payés."));
+  line(T("Dresseurs battus"), trd, trn, T("Les dresseurs qui vous défient quand vous passez devant eux."));
+  line(T("Revanches gagnées"), rvd, rv, T("Après le Seigneur des Orages, les dresseurs battus proposent une revanche."));
+  line(T("Coffres ouverts"), chd, ch, T("Tous les coffres du monde, éclats de brume compris."));
+  line(T("Créatures obtenues"), caughtN, sp, T("Le Bestiaire : les créatures capturées ou reçues (sans les humains ni les boss)."));
+  line(T("Poissons pêchés"), fishCaught(), fishSpecies(), T("Le carnet du maître pêcheur du port."));
+  line(T("Discussions écoutées"), talk, discussionCount(), T("Échap > Discussions : ce que se disent les héros."));
+  line(T("Trésors cachés"), hidd, hid, T("Les trésors des cartes de Corbin, au port : chacun contient la carte du suivant."));
+  line(T("Joueurs de cartes battus"), cardsWon(), cardFoeCount(), T("Les joueurs de Cartes des gardiens, dans les auberges et les maisons."));
+  line(T("Cartes des gardiens"), (int)cardCollection().size(), cardTotal(), T("Chaque créature obtenue donne sa carte ; les cartes des boss se gagnent aux joueurs."));
+  line(T("Exploits"), exploitsDone(), exploitCount(), T("Journal > Exploits : les défis pour ceux qui veulent tout faire."));
+  MenuItem c{T("Créatures chromatiques"), std::to_string(cr), T("Les créatures aux couleurs rares de votre équipe et de votre réserve."), true, nullptr};
+  m.items.push_back(c);
+  m.onCancel = [this] { menus.pop(); };
   menus.push(m);
 }
 
@@ -998,7 +1119,7 @@ void Game::drawTeamPanel(int x, int y, int sel) {
     }
   auto limitLines = f.S().limit.empty() ? std::vector<std::string>{} : Gfx::wrap(T("Limite : ") + moveInfo(f.S().limit).name, w - 16);
   int lines = (int)techLines.size() + (int)magicLines.size() + (int)limitLines.size();
-  g.window(x, y, w, std::min(SCREEN_H - y - 2, 34 + 4 * 11 + 3 + 4 * 11 + 3 + lines * 11 + 6));
+  g.window(x, y, w, std::min(SCREEN_H - y - 2, 34 + 5 * 11 + 3 + 4 * 11 + 3 + lines * 11 + 6));
   g.text(x + 8, y + 6, f.name(), GOLD);
   g.text(x + w - 8, y + 6, T("Niveau ") + std::to_string(f.lvl), WHITE, 2);
   if (const Rules::Talent* tl = talentOf(f.S())) g.text(x + 8, y + 19, T("Talent : ") + tl->name, rgb(0xffd34d));  // (Aide > Talents)
@@ -1006,7 +1127,7 @@ void Game::drawTeamPanel(int x, int y, int sel) {
   if (f.S().human) drawHuman(g, look(f.S().look), x + w - 40, y + 32, 2, DOWN, 0, false);  // sous la ligne du rôle
   else {  // à la taille de la place à droite des premières lignes (les petites créatures deux fois plus grandes)
     float k = creatureFit(f.sp, 44, 56);
-    drawCreature(g, f.sp, x + w - 34, y + 74 - 16 * k * f.S().size, k, false, time);
+    drawCreature(g, f.sp, x + w - 34, y + 74 - 16 * k * f.S().size, k, false, time, f.chroma);
   }
   int ly = y + 34;
   auto row = [&](const std::string& a, const std::string& b) {
@@ -1018,6 +1139,7 @@ void Game::drawTeamPanel(int x, int y, int sel) {
   row(T("PV"), std::to_string(f.hp) + "/" + std::to_string(f.mhp));
   row(T("PM"), std::to_string(f.mp) + "/" + std::to_string(f.mmp));
   row(T("Exp."), std::to_string(f.xp) + "/" + std::to_string(f.need()));
+  row(T("Pas"), std::to_string(fighterMoveRange(f)) + T(" cases") + (speciesFlies(f.S()) ? T(", vole") : ""));  // échiquier
   ly += 3;
   // Statistiques sur deux colonnes
   auto pair = [&](const char* a, int va, const char* b, const std::string& vb) {
@@ -1042,8 +1164,7 @@ void Game::drawTeamPanel(int x, int y, int sel) {
 // passages ouverts ; l'acte 2 reste caché tant que le bateau ne traverse pas. Rien n'est enregistré : tout se déduit
 // des passages et des drapeaux.
 // ---------------------------------------------------------------------------
-void Game::drawWorldMap() {
-  // Le lieu de départ : la carte où l'on est, ou celle où mène la sortie d'un intérieur
+std::vector<bool> Game::worldOpen() const {
   int here = mapId;
   if (M().theme == Theme::Interieur)
     for (auto& w : M().warps)
@@ -1057,22 +1178,111 @@ void Game::drawWorldMap() {
     for (auto& w : maps()[c].warps) {
       int t = mapIndex(w.map);
       if (t < 0 || open[t] || maps()[t].worldX < 0) continue;
-      if (!w.condition.is_null() && !checkCond(w.condition)) continue;  // passage fermé : on ne le voit pas encore
+      if (!w.condition.is_null() && !checkCond(w.condition)) continue;
       open[t] = true;
       todo.push_back(t);
     }
   }
-  const float X0 = 18, Y0 = 34, WW = 284, HH = 176;
+  return open;
+}
+
+std::vector<int> Game::travelTargets() const {
+  std::vector<int> out;
+  if (inExpedition() || (online_ && online_->connected()) || pilot_) return out;
+  auto open = worldOpen();
+  for (size_t i = 0; i < maps().size(); i++) {
+    if (!open[i] || (int)i == mapId || !visited.count(maps()[i].id)) continue;
+    for (auto& b : maps()[i].buildings)
+      if (b.kind == "soin") {
+        out.push_back((int)i);
+        break;
+      }
+  }
+  return out;
+}
+
+void Game::drawWorldMap() {
+  // Carte illustrée (2026-10-21) : parchemin taché et bordé, rose des vents ; sous chaque lieu découvert, un petit
+  // dessin de son paysage (arbres, sommets, neige, entrée de grotte, vagues pour un lieu au bord de l'eau) ; les
+  // chemins en pointillés ; les noms des villages, du lieu où l'on est et de la destination choisie, placés sans se
+  // chevaucher (les autres lieux n'ont que leur dessin).
+  int here = mapId;
+  if (M().theme == Theme::Interieur)
+    for (auto& w : M().warps)
+      if (int t = mapIndex(w.map); t >= 0 && maps()[t].worldX >= 0) here = t;
+  auto targets = travelTargets();
+  auto open = worldOpen();  // passage fermé : on ne voit pas encore ce qu'il y a derrière
+  const float X0 = 22, Y0 = 34, WW = 276, HH = 168;
   auto P = [&](const MapDef& m) { return Pt{X0 + m.worldX / 100 * WW, Y0 + m.worldY / 100 * HH}; };
+  static std::vector<float> wet;  // part d'eau de chaque carte (calculée une fois)
+  if (wet.size() != maps().size()) {
+    wet.assign(maps().size(), 0.f);
+    for (size_t i = 0; i < maps().size(); i++) {
+      int n = 0, tot = 0;
+      for (auto& r : maps()[i].rows)
+        for (char c : r) n += c == '~', tot++;
+      wet[i] = tot ? float(n) / tot : 0.f;
+    }
+  }
+  const Color INK = rgb(0x4a321c), INK2 = rgb(0x6a4a2a);
   g.newLayer();
   g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0x050816, 200));
   g.rect(8, 8, 304, 224, rgb(0x3a2a1a));
-  g.gradV(10, 10, 300, 220, rgb(0xeee0bc), rgb(0xd8c28e));  // parchemin
-  g.text(160, 13, T("Carte du monde"), rgb(0x4a321c), 1, false);
-  g.ellipse(X0 + .40f * WW, Y0 + .66f * HH, 46, 11, rgb(0x7fb0d8, 160));  // le lac, entre la vallée et l'archipel
-  for (int i = 0; i < 4; i++)                                             // les montagnes du nord-est
-    g.tri(X0 + (.70f + i * .07f) * WW - 9, Y0 + .24f * HH, X0 + (.70f + i * .07f) * WW, Y0 + .14f * HH, X0 + (.70f + i * .07f) * WW + 9,
-          Y0 + .24f * HH, rgb(0xa89878, 150));
+  g.gradV(10, 10, 300, 220, rgb(0xf0e4c4), rgb(0xd6bf8a));  // parchemin
+  for (int i = 0; i < 9; i++) {                              // taches et usure
+    float x = 20 + (i * 97) % 270, y = 22 + (i * 61) % 190;
+    g.ellipse(x, y, 10 + i % 4 * 6, 6 + i % 3 * 4, rgb(0xb89a64, 26));
+  }
+  g.frame(13, 13, 294, 214, rgb(0x8a6a44));  // double filet
+  g.frame(15, 15, 290, 210, rgb(0xa8885a));
+  for (float cx : {15.f, 305.f})
+    for (float cy : {15.f, 225.f}) g.ellipse(cx, cy, 3, 3, rgb(0x8a6a44));  // coins
+  g.text(160, 18, T("Carte du monde"), INK, 1, false);
+  // Rose des vents (en bas à droite)
+  {
+    float cx = 284, cy = 196;
+    g.ellipse(cx, cy, 11, 11, rgb(0xb89a64, 90));
+    g.poly({{cx, cy - 13}, {cx + 3, cy}, {cx, cy + 13}, {cx - 3, cy}}, INK2);
+    g.poly({{cx - 13, cy}, {cx, cy - 3}, {cx + 13, cy}, {cx, cy + 3}}, rgb(0x8a6a44));
+    g.poly({{cx, cy - 13}, {cx + 3, cy}, {cx - 3, cy}}, rgb(0xb8402a));
+    g.text(cx, cy - 23, "N", INK, 1, false);
+  }
+  // Paysages des lieux découverts
+  for (size_t i = 0; i < maps().size(); i++) {
+    if (!open[i]) continue;
+    const MapDef& m = maps()[i];
+    Pt p = P(m);
+    int h = int(i * 37 + 11);
+    if (wet[i] > .12f)  // au bord de l'eau : une tache bleue et des vaguelettes
+      for (int k = 0; k < 3; k++) {
+        float wx = p.x + (k - 1) * 9 + (h >> k) % 5 - 2, wy = p.y + 7 + (k % 2) * 3;
+        g.ellipse(wx, wy, 11, 5, rgb(0x7fb0d8, 120));
+        g.rect(wx - 3, wy - 1, 3, 1, rgb(0x4a80b0, 200)), g.rect(wx, wy, 3, 1, rgb(0x4a80b0, 200));
+      }
+    if (m.theme == Theme::Foret)  // de petits arbres
+      for (int k = 0; k < 5; k++) {
+        float tx = p.x - 12 + k * 6, ty = p.y - 3 + (k % 2) * 4 - (k == 2) * 2;
+        g.rect(tx, ty + 2, 1, 3, rgb(0x5a3a1a));
+        g.ellipse(tx + .5f, ty, 3, 3.5f, rgb(k % 2 ? 0x2f6a3a : 0x3e7f44));
+      }
+    else if (m.theme == Theme::Cendres || m.theme == Theme::Neige) {  // des sommets (enneigés dans le froid)
+      bool snow = m.theme == Theme::Neige;
+      for (int k = 0; k < 3; k++) {
+        float mx = p.x - 10 + k * 10, my = p.y + 2 - (k == 1) * 3, s = k == 1 ? 9.f : 7.f;
+        g.tri(mx - s, my, mx, my - s * 1.3f, mx + s, my, rgb(snow ? 0x9ab4cc : 0xa08468));
+        g.tri(mx, my, mx, my - s * 1.3f, mx + s, my, rgb(snow ? 0x7a94b0 : 0x806448));  // le versant à l'ombre
+        g.tri(mx - s * .35f, my - s * .85f, mx, my - s * 1.3f, mx + s * .35f, my - s * .85f, rgb(snow ? 0xffffff : 0xc8b090));
+      }
+      if (m.id == "cendrelune" || m.id == "cratere") g.ellipse(p.x, p.y - 13, 3, 2, rgb(0xd9541e, 200));  // le volcan fume
+    } else if (m.theme == Theme::Grotte) {  // l'entrée d'une grotte
+      g.ellipse(p.x, p.y - 1, 9, 7, rgb(0x8a7a66));
+      g.ellipse(p.x, p.y + 1, 5, 5, rgb(0x2a2018));
+    } else if (wet[i] <= .12f)  // prairie : des touffes d'herbe
+      for (int k = 0; k < 4; k++) {
+        float gx = p.x - 10 + k * 7, gy = p.y + 5 + (k % 2) * 3;
+        g.rect(gx, gy, 1, 2, rgb(0x5f9a52)), g.rect(gx + 2, gy - 1, 1, 3, rgb(0x5f9a52));
+      }
+  }
   // Chemins entre les lieux ouverts : des pointillés
   for (size_t i = 0; i < maps().size(); i++) {
     if (!open[i]) continue;
@@ -1081,26 +1291,71 @@ void Game::drawWorldMap() {
       if (t <= (int)i || !open[(size_t)t]) continue;
       Pt a = P(maps()[i]), b = P(maps()[(size_t)t]);
       float d = std::hypot(b.x - a.x, b.y - a.y);
-      for (float k = 0; k < d; k += 5) g.rect(a.x + (b.x - a.x) * k / d - .5f, a.y + (b.y - a.y) * k / d - .5f, 2, 2, rgb(0x8a6a44));
+      for (float k = 6; k < d - 6; k += 4) g.rect(std::round(a.x + (b.x - a.x) * k / d), std::round(a.y + (b.y - a.y) * k / d), 2, 1, rgb(0x8a6a44));
     }
   }
+  // Les lieux, puis leurs noms (sans chevauchement : sous le point, sinon au-dessus, à droite ou à gauche)
+  std::vector<std::array<float, 4>> taken;  // rectangles déjà occupés par un nom
   for (size_t i = 0; i < maps().size(); i++) {
     if (!open[i]) continue;
     const MapDef& m = maps()[i];
     Pt p = P(m);
     uint32_t col = m.theme == Theme::Foret ? 0x2f6a3a : m.theme == Theme::Cendres ? 0xc0502a : m.theme == Theme::Neige ? 0x8ab8e0
                    : m.theme == Theme::Grotte ? 0x6a5a8a : 0x5fa84f;
-    g.ellipse(p.x, p.y + 1, 6, 5, rgb(0x000000, 60));
-    g.ellipse(p.x, p.y, 6, 5, rgb(0x3a2a1a));
-    g.ellipse(p.x, p.y, 4.5f, 3.5f, rgb(col));
-    if ((int)i == here) {  // vous êtes ici : un anneau doré qui pulse, et Lior au-dessus
-      float k = .5f + .5f * std::sin(time * 5);
-      g.ellipse(p.x, p.y, 8 + k * 2, 7 + k * 2, rgb(0xffd34d, uint8_t(90 + 80 * k)));
-      g.ellipse(p.x, p.y, 4.5f, 3.5f, rgb(col));
-      if (const SpriteRect* r = findSprite("lior_bas_0")) g.sprite(*r, std::round(p.x - 10 - r->w * .7f), std::round(p.y + 3 - r->h * .7f), false, .7f);  // à gauche du point
+    bool village = false;
+    for (auto& b : m.buildings) village = village || b.kind == "soin";
+    g.ellipse(p.x, p.y + 1, 5, 4, rgb(0x000000, 60));
+    if (village) {  // un village : une petite maison
+      g.rect(p.x - 4, p.y - 2, 8, 5, rgb(0xe8d8b0));
+      g.tri(p.x - 5, p.y - 2, p.x, p.y - 6, p.x + 5, p.y - 2, rgb(0xb8402a));
+      g.rect(p.x - 1, p.y, 2, 3, rgb(0x5a3a1a));
+    } else {
+      g.ellipse(p.x, p.y, 4, 3.5f, rgb(0x3a2a1a));
+      g.ellipse(p.x, p.y, 3, 2.5f, rgb(col));
     }
-    std::string name = m.name;
-    g.text(p.x, p.y + 6, name, (int)i == here ? rgb(0x8a2a10) : rgb(0x4a321c), 1, false);
+    if ((int)i == here) {  // vous êtes ici : un anneau doré qui pulse, et Lior à côté
+      float k = .5f + .5f * std::sin(time * 5);
+      g.ellipse(p.x, p.y, 8 + k * 2, 7 + k * 2, rgb(0xffd34d, uint8_t(70 + 70 * k)));
+      if (const SpriteRect* r = findSprite("lior_bas_0")) {  // Lior, debout au-dessus du lieu
+        g.sprite(*r, std::round(p.x - r->w * .35f), std::round(p.y - 6 - r->h * .7f), false, .7f);
+        taken.push_back({p.x - r->w * .35f, p.y - 6 - r->h * .7f, r->w * .7f, r->h * .7f});
+      }
+    }
+    taken.push_back({p.x - 8, p.y - 7, 16, 13});  // le dessin du lieu : aucun nom par-dessus
+    bool sel = (int)i == worldSel_, can = std::find(targets.begin(), targets.end(), (int)i) != targets.end();
+    if (sel) {
+      float k = .5f + .5f * std::sin(time * 6);
+      g.ellipse(p.x, p.y, 9 + k * 2, 8 + k * 2, rgb(0x2a7ad8, uint8_t(110 + 80 * k)));
+    } else if (can)
+      g.ellipse(p.x + 6, p.y - 5, 1.5f, 1.5f, rgb(0x2a7ad8));
   }
-  g.text(160, 218, T("Entrée ou Échap : fermer"), rgb(0x6a4a2a), 1, false);
+  for (int pass = 0; pass < 2; pass++)  // d'abord la destination et le lieu actuel (leur nom passe avant les autres)
+    for (size_t i = 0; i < maps().size(); i++) {
+      if (!open[i]) continue;
+      const MapDef& m = maps()[i];
+      bool village = false;
+      for (auto& b : m.buildings) village = village || b.kind == "soin";
+      bool sel = (int)i == worldSel_, me = (int)i == here;
+      if ((pass == 0) != (sel || me) || !(village || sel || me)) continue;
+      Pt p = P(m);
+      float w = (float)Gfx::textW(m.name), hgt = 9;
+      std::array<std::array<float, 2>, 4> spots = {{{p.x - w / 2, p.y + 6}, {p.x - w / 2, p.y - 17}, {p.x + 9, p.y - 4}, {p.x - 9 - w, p.y - 4}}};
+      std::array<float, 2> at = spots[0];
+      float best = 1e9f;  // la place la moins encombrée (surface recouverte)
+      for (auto& sp : spots) {
+        float cost = (sp[0] < 16 || sp[0] + w > 304 || sp[1] < 26 || sp[1] + hgt > 210) ? 1e6f : 0.f;
+        for (auto& r : taken)
+          cost += std::max(0.f, std::min(sp[0] + w + 2, r[0] + r[2]) - std::max(sp[0] - 2, r[0])) *
+                  std::max(0.f, std::min(sp[1] + hgt, r[1] + r[3]) - std::max(sp[1], r[1]));
+        if (cost < best - .5f) best = cost, at = sp;
+      }
+      taken.push_back({at[0], at[1], w, hgt});
+      g.rect(at[0] - 2, at[1] - 1, w + 4, hgt + 1, rgb(0xf2e6c6, 215));  // une petite étiquette de parchemin
+      g.text(at[0], at[1], m.name, sel ? rgb(0x1a4a9a) : me ? rgb(0x8a2a10) : INK, 0, false);
+    }
+  g.text(160, 213, targets.empty() ? T("Entrée ou Échap : fermer")
+                   : worldSel_ >= 0 ? T("Entrée : y aller · Échap : fermer") : T("Flèches : choisir un village · Échap : fermer"),
+         INK2, 1, false);
 }
+
+

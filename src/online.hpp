@@ -68,6 +68,7 @@ class Online {
     std::string sp;
     int lvl;
     Json gear;  // son équipement
+    bool chroma = false;  // créature chromatique (4e élément, facultatif)
   };
 
  private:

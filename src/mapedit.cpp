@@ -314,7 +314,8 @@ void MapEditor::act(int x, int y) {
     for (size_t i = 0; i < m.signs.size(); i++)
       if (m.signs[i].x == x && m.signs[i].y == y) return editSign((int)i);
     for (size_t i = 0; i < m.bosses.size(); i++)
-      if (x >= m.bosses[i].x && x <= m.bosses[i].x + 1 && y >= m.bosses[i].y && y <= m.bosses[i].y + 1) return editBoss((int)i);
+      if (!m.bosses[i].bounty && x >= m.bosses[i].x && x <= m.bosses[i].x + 1 && y >= m.bosses[i].y && y <= m.bosses[i].y + 1)
+        return editBoss((int)i);  // le monstre d'une prime se règle dans data/primes.json
     for (size_t i = 0; i < m.warps.size(); i++)
       if (m.warps[i].x == x && m.warps[i].y == y) return editWarp((int)i);
     for (size_t i = 0; i < m.buildings.size(); i++) {

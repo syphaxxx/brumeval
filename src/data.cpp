@@ -68,6 +68,27 @@ std::string cellName(int c) {
   if (c < 0 || c >= N_CELLS) return "?";
   return std::string(T(COLS[cellCol(c)])) + " · " + T(ROWS[cellRow(c)]);
 }
+int boardDist(int a, int b) { return std::max(std::abs(boardX(a) - boardX(b)), std::abs(boardY(a) - boardY(b))); }
+int boardSteps(int a, int b) { return std::abs(boardX(a) - boardX(b)) + std::abs(boardY(a) - boardY(b)); }
+std::string boardName(int b) {
+  static const char* COLS[GRID] = {"arrière", "milieu arrière", "milieu avant", "avant"};
+  static const char* ROWS[GRID] = {"haut", "centre haut", "centre bas", "bas"};
+  if (b < 0 || b >= BOARD_CELLS) return "?";
+  int x = boardX(b);
+  bool ours = x < GRID;
+  return std::string(ours ? T("Notre camp, ") : T("Camp adverse, ")) + T(COLS[ours ? x : BOARD_W - 1 - x]) + " · " + T(ROWS[boardY(b)]);
+}
+bool inBoardZone(Area z, int center, int cell) {
+  int dc = std::abs(boardX(center) - boardX(cell)), dr = std::abs(boardY(center) - boardY(cell));
+  switch (z) {
+    case Area::Single: return dc == 0 && dr == 0;
+    case Area::Line: return dr == 0;
+    case Area::Column: return dc == 0;
+    case Area::Cross: return dc + dr <= 1;
+    case Area::All: return true;
+  }
+  return false;
+}
 bool inZone(Area z, int center, int cell) {
   int dc = std::abs(cellCol(center) - cellCol(cell)), dr = std::abs(cellRow(center) - cellRow(cell));
   switch (z) {
@@ -166,6 +187,10 @@ std::vector<RuleField> ruleFields(Rules& r) {
       I("rencontres", "meute_max", "Meutes : ennemis au plus", r.packMax, 1, 6, 1),
       D("rencontres", "meute_distance", "Meutes : profondeur maximale (cases)", r.packDistance, 5, 200, 1),
       D("rencontres", "nature_dense", "Rencontres en plus au plus profond", r.packDense, 0, 3, .05),
+      D("rencontres", "chromatique", "Chance d'une créature chromatique", r.chroma, 0, 1, .001),
+      D("rencontres", "alpha", "Chance d'un alpha à la tête d'une meute", r.alpha, 0, 1, .01),
+      I("rencontres", "alpha_niveaux", "Niveaux en plus de l'alpha", r.alphaLevels, 0, 20, 1),
+      D("rencontres", "part_nuit", "Part des rencontres de nuit (liste « nuit »)", r.nightShare, 0, 1, .05),
       D("combat", "atb_base", "Vitesse ATB de base", r.atbBase, 0, 100, 1),
       D("combat", "atb_vitesse", "Multiplicateur de vitesse ATB", r.atbSpeed, .1, 5, .1),
       D("combat", "fuite", "Chance de fuite", r.flee, 0, 1, .05),
@@ -179,7 +204,6 @@ std::vector<RuleField> ruleFields(Rules& r) {
       I("combat", "esquive_base", "Esquive par défaut (%)", r.evaBase, 0, 100, 1),
       I("combat", "critique_base", "Critique par défaut (%)", r.critBase, 0, 100, 1),
       I("combat", "jauge_rapide", "Technique rapide : jauge de départ (%)", r.quickGauge, 0, 90, 5),
-      D("combat", "arriere", "Arrière : dégâts au corps à corps donnés et reçus", r.backRow, .1, 1, .05),
       D("combat", "zone_voisins", "Zone d'effet : dégâts autour de la cible", r.zoneSide, 0, 1, .05),
       D("combat", "boss_annonce", "Boss : chance d'annoncer une attaque", r.bossWarn, 0, 1, .05),
       D("combat", "boss_annonce_puissance", "Boss : puissance de l'attaque annoncée", r.bossBurst, 1, 5, .1),
@@ -197,6 +221,14 @@ std::vector<RuleField> ruleFields(Rules& r) {
       D("damier", "choc", "Pousser : choc (part des dégâts) si la case est prise", r.shoveClash, 0, 2, .05),
       I("damier", "terrain_min", "Terrain : cases spéciales par camp (minimum)", r.terrainMin, 0, 8, 1),
       I("damier", "terrain_max", "Terrain : cases spéciales par camp (maximum)", r.terrainMax, 0, 8, 1),
+      I("damier", "mouvement", "Échiquier : cases parcourues par tour", r.moveRange, 0, 6, 1),
+      I("damier", "allonge_boss", "Échiquier : portée du corps à corps d'un boss", r.bossReach, 1, 4, 1),
+      D("damier", "dos", "Échiquier : dégâts d'un coup dans le dos", r.backStab, 1, 3, .05),
+      D("damier", "encercle", "Échiquier : dégâts en plus par adversaire au contact (au-delà du 1er)", r.surround, 0, 1, .05),
+      D("damier", "contact", "Échiquier : distance ou magie au contact d'un ennemi", r.contact, .1, 1, .05),
+      I("damier", "percee", "Échiquier : Percée (bonus en atteignant le bord adverse)", r.breakthrough, 0, 3, 1),
+      I("damier", "obstacles_min", "Échiquier : obstacles sur le plateau (minimum)", r.obstacleMin, 0, 6, 1),
+      I("damier", "obstacles_max", "Échiquier : obstacles sur le plateau (maximum)", r.obstacleMax, 0, 6, 1),
       I("duo", "jauge", "Duo : jauge ATB du partenaire (%)", r.duoGauge, 0, 100, 5),
       D("etats", "poison_degats", "Poison : part des PV perdus par tour", r.poisonDmg, 0, 1, .01),
       D("etats", "brulure_degats", "Brûlure : part des PV perdus par tour", r.burnDmg, 0, 1, .01),
@@ -267,6 +299,12 @@ static void loadRules(const Json& j) {
   if (j.contains("recompenses"))
     for (auto& b : j["recompenses"].value("butin_type", Json::array()))
       r.typeDrops.push_back({b.at("type").get<std::string>(), b.at("objet").get<std::string>(), b.at("chance").get<double>()});
+  if (j.contains("damier")) {
+    r.flyTypes = jget(j["damier"], "vol", std::vector<std::string>{});
+    r.fastTypes = jget(j["damier"], "rapides", std::vector<std::string>{});
+    Json obs = j["damier"].value("decors_obstacles", Json::object());  // variable : la boucle doit la garder en vie
+    for (auto& [th, v] : obs.items()) r.obstacleSprites[th] = v.get<std::vector<std::string>>();
+  }
   for (auto& w : j.value("meteo", Json::array())) {
     Rules::Weather x;
     x.id = w.at("id").get<std::string>(), x.name = tr(w.at("nom").get<std::string>());
@@ -380,6 +418,7 @@ void rebuildData() {
     m.melee = jget<std::string>(o, "portee", m.kind == Kind::Physical ? "corps" : "distance") == "corps";
     std::string sh = jget<std::string>(o, "deplace", "");
     m.shove = sh == "pousse" ? 1 : sh == "tire" ? -1 : 0;
+    m.motion = jget<std::string>(o, "mouvement", "");
     if (!sh.empty() && !m.shove) throw std::runtime_error("Technique " + m.id + " : « deplace » doit valoir pousse ou tire");
     if (o.contains("effet")) m.effects.push_back(parseEffect(o["effet"]));
     for (auto& e : o.value("effets", Json::array())) m.effects.push_back(parseEffect(e));
@@ -418,6 +457,7 @@ void rebuildData() {
     s.acc = jget(o, "precision", RULES.accBase);
     s.eva = jget(o, "esquive", RULES.evaBase);
     s.crit = jget(o, "critique", RULES.critBase);
+    s.desc = tr(jget<std::string>(o, "description", ""));
     Json resist = o.value("resistances", Json::object());  // variable : la boucle doit la garder en vie
     for (auto& [k, v] : resist.items()) s.resist[k] = v.get<float>();
     s.immune = jget(o, "immunites", std::vector<std::string>{});
@@ -479,7 +519,9 @@ void rebuildData() {
         if (i == N_GEAR_STATS) throw std::runtime_error("Objet « " + d.id + " » : bonus inconnu « " + k + " »");
         d.bonus[i] = v.get<int>();
       }
+      d.moveBonus = jget(o, "mouvement", 0);
     }
+    d.owner = jget<std::string>(o, "pour", "");
     if (o.contains("gemme")) {
       const Json& g = o["gemme"];
       static const char* STATS[] = {"pv", "pm", "attaque", "defense", "magie", "resistance", "vitesse", "precision", "esquive", "critique"};
@@ -552,6 +594,9 @@ std::vector<std::string> checkData() {
         err.push_back(s.name + " : immunité à un état inconnu « " + st + " »");
     for (auto& e : checkTactics(s.tactics, s.name)) err.push_back(e);
   }
+  for (auto& d : ITEMS)
+    if (!d.owner.empty() && (!hasSpecies(d.owner) || d.slot < 0))
+      err.push_back("Objet « " + d.id + " » : « pour » une espèce inconnue ou un objet qui ne s'équipe pas : " + d.owner);
   for (auto& t : TYPES)
     for (auto& st : t.immune)
       if (std::find(std::begin(STATUSES) + 1, std::end(STATUSES), st) == std::end(STATUSES))
@@ -753,7 +798,10 @@ std::vector<std::string> trimGems(Fighter& f) {
   return out;
 }
 
-bool canEquip(const Fighter& f, const ItemDef& d) { return d.slot == G_ACCESSORY || (d.slot >= 0 && f.S().human); }
+bool canEquip(const Fighter& f, const ItemDef& d) {
+  if (!d.owner.empty() && f.sp != d.owner) return false;  // l'arme d'un héros (champ « pour »)
+  return d.slot == G_ACCESSORY || (d.slot >= 0 && f.S().human);
+}
 
 // Héros ? (faux pour une espèce disparue : monde d'une expédition déjà remis en place)
 static bool hero(const FighterP& f) { return f && hasSpecies(f->sp) && f->S().human; }
@@ -900,8 +948,9 @@ std::vector<std::string> Fighter::spells() const {
   return v;
 }
 
+int foeLevelBonus = 0;
 FighterP makeFoe(const Json& e, int defaultLevel) {
-  auto f = makeFighter(e.at("espece").get<std::string>(), jget(e, "niveau", defaultLevel));
+  auto f = makeFighter(e.at("espece").get<std::string>(), jget(e, "niveau", defaultLevel) + foeLevelBonus);
   float mult = jget(e, "pv", 1.f);
   if (mult != 1.f) f->mhp = std::max(1, int(f->mhp * mult + 1e-4f));
   f->hp = f->mhp;
@@ -910,6 +959,20 @@ FighterP makeFoe(const Json& e, int defaultLevel) {
   if (e.contains("phases") && e["phases"].is_array()) f->phases = e["phases"];
   return f;
 }
+
+static bool hasTypeIn(const Species& s, const std::vector<std::string>& ids) {
+  for (auto& ty : ids)
+    for (size_t k = 0; k < TYPES.size(); k++)
+      if (TYPES[k].id == ty && hasType(s, (int)k)) return true;
+  return false;
+}
+int fighterMoveRange(const Fighter& f) {
+  int r = RULES.moveRange + (hasTypeIn(f.S(), RULES.fastTypes) ? 1 : 0);
+  for (auto& id : f.gear)  // bottes : une case de plus
+    if (!id.empty() && hasItem(id)) r += item(id).moveBonus;
+  return r;
+}
+bool speciesFlies(const Species& s) { return hasTypeIn(s, RULES.flyTypes); }
 
 FighterP makeFighter(const std::string& id, int lvl) {
   auto f = std::make_shared<Fighter>();

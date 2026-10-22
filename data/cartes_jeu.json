@@ -1,0 +1,80 @@
+{
+  "depart": ["mulotin", "piafouine", "champichou", "grenouillon", "brumelin"],
+  "adversaires": [
+    {
+      "id": "pip",
+      "nom": "Pip",
+      "cartes": ["mulotin", "piafouine", "champichou", "lucioline", "rocaillou"],
+      "niveau": 0,
+      "or": 200,
+      "carte": "louvet"
+    },
+    {
+      "id": "meunier",
+      "nom": "Le meunier",
+      "cartes": ["rongecrin", "louvet", "lucioline", "rocaillou", "grenouillon"],
+      "niveau": 0,
+      "or": 400,
+      "carte": "sylvarque"
+    },
+    {
+      "id": "mineur",
+      "nom": "Gunnar le mineur",
+      "cartes": ["tisonnel", "galetor", "voltigeon", "fumerole", "draconnet"],
+      "niveau": 1,
+      "or": 800,
+      "carte": "ignarok"
+    },
+    {
+      "id": "chevaliere",
+      "nom": "Dame Elwen",
+      "cartes": ["givrelin", "zephyrin", "cristallin", "etincelot", "banquisot"],
+      "niveau": 1,
+      "or": 1200,
+      "carte": "givrecorne"
+    },
+    {
+      "id": "matelot",
+      "nom": "Matelot Bastien",
+      "cartes": ["ecumet", "voltanguille", "orageline", "noyelin", "nuageon"],
+      "niveau": 1,
+      "or": 2000,
+      "carte": "mere_brumes"
+    },
+    {
+      "id": "mousse",
+      "nom": "Lou, la mousse",
+      "cartes": ["corailleur", "perlin", "murenix", "ecumet", "bastillon"],
+      "niveau": 2,
+      "or": 3000,
+      "carte": "seigneur_orage"
+    },
+    {
+      "id": "voyageuse",
+      "nom": "Mira la voyageuse",
+      "cartes": ["lueurine", "loup_aube", "aubelle", "vasepent", "crapale"],
+      "niveau": 2,
+      "or": 4000,
+      "carte": "brume_noire",
+      "regles": ["identique"]
+    },
+    {
+      "id": "ermite",
+      "nom": "L'ermite des échos",
+      "cartes": ["petrolin", "fossiloup", "echoplume", "spectrecho", "loup_aube"],
+      "niveau": 2,
+      "or": 6000,
+      "carte": "ombre_gardien",
+      "regles": ["identique"]
+    },
+    {
+      "id": "maitre",
+      "nom": "Le Maître des cartes",
+      "cartes": ["mere_brumes", "seigneur_orage", "brume_noire", "ombre_gardien", "veilleur_phare"],
+      "niveau": 2,
+      "or": 10000,
+      "carte": "veilleur_phare",
+      "regles": ["identique"]
+    }
+  ]
+}

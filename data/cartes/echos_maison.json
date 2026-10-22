@@ -1,0 +1,34 @@
+{
+  "id": "echos_maison",
+  "nom": "Maison d'Oriane",
+  "theme": "interieur",
+  "tuiles": [
+    "###########",
+    "###########",
+    "#hh.e..e..#",
+    "#.........#",
+    "#.jtt.....#",
+    "#.jtt.....#",
+    "#........v#",
+    "#.........#",
+    "#####p#####"
+  ],
+  "batiments": [],
+  "habitants": [
+    {
+      "x": 8,
+      "y": 4,
+      "apparence": "chat",
+      "direction": "bas",
+      "dialogue": ["Le chat d'Oriane miaule. Trois fois. Ou alors c'est l'écho."],
+      "promenade": 1
+    },
+    {"x": 3, "y": 6, "apparence": "ermite", "direction": "bas", "evenement": "cartes_ermite"}
+  ],
+  "coffres": [],
+  "panneaux": [],
+  "passages": [{"x": 5, "y": 8, "vers": "echos", "tx": 7, "ty": 20, "direction": "bas"}],
+  "zones": [],
+  "boss": [],
+  "declencheurs": [{"x": 5, "y": 6, "l": 1, "h": 1, "evenement": "echos_maison"}]
+}

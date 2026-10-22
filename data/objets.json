@@ -87,6 +87,121 @@
     "capture": 2.5
   },
   {
+    "id": "canne",
+    "nom": "Canne à pêche",
+    "icone": "ic_lance_1",
+    "description": "Face à l'eau, Entrée pour lancer la ligne. Quand ça mord, Entrée vite, puis Entrée dans la zone verte pour ferrer.",
+    "prix": 0
+  },
+  {
+    "id": "gardon",
+    "nom": "Gardon",
+    "description": "Un petit poisson argenté des lacs de la vallée. Difficulté : ★.",
+    "prix": 40
+  },
+  {
+    "id": "truite",
+    "nom": "Truite arc-en-ciel",
+    "description": "Ses écailles brillent de toutes les couleurs. Difficulté : ★★.",
+    "prix": 120
+  },
+  {
+    "id": "brochet_dore",
+    "nom": "Brochet doré",
+    "description": "Rare : un brochet couleur de soleil. Les pêcheurs en rêvent. Difficulté : ★★★★.",
+    "prix": 800
+  },
+  {
+    "id": "perche",
+    "nom": "Perche moussue",
+    "description": "Elle se cache sous les racines des vieux arbres. Difficulté : ★★.",
+    "prix": 90
+  },
+  {
+    "id": "silure",
+    "nom": "Silure des marais",
+    "description": "Énorme et paresseux, mais il tire fort. Difficulté : ★★★.",
+    "prix": 300
+  },
+  {
+    "id": "omble",
+    "nom": "Omble des glaces",
+    "description": "Il vit sous la glace et n'a jamais froid. Difficulté : ★★.",
+    "prix": 180
+  },
+  {
+    "id": "lotte",
+    "nom": "Lotte givrée",
+    "description": "Une lumière bleue pend devant sa bouche. Difficulté : ★★★★.",
+    "prix": 520
+  },
+  {
+    "id": "aveugle",
+    "nom": "Poisson aveugle",
+    "description": "Il n'a pas d'yeux, mais il sent tout. Difficulté : ★★.",
+    "prix": 220
+  },
+  {
+    "id": "sardine",
+    "nom": "Sardine",
+    "description": "Elle nage en bancs serrés le long des quais. Difficulté : ★.",
+    "prix": 30
+  },
+  {
+    "id": "maquereau",
+    "nom": "Maquereau",
+    "description": "Rayé de bleu, rapide comme une flèche. Difficulté : ★★.",
+    "prix": 100
+  },
+  {
+    "id": "bar",
+    "nom": "Bar d'écume",
+    "description": "Le poisson préféré du capitaine Morvan. Difficulté : ★★★.",
+    "prix": 280
+  },
+  {
+    "id": "raie",
+    "nom": "Raie lune",
+    "description": "Elle glisse sur le sable comme un oiseau dans le ciel. Difficulté : ★★★★.",
+    "prix": 600
+  },
+  {
+    "id": "poulpe",
+    "nom": "Poulpe des ruines",
+    "description": "Il vient des ruines englouties et vole les pièces des noyés. Difficulté : ★★★.",
+    "prix": 440
+  },
+  {
+    "id": "espadon",
+    "nom": "Espadon d'orage",
+    "description": "Très rare : on dit qu'il naît des éclairs qui tombent dans la mer. Difficulté : ★★★★★.",
+    "prix": 1800
+  },
+  {
+    "id": "poisson_lune",
+    "nom": "Poisson-lune",
+    "description": "Rond et rose, il dort à la surface les nuits d'Aube. Difficulté : ★★.",
+    "prix": 240
+  },
+  {
+    "id": "carpe_aube",
+    "nom": "Carpe d'aube",
+    "description": "Ses écailles ont la couleur du soleil levant. Difficulté : ★★★★.",
+    "prix": 1000
+  },
+  {
+    "id": "nacre",
+    "nom": "Poisson nacré",
+    "description": "Il brille comme une perle dans l'eau pâle. Difficulté : ★★★★.",
+    "prix": 840
+  },
+  {
+    "id": "roi_brumes",
+    "nom": "Roi des brumes",
+    "description": "Le poisson légendaire de la Source des Brumes. Presque personne ne l'a vu. Difficulté : ★★★★★.",
+    "prix": 3000
+  },
+  {
     "id": "minerai",
     "nom": "Minerai de fer",
     "icone": "ic_minerai",
@@ -145,6 +260,13 @@
     "description": "Elle brûle sans jamais s'éteindre.",
     "prix": 0,
     "important": true,
+    "trophee": true
+  },
+  {
+    "id": "plume_harpie",
+    "nom": "Plume de harpie",
+    "description": "Trophée : une plume de givre qui ne fond jamais, prise à la Harpie du col.",
+    "prix": 0,
     "trophee": true
   },
   {
@@ -322,6 +444,26 @@
     "bonus": {"esquive": 5, "vitesse": 2}
   },
   {
+    "id": "bottes_vent",
+    "nom": "Bottes de vent",
+    "icone": "ic_bottes_2",
+    "description": "Légères comme une brise : on arrive plus vite là où il faut.",
+    "prix": 700,
+    "equipement": "accessoire",
+    "bonus": {"esquive": 2},
+    "mouvement": 1
+  },
+  {
+    "id": "bottes_ailees",
+    "nom": "Bottes ailées",
+    "icone": "ic_bottes_4",
+    "description": "Des plumes cousues aux chevilles, pour traverser le champ de bataille.",
+    "prix": 2200,
+    "equipement": "accessoire",
+    "bonus": {"vitesse": 3, "esquive": 3},
+    "mouvement": 1
+  },
+  {
     "id": "pendentif_brume",
     "nom": "Pendentif de brume",
     "icone": "ic_acc_7",
@@ -352,6 +494,66 @@
     "description": "Un vieux livre de recettes de plantes, couvert de notes.",
     "prix": 0,
     "important": true
+  },
+  {
+    "id": "eclat_brume",
+    "nom": "Éclat de brume",
+    "icone": "ic_gemme_cristal",
+    "description": "Un fragment de brume figée, froid comme du verre. Une collectionneuse de la Vallée les recherche.",
+    "prix": 0
+  },
+  {
+    "id": "anneau_brume",
+    "nom": "Anneau de brume",
+    "icone": "ic_acc_6",
+    "description": "Taillé dans dix éclats de brume. Celui qui le porte glisse entre les coups.",
+    "prix": 1600,
+    "equipement": "accessoire",
+    "bonus": {"vitesse": 3, "esquive": 4, "resistance": 3}
+  },
+  {
+    "id": "manteau_brume",
+    "nom": "Manteau de brume",
+    "icone": "ic_armure_7",
+    "description": "Tissé de trente éclats de brume. Léger comme l'aube, solide comme la montagne.",
+    "prix": 4000,
+    "equipement": "armure",
+    "bonus": {"pv": 25, "defense": 12, "resistance": 12, "esquive": 4}
+  },
+  {
+    "id": "lettre_aldo",
+    "nom": "Lettre pour Aldo",
+    "icone": "ic_livre",
+    "description": "Une lettre cachetée de cire bleue, pour Aldo, à Forgeroc.",
+    "prix": 0
+  },
+  {
+    "id": "coffret_caravane",
+    "nom": "Coffret de la caravane",
+    "icone": "ic_sac",
+    "description": "Un coffret de marchande, cabossé mais toujours fermé.",
+    "prix": 0
+  },
+  {
+    "id": "champignon_lune",
+    "nom": "Champignon de lune",
+    "icone": "ic_herbe",
+    "description": "Un champignon pâle qui brille faiblement dans le noir.",
+    "prix": 0
+  },
+  {
+    "id": "oeuf_braise",
+    "nom": "Œuf tiède",
+    "icone": "ic_gemme_coeur",
+    "description": "Un gros œuf écailleux, encore tiède. Quelque chose bouge dedans.",
+    "prix": 0
+  },
+  {
+    "id": "partition",
+    "nom": "Page de partition",
+    "icone": "ic_livre",
+    "description": "Une page de musique, tachée d'eau de mer. On devine une mélodie.",
+    "prix": 0
   },
   {
     "id": "gemme_vie",
@@ -466,6 +668,13 @@
     "important": true
   },
   {
+    "id": "trident",
+    "nom": "Trident d'écume",
+    "icone": "ic_lance_4",
+    "description": "Une arme ancienne des gardiens de la mer. Elle ouvre la porte de corail des Ruines englouties.",
+    "prix": 0
+  },
+  {
     "id": "ecaille_kraken",
     "nom": "Écaille du Kraken",
     "description": "Trophée : une écaille irisée, dure comme l'acier.",
@@ -485,6 +694,98 @@
     "description": "Trophée : le cœur du Seigneur des Orages, enfin calme.",
     "prix": 1000,
     "trophee": true
+  },
+  {
+    "id": "larme_aube",
+    "nom": "Larme d'Aube",
+    "icone": "ic_gemme_perle",
+    "description": "Une larme de lumière, tiède comme un matin d'été. Elle ouvre la porte du Gouffre.",
+    "prix": 0
+  },
+  {
+    "id": "seve_lueurs",
+    "nom": "Sève des Lueurs",
+    "description": "Trophée : une goutte de sève qui brille dans le noir, donnée par le Gardien des Lueurs.",
+    "prix": 900,
+    "trophee": true
+  },
+  {
+    "id": "couronne_nenuphar",
+    "nom": "Couronne de nénuphar",
+    "description": "Trophée : la couronne de la Reine du Marais, toujours fraîche.",
+    "prix": 1100,
+    "trophee": true
+  },
+  {
+    "id": "coeur_aube",
+    "nom": "Cœur d'Aube",
+    "description": "Trophée : ce qui reste de la Brume Noire, une perle de lumière rose.",
+    "prix": 2000,
+    "trophee": true
+  },
+  {
+    "id": "croc_troll",
+    "nom": "Croc de troll",
+    "description": "Trophée : un croc gros comme un poing, rapporté des Mines de Forgeroc.",
+    "prix": 300,
+    "trophee": true
+  },
+  {
+    "id": "coeur_colosse",
+    "nom": "Cœur du colosse",
+    "description": "Trophée : un bloc de glace qui ne fond jamais, venu du Glacier de Givreval.",
+    "prix": 700,
+    "trophee": true
+  },
+  {
+    "id": "oeil_leviathan",
+    "nom": "Œil du Léviathan",
+    "description": "Trophée : une perle noire, l'œil du monstre de l'épave.",
+    "prix": 1200,
+    "trophee": true
+  },
+  {
+    "id": "eclair_fige",
+    "nom": "Éclair figé",
+    "description": "Trophée : un éclair pris dans le cristal, au fond de l'Abîme.",
+    "prix": 2500,
+    "trophee": true
+  },
+  {
+    "id": "lame_orage",
+    "nom": "Lame de l'orage ancien",
+    "icone": "ic_epee_4",
+    "description": "Forgée dans l'éclair figé. Elle gronde quand on la tire.",
+    "prix": 8000,
+    "equipement": "arme",
+    "bonus": {"attaque": 24, "magie": 8, "vitesse": 3, "critique": 6}
+  },
+  {
+    "id": "lame_aube",
+    "nom": "Lame d'Aube",
+    "icone": "ic_epee_5",
+    "description": "L'épée du Premier Gardien. Elle brille comme le soleil qui se lève.",
+    "prix": 5000,
+    "equipement": "arme",
+    "bonus": {"attaque": 19, "magie": 6, "critique": 8}
+  },
+  {
+    "id": "insigne_gardien",
+    "nom": "Insigne des gardiens",
+    "icone": "ic_acc_2",
+    "description": "Porté par les plus grands gardiens d'Aube. Il réchauffe le cœur au combat.",
+    "prix": 6000,
+    "equipement": "accessoire",
+    "bonus": {"pv": 40, "attaque": 4, "defense": 4, "magie": 4, "resistance": 4, "vitesse": 4}
+  },
+  {
+    "id": "medaille_naturaliste",
+    "nom": "Médaille du naturaliste",
+    "icone": "ic_acc_4",
+    "description": "Remise à ceux qui connaissent toutes les créatures. Elles semblent vous faire confiance.",
+    "prix": 5000,
+    "equipement": "accessoire",
+    "bonus": {"pv": 30, "attaque": 3, "defense": 3, "magie": 3, "resistance": 3, "vitesse": 3, "precision": 5}
   },
   {
     "id": "lame_ecume",
@@ -523,6 +824,78 @@
     "bonus": {"resistance": 12, "defense": 4, "pm": 8}
   },
   {
+    "id": "lame_lueur",
+    "nom": "Lame de lueur",
+    "icone": "ic_epee_4",
+    "prix": 3600,
+    "equipement": "arme",
+    "description": "Une lame forgée dans le Bois des Lueurs. Elle brille faiblement dans le noir.",
+    "bonus": {"attaque": 18, "critique": 5}
+  },
+  {
+    "id": "baton_lueur",
+    "nom": "Bâton de lueur",
+    "icone": "ic_baton_4",
+    "prix": 3600,
+    "equipement": "arme",
+    "description": "Un bâton de bois pâle, coiffé d'un éclat turquoise.",
+    "bonus": {"magie": 18, "pm": 16}
+  },
+  {
+    "id": "armure_nacre",
+    "nom": "Armure de nacre",
+    "icone": "ic_armure_6",
+    "prix": 3300,
+    "equipement": "armure",
+    "description": "Des plaques de nacre cousues sur du cuir. Légère, et plus solide qu'elle n'en a l'air.",
+    "bonus": {"defense": 16, "resistance": 9, "pv": 20}
+  },
+  {
+    "id": "robe_lueur",
+    "nom": "Robe de lueur",
+    "icone": "ic_armure_7",
+    "prix": 3100,
+    "equipement": "armure",
+    "description": "Une robe tissée de fils qui gardent la lumière du jour.",
+    "bonus": {"resistance": 15, "defense": 6, "pm": 12}
+  },
+  {
+    "id": "lame_echo",
+    "nom": "Lame d'écho",
+    "icone": "ic_epee_5",
+    "prix": 6200,
+    "equipement": "arme",
+    "description": "Une lame de pierre grise qui chante quand elle fend l'air.",
+    "bonus": {"attaque": 22, "critique": 6, "vitesse": 2}
+  },
+  {
+    "id": "baton_echo",
+    "nom": "Bâton d'écho",
+    "icone": "ic_baton_5",
+    "prix": 6200,
+    "equipement": "arme",
+    "description": "Un bâton de pierre grise. Les sorts qu'on y murmure reviennent plus forts.",
+    "bonus": {"magie": 22, "pm": 18, "vitesse": 2}
+  },
+  {
+    "id": "armure_petrifiee",
+    "nom": "Armure pétrifiée",
+    "icone": "ic_armure_8",
+    "prix": 5600,
+    "equipement": "armure",
+    "description": "Taillée dans l'écorce d'un arbre de pierre. Lourde, mais rien ne la traverse.",
+    "bonus": {"defense": 20, "resistance": 11, "pv": 30, "vitesse": -1}
+  },
+  {
+    "id": "robe_echo",
+    "nom": "Robe d'écho",
+    "icone": "ic_armure_7",
+    "prix": 5300,
+    "equipement": "armure",
+    "description": "Les coquillages cousus dessus chantent quand on marche.",
+    "bonus": {"resistance": 19, "defense": 8, "pm": 14}
+  },
+  {
     "id": "amulette_maree",
     "nom": "Amulette des marées",
     "icone": "ic_acc_5",
@@ -530,6 +903,374 @@
     "prix": 1800,
     "equipement": "accessoire",
     "bonus": {"pv": 40, "resistance": 4}
+  },
+  {
+    "id": "collier_corail",
+    "nom": "Collier de corail",
+    "icone": "ic_acc_5",
+    "description": "Trois perles d'écume sur un fil de corail rose. La mer protège celui qui le porte.",
+    "prix": 2400,
+    "equipement": "accessoire",
+    "bonus": {"pv": 25, "resistance": 6, "esquive": 3}
+  },
+  {
+    "id": "eclat_lueur",
+    "nom": "Éclat de lueur",
+    "icone": "ic_gemme_cristal",
+    "description": "Un éclat de cristal qui garde un peu de lumière, même dans le noir. Le gardien du phare d'Aube en cherche.",
+    "prix": 0,
+    "important": true
+  },
+  {
+    "id": "amulette_aube",
+    "nom": "Amulette d'Aube",
+    "icone": "ic_acc_7",
+    "description": "Le cristal du vieux phare, serti d'argent. Il réchauffe le cœur de qui le porte.",
+    "prix": 5000,
+    "equipement": "accessoire",
+    "bonus": {"pv": 60, "magie": 8, "resistance": 6}
+  },
+  {
+    "id": "page_orage",
+    "nom": "Page de l'orage",
+    "icone": "ic_livre",
+    "description": "Une page arrachée, couverte d'une écriture ancienne. L'érudite des Ruines englouties en cherche.",
+    "prix": 0,
+    "important": true
+  },
+  {
+    "id": "recueil_orages",
+    "nom": "Recueil des orages",
+    "icone": "ic_livre",
+    "description": "Le vieux livre des gardiens, enfin complet. Ses pages crépitent sous les doigts.",
+    "prix": 3200,
+    "equipement": "accessoire",
+    "bonus": {"magie": 12, "resistance": 6, "vitesse": 3}
+  },
+  {
+    "id": "echo_pierre",
+    "nom": "Écho de pierre",
+    "icone": "ic_gemme_cristal",
+    "prix": 0,
+    "important": true,
+    "description": "Un galet qui murmure quand on le serre dans la main. Le Colosse d'écho le gardait."
+  },
+  {
+    "id": "echo_flamme",
+    "nom": "Écho de flamme",
+    "icone": "ic_gemme_feu",
+    "prix": 0,
+    "important": true,
+    "description": "Une braise qui ne brûle pas, et qui chante tout bas. Le Phénix d'écho la gardait."
+  },
+  {
+    "id": "coeur_echo",
+    "nom": "Cœur d'écho",
+    "icone": "ic_acc_8",
+    "prix": 9000,
+    "equipement": "accessoire",
+    "description": "Le dernier écho du Premier Gardien, devenu calme. Il bat au rythme de celui qui le porte.",
+    "bonus": {"pv": 80, "attaque": 8, "magie": 8, "vitesse": 4, "critique": 3}
+  },
+  {
+    "id": "fragment_cloche",
+    "nom": "Fragment de cloche",
+    "icone": "ic_minerai",
+    "prix": 0,
+    "important": true,
+    "description": "Un morceau de bronze vert-de-gris. Quand on le frappe, il sonne encore. Le sonneur de Port-Écho en cherche."
+  },
+  {
+    "id": "cloche_echo",
+    "nom": "Clochette d'écho",
+    "icone": "ic_acc_3",
+    "prix": 6000,
+    "equipement": "accessoire",
+    "description": "Une clochette fondue avec le bronze de la vieille cloche. Son tintement donne du courage à qui la porte.",
+    "bonus": {"pv": 50, "resistance": 10, "vitesse": 4}
+  },
+  {
+    "id": "medaille_eleveuse",
+    "nom": "Médaille de l'éleveuse",
+    "icone": "ic_acc_4",
+    "prix": 7000,
+    "equipement": "accessoire",
+    "description": "La médaille des grands éleveurs de Forgeroc. Les créatures qui la portent grandissent plus fortes.",
+    "bonus": {"pv": 40, "attaque": 5, "defense": 5, "magie": 5, "resistance": 5, "vitesse": 3}
+  },
+  {
+    "id": "lanterne_veilleur",
+    "nom": "Lanterne du veilleur",
+    "icone": "ic_lanterne_or",
+    "prix": 12000,
+    "equipement": "accessoire",
+    "description": "La lanterne du dernier veilleur du phare. Sa flamme ne s'éteint jamais, même au fond de l'Abîme.",
+    "bonus": {"pv": 100, "magie": 10, "resistance": 10, "vitesse": 5, "critique": 4}
+  },
+  {
+    "id": "lanterne_fete",
+    "nom": "Lanterne de fête",
+    "icone": "ic_lanterne",
+    "prix": 0,
+    "important": true,
+    "description": "Une lanterne de papier rouge, emportée par le vent. Lison en a besoin pour la fête."
+  },
+  {
+    "id": "lanterne_lison",
+    "nom": "Lanterne de Lison",
+    "icone": "ic_lanterne_or",
+    "prix": 3000,
+    "equipement": "accessoire",
+    "description": "La plus vieille lanterne de la fête. Sa lumière rassure les créatures de la nuit.",
+    "bonus": {"pv": 30, "magie": 5, "resistance": 5, "esquive": 3}
+  },
+  {
+    "id": "medaillon_legendes",
+    "nom": "Médaillon des légendes",
+    "icone": "ic_acc_4",
+    "prix": 10000,
+    "equipement": "accessoire",
+    "description": "Un médaillon où dorment les échos de trois légendes. On les entend murmurer pendant les combats.",
+    "bonus": {"pv": 60, "attaque": 8, "magie": 8, "vitesse": 4, "critique": 4}
+  },
+  {
+    "id": "couronne_echos",
+    "nom": "Couronne des échos",
+    "icone": "ic_acc_8",
+    "prix": 15000,
+    "equipement": "accessoire",
+    "description": "La couronne de celui qui a vaincu tous les échos. Tous les gardiens de l'histoire l'ont un jour portée.",
+    "bonus": {
+      "pv": 120,
+      "attaque": 10,
+      "magie": 10,
+      "defense": 8,
+      "resistance": 8,
+      "vitesse": 6,
+      "critique": 5
+    }
+  },
+  {
+    "id": "as_gardiens",
+    "nom": "As des gardiens",
+    "icone": "ic_acc_8",
+    "prix": 9000,
+    "equipement": "accessoire",
+    "description": "La carte la plus rare du jeu, montée en broche. Le Maître des cartes la donne à celui qui l'a battu.",
+    "bonus": {"pv": 30, "vitesse": 4, "esquive": 4, "critique": 8}
+  },
+  {
+    "id": "carte_tresor_1",
+    "nom": "Carte au trésor n°1",
+    "icone": "ic_livre",
+    "prix": 0,
+    "important": true,
+    "description": "Un vieux parchemin de Corbin. Une croix rouge : Vallée de Brumeval, au sud-ouest de la carte, dans un coin où personne ne va."
+  },
+  {
+    "id": "carte_tresor_2",
+    "nom": "Carte au trésor n°2",
+    "icone": "ic_livre",
+    "prix": 0,
+    "important": true,
+    "description": "Un vieux parchemin de Corbin. Une croix rouge : Sylve-Noire, au nord-est de la carte, dans un coin où personne ne va."
+  },
+  {
+    "id": "carte_tresor_3",
+    "nom": "Carte au trésor n°3",
+    "icone": "ic_livre",
+    "prix": 0,
+    "important": true,
+    "description": "Un vieux parchemin de Corbin. Une croix rouge : Plaine des Moulins, au sud-est de la carte, dans un coin où personne ne va."
+  },
+  {
+    "id": "carte_tresor_4",
+    "nom": "Carte au trésor n°4",
+    "icone": "ic_livre",
+    "prix": 0,
+    "important": true,
+    "description": "Un vieux parchemin de Corbin. Une croix rouge : Monts Cendrelune, à l'est de la carte, dans un coin où personne ne va."
+  },
+  {
+    "id": "carte_tresor_5",
+    "nom": "Carte au trésor n°5",
+    "icone": "ic_livre",
+    "prix": 0,
+    "important": true,
+    "description": "Un vieux parchemin de Corbin. Une croix rouge : Col des Hurlevents, au centre de la carte, dans un coin où personne ne va."
+  },
+  {
+    "id": "carte_tresor_6",
+    "nom": "Carte au trésor n°6",
+    "icone": "ic_livre",
+    "prix": 0,
+    "important": true,
+    "description": "Un vieux parchemin de Corbin. Une croix rouge : Pics Givrés, à l'ouest de la carte, dans un coin où personne ne va."
+  },
+  {
+    "id": "carte_tresor_7",
+    "nom": "Carte au trésor n°7",
+    "icone": "ic_livre",
+    "prix": 0,
+    "important": true,
+    "description": "Un vieux parchemin de Corbin. Une croix rouge : Val des Murmures, au sud-est de la carte, dans un coin où personne ne va."
+  },
+  {
+    "id": "carte_tresor_8",
+    "nom": "Carte au trésor n°8",
+    "icone": "ic_livre",
+    "prix": 0,
+    "important": true,
+    "description": "Un vieux parchemin de Corbin. Une croix rouge : Récif d'Écume, à l'est de la carte, dans un coin où personne ne va."
+  },
+  {
+    "id": "boussole_corbin",
+    "nom": "Boussole de Corbin",
+    "icone": "ic_acc_6",
+    "prix": 9000,
+    "equipement": "accessoire",
+    "description": "La boussole du vieux Corbin. Elle ne montre pas le nord : elle montre ce qu'on cherche.",
+    "bonus": {"pv": 40, "vitesse": 6, "esquive": 6, "critique": 4}
+  },
+  {
+    "id": "lanterne_lame",
+    "nom": "Lanterne-lame",
+    "icone": "ic_epee_5",
+    "prix": 12000,
+    "equipement": "arme",
+    "pour": "lior",
+    "description": "L'épée de l'ancien, quand il était gardien. Une petite flamme brûle dans sa garde, et ne s'éteint jamais.",
+    "bonus": {"attaque": 30, "magie": 10, "vitesse": 3, "critique": 8}
+  },
+  {
+    "id": "baton_aurore",
+    "nom": "Bâton d'Aurore",
+    "icone": "ic_baton_5",
+    "prix": 12000,
+    "equipement": "arme",
+    "pour": "maelle",
+    "description": "Le bâton de la première mage blanche de la vallée. Sa pierre rose s'allume quand quelqu'un souffre, tout près.",
+    "bonus": {"magie": 30, "pm": 30, "resistance": 8, "vitesse": 2}
+  },
+  {
+    "id": "coeur_magma",
+    "nom": "Cœur de magma",
+    "icone": "ic_gemme_feu",
+    "description": "Une pierre rouge, brûlante, qui bat encore comme un cœur. Maître Hrolf en a besoin.",
+    "prix": 0,
+    "important": true
+  },
+  {
+    "id": "hache_hrolf",
+    "nom": "Hache de Hrolf",
+    "icone": "ic_hache_4",
+    "prix": 12000,
+    "equipement": "arme",
+    "pour": "brann",
+    "description": "La dernière hache de maître Hrolf, forgée avec un cœur de magma. Elle chauffe quand Brann se met en colère.",
+    "bonus": {"attaque": 34, "defense": 6, "critique": 8}
+  },
+  {
+    "id": "grimoire_profondeurs",
+    "nom": "Grimoire des profondeurs",
+    "icone": "ic_livre",
+    "prix": 12000,
+    "equipement": "arme",
+    "pour": "isra",
+    "description": "Le livre du maître d'Isra, écrit à la lueur d'une bougie au fond des grottes. Les sorts y attendent dans le noir.",
+    "bonus": {"magie": 32, "pm": 24, "vitesse": 4}
+  },
+  {
+    "id": "arc_sylve",
+    "nom": "Arc de Sylve",
+    "icone": "ic_arc_4",
+    "prix": 12000,
+    "equipement": "arme",
+    "pour": "kael",
+    "description": "Taillé dans le vieux chêne de Sylve-Noire, qui n'avait jamais laissé personne le toucher. Il a laissé Kael.",
+    "bonus": {"attaque": 30, "vitesse": 8, "precision": 10, "critique": 6}
+  },
+  {
+    "id": "armure_serment",
+    "nom": "Armure du serment",
+    "icone": "ic_armure_8",
+    "prix": 12000,
+    "equipement": "armure",
+    "pour": "selene",
+    "description": "L'armure du père de Sélène. Un serment est gravé à l'intérieur : « Garder ceux qui ont froid. »",
+    "bonus": {"pv": 80, "defense": 28, "resistance": 16}
+  },
+  {
+    "id": "prisme_chromatique",
+    "nom": "Prisme chromatique",
+    "icone": "ic_gemme_cristal",
+    "prix": 9000,
+    "equipement": "accessoire",
+    "description": "Un prisme qui décompose la lumière en couleurs que personne n'a jamais vues. Il porte bonheur aux chasseurs de raretés.",
+    "bonus": {"pv": 50, "attaque": 6, "defense": 6, "magie": 6, "resistance": 6, "vitesse": 4, "critique": 4}
+  },
+  {
+    "id": "couronne_colisee",
+    "nom": "Couronne de la Ligue",
+    "icone": "ic_acc_8",
+    "description": "Une couronne d'or ciselée de vagues. Elle n'appartient qu'aux vainqueurs du rang Or.",
+    "prix": 8000,
+    "equipement": "accessoire",
+    "bonus": {"pv": 40, "attaque": 6, "magie": 6, "defense": 6, "resistance": 6, "vitesse": 3}
+  },
+  {
+    "id": "cape_stratege",
+    "nom": "Cape du stratège",
+    "icone": "ic_acc_6",
+    "description": "La cape gris argent des vainqueurs du rang Argent. On dit qu'elle aide à voir venir les coups.",
+    "prix": 4200,
+    "equipement": "accessoire",
+    "bonus": {"defense": 10, "resistance": 10, "esquive": 3}
+  },
+  {
+    "id": "echarpe_lutteur",
+    "nom": "Écharpe du lutteur",
+    "icone": "ic_acc_2",
+    "description": "L'écharpe rouge des vainqueurs du rang Bronze de la Ligue.",
+    "prix": 2600,
+    "equipement": "accessoire",
+    "bonus": {"attaque": 8, "vitesse": 3, "critique": 3}
+  },
+  {
+    "id": "insigne_chasseur",
+    "nom": "Insigne du chasseur",
+    "icone": "ic_acc_3",
+    "description": "Remis aux chasseurs de primes reconnus. On vise mieux quand on le porte.",
+    "prix": 600,
+    "equipement": "accessoire",
+    "bonus": {"precision": 4, "critique": 4}
+  },
+  {
+    "id": "cape_traqueur",
+    "nom": "Cape du traqueur",
+    "icone": "ic_armure_4",
+    "description": "Légère et couleur de mousse : le gibier ne vous entend pas venir.",
+    "prix": 1500,
+    "equipement": "armure",
+    "bonus": {"defense": 7, "esquive": 4, "vitesse": 2}
+  },
+  {
+    "id": "lance_traqueur",
+    "nom": "Lance du traqueur",
+    "icone": "ic_lance_3",
+    "description": "Une lance de chasse en bois de givre, d'une précision redoutable.",
+    "prix": 2600,
+    "equipement": "arme",
+    "bonus": {"attaque": 14, "precision": 8, "critique": 4}
+  },
+  {
+    "id": "couronne_brumes",
+    "nom": "Couronne des brumes",
+    "icone": "ic_acc_8",
+    "description": "Tressée par les gens de l'archipel pour le plus grand chasseur. Elle brille d'une lumière douce.",
+    "prix": 5000,
+    "equipement": "accessoire",
+    "bonus": {"pv": 30, "attaque": 5, "defense": 5, "magie": 5, "resistance": 5, "vitesse": 3}
   },
   {
     "id": "gemme_maitre",

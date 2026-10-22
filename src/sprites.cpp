@@ -56,17 +56,42 @@ static const SpriteRect* borrowedSprite(const Species& sp, Color& tint) {
   return findSprite(v[idHash(sp.id) % v.size()]);
 }
 
-void drawCreature(Gfx& g, const std::string& id, float x, float y, float s, bool flip, float t) {
+void drawCreature(Gfx& g, const std::string& id, float x, float y, float s, bool flip, float t, bool chroma) {
   const Species& sp = species(id);
   s *= sp.size;
   Color tint = rgb(0xffffff);
-  const SpriteRect* own = sp.sprite.empty() ? borrowedSprite(sp, tint) : findSprite(sp.sprite);
+  const SpriteRect* own = sp.sprite.empty() ? borrowedSprite(sp, tint) : nullptr;
+  if (!sp.sprite.empty() && !(chroma && (own = findSprite(sp.sprite + "_chroma")))) own = findSprite(sp.sprite);
+  if (chroma && own && g.spriteAngle == 0 && std::fmod(t * .7f + x * .013f, 1.f) < .3f) {  // chromatique : des éclats dorés
+    float ph = std::fmod(t * .7f + x * .013f, 1.f) / .3f, k = crisp(s);
+    for (int i = 0; i < 3; i++) {
+      float sx = x + (i - 1) * own->w * k * .35f, sy = y + 16 * s - own->h * k * (.55f + .25f * (i % 2)), r = 1 + 2.5f * std::sin(ph * 3.14159f);
+      g.rect(sx - r, sy, 2 * r + 1, 1, rgb(0xffe680)), g.rect(sx, sy - r, 1, 2 * r + 1, rgb(0xffe680));
+    }
+  }
   if (const SpriteRect* r = own) {
     // Sprite (regard vers la gauche) : centré en x, posé sur l'ombre (y + 15)
     float k = crisp(s);
-    float bob = std::round(std::sin(t * 3.1f));
+    float x0 = std::round(x - r->w * k / 2), y0 = std::round(y + 16 * s - r->h * k);
+    bool flies = sp.shape == Shape::Bird || sp.shape == Shape::Bat || sp.shape == Shape::Ghost || sp.shape == Shape::Bug ||
+                 sp.shape == Shape::Wisp;
+    if (flies && g.spriteAngle == 0) {  // en vol : tout le corps flotte, l'ombre rétrécit quand il monte
+      float up = std::round((std::sin(t * 3.1f) * .5f + .5f) * 2 * std::min(k, 1.f));
+      g.ellipse(x, y + 15 * s, std::max(5.f, r->w * k * (.36f - up * .02f)), 3 * s, rgb(0, 40));
+      g.sprite(*r, x0, y0 - 1 - up, flip, k, tint);
+      return;
+    }
+    // Au sol : il respire. Le bas du corps reste posé, le haut (tête et épaules) descend d'un pixel puis remonte,
+    // comme les créatures au repos des jeux en pixel art ; décalé d'une créature à l'autre (selon x)
     g.ellipse(x, y + 15 * s, std::max(6.f, r->w * k * .38f), 3 * s, rgb(0, 46));
-    g.sprite(*r, std::round(x - r->w * k / 2), std::round(y + 16 * s - r->h * k + bob), flip, k, tint);
+    bool down = std::sin(t * 2.6f + x * .37f) > .2f;
+    int h = r->h, head = std::max(1, h * 9 / 20);
+    if (h < 10 || k < 1 || !down || g.spriteAngle != 0) {  // petit, en réduction (carte) ou couché (K.O.) : pas de respiration
+      g.sprite(*r, x0, y0, flip, k, tint);
+      return;
+    }
+    g.sprite(r->sub(0, head, r->w, h - head), x0, y0 + head * k, flip, k, tint);
+    g.sprite(r->sub(0, 0, r->w, head), x0, y0 + k, flip, k, tint);
     return;
   }
   Color C = rgb(sp.c1), L = rgb(sp.c2), D = shade(C, .3f);
@@ -272,6 +297,7 @@ void drawCreature(Gfx& g, const std::string& id, float x, float y, float s, bool
 // Sprite d'un personnage : (x, y) = coin haut-gauche de sa case de 16x16 agrandie s fois. Sur la carte (s < 1,5) :
 // <sprite>_<direction>_<image> (gauche = droite retournée et inversement ; direction absente : de face) ; en plus
 // grand (combat, menus) : <sprite>_combat, tourné vers la gauche.
+static int breathPx_ = 0;  // combat : le haut du héros descend de ce nombre de pixels (respiration, drawFighterSprite)
 static bool humanSprite(Gfx& g, const Look& lk, float x, float y, float s, int dir, int step, bool run) {
   // Expédition (3.3) : un personnage généré (lk_…) prend le dessin d'un personnage de la planche selon son arme
   static const char* BY_WEAPON[] = {"homme", "aventuriere", "mage", "soldat", "aventuriere", "archere", "soldat"};
@@ -294,7 +320,13 @@ static bool humanSprite(Gfx& g, const Look& lk, float x, float y, float s, int d
     if (!r) return false;
     float cx = x + 8 * s, bottom = y + 16 * s;
     g.ellipse(cx, bottom - 1, r->w * k * .36f, 2 * k, rgb(0, 50));
-    g.sprite(*r, std::round(cx - r->w * k / 2), std::round(bottom - r->h * k), dir == 3, k, tint);
+    float x0 = std::round(cx - r->w * k / 2), y0 = std::round(bottom - r->h * k);
+    if (breathPx_ > 0 && r->h >= 16) {  // respiration : la tête et les épaules descendent, les pieds restent posés
+      int head = r->h * 2 / 5;
+      g.sprite(r->sub(0, head, r->w, r->h - head), x0, y0 + head * k, dir == 3, k, tint);
+      g.sprite(r->sub(0, 0, r->w, head), x0, y0 + breathPx_, dir == 3, k, tint);
+    } else
+      g.sprite(*r, x0, y0, dir == 3, k, tint);
     return true;
   }
   static const char* NAMES[] = {"haut", "bas", "gauche", "droite"};
@@ -317,10 +349,15 @@ static bool humanSprite(Gfx& g, const Look& lk, float x, float y, float s, int d
     flip = r != nullptr;
   }
   if (!r) r = frame("bas");
-  if (!r && (r = findSprite(p))) flip = dir == 3;  // animal : un seul sprite, tourné vers la gauche
+  float hop = 0;
+  if (!r && (r = findSprite(p))) {  // animal : un seul sprite, tourné vers la gauche ; il trottine en marchant (3.4)
+    flip = dir == 3;
+    hop = step ? -1.f * s : 0.f;
+  }
   if (!r) return false;
-  g.ellipse(x + 8 * s, y + 15 * s, 6 * s, 2 * s, rgb(0, 50));
-  g.sprite(*r, std::round(x + (16 * s - r->w * s) / 2), std::round(y + 16 * s - r->h * s), flip, s, tint);
+  g.ellipse(x + 8 * s, y + 15 * s, 7 * s, 2.5f * s, rgb(0, 34));  // ombre douce (2026-10-21) : un halo, puis le cœur
+  g.ellipse(x + 8 * s, y + 15 * s, 5 * s, 1.6f * s, rgb(0, 52));
+  g.sprite(*r, std::round(x + (16 * s - r->w * s) / 2), std::round(y + 16 * s - r->h * s + hop), flip, s, tint);
   return true;
 }
 
@@ -421,7 +458,8 @@ bool drawFighterIcon(Gfx& g, const Fighter& f, float cx, float cy, float w, floa
     g.sprite(r->sub(0, 0, r->w, hh), std::round(cx - r->w * k / 2), std::round(cy - hh * k / 2), faceRight, k, tint);
     return true;
   }
-  const SpriteRect* r = sp.sprite.empty() ? borrowedSprite(sp, tint) : findSprite(sp.sprite);
+  const SpriteRect* r = sp.sprite.empty() ? borrowedSprite(sp, tint) : nullptr;
+  if (!sp.sprite.empty() && !(f.chroma && (r = findSprite(sp.sprite + "_chroma")))) r = findSprite(sp.sprite);  // chromatique
   if (!r) return false;
   float k = std::min({1.f, h / r->h, w / r->w});
   g.sprite(*r, std::round(cx - r->w * k / 2), std::round(cy - r->h * k / 2), faceRight, k, tint);
@@ -465,10 +503,11 @@ void drawFighterSprite(Gfx& g, const Fighter& f, float x, float y, float s, bool
   const Species& sp = f.S();
   if (sp.human) {
     float k = 2 * s;
-    float bob = std::round(std::sin(t * 2.5f) * .6f);
-    drawHuman(g, look(sp.look), x - 8 * k, y - 10 * k + bob, k, faceRight ? 3 : 2, 0, true);
+    breathPx_ = g.spriteAngle == 0 && std::sin(t * 2.2f + x * .31f) > .3f ? 1 : 0;  // respire (pas couché : K.O.)
+    drawHuman(g, look(sp.look), x - 8 * k, y - 10 * k, k, faceRight ? 3 : 2, 0, true);
+    breathPx_ = 0;
   } else {
-    drawCreature(g, f.sp, x, y, s, faceRight, t);
+    drawCreature(g, f.sp, x, y, s, faceRight, t, f.chroma);
   }
 }
 
@@ -489,6 +528,12 @@ static bool texTile(Gfx& g, const char* id, int x, int y, int sx, int sy, Color 
   return true;
 }
 
+// Sol des grottes (2026-10-21) : la teinte des dalles suit la roche de la carte (« teinte_murs »), posée par drawTile
+static uint32_t caveFloor = 0x8a84a0;
+static int roomStyle = 0;
+static bool tileNight = false;
+void setTileNight(bool night) { tileNight = night; }  // intérieurs (2026-10-21) : 0 maison, 1 chapelle, 2 auberge, 3 boutique, 4 soin
+
 static void ground(Gfx& g, Theme th, int sx, int sy, int h, int x, int y) {
   if (th == Theme::Vallee) {
     g.rect(sx, sy, 16, 16, rgb(0x67b35d));
@@ -500,9 +545,19 @@ static void ground(Gfx& g, Theme th, int sx, int sy, int h, int x, int y) {
     }
     if (h % 17 == 0) g.rect(sx + 2 + (h >> 5) % 11, sy + 2 + (h >> 9) % 11, 1, 1, rgb((h >> 2) % 2 ? 0xfff2a0 : 0xffffff));  // fleurette
   } else if (th == Theme::Cendres) {
-    g.rect(sx, sy, 16, 16, rgb(0x6e625c));
+    // (2026-10-21) la roche volcanique n'est plus un aplat : nuance par case, plaques de cendre claire, fissures,
+    // gravier ; rarement une braise qui rougeoit encore
+    int v = hsh(x / 3, y / 3) % 3 - 1;  // nuance par grandes plaques (une case seule ferait un damier)
+    g.rect(sx, sy, 16, 16, rgb(uint32_t((0x6e + v * 2) << 16 | (0x62 + v * 2) << 8 | (0x5c + v * 2))));
+    if (h % 7 == 0) g.ellipse(sx + 5 + (h >> 3) % 7, sy + 6 + (h >> 6) % 5, 5, 2.5f, rgb(0x8a7e76, 120));  // cendre claire
+    if (h % 5 == 1) {  // une fissure
+      int fx = sx + 2 + (h >> 7) % 9, fy = sy + 3 + (h >> 10) % 9;
+      g.rect(fx, fy, 3, 1, rgb(0x4a403c)), g.rect(fx + 3, fy + 1, 2, 1, rgb(0x4a403c)), g.rect(fx + 4, fy + 2, 1, 2, rgb(0x4a403c));
+    }
     g.rect(sx + h % 13, sy + (h >> 4) % 13, 2, 1, rgb(0x5f544f));
     g.rect(sx + (h >> 8) % 12 + 2, sy + (h >> 12) % 12 + 2, 1, 1, rgb(0x857770));
+    g.rect(sx + (h >> 11) % 13 + 1, sy + (h >> 2) % 12 + 2, 1, 1, rgb(0x8f8278));
+    if (h % 61 == 0) g.rect(sx + 4 + (h >> 4) % 8, sy + 5 + (h >> 9) % 8, 2, 1, rgb(0xd9541e));  // une braise
   } else if (th == Theme::Foret) {
     g.rect(sx, sy, 16, 16, rgb(0x3f7d45));
     g.rect(sx + h % 13, sy + (h >> 4) % 13, 2, 1, rgb(0x34693a));
@@ -511,6 +566,10 @@ static void ground(Gfx& g, Theme th, int sx, int sy, int h, int x, int y) {
   } else if (th == Theme::Neige) {
     // Neige (3.3) : des rides de vent, des congères avec leur ombre, des brins secs qui dépassent et des cristaux
     g.rect(sx, sy, 16, 16, rgb(0xe8eef6));
+    // (2026-10-21) de grandes ondulations de la neige : par endroits un peu bleutée, par endroits plus claire
+    int dune = hsh(x / 3, y / 2) % 5;
+    if (dune == 0) g.rect(sx, sy, 16, 16, rgb(0xb8cce6, 16));
+    else if (dune == 1) g.rect(sx, sy, 16, 16, rgb(0xffffff, 28));
     g.rect(sx + h % 13, sy + (h >> 4) % 13, 2, 1, rgb(0xcdd8e8));
     g.rect(sx + (h >> 8) % 12 + 2, sy + (h >> 12) % 12 + 2, 1, 1, rgb(0xffffff));
     int k = (h >> 5) % 13;
@@ -530,15 +589,27 @@ static void ground(Gfx& g, Theme th, int sx, int sy, int h, int x, int y) {
       int gx = sx + 3 + (h >> 9) % 10, gy = sy + 3 + (h >> 12) % 10;
       g.rect(gx, gy, 1, 1, rgb(0xffffff)), g.rect(gx - 1, gy, 3, 1, rgb(0xc4e4ff, 170)), g.rect(gx, gy - 1, 1, 3, rgb(0xc4e4ff, 170));
     }
-  } else if (th == Theme::Interieur) {  // parquet : quatre lames par case, joints décalés
-    g.rect(sx, sy, 16, 16, rgb(0xb07a48));
+  } else if (th == Theme::Interieur && roomStyle == 1) {  // chapelle : grandes dalles de pierre
+    g.rect(sx, sy, 16, 16, rgb((x + y) % 2 ? 0xa8a296 : 0xb2ac9f));
+    g.rect(sx, sy + 15, 16, 1, rgb(0x857f74)), g.rect(sx + 15, sy, 1, 16, rgb(0x857f74));
+    g.rect(sx, sy, 16, 1, rgb(0xc8c2b4));
+    if (h % 7 == 0) g.rect(sx + 3 + (h >> 4) % 8, sy + 5 + (h >> 7) % 6, 3, 1, rgb(0x938d80));  // une fêlure
+  } else if (th == Theme::Interieur && (roomStyle == 3 || roomStyle == 4)) {  // boutique, soin : un carrelage en damier
+    bool odd = (x + y) % 2;
+    uint32_t a = roomStyle == 3 ? 0xc8b48a : 0xe4ecf2, b = roomStyle == 3 ? 0x9a7e56 : 0xa8c4dc;
+    g.rect(sx, sy, 16, 16, rgb(odd ? a : b));
+    g.rect(sx, sy, 16, 1, rgb(0xffffff, 40)), g.rect(sx, sy, 1, 16, rgb(0xffffff, 30));
+    g.rect(sx, sy + 15, 16, 1, rgb(0x000000, 30));
+    if (!odd) g.rect(sx + 3, sy + 3, 2, 1, rgb(0xffffff, 60));  // un reflet sur le carreau
+  } else if (th == Theme::Interieur) {  // parquet : quatre lames par case, joints décalés ; plus sombre à l'auberge
+    g.rect(sx, sy, 16, 16, rgb(roomStyle == 2 ? 0x8e5a34 : 0xb07a48));
     for (int i = 0; i < 4; i++) {
       g.rect(sx, sy + i * 4 + 3, 16, 1, rgb(0x8f5f36));
       g.rect(sx + (h >> (i * 3)) % 14 + 1, sy + i * 4, 1, 3, rgb(0x8f5f36));
     }
     g.rect(sx + h % 12 + 2, sy + 1 + (h >> 5) % 2 * 8, 2, 1, rgb(0xc48c58));
   } else {
-    if (texTile(g, (h >> 3) % 3 ? "sol_3_5" : "sol_2_5", x, y, sx, sy, rgb(0x8a84a0))) return;  // grotte (3.3) : dalles sombres
+    if (texTile(g, (h >> 3) % 3 ? "sol_3_5" : "sol_2_5", x, y, sx, sy, rgb(caveFloor))) return;  // grotte (3.3) : dalles sombres
     g.rect(sx, sy, 16, 16, rgb(0x4a4252));
     g.rect(sx + h % 13, sy + (h >> 4) % 13, 2, 1, rgb(0x3f3847));
     g.rect(sx + (h >> 8) % 12 + 2, sy + (h >> 12) % 12 + 2, 1, 1, rgb(0x5a5164));
@@ -555,7 +626,9 @@ bool tallGrass(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t, b
   for (int i = 0; i < 2; i++) {
     const SpriteRect* r = findSprite(std::string(kind) + std::to_string(1 + ((h >> i) & 1)));
     if (!r) return false;
-    int sway = (int)std::lround(std::sin(t * 2.2f + x * .7f + y * .3f + i * 1.7f) * .6f);
+    // ondulation, plus une rafale qui traverse le champ d'ouest en est (une vague tous les ~4 s)
+    float gust = std::pow(std::max(0.f, std::sin(x * .35f + y * .12f - t * 1.6f)), 8.f) * 2.2f;
+    int sway = (int)std::lround(std::sin(t * 2.2f + x * .7f + y * .3f + i * 1.7f) * .6f + gust);
     int px = sx - 2 + i * 8 + sway, py = sy + 16 - r->h + i;
     if (!front) g.sprite(*r, px, py, (h >> (i + 4)) & 1);
     else {
@@ -608,6 +681,8 @@ static const SpriteRect* propSprite(const MapDef& m, int x, int y) {
     case 'G': id = "tableau_annonces"; break;
     case 'J': id = "banniere"; break;
   }
+  if (id && c == 'T' && !m.trees.empty())  // arbres d'une autre sorte (« arbres » de la carte : « pierre »…)
+    if (const SpriteRect* r = findSprite(std::string(id) + "_" + m.trees)) return r;
   return id ? findSprite(id) : nullptr;
 }
 bool hasProp(const MapDef& m, int x, int y) { return propSprite(m, x, y) != nullptr; }
@@ -627,20 +702,102 @@ void drawProp(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
   if (c == 'j') jx = x > 0 && m.rows[y][x - 1] == 't' ? -2 : 2;  // la chaise contre sa table
   if (c != 'C' && c != 'U') g.ellipse(sx + 8 + jx, sy + 14, std::min(8.f, r->w * .4f), 2.5f, rgb(0, 45));
   bool flip = (c == 'T' && (h >> 11) % 2) || (c == 'j' && x > 0 && m.rows[y][x - 1] == 't');  // chaise tournée vers la table
-  g.sprite(*r, sx + 8 + jx - r->w / 2, sy + 16 - r->h + (c == 'T' ? 1 : 0), flip);
+  float x0 = sx + 8 + jx - r->w / 2, y0 = sy + 16 - r->h + (c == 'T' ? 1 : 0);
+  if (c == 'T' && r->h >= 16) {  // le vent : le haut de l'arbre penche d'un pixel par moments, en vague sur la carte
+    int sway = (int)std::round(std::sin(t * 1.3f + x * .45f + y * .2f) * .65f);
+    if (sway != 0) {
+      int top = r->h * 9 / 20;
+      g.sprite(r->sub(0, top, r->w, r->h - top), x0, y0 + top, flip);
+      g.sprite(r->sub(0, 0, r->w, top), x0 + sway, y0, flip);
+      return;
+    }
+  }
+  g.sprite(*r, x0, y0, flip);
 }
 
 // Fenêtre d'un mur d'intérieur (3.3) : la face d'un mur sur deux ou trois, sauf là où pend un cadre
 static bool interiorWindow(int x, int y) { return (x * 7 + y) % 9 != 0 && (x * 5 + y * 3) % 4 == 1; }
 
+// Relief des murs (2026-10-21, graphismes) : dans les grottes, donjons et lieux de glace, un mur n'est plus une dalle
+// vue de dessus. Là où il continue vers le bas, on voit son dessus (sombre, ou enneigé dans la glace), bordé d'une
+// arête claire du côté du sol ; là où il touche le sol par en dessous, on voit sa face, éclairée en haut et dans
+// l'ombre au pied ; le sol au pied d'un mur reçoit son ombre (plus marquée sous une face que sur les côtés).
+static void wallDepth(Gfx& g, const MapDef& m, int x, int y, int sx, int sy) {
+  auto wall = [&](int xx, int yy) {
+    if (xx < 0 || yy < 0 || xx >= m.w() || yy >= m.h()) return true;
+    char c = m.rows[yy][xx];
+    return c == '#' || c == ' ';
+  };
+  bool ice = m.theme == Theme::Neige;
+  int h = hsh(x, y);
+  uint32_t base = ice ? 0 : m.wallTint ? m.wallTint : 0x46405a;  // la roche, en plus sombre (dessus) ou plus clair (arêtes)
+  auto shade = [&](float k) {
+    int r = std::min(255, int(((base >> 16) & 255) * k)), gg = std::min(255, int(((base >> 8) & 255) * k)), b = std::min(255, int((base & 255) * k));
+    return rgb(uint32_t(r << 16 | gg << 8 | b));
+  };
+  if (wall(x, y)) {
+    if (m.rows[y][x] == ' ') return;
+    if (!wall(x, y + 1)) {  // la face du mur, tournée vers nous
+      Color cap = ice ? rgb(0xe6eef8) : shade(.6f), rim = ice ? rgb(0xffffff) : shade(1.3f);
+      g.rect(sx, sy, 16, 4, cap);
+      g.rect(sx, sy + 4, 16, 1, rim);
+      for (int i = 0; i < 11; i++) g.rect(sx, sy + 5 + i, 16, 1, rgb(0x000000, uint8_t(i * (ice ? 5 : 9))));  // l'ombre monte du pied
+      g.rect(sx, sy + 14, 16, 2, rgb(ice ? 0x2a4a6a : 0x0c0910, ice ? 90 : 140));
+      if (ice && (h >> 3) % 3 == 0) g.rect(sx + 3 + (h >> 5) % 9, sy + 6, 1, 6 + (h >> 9) % 3, rgb(0xffffff, 120));  // reflet de glace
+      if (!ice && (h >> 3) % 4 == 0) {  // un éclat de roche
+        Color c = shade(1.9f);
+        c.a = 90;
+        g.rect(sx + 2 + (h >> 5) % 11, sy + 7 + (h >> 9) % 4, 2, 1, c);
+      }
+      if (!wall(x - 1, y)) g.rect(sx, sy, 1, 16, rgb(0x000000, 60));
+      if (!wall(x + 1, y)) g.rect(sx + 15, sy, 1, 16, rgb(0x000000, 80));
+    } else {  // le dessus du mur
+      Color top = ice ? rgb(0xdfe9f5) : shade(.48f);
+      // dessus du mur : la roche (ou la neige) en texture, assombrie ; sinon un aplat
+      if (!texTile(g, ice ? "tex_neige" : "tex_pierre", x, y, sx, sy, ice ? rgb(0xf0f6ff) : shade(.62f))) g.rect(sx, sy, 16, 16, top);
+      if (ice) g.rect(sx + (h % 11), sy + 3 + (h >> 4) % 9, 4, 1, rgb(0xc8d8ec));
+      else g.rect(sx, sy, 16, 16, rgb(0x000000, 35));  // le dessus est moins éclairé que la face
+      Color edge = ice ? rgb(0xa8c4e0) : shade(1.1f);
+      if (!wall(x, y - 1)) g.rect(sx, sy, 16, 1, edge);
+      if (!wall(x - 1, y)) g.rect(sx, sy, 1, 16, edge);
+      if (!wall(x + 1, y)) g.rect(sx + 15, sy, 1, 16, edge);
+    }
+    return;
+  }
+  // Le sol au pied des murs : leur ombre
+  if (wall(x, y - 1))
+    for (int i = 0; i < 6; i++) g.rect(sx, sy + i, 16, 1, rgb(0x000000, uint8_t((6 - i) * (ice ? 9 : 16))));
+  if (wall(x - 1, y)) g.rect(sx, sy, 2, 16, rgb(0x000000, ice ? 30 : 55));
+  if (wall(x + 1, y)) g.rect(sx + 14, sy, 2, 16, rgb(0x000000, ice ? 20 : 40));
+}
+
 static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t);
 void drawTile(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float t) {
+  caveFloor = 0x8a84a0;
+  roomStyle = m.style == "chapelle" ? 1 : m.style == "auberge" ? 2 : m.style == "boutique" ? 3 : m.style == "soin" ? 4 : 0;
+  if (m.wallTint) {  // la roche de la carte, en plus clair pour le sol
+    auto ch = [&](int s) { return uint32_t(std::min(255, ((int(m.wallTint) >> s) & 255) * 2 - 4)); };
+    caveFloor = ch(16) << 16 | ch(8) << 8 | ch(0);
+  }
   drawTileBase(g, m, x, y, sx, sy, t);
+  if (m.theme == Theme::Grotte || m.theme == Theme::Neige) return wallDepth(g, m, x, y, sx, sy);
+  if (m.theme == Theme::Cendres && m.rows[y][x] != 'l') {  // (2026-10-21) le sol qui borde la lave rougeoit, en pulsant
+    auto lava = [&](int xx, int yy) { return xx >= 0 && yy >= 0 && xx < m.w() && yy < m.h() && m.rows[yy][xx] == 'l'; };
+    float k = .75f + .25f * std::sin(t * 2.2f + x * .7f + y * .5f);
+    for (int i = 0; i < 6; i++) {
+      uint8_t a = uint8_t((6 - i) * 13 * k);
+      Color c = rgb(0xff7a2a, a);
+      if (lava(x, y - 1)) g.rect(sx, sy + i, 16, 1, c);
+      if (lava(x, y + 1)) g.rect(sx, sy + 15 - i, 16, 1, c);
+      if (lava(x - 1, y)) g.rect(sx + i, sy, 1, 16, c);
+      if (lava(x + 1, y)) g.rect(sx + 15 - i, sy, 1, 16, c);
+    }
+  }
   if (m.theme != Theme::Interieur || m.rows[y][x] == '#' || m.rows[y][x] == ' ') return;
   // Intérieurs (3.3) : l'ombre des murs sur le sol, et la lumière qui tombe d'une fenêtre
   auto wall = [&](int xx, int yy) { return xx < 0 || yy < 0 || xx >= m.w() || yy >= m.h() || m.rows[yy][xx] == '#'; };
   if (wall(x, y - 1)) {
-    if (interiorWindow(x, y - 1))
+    if (interiorWindow(x, y - 1) && !tileNight)  // le soleil entre par la fenêtre (pas la nuit)
       g.poly({{sx + 4.f, sy + 0.f}, {sx + 12.f, sy + 0.f}, {sx + 15.f, sy + 14.f}, {sx + 3.f, sy + 14.f}}, rgb(0xfff2c0, 34));
     g.rect(sx, sy, 16, 3, rgb(0x1a0e06, 70)), g.rect(sx, sy + 3, 16, 2, rgb(0x1a0e06, 30));
   }
@@ -822,18 +979,20 @@ static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, 
       }
       if (c == 'B') {
         bool horiz = at(x - 1, y) == '=' || at(x + 1, y) == '=' || at(x - 1, y) == 'B' || at(x + 1, y) == 'B';
-        g.rect(sx, sy, 16, 16, rgb(0xa0703f));
+        // (2026-10-21) un vrai pont : son ombre sur l'eau, des planches éclairées et clouées, deux poutres et leurs poteaux
+        // (dessiné dans un repère « horizontal » : u le long du pont, v en travers ; tourné pour un pont vertical)
+        auto R = [&](float u, float v, float w, float hh, Color c) { horiz ? g.rect(sx + u, sy + v, w, hh, c) : g.rect(sx + v, sy + u, hh, w, c); };
+        R(0, 13, 16, 3, rgb(0x0e2a4a, 120));  // l'ombre sur l'eau
+        R(0, 2, 16, 11, rgb(0xa0703f));
         for (int i = 0; i < 16; i += 4) {
-          if (horiz) g.rect(sx + i, sy, 1, 16, rgb(0x7a5230));
-          else g.rect(sx, sy + i, 16, 1, rgb(0x7a5230));
+          R(i, 2, 1, 11, rgb(0x7a5230));
+          R(i + 1, 3, 3, 1, rgb(0xc08a52));  // le bord éclairé de la planche
+          R(i + 2, 5, 1, 1, rgb(0x4a3420)), R(i + 2, 10, 1, 1, rgb(0x4a3420));  // les clous
         }
-        if (horiz) {
-          g.rect(sx, sy, 16, 2, rgb(0x6b4a2f));
-          g.rect(sx, sy + 14, 16, 2, rgb(0x6b4a2f));
-        } else {
-          g.rect(sx, sy, 2, 16, rgb(0x6b4a2f));
-          g.rect(sx + 14, sy, 2, 16, rgb(0x6b4a2f));
-        }
+        R(0, 1, 16, 2, rgb(0x6b4a2f)), R(0, 12, 16, 2, rgb(0x5a3e26));  // les poutres
+        R(1, -1, 2, 4, rgb(0x5a3e26)), R(9, -1, 2, 4, rgb(0x5a3e26));     // les poteaux
+        R(1, 11, 2, 4, rgb(0x4a321e)), R(9, 11, 2, 4, rgb(0x4a321e));
+        R(1, -1, 2, 1, rgb(0x8a6440)), R(9, -1, 2, 1, rgb(0x8a6440));
       }
       break;
     }
@@ -894,16 +1053,25 @@ static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, 
         g.rect(sx + 3 + (y % 2) * 6, sy + 8, 1, 8, rgb(0x786d66));
       }
       break;
-    case 'P':  // plaque de l'énigme (3.0) : une dalle gravée
+    case 'P':  // plaque de l'énigme (3.0) : une dalle gravée ; (2026-10-21) biseautée, avec un cercle de runes
       ground(g, th, sx, sy, h, x, y);
-      g.rect(sx + 2, sy + 2, 12, 12, rgb(0x8a8270));
-      g.rect(sx + 3, sy + 3, 10, 10, rgb(0xa89e88));
-      g.rect(sx + 6, sy + 6, 4, 4, rgb(0x6a6252));
+      g.rect(sx + 1, sy + 2, 14, 13, rgb(0x000000, 50));                                   // son ombre
+      g.rect(sx + 1, sy + 1, 14, 13, rgb(0x8a8270));
+      g.rect(sx + 1, sy + 1, 14, 1, rgb(0xc8bea4)), g.rect(sx + 1, sy + 1, 1, 13, rgb(0xb8ae94));  // arêtes éclairées
+      g.rect(sx + 1, sy + 13, 14, 1, rgb(0x5a5242)), g.rect(sx + 14, sy + 1, 1, 13, rgb(0x6a6252));
+      g.rect(sx + 3, sy + 3, 10, 9, rgb(0xa89e88));
+      g.ellipse(sx + 8, sy + 7.5f, 4, 3.5f, rgb(0x6a6252));                                 // le cercle gravé
+      g.ellipse(sx + 8, sy + 7.5f, 2.6f, 2.2f, rgb(0xa89e88));
+      g.rect(sx + 7, sy + 4, 2, 1, rgb(0x6a6252)), g.rect(sx + 7, sy + 11, 2, 1, rgb(0x6a6252));
+      g.rect(sx + 4, sy + 7, 1, 2, rgb(0x6a6252)), g.rect(sx + 11, sy + 7, 1, 2, rgb(0x6a6252));
       break;
-    case 'R':
+    case 'R':  // (2026-10-21) un rocher ombré, avec son reflet et une fente
       ground(g, th, sx, sy, h, x, y);
-      g.ellipse(sx + 8, sy + 10, 6, 5, rgb(0x8a8a92));
-      g.ellipse(sx + 7, sy + 8, 4, 3, rgb(0xa9a9b3));
+      g.ellipse(sx + 8, sy + 14, 6.5f, 2, rgb(0x000000, 60));
+      g.ellipse(sx + 8, sy + 10, 6.5f, 5.5f, rgb(0x5e5a66));
+      g.ellipse(sx + 7.5f, sy + 9, 5.5f, 4.5f, rgb(0x8a8692));
+      g.ellipse(sx + 6.5f, sy + 7.5f, 3, 2, rgb(0xb0acb8));
+      g.rect(sx + 9 + (h >> 4) % 2, sy + 9, 1, 3, rgb(0x46424e));
       break;
     case 'W': {
       bool paved = at(x - 1, y) == 'q' || at(x + 1, y) == 'q' || at(x, y - 1) == 'q' || at(x, y + 1) == 'q';
@@ -915,18 +1083,34 @@ static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, 
       while (at(x, y - bh / 16) == 'W') bh += 16;
       float ox0 = sx + 16 - bw, oy0 = sy + 16 - bh;
       float cx = ox0 + bw / 2.f, cy = oy0 + bh / 2.f + 1, rx = bw / 2.f - 1, ry = bh / 2.f - 2;
-      g.ellipse(cx, cy + 2, rx, ry, rgb(0x000000, 50));                 // ombre
-      g.ellipse(cx, cy, rx, ry, rgb(0x8a8a96));                          // margelle de pierre
-      g.ellipse(cx, cy - 1, rx - 1, ry - 1, rgb(0xb4b4c0));
-      g.ellipse(cx, cy, rx - 3, ry - 3, rgb(0x3f7fc0));                  // l'eau
-      g.ellipse(cx - 2, cy - 1, rx - 6, ry - 5, rgb(0x5ea0dc));
-      float ring = std::fmod(t * .8f, 1.f);                              // ronds dans l'eau
-      g.ellipse(cx, cy, 3 + ring * (rx - 6), 1.5f + ring * (ry - 5), rgb(0xcfeaff, uint8_t(120 * (1 - ring))));
-      g.rect(cx - 2, cy - 6, 4, 6, rgb(0x9a9aa6));                       // colonne centrale
-      g.rect(cx - 1, cy - 12 + std::sin(t * 6), 2, 7, rgb(0xcfeaff, 210));  // le jet
-      for (int i = 0; i < 4; i++) {                                      // gouttes qui retombent
-        float k = std::fmod(t * 1.6f + i * .25f, 1.f), dx = (i % 2 ? 1 : -1) * (2 + k * 6);
-        g.rect(cx + dx, cy - 11 + k * k * 12, 1, 1, rgb(0xe6f6ff, uint8_t(220 * (1 - k))));
+      // (2026-10-21) un bassin qui a de l'épaisseur, une vasque sur sa colonne, un jet qui retombe en gerbe
+      g.ellipse(cx, cy + 3, rx, ry, rgb(0x000000, 50));                  // ombre
+      g.ellipse(cx, cy + 2, rx, ry, rgb(0x6e6e7c));                      // la paroi du bassin, vue de face
+      g.ellipse(cx, cy, rx, ry, rgb(0x9a9aa8));                          // margelle
+      g.ellipse(cx, cy - 1, rx - 1, ry - 1, rgb(0xc8c8d4));              // son dessus, éclairé
+      g.ellipse(cx, cy, rx - 3, ry - 3, rgb(0x2f6aa8));                  // l'eau
+      g.ellipse(cx - 1, cy - 1, rx - 5, ry - 4.5f, rgb(0x4a8fd0));
+      for (int i = 0; i < 2; i++) {                                      // ronds dans l'eau
+        float ring = std::fmod(t * .8f + i * .5f, 1.f);
+        g.ellipse(cx, cy, 3 + ring * (rx - 5), 1.5f + ring * (ry - 4.5f), rgb(0xcfeaff, uint8_t(110 * (1 - ring))));
+      }
+      for (int i = 0; i < 3; i++)                                        // reflets qui scintillent
+        if (std::fmod(t * 1.7f + i * .37f, 1.f) < .35f)
+          g.rect(cx - rx * .5f + i * rx * .45f, cy - ry * .2f + (i % 2) * 2, 1, 1, rgb(0xffffff, 230));
+      g.rect(cx - 2, cy - 7, 4, 7, rgb(0x8a8a98));                       // la colonne
+      g.rect(cx - 2, cy - 7, 1, 7, rgb(0xb4b4c0));
+      g.ellipse(cx, cy - 8, 5, 2, rgb(0x9a9aa8));                        // la vasque
+      g.ellipse(cx, cy - 8.5f, 3.5f, 1.2f, rgb(0x6aaee8));
+      float jh = 12 + std::sin(t * 5) * 2, top = cy - 8 - jh;
+      g.rect(cx - 1, top, 3, jh, rgb(0xd8f0ff, 210));                    // le jet
+      g.rect(cx, top, 1, jh, rgb(0xffffff, 230));
+      g.ellipse(cx + .5f, top, 3, 2, rgb(0xffffff, 230));
+      for (int i = 0; i < 10; i++) {                                     // la gerbe : des gouttes en arc qui retombent
+        float k = std::fmod(t * 1.1f + i * .1f, 1.f), dir = (i % 2 ? 1 : -1) * (.45f + (i % 5) * .12f);
+        float dx = dir * k * (rx - 3), dy = -k * 5 + k * k * (jh + 13);
+        g.rect(cx + dx, top + dy, 2, 1, rgb(0xf0faff, uint8_t(240 * (1 - k * .5f))));
+        g.rect(cx + dx, top + dy + 1, 1, 1, rgb(0xbfe0ff, uint8_t(200 * (1 - k * .5f))));
+        if (k > .9f) g.ellipse(cx + dx, top + dy + 1, 1.5f, .8f, rgb(0xffffff, 120));  // elle touche l'eau
       }
       break;
     }
@@ -935,18 +1119,37 @@ static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, 
         if (at(x, y + 1) == '#' || at(x, y + 1) == ' ') {  // dessus du mur, vu d'en haut
           g.rect(sx, sy, 16, 16, rgb(0x3a2a22));
           if (at(x, y + 1) == '#' && at(x, y + 2) != '#' && at(x, y + 2) != ' ') g.rect(sx, sy + 14, 16, 2, rgb(0x5a4232));
-        } else {  // face du mur : papier peint rayé et lambris
-          g.rect(sx, sy, 16, 16, rgb(0xe8d8b0));
-          for (int i = 2; i < 16; i += 5) g.rect(sx + i, sy, 1, 11, rgb(0xd6c294));
-          g.rect(sx, sy + 11, 16, 5, rgb(0x8a5a32));
-          g.rect(sx, sy + 11, 16, 1, rgb(0xa8743f));
+        } else if (roomStyle == 1) {  // chapelle : pierre claire et vitraux en ogive
+          g.rect(sx, sy, 16, 16, rgb(0xd2ccbe));
+          g.rect(sx, sy + 5, 16, 1, rgb(0xb8b2a4)), g.rect(sx, sy + 10, 16, 1, rgb(0xb8b2a4));
+          g.rect(sx + (y % 2 ? 4 : 11), sy, 1, 5, rgb(0xb8b2a4)), g.rect(sx + (y % 2 ? 11 : 4), sy + 5, 1, 5, rgb(0xb8b2a4));
+          g.rect(sx, sy + 13, 16, 3, rgb(0x8a8476));
+          if (interiorWindow(x, y)) {  // un vitrail : rouge, bleu, or, dans une ogive de plomb
+            g.rect(sx + 4, sy + 3, 8, 10, rgb(0x3a3430));
+            g.tri(sx + 4, sy + 3, sx + 8, sy - 1, sx + 12, sy + 3, rgb(0x3a3430));
+            g.rect(sx + 5, sy + 3, 3, 4, rgb(0xd04a4a)), g.rect(sx + 8, sy + 3, 3, 4, rgb(0x4a7ad0));
+            g.rect(sx + 5, sy + 7, 3, 5, rgb(0xe8c040)), g.rect(sx + 8, sy + 7, 3, 5, rgb(0x5aa85a));
+            g.tri(sx + 5, sy + 3, sx + 8, sy + .5f, sx + 11, sy + 3, rgb(0xb070d0));
+            g.rect(sx + 5, sy + 4, 1, 1, rgb(0xffffff, 160));
+          }
+        } else {  // face du mur : papier peint rayé et lambris (couleurs selon le style de la pièce)
+          uint32_t paper = roomStyle == 2 ? 0xb8705a : roomStyle == 3 ? 0xb8c89a : roomStyle == 4 ? 0xeef2f6 : 0xe8d8b0;
+          uint32_t stripe = roomStyle == 2 ? 0xa45e4a : roomStyle == 3 ? 0xa4b486 : roomStyle == 4 ? 0xc8dcec : 0xd6c294;
+          g.rect(sx, sy, 16, 16, rgb(paper));
+          for (int i = 2; i < 16; i += 5) g.rect(sx + i, sy, 1, 11, rgb(stripe));
+          g.rect(sx, sy + 11, 16, 5, rgb(roomStyle == 4 ? 0x6a9ac8 : 0x8a5a32));
+          g.rect(sx, sy + 11, 16, 1, rgb(roomStyle == 4 ? 0x8ab4dc : 0xa8743f));
           if ((x * 7 + y) % 9 == 0) {  // un cadre de temps en temps
             g.rect(sx + 4, sy + 2, 8, 7, rgb(0x7a5230));
             g.rect(sx + 5, sy + 3, 6, 5, rgb(0x7fb0d8));
             g.rect(sx + 5, sy + 6, 6, 2, rgb(0x5f9a52));
           } else if (interiorWindow(x, y)) {  // une fenêtre (3.3) : ciel, croisillon, rebord ; la lumière tombe au sol
             g.rect(sx + 3, sy + 1, 10, 10, rgb(0x6b4a2f));
-            g.gradV(sx + 4, sy + 2, 8, 8, rgb(0xbfe4ff), rgb(0x86c0ea));
+            if (tileNight) {  // la nuit : un ciel sombre et une étoile
+              g.gradV(sx + 4, sy + 2, 8, 8, rgb(0x0e1638), rgb(0x24305e));
+              g.rect(sx + 10, sy + 3, 1, 1, rgb(0xffffff));
+            } else
+              g.gradV(sx + 4, sy + 2, 8, 8, rgb(0xbfe4ff), rgb(0x86c0ea));
             g.rect(sx + 7, sy + 2, 2, 8, rgb(0x6b4a2f)), g.rect(sx + 4, sy + 5, 8, 1, rgb(0x6b4a2f));
             g.rect(sx + 5, sy + 3, 1, 2, rgb(0xffffff, 200));  // reflet
             g.rect(sx + 2, sy + 10, 12, 1, rgb(0xa8743f));      // rebord
@@ -954,7 +1157,7 @@ static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, 
         }
       } else if (th == Theme::Neige && texTile(g, "tex_pierre", x, y, sx, sy, rgb(0xb4cdec))) {  // (3.3) pierre glacée
         if (at(x, y - 1) != '#') g.rect(sx, sy, 16, 3, rgb(0xf2f6fb));  // neige sur le haut du mur
-      } else if (th == Theme::Grotte && texTile(g, "tex_pierre", x, y, sx, sy, rgb(0x46405a))) {  // (3.3) roche sombre
+      } else if (th == Theme::Grotte && texTile(g, "tex_pierre", x, y, sx, sy, rgb(m.wallTint ? m.wallTint : 0x46405a))) {  // (3.3) roche sombre
         if (at(x, y + 1) != '#' && at(x, y + 1) != ' ') g.rect(sx, sy + 14, 16, 2, rgb(0x16121c, 160));  // pied du mur dans l'ombre
       } else if (th == Theme::Neige) {
         g.rect(sx, sy, 16, 16, rgb(0x7fa8c8));
@@ -1008,11 +1211,16 @@ static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, 
       g.tri(sx + 8, sy - 1, sx + 17, sy + 16, sx + 10, sy + 16, rgb(0x4a3c37));
       g.tri(sx + 5, sy + 5, sx + 8, sy - 1, sx + 10, sy + 4, rgb(0x8a7a72));
       break;
-    case 'k':
+    case 'k':  // escalier qui descend (2026-10-21) : un cadre de pierre, des marches qui s'enfoncent dans le noir
       ground(g, th, sx, sy, h, x, y);
-      g.tri(sx - 1, sy + 16, sx + 8, sy - 2, sx + 17, sy + 16, rgb(0x5a4a44));
-      g.ellipse(sx + 8, sy + 13, 5, 7, rgb(0x120e18));
-      g.rect(sx + 3, sy + 13, 10, 3, rgb(0x120e18));
+      g.rect(sx + 1, sy + 1, 14, 15, rgb(0x5a4a44));
+      g.rect(sx + 1, sy + 1, 14, 1, rgb(0x8a7a70)), g.rect(sx + 1, sy + 1, 1, 15, rgb(0x7a6a60));
+      g.rect(sx + 3, sy + 3, 10, 13, rgb(0x0c0a10));
+      for (int i = 0; i < 4; i++) {  // de plus en plus sombres et étroites
+        uint8_t v = uint8_t(150 - i * 32);
+        g.rect(sx + 3 + i, sy + 13 - i * 3, 10 - i * 2, 2, rgb(uint32_t(v << 16 | (v - 10) << 8 | (v - 20))));
+        g.rect(sx + 3 + i, sy + 13 - i * 3, 10 - i * 2, 1, rgb(uint32_t((v + 30) << 16 | (v + 20) << 8 | (v + 10))));
+      }
       break;
     case 'c':
       if (th == Theme::Neige) {  // dalles de glace (3.3, Temple) : joints, reflet en biais, fêlures
@@ -1030,8 +1238,21 @@ static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, 
       ground(g, th, sx, sy, h, x, y);
       Color glow = rgb(0x7fd6ff, uint8_t(60 + 40 * std::sin(t * 2 + x)));
       g.ellipse(sx + 8, sy + 9, 8, 7, glow);
-      g.poly({{sx + 5.f, sy + 15.f}, {sx + 4.f, sy + 6.f}, {sx + 7.f, sy + 1.f}, {sx + 9.f, sy + 7.f}, {sx + 8.f, sy + 15.f}}, rgb(0x7fd6ff));
-      g.poly({{sx + 9.f, sy + 15.f}, {sx + 10.f, sy + 7.f}, {sx + 13.f, sy + 4.f}, {sx + 13.f, sy + 15.f}}, rgb(0xa8e6ff));
+      // (2026-10-21) une grappe de trois cristaux à facettes (côté clair, côté sombre), et un éclat qui passe
+      g.ellipse(sx + 8, sy + 15, 6, 1.5f, rgb(0x000000, 60));
+      auto shard = [&](float bx, float w, float hgt, float lean) {
+        float base = sy + 15.f, top = base - hgt;
+        g.poly({{bx, base}, {bx + lean, top}, {bx + w / 2 + lean, top - 2}, {bx + w / 2, base}}, rgb(0xa8e6ff));
+        g.poly({{bx + w / 2, base}, {bx + w / 2 + lean, top - 2}, {bx + w + lean, top}, {bx + w, base}}, rgb(0x4aa8e0));
+        g.line(bx + lean + .5f, top + 1, bx + .5f, sy + 14, 1, rgb(0xe8f8ff, 200));
+      };
+      shard(sx + 2, 5, 8, -1);
+      shard(sx + 9, 5, 9, 1);
+      shard(sx + 5, 6, 13, 0);
+      if (std::fmod(t * .8f + x * .37f + y * .21f, 3.f) < .25f) {
+        float px0 = sx + 8, py0 = sy + 4;
+        g.rect(px0 - 2, py0, 5, 1, rgb(0xffffff, 220)), g.rect(px0, py0 - 2, 1, 5, rgb(0xffffff, 220));
+      }
       break;
     }
     // Meubles des intérieurs
@@ -1273,11 +1494,22 @@ void drawChimneySmoke(Gfx& g, const Building& b, int sx, int sy, float t) {
   }
 }
 
-void drawChest(Gfx& g, int sx, int sy, bool open) {
+void drawChest(Gfx& g, int sx, int sy, bool open, float t) {
   g.ellipse(sx + 8, sy + 14, 7, 2, rgb(0, 50));
   if (const SpriteRect* r = findSprite("coffre")) {  // ouvert : assombri, couvercle rabattu
-    g.sprite(*r, sx + 8 - r->w / 2, sy + 15 - r->h, false, 1, open ? rgb(0x8a8a9a) : rgb(0xffffff));
-    if (open) g.rect(sx + 8 - r->w / 2 + 2, sy + 15 - r->h + 2, r->w - 4, 2, rgb(0x2a1a0a));
+    float x0 = sx + 8 - r->w / 2, y0 = sy + 15 - r->h;
+    if (open) {  // (2026-10-21) vraiment ouvert : le couvercle relevé derrière, l'intérieur sombre, la caisse devant
+      int lid = r->h * 2 / 5;
+      g.sprite(r->sub(0, 0, r->w, lid), x0, y0 - lid + 2, false, 1, rgb(0x9a8a7a));
+      g.sprite(r->sub(0, lid, r->w, r->h - lid), x0, y0 + lid, false, 1, rgb(0xd8d0c8));
+      g.rect(x0 + 2, y0 + lid, r->w - 4, 2, rgb(0x1a1008));
+    } else
+      g.sprite(*r, x0, y0);
+    float k = t < 0 || open ? 1 : std::fmod(t * .45f + sx * .013f + sy * .007f, 1.f) / .12f;  // un éclat toutes les ~2 s
+    if (k < 1) {
+      float cx = sx + 8 - r->w / 2.f + 3 + k * (r->w - 6), cy = sy + 15 - r->h + 3, s2 = 2.5f * std::sin(k * 3.14159f);
+      g.rect(cx - s2, cy, 2 * s2 + 1, 1, rgb(0xffffff, 230)), g.rect(cx, cy - s2, 1, 2 * s2 + 1, rgb(0xffffff, 230));
+    }
     return;
   }
   g.rect(sx + 2, sy + 7, 12, 8, rgb(0x8a5a2a));
@@ -1302,4 +1534,36 @@ void drawSign(Gfx& g, int sx, int sy) {
   g.frame(sx + 2, sy + 2, 12, 8, rgb(0x7a5230));
   g.rect(sx + 4, sy + 4, 8, 1, rgb(0x7a5230));
   g.rect(sx + 4, sy + 7, 6, 1, rgb(0x7a5230));
+}
+
+void drawMapCritters(Gfx& g, const MapDef& m, int tx0, int tx1, int ty0, int ty1, int camX, int camY, float t, float night) {
+  if (m.theme == Theme::Interieur || m.theme == Theme::Grotte) return;
+  static const uint32_t WINGS[] = {0xffffff, 0xfff27a, 0x9fd8ff, 0xffb0d8};
+  for (int y = std::max(0, ty0); y <= ty1 && y < m.h(); y++)
+    for (int x = std::max(0, tx0); x <= tx1 && x < m.w(); x++) {
+      char c = m.rows[y][x];
+      int h = hsh(x, y);
+      float cx = x * 16 - camX + 8.f, cy = y * 16 - camY + 8.f;
+      if (c == 'F' && h % 7 == 0 && night < .5f && m.theme != Theme::Neige) {  // un papillon qui butine
+        float ph = h % 100 * .1f;
+        float bx = cx + std::sin(t * .7f + ph) * 10, by = cy - 6 + std::cos(t * .9f + ph * 1.3f) * 5;
+        bool open = std::fmod(t * 7 + ph, 1.f) < .5f;
+        Color w = rgb(WINGS[(h >> 3) % 4]);
+        if (open) g.rect(std::round(bx) - 2, std::round(by), 2, 2, w), g.rect(std::round(bx) + 1, std::round(by), 2, 2, w);
+        else g.rect(std::round(bx) - 1, std::round(by) - 1, 1, 2, w), g.rect(std::round(bx) + 1, std::round(by) - 1, 1, 2, w);
+        g.rect(std::round(bx), std::round(by), 1, 2, rgb(0x3a2a1a));
+      } else if (c == '~' && h % 29 == 0) {  // un poisson saute, puis des ronds dans l'eau
+        float ph = std::fmod(t * .45f + h % 13 * .7f, 5.f);
+        if (ph < .6f) {
+          float u = ph / .6f;
+          float fx = cx - 5 + u * 10, fy = cy - std::sin(u * 3.1416f) * 8;
+          g.rect(std::round(fx) - 1, std::round(fy), 3, 1, rgb(0xd8e8f0));
+          g.rect(std::round(fx) + (u < .5f ? 2 : -2), std::round(fy) - 1, 1, 1, rgb(0xa8c0d0));
+        } else if (ph < 1.4f) {
+          float u = (ph - .6f) / .8f;
+          g.ellipse(cx + 5, cy + 1, 2 + u * 6, 1 + u * 2, rgb(0xffffff, uint8_t(150 * (1 - u))));
+          if (u < .3f) g.rect(cx + 4, cy - 2, 1, 2, rgb(0xffffff, 200)), g.rect(cx + 6, cy - 3, 1, 2, rgb(0xffffff, 200));
+        }
+      }
+    }
 }

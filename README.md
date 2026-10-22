@@ -24,7 +24,7 @@ Windows et de macOS, normaux pour un jeu non signé).
 | Entrée ou Espace | Parler, valider, faire défiler les dialogues |
 | Échap | Annuler, ouvrir le menu (équipe, tactiques, objets, magie, sauvegarde) |
 | Tab (en combat) | Mode auto : les tactiques jouent à votre place, ou vous reprenez la main |
-| F1 | Aide : statistiques, dégâts, damier et zones, états, tableau des types, exploration, touches |
+| F1 | Aide : statistiques, dégâts, échiquier et zones, états, tableau des types, exploration, touches |
 | F2 | Vitesse du jeu ×1, ×2 ou ×3 (marche, combats, textes ; gardée pour la prochaine fois) |
 | F11 ou Alt+Entrée | Plein écran ou fenêtre (le choix est gardé pour la prochaine fois). L'image s'adapte à la forme de l'écran ou de la fenêtre, sans bandes noires |
 
@@ -49,28 +49,43 @@ Roche et Métal), **cœur de braise** (créatures Feu), **cristal de givre**
 (créatures Glace), quelques coffres, et un **trophée** laissé par chaque boss
 pour le +3. Coûts et effets : Échap > Aide > Forge.
 
-## Le damier de combat
+## L'échiquier de combat (3.4)
 
-Chaque camp se place sur un **damier de 16 cases** (4 × 4) : quatre colonnes, de
-l'**avant** à l'**arrière**, sur quatre lignes.
+Les deux camps partagent **un seul plateau de 8 × 4 cases**, comme un échiquier : votre équipe part de la moitié
+gauche, les ennemis de la droite, et **chacun peut passer de l'autre côté**.
 
-- Les coups **au corps à corps** (épées, crocs, griffes…) ne peuvent toucher que
-  la colonne ennemie la plus avancée encore debout : il faut percer la ligne de
-  front pour atteindre les mages. Les attaques **à distance** (sorts, flèches,
-  projectiles) visent n'importe quelle case.
-- À **l'arrière**, on reçoit et on donne moins de dégâts au corps à corps : la
-  bonne place pour les soigneurs et les mages.
-- Chaque technique a une **zone** : une cible, une **ligne** (elle perce en
-  profondeur), une **colonne**, une **croix** (la cible et ses voisines) ou tout le
-  camp. Les cases autour de la cible prennent un peu moins. En choisissant la
-  cible, les cases touchées s'allument en or.
-- Échap > **Formation** : placer chacun sur le damier avant les combats. En
-  combat, **Se déplacer** change de case (action rapide) : la case et la cible se choisissent directement sur le
-  damier, aux flèches ou à la souris. En survolant une technique, sa zone s'allume déjà sur le damier ennemi.
-- Les **boss annoncent** parfois leur plus grosse attaque : une zone de votre
-  damier s'allume en **rouge**. Au tour suivant, elle frappe très fort ceux qui
-  y sont restés : écartez-vous ! En mode auto, la tactique « Soi : zone
-  annoncée → Se mettre à l'abri » le fait pour vous.
+- **Se déplacer** ne finit plus le tour : une fois par tour, avant d'agir, on avance de 2 cases (3 pour les types
+  Vent et Foudre). On traverse ses alliés, pas les ennemis, et on s'arrête en arrivant à leur contact : une ligne
+  de combattants protège ceux qui sont derrière. Les types Vent et Esprit volent par-dessus tout. **Attendre**
+  finit le tour sans agir (on rejoue plus tôt).
+- Les coups **au corps à corps** visent un ennemi **au contact** (les 8 cases autour ; un boss frappe plus loin).
+  Si la cible est plus loin mais qu'on peut la rejoindre ce tour, le combattant s'approche d'abord. Les attaques
+  **à distance** visent n'importe quelle case, mais perdent un quart de leur force quand un ennemi est au contact
+  du lanceur : allez gêner les mages !
+- **Dans le dos** : frapper un ennemi depuis le côté de son propre camp fait ×1,3 de dégâts. **Encerclé** : chaque
+  adversaire au contact au-delà du premier ajoute 10 % aux dégâts reçus (pas un boss).
+- **Percée** : le premier qui atteint le bord du camp adverse gagne +1 en Attaque, Magie et Vitesse pour tout le
+  combat. Les ennemis aussi : barrez-leur la route.
+- **Obstacles** : selon le décor, des rochers, buissons ou tonneaux occupent quelques cases du milieu. On ne peut
+  ni s'y arrêter ni les traverser (sauf en volant) ; un ennemi poussé contre l'un d'eux subit un choc.
+- En choisissant sa case, de petits **losanges rouges** montrent combien d'ennemis pourront y frapper au prochain tour,
+  et le chemin s'affiche en pointillés. Tant qu'on n'a pas agi, **Revenir** annule le déplacement.
+- **Tactiques** de l'échiquier : S'approcher, Contourner (passer dans le dos) et Protéger un allié ; le tour continue
+  ensuite avec la règle suivante. En mode auto, chacun choisit aussi sa case avant d'agir.
+- **Bottes** (accessoires) : les Bottes de vent (Forgeroc) et les Bottes ailées (Givreval) font avancer d'une case de plus.
+- **Défis de l'échiquier** (écran titre > Outils > Arène) : cinq positions imposées, une leçon chacune (dans le dos, voler par-dessus une ligne,
+  Percée, tenir une ligne, pousser contre un rocher). Dans la Vallée, le **maître d'armes** propose le premier en
+  entraînement (une défaite ne coûte rien) et offre des Bottes de vent au vainqueur.
+- Certaines techniques **bougent** : Dague, Coup de bec, Piqué tonnerre et Lame d'ombre font **bondir** derrière la
+  cible ; Coup bas fait **échanger** sa case avec celle de la cible.
+- Chaque technique a une **zone** : une cible, une **ligne** (d'un bord du plateau à l'autre), une **colonne**, une
+  **croix** (la cible et ses voisines) ou tout le camp. Les cases autour de la cible prennent un peu moins. En
+  choisissant la cible, les cases touchées s'allument en or.
+- Échap > **Formation** : la case de chacun au début du combat, dans votre moitié. En combat, la case et la cible
+  se choisissent directement sur le plateau, aux flèches ou à la souris.
+- Les **boss annoncent** parfois leur plus grosse attaque : une zone s'allume en **rouge**. Au tour suivant, elle
+  frappe très fort ceux qui y sont restés : écartez-vous ! En mode auto, la tactique « Soi : zone annoncée → Se
+  mettre à l'abri » le fait pour vous.
 
 ## Brisure, ordre des tours et talents (2.5)
 
@@ -91,7 +106,7 @@ Inspiré d'Octopath Traveler, de Final Fantasy X et de Pokémon :
   par un ennemi brisé). Les techniques rapides et lourdes la font bouger.
 - **Talents** : chaque espèce a un pouvoir permanent, gardé quand elle évolue :
   Carapace et Écorce runique (moins de dégâts physiques ou magiques), Rage,
-  Soigneur (soigne ses voisins de damier), Régénération, Méditation, Furtif
+  Soigneur (soigne ses voisins sur le plateau), Régénération, Méditation, Furtif
   (esquive à l'arrière), Vif (commence avec la jauge avancée), Briseur (use
   plus les boucliers), Œil perçant, Esprit clair (insensible aux états),
   Intimidation (baisse l'Attaque adverse en début de combat), Peau piquante,
@@ -116,7 +131,7 @@ Inspiré d'Into the Breach et de Chrono Trigger :
   Les boss sont inébranlables, mais les ennemis aussi poussent et tirent.
 - **Météo** (affichée sous l'ordre des tours) : pluie (Eau +25 %, Feu -25 %),
   grand soleil, canicule à Cendrelune, blizzard dans les Pics, orage, brume…
-- **Terrain** : des cases colorées sur les damiers. Braises (brûlent à la fin du
+- **Terrain** : des cases colorées sur le plateau. Braises (brûlent à la fin du
   tour, ou dès qu'on y est poussé), ronces (poison), verglas (jauge plus lente),
   herbes hautes (esquive), source (soigne), cristaux (Magie +20 %). « Se
   déplacer » dit le terrain de chaque case ; en mode auto, « Se mettre à l'abri »
@@ -294,6 +309,59 @@ Le Givrecorne vaincu, une faille s'ouvre au fond de son sanctuaire : la
 **Source des Brumes**, d'où vient la brume qui rend les créatures sauvages.
 Nouvelles créatures, gardiens et un dernier boss facultatif, pour une équipe
 de niveau 35-40 bien équipée.
+
+## Une aventure bien plus longue (3.5)
+
+- **Nouveaux lieux sur le chemin** : la Plaine des Moulins (un pont rongé par des
+  Rongecrins), le Col des Hurlevents (la Harpie de givre), le Val des Murmures
+  (trois esprits à apaiser), l'île de Corail et la Grotte des Marées (le Trident
+  d'écume ouvre les Ruines).
+- **Acte 3, l'île d'Aube** : après le Seigneur des Orages, la jetée de l'est du
+  port mène à Havre-d'Aube ; Bois des Lueurs, Marais Pâle, Gouffre et Citadelle,
+  jusqu'à la Brume Noire.
+- **Acte 4, l'île des Échos** : après la Brume Noire, la jetée ouest de
+  Havre-d'Aube ; le Colosse et le Phénix d'écho, puis l'Ombre du Premier Gardien.
+- **Primes** (tableaux d'annonces des villages), **43 quêtes** (Échap > Journal),
+  **30 éclats de brume** à collectionner, le **grand bestiaire** de la
+  professeure.
+- **28 dresseurs** sur les routes ; après le Seigneur des Orages, les dresseurs
+  battus proposent une **revanche** (épées croisées au-dessus d'eux). La **Ligue
+  d'Écume** au port : quatre rangs, trois combats d'affilée chacun.
+- **Après l'histoire** : les épreuves des gardiens, cinq donjons (Mines,
+  Glacier, Épave, Abîme, et le Vieux Phare de l'île des Échos, cinq étages), la **pêche** (canne du maître pêcheur du port, 18
+  poissons) et la **Nouvelle partie +**.
+- **Discussions** entre les héros (Échap > Discussions), pluie de temps en temps,
+  musiques réécrites.
+- **Quêtes des héros** : après l'acte 3, une quête pour chacun des six héros (son passé, un boss, une arme rien qu'à lui).
+- **Cartes au trésor** : Corbin, au port, a caché huit trésors dans des coins perdus ; chacun contient la carte du suivant.
+- **Cartes des gardiens** : un jeu de cartes (plateau de 3 × 3, comme le Triple Triad) contre neuf joueurs des
+  auberges ; chaque créature obtenue donne sa carte, les boss se gagnent.
+- **Échos des légendes** : après l'acte 4, à Port-Écho, les grands boss de l'aventure reviennent, cinq cercles de trois
+  combats d'affilée.
+- **Pension de Moulinbourg** : deux créatures grandissent pendant que vous marchez ; deux d'un même type laissent
+  parfois un œuf, qui éclot dans l'équipe.
+- **Fête des lanternes** : la nuit, sur la place de la Vallée, Lison a perdu ses lanternes ; retrouvées, elles montent
+  chaque nuit dans le ciel.
+- **Exploits** : 32 défis (finir les actes, remplir le Bestiaire, devenir champion…), cochés dans Journal > Exploits.
+- **Sauvegarde automatique** à chaque passage et porte (Options > Sauvegarde auto pour la couper).
+- **Voyage rapide** : Échap > Carte, choisir un village déjà visité (flèches), Entrée pour y aller.
+- **Créatures de la nuit** : la nuit, d'autres créatures sortent dans les herbes ; parfois, une meute est menée
+  par un **alpha** qui se bat comme un boss.
+- **Créatures chromatiques** : très rarement, une créature sauvage a des couleurs
+  rares (et brille) : à capturer pour les collectionneurs.
+
+## De nouveaux graphismes (3.5)
+
+- **Grottes et donjons** : les murs ont du relief (le dessus, la face éclairée, l'ombre au pied) et chaque donjon a
+  la couleur de sa roche ; dans le noir, la lanterne éclaire en fondu et vacille, les cristaux brillent ; rochers,
+  plaques à runes, herses et escaliers des énigmes redessinés.
+- **Carte du monde illustrée** : parchemin, rose des vents, un petit dessin pour chaque lieu découvert.
+- **Combats** : la mer à l'horizon au port et sur les îles, la roche du donjon sous terre, un vrai éclair pendant
+  l'orage, des nombres de dégâts lisibles, une traînée derrière celui qui frappe, un nouveau panneau du bas.
+- **Le monde** : ponts, fontaine, flaques sous la pluie, mouettes au bord de la mer, terres volcaniques, neige.
+- **Intérieurs** : chapelle à vitraux, auberge, boutique et maison de soin ont chacune leur style ; la nuit, les
+  fenêtres sont sombres et la pièce prend la lumière des bougies.
+- **Interface** : titre doré, nom des lieux en ruban à l'arrivée, fenêtres aux coins arrondis.
 
 ## Mode Expédition (roguelite)
 

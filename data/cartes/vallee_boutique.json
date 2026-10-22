@@ -14,10 +14,14 @@
     "#####p#####"
   ],
   "batiments": [],
-  "habitants": [{"x": 5, "y": 3, "apparence": "marchande", "evenement": "boutique1", "direction": "bas"}],
+  "habitants": [
+    {"x": 5, "y": 3, "apparence": "marchande", "evenement": "boutique1", "direction": "bas"},
+    {"x": 3, "y": 6, "apparence": "enfant", "direction": "bas", "evenement": "cartes_pip"}
+  ],
   "coffres": [],
   "panneaux": [],
   "passages": [{"x": 5, "y": 8, "vers": "vallee", "tx": 18, "ty": 6, "direction": "bas"}],
   "zones": [],
-  "boss": []
+  "boss": [],
+  "style": "boutique"
 }

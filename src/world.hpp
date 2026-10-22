@@ -50,6 +50,7 @@ struct Npc {
   std::string event;               // vide = simple dialogue ; sinon événement (data/evenements.json)
   std::vector<std::string> lines;  // dialogue simple
   std::string hideIf;              // caché quand ce drapeau est posé
+  Json cond;                       // facultatif (« si ») : présent seulement si ces conditions sont vraies
   int sight = 0;                   // dresseur : repère le joueur à cette distance devant lui
   std::string sightUntil;          // … tant que ce drapeau n'est pas posé
   int roam = 0;                    // promeneur (3.3) : marche jusqu'à cette distance de sa place (0 : reste sur place)
@@ -59,6 +60,7 @@ struct Chest {
   int x, y;
   std::string item;  // vide si le coffre contient de l'or
   int qty;
+  Json cond;         // champ « si » (2026-10-20, cartes au trésor) : caché tant que la condition est fausse (null : toujours là)
 };
 
 struct Sign {
@@ -85,6 +87,8 @@ struct Zone {
   int x, y, w, h;
   int lo, hi, maxN;
   std::vector<std::string> pool;
+  std::vector<std::string> night;  // « nuit » : créatures de la nuit (2026-10-20), la moitié des rencontres quand il fait nuit
+  int packCap = 0;                 // « meute_max » : taille maximale d'une meute dans cette zone (0 : la règle générale)
 };
 
 struct BossSpot {
@@ -92,6 +96,8 @@ struct BossSpot {
   std::string id;     // espèce affichée sur la carte
   std::string flag;   // drapeau posé quand il est vaincu (le boss disparaît)
   std::string event;  // événement lancé quand on lui parle
+  Json cond;          // facultatif : présent seulement si ces conditions sont vraies (comme « si » des événements)
+  bool bounty = false;  // monstre d'une prime (primes.hpp) : ajouté au chargement, jamais écrit dans la carte
 };
 
 struct MapDef {
@@ -100,6 +106,10 @@ struct MapDef {
   float encounterRate = 0;  // 0 = valeur des règles
   std::string ambiance;     // "", "brume", "cendres", "obscurite"
   std::string ambianceUntil;  // l'ambiance disparaît quand ce drapeau est posé
+  std::string trees;          // « arbres » : variante des sprites d'arbres (« pierre » : arbres pétrifiés), vide : normaux
+  std::string style;          // « style » (2026-10-21) d'un intérieur : chapelle, auberge, boutique, soin (vide : maison)
+  uint32_t wallTint = 0;      // « teinte_murs » (2026-10-21) : couleur de la roche des murs d'une grotte (0 : celle du thème)
+  Json festival;              // « fete » (2026-10-20) : condition ; vraie, des lanternes montent dans le ciel la nuit
   std::vector<std::string> rows;
   std::vector<Building> buildings;
   std::vector<Npc> npcs;

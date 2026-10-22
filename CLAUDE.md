@@ -182,7 +182,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - Bestiaire : `Game::seen` / `caught` (espèces de créatures), lignes `vu` et
   `pris` de la sauvegarde ; `see()` dans `startBattle` et à l'entrée d'un
   renfort, `caught` à la capture, `noteBestiary()` compte l'équipe et la
-  réserve. Menu `bestiaryMenu`, fiche `drawBestiaryPanel` (`panelMode_` 3).
+  réserve. Menu `bestiaryMenu`, fiche `drawBestiaryPanel` (`panelMode_` 3 ; une fois l'espèce obtenue, sa
+  `description` : `Species::desc`, écrites par `outils/villes/descriptions.py`).
   L'Expédition repart d'un bestiaire vide.
 - Vente : boutique > « Vendre… » (`Game::sellMenu`), moitié du prix, sauf les
   objets importants.
@@ -193,6 +194,10 @@ code) ; `docs/GUIDE.md` les range par domaine.
   `membre` est suivie de `tactiques` (interrupteur) et des lignes `tactique` du
   membre ; `auto` garde le mode auto. Le mode test écrit dans
   `sauvegarde_test.txt` (`saveName_`) pour ne jamais toucher à la vraie partie.
+  Sauvegarde automatique (2026-10-20, `Game::autoSave`) : à chaque passage et porte, si `options().autosave`
+  (ligne `sauvegarde_auto` d'`options.txt`, Options > Sauvegarde auto) ; jamais en Expédition, en ligne, en démo ni
+  en mode test (`saveName_` différent) ; « Sauvegarde… » un instant en bas à droite. Nouvelle partie avec une partie
+  sauvegardée : confirmation d'abord.
 - Expédition (expedition.hpp, procgen.hpp) : tout le contenu est généré depuis
   une graine (`procgen::generateBase`, puis `generateRegion(graine, k, contenu)`
   région par région : la région k ne dépend que de la graine et de k). Le
@@ -234,7 +239,12 @@ code) ; `docs/GUIDE.md` les range par domaine.
   (seulement le combat affiché, pas les simulations ; l'hôte ou le chef envoie
   `son` aux autres). Les menus font leurs bruits eux-mêmes (`MenuStack::update`).
   Le mode test n'ouvre pas de sortie son mais fabrique chaque morceau et chaque
-  effet (`audio::render`) pour vérifier qu'ils s'entendent.
+  effet (`audio::render`) pour vérifier qu'ils s'entendent. Musiques (2026-10-19) : écrites par
+  `outils/musique/compose.py` d'après `outils/musique/morceaux.py` (20 morceaux, dont `echos` pour l'acte 4, `plaine`, `phare` et `cartes` (parties de cartes) ; chacun : grille d'accords, mélodie,
+  contre-chant, arpège, basse et batterie fabriqués d'après les accords) ; voix avec `vibrato`, `attaque`,
+  `ondulation`, morceau avec `echo` (ligne à retard du `Mixer`) ; `lieux` accepte un identifiant de carte
+  (`Game::updateMusic` : carte, puis thème ; `combat:<carte>` donne la musique des combats ordinaires de cette carte : `combat_mer` dans l'archipel, `combat_aube` sur Aube) ; `BattleSetup::music` (« musique » de l'action combat, vérifiée par
+  `checkEvents`).
 - Évolution (2.2, plan validé le 2026-10-12) : `Species::evolveTo` / `evolveLvl` (champ `evolution` : `espece`, `niveau`) et
   `size` (`taille`, dessin agrandi dans `drawCreature`) ; `canEvolve` / `evolve` (data.cpp : même niveau, équipement,
   tactiques, case, compagnon ; PV et PM en proportion). Après un combat gagné (hors Expédition, Arène, duel),
@@ -293,12 +303,23 @@ code) ; `docs/GUIDE.md` les range par domaine.
   `tryMove` quand on marche dans la porte ; case d'arrivée `interiorEntry` :
   au-dessus du passage de sortie) ; `checkMaps` vérifie la sortie et part de cette case
   pour l'accessibilité. Une carte moins haute que l'écran est centrée
-  (`drawMap`). Les 12 intérieurs des villages sont `data/cartes/<village>_<lieu>.json`.
+  (`drawMap`). Les intérieurs des villages sont `data/cartes/<village>_<lieu>.json` (12 au départ ; 17 de plus pour
+  Moulinbourg, le port, Havre-d'Aube, Corail et Port-Écho, `outils/villes/interieurs_nouveaux.py` : le service passe à un
+  habitant de l'intérieur, la description d'une maison devient un déclencheur au premier pas).
 - Quêtes annexes : `data/quetes.json` (lu par `loadEvents`, vérifié par
   `checkEvents`), action `quete` (drapeaux `quete:<id>` et `quete:<id>:fin`,
-  `questFlag`), journal `Game::journalMenu`. Trois quêtes : `medaillon`
-  (vallée), `braises` (Forgeroc, boss de carte `tisonnels`), `tisane` (Givreval) ;
-  leurs habitants sont dans les intérieurs.
+  `questFlag`), journal `Game::journalMenu` (en tête : « Progression », `Game::progressMenu` : quêtes, primes,
+  dresseurs, revanches, coffres, Bestiaire, poissons, discussions, trésors cachés, joueurs de cartes, cartes, exploits, chromatiques, tout recalculé d'après les drapeaux). 20 quêtes (2026-10-19 : 14 de plus, ajoutées par un script de
+  Claude) : `medaillon`, `braises`, `tisane`, `grimoire`, `cristal`, `perles`, puis `chat`, `naturaliste` (montrer
+  des créatures : condition `membre`), `lettre`, `apprenti`, `caravane` (boss de carte sous condition), `champignons`,
+  `oeuf` (donne un Draconnet), `cache_cache`, `bains`, `rival` (Tom, trois combats au fil de l'histoire),
+  `capitaine`, `partitions`, `conte` (après la fin), `ruches` ; puis (outils/villes/quetes_lieux.py) `chien`, `collier`,
+  `message`, `tournoi`, `etude_aube`, puis (outils/villes/quetes_actes.py, actes 2 et 3) `phare_aube`, `enfant_marais`,
+  `spectre` (boss de carte sous condition dans le Gouffre), `pages_orage`, `carapace`, puis `echos`, `cloche`, `etude_oriane`
+  (acte 4), `eleveuse` (Forgeroc, `outils/villes/eleveuse.py` : huit créatures évoluées à montrer, une par une,
+  drapeaux `eleveuse1`…`8`), `quiz` (le conteur de la Vallée après `echos_fin`, dix questions oui/non,
+  `outils/villes/quiz.py`), et celles des nouveaux lieux (`trident`, `esprits`, donjons, `epreuves`, `peche`, `bestiaire`). Habitants et boss de carte peuvent avoir `si` (présents
+  seulement si la condition est vraie : `Npc::cond`, `BossSpot::cond`).
 - Événements : habitants (`evenement`), portes des bâtiments (genre ou
   `evenement`) et boss lancent un événement de `data/evenements.json`. Les
   actions sont exécutées par `Game::execAction` (events.cpp) via le `Script` ;
@@ -337,7 +358,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   compilé seul dans image.cpp) ; `findSprite(nom)`, `Gfx::sprite(…)` (miroir, échelle, teinte, éclat). Champs :
   `sprite` des apparences (préfixe : `<p>_bas_0`, `_haut_k`, `_droite_k` ou `_gauche_k`, `_combat` ; un animal : un seul
   sprite) et des espèces (regard vers la gauche ; boss : `_grand`), `icone` des objets (dessinée devant le nom dans
-  tout menu, `itemIcon` de ui.cpp). Ce qui n'a pas de sprite garde son dessin en code. Personnages de la carte en
+  tout menu, `itemIcon` de ui.cpp). Ce qui n'a pas de sprite garde son dessin en code. Créatures au repos (`drawCreature`, 2026-10-20) : celles qui volent flottent (l'ombre rétrécit), les autres
+  respirent (le haut du sprite descend d'un pixel, puis remonte ; pas en réduction sur la carte). Arbres `T` de la carte : le haut penche d'un pixel par moments (vent, `drawProp`). Papillons au-dessus des fleurs le jour et poissons qui sautent dans l'eau (`drawMapCritters`, après les personnages). Effets de combat (`spriteFx`) : images en fondu et étincelles du type. Personnages de la carte en
   16×24, combat en ~36 px ; `crisp` n'agrandit que d'un nombre entier de fois. Lior a ses visages (`lior_visage_0..4`,
   portrait des dialogues selon la réplique). Effets des sorts (`spriteFx` : une suite d'images par type, soins),
   invocation au-dessus des cibles d'une Limite (`inv_…` selon le type), textures 32×32 (`texTile` : parquet des
@@ -354,9 +376,18 @@ code) ; `docs/GUIDE.md` les range par domaine.
   voyageuse, paysan et animaux. Nouvelles créatures (monstres restants des planches) : Tisseline (Grotte), Osselet
   (Ruines, Tour), Gobelard et Brutor (Sylve-Noire), Draconnet (volcan, rare), Coffrelin (coffre piégé des Ruines,
   « boss » de carte, événement `coffrelin`).
+- Blender et Godot (3.4, demandé le 2026-10-18) : `outils/blender/personnages.py` construit des personnages chibi en 3D
+  (fiches `personnages.json`), `pixeliser.py` les réduit en pixel art dans `outils/sprites/rendus/`. Les habitants
+  rendus ainsi ont été jugés trop différents du reste du jeu (2026-10-19) : leurs poses de dos et de profil sont
+  maintenant tirées de leur dessin de face par `outils/sprites/tourner.py` (entrées `tourner` de `decoupe.json` :
+  visage changé en cheveux ou glissé de trois quarts, pieds décalés pour la marche ; options `chapeau`, `cheveux`,
+  `tablier`, `tourne`), avant la réduction commune : même style que les planches. Blender reste pour s'exercer. `outils/godot/effets/rendu.gd` rend des effets en particules image par image (`gfx_<type>_k` : Métal,
+  Normal, Plante et Esprit (2026-10-20) dans `spriteFx`, Percée et Brisure dans `Battle::bursts_` ; cercle d'invocation `gfx_cercle_k` sous les cibles
+  d'une Limite, dans `Battle::draw`). Marche à suivre et pièges : compétence
+  `sprites-blender-godot`.
 - Améliorations (branche `ameliorations`, carte blanche du 2026-10-16) : petits détails du sol en sprites (touffes,
   fleurettes, cailloux selon `hsh`, dans `drawTile` '.'), hautes herbes `,`/`g` en touffes de la planche
-  (`tallGrass` ; `front` : le bas des touffes redessiné sur les pieds du joueur), montagnes `m` en éboulis de rochers.
+  (`tallGrass`, qui ondulent, avec des rafales qui traversent les champs ; `front` : le bas des touffes redessiné sur les pieds du joueur), montagnes `m` en éboulis de rochers.
   Courir : Maj ou X de la manette maintenu (`Input::run`, `Game::running_`, pas à 13/s au lieu de 7,5, images
   `lior_course_k`). Intérieurs : `e` = une bibliothèque pour deux cases, `t` = table (sprite « banc »), `j` = chaise
   (tournée vers la table), script `outils/villes/interieurs.py`. Expédition : une créature générée sans sprite prend
@@ -367,7 +398,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   Dégâts prévus sur la cible visée (`Battle::damageText`, même formule que `applyHit` sans hasard ni critique :
   fourchette de `ecart_min` à 1, chance de toucher) ; l'efficacité d'un type n'est comptée qu'une fois découverte
   (`weakKnown`), sinon neutre : rien ne se devine sans attaquer (Brisure). Ennemi vaincu : il s'efface en 0,6 s (`koT_`). Décor de l'horizon en sprites
-  (arbres, sapins, rochers). Écran titre : les personnages de part et d'autre du menu. Habitants : regards et
+  (arbres, sapins, rochers). Écran titre : les personnages de part et d'autre du menu, dans un paysage de nuit (lune, montagnes enneigées,
+  village aux fenêtres allumées, brume, prairie aux herbes qui ondulent ; `drawTitle`, 2026-10-20). Habitants : regards et
   sautillements (dessin seul). Ordre des tours : portraits (`drawFighterIcon`). Un objet haut juste devant le joueur,
   un coffre, un panneau ou un habitant devient transparent (`behind` dans `drawMap`). Murs de grotte, de glace et
   falaises en `tex_pierre` teintée, dalles au sol des grottes (`texTile` avec teinte). Fontaine `W` dessinée une fois
@@ -378,8 +410,9 @@ code) ; `docs/GUIDE.md` les range par domaine.
   hasard à part `walkSeed_`, rien d'enregistré), `npcCell` pour toute position d'habitant (collision, parole,
   dessin) ; chaque habitant se tourne vers le joueur qui lui parle (sauf un dresseur). Éditeur de cartes : objets hauts dessinés (`drawProp`,
   `drawPropIcon` dans la palette). Carte du monde (Échap > Carte, `worldMapOn_`, `drawWorldMap` dans menus.cpp) : les
-  lieux ayant `carte_monde` atteignables d'ici par des passages ouverts (`checkCond`), sans rien enregistrer ; pas en
-  Expédition. Eau `~` dessinée en code (la texture `tex_eau` de la planche n'est pas utilisable) : bords peu
+  lieux ayant `carte_monde` atteignables d'ici par des passages ouverts (`checkCond`, `worldOpen`) ; pas en
+  Expédition. Voyage rapide (2026-10-20) : flèches pour choisir un village déjà visité qui a une maison de soin
+  (`travelTargets`, `Game::visited`, lignes `lieu` de la sauvegarde), Entrée pour y aller (devant la maison de soin). Eau `~` dessinée en code (la texture `tex_eau` de la planche n'est pas utilisable) : bords peu
   profonds plus clairs, ombre de la berge, écume en tirets, vaguelettes, reflets. Neige (`ground`) : rides de vent,
   congères, brins secs, cristaux ; chemins `=` de neige tassée (empreintes, bords de neige fraîche), et les pas du
   joueur y restent 30 s (`footprints_`, dessin seul, vidé au changement de carte) ; case `c` d'une
@@ -395,32 +428,66 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - Meutes (1.7) : `Game::wildDepth`, distance à pied du plus proche bâtiment ou
   passage ; plus on s'enfonce (jusqu'à `meute_distance` cases), plus les
   rencontres sont fréquentes (+`nature_dense`) et les groupes grands (jusqu'à
-  `meute_max`, 6). Règles, rencontres.
-- Damier (1.7, plan validé le 2026-10-10 ; **4x4 depuis la 2.0**, demandé le 2026-10-12) : `N_CELLS` = 16 cases par camp
-  (data.hpp : `GRID` 4, `cellCol` 0 avant … `BACK_COL` 3 arrière, `cellRow`, `cellAt(ligne, colonne)` ; ne jamais écrire
-  3 ou 9 en dur). Sauvegarde : ligne `case4` ; une ancienne ligne `case` (3x3) est convertie (l'arrière reste l'arrière).
-  À l'écran (`Battle::cellPos`) : alliés à gauche (tournés vers la droite), ennemis à droite (vers la gauche) depuis la
-  3.3, colonnes de 30 px, lignes de 22 px à partir de y 72. Mesuré : difficulté inchangée
-  par rapport au 3x3 (écarts dans le bruit). `Battle::cells_` garde la
-  case de chacun pendant le combat (alliés : `Fighter::cell`, la formation, ligne
-  `case4` de la sauvegarde ; ennemis et gardien à plusieurs : `formation()`
-  automatique, physiques devant). `Move::melee` (champ `portee`) : le corps à
-  corps ne vise que la colonne la plus avancée encore debout (`reachable`, aussi
-  dans `attackScore` : l'IA et les tactiques en tiennent compte) ; l'arrière donne
-  et reçoit `backRow` au corps à corps. `Move::zone` (`Area`, champ `zone`) :
-  `zoneTargets` étend la cible à sa zone dans `useMove`, voisins × `zoneSide`.
-  « Se déplacer » (`moveTo`, jauge rapide ; case choisie sur le damier), menu `Game::formationMenu` (dessin
-  `drawFormationPanel`, `panelMode_` 4). Réseau : la case est le 7e nombre de
-  chaque combattant dans `etat` ; ordre `deplacer`.
+  `meute_max`, 6). Règles, rencontres ; une zone peut avoir son propre `meute_max` (`Zone::packCap` : 3 dans
+  les étages de l'Abîme et du Vieux Phare).
+- Échiquier (3.4, demandé le 2026-10-18 : « que ça marche comme un échiquier, que les combattants puissent passer du
+  côté adverse ») ; code dans `src/echiquier.cpp` (méthodes de `Battle` sur le plateau, `challengeSetup`) : en combat, un seul plateau de `BOARD_W` × `GRID` (8 × 4) cases pour les deux camps (data.hpp :
+  `boardX`, `boardY`, `boardAt`, `inHalf`, `boardDist` (diagonales comprises), `boardSteps`, `inBoardZone`,
+  `boardName`). Alliés à gauche (colonnes 0 à 3, avant en 3), ennemis à droite (4 à 7, avant en 4). `Battle::cells_` =
+  case du plateau ; la formation (`Fighter::cell`, ligne `case4` de la sauvegarde, 0 à 15 dans sa moitié, `GRID` 4,
+  `cellCol` 0 avant … `BACK_COL` arrière) est placée par `toBoard` au début. Règles (`damier` de regles.json) :
+  « Se déplacer » une fois par tour **sans finir le tour** (`moved_`, `walkable` : `mouvement` cases sans diagonale,
+  +1 pour les types `rapides` ; on traverse ses alliés, pas les adversaires, arrêt au contact ; les types `vol`
+  passent par-dessus), puis `resumeTurn` rouvre le menu (ou l'ordinateur agit) ; « Attendre » (`waitTurn`, jauge
+  rapide). Corps à corps (`reachable`) : adversaire à `reach` (1, boss `allonge_boss`), sinon rejoignable ce tour
+  (`approachCell`, le pas est fait au début de `useMove`). `posMult` (dans `applyHit`, `attackScore`, `damageText`) :
+  dans le dos (`behind` : depuis le côté du camp de la cible, × `dos`), encerclé (`encercle` par adversaire au contact
+  au-delà du premier, pas un boss), distance ou magie au contact d'un adversaire (× `contact`, pas un boss). Percée :
+  atteindre le bord adverse donne +`percee` en Attaque, Magie et Vitesse une fois (`breakthrough_`). Poussée dans
+  l'axe du lanceur (`shoveDest(a, t, m)`), choc contre tout combattant. Terrain : `terrain_[case du plateau]`.
+  Ordinateur : `planMove`/`posValue` (meilleure attaque possible de la case, danger, distance, protecteur, terrain,
+  zone annoncée, Percée) avant `think` dans `enemyTurn` et `autoCommand` ; `think` renvoie `Plan::wait` si rien
+  n'est à portée ; tactiques : sans attaque à portée, il s'approche puis rejoue (`tacticTurn`). Menus : une
+  technique sans cible atteignable est « hors d'atteinte ». Dessin : `cellPos(case)` (colonnes de 32 px), cases
+  alternées, moitiés teintées, ligne de front, glissement (`slide_`), regard vers l'adversaire le plus proche
+  (`facesRight`). Réseau : cases du plateau dans `etat`, vues **en miroir** chez l'invité du duel (`netCell`) ;
+  `tour` porte `bouge` (déjà déplacé), ordres `deplacer` et `attendre`, `obstacles` dans `etat`. Obstacles
+  (`obstacles_`, `blockedCell` ; règles `obstacles_min/max`, sprites par décor `decors_obstacles`) : tirés dans les 4
+  colonnes du milieu, ni arrêt ni traversée (sauf vol), choc si on y pousse ; aucun en duel. En mode auto, les
+  tactiques commencent par `planMove` (pas chez l'invité). « Se déplacer » marque les cases menacées
+  (`meleeThreat` : losanges rouges, aide « Danger : n ennemis »). Techniques de mouvement (`Move::motion`, champ
+  `mouvement`) : `bond` (le lanceur saute derrière la cible, `leapDest`) et `echange` (cases échangées, pas un
+  boss), dans `motionAfterHit` ; effets Godot `poussiere` et `echange`. Sons `pas`, `bond`, `echange`. Menu de commande :
+  portée en bleu (`walkable`), « Revenir » (`moveFrom_`, pas en ligne ni après une Percée) ; choix de case : chemin
+  (`pathTo`). Tactiques `approcher`, `contourner`, `proteger` (`Plan::cell`, le tour continue) ; une règle de
+  déplacement qui s'applique passe avant `planMove`. Formation : liste dans l'ordre du dessin (colonnes), Gauche/Droite
+  par `adjust`, souris sur le dessin (`formationPick_`, `formationCellAt`). Équipement : champ `mouvement`
+  (`ItemDef::moveBonus`, ajouté dans `moveRange`) : Bottes de vent, Bottes ailées. Défis : `data/defis.json` (alliés,
+  ennemis et obstacles avec `case` [ligne, colonne] du plateau, `decor`), `Arena::menuChallenges`/`startChallenge`,
+  `BattleSetup::fixedBoard` (`allyCells`, `foeCells`, `obstacleCells` ; ni météo ni terrain), `challengeSetup(id)` (battle.cpp,
+  partagé par l'Arène, les événements et le joueur automatique). Action `combat` d'un événement : `defi` (ce défi, ses
+  combattants prêtés : pas de « Changer ») et `entrainement` (ni gains ni évolutions, une défaite ne coûte rien :
+  `BattleSetup::training`) ; maître d'armes de la Vallée (événement `maitre_armes`, drapeau `maitre_bottes`, Bottes de
+  vent). Mesuré (BRUMEVAL_SIMULATIONS=2) : sans
+  réglage, boss bien plus faciles (encerclés par 6 alliés : +60 %) ; après (boss ni encerclés ni gênés au contact,
+  encerclement 10 %, Ignarok N.25, Ronce-Mère N.22, Mère des Brumes N.41), difficulté proche de la 3.3.
+- Primes (demandé le 2026-10-19 : « au moins 20 heures de jeu ») : `data/primes.json`, `primes.hpp` (chargées par
+  `loadMaps`, qui ajoute le monstre de chaque prime à sa carte : `BossSpot::bounty`, visible si `BossSpot::cond`, jamais
+  écrit par `mapToJson`), événement généré `prime:<id>` (`bountyEvent`, trouvé par `findEvent`, jamais dans
+  evenements.json), drapeaux `prime:<id>`, `:vaincue`, `:fin` (`bountyFlag`). Tableau d'annonces = tuile `G`
+  (`Game::interact` → `bountyMenu`, chasse.cpp ; pas en Expédition) dans la Vallée, à Forgeroc, Sylve-Noire,
+  Givreval et au Port ; `claimBounty` (or, objets, rang de chasseur `bountyRanks`, `hunterTitle`). Bulle rouge « ! »
+  au-dessus du monstre ; Journal : primes en cours. 17 primes (12 pendant l'histoire, 3 après la fin : Sylvarque,
+  Ignarok, Mère des Brumes, super-boss ; 2 sur l'île des Échos, `outils/villes/echos_annexes.py`). Joueur automatique : `Pilot::bountyWork`/`bountyStep` (prend tout, touche
+  tout ; chasse comme un boss, quand il est prêt). `checkEvents` vérifie les primes (sauf en Expédition).
 - Attaques annoncées (1.8) : `Battle::bossPlan` ; un boss (pas en duel) annonce
   parfois (`boss_annonce`, 0,35) sa plus forte attaque sur la colonne, croix ou
   ligne qui couvre le plus d'alliés (`warnings_`, zone rouge, 8e champ `w` de
   `etat` pour l'invité) ; l'annonce ne lui coûte pas son tour. À son tour
   suivant, elle frappe ceux restés dans la zone × `boss_annonce_puissance`
   (1,6) ; si tous se sont écartés, il attaque normalement. Les alliés joués par
-  l'ordinateur (`autoCommand`) se mettent à l'abri (`threatened`, `safeCell`).
-  `enemyMove` : un lanceur de sorts ennemi à l'avant recule, un combattant à
-  l'arrière avance. Tactiques : conditions `soi_menace`, `ennemis_groupes`
+  l'ordinateur (`autoCommand`) se mettent à l'abri (`threatened`, `safeCell` : une
+  case où il peut aller ce tour). Tactiques : conditions `soi_menace`, `ennemis_groupes`
   (taille de la zone), `allie_avant_pv_moins` ; action `esquiver`
   (`Plan::cell`).
 - Rythme (`Move::pace`, champ `rythme`) : après une technique rapide, la jauge ATB
@@ -455,13 +522,22 @@ code) ; `docs/GUIDE.md` les range par domaine.
   (`goOnline`) ; envoyés au gardien à plusieurs (`meteo`, `terrain` de `etat`). Effets : `weatherMult` et précision
   dans `applyHit`/`attackScore`, `atbRate` (verglas, aussi `turnOrder`), `terrainTurn` (fin du tour dans
   `afterAction`, et à l'arrivée d'une poussée), herbes et cristaux dans `applyHit`. `threatened` inclut une case
-  qui blesse (`terrainHurts`) : l'IA et la tactique « Se mettre à l'abri » la quittent ; `enemyMove` aussi.
+  qui blesse (`terrainHurts`) : l'IA et la tactique « Se mettre à l'abri » la quittent ; l'ordinateur l'évite (`posValue`).
   Duos : `Rules::duos`, `duoMember` (espèce, `humain`, `type:x`), `Battle::duoOptions` (partenaire vivant, jauge ≥
   `duo.jauge`, PM des deux ; jamais en ligne), `duoMove` (le partenaire paie et sa jauge tombe à 0, puis `useMove`
   avec `duoPartner_` pour le message). IA : `think` les compte × (1 - 0,45 × jauge du partenaire) ; tactiques : action
   « attaque » (`Plan::duo`). Expédition : seuls les duos `humain`/`type:` restent (`Expedition::install`). Jour et nuit
   sur les cartes : `Game::nightAmount` (12 min par jour, dehors seulement), `drawBuildingLights`,
-  `drawChimneySmoke` ; le combat s'assombrit aussi.
+  `drawChimneySmoke` ; le combat s'assombrit aussi. Pluie (2026-10-20) : `Game::rainAmount` (cartes Vallée et Forêt
+  sans ambiance active, averses de 210 s choisies d'après leur numéro, jamais au début), dessinée dans `drawMap`,
+  entendue (`audio::ambience`, bruit filtré du `Mixer`, appelé par `updateMusic` ; en combat : `Battle::raining`), et
+  `BattleSetup::rain` impose la météo d'effet « pluie » si le décor la permet. Ombres de nuages (`drawMap`) ; brins
+  d'herbe et poussière de course (`Game::puffs_`, dessin seul, vidé au changement de carte). Coffres : un éclat passe de temps en
+  temps sur un coffre fermé (`drawChest(…, t)`), et à l'ouverture des rayons de lumière et l'icône de l'objet qui monte
+  (`Game::chestFx_`). Bulles d'humeur : de temps en temps, un habitant sans bulle de quête (ni dresseur) montre une
+  note de musique, « … » ou un cœur (selon sa case ; dessin seul, `drawMap`).
+  Combat : les alliés qui gagnent un niveau sont entourés d'étincelles dorées pendant la fenêtre des gains
+  (`Battle::levelUps_`).
 - Stratégie 2.7 (FF7, boss en phases) : gemmes `ItemDef::gem` (`gemMove`, `gemBonus` en %, `gemSupport`/`gemValue`),
   `Fighter::gems[emplacement]` (ligne `gemmes <emplacement> id…` après `equipement`, aussi dans les échanges),
   `gemSockets` (règles `gemmes`), `trimGems` (rendues au sac quand l'équipement change), `gemSupport(f, effet)` ;
@@ -481,13 +557,144 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - Expédition 2.9 (procgen.cpp) : talent par type (`typeTalent`) ou par classe, `role_combat` selon le profil, talent
   des gardiens, phases des gardiens, gemme en récompense, gemmes en boutique (`shopStock`). Les nouveaux tirages viennent
   d'un générateur à part semé par l'identifiant (`idHash`, `stream(…, 29)`) : le reste d'un monde ne change pas, mais
-  l'empreinte de la graine 2026 a changé (28da4b9e14a4ce4d). Les conseils de l'histoire sont vidés en Expédition.
+  l'empreinte de la graine 2026 a changé (28da4b9e14a4ce4d ; 3.4 : bottes dans les boutiques, 171c24418b3b440e). Les conseils de l'histoire sont vidés en Expédition.
 - Acte 2 (3.0) : cartes `port`, `recif`, `ruines`, `tour` (générées par un script, puis réglées à la main), le bateau
   du pêcheur (page `boss4` de l'événement `pecheur`) et le `passeur`. Énigmes : tuiles `O`/`P`/`D`, `MapDef::puzzle*`
   (champ `enigme`), `solvePuzzle` (world.cpp, recherche en largeur, aussi dans `checkMaps`), `Game::boulders_`
   (`bouldersMap_` : la carte qu'ils décrivent ; remis en place en changeant de carte, sauf énigme résolue),
   `pushBoulder` dans `tryMove`, « Recommencer l'énigme » (menu Échap), dessin dans `drawMap`. Joueur automatique :
   objectif `enigme:<carte>` puis `puzzleMoves_`. Condition `objet_min`. Final : `boss5` (Seigneur des Orages).
+- Acte 3 (2026-10-20, « 20 heures ») : l'île d'Aube, après le Seigneur des Orages (`boss5`). Jetée de l'est du port
+  (passage sous condition `boss5`, navigatrice Ysolde) ; cartes `aube` (Havre-d'Aube : soins, comptoir, Ilya),
+  `lueurs` (Bois des Lueurs, boss de carte `gardien_lueurs`), `marais` (Marais Pâle, `reine_marais` : Larme d'Aube),
+  `gouffre` (énigme des rochers, porte de lumière : passage sous condition `objet` `larme_aube`), `citadelle` (Ilya
+  soigne, `brume_noire`, drapeau `aube_fin`, écran de fin). 8 créatures d'Aube et 3 boss recolorés (variantes.json :
+  `lueurine`, `loup_aube`…). Écrit par `outils/villes/acte3.py` (cartes, vérifie l'accès à pied) puis
+  `outils/villes/acte3_histoire.py` (espèces, objets, conseils, événements) : pour refaire, remettre data/ avec git.
+- Acte 4 (2026-10-20, `outils/villes/acte4.py`, puis `outils/sprites/decoupe.py`) : l'île des Échos, après `aube_fin`.
+  Jetée ouest de Havre-d'Aube (passages sous condition `aube_fin`, Ysolde en parle) ; cartes `echos` (Port-Écho :
+  soins, comptoir, Oriane, quête `echos`), `pierres` (Forêt Pétrifiée, boss de carte `colosse_echo`), `cratere`
+  (Cratère des Échos, `phenix_echo`), `sanctuaire_echos` (donjon à énigme de cartegen.py ; la porte du nord de la forêt
+  demande les deux drapeaux `colosse_echo_vaincu` et `phenix_echo_vaincu`) : Ombre du Premier Gardien (N.95, 3 phases),
+  drapeau `echos_fin`, Cœur d'écho, écran de fin. 6 créatures et 3 boss recolorés (variantes.json). La forêt a des arbres de
+  pierre : champ `arbres` d'une carte (`MapDef::trees`, `propSprite` cherche `<arbre>_<arbres>`) ; aussi `lueur` (Bois
+  des Lueurs, arbres turquoise), `pale` (Marais Pâle) et `brume` (Val des Murmures, arbres violets) ;
+  le fond des combats sur ces cartes reprend ces arbres.
+- Techniques tardives (2026-10-20, `outils/villes/techniques_tardives.py`) : deux techniques de plus par héros, aux
+  niveaux 35 et 60 (avant, ils n'apprenaient plus rien après le niveau 27 environ).
+  Les créatures aussi (`outils/villes/apprentissages_tardifs.py`) : deux techniques de leur type aux niveaux 45 et 65
+  (physiques ou magiques selon leur Attaque et leur Magie ; repli sur une technique normale ; jamais d'attaque sur
+  tous les ennemis : une meute qui en a plusieurs écrase l'équipe).
+- Équipement tardif (2026-10-20, `outils/villes/equipement_tardif.py`) : rangs lueur (boutique de Havre-d'Aube) et
+  écho (Port-Écho), une arme et une armure pour les combattants et pour les mages, forgeables comme les autres.
+- Créatures de la nuit (2026-10-20, `outils/villes/nuit.py`) : champ `nuit` d'une zone (`Zone::night`, écrit par
+  `mapToJson` seulement s'il n'est pas vide) ; quand `nightAmount() > 0,5`, une part `rencontres.part_nuit` (0,5) des rencontres en viennent.
+  Onze cartes du dehors en ont.
+- Créatures chromatiques (2026-10-20) : `Fighter::chroma` (ligne `chromatique` après `membre` dans la sauvegarde),
+  tirée dans `Game::encounter` (règle `rencontres.chromatique`, 0,006 ; jamais en Expédition) ; `decoupe.py` fabrique
+  `<sprite>_chroma` (teinte tournée de 140°, gris dorés) pour chaque créature ni humaine ni boss ; `drawCreature(…,
+  chroma)` le dessine avec des éclats dorés ; message d'entrée en combat ; condition `chromatiques_min`, quête `chroma`
+  (l'assistant de la professeure, `outils/villes/chromatiques.py`). Alphas (même jour) : une meute de 2 créatures ou
+  plus est parfois menée par un alpha (règle `rencontres.alpha`, 0,06 ; pas en Expédition) : +`alpha_niveaux` (3) et `Fighter::boss`
+  (dessiné plus grand, bouclier de boss, attaques annoncées, gains de boss ; capturé, il redevient ordinaire) ; message « Une meute menée par un alpha ».
+- Nouvelle partie + (2026-10-20) : après `aube_fin`, Ilya propose de tout recommencer (action `nouvelle_partie_plus`,
+  `Game::startNewGamePlus`) : équipe, équipement, or, Bestiaire et drapeaux `peche:` gardés ; objets importants (prix 0,
+  ni équipement ni gemme) rendus ; drapeaux effacés sauf `ngp<k>`, et `ngp<k+1>` posé. `foeLevelBonus` (data.cpp) =
+  `NGP_LEVELS` (12) × tours, ajouté par `makeFoe` et aux créatures sauvages ; posé par `applyNewGamePlus` (nouvelle
+  partie : 0, chargement, écran titre : 0). Le joueur automatique répond Non à cette question.
+- Discussions (2026-10-20, `discussions.cpp`, `data/discussions.json`) : conversations courtes entre héros (comme les
+  saynètes des Tales of) : `id`, `titre`, `si`, `membres` (espèces dans l'équipe), `dialogue` ; Échap > Discussions
+  (nouvelles d'abord), drapeau `discussion:<id>` ; une nouvelle disponible est annoncée sur la carte
+  (`checkDiscussions`, `lastNewTalks_`, remis au chargement). 50 discussions.
+- Exploits (2026-10-20, `exploits.cpp`, `data/exploits.json`) : des succès (`id`, `nom`, `description`, `si`) ;
+  `checkExploits` (toutes les secondes sur la carte, avec `checkDiscussions` ; pas en Expédition ni pendant la pêche)
+  pose `exploit:<id>` (acquis pour de bon) et l'annonce ; Journal > Exploits (`exploitsMenu`, à faire d'abord). 32
+  exploits ; condition `quetes_min` (quêtes terminées) ajoutée pour eux.
+- Quêtes des héros (2026-10-20, `outils/villes/liens.py`) : après `aube_fin`, une par héros (`lien_lior`…, le héros doit
+  être dans l'équipe : condition `membre`), un boss (4 recolorés : Brumeroi, Sentinelle d'aurore, Golem de magma, Ombre
+  des galeries ; Varn et le Chevalier de glace sont des habitants qui lancent le combat) et une arme ou armure à lui seul :
+  champ `pour` des objets (`ItemDef::owner`, `canEquip` ; « (pour Lior seulement) » dans `itemDetails` ; retirées des
+  données en Expédition). L'événement `chapelle` garde son soin sur chaque page.
+- Cartes au trésor (2026-10-20, `outils/villes/tresors.py`) : `Chest::cond` (champ `si` d'un coffre, `Game::chestShown` :
+  caché tant que la condition est fausse, sauf déjà ouvert ; collision, dessin, Entrée, joueur automatique). Corbin, au
+  port (quête `tresors`), donne la carte n°1 ; la description de chaque carte dit où est la cache (case la plus éloignée
+  à pied des passages), et chaque trésor contient la carte suivante ; huit, puis la Boussole de Corbin.
+- Cartes des gardiens (2026-10-20, `cartes.cpp`, `data/cartes_jeu.json`, `outils/villes/cartes.py`) : jeu de cartes à la
+  Triple Triad. Carte = espèce (`cardValues` : Attaque, Vitesse, Défense, Magie de base ramenées de 1 à 10) ; collection
+  (`cardCollection`) : cartes de départ, espèces obtenues (pas les humains ni les boss), drapeaux `carte:<espèce>` ; main
+  (`cardHand_`, ligne `main_cartes`, complétée par les meilleures : `cardDeck`). `cards_` (comme la pêche : le jeu attend
+  dans `update`, dessin `drawCards` par-dessus) ; règle `cardFlips` (+1 si le type est efficace), ordinateur `cardChoice`
+  (niveaux 0 à 2 ; le joueur automatique joue avec le niveau 2) ; règle Identique (`regles`, `CardGame::same`) pour les trois
+  derniers joueurs. Action `cartes` (menu `cardsMenu` : Jouer, Choisir ma
+  main, Règles), première victoire : drapeau `cartes:<id>`, or et une carte de boss. Neuf joueurs (auberges, maisons),
+  le Maître des cartes au port après les huit autres ; quête `cartes`, condition `cartes_min`.
+- Échos des légendes (2026-10-20, `outils/villes/legendes.py`) : après `echos_fin`, la gardienne des échos de Port-Écho
+  (événement `legendes`) : cinq cercles de trois boss de l'aventure d'affilée (N.98 à 120, comme la Ligue), drapeaux
+  `legende1`…`5`, Médaillon des légendes, Couronne des échos ; quête `legendes`, 31 exploits.
+- Pension (2026-10-20, `pension.cpp`, `outils/villes/pension.py`) : Mamie Rose à Moulinbourg (action `pension`). Deux
+  créatures (`pension_`, `pensionLvl_` : niveau à l'arrivée) gagnent de l'expérience à chaque pas (`pensionStep` dans
+  `arrive`, jamais au-dessus du plus haut niveau de l'équipe) ; deux d'un même type laissent parfois un œuf
+  (`pensionEgg_`), emporté dans `eggs_` (espèce, pas restants) puis éclos (forme de base `baseForm`, niveau 1, plus
+  souvent chromatique, drapeau `oeuf_eclos`). Règles `pension` de regles.json. Sauvegarde : `pension_niveaux`,
+  `pension_pas`, `oeuf`, puis la ligne `pension` et ses `membre` (en dernier ; `Online::myTeam` s'y arrête). 32 exploits.
+- Fête des lanternes (2026-10-20, `outils/villes/fete.py`) : condition `nuit` (`Game::isNight`, l'heure du jeu même dans
+  un intérieur), Lison sur la place de la Vallée la nuit après `boss2`, cinq coffres `si` (quête et nuit) ; champ `fete`
+  d'une carte (`MapDef::festival`) : des lanternes montent dans le ciel la nuit (`drawMap`).
+- Graphismes (2026-10-21, « sans limite ») : relief des murs des grottes et des lieux de glace (`wallDepth`, sprites.cpp :
+  dessus en texture sombre ou enneigé, face éclairée là où le mur touche le sol par en dessous, ombre au pied) ; roche
+  propre à chaque donjon (`teinte_murs`, `MapDef::wallTint`, sol plus clair de la même teinte : `caveFloor`) ; lanterne
+  des lieux obscurs en fondu de douze anneaux qui vacille, cristaux `x` qui brillent dans le noir. Captures
+  `donjon_<carte>` du mode test. Combats : sol en perspective, brume d'horizon, vignette. Carte du monde illustrée (`drawWorldMap` :
+  parchemin, rose des vents, paysage de chaque lieu découvert, noms des villages placés au moins encombré ;
+  capture `carte_monde_fin`) Nom des lieux en ruban (bande qui s'efface, filets dorés, `textBig`, qui saute désormais les
+  espaces) ; titre de l'écran d'accueil en `Gfx::textBigFancy` (contour, ombre, dégradé). Combats au bord de la mer
+  (`Game::coastal` : plus de 15 % d'eau sur la carte) : la mer, une voile et le sable au fond ; mouettes sur ces cartes.
+  Orage : éclair dessiné ; fontaine, fenêtres (ombre, coins arrondis), nombres des combats cernés de noir. Intérieurs :
+  champ `style` (`MapDef::style`, `roomStyle` dans sprites.cpp : sols et murs propres à la chapelle, l'auberge, la
+  boutique, la maison de soin). Ponts, énigmes (rochers, plaques, herse), escaliers, cristaux, coffres ouverts redessinés. Second dossier de compilation `build-gfx` quand `build-dev` est occupé (démo ouverte).
+- Épreuves des gardiens (2026-10-20) : après `aube_fin`, la porte du sanctuaire d'Aube (événement `epreuves`) ouvre huit
+  combats contre des esprits gardiens (drapeaux `epreuve1`…`epreuve8`, niveaux 70 à 84), puis Ilya (`epreuve9`,
+  Insigne des gardiens) ; quête `epreuves`. Script `outils/villes/epreuves.py` ; une phase à mi-vie pour chaque gardien,
+  le troll des Mines et les Rongecrins (`outils/villes/phases.py`, avec `carte.rewrite_events` qui ne réécrit que
+  les entrées touchées d'evenements.json).
+- Col des Hurlevents (2026-10-20, `outils/villes/col.py`) : carte `col` de l'histoire entre les Monts Cendrelune et
+  les Pics Givrés (le passage du nord de Cendrelune y mène sous `boss2`, celui des Pics en revient), camp de bergers
+  (soins, boutique), Harpie de givre (boss de carte `harpie_givre`, drapeau `harpie`, conseil) qui ouvre le défilé.
+- Val des Murmures (2026-10-20, `outils/villes/val.py`) : carte `val` entre le sanctuaire du Givrecorne et la Source des
+  Brumes (les passages des deux cartes y mènent) : hameau de Brumaille, gardienne des lanternes (quête `esprits`), trois
+  esprits (`esprit_val_1..3`, un combat chacun) qui ouvrent le chemin de la Source.
+- Plaine des Moulins (2026-10-20, `outils/villes/plaine.py`) : carte `plaine` entre la Vallée et les Monts Cendrelune
+  (les passages des deux cartes y mènent) : village de Moulinbourg (soins, épicerie, meunier, charpentier), pont gardé
+  par des passages sous condition `pont_repare` ; quête `pont` : chasser les Rongecrins (boss de carte `rongecrins`, si
+  `quete:pont`, drapeau `rongecrins_chasses`), puis le charpentier répare le pont.
+- Dresseurs des routes (2026-10-20, `outils/villes/dresseurs.py`) : 28 habitants avec `vue` 3 (événements et drapeaux
+  `route_<carte><n>`) de la Vallée à la Citadelle : case choisie par le script (près d'un chemin, rien de bouché, loin
+  des passages, bâtiments et énigmes ; accessibilité vérifiée), équipe tirée des créatures de leur zone (évoluées selon
+  le niveau), or et parfois un objet. Revanches (`outils/villes/revanches.py`) : 37 dresseurs battus (ceux des routes et
+  les anciens, sauf la mage du temple) proposent une revanche (question, drapeau `<drapeau>_revanche`) après `boss5`
+  (actes 1-2, N.50-56) ou `aube_fin` (Aube, N.74-77) ; `questMark` rend 3 (bulle d'épées croisées) pour un combat
+  proposé dans une question dont la victoire pose un drapeau pas encore posé.
+- Ligue d'Écume (2026-10-20, `outils/villes/ligue.py`) : la maîtresse de la Ligue au nord du port (événement `ligue`,
+  quête `ligue`) : rangs Bronze (`boss4`, N.47), Argent (`boss5`, N.57), Or (`aube_fin`, N.80), Champion (`epreuve9`,
+  N.92), chacun trois combats enchaînés dans `victoire` (sans soin), drapeaux `ligue1`…`ligue4`, accessoires uniques.
+- Île de Corail (2026-10-20, `outils/villes/corail.py`) : acte 2, passe à l'est du Récif vers la carte `corail`
+  (village : soins, comptoir, doyenne, quête `trident`) et la Grotte des Marées (`marees`, donjon de cartegen.py,
+  Gardien des marées, drapeau `marees_boss`, objet `trident`) ; le passage du Récif vers les Ruines demande le trident.
+  Les outils de donjon (`dungeon`, `finish`) sont dans `outils/villes/cartegen.py`.
+- Donjons optionnels (2026-10-20, `outils/villes/donjons.py`, salles et couloirs tirés d'une graine fixe, outil
+  commun `outils/villes/cartegen.py`) : Mines de Forgeroc (`mines`, entrée à l'ouest de Forgeroc sous `boss1`, énigme),
+  Glacier de Givreval (`glacier`, est des Pics, `boss2`, énigme), Épave du Léviathan (`epave`, sud du Récif, `boss4`),
+  l'Abîme (`abime1` à `abime3`, ouest du Bois des Lueurs, `aube_fin`, escaliers `k`, super-boss Orage ancien N.100).
+  Boss recolorés (troll_mines, colosse_givre, leviathan, orage_ancien), drapeau `<carte>_boss`, quêtes `mines`,
+  `glacier`, `epave`, `abime`. Le Vieux Phare (`outils/villes/phare.py`, après l'acte 4) : `phare1` à `phare5` sous les
+  ruines de Port-Écho (passage sous `echos_fin`), créatures N.90-102, Veilleur du phare N.110 (`phare5_boss`), quête `phare`.
+- Pêche (2026-10-20, `peche.cpp`) : face à une case `~` avec l'objet `canne` (donné par le maître pêcheur du port,
+  événement `maitre_pecheur`), `Game::interact` lance `startFishing` ; `fishing_` (0 attente, 1 ça mord : Entrée vite,
+  2 ferrage : Entrée quand le curseur est dans la zone verte, `need` coups, 3 ratés = ligne cassée) ; le jeu attend
+  pendant ce temps (`Game::update`), dessin `drawFishing` par-dessus la carte (`camX_`, `camY_`). Poissons :
+  `data/peche.json` (`objet`, `eaux` : identifiants de carte d'abord, sinon thèmes ; `poids`, `difficulte`), objets de
+  objets.json ; drapeau `peche:<id>`, `Game::fishCaught`, condition `poissons_min` ; quête `peche` (récompenses à 5, 10,
+  15, 18 espèces). Script `outils/villes/peche.py`. Pas en Expédition ; le joueur automatique ne pêche pas.
 - Langue (3.1) : `i18n.hpp` : `T("…")` (const char*) et `tr(std::string)` traduisent une phrase française avec
   `data/langues/<langue>.json` (absente : le français reste). `setLanguage` au démarrage (`options().english`, ligne
   `anglais` d'`options.txt` ; premier lancement : langue du système) et dans Options > Langue, puis `rebuildData()` et
@@ -544,7 +751,10 @@ réécrits par `writeJson` (petites listes sur une ligne) : garder ce format.
 ## Équilibrage
 
 Mesures des boss, méthode et historique des réglages : compétence `equilibrage`. Un boss trop facile
-vient souvent de sa lenteur ou d'acolytes trop faibles, pas de ses PV.
+vient souvent de sa lenteur ou d'acolytes trop faibles, pas de ses PV. Un boss qui frappe toute l'équipe à chaque tour
+(Ouragan, Éclipse, Rayon sacré) écrase une équipe de six : lui donner plutôt des techniques à une cible ou en croix
+(mesuré le 2026-10-20 sur le Phénix d'écho et l'Ombre du Premier Gardien, simulations du mode test ; elles se
+font dans le décor de la carte du boss, avec sa météo).
 
 ## À faire / pistes
 

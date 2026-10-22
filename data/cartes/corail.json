@@ -1,0 +1,150 @@
+{
+  "id": "corail",
+  "nom": "Île de Corail",
+  "theme": "vallee",
+  "tuiles": [
+    "~~~~~~~~~~~~~~...........~~~~~~~~~~~~~~~",
+    "~~~~~~~~~~~~...............~~~~~~~~~~~~~",
+    "~~~~~~~~~~.....############..~~~~~~~~~~~",
+    "~~~~~~~~~......############...~~~~~~~~~~",
+    "~~~~~~~~,......############....~~~~~~~~~",
+    "~~~~~~~~,T.....############..T.~~~~~~~~~",
+    "~~~~~~.,F..T...#####kk#####.....~~~~~~~~",
+    "~~~~,,,F,....T......==.......T..~~~~~~~~",
+    "~~~~,,,,........T...==.T.......F~~~~~~~~",
+    "~~~,.,,,,T..........==..........~~~~~~~~",
+    "~~,,,.,,,......L....==....L.....,,~~~~~~",
+    "~~,,,,.,,.......qqqqqqqqqq....F.,,,~~~~~",
+    "~~.,,,,.,..=....qqqqWWqqqq...=.T.,,,~~~~",
+    "~~,.,,,,...=....qqqqWWqqqq...=..,.,,~~~~",
+    "BBBBBBBB========qqqqqqqqqq..F=..,,.,,~~~",
+    "BBBBBBBB========qqqqqqqqqq...=..,,,.,~~~",
+    "~~,,,,.,,..=====qqqqqqqqqq====..,,,,.~~~",
+    "~~~,,,,.,.......qqqqqqqqqq.......,,,,~~~",
+    "~~~~,,,,F......L....=.....L.....,.,,,~~~",
+    "~~~~.,,,,....T.....F=...........,,.,~~~~",
+    "~~~~~~,,,....F......=...F.......,,,.~~~~",
+    "~~~~~~~~,...........=...........,,,~~~~~",
+    "~~~~~~~~~~...=......=......F.....,~~~~~~",
+    "~~~~~~~~~~~..========...........,~~~~~~~",
+    "~~~~~~~~~~~~....................~~~~~~~~",
+    "~~~~~~~~~~~~~~......F...........~~~~~~~~",
+    "~~~~~~~~~~~~~~~~..............~~~~~~~~~~",
+    "~~~~~~~~~~~~~~~~~~~.........~~~~~~~~~~~~",
+    "~~~~~~~~~~~~~~~~~~~~~~~.~~~~~~~~~~~~~~~~",
+    "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+  ],
+  "batiments": [
+    {
+      "x": 9,
+      "y": 8,
+      "l": 5,
+      "h": 4,
+      "genre": "soin",
+      "nom": "Maison de soin",
+      "toit": "#e08a7a",
+      "interieur": "corail_soin"
+    },
+    {
+      "x": 27,
+      "y": 8,
+      "l": 5,
+      "h": 4,
+      "genre": "boutique2",
+      "nom": "Comptoir des coraux",
+      "toit": "#4ab0b8",
+      "interieur": "corail_boutique"
+    },
+    {
+      "x": 10,
+      "y": 18,
+      "l": 6,
+      "h": 4,
+      "genre": "maison",
+      "nom": "Maison de la doyenne",
+      "toit": "#c87ab8",
+      "interieur": "corail_maison"
+    }
+  ],
+  "habitants": [
+    {"x": 22, "y": 15, "apparence": "ancien", "direction": "bas", "evenement": "doyenne"},
+    {
+      "x": 18,
+      "y": 16,
+      "apparence": "enfant",
+      "direction": "droite",
+      "promenade": 2,
+      "dialogue": [
+        "Mon grand frère dit qu'un monstre vit au fond de la grotte, là-haut.",
+        "Il garde un trident aussi grand qu'un arbre !"
+      ]
+    },
+    {
+      "x": 24,
+      "y": 20,
+      "apparence": "pecheur",
+      "direction": "gauche",
+      "dialogue": [
+        "Les Ruines, au nord du Récif, sont fermées par une porte de corail. Personne ne l'a jamais ouverte.",
+        "La doyenne sait des choses. Allez la voir."
+      ]
+    },
+    {
+      "x": 8,
+      "y": 13,
+      "apparence": "voyageuse",
+      "direction": "bas",
+      "dialogue": [
+        "Bienvenue sur l'île de Corail ! On ne voit pas souvent des étrangers.",
+        "Depuis que la brume est partie, les bateaux reviennent un peu."
+      ]
+    },
+    {"x": 30, "y": 15, "apparence": "villageoise", "direction": "gauche", "evenement": "quete_collier"},
+    {
+      "x": 17,
+      "y": 25,
+      "apparence": "pecheur",
+      "direction": "haut",
+      "evenement": "route_corail1",
+      "vue": 3,
+      "vue_jusqua": "route_corail1"
+    },
+    {
+      "x": 28,
+      "y": 18,
+      "apparence": "villageoise",
+      "direction": "haut",
+      "evenement": "route_corail2",
+      "vue": 3,
+      "vue_jusqua": "route_corail2"
+    },
+    {"x": 13, "y": 23, "apparence": "enfant", "direction": "droite", "evenement": "quete_carapace"}
+  ],
+  "coffres": [
+    {"x": 33, "y": 20, "objet": "perle", "quantite": 1},
+    {"x": 6, "y": 20, "objet": "superpotion", "quantite": 2}
+  ],
+  "panneaux": [],
+  "passages": [
+    {"x": 0, "y": 14, "vers": "recif", "tx": 45, "ty": 15, "direction": "gauche"},
+    {"x": 0, "y": 15, "vers": "recif", "tx": 45, "ty": 16, "direction": "gauche"},
+    {"x": 20, "y": 6, "vers": "marees", "tx": 18, "ty": 30, "direction": "haut"},
+    {"x": 21, "y": 6, "vers": "marees", "tx": 18, "ty": 30, "direction": "haut"}
+  ],
+  "zones": [
+    {
+      "x": 0,
+      "y": 0,
+      "l": 40,
+      "h": 30,
+      "niveau_min": 42,
+      "niveau_max": 46,
+      "max_ennemis": 3,
+      "creatures": ["corailleur", "perlin", "ecumet", "coquillon"],
+      "nuit": ["noyelin", "nuageon"]
+    }
+  ],
+  "boss": [],
+  "declencheurs": [{"x": 7, "y": 14, "l": 1, "h": 2, "evenement": "corail_entree", "jusqua": "corail_vu"}],
+  "carte_monde": [62, 92]
+}

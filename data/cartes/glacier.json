@@ -1,0 +1,96 @@
+{
+  "id": "glacier",
+  "nom": "Glacier de Givreval",
+  "theme": "neige",
+  "ambiance": {"effet": "neige"},
+  "tuiles": [
+    "########################################",
+    "########################################",
+    "###########################xiiiiiiix####",
+    "###########################iiiiiiiii####",
+    "###########################iiiiiiiii####",
+    "######Riiiii##iiiii########iiiiiiiii####",
+    "######iiiiii##iiiii########iiiiiiiii####",
+    "######iiiiiinniiiiinnnnnnnniiiiiiiiR####",
+    "######iiiiiinniiiix#########n##nn#######",
+    "######iiiiiR#nn#nn##########n##nn#######",
+    "#############nn#nn#######iiiii#nn#######",
+    "#############nn#nn#######iiiii#niiiii###",
+    "#############nn#nnnnnnnnniiiiinniiiii###",
+    "#############nn#nnnnnnnnnxiiixnniiiii###",
+    "#############nn#############nn##iiiii###",
+    "##.....######nn#############nn##iiiii###",
+    "##.....##.........##########nn##Riiii###",
+    "##.....##....P....##########nn##########",
+    "##.....##.........D..#######nn##########",
+    "##.....nn....O....###nnnnRiiiiR#########",
+    "####nnnnn.........#######iiiiii#########",
+    "#########......O.P#######iiiiii#########",
+    "#########.........#######iiiiii#########",
+    "#########.........#######iiiiiR#########",
+    "############################ii##########",
+    "############################ii##########",
+    "############################ii##########",
+    "############################ii##########",
+    "############################ii##########",
+    "############################ii##########",
+    "############################ii##########",
+    "############################ii##########"
+  ],
+  "batiments": [],
+  "habitants": [
+    {
+      "x": 8,
+      "y": 6,
+      "apparence": "garde",
+      "direction": "bas",
+      "evenement": "route_glacier1",
+      "vue": 3,
+      "vue_jusqua": "route_glacier1"
+    },
+    {
+      "x": 30,
+      "y": 6,
+      "apparence": "chevalier",
+      "direction": "bas",
+      "evenement": "chevalier_glace",
+      "si": {"drapeau": "quete:lien_selene"},
+      "cache_si": "lien_selene_vaincu"
+    }
+  ],
+  "coffres": [
+    {"x": 20, "y": 18, "objet": "gemme_maitre", "quantite": 1},
+    {"x": 28, "y": 11, "objet": "cristal_givre", "quantite": 2},
+    {"x": 10, "y": 6, "objet": "elixir", "quantite": 1},
+    {"x": 34, "y": 3, "objet": "gemme_givre", "quantite": 1},
+    {"x": 17, "y": 6, "or": 3000},
+    {"x": 35, "y": 12, "objet": "plume", "quantite": 1}
+  ],
+  "panneaux": [],
+  "passages": [
+    {"x": 28, "y": 31, "vers": "pics", "tx": 82, "ty": 24, "direction": "bas"},
+    {"x": 29, "y": 31, "vers": "pics", "tx": 82, "ty": 24, "direction": "bas"}
+  ],
+  "enigme": {
+    "drapeau": "glacier_grille",
+    "x": 10,
+    "y": 19,
+    "message": "Les dalles s'enfoncent : la grille de l'alcôve se lève !",
+    "zone": {"x": 9, "y": 16, "l": 12, "h": 8}
+  },
+  "zones": [
+    {
+      "x": 0,
+      "y": 0,
+      "l": 40,
+      "h": 32,
+      "niveau_min": 27,
+      "niveau_max": 31,
+      "max_ennemis": 3,
+      "creatures": ["givrelin", "banquisot", "glaconnet", "givrenard", "cristallin"]
+    }
+  ],
+  "boss": [
+    {"x": 3, "y": 16, "espece": "colosse_givre", "drapeau": "glacier_boss", "evenement": "glacier_boss"}
+  ]
+}

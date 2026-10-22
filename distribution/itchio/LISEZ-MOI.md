@@ -40,11 +40,13 @@ apaiser les gardiens de la vallée… puis traversent le lac jusqu'à l'archipel
 d'Écume, où un orage millénaire se réveille.
 
 - **Combats au tour par tour actif** (jauges ATB, comme Final Fantasy) sur un
-  **damier 4×4** : corps à corps, distance, zones, attaques annoncées des boss.
+  **échiquier commun** : on avance, on passe dans le camp adverse, on frappe
+  dans le dos, on bloque le passage ; zones, obstacles, attaques annoncées des boss.
 - **Brisure** : frappez les faiblesses pour briser le bouclier des ennemis.
 - **Créatures à capturer**, avec talents, rôles et évolutions ; chaque héros
   combat avec sa créature, et ils lancent des **techniques en duo**.
-- **Pousser et tirer**, **météo** et **cases de terrain** sur le damier.
+- **Pousser, tirer, bondir, échanger**, **météo** et **cases de terrain** sur le plateau ;
+  **défis de l'échiquier** pour s'entraîner.
 - **Gemmes** à sertir dans l'équipement, **forge**, **tactiques** pour le mode
   automatique.
 - **Boss en plusieurs phases**, **énigmes** de rochers, quêtes annexes, deux actes.
@@ -62,12 +64,14 @@ A strange mist is turning creatures wild. Lior and friends set out to calm the
 valley's guardians… then sail across the lake to the Foam Archipelago, where a
 thousand-year-old storm is waking up.
 
-- **Active-time battles** (ATB gauges, Final Fantasy style) on a **4×4 grid**:
-  melee, ranged, area attacks, telegraphed boss attacks.
+- **Active-time battles** (ATB gauges, Final Fantasy style) on a **shared
+  chessboard**: advance, cross into the enemy side, strike from behind, block
+  the way; area attacks, obstacles, telegraphed boss attacks.
 - **Break**: hit weaknesses to shatter enemy shields.
 - **Catch creatures** with talents, roles and evolutions; every hero fights
   alongside a creature, and they unleash **dual techniques**.
-- **Push and pull**, **weather** and **terrain tiles** on the battle grid.
+- **Push, pull, leap, swap**, **weather** and **terrain tiles** on the board;
+  **chessboard challenges** to practise.
 - **Gems** to socket in your gear, a **forge**, and **tactics** for auto-battle.
 - **Multi-phase bosses**, boulder **puzzles**, side quests, two acts.
 - **Expedition mode** (roguelite): a whole world generated from a seed.

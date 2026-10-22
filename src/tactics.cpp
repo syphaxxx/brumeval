@@ -39,7 +39,7 @@ static const std::vector<TacticCond> CONDS = {
     {"soi_menace", ::T("Soi : zone annoncée"), TSide::Self, 0, 0, 0, 0, ::T("Quand une attaque annoncée (zone rouge) va toucher sa case, ou que sa case le blesse.")},
     {"ennemis_groupes", ::T("Ennemis : {n} dans la zone"), TSide::Foe, 2, 2, 4, 1,
      ::T("Une cible dont la zone de l'action touche au moins ce nombre d'ennemis (gauche/droite : nombre).")},
-    {"allie_avant_pv_moins", ::T("Allié avant : PV < {n} %"), TSide::Ally, 50, 10, 90, 10, ::T("Un allié de la colonne avant, blessé sous ce seuil (gauche/droite).")},
+    {"allie_avant_pv_moins", ::T("Allié au contact : PV < {n} %"), TSide::Ally, 50, 10, 90, 10, ::T("Un allié au contact d'un ennemi, blessé sous ce seuil (gauche/droite).")},
 };
 static const std::vector<TacticAuto> AUTOS = {
     {"attaque", ::T("Meilleure attaque"), TSide::Foe, ::T("La technique, le sort ou le duo qui fait le plus de dégâts (peut dépenser des PM).")},
@@ -49,6 +49,9 @@ static const std::vector<TacticAuto> AUTOS = {
     {"guerison", ::T("Guérison"), TSide::Ally, ::T("Un sort qui guérit les états (poison, sommeil…).")},
     {"limite", ::T("Limite"), TSide::Any, ::T("La technique ultime, quand la jauge Limite est pleine.")},
     {"esquiver", ::T("Se mettre à l'abri"), TSide::Ally, ::T("Changer de case pour fuir la zone rouge d'un boss ou une case qui blesse (action rapide).")},
+    {"approcher", ::T("S'approcher"), TSide::Foe, ::T("Aller vers cet ennemi, au contact si possible. Le tour continue : la règle suivante choisit l'action.")},
+    {"contourner", ::T("Contourner"), TSide::Foe, ::T("Passer dans le dos de cet ennemi (coups plus forts). Le tour continue ensuite.")},
+    {"proteger", ::T("Protéger"), TSide::Ally, ::T("Se placer à côté de cet allié, du côté des ennemis, pour le couvrir. Le tour continue ensuite.")},
 };
 
 const std::vector<TacticCond>& tacticConds() { return CONDS; }
@@ -129,6 +132,8 @@ std::string tacticProblem(const Tactic& t, const Fighter* f) {
   TSide a = tacticActSide(t);
   if (a == TSide::Foe && c->side != TSide::Foe) return ::T("cette action vise un ennemi : il faut une condition « Ennemi ».");
   if (a == TSide::Ally && c->side == TSide::Foe) return ::T("cette action vise un allié : il faut une condition « Allié » ou « Soi ».");
+  if (t.kind == Tactic::Act::Auto && t.act == "proteger" && c->side == TSide::Self)
+    return ::T("Protéger vise un autre allié : il faut une condition « Allié ».");
   bool rev = isRevive(t);
   if (t.cond == "allie_ko" && !rev) return ::T("un allié K.O. ne peut recevoir qu'une réanimation.");
   if (rev && t.cond != "allie_ko") return ::T("une réanimation va avec la condition « Allié : K.O. ».");

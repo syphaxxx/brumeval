@@ -1,0 +1,119 @@
+{
+  "id": "gouffre",
+  "nom": "Gouffre d'Aube",
+  "theme": "grotte",
+  "ambiance": {"effet": "obscurite"},
+  "tuiles": [
+    "#################cc#################",
+    "#################cc#################",
+    "#################cc#################",
+    "#################cc#################",
+    "#################cc#################",
+    "#################cc#################",
+    "#################cc#################",
+    "#################cc#################",
+    "####ccccc######ccccc###.........####",
+    "########c#####ccccccc##....P....####",
+    "########c#####ccccccc##.........D..#",
+    "########c#####ccccc........O....####",
+    "########c######ccccc###.........####",
+    "########c########cc####......O.P####",
+    "########ccccccccccc####.........####",
+    "########ccccccccccc####.........####",
+    "######ccccc#########################",
+    "#####ccccccc########################",
+    "#####ccccccc########################",
+    "#####ccccccc########################",
+    "######ccccc#########################",
+    "########cc##############c###########",
+    "########ccccccccccc###ccccc#########",
+    "########cccccccccccccccccccc########",
+    "#################cc##ccccccc########",
+    "#################cc##ccccccc########",
+    "#################cc###ccccc#########",
+    "#################cc#####c###########",
+    "#################cc#################",
+    "#################cc#################"
+  ],
+  "batiments": [],
+  "habitants": [
+    {
+      "x": 9,
+      "y": 15,
+      "apparence": "chevalier",
+      "direction": "bas",
+      "evenement": "route_gouffre1",
+      "vue": 3,
+      "vue_jusqua": "route_gouffre1"
+    }
+  ],
+  "coffres": [
+    {"x": 34, "y": 10, "objet": "gemme_maitre", "quantite": 1},
+    {"x": 4, "y": 8, "objet": "elixir", "quantite": 2},
+    {"x": 25, "y": 25, "objet": "gemme_soin", "quantite": 1},
+    {"x": 6, "y": 18, "or": 5000},
+    {"x": 23, "y": 23, "objet": "eclat_lueur", "quantite": 1}
+  ],
+  "panneaux": [
+    {
+      "x": 22,
+      "y": 10,
+      "texte": "Gravé dans la roche : « Deux pierres, deux dalles, et le trésor des gardiens sera à vous. »"
+    }
+  ],
+  "passages": [
+    {"x": 17, "y": 29, "vers": "lueurs", "tx": 23, "ty": 1, "direction": "bas"},
+    {"x": 18, "y": 29, "vers": "lueurs", "tx": 24, "ty": 1, "direction": "bas"},
+    {
+      "x": 17,
+      "y": 0,
+      "vers": "citadelle",
+      "tx": 14,
+      "ty": 38,
+      "direction": "haut",
+      "condition": {"objet": "larme_aube"},
+      "message": "Une porte de lumière ferme le passage. Elle attend quelque chose qui brille comme l'aube…"
+    },
+    {
+      "x": 18,
+      "y": 0,
+      "vers": "citadelle",
+      "tx": 15,
+      "ty": 38,
+      "direction": "haut",
+      "condition": {"objet": "larme_aube"},
+      "message": "Une porte de lumière ferme le passage. Elle attend quelque chose qui brille comme l'aube…"
+    }
+  ],
+  "enigme": {
+    "drapeau": "gouffre_grille",
+    "x": 24,
+    "y": 11,
+    "message": "Les dalles s'enfoncent : la grille de l'alcôve se lève !",
+    "zone": {"x": 23, "y": 8, "l": 12, "h": 8}
+  },
+  "zones": [
+    {
+      "x": 0,
+      "y": 0,
+      "l": 36,
+      "h": 30,
+      "niveau_min": 58,
+      "niveau_max": 61,
+      "max_ennemis": 3,
+      "creatures": ["rocaube", "aubespectre", "vasepent", "nacrelin"]
+    }
+  ],
+  "boss": [
+    {
+      "x": 8,
+      "y": 17,
+      "espece": "aubespectre",
+      "drapeau": "spectre_gouffre",
+      "evenement": "spectre_gouffre",
+      "si": {"drapeau": "quete:spectre"}
+    }
+  ],
+  "carte_monde": [6, 62],
+  "teinte_murs": "#5a4660"
+}

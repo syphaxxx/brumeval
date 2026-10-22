@@ -75,6 +75,7 @@ class Game {
   std::vector<FighterP> reserve;       // créatures en plus de l'équipe (captures et cadeaux quand elle est complète)
   // Bestiaire : espèces de créatures rencontrées et obtenues (lignes « vu » et « pris » de la sauvegarde)
   std::set<std::string> seen, caught;
+  std::set<std::string> visited;  // lieux de la carte du monde déjà visités (voyage rapide ; lignes « lieu » de la sauvegarde)
   // Brisure (2.5) : faiblesses découvertes (« espèce:type ») en frappant un ennemi sur l'une d'elles
   std::set<std::string> weak;
   bool weakKnown(const std::string& sp, int type) const { return weak.count(sp + ":" + std::to_string(type)) > 0; }
@@ -100,7 +101,7 @@ class Game {
   void runEvent(const std::string& id);
   void runActions(const Json& list);
   bool checkCond(const Json& c) const;
-  int questMark(const std::string& event) const;  // bulle d'un habitant : 1 « ! » (quête à prendre), 2 « ? » (à rendre)
+  int questMark(const std::string& event) const;  // bulle d'un habitant : 1 « ! » (quête à prendre), 2 « ? » (à rendre), 3 épées (combat proposé)
   std::string fillText(std::string s) const;
 
  private:
@@ -125,6 +126,7 @@ class Game {
   bool puzzleSolved(const MapDef& m) const { return m.puzzleFlag.empty() || has(m.puzzleFlag); }
   void pushBoulder(int x, int y, int dx, int dy);  // le joueur pousse le rocher de (x, y)  // case occupée sur cette carte
   bool npcVisible(const Npc& n) const;
+  bool chestShown(const MapDef& m, const Chest& c) const;  // ouvert, ou sa condition « si » est vraie
   bool bossAlive(const BossSpot& b) const;
   void tryMove(int d);
   void arrive();
@@ -162,6 +164,9 @@ class Game {
   // Menus
   void titleMenu();
   void starterMenu();
+  void autoSave();          // sauvegarde automatique (option), en changeant de carte à pied
+  float autoSaveT_ = -10;   // moment de la dernière (petit « Sauvegarde… » à l'écran)
+  std::string autoSaveFile_ = "sauvegarde.txt";  // seule la vraie partie se sauvegarde seule (le mode test le change)
   void newGame(const std::string& starter);
   void pauseMenu();
   void tacticsMenu(int sel = 0);
@@ -175,6 +180,7 @@ class Game {
   void evolutionMenu();                      // les évolutions refusées, à faire maintenant
   void drawEvolution();
   std::string evoFrom_, evoTo_;              // effet en cours (espèces avant et après), vide : aucun
+  bool evoChroma_ = false;                   // la créature qui évolue est chromatique
   float evoT_ = 0;                           // début de l'effet (Game::time)
   bool offerEvolve_ = true;
   // Astuces (2.8) : celles déjà montrées (lignes « astuce » de la sauvegarde) ; le mode test les coupe sauf dans
@@ -189,11 +195,38 @@ class Game {
   int forgeStock(const std::string& id) const;               // « trophee » : tous les trophées
   std::string forgeCost(const ItemDef& d, std::string* missing) const;
   void journalMenu();
+  void progressMenu();  // Journal > Progression : ce qui est déjà fait, en chiffres (2026-10-20)
+  // Discussions entre les héros (discussions.cpp, data/discussions.json)
+  void discussionsMenu(int sel = 0);
+  void playDiscussion(const std::string& id);
+  bool discussionOpen(const Json& d) const;
+  int newDiscussions() const;
+  void checkDiscussions();
+  // Exploits (exploits.cpp, data/exploits.json) : objectifs à atteindre, drapeaux « exploit:<id> »
+  void checkExploits();
+  bool exploitsOff_ = false;  // mode test : pas de vérification des exploits (sauf dans leur test)
+  void exploitsMenu();
+  int exploitsDone() const;
+  int lastNewTalks_ = 0;
+  float talkCheckT_ = 0;
+  // Nouvelle partie + (2026-10-20) : drapeaux « ngp1 », « ngp2 »… ; chaque tour ajoute NGP_LEVELS niveaux aux ennemis
+  static constexpr int NGP_LEVELS = 12;
+  int newGamePlus() const;
+  void applyNewGamePlus() { foeLevelBonus = newGamePlus() * NGP_LEVELS; }
+  void startNewGamePlus();
+  // Primes (chasse.cpp, primes.hpp) : tableau d'annonces (tuile G) ; rang de chasseur selon les primes touchées
+  void bountyMenu(int sel = 0);
+  void claimBounty(const std::string& id);
+  int bountiesClaimed() const;
+  std::string hunterTitle() const;
   void companionsMenu(int sel = 0);  // la créature compagnon de chaque héros
   void reserveMenu(int sel = 0);     // déposer, reprendre ou échanger des créatures avec la réserve
   void bestiaryMenu(int sel = 0);    // toutes les créatures : vues, obtenues, fiche
   void formationMenu(int sel = 0);   // la case de chaque combattant sur le damier
   int formationCell_ = -1;           // case surlignée sur le dessin du damier (panelMode_ 4)
+  bool formationPick_ = false;
+  std::vector<std::pair<int, int>> trainingHp_;  // entraînement : PV et PM de l'équipe avant le combat (remis après)       // le choix de la case est ouvert : la souris peut la désigner sur le dessin
+  int formationCellAt(int mx, int my) const;  // case de la formation sous la souris (-1 : aucune)
   void drawFormationPanel(int x, int y);
   std::string bestiarySel_;          // espèce dont la fiche est affichée (panelMode_ 3)
   void drawBestiaryPanel(int x, int y);
@@ -209,8 +242,64 @@ class Game {
   void openHelp(int page);
   void updateHelp();
   void drawHelp();
+  // Pêche (peche.cpp, 2026-10-20) : face à l'eau avec la canne ; 0 attente, 1 ça mord, 2 ferrage
+  struct Fishing {
+    bool on = false;
+    int state = 0, level = 1, need = 0, hits = 0, misses = 0, bx = 0, by = 0;
+    float t = 0, wait = 0, cursor = 0, dir = 1, zone = 0, zoneW = 0, speed = 0, flash = 0;
+    std::string fish;
+  } fishing_;
+  int camX_ = 0, camY_ = 0;  // caméra de la dernière carte dessinée (dessin de la pêche)
+  void startFishing(int wx, int wy);
+  void updateFishing(float dt);
+  void endFishing(const std::string& msg);
+  void drawFishing();
+  // Cartes des gardiens (cartes.cpp, 2026-10-20) : un jeu de cartes à part, contre les joueurs de data/cartes_jeu.json
+  struct CardGame {
+    bool on = false, over = false, abandon = false, same = false;  // same : règle « Identique »
+    std::string foe, foeName;
+    int level = 1, turn = 0, phase = 0, sel = 0, cursor = 4;  // phase 0 : choisir la carte, 1 : la case
+    std::array<std::string, 9> cell;
+    std::array<int, 9> owner{};
+    std::array<float, 9> flipT{};
+    std::vector<std::string> hand[2];  // 0 : le joueur, 1 : l'adversaire
+    float t = 0, wait = 0, sameT = 0;
+    std::function<void(int)> done;  // 1 gagné, 0 égalité, -1 perdu
+  } cards_;
+  // Pension de Moulinbourg (pension.cpp, 2026-10-20) : deux créatures gagnent de l'expérience à chaque pas, et parfois un œuf
+  std::vector<FighterP> pension_;
+  std::vector<int> pensionLvl_;                       // leur niveau à l'arrivée (prix pour les reprendre)
+  int pensionSteps_ = 0;                              // pas depuis le dernier tirage d'un œuf
+  bool pensionEgg_ = false;                           // un œuf attend à la pension
+  std::vector<std::pair<std::string, int>> eggs_;     // œufs emportés : espèce, pas avant l'éclosion
+  void pensionStep();
+  void pensionMenu(int sel = 0);
+  void pensionPick();
+  bool pensionCanEgg() const;
+  std::vector<std::string> cardHand_;  // la main choisie (ligne « main_cartes ») ; complétée par les meilleures cartes
+  int cardGames_ = 0;                  // parties jouées depuis le lancement (le joueur automatique rejoue après une défaite)
+  void startCards(const std::string& foe, std::function<void(int)> done);
+  void updateCards(float dt);
+  void endCards();
+  void drawCards();
+  void drawCard(float x, float y, float w, float h, const std::string& sp, int who, bool lit, float flip);
+  int cardFlips(int c, const std::string& sp, int who, bool apply);
+  std::pair<int, int> cardChoice(int who, int level);
+  void cardsMenu(const std::string& foe, std::function<void(int)> done);
+  void cardHandMenu(int sel = 0);
+ public:
+  std::vector<std::string> cardCollection() const;  // toutes les cartes obtenues, les plus fortes d'abord
+  std::vector<std::string> cardDeck() const;        // les cinq cartes jouées
+  int cardsWon() const;                             // adversaires déjà battus
+  int fishCaught() const;  // espèces de poissons du carnet
+ private:
   bool worldMapOn_ = false;  // carte du monde ouverte (3.3, menu pause) : le reste du jeu attend
   void drawWorldMap();
+  // Voyage rapide (2026-10-20) : les villages (une maison de soin) visités et atteignables d'ici ; flèches pour choisir,
+  // Entrée pour y aller (devant la maison de soin)
+  std::vector<int> travelTargets() const;
+  int worldSel_ = -1;  // la destination choisie (index de carte), -1 : aucune
+  std::vector<bool> worldOpen() const;  // les lieux de la carte du monde atteignables d'ici par des passages ouverts
   int helpPage_ = -1, helpScroll_ = 0, lastHelp_ = 0;  // page affichée (-1 : aucune), défilement, dernière vue (F1)
   void keysMenu(int sel = 0);
   bool padDir_[4] = {}, stickDir_[4] = {};  // directions tenues à la manette (croix, stick)
@@ -236,6 +325,9 @@ class Game {
   // Jour et nuit (2.6) : 0 en plein jour, 1 au cœur de la nuit ; un jour dure 12 minutes de jeu.
   // Seulement dehors (pas les intérieurs ni les grottes obscures)
   float nightAmount() const;
+  bool isNight() const;  // l'heure du jeu (condition « nuit »), même dans un intérieur
+  bool coastal(const MapDef& m) const;  // beaucoup d'eau : mouettes au-dessus, la mer au fond des combats
+  float rainAmount() const;  // 0 à 1 : une averse sur la carte (dessin, et météo Pluie des combats)
   bool outdoors() const;
   void drawDialogue();
   void drawEnding();
@@ -266,6 +358,18 @@ class Game {
     float t;
   };
   std::vector<Footprint> footprints_;
+  // Petits effets de pas (2026-10-20, dessin seul) : brins d'herbe qui volent (hautes herbes), poussière (course)
+  struct Puff {
+    float x, y, t;  // pixels de la carte, moment
+    int kind;       // 0 : herbe, 1 : poussière
+  };
+  std::vector<Puff> puffs_;
+  struct ChestFx {  // coffre qu'on vient d'ouvrir (dessin seul) : un éclat de lumière et l'icône de l'objet qui monte
+    int x = 0, y = 0;
+    float t = -10;
+    std::string icon;  // vide : de l'or
+    int map = -1;
+  } chestFx_;
   int followDir_ = DOWN;
   float mapFadeT_ = -10;  // moment du dernier changement de carte (fondu depuis le noir, 0,3 s)
   std::unique_ptr<Pilot> pilot_;            // joueur automatique (démo, partie rapide), voir pilot.hpp
@@ -298,3 +402,20 @@ class Game {
   friend class Online;
   friend class Pilot;
 };
+
+// Pêche (peche.cpp) : vérification de data/peche.json (mode test) et nombre d'espèces de poissons
+std::vector<std::string> checkFishing();
+int fishSpecies();
+
+// Discussions (discussions.cpp) : vérification de data/discussions.json (mode test) et nombre de discussions
+std::vector<std::string> checkDiscussionsData();
+std::vector<std::string> checkExploitsData();
+std::vector<std::string> checkCardsData();  // data/cartes_jeu.json
+std::array<int, 4> cardValues(const std::string& sp);  // haut, droite, bas, gauche (1 à 10)
+int cardFoeCount();
+int cardTotal();  // toutes les cartes qu'on peut obtenir
+std::string baseForm(const std::string& sp);  // la forme de base (avant toute évolution)
+bool cardFoeExists(const std::string& id);
+int exploitCount();
+void checkConditionData(const Json& c, const std::string& where, std::vector<std::string>& err);  // une condition « si » bien écrite
+int discussionCount();

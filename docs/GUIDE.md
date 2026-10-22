@@ -54,14 +54,14 @@ importantes ont un commentaire d'une ligne au-dessus.
 | Menus | `menus.cpp` | Menu de pause (équipe, compagnons, réserve, bestiaire, équipement, journal, objets, magie), boutique, options |
 | Sauvegarde | `save.cpp` | `saveGame`, `loadGame`, `readMemberLine` |
 | Événements, quêtes | `events.hpp/.cpp` | Actions des événements (`Game::execAction`), conditions, quêtes |
-| Combat | `battle.hpp/.cpp`, `tactics.hpp/.cpp` | Jauges ATB, dégâts, IA, tactiques, animations, combat en ligne |
+| Combat | `battle.hpp/.cpp`, `echiquier.cpp`, `tactics.hpp/.cpp` | Jauges ATB, dégâts, IA, tactiques, animations, combat en ligne ; `echiquier.cpp` : plateau commun, déplacements, portée, dos/encerclement, Percée, choix de case de l'ordinateur, défis |
 | Données | `data.hpp/.cpp`, `world.hpp/.cpp`, `store.hpp/.cpp` | Lecture et vérification de `data/`, cartes, fichiers du joueur |
 | Dessin | `gfx.hpp/.cpp`, `sprites.hpp/.cpp`, `ui.hpp/.cpp` | Formes, police, fenêtres ; créatures, humains, tuiles ; menus |
 | Son | `audio.hpp/.cpp` | Synthèse des musiques et bruitages de `data/sons.json` |
 | Options | `options.hpp/.cpp` | Volumes, plein écran, vitesse du jeu, touches (`options.txt`) |
 | Évolution | `evolution.cpp` | Question « Évoluer ? » après un combat, effet de lumière, menu Échap > Évolution |
 | Forge | `forge.cpp` | Forge de Forgeroc : menu, coûts, forger (objets forgés générés dans `data.cpp`) |
-| Aide | `help.cpp` | Pages d'aide (Échap > Aide, F1) : statistiques, dégâts, damier, zones, rythme, états, tableau des types, touches |
+| Aide | `help.cpp` | Pages d'aide (Échap > Aide, F1) : statistiques, dégâts, échiquier, zones, rythme, états, tableau des types, touches |
 | Expédition | `expedition.hpp/.cpp`, `procgen.hpp/.cpp` | Monde généré à partir d'une graine, Camp, sauvegarde à part |
 | Multijoueur | `net.hpp/.cpp`, `upnp.hpp/.cpp` (box, code de partie), `online.hpp/.cpp`, `coop.cpp`, `trade.cpp` | Connexions, salon, duel, expédition à plusieurs, échanges |
 | Outils | `arena`, `settings`, `mapedit`, `storyedit` | Arène, réglages, éditeur de cartes, éditeur d'histoire |
@@ -96,8 +96,9 @@ les coffres ouverts et les quêtes sont des **drapeaux** (`Game::flags`).
 
 **Qui combat** : `frontOf` (data.cpp) — les 3 premiers héros valides, chacun
 suivi de sa créature compagnon. Le joueur commande héros et compagnons ; la
-jauge des compagnons avance moins vite. Chacun a sa case sur le damier
-(`formation`, `Battle::cells_`).
+jauge des compagnons avance moins vite. Chacun a sa case sur l'échiquier
+(`formation` pour la case de départ dans sa moitié, `Battle::cells_` pendant le combat : un seul plateau de
+`BOARD_W` × `GRID` cases pour les deux camps, voir CLAUDE.md).
 
 ## 4. Recettes
 
@@ -109,7 +110,11 @@ concernées dans `captures/`.
 `forme`, `couleurs`, `apprend`, et `sprite` : un nom de `data/sprites.json`), puis l'ajouter à une zone de
 rencontres d'une carte (`zones`, champ `pool`). **Un nouveau sprite** : sa boîte dans
 `outils/sprites/decoupe.json` (ou une recoloration dans `variantes.json`), puis `python outils/sprites/decoupe.py`
-et regarder `outils/sprites/apercu.png`. Une nouvelle *forme* (dessin) : ajouter une
+et regarder `outils/sprites/apercu.png`. **Les poses de dos et de profil d'un personnage dessiné seulement de face** : des entrées
+`tourner` dans `decoupe.json` (voir `outils/sprites/tourner.py`), puis `decoupe.py` (le rendu 3D avec Blender,
+`outils/blender/`, donnait un style trop différent). **Un effet animé** : une gerbe de particules dans `outils/godot/effets/rendu.gd`, puis Godot,
+`python outils/godot/pixeliser_effets.py <type>` et `decoupe.py` (marche à suivre : compétence `sprites-blender-godot`).
+Une nouvelle *forme* (dessin) : ajouter une
 valeur à `Shape` (data.hpp) **avant** `Human`, son nom dans `SHAPES`
 (data.cpp), et son dessin dans `drawCreature` (sprites.cpp).
 
@@ -129,6 +134,15 @@ fichier dans `data/cartes/`. Un **intérieur** : une carte au thème
 champ `interieur` sur le bâtiment du village. `checkMaps` vérifie que tout est
 accessible à pied.
 
+**Une région, des quêtes, des dresseurs écrits par un script** (étape « 20 heures ») : `outils/villes/` contient
+les scripts qui ont écrit les nouveaux lieux (`col.py`, `val.py`, `corail.py`, `plaine.py`, `donjons.py`…), les
+dresseurs (`dresseurs.py`, `revanches.py`), la Ligue (`ligue.py`) et les quêtes (`quetes_lieux.py`,
+`quetes_actes.py`). Outils communs : `cartegen.py` (classe `Map` : rectangles, taches, chemins, habitants, coffres,
+passages, donjons à salles), `place_util.py` (une case libre et atteignable à pied, sans rien boucher), `carte.py`
+(lecture et écriture au format du jeu ; `rewrite_events` ne réécrit que les entrées touchées d'`evenements.json`).
+Chaque script ne tourne qu'une fois (il refuse s'il trouve déjà son contenu) : pour le refaire, remettre `data/`
+avec git. Puis `python outils/textes.py` et les traductions anglaises.
+
 **Un dialogue, une scène** : l'éditeur d'histoire, ou `data/evenements.json`
 (pages avec conditions, actions). Le lancer depuis un habitant (`evenement`),
 une porte, un boss de carte ou une zone déclencheuse.
@@ -137,6 +151,10 @@ une porte, un boss de carte ou une zone déclencheuse.
 puis un événement qui la commence (`{"action": "quete", "id": …}`) et la
 termine (`"fin": true`), avec des pages qui testent les drapeaux
 `quete:<id>` et `quete:<id>:fin`. Exemple complet : `quete_medaillon`.
+
+**Une prime** (monstre recherché) : une entrée dans `data/primes.json` (carte, case libre de 2×2, combat,
+récompense, condition `si`) ; elle apparaît aux tableaux d'annonces (tuile `G`). Code : `primes.cpp` (données,
+événement généré « prime:<id> », monstre ajouté à sa carte) et `chasse.cpp` (menu du tableau, récompense, rang).
 
 **Une musique ou un bruitage** : `data/sons.json` (format dans
 `data/LISEZMOI.md`). Une musique de lieu se choisit par le thème de la carte
@@ -168,6 +186,16 @@ connectent pas. Un message mal formé ne peut pas faire planter le jeu
 « tour des menus » du mode test (`test.cpp`) ouvre les menus avec les noms
 les plus longs : y ajouter tout nouvel écran pour que la mise en page soit
 vérifiée.
+
+### Graphismes (2026-10-21)
+
+- **Une grotte, un donjon** : donner à sa carte `teinte_murs` (la couleur de la roche) ; murs, sol et décor des
+  combats en prennent la teinte. Les murs (`#`) des thèmes grotte et neige ont leur relief tout seuls (`wallDepth`).
+- **Un intérieur** : `style` = `chapelle`, `auberge`, `boutique` ou `soin` (rien : une maison).
+- **Un lieu au bord de la mer** (plus de 15 % d'eau, `Game::coastal`) : mouettes, et la mer au fond des combats.
+- **Une fête la nuit** : champ `fete` (une condition) ; des lanternes montent dans le ciel.
+- Les captures `donjon_<carte>`, `carte_monde_fin`, `combat_port`, `combat_mines`, `meteo_orage`, `interieur_nuit` du
+  mode test servent à comparer avant et après.
 
 ## 5. Tester
 
@@ -213,6 +241,10 @@ détaillé d'un combat simulé), `BRUMEVAL_MONDE=brume` (monde d'une graine).
   LF) ; garder 0 avertissement de compilation.
 - **Équilibrage** : ne pas retoucher les boss sans demander (choix du
   2026-10-07) ; comparer avec `BRUMEVAL_SIMULATIONS=5`.
+
+- Ne jamais modifier un `.hpp` pendant qu'une compilation tourne : certains fichiers compilés gardent l'ancienne
+  version tout en paraissant à jour, et le jeu plante au lancement. Remède : `touch src/*.hpp`, puis recompiler.
+- Une démo ouverte bloque `build-dev/Release/brumeval.exe` : compiler alors dans un second dossier (`build-gfx`).
 
 ## 7. Carte du code (graphify)
 

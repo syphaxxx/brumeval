@@ -154,7 +154,11 @@ void Expedition::install() {
   if (r.contains("duo")) r["duo"]["liste"] = duoList;
   r["conseils"] = Json::array();  // les conseils parlent des boss de l'histoire (2.8)
   dataDoc(DF_RULES) = r;
-  for (auto f : {DF_TYPES, DF_ITEMS}) dataDoc(f) = docs_[f];
+  dataDoc(DF_TYPES) = docs_[DF_TYPES];
+  Json items = Json::array();  // sans les armes des héros de l'histoire (champ « pour ») : ils n'existent pas ici
+  for (auto& it : docs_[DF_ITEMS])
+    if (jget<std::string>(it, "pour", "").empty()) items.push_back(it);
+  dataDoc(DF_ITEMS) = items;
   rebuildData();
   maps() = {mapFromJson(current_.map)};
   events() = current_.events;
@@ -494,12 +498,17 @@ bool Expedition::readSave(const std::string& key, const std::string& rest) {
 void Expedition::draw(Gfx& g) {
   float L = g.left(), W = (float)g.fullW;
   g.gradV(L, 0, W, SCREEN_H, rgb(0x10183a), rgb(0x2c3a6e));
+  for (int i = 0; i < 46 * W / SCREEN_W; i++) {  // (2026-10-21) des étoiles qui scintillent, une crête plus lointaine
+    float x = L + std::fmod(i * 53.f + i * i * .37f, W), y = std::fmod(i * 29.f, 120.f), tw = .5f + .5f * std::sin(G.time * (1.3f + i % 5 * .3f) + i);
+    g.rect(x, y, 1, 1, rgb(0xffffff, uint8_t(50 + 140 * tw)));
+  }
+  g.poly({{L, 150}, {30, 118}, {80, 136}, {130, 104}, {190, 130}, {250, 98}, {300, 124}, {L + W, 112}, {L + W, 240}, {L, 240}}, rgb(0x182050));
   g.poly({{L, 170}, {40, 140}, {90, 160}, {150, 126}, {210, 150}, {270, 120}, {L + W, 146}, {L + W, 240}, {L, 240}}, rgb(0x1e2650));
   for (int i = 0; i < 6 * W / SCREEN_W; i++) g.ellipse(L + std::fmod(i * 70 + G.time * 14, W + 100) - 50, 150 + (i % 5) * 12, 90, 7, rgb(0xe6ebff, 22));
   bool choosing = active_ && !preview_.empty() && hasSpecies(preview_);
   if (choosing) drawFighterCard(g, *makeFighter(preview_, 5 + progress.up[U_LEVEL]), 160, 18, 156, 180, G.time);
   else {
-    g.text(160, 10, T("EXPÉDITION"), GOLD, 1);
+    g.textBigFancy(160, 6, T("EXPÉDITION"), rgb(0xfff0a0), rgb(0xe8902a), rgb(0x2a1606), 2, 1);
     if (G.menus.maxRight() <= 158) {
       g.window(164, 40, 150, 70);
       g.text(172, 46, T("Record : région ") + std::to_string(progress.record), WHITE);

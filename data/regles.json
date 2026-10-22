@@ -13,7 +13,17 @@
     "evenement": "debut"
   },
   "equipe": {"taille_max": 8, "en_combat": 3},
-  "rencontres": {"taux": 0.11, "pas_minimum": 3, "chance_2e": 0.55, "chance_3e": 0.35, "meute_distance": 50},
+  "rencontres": {
+    "taux": 0.11,
+    "pas_minimum": 3,
+    "chance_2e": 0.55,
+    "chance_3e": 0.35,
+    "meute_distance": 50,
+    "chromatique": 0.006,
+    "alpha": 0.06,
+    "alpha_niveaux": 3,
+    "part_nuit": 0.5
+  },
   "combat": {
     "atb_base": 20,
     "atb_vitesse": 1.1,
@@ -34,7 +44,28 @@
   "brisure": {"bouclier": 2, "bouclier_boss": 8, "degats": 1.5},
   "roles": {"protection": 0.3, "chef": 0.2},
   "gemmes": {"chatons_arme": 1, "chatons_armure": 1, "chatons_accessoire": 1, "forge_chaton": 2},
-  "damier": {"choc": 0.35, "terrain_min": 0, "terrain_max": 2},
+  "damier": {
+    "choc": 0.35,
+    "terrain_min": 0,
+    "terrain_max": 2,
+    "mouvement": 2,
+    "allonge_boss": 2,
+    "dos": 1.3,
+    "encercle": 0.1,
+    "contact": 0.75,
+    "percee": 1,
+    "vol": ["vent", "esprit"],
+    "rapides": ["vent", "foudre"],
+    "obstacles_min": 0,
+    "obstacles_max": 3,
+    "decors_obstacles": {
+      "vallee": ["rocher", "buisson", "tonneau"],
+      "foret": ["buisson_2", "buisson_baies", "pierres_moussues"],
+      "cendres": ["rocher", "rochers", "cailloux"],
+      "grotte": ["rocher", "cailloux", "rochers"],
+      "neige": ["rocher", "sapin_petit"]
+    }
+  },
   "meteo": [
     {
       "id": "pluie",
@@ -175,6 +206,16 @@
   },
   "astuces": [
     {
+      "id": "echiquier",
+      "aide": "Échiquier",
+      "texte": "Les deux camps partagent le plateau. « Se déplacer » ne finit pas le tour : avancez, contournez la ligne ennemie et frappez dans le dos, ou protégez vos lanceurs de sorts."
+    },
+    {
+      "id": "obstacle",
+      "aide": "Échiquier",
+      "texte": "Un obstacle bloque le passage au milieu du plateau : contournez-le, abritez vos lanceurs derrière, ou poussez un ennemi contre lui (choc !)."
+    },
+    {
       "id": "bouclier",
       "aide": "Brisure",
       "texte": "Le chiffre dans l'écu bleu est le bouclier de l'ennemi. Frappez ses faiblesses pour l'user : à zéro, il est brisé, perd un tour et encaisse 50 % de plus."
@@ -238,6 +279,16 @@
       "id": "enigme",
       "aide": "Énigmes",
       "texte": "Une énigme ! Poussez les rochers sur toutes les dalles en marchant dedans. Un rocher coincé ? Échap > Recommencer l'énigme."
+    },
+    {
+      "id": "dos",
+      "aide": "Échiquier",
+      "texte": "Coup dans le dos ! Frapper un ennemi depuis le côté de son camp fait plus mal. Attention : là-bas, on risque d'être encerclé."
+    },
+    {
+      "id": "percee",
+      "aide": "Échiquier",
+      "texte": "Percée ! Atteindre le bord du camp adverse donne un bonus pour tout le combat. Les ennemis peuvent en faire autant : barrez-leur la route."
     }
   ],
   "conseils": [
@@ -270,6 +321,13 @@
       "texte": "Sa carapace de lave se reforme à 60 % de PV, puis il appelle un tisonnel. Gardez un gros coup pour chaque brisure."
     },
     {
+      "drapeau": "harpie",
+      "boss": "harpie_givre",
+      "lieu": "le défilé du Col des Hurlevents",
+      "gemme": "gemme_feu",
+      "texte": "Très rapide : elle joue souvent deux fois de suite. À mi-vie, son blizzard gèle le terrain."
+    },
+    {
       "drapeau": "cristal_apaise",
       "boss": "cristallin",
       "lieu": "le Temple de cristal",
@@ -291,6 +349,13 @@
       "texte": "Le Nébulis (croix) la soigne : éliminez-le. La brume puis sa colère : gardez des PM pour la fin."
     },
     {
+      "drapeau": "marees_boss",
+      "boss": "gardien_marees",
+      "lieu": "le fond de la Grotte des Marées",
+      "gemme": "gemme_foudre",
+      "texte": "Une carapace très solide : la magie passe mieux que les coups. À mi-vie, il appelle la marée."
+    },
+    {
       "drapeau": "kraken",
       "boss": "kraken",
       "lieu": "les Ruines englouties, au nord du Récif d'Écume",
@@ -310,6 +375,27 @@
       "lieu": "le sommet de la Tour de l'Orage",
       "gemme": "gemme_maitre",
       "texte": "Trois phases : la foudre, puis des renforts (un Nuageon soigneur : visez-le), puis un dernier souffle. Gardez Limites et duos pour la fin."
+    },
+    {
+      "drapeau": "gardien_lueurs",
+      "boss": "gardien_lueurs",
+      "lieu": "le nord du Bois des Lueurs",
+      "gemme": "gemme_pyro",
+      "texte": "À mi-vie, il appelle une Lueurine et se renforce contre la magie : abattez-la aussitôt."
+    },
+    {
+      "drapeau": "reine_marais",
+      "boss": "reine_marais",
+      "lieu": "l'îlot du Marais Pâle",
+      "gemme": "gemme_foudre",
+      "texte": "Elle empoisonne toute l'équipe : gardez des Remèdes. À 30 % de PV, un Vasepent vient l'aider."
+    },
+    {
+      "drapeau": "aube_fin",
+      "boss": "brume_noire",
+      "lieu": "le trône de la Citadelle des gardiens",
+      "gemme": "gemme_maitre",
+      "texte": "Trois phases, de plus en plus rapides ; un Aubespectre la soigne : visez-le. Ilya vous soigne juste avant."
     }
   ],
   "talents": [
@@ -358,7 +444,7 @@
     {
       "id": "furtif",
       "nom": "Furtif",
-      "description": "À l'arrière, esquive 15 % des coups physiques en plus.",
+      "description": "Loin de la mêlée (aucun ennemi au contact), esquive 15 % des coups physiques en plus.",
       "effet": "esquive_arriere",
       "valeur": 0.15
     },
@@ -464,5 +550,14 @@
       {"si": "soi_limite", "faire": "limite"},
       {"si": "ennemi", "faire": "attaque"}
     ]
+  },
+  "pension": {
+    "pas_par_niveau": 120,
+    "pas_oeuf": 300,
+    "chance_oeuf": 0.5,
+    "pas_eclosion": 400,
+    "chroma_oeuf": 0.03,
+    "prix_par_niveau": 100,
+    "oeufs_max": 3
   }
 }
