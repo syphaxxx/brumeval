@@ -651,7 +651,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   (`Game::coastal` : plus de 15 % d'eau sur la carte) : la mer, une voile et le sable au fond ; mouettes sur ces cartes.
   Orage : éclair dessiné ; fontaine, fenêtres (ombre, coins arrondis), nombres des combats cernés de noir. Intérieurs :
   champ `style` (`MapDef::style`, `roomStyle` dans sprites.cpp : sols et murs propres à la chapelle, l'auberge, la
-  boutique, la maison de soin). Champ `eau` d'une carte (`MapDef::water`, `marais` : eau trouble et nénuphars) ; sol `z`
+  boutique, la maison de soin). Champ `lumiere` (`MapDef::light`, voile de
+  couleur le jour : Aube, Lueurs, Citadelle, Port-Écho, Forêt Pétrifiée, Cratère). Champ `eau` d'une carte (`MapDef::water`, `marais` : eau trouble et nénuphars) ; sol `z`
   du marais (boue, flaques, quenouilles éparses, bords fondus). Ponts, énigmes (rochers, plaques, herse), escaliers, cristaux, coffres ouverts redessinés. Second dossier de compilation `build-gfx` quand `build-dev` est occupé (démo ouverte).
 - Épreuves des gardiens (2026-10-20) : après `aube_fin`, la porte du sanctuaire d'Aube (événement `epreuves`) ouvre huit
   combats contre des esprits gardiens (drapeaux `epreuve1`…`epreuve8`, niveaux 70 à 84), puis Ilya (`epreuve9`,

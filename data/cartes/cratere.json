@@ -67,5 +67,6 @@
     }
   ],
   "boss": [{"x": 40, "y": 19, "espece": "phenix_echo", "drapeau": "phenix_echo_vaincu"}],
-  "carte_monde": [17, 24]
+  "carte_monde": [17, 24],
+  "lumiere": "#ff6a3a"
 }

@@ -1515,6 +1515,8 @@ void Game::drawMap() {
   drawMapCritters(g, m, tx0, tx1, ty0, ty0 + SCREEN_H / 16 + 1, camX, camY, time, nightAmount());
   // Jour et nuit : la carte s'assombrit (crépuscule orangé), les fenêtres s'allument, le héros porte une lanterne
   float night = nightAmount();
+  if (m.light && night < 1)  // (2026-10-22) la lumière propre au lieu : l'aube rose d'Aube, la lumière froide des Échos
+    g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(m.light, uint8_t(42 * (1 - night))));
   if (m.theme == Theme::Interieur && isNight())  // (2026-10-21) la nuit, dedans : la lumière chaude des bougies
     g.rect(g.left(), 0, g.fullW, SCREEN_H, rgb(0x4a2a08, 46));
   if (night > 0) {

@@ -319,6 +319,8 @@ table, `h` lit, `e` étagère (une bibliothèque pour deux cases), `o` comptoir,
   un dresseur).
 - `coffres` : `objet` et `quantite`, ou `or` ; `si` : le coffre n'apparaît que si ces conditions sont vraies (une fois
   ouvert, il reste là) : cartes au trésor de Corbin.
+- `lumiere` (carte) : couleur de la lumière du lieu (`"#ff9a7a"`), posée en voile léger le jour (aube rose d'Aube,
+  lumière froide des Échos, rouge du Cratère).
 - `eau` (carte) : `marais` = eau trouble et verte, avec des nénuphars (Marais Pâle).
 - `style` (intérieur) : `chapelle` (dalles, vitraux), `auberge`, `boutique`, `soin` (carrelage) ; vide : une maison.
 - `teinte_murs` (carte, thème grotte) : couleur de la roche (`"#6a5040"`) ; les murs et le sol en prennent la teinte.
