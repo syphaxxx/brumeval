@@ -33,7 +33,7 @@ Méthode :
   profil Soigneur sans sorts, Combattant qui impose « le moins de PV », répétition de tous les boss (318 min
   d'entraînement). Corrigé (branche tactiques-2 : action « Attaque, PM gardés », le Combattant n'achève que sous 30 %,
   ready() ne répète que les combats perdus) : **sans mémoire, tout fini en 7 h 40, 27 défaites, niveau 103** (quatre
-  actes à 5 h 34). Embuscades à
+  actes à 5 h 34). La 3.6 publiée (profils d'avant), même mesure : tout fini mais en 15 h 20, 42 défaites, niveau 128. Embuscades à
   0,1 et la moitié derrière : 48 défaites, fin non atteinte en 14 h (trop dur, retiré). Prime la plus dure : la Braisaure
   ancestrale (trois carapaces : il faut de la magie).
 
