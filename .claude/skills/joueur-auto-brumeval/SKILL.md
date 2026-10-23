@@ -132,3 +132,7 @@ Demandé : « développe le mode tactique et que le joueur auto l'utilise ». `P
 `protecteur`), Briseur (au moins 3 types d'attaque, pour trouver les faiblesses), sinon Combattant ; refait quand une
 ligne de plus sert le profil (`profileOf_` : profil et lignes). En démo, par les menus (Préparation > Tactiques >
 membre > Profils… > profil). Rapport : « Tactiques : Lior → Combattant ».
+
+Prêt ou pas (2026-10-23) : `Pilot::ready` répète toujours un boss, ou un combat déjà perdu, même loin au-dessus de son
+niveau (avant, 3 niveaux + marge au-dessus suffisaient : la Braisaure ancestrale, trois carapaces, se perdait 8 fois de
+suite avec une équipe sans magie, et la partie se bloquait). Simulation de cette prime dans le mode test.
