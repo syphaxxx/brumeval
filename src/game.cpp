@@ -758,8 +758,10 @@ void Game::encounter() {
     }
     if (n >= 2 && !inExpedition() && frand() < rules().alpha) {  // une meute menée par un alpha : plus fort, traité comme un boss
       bool chroma = foes[0]->chroma;
+      int reward = foes[0]->rewardLvl;  // relevée : ses gains restent ceux de sa zone (plus les niveaux de l'alpha)
       foes[0] = makeFighter(foes[0]->sp, foes[0]->lvl + rules().alphaLevels);
       foes[0]->boss = true, foes[0]->chroma = chroma;
+      foes[0]->rewardLvl = reward > 0 ? reward + rules().alphaLevels : 0;
     }
     BattleSetup s;
     s.foes = foes;

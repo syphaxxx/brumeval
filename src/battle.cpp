@@ -1662,6 +1662,7 @@ bool Battle::tacticTurn(FighterP a) {
     if (!tacticPlan(a, q) || q.cell >= 0) return autoCommand(a), true;
     log.push_back(a->name() + T(" : tactique ") + std::to_string(q.tactic + 1));
     p = q;
+    if (p.wait) return waitTurn(a), true;  // se mettre en garde après s'être déplacé (relecture de Codex)
   }
   if (!p.item.empty()) useItem(a, p.item, p.targets.at(0));
   else if (p.duo) duoMove(a, p.duo, p.move, p.targets);
@@ -2555,7 +2556,8 @@ void Battle::victory() {
   for (auto& d : defeated) {
     int lv = d->rewardLvl > 0 ? d->rewardLvl : d->lvl;  // relevée au niveau de l'équipe : les gains de sa zone (sinon l'équipe file devant)
     // trop faible pour l'équipe : moins d'expérience (l'équipe ne file plus loin devant l'histoire)
-    float gap = teamLvl - lv - R.xpGapFree, k = R.xpGapLoss > 0 && gap > 0 ? std::max(float(R.xpGapMin), 1 - gap * float(R.xpGapLoss)) : 1.f;
+    float gap = teamLvl - lv - R.xpGapFree;
+    float k = R.xpGapLoss > 0 && gap > 0 && !G.inExpedition() ? std::max(float(R.xpGapMin), 1 - gap * float(R.xpGapLoss)) : 1.f;  // pas en Expédition
     total += int(lv * R.xpPerLevel * (d->boss ? R.xpBoss : 1) * k + .5f);
     goldGain += lv * R.goldPerLevel * (d->boss ? R.goldBoss : 1);
   }
