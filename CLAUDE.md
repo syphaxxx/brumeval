@@ -446,7 +446,9 @@ code) ; `docs/GUIDE.md` les range par domaine.
   passent par-dessus), puis `resumeTurn` rouvre le menu (ou l'ordinateur agit) ; « Attendre » (`waitTurn`, jauge
   rapide). Corps à corps (`reachable`) : adversaire à `reach` (1, boss `allonge_boss`), sinon rejoignable ce tour
   (`approachCell`, le pas est fait au début de `useMove`). `posMult` (dans `applyHit`, `attackScore`, `damageText`) :
-  dans le dos (`behind` : depuis le côté du camp de la cible, × `dos`), encerclé (`encercle` par adversaire au contact
+  dans le dos (`behind` : du côté opposé au regard de la cible, × `dos` ; regard `facing_` (2026-10-23) : vers où il
+  marche (`step`), vers sa cible (`useMove`), vers l'adversaire le plus proche s'il attend (`waitTurn`) ; par défaut vers le
+  camp adverse ; flèche au sol ; 10e nombre de chaque combattant dans `etat`, en miroir chez l'invité du duel), encerclé (`encercle` par adversaire au contact
   au-delà du premier, pas un boss), distance ou magie au contact d'un adversaire (× `contact`, pas un boss). Percée :
   atteindre le bord adverse donne +`percee` en Attaque, Magie et Vitesse une fois (`breakthrough_`). Poussée dans
   l'axe du lanceur (`shoveDest(a, t, m)`), choc contre tout combattant. Terrain : `terrain_[case du plateau]`.
