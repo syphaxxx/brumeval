@@ -148,7 +148,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   et une icône facultative `icon` (un sprite, ou un dessin de `menuGlyph` dans
   ui.cpp : patte, damier, viser, parchemin, bulle, carte, engrenage, aide, porte,
   pas, sablier, echange, duo… ; « #rrggbb » : une pastille de cette couleur, `typeDot` pour les techniques), posée par `setIcons(m, {{T("Équipe"), "ic_casque_1"}…})` : menu de
-  pause, commandes du combat, écran titre ; le libellé passe 11 px plus à droite.
+  pause, commandes du combat, écran titre ; le libellé passe 11 px plus à droite. `MenuItem::sep` : filet au-dessus
+  (début d'un groupe) ; `MenuItem::notches` : un réglage de 0 à 10 dessiné en crans (volumes des Options).
   Un menu du dessous n'est pas dessiné si un sous-menu le chevauche sans être
   bien à l'intérieur (4 px de marge). Un libellé trop long est coupé avec « … »
   (signalé par le mode test, sauf `MenuItem::shrink`). Les panneaux à droite
