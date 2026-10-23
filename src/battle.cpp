@@ -215,20 +215,27 @@ std::string matchupText(const Species& sp, const std::set<std::string>* known) {
       if (known->count(sp.id + ":" + std::to_string(t))) found += (found.empty() ? "" : ", ") + std::string(types()[t].name) + T(" (×") + numFr(e) + ")";
       else hidden++;
     }
-    std::string s = T("Faiblesses découvertes : ") + (found.empty() ? std::string("aucune") : found) + ".";
+    std::string absorbs;  // une absorption découverte en la frappant
+    for (Type t = 0; t < (Type)types().size(); t++)
+      if (typeEff(t, sp.type) * (sp.type2 >= 0 ? typeEff(t, sp.type2) : 1.f) * r(types()[t].id) < 0 && known->count(sp.id + ":" + std::to_string(t)))
+        absorbs += (absorbs.empty() ? "" : ", ") + std::string(types()[t].name);
+    std::string s = T("Faiblesses découvertes : ") + (found.empty() ? std::string(T("aucune")) : found) + ".";
+    if (!absorbs.empty()) s += T(" Absorbe : ") + absorbs + ".";
     if (hidden) s += T(" Encore ") + std::to_string(hidden) + T(" à découvrir (frappez-la avec d'autres types).");
     return s;
   }
-  std::string weak, strong, none;
+  std::string weak, strong, none, absorbs;
   for (auto& [e, names] : by) {
     std::string mult = T(" (×") + numFr(e) + ")";
-    if (e == 0) none = names;
+    if (e < 0) absorbs += (absorbs.empty() ? "" : ", ") + names;
+    else if (e == 0) none = names;
     else if (e > 1) weak += (weak.empty() ? "" : ", ") + names + mult;
     else strong += (strong.empty() ? "" : ", ") + names + mult;
   }
-  std::string s = T("Faible contre : ") + (weak.empty() ? std::string("rien") : weak) + ".";
+  std::string s = T("Faible contre : ") + (weak.empty() ? std::string(T("rien")) : weak) + ".";
   if (!strong.empty()) s += T(" Résiste : ") + strong + ".";
   if (!none.empty()) s += T(" Sans effet : ") + none + ".";
+  if (!absorbs.empty()) s += T(" Absorbe : ") + absorbs + ".";
   if (r("physique") != 1) s += std::string(r("physique") < 1 ? T(" Encaisse") : T(" Craint")) + T(" les coups physiques (×") + numFr(r("physique")) + ").";
   if (r("magique") != 1) s += std::string(r("magique") < 1 ? T(" Encaisse") : T(" Craint")) + T(" la magie (×") + numFr(r("magique")) + ").";
   std::string imm;
@@ -268,6 +275,21 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
     for (auto& o : foes) taken = taken || cells_[o.get()] == mid;
     if (boardX(c) == GRID && !f->boss && !taken && frand() < .35f) cells_[f.get()] = mid;
   }
+  // Embuscade : un tiers des créatures (au moins une) part du fond du camp allié, tournée vers l'équipe, qui regarde
+  // de l'autre côté : il faut se retourner, se déplacer ou protéger ses lanceurs de sorts
+  ambush_ = s.ambush && foes.size() >= 2 && !s.fixedBoard;
+  if (ambush_)
+    for (size_t i = foes.size() - std::max<size_t>(1, foes.size() / 3); i < foes.size(); i++) {  // un tiers (au moins une)
+      int best = -1;
+      for (int k = 0; k < GRID && best < 0; k++) {  // la ligne du milieu d'abord, puis de part et d'autre
+        int row = (GRID / 2 + (k % 2 ? -(k + 1) / 2 : k / 2) + GRID) % GRID, c = boardAt(row, 0);
+        if (!at(c)) best = c;
+      }
+      if (best < 0) break;
+      cells_[foes[i].get()] = best;
+      facing_[foes[i].get()] = 1;
+      breakthrough_.insert(foes[i].get());  // déjà au bord : pas de Percée pour avoir longé le fond
+    }
   start = G.time;
   std::map<std::string, int> cnt, seen;
   for (auto* v : {&foes, &reserve})
@@ -356,6 +378,7 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
   if (foeName.empty() && !boss && leader->boss && !leader->S().human) intro = T("Une meute menée par un alpha : ") + leader->name() + " !";
   for (auto& e : foes)
     if (e->chroma && foeName.empty() && !boss) intro = T("Une créature chromatique ! ") + e->name() + T(" brille de couleurs rares.");
+  if (ambush_) intro = T("Embuscade ! Des créatures surgissent derrière vous.");
   if (!s.intro.empty()) intro = s.intro;
   sc.say(intro, s.intro.empty() ? 1.3f : 0.f);  // la leçon d'un défi attend Entrée
 }
@@ -679,10 +702,14 @@ void Battle::tip(const char* id) {
 // Une seule astuce au début d'un combat : la première règle nouvelle qu'on y rencontre
 void Battle::startTips() {
   if (!shown() || autoPlay || net_ != Net::None) return;
-  bool shield = false, role = false, terrain = false;
-  for (auto& f : foes) shield = shield || f->shieldMax > 0, role = role || !f->S().combatRole.empty();
+  bool shield = false, role = false, terrain = false, armor = false;
+  for (auto& f : foes) {
+    shield = shield || f->shieldMax > 0, role = role || !f->S().combatRole.empty();
+    auto& r = f->S().resist;  // carapace ou peau d'enchantement (2026-10-23) : une attaque encaissée
+    armor = armor || (r.count("physique") && r.at("physique") < 1) || (r.count("magique") && r.at("magique") < 1);
+  }
   for (int v : terrain_) terrain = terrain || v >= 0;
-  std::pair<const char*, bool> order[] = {{"echiquier", true}, {"obstacle", !obstacles_.empty()}, {"bouclier", shield}, {"ordre", true}, {"role", role}, {"meteo", weather_ >= 0}, {"terrain", terrain}, {"talent", true}};
+  std::pair<const char*, bool> order[] = {{"embuscade", ambush_}, {"carapace", armor}, {"echiquier", true}, {"obstacle", !obstacles_.empty()}, {"bouclier", shield}, {"ordre", true}, {"role", role}, {"meteo", weather_ >= 0}, {"terrain", terrain}, {"talent", true}};
   for (auto& [id, ok] : order)
     if (ok && G.tip(id, sc)) return;
 }
@@ -928,6 +955,7 @@ void Battle::command(FighterP a) {
                          if (ok && t.sel < 0) t.sel = (int)t.items.size();
                          t.items.push_back({mv.name, ok ? typeName(mv.type) : T("hors d'atteinte"), moveBrief(mv, a.get()), ok,
                                             [this, a, id] { moveTarget(a, id); }, [this, a, id] { previewMove(a, id); }});
+                         t.items.back().icon = typeDot(mv.type);
                        }
                        t.sel = std::max(0, t.sel);
                        dock(t);
@@ -944,11 +972,14 @@ void Battle::command(FighterP a) {
                            bool ok = inReach(mv);
                            t.items.push_back({mv.name, ok ? std::to_string(mv.cost) + T(" PM") : T("hors d'atteinte"), moveBrief(mv, a.get()),
                                               ok && a->mp >= mv.cost, [this, a, id] { moveTarget(a, id); }, [this, a, id] { previewMove(a, id); }});
+                           t.items.back().icon = typeDot(mv.type);
                          }
                          dock(t);
                          G.menus.push(t);
                        }});
-  if (!a->S().limit.empty()) {
+  // (2026-10-23) un menu plus court : la Limite n'apparaît que prête (en or ; sa jauge rose est dans l'ATH), le Duo
+  // seulement possible, « Changer » seulement s'il y a un remplaçant
+  if (!a->S().limit.empty() && a->lim >= 100) {
     const Move& lim = moveInfo(a->S().limit);
     m.items.push_back({T("Limite"), "", (a->lim >= 100 ? lim.name + T(" : technique ultime ! ") : T("La jauge Limite (rose) se remplit quand on reçoit des coups. ") + lim.name + " : ") +
                            moveDetails(lim, a.get()),
@@ -956,8 +987,9 @@ void Battle::command(FighterP a) {
                          G.menus.clear();
                          useMove(a, lim.id, lim.target == Target::AllAllies ? alive(allies) : alive(foes), true);
                        }});
+    m.items.back().color = 0xffd34d;
   }
-  if (!duoOptions(a, false).empty()) {  // techniques en duo possibles dans ce combat
+  if (!duoOptions(a).empty()) {  // un duo possible maintenant
     auto duos = duoOptions(a);
     if (!duos.empty()) tip("duo");
     std::string why = T("Technique à deux. Il faut un partenaire dont la jauge ATB atteint ") + std::to_string(rules().duoGauge) +
@@ -1025,12 +1057,14 @@ void Battle::command(FighterP a) {
                            const Rules::Terrain* tr = terrainOf(c);
                            std::string where = boardX(c) == edge && !breakthrough_.count(a.get()) && rules().breakthrough > 0
                                                    ? T("Bord adverse : Percée ! Attaque, Magie et Vitesse +") + std::to_string(rules().breakthrough) + "."
-                                               : !inHalf(true, c) ? T("Camp adverse : on peut frapper dans le dos, mais gare à l'encerclement.")
+                                               : !inHalf(true, c) ? T("Camp adverse : gare à l'encerclement.")
                                                                   : std::string();
                            int threat = meleeThreat(a, c);
                            std::string danger = threat == 0 ? std::string(T(" · Hors de portée des ennemis au prochain tour."))
                                                             : T(" · Danger : ") + std::to_string(threat) + T(" ennemi(s) pourront frapper ici.");
-                           t.items.push_back({boardName(c), "", boardName(c) + (tr ? " · " + tr->name + " : " + tr->desc : where.empty() ? "" : " · " + where) + danger, true,
+                           FighterP e = backReach(a, c);  // le plus utile d'abord : l'aide est coupée après deux lignes
+                           std::string back = e ? T(" · Dans le dos de ") + e->name() + "." : std::string();
+                           t.items.push_back({boardName(c), "", boardName(c) + back + (tr ? " · " + tr->name + " : " + tr->desc : where.empty() ? "" : " · " + where) + danger, true,
                                               [this, a, c] { moveTo(a, c); }});
                          }
                          // la case la plus proche du combattant d'abord
@@ -1046,18 +1080,20 @@ void Battle::command(FighterP a) {
                          if (shown()) slide_[a.get()] = {pos(a), G.time};
                          cells_[a.get()] = moveFrom_[a.get()];
                          moveFrom_.erase(a.get());
+                         if (int f = faceFrom_[a.get()]) facing_[a.get()] = f;  // il retrouve aussi son regard
+                         else facing_.erase(a.get());
                          moved_.erase(a.get());
                          sound("pas");
                          log.push_back(a->name() + T(" revient sur ses pas"));
                          command(a);
                        }});
-  m.items.push_back({T("Attendre"), "", T("Finir son tour sans agir : rejoue plus tôt."), true, [this, a] { waitTurn(a); }});
+  m.items.push_back({T("Attendre"), "", T("Finir son tour sans agir : rejoue plus tôt, face à l'ennemi le plus proche (le dos à l'abri)."), true, [this, a] { waitTurn(a); }});
   std::vector<FighterP> bench;  // avec des héros : un héros n'est remplacé que par un héros
   bool inTeam = std::find(G.team.begin(), G.team.end(), a) != G.team.end();  // défi : des combattants prêtés, sans remplaçants
   for (auto& r : G.team)
     if (inTeam && r->alive() && !isAlly(r) && (!hasHero_ || r->S().human == a->S().human)) bench.push_back(r);
-  m.items.push_back({T("Changer"), "", bench.empty() ? T("Personne pour vous remplacer.") : T("Faire entrer un remplaçant de l'équipe."), !bench.empty(),
-                     [this, a, bench] {
+  if (!bench.empty())
+    m.items.push_back({T("Changer"), "", T("Faire entrer un remplaçant de l'équipe."), true, [this, a, bench] {
                        Menu t;
                        t.title = T("Remplaçants");
                        t.rows = 5;
@@ -1078,6 +1114,10 @@ void Battle::command(FighterP a) {
                                  [d](const MenuItem& it) { return (d && it.label == T("Objet")) || it.label == T("Changer"); }),
                   m.items.end());
   }
+  // (2026-10-23) une petite icône devant chaque commande, comme au menu de pause
+  setIcons(m, {
+      {T("Attaquer"), "ic_epee_1"}, {T("Magie"), "ic_baton_1"}, {T("Limite"), "etoile"}, {T("Duo"), "duo"}, {T("Objet"), "ic_sac"},
+      {T("Se déplacer"), "pas"}, {T("Revenir"), "retour"}, {T("Attendre"), "sablier"}, {T("Changer"), "echange"}, {T("Fuir"), "drapeau"}});
   // Le curseur sur la première action possible (rien à portée : « Se déplacer »)
   for (size_t i = 0; i < m.items.size(); i++)
     if (m.items[i].enabled && (anyTech || m.items[i].label == T("Se déplacer") || m.items[i].label == T("Attendre"))) {
@@ -1295,6 +1335,7 @@ void Battle::duoMove(FighterP a, FighterP p, const std::string& id, std::vector<
   pop(p, T("Duo !"), rgb(0xffd34d));
   log.push_back(a->name() + " + " + p->name() + T(" : duo"));
   duoPartner_ = p;
+  if (!targets.empty() && targets[0]) face(p, cellOf(targets[0]));  // le partenaire se tourne aussi vers la cible
   useMove(a, id, std::move(targets));
   duoPartner_ = nullptr;
 }
@@ -1427,6 +1468,7 @@ float Battle::attackScore(const FighterP& a, const Move& m, const FighterP& t) c
   if (ally && !t->broken && t->shieldMax > 0 && moveEff(m, t->S()) > 1) score *= 1.f + .6f / float(std::max(1, t->shield));  // près de le briser
   score *= posMult(a, t, m);  // échiquier : dans le dos, encerclé, distance au contact
   if (m.melee && boardDist(cellOf(a), cellOf(t)) > reach(a)) score *= .9f;  // il faut d'abord s'approcher
+  if (boardDist(cellOf(a), cellOf(t)) <= 1 && behind(t, a)) score *= 1.4f;  // il est dans mon dos : le frapper, c'est se retourner
   if (!ally) return score / paceTime(m);
   score *= 1 + std::min(1.f, (a->crit + m.critBonus) / 100.f) * float(R.critMult - 1);
   if (score >= t->hp * 1.2f) score += 15;  // achever un adversaire affaibli
@@ -1462,6 +1504,7 @@ std::string Battle::damageText(const FighterP& a, const Move& m, const FighterP&
   // Brisure : l'efficacité d'un type n'est comptée qu'une fois découverte (sinon neutre, quelle qu'elle soit : rien ne
   // se devine sans attaquer ; la fiche de la cible montre déjà « ? »)
   float eff = G.weakKnown(d->sp, m.type) ? moveEff(m, d->S()) : 1.f;
+  if (eff < 0) return T(" · absorbé : le soigne !");
   if (eff <= 0) return T(" · aucun effet");
   float A = magic ? a->eMag() : a->eAtk(), D = magic ? d->eRes() : d->eDef();
   float stab = hasType(a->S(), m.type) ? float(R.stab) : 1.f, k = 1;
@@ -1614,6 +1657,7 @@ bool Battle::tacticTurn(FighterP a) {
   }
   actor = a;
   log.push_back(a->name() + T(" : tactique ") + std::to_string(p.tactic + 1));
+  if (p.wait) return waitTurn(a), true;  // se mettre en garde
   if (p.cell >= 0 && follower()) return moveTo(a, p.cell), true;  // le chef déplace, puis renvoie « tour » (bouge)
   if (p.cell >= 0) {  // se mettre à l'abri, puis agir (une autre règle, sinon l'ordinateur)
     step(a, p.cell);
@@ -1622,6 +1666,7 @@ bool Battle::tacticTurn(FighterP a) {
     if (!tacticPlan(a, q) || q.cell >= 0) return autoCommand(a), true;
     log.push_back(a->name() + T(" : tactique ") + std::to_string(q.tactic + 1));
     p = q;
+    if (p.wait) return waitTurn(a), true;  // se mettre en garde après s'être déplacé (relecture de Codex)
   }
   if (!p.item.empty()) useItem(a, p.item, p.targets.at(0));
   else if (p.duo) duoMove(a, p.duo, p.move, p.targets);
@@ -1677,6 +1722,20 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
     if (c == "soi_limite") return a->lim >= 100;
     if (c == "soi_menace") return threatened(a);
     if (c == "allie_avant_pv_moins") return engaged(t) && t->hp * 100 < tc.value * t->mhp;  // au contact d'un ennemi
+    if (c == "ennemi_brise") return t->broken;
+    if (c == "ennemi_role") return t->S().combatRole == "soigneur" || t->S().combatRole == "chef";
+    if (c == "ennemi_dos") {  // son dos est à portée : d'ici, ou d'une case où il peut aller ce tour
+      if (boardDist(cellOf(a), cellOf(t)) <= reach(a) && behind(a, t)) return true;
+      if (moved_.count(a.get())) return false;
+      for (auto& [w, steps] : walkable(a))
+        if (boardDist(w, cellOf(t)) <= reach(a) && behind(a, t, w)) return true;
+      return false;
+    }
+    if (c == "soi_dos_menace") {
+      for (auto& o : liveFoes)
+        if (boardDist(cellOf(o), cellOf(a)) <= 1 && behind(o, a)) return true;
+      return false;
+    }
     if (c == "ennemis_groupes") {
       if (!x.m) return false;
       if (x.m->zone == Area::All) return (int)liveFoes.size() >= tc.value;
@@ -1772,6 +1831,15 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
       out = Plan{};
       out.tactic = i, out.cell = cell;
       return true;
+    } else if (tc.act == "garde") {  // se mettre en garde : attendre, face à l'ennemi le plus proche
+      bool cond = false;
+      if (c->side == TSide::Self) cond = holds(tc, Act{}, a);
+      else
+        for (auto& t : c->side == TSide::Foe ? liveFoes : liveAllies) cond = cond || holds(tc, Act{}, t);
+      if (!cond) continue;
+      out = Plan{};
+      out.tactic = i, out.wait = true;
+      return true;
     } else if (tc.act == "limite") {
       if (a->lim >= 100 && !a->S().limit.empty()) acts.push_back({&moveInfo(a->S().limit), "", true});
     } else
@@ -1779,7 +1847,7 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
         const Move& m = moveInfo(id);
         if (a->mp < m.cost) continue;
         const std::string& k = tc.act;
-        if ((k == "attaque" && m.damaging()) || (k == "technique" && m.damaging() && m.cost == 0) ||
+        if ((k == "attaque" && m.damaging()) || (k == "technique" && m.damaging() && m.cost == 0) || (k == "briser" && m.damaging()) ||
             (k == "soin" && m.kind == Kind::Heal && m.power > 0) || (k == "reanimation" && m.kind == Kind::Revive) ||
             (k == "guerison" && m.kind == Kind::Heal && cures(m)))
           acts.push_back({&m});
@@ -1807,6 +1875,7 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
       auto& side = onAllies ? liveAllies : liveFoes;
       for (auto& t : pool) {
         if (!holds(tc, x, t) || !useful(x, t)) continue;
+        if (tc.act == "briser" && !(x.m && G.weakKnown(t->sp, x.m->type) && moveEff(*x.m, t->S()) > 1)) continue;  // une faiblesse connue
         float key = order(tc.cond, t), score = 1;
         if (x.m && x.m->damaging()) {
           score = 0;
@@ -1856,6 +1925,8 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
     return -1;
   }
   float eff = moveEff(m, d->S());
+  bool absorb = eff < 0;  // (2026-10-23) il absorbe ce type (résistance négative) : le coup le soigne
+  if (absorb) eff = -eff;
   if (eff <= 0) {
     pop(d, T("Aucun effet"), GREY);
     sound("rate");
@@ -1878,6 +1949,16 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
   k *= guardMult(d);                                                                                 // rôle : protecteur voisin
   if (const Rules::Terrain* tr = terrainAt(a); magic && tr && tr->kind == "magie") k *= 1 + float(tr->value);  // cristaux
   int dmg = std::max(1, int(((2 * a->lvl / 5.f + 2) * m.power * A / std::max(1.f, D) / float(R.dmgDivisor) + 2) * stab * eff * spread * k));
+  if (absorb) {  // soigné au lieu d'être blessé ; l'équipe s'en souvient (aperçu des dégâts, Bestiaire)
+    int h = std::min(dmg, d->mhp - d->hp);
+    d->hp += h;
+    pop(d, "+" + std::to_string(h), GREEN);
+    pop(d, T("Absorbe !"), rgb(0x7dffa8));
+    sound("soin");
+    if (isAlly(a)) G.weak.insert(d->sp + ":" + std::to_string(m.type)), tip("absorbe");
+    log.push_back(a->name() + " > " + d->name() + " : " + m.name + T(" absorbé (+") + std::to_string(h) + T(" PV)"));
+    return 0;
+  }
   d->hp = std::max(0, d->hp - dmg);
   if (eff > 1 && d->shieldMax > 0) {  // Brisure : une faiblesse entame le bouclier, et l'équipe la retient
     if (isAlly(a) && G.weak.insert(d->sp + ":" + std::to_string(m.type)).second) tip("faiblesse");
@@ -2190,6 +2271,7 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
       step(a, c);
     }
   }
+  if (!targets.empty() && targets[0] && targets[0] != a) face(a, cellOf(targets[0]));  // il se tourne vers sa cible
   // Zone autour d'une cible : les combattants voisins sont touchés aussi, un peu moins fort
   FighterP center = boost == 1 && m.zone != Area::Single && m.zone != Area::All && targets.size() == 1 ? targets[0] : nullptr;
   if (center) targets = zoneTargets(m, center);
@@ -2243,7 +2325,7 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
         landed = true;
       } else {
         int dmg = applyHit(a, t, m, (center && t != center ? float(rules().zoneSide) : 1.f) * boost);
-        if (dmg < 0) continue;
+        if (dmg <= 0) continue;  // raté, sans effet ou absorbé : ni état, ni poussée, ni bonus pour le lanceur (relecture de Codex)
         landed = true;
         if (!t->alive()) ko->push_back(t);
         else {
@@ -2280,6 +2362,7 @@ void Battle::useItem(FighterP a, const std::string& id, FighterP t) {
     return;
   }
   if (mineToCommand(a)) G.items[id]--;  // l'objet d'un autre joueur a déjà été pris dans son sac
+  if (t && t != a) face(a, cellOf(t));  // vers celui qu'il soigne ou capture
   const ItemDef& d = item(id);
   startAnim(a, {t}, d.capture > 0 ? Fx::Capture : Fx::Heal, d.capture > 0 ? rgb(0xffe27a) : rgb(0x7dffa8));
   sc.say(a->name() + T(" utilise : ") + d.name, .7f);
@@ -2326,7 +2409,7 @@ void Battle::useItem(FighterP a, const std::string& id, FighterP t) {
         (full ? G.reserve : G.team).push_back(t);
         G.caught.insert(t->sp);
         sc.call([this] { sound("capture"); });
-        sc.say(T("Capturé ! ") + t->name() + (full ? T(" est envoyé dans la réserve (Échap > Réserve).") : T(" rejoint l'équipe.")), 1.5f);
+        sc.say(T("Capturé ! ") + t->name() + (full ? T(" est envoyé dans la réserve (Échap > Préparation > Réserve).") : T(" rejoint l'équipe.")), 1.5f);
       } else {
         sc.call([this] { sound("capture_rate"); });
         sc.say(t->name() + T(" s'échappe de la lumière !"), 1.0f);
@@ -2471,10 +2554,16 @@ void Battle::victory() {
     return;
   }
   const Rules& R = rules();
-  int total = 0, goldGain = 0;
+  int total = 0, goldGain = 0, sumLvl = 0;
+  for (auto& a : allies) sumLvl += a->lvl;
+  float teamLvl = allies.empty() ? 0.f : float(sumLvl) / allies.size();
   for (auto& d : defeated) {
-    total += d->lvl * R.xpPerLevel * (d->boss ? R.xpBoss : 1);
-    goldGain += d->lvl * R.goldPerLevel * (d->boss ? R.goldBoss : 1);
+    int lv = d->rewardLvl > 0 ? d->rewardLvl : d->lvl;  // relevée au niveau de l'équipe : les gains de sa zone (sinon l'équipe file devant)
+    // trop faible pour l'équipe : moins d'expérience (l'équipe ne file plus loin devant l'histoire)
+    float gap = teamLvl - lv - R.xpGapFree;
+    float k = R.xpGapLoss > 0 && gap > 0 && !G.inExpedition() ? std::max(float(R.xpGapMin), 1 - gap * float(R.xpGapLoss)) : 1.f;  // pas en Expédition
+    total += int(lv * R.xpPerLevel * (d->boss ? R.xpBoss : 1) * k + .5f);
+    goldGain += lv * R.goldPerLevel * (d->boss ? R.goldBoss : 1);
   }
   sound("victoire", false);  // chacun joue la fin chez lui
   sc.wait(.6f);
@@ -2579,6 +2668,12 @@ void Battle::drawZones(float t) {
         for (int k = 0; k < n; k++) {
           float x = p.x - (n - 1) * 3.f + k * 6, y = p.y + 13;
           g.poly({{x, y - 2.5f}, {x + 2.5f, y}, {x, y + 2.5f}, {x - 2.5f, y}}, rgb(0xff4a3a, 220));
+        }
+        if (backReach(actor, pick_.cells[i])) {  // (2026-10-23) d'ici, un ennemi au contact est frappé dans le dos : une dague dorée
+          float x = p.x - 12, y = p.y + 11;  // au coin gauche de la case (le centre porte l'aperçu du combattant)
+          g.line(x - 3, y + 3, x + 3, y - 3, 2, rgb(0x2a1606, 200));
+          g.line(x - 3, y + 3, x + 3, y - 3, 1, rgb(0xffe066));
+          g.line(x - 3, y - 1, x + 1, y + 3, 1, rgb(0xffb04a));  // la garde
         }
       }
     if (pick_.move && center >= 0 && actor) {  // le chemin jusqu'à la case : des points le long des pas
@@ -2846,6 +2941,18 @@ void Battle::draw() {
       g.sprite(*r, std::round(x), std::round(y), i % 2);
     }
   }
+  if (shown() && G.mapId >= 0 && G.mapId < (int)maps().size()) {  // (2026-10-22) comme sur la carte du lieu
+    const MapDef& here = G.M();
+    if (here.light) g.rect(L, 0, W, SCREEN_H, rgb(here.light, uint8_t(42 * (1 - G.nightAmount()))));  // sa lumière
+    if (here.water == "marais" && bg == Theme::Foret)  // des flaques troubles et des quenouilles sur le sol du combat
+      for (int i = 0; i < 9 * more / 100; i++) {
+        float px0 = L + std::fmod(i * 83.f + 31, W), py0 = HZ + 18 + std::fmod(i * 47.f, 120.f), w2 = 8 + i % 3 * 4;
+        g.ellipse(px0, py0, w2, 3, rgb(0x3e5a4a, 200));
+        g.ellipse(px0 - w2 * .3f, py0 - 1, w2 * .3f, 1, rgb(0x8aa87a, 120));
+        g.line(px0 + w2, py0, px0 + w2 + std::sin(t + i) * .8f, py0 - 9, 1, rgb(0x6a8a3a));
+        g.rect(px0 + w2 - .5f + std::sin(t + i) * .8f, py0 - 11, 2, 3, rgb(0x7a4a28));
+      }
+  }
   if (float night = shown() ? G.nightAmount() : 0.f; night > 0)  // jour et nuit (2.6), comme sur la carte
     g.rect(L, 0, W, SCREEN_H, rgb(0x0a1440, uint8_t(80 * night)));
   for (int i = 0; i < 28; i++) {  // vignette (2026-10-21) : les bords de l'écran un peu plus sombres, le regard va au centre
@@ -2948,6 +3055,14 @@ void Battle::draw() {
         if (c == zCenter || (zm && (zm->zone == Area::All || inBoardZone(zm->zone, zCenter, c)))) zCells.insert(c);
     }
   }
+  // Le regard (2026-10-23) : une petite flèche au sol, devant les pieds, de la couleur du camp ; le dos est de l'autre côté
+  for (auto& f : shown)
+    if (f->alive() && cellOf(f) >= 0 && !ending_) {
+      Pt p = pos(f);
+      float d = facesRight(f) ? 1.f : -1.f, x0 = p.x + d * (f->boss ? 20 : 14), y0 = p.y + 14;
+      g.tri(x0 - d, y0 - 4, x0 - d, y0 + 4, x0 + d * 6, y0, rgb(0x0a0f33, 140));  // contour sombre
+      g.tri(x0, y0 - 2.8f, x0, y0 + 2.8f, x0 + d * 4.5f, y0, isAlly(f) ? rgb(0x8fd0ff, 230) : rgb(0xff8a7a, 230));
+    }
   for (auto& f : shown) {
     Pt p = pos(f);
     Pt o = offset(f);
@@ -3188,7 +3303,20 @@ void Battle::draw() {
     w = std::min(312, w + 18);
     int x = std::max(4, 316 - w), h = 36 + 11 * (int)summary_.size(), y = std::max(26, 92 - h / 2);
     g.window(x, y, w, h);
-    g.text(x + w / 2, y + 5, T("Victoire !"), GOLD, 1);
+    bool big = Gfx::textW(T("Victoire !")) * 2 <= x - 8;  // le grand titre a la place à gauche : la fenêtre dit « Gains »
+    g.text(x + w / 2, y + 5, big ? T("Gains") : T("Victoire !"), GOLD, 1);
+    {  // (2026-10-22) en grand, à gauche de la fenêtre : « Victoire ! » qui tombe en place, avec deux éclats
+      std::string v = T("Victoire !");
+      float vw = Gfx::textW(v) * 2.f, cx = (4 + x) / 2.f, age = t - summaryT_;
+      if (vw <= x - 8) {
+        float drop = std::max(0.f, 1 - age * 4) * 18;
+        g.textBigFancy(cx, 36 - drop, v, rgb(0xfff0a0), rgb(0xe8902a), rgb(0x2a1606), 2, 1);
+        for (int k = 0; k < 2; k++) {
+          float ph = std::fmod(age * 1.3f + k * .5f, 1.f), sx2 = cx + (k ? vw / 2 - 4 : -vw / 2 + 4), sy2 = 40.f, r = 3 * std::sin(ph * 3.14159f);
+          g.rect(sx2 - r, sy2, 2 * r + 1, 1, rgb(0xffffff, 220)), g.rect(sx2, sy2 - r, 1, 2 * r + 1, rgb(0xffffff, 220));
+        }
+      }
+    }
     for (size_t i = 0; i < summary_.size(); i++) g.text(x + 8, y + 19 + i * 11, summary_[i], WHITE);
     g.text(x + w / 2, y + h - 12, T("Entrée : continuer"), rgb(0xaab3d8), 1);
   }
@@ -3211,11 +3339,19 @@ void Battle::draw() {
     if (bossName.empty() && f->boss) bossName = f->name();
   if (boss && kb < 1 && !bossName.empty()) {
     float a = std::min({1.f, kb * 6, (1 - kb) * 5});
-    float y = 80, h = 22 * a;
-    g.rect(g.left(), y - h / 2, g.fullW, h, rgb(0x1a0610, uint8_t(220 * a)));
+    // (2026-10-22) un bandeau plus large, et le nom en grandes lettres rouge et or qui glissent en place
+    bool big = Gfx::textW(bossName) * 2 <= 290;
+    float y = 80, h = (big ? 32 : 22) * a;
+    g.rect(g.left(), y - h / 2, g.fullW, h, rgb(0x1a0610, uint8_t(225 * a)));
     g.rect(g.left(), y - h / 2, g.fullW, 1, rgb(0xffe066, uint8_t(255 * a)));
+    g.rect(g.left(), y - h / 2 + 2, g.fullW, 1, rgb(0xb8402a, uint8_t(200 * a)));
+    g.rect(g.left(), y + h / 2 - 3, g.fullW, 1, rgb(0xb8402a, uint8_t(200 * a)));
     g.rect(g.left(), y + h / 2 - 1, g.fullW, 1, rgb(0xffe066, uint8_t(255 * a)));
-    if (a > .5f) g.text(160 + (1 - std::min(1.f, kb * 4)) * 60, y - 4, bossName, rgb(0xffe066), 1);
+    float slide = (1 - std::min(1.f, kb * 4)) * 60;
+    if (a > .5f) {
+      if (big) g.textBigFancy(160 + slide, y - 11, bossName, rgb(0xffe880), rgb(0xd8402a), rgb(0x200408), 2, 1);
+      else g.text(160 + slide, y - 4, bossName, rgb(0xffe066), 1);
+    }
   }
 }
 
@@ -3292,7 +3428,7 @@ Json Battle::netState() const {
     for (auto& f : v) {
       Json st = Json::array();
       for (int k = 0; k < N_STAGES; k++) st.push_back(f->stage[k]);
-      a.push_back(Json::array({f->hp, f->mp, (int)std::lround(f->atb), (int)std::lround(f->lim), (int)f->status, st, netCell(cellOf(f)), f->shield, f->broken ? 1 : 0}));
+      a.push_back(Json::array({f->hp, f->mp, (int)std::lround(f->atb), (int)std::lround(f->lim), (int)f->status, st, netCell(cellOf(f)), f->shield, f->broken ? 1 : 0, facingOf(f)}));
     }
     return a;
   };
@@ -3343,6 +3479,7 @@ void Battle::netMessage(const Json& m) {
             cells_[&f] = c;
           }
           if (x.size() > 8) f.shield = x.at(7).get<int>(), f.broken = x.at(8).get<int>() != 0;  // Brisure
+          if (x.size() > 9) facing_[&f] = (x.at(9).get<int>() < 0 ? -1 : 1) * (net_ == Net::Guest ? -1 : 1);  // regard (miroir chez l'invité)
           // at() : une liste trop courte lève une erreur (rattrapée par Online::update) au lieu de lire n'importe quoi
           f.hp = x.at(0).get<int>(), f.mp = x.at(1).get<int>(), f.atb = x.at(2).get<float>(), f.lim = x.at(3).get<float>();
           f.status = Status(std::clamp(x.at(4).get<int>(), 0, 4));

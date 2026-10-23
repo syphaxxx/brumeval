@@ -569,6 +569,18 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     check(cellCol(cells[0]) == 0 && cellCol(cells[1]) == BACK_COL && cellCol(cells[2]) == 0 && cells[0] != cells[2],
           "damier : placement automatique (Louvet et Galetor devant, Esprillon derrière)");
     team = {makeFighter("lior", 20), makeFighter("maelle", 20)};
+    {  // embuscade (2026-10-23) : une partie des créatures part du fond du camp allié, tournée vers l'équipe
+      BattleSetup s;
+      s.foes = {makeFighter("mulotin", 5), makeFighter("mulotin", 5), makeFighter("mulotin", 5)};
+      s.ambush = true;
+      startBattle(std::move(s), nullptr);
+      int behind = 0;
+      for (auto& f : battle_->foes) behind += inHalf(true, battle_->cellOf(f)) && battle_->facesRight(f);
+      check(behind >= 1 && battle_->ambush_, "embuscade : " + std::to_string(behind) + " créature(s) au fond de notre camp, tournées vers l'équipe");
+      battle_->start = time - 5;
+      run(.4f);
+      snap("embuscade");
+    }
     startBattle({brute, mage, extra}, false, nullptr);
     Battle& B = *battle_;
     bool halves = true;  // échiquier (3.4) : chaque camp part de sa moitié du plateau
@@ -596,7 +608,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     bool blocked = true;
     for (auto& [c, d] : B.walkable(lior)) blocked = blocked && boardX(c) <= GRID;
     check(reach && afterMove && blocked, "échiquier : le corps à corps vise un ennemi au contact ou qu'on peut rejoindre ; on s'arrête au contact d'un ennemi");
-    // Dans le dos : même coup, même hasard, frappé depuis le côté de son camp
+    // Dans le dos : même coup, même hasard, frappé du côté opposé à son regard
     auto hitFrom = [&](const FighterP& d, int from, const Move& m) {
       B.cells_[lior.get()] = from;
       seedRandom(2026);  // la même suite de tirages : seule la case change
@@ -613,7 +625,30 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     long long front = hitFrom(extra, boardAt(0, 4), bite), back = hitFrom(extra, boardAt(0, 6), bite);
     // Distance au contact : moins fort
     long long far = hitFrom(extra, boardAt(2, 2), wave), near = hitFrom(extra, boardAt(0, 4), wave);
+    // Le regard (2026-10-23) : retourné vers son camp, son dos est de l'autre côté ; il se tourne vers où il va
+    B.facing_[extra.get()] = 1;
+    long long turnedFront = hitFrom(extra, boardAt(0, 6), bite), turnedBack = hitFrom(extra, boardAt(0, 4), bite);
+    B.facing_.erase(extra.get());
+    B.cells_[lior.get()] = boardAt(2, 2);
+    B.face(lior, boardAt(2, 0));
+    bool turns = !B.facesRight(lior);
+    B.face(lior, boardAt(0, 2));  // même colonne : il garde son regard
+    turns = turns && !B.facesRight(lior);
+    B.facing_.erase(lior.get());
     seedRandom(std::random_device{}());  // la suite du mode test retrouve son hasard
+    check(turnedBack > turnedFront * 1.15 && turns,
+          "échiquier : le dos dépend du regard (retourné : " + std::to_string(turnedBack) + " contre " + std::to_string(turnedFront) +
+              ") ; on se tourne vers où l'on va");
+    {  // (2026-10-23) absorption : une résistance négative, le coup soigne au lieu de blesser
+      FighterP cend = makeFighter("cendrelys", 20);
+      B.foes.push_back(cend);
+      B.cells_[cend.get()] = boardAt(2, 5), B.cells_[lior.get()] = boardAt(2, 4);
+      cend->hp = cend->mhp / 2;
+      int before = cend->hp, r = B.applyHit(lior, cend, moveInfo("flam"));
+      bool absorbs = r == 0 && cend->hp > before && weakKnown(cend->sp, moveInfo("flam").type);
+      B.foes.pop_back();
+      check(absorbs, "combat : Cendrelys absorbe le Feu (Flam le soigne, dégâts 0, retenu par l'équipe)");
+    }
     check(back > front * 1.15 && near > 0 && near < far * 0.85,
           "échiquier : un coup dans le dos fait plus mal (" + std::to_string(back) + " contre " + std::to_string(front) +
               ") ; à distance, moins fort au contact (" + std::to_string(near) + " contre " + std::to_string(far) + ")");
@@ -736,9 +771,22 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       std::swap(B.allies[0], B.allies[1]);  // Maëlle en chef d'équipe
       bool cover = B.tacticPlan(lior, p) && p.cell >= 0 && inBoardZone(Area::Cross, boardAt(2, 1), p.cell);
       std::swap(B.allies[0], B.allies[1]);
+      // (2026-10-23) « Ennemi : brisé » vise l'ennemi brisé ; un profil coupé à 4 lignes garde sa dernière règle
+      lior->tactics = {Tactic{true, "ennemi_brise", 0, Tactic::Act::Auto, "attaque"}};
+      B.cells_[lior.get()] = boardAt(1, 3), B.cells_[brute.get()] = boardAt(1, 4), B.cells_[mage.get()] = boardAt(2, 4);
+      mage->broken = true;
+      bool brk = B.tacticPlan(lior, p) && !p.targets.empty() && p.targets[0] == mage;
+      mage->broken = false;
+      bool trim = false;
+      if (!rules().tacticProfiles.empty()) {
+        auto& pr = rules().tacticProfiles[0];
+        auto v = profileRules(pr, 4);
+        trim = v.size() == std::min<size_t>(4, pr.rules.size()) && v.back().cond == pr.rules.back().cond && v.back().act == pr.rules.back().act;
+      }
       brute->hp = brute->mhp;
       lior->tactics = keepT, lior->tacticsOn = keepOn;
       check(closer && around && cover, "tactiques : s'approcher, contourner (dans le dos), protéger un allié");
+      check(brk && trim, "tactiques : « Ennemi : brisé » vise l'ennemi brisé ; un profil coupé à ses lignes garde sa dernière règle");
     }
     lior->stage.fill(0);
     B.moved_.clear();
@@ -1197,6 +1245,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   battle_->foes[1]->boss = true;
   run(.3f);
   snap("98_entree_boss");  // transition d'entrée et bandeau du boss
+  run(.4f);
+  snap("98b_nom_du_boss");  // le nom du boss en grand, dans son bandeau
   for (int i = 0; i < 1500 && !menus.active(); i++) frame();
   snap("18_boss_ignarok");
   check(audio::currentMusic() == "boss", "son : musique du boss");
@@ -2004,6 +2054,28 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
           battle_->start = time - 5;
           run(.5f);
           snap("defi_dos");
+          {  // (2026-10-23) « Se déplacer » près d'un soigneur : les cases d'où on le frappe dans le dos portent une dague dorée
+            FighterP lior = battle_->allies[0];
+            battle_->cells_[lior.get()] = boardAt(3, 5);
+            for (auto& f : battle_->foes)
+              if (battle_->cellOf(f) == boardAt(2, 6)) battle_->facing_[f.get()] = 1;  // le soigneur s'est retourné (il a soigné derrière lui)
+            battle_->moved_.clear();
+            menus.clear();
+            battle_->command(lior);
+            bool moveOk = false;
+            for (size_t i = 0; i < menus.top().items.size() && !moveOk; i++)
+              if (menus.top().items[i].label == T("Se déplacer")) {
+                auto act = menus.top().items[i].act;  // copie : l'action change les menus
+                act();
+                moveOk = true;
+              }
+            battle_->start = time - 5;
+            run(.1f);
+            snap("defi_dos_deplacer");
+            bool mark = moveOk && battle_->backReach(lior, boardAt(2, 5)) && !battle_->backReach(lior, boardAt(3, 4));
+            check(mark, "échiquier : en se déplaçant, les cases d'où l'on frappe un ennemi dans le dos sont marquées");
+            menus.clear();
+          }
           for (auto& f : battle_->foes) f->hp = 0, battle_->knockOut(f);
           battle_->sc.clear();
           battle_->checkEnd();
@@ -2389,13 +2461,16 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       }
       check(mode == Mode::Map && !menu, "tactiques : le combat se joue tout seul en mode auto, sans ouvrir de menu");
     }
-    // Éditeur des tactiques : menu de pause > Tactiques > Lior
+    // Éditeur des tactiques : menu de pause > Préparation > Tactiques > Lior
     skipScript();
     menus.clear();
     sc.clear();
     in.menu = true;
     frame();
-    bool inMenu = selectLabel("Tactiques");
+    bool inMenu = selectLabel("Préparation");
+    in.confirm = true;
+    frame();
+    inMenu = selectLabel("Tactiques") && inMenu;
     in.confirm = true;
     frame();
     run(.1f);
@@ -2474,9 +2549,16 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
 
   // --- Tour des menus : chaque écran est dessiné une fois pour vérifier sa mise en page ---
   {
+    static const bool tourShots = SDL_getenv("BRUMEVAL_CAPTURES_TOUR") != nullptr;  // une capture par écran du tour
+    int tourN = 0;
     auto show = [&](const std::string& name) {
       g.layoutScene = "tour : " + name;
       frame();
+      if (tourShots) {
+        char n[8];
+        std::snprintf(n, sizeof n, "%02d", ++tourN);
+        snap(std::string("tour_") + n);
+      }
     };
     auto back = [&](size_t depth) {
       for (int i = 0; i < 10 && menus.depth() > depth; i++) {
@@ -2496,6 +2578,10 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     banner = 0;
     pauseMenu();
     show("pause");
+    prepMenu();
+    show("préparation");
+    menus.clear();
+    pauseMenu();
     teamMenuAt(1);
     show("équipe");
     menus.clear();
@@ -2513,6 +2599,13 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       if (d.price > 0) stock.push_back(d.id);
     shopMenu(stock);
     show("boutique");
+    for (size_t i = 0; i < stock.size(); i++)  // une armure : le panneau de comparaison sous la liste
+      if (item(stock[i]).slot == G_ARMOR) {
+        menus.top().sel = (int)i;
+        if (auto h = menus.top().items[i].hover) h();  // comme un survol
+        break;
+      }
+    show("boutique : équipement");
     menus.top().sel = (int)stock.size();  // Vendre…
     in.confirm = true;
     show("boutique : vendre");
@@ -2717,6 +2810,14 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       if (battle_) battle_->sc.clear();
       draw();
       snap("combat_mines");
+      battle_.reset();
+      changeMap(mi("marais"), 20, 16, DOWN);
+      startBattle({makeFighter("crapale", 60)}, false, nullptr);
+      run(1.5f);
+      menus.clear();
+      if (battle_) battle_->sc.clear();
+      draw();
+      snap("combat_marais");
       battle_.reset();
       mode = Mode::Map;
       menus.clear();
@@ -3181,7 +3282,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
             "expédition : la même graine redonne exactement le même monde");
       // À plusieurs, chaque joueur génère le monde chez lui : l'empreinte doit être la même sous Windows, Mac et Linux
       std::string wh = Expedition::worldHash(2026, 3);
-      check(wh == "171c24418b3b440e", "expédition : la graine 2026 donne le même monde sur tous les systèmes (empreinte " + wh + ")");
+      check(wh == "eb8f2be6200f01bc", "expédition : la graine 2026 donne le même monde sur tous les systèmes (empreinte " + wh + ")");
       procgen::Content c1 = procgen::generateBase(7), c6 = c1;
       std::string shop1 = procgen::generateRegion(7, 1, c1).events.dump(), shop6;
       for (int k = 1; k <= 6; k++) shop6 = procgen::generateRegion(7, k, c6).events.dump();
@@ -4023,6 +4124,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   simSetup("Veilleur du phare (équipe N.110)", {{"lior", 110}, {"maelle", 110}, {"isra", 110}, {"braisenard", 110}, {"gouttelin", 110}, {"ronceau", 110}},
            bossEvent("phare5_boss"), 10);
   // Quêtes des héros (2026-10-20, outils/villes/liens.py), après l'acte 3
+  // (2026-10-23) la prime la plus dure du joueur automatique : trois carapaces, dont la Braisaure ancestrale (N.90, PV ×4)
+  simSetup("Braisaure ancestrale (équipe N.102)", {{"lior", 102}, {"maelle", 102}, {"isra", 102}, {"braisenard", 102}, {"gouttelin", 102}, {"ronceau", 102}},
+           bossEvent("prime:braisaure_ancestrale"), 20);
+  simSetup("Braisaure ancestrale (équipe N.102, tactiques)", {{"lior", 102}, {"maelle", 102}, {"isra", 102}, {"braisenard", 102}, {"gouttelin", 102}, {"ronceau", 102}},
+           bossEvent("prime:braisaure_ancestrale"), 20, true);
   for (auto [name, ev, hero] : std::vector<std::array<const char*, 3>>{{"Brumeroi", "brumeroi", "lior"}, {"Sentinelle d'aurore", "sentinelle_aurore", "maelle"},
                                                                          {"Golem de magma", "golem_magma", "brann"}, {"Ombre des galeries", "ombre_galeries", "isra"},
                                                                          {"Varn le braconnier", "varn", "kael"}, {"Chevalier de glace", "chevalier_glace", "selene"}})

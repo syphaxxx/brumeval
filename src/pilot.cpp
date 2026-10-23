@@ -14,6 +14,7 @@
 #include "battle.hpp"
 #include "events.hpp"
 #include "primes.hpp"
+#include "tactics.hpp"
 #include "game.hpp"
 #include "world.hpp"
 
@@ -279,7 +280,9 @@ Pilot::Info Pilot::inspect(const std::string& id) const {
 // partie, et de la mémoire des précédentes)
 bool Pilot::ready(const Info& in, const std::string& key) {
   int avg = G.avgLevel();
-  if (avg >= in.lvl + 3 + margin(key)) return true;
+  // (2026-10-23) loin au-dessus : d'office, sauf un boss ou un combat déjà perdu, toujours répétés (la Braisaure
+  // ancestrale, trois carapaces, se perdait 8 fois de suite avec 12 niveaux d'avance et une équipe sans magie)
+  if (avg >= in.lvl + 3 + margin(key) && !in.boss && !fails_.count(key)) return true;
   if (avg < in.lvl - 8 || in.fight.is_null()) return avg >= in.lvl - (in.boss ? 2 : 3) + margin(key);
   std::string sig = teamSignature();
   auto it = chances_.find(key);
@@ -341,6 +344,7 @@ float Pilot::rehearse(const Json& fight, int n, bool fullHealth) {
     if (fight.contains("defi") && fight["defi"].is_string()) challengeSetup(fight["defi"].get<std::string>(), s);  // ses combattants
     for (auto& e : fight.value("ennemis", Json::array())) s.foes.push_back(make(e));
     for (auto& e : fight.value("renforts", Json::array())) s.reserve.push_back(make(e));
+    s.ambush = fight.value("embuscade", false);
     if (s.foes.empty()) {  // rien à combattre : gagné d'avance (l'équipe est remise en place après la boucle)
       wins = n;
       break;
@@ -481,7 +485,8 @@ void Pilot::plan() {
   path_.clear();
   grind_.clear();
   int cur = node(G.mapId, G.px, G.py);
-  socketGems();  // une gemme reçue (boss, coffre) : sertie aussitôt
+  socketGems(demo_);  // une gemme reçue (boss, coffre) : sertie aussitôt (en démo, par les menus)
+  setupTactics(demo_);  // un profil de tactiques pour chaque membre (en démo, par les menus)
   watchSight();
   dijkstra(cur);
   std::vector<Goal> gs = goals();
@@ -805,8 +810,17 @@ void Pilot::pace() {
 int Pilot::pickItem(const std::string& label) {
   Menu& t = G.menus.top();
   int idx = -1;
-  for (int i = 0; i < (int)t.items.size(); i++)
-    if (t.items[i].label == label && t.items[i].enabled && !t.items[i].header) idx = i;
+  auto bar = label.find('|');  // « Titre|libellé » : le premier libellé après ce titre de section (ex. « Arme|(rien) »)
+  if (bar != std::string::npos) {
+    std::string head = label.substr(0, bar), want = label.substr(bar + 1);
+    bool after = false;
+    for (int i = 0; i < (int)t.items.size() && idx < 0; i++) {
+      if (t.items[i].header) after = t.items[i].label == head;
+      else if (after && t.items[i].label == want && t.items[i].enabled) idx = i;
+    }
+  } else
+    for (int i = 0; i < (int)t.items.size(); i++)
+      if (t.items[i].label == label && t.items[i].enabled && !t.items[i].header) idx = i;
   if (idx < 0) return 0;
   if (t.sel != idx) {
     if (++menuMoves_ > 40) t.sel = idx;  // au cas où le curseur ne suivrait pas
@@ -991,7 +1005,7 @@ void Pilot::shopping() {
   }
   if (pickItem(T("Quitter")) != 1) {
     shopPlanned_ = false;
-    equipBest();
+    equipBest(demo_);
   }
 }
 
@@ -1052,8 +1066,8 @@ void Pilot::forging() {
   wait_ = .45f;
 }
 
-// Met à chacun le meilleur équipement du sac (comme Game::gearPick)
-void Pilot::equipBest() {
+// Met à chacun le meilleur équipement du sac (comme Game::gearPick) ; en démo, par les menus (visites)
+void Pilot::equipBest(bool show) {
   for (auto& f : G.team)
     for (int s = 0; s < N_GEAR; s++) {
       std::string& cur = f->gear[s];
@@ -1065,6 +1079,11 @@ void Pilot::equipBest() {
         if (gearScore(*f, d) > have) have = gearScore(*f, d), pick = d.id;
       }
       if (pick.empty()) continue;
+      if (show) {  // Échap > Équipement > le membre > l'emplacement > l'objet
+        visit({T("Équipement"), f->name(), std::string(gearSlotName(s)) + "|" + (cur.empty() ? std::string(T("(rien)")) : item(cur).name), item(pick).name},
+              2.f, true);
+        continue;
+      }
       if (!cur.empty()) G.items[cur]++;
       G.items[pick]--;
       int lostHp = f->mhp - f->hp, lostMp = f->mmp - f->mp;
@@ -1075,11 +1094,41 @@ void Pilot::equipBest() {
       f->mp = std::clamp(f->mmp - lostMp, 0, f->mmp);
       note("Équipe " + f->name() + " : " + item(pick).name);
     }
-  socketGems();
+  socketGems(show);
+}
+
+// Tactiques : le profil qui convient à chacun, d'après ce qu'il sait faire ; refait quand il apprend de quoi soigner ou
+// qu'il gagne des types d'attaque
+void Pilot::setupTactics(bool show) {
+  const auto& profiles = rules().tacticProfiles;
+  auto find = [&](const char* id) -> const Rules::TacticProfile* {
+    for (auto& p : profiles)
+      if (p.id == id) return &p;
+    return nullptr;
+  };
+  for (auto& f : G.team) {
+    bool heals = false;
+    std::set<Type> types;
+    auto known = f->techs(), sp = f->spells();
+    known.insert(known.end(), sp.begin(), sp.end());
+    for (auto& id : known) {
+      const Move& m = moveInfo(id);
+      heals = heals || (m.kind == ::Kind::Heal && m.power > 0);
+      if (m.damaging()) types.insert(m.type);
+    }
+    const char* want = heals && f->mag >= f->atk ? "soigneur" : f->S().combatRole == "protecteur" ? "protecteur" : types.size() >= 3 ? "briseur" : "combattant";
+    const Rules::TacticProfile* p = find(want);
+    std::string key = std::string(want) + ":" + std::to_string(std::min(tacticSlots(f->lvl), (int)(p ? p->rules.size() : 0)));
+    if (!p || profileOf_[f.get()] == key) continue;  // refait quand une ligne de plus sert le profil
+    profileOf_[f.get()] = key;
+    if (show) visit({T("Préparation"), T("Tactiques"), f->name(), T("Profils…"), p->name}, 3.f);
+    else f->tactics = profileRules(*p, tacticSlots(f->lvl));
+    note("Tactiques : " + f->name() + " → " + p->name);
+  }
 }
 
 // Gemmes du sac (2.7) : chacune dans le chaton libre où elle sert le plus (combattants d'abord)
-void Pilot::socketGems() {
+void Pilot::socketGems(bool show) {
   auto front = G.front();
   auto worth = [&](const Fighter& f, const ItemDef& g) {
     bool mage = f.mag > f.atk;
@@ -1118,6 +1167,10 @@ void Pilot::socketGems() {
         }
     }
     if (!who) break;
+    if (show) {  // Échap > Équipement > le membre > Gemmes > le chaton vide > la gemme
+      visit({T("Équipement"), who->name(), T("Gemmes"), std::string(gearSlotName(slot)) + " : " + T("(vide)"), item(gem).name}, 2.f, true);
+      break;  // les suivantes après celle-ci (la visite finit par equipBest)
+    }
     G.items[gem]--;
     who->gems[(size_t)slot].push_back(gem);
     int lostHp = who->mhp - who->hp, lostMp = who->mmp - who->mp;
@@ -1138,8 +1191,70 @@ std::string Pilot::hms() const {
   std::snprintf(b, sizeof b, "%d:%02d:%02d", s / 3600, s / 60 % 60, s % 60);
   return b;
 }
+void Pilot::visit(std::vector<std::string> path, float look, bool gear) {
+  for (auto& v : visits_)
+    if (v.path == path) return;  // déjà prévue
+  visits_.push_back({std::move(path), look, gear});
+}
+
+void Pilot::lookAt(std::vector<std::string> path, float look) {
+  if (!demo_ || clock - lastLook_ < 60 || visits_.size() > 3) return;
+  lastLook_ = clock;
+  visit(std::move(path), look);
+}
+
+bool Pilot::visitStep() {
+  if (visits_.empty()) return false;
+  if (!visitOpen_) {
+    if (G.menus.active() || G.sc.busy() || G.moving) return false;
+    status = "menus";
+    G.in.menu = true;  // Échap : le menu de pause
+    visitOpen_ = true, visitClosing_ = false, visitStep_ = 0;
+    wait_ = .6f;
+    return true;
+  }
+  Visit& v = visits_.front();
+  if (visitClosing_) {
+    if (G.menus.active() && !G.sc.busy()) {
+      G.in.cancel = true;
+      wait_ = .25f;
+      return true;
+    }
+    if (G.sc.busy()) return false;
+    bool gear = v.gear;
+    visits_.pop_front();
+    visitOpen_ = false;
+    bool more = std::any_of(visits_.begin(), visits_.end(), [](const Visit& w) { return w.gear; });
+    if (gear && !more) equipBest(false);  // après la dernière : ce que les menus n'auraient pas fait (libellé introuvable…)
+    return true;
+  }
+  if (!G.menus.active()) {
+    visitClosing_ = true;
+    return true;
+  }
+  if (visitStep_ >= v.path.size()) {  // arrivé : le temps de regarder, puis on referme
+    std::string where;
+    for (auto& p : v.path) where += (where.empty() ? "" : " > ") + p;
+    note("Menus : " + where, "menus");
+    visitClosing_ = true;
+    wait_ = v.look;
+    return true;
+  }
+  int r = pickItem(v.path[visitStep_]);
+  if (r == 0) {
+    visitClosing_ = true;  // introuvable : on referme
+    return true;
+  }
+  if (r == 1) wait_ = .2f;
+  if (r == 2) visitStep_++, wait_ = .8f;
+  return true;
+}
+
 void Pilot::note(const std::string& s, const std::string& capture) {
   journal.push_back("[" + hms() + "] " + s);
+  // Démo : le Journal à chaque nouvelle quête, le Bestiaire après une capture
+  if (s.rfind("Drapeau : quete:", 0) == 0 && s.find(":fin") == std::string::npos) lookAt({T("Journal")}, 3.f);
+  if (s.rfind("Capture", 0) == 0) lookAt({T("Journal"), T("Bestiaire")}, 3.f);
   if (!capture.empty()) shot = std::to_string(++shots_) + "_" + capture;
 }
 
@@ -1276,7 +1391,8 @@ void Pilot::update(float dt) {
         top = std::max(top, f->lvl);
         fight["ennemis"].push_back({{"espece", f->sp}, {"niveau", f->lvl}});
       }
-      if (G.battle_->foes.size() >= 3 || top > G.avgLevel() + 1) {
+      fight["embuscade"] = G.battle_->ambush_;  // une embuscade se répète comme telle
+      if (G.battle_->foes.size() >= 3 || top > G.avgLevel() + 1 || G.battle_->ambush_) {
         float c = prudent(rehearse(fight, 8, false), 8);
         fleeNow_ = c < .7f;  // fuir coûte peu, perdre coûte cher (retour, soins, moitié de l'or)
         if (SDL_getenv("BRUMEVAL_TRACE"))
@@ -1321,6 +1437,15 @@ void Pilot::update(float dt) {
   if (battle && battleWild_ && shouldFlee()) G.tacticsAuto = false;  // le menu de commande doit s'ouvrir : « Fuir »
   if (battle) return battleStep();
   if (G.mode != Mode::Map) return;
+  if (demo_) {
+    if (seenTeam_ == 0 && !G.team.empty()) visit({T("Préparation"), T("Tactiques"), G.team[0]->name()}, 3.5f);  // au début : ses tactiques
+    if (G.team.size() > seenTeam_ && seenTeam_ > 0 && !G.sc.busy()) {  // un nouveau membre : ses tactiques, puis la formation
+      visit({T("Préparation"), T("Tactiques"), G.team.back()->name()}, 3.5f);
+      visit({T("Préparation"), T("Formation")}, 2.5f);
+    }
+    seenTeam_ = std::max(seenTeam_, G.team.size());
+    if (visitStep()) return;
+  }
   if (G.menus.active()) return menuStep();
   if (G.cards_.on && !G.sc.busy()) {  // Cartes des gardiens : le jeu joue pour lui (Game::updateCards)
     status = "cartes";
@@ -1357,7 +1482,7 @@ void Game::startPilot(bool demo) {
 int Game::autoGame(SDL_Surface* target, const std::string& out) {
   std::filesystem::create_directories(out);
   g.checkLayout = true;
-  startPilot(false);
+  startPilot(SDL_getenv("BRUMEVAL_DEMO") != nullptr);  // BRUMEVAL_DEMO=1 : le joueur de la démo (menus visités, pauses), sans fenêtre
   Pilot& P = *pilot_;
   std::ofstream rep(out + "/rapport.txt");
   auto say = [&](const std::string& s) {
@@ -1366,7 +1491,7 @@ int Game::autoGame(SDL_Surface* target, const std::string& out) {
   };
   say("Partie automatique de Brumeval (premier compagnon : " + team.at(1)->name() + ")");
   const float dt = 1 / 30.f;
-  const float limit = 10 * 3600;  // dix heures de jeu au plus
+  const float limit = 14 * 3600;  // quatorze heures de jeu au plus (rééquilibrage du 2026-10-23 : le jeu est plus long)
   size_t shown = 0;
   for (long i = 0; !P.over() && P.clock < limit; i++) {
     update(dt);
@@ -1384,7 +1509,7 @@ int Game::autoGame(SDL_Surface* target, const std::string& out) {
     if (i % (30 * 600) == 0) say("  … " + P.summary());  // toutes les dix minutes de jeu
   }
   while (shown < P.journal.size()) say(P.journal[shown++]);
-  if (!P.over()) say("ARRÊT : plus de dix heures de jeu sans finir");
+  if (!P.over()) say("ARRÊT : plus de quatorze heures de jeu sans finir");
   say("");
   say(P.finished ? "RÉSULTAT : histoire terminée" : "RÉSULTAT : histoire NON terminée");
   say(P.summary());

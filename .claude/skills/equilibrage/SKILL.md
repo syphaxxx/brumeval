@@ -15,6 +15,22 @@ Méthode :
 
 ## Historique des mesures
 
+- **Rééquilibrage « trop facile »** (2026-10-23, demandé par l'utilisateur, comparé à Expedition 33) : le joueur automatique
+  arrivait aux boss du milieu de l'histoire avec 15 à 20 niveaux d'avance (Givrecorne N.39 au niveau 58, Mère des Brumes
+  N.44 au niveau 61) et ~2 créatures par rencontre contre jusqu'à 6 alliés. Réglages (`regles.json`) : `par_allie` 0,5
+  (ennemis par allié), `ecart_niveau` 4 / `plafond_niveau` 6 (créatures sauvages relevées, gains de leur niveau d'origine :
+  `rewardLvl`), `exp_ecart` 0,08 au-delà de `exp_marge` 4 niveaux, au moins `exp_min` 0,25 ; résistances des créatures
+  sauvages (`outils/villes/resistances.py`, absorption = résistance négative). Joueur automatique (une partie chacune,
+  avec mémoire) : avant 6 h 37, 17 défaites, N.119 ; rencontres seules 5 h 57, 13, N.127 (plus d'expérience : pire) ;
+  + résistances 7 h 00, 9, N.130 ; + exp 12 %/2 niveaux : boss à +1/+5 niveaux mais 46 défaites et fin non atteinte en
+  10 h (saut de 20 niveaux entre l'acte 3, Citadelle 60-64, et l'acte 4, 84-90) ; réglage final : **7 h 38, 21 défaites,
+  N.102**, boss affrontés de −5 à +6 niveaux (Givrecorne 45, Mère des Brumes 49, Kraken 57, Ombre 90, Veilleur 105),
+  défaites dans l'Abîme et le Vieux Phare (contenu facultatif). Limite du joueur automatique : 14 h de jeu.
+  Avec les embuscades (0,07, un tiers derrière), les profils de tactiques et la répétition systématique des boss : à
+  7:18 de jeu, 10 défaites, niveau 90 (les quatre actes finis ; mesure en cours à la publication de la 3.6). Embuscades à
+  0,1 et la moitié derrière : 48 défaites, fin non atteinte en 14 h (trop dur, retiré). Prime la plus dure : la Braisaure
+  ancestrale (trois carapaces : il faut de la magie).
+
 - **Acte 2** (3.0, 2026-10-15) : le Seigneur des Orages battait toutes les équipes (journal : Foudre noire en croix à
   55-90 % des PV de trois alliés par tour, ~3000 PV) ; Magie 80 → 68, PV de base 110 → 100, Foudre noire 82 → 70,
   ×10 → ×7,5, renfort réduit au seul Nuageon soigneur. Kraken N.53 ×17, Griffon N.55 ×15. Mesuré

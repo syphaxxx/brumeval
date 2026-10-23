@@ -1,15 +1,16 @@
 ## Nouveautés
 
-Une très grosse version : l'aventure est bien plus longue (une vingtaine d'heures pour tout faire), le combat se joue sur un échiquier, et les graphismes ont été refaits.
+Une version plus exigeante et plus tactique : les combats demandent d'adapter son équipe, les menus sont plus clairs, et la démo montre tout ce que fait le joueur automatique.
 
-- **L'échiquier de combat** : les deux camps partagent un plateau de 8 × 4 cases. On se déplace avant d'agir, on frappe dans le dos, on encercle, on perce jusqu'au bord adverse ; des obstacles au milieu, des bottes pour aller plus loin, et des défis dans l'Arène.
-- **Deux actes de plus** : l'île d'Aube (acte 3) après le Seigneur des Orages, puis l'île des Échos (acte 4) après la Brume Noire. Et sur le chemin : la Plaine des Moulins, le Col des Hurlevents, le Val des Murmures, l'île de Corail.
-- **Beaucoup à faire** : primes, plus de quarante quêtes, une quête pour chaque héros (avec une arme rien qu'à lui), 28 dresseurs et leurs revanches, la Ligue d'Écume, les cartes au trésor de Corbin, trente éclats de brume, cinq donjons, les épreuves des gardiens et les Échos des légendes après la fin, la Nouvelle partie +.
-- **À côté de l'aventure** : la pêche, un jeu de cartes (les Cartes des gardiens, contre neuf joueurs), la pension de Moulinbourg et ses œufs, la fête des lanternes, des créatures de nuit, des créatures chromatiques, des alphas qui mènent les meutes, des discussions entre héros, et 32 exploits à cocher.
-- **De nouveaux graphismes** : donjons en relief avec la couleur de leur roche, lanterne dans le noir, carte du monde illustrée, intérieurs selon le bâtiment, combats au bord de la mer, éclairs, flaques, ponts, fontaine, mouettes, titres et fenêtres redessinés.
-- **Plus confortable** : sauvegarde automatique, voyage rapide (Échap > Carte), Journal > Progression, et des musiques réécrites.
+- **Le dos dépend du regard** : chaque combattant regarde vers sa dernière cible, vers où il a marché, ou vers l'adversaire le plus proche s'il attend. Un coup venu de l'autre côté est dans le dos. Une flèche au sol montre où chacun regarde ; en choisissant sa case, une dague dorée marque celles d'où l'on frappe un dos.
+- **Embuscades** : parfois, des créatures surgissent au fond de votre camp, derrière l'équipe. Retournez-vous, ou protégez vos lanceurs de sorts.
+- **Un jeu plus exigeant** : des rencontres à la mesure de l'équipe, des créatures sauvages qui restent près de votre niveau, et qui ne se battent plus toutes pareil : les carapaces encaissent les coups physiques, les esprits aussi, certaines encaissent la magie, et quelques élémentaires absorbent leur propre élément (le coup les soigne !). Un adversaire bien plus faible rapporte moins d'expérience : les boss s'affrontent au bon niveau. Le Bestiaire et l'aperçu des dégâts retiennent ce que vous avez découvert.
+- **Tactiques** : de nouvelles conditions (Ennemi : brisé, dos exposé, soigneur ou chef ; Soi : dos menacé), de nouvelles actions (Viser une faiblesse, Se mettre en garde), et des profils tout faits (Combattant, Soigneur, Protecteur, Briseur) à choisir d'un coup.
+- **Des menus plus clairs** : le menu de pause en quatre groupes avec Préparation (formation, compagnons, tactiques, réserve), le Journal qui accueille Discussions et Bestiaire, des icônes partout, des jauges sous les PV, PM et statistiques, la couleur du type devant chaque technique, la boutique qui compare l'équipement avec ce que porte chacun, un menu de combat qui ne montre que ce qui est possible.
+- **La démo montre tout** : le joueur automatique passe par les menus comme un joueur (équipement, gemmes, tactiques, formation, Journal, Bestiaire).
+- **Et encore** : le Marais Pâle en eau trouble, la lumière propre à chaque lieu, le nom des boss en grand, l'onglet du nom dans les dialogues, un écran de fin à l'aube.
 
-Dans la 3.3 : des sprites plus nets et un combat plus clair. Dans la 3.2 : la refonte graphique. Dans la 3.1 : le jeu en anglais.
+Dans la 3.5 : deux actes de plus, l'échiquier de combat, les primes et les quêtes. Dans la 3.3 : des sprites plus nets. Dans la 3.1 : le jeu en anglais.
 
 ## Télécharger
 

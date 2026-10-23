@@ -344,7 +344,8 @@
     "limite": "lim_rocaillou",
     "talent": "carapace",
     "role_combat": "protecteur",
-    "evolution": {"espece": "galetor", "niveau": 16}
+    "evolution": {"espece": "galetor", "niveau": 16},
+    "resistances": {"physique": 0.6, "magique": 1.2}
   },
   {
     "id": "brumelin",
@@ -404,7 +405,8 @@
     "limite": "lim_galetor",
     "talent": "carapace",
     "role_combat": "protecteur",
-    "taille": 1.15
+    "taille": 1.15,
+    "resistances": {"physique": 0.6, "magique": 1.2}
   },
   {
     "id": "glaconnet",
@@ -494,7 +496,8 @@
     "limite": "lim_esprillon",
     "talent": "furtif",
     "role_combat": "soigneur",
-    "evolution": {"espece": "nebulis", "niveau": 32}
+    "evolution": {"espece": "nebulis", "niveau": 32},
+    "resistances": {"physique": 0.55, "magique": 1.15}
   },
   {
     "id": "crapoison",
@@ -541,7 +544,8 @@
     "limite": "lim_carapierre",
     "talent": "carapace",
     "role_combat": "protecteur",
-    "evolution": {"espece": "carapic", "niveau": 28}
+    "evolution": {"espece": "carapic", "niveau": 28},
+    "resistances": {"physique": 0.6, "magique": 1.2}
   },
   {
     "id": "givrelin",
@@ -587,7 +591,8 @@
     "limite": "lim_ferrolin",
     "talent": "carapace",
     "role_combat": "protecteur",
-    "evolution": {"espece": "ferrogeant", "niveau": 34}
+    "evolution": {"espece": "ferrogeant", "niveau": 34},
+    "resistances": {"physique": 0.6, "magique": 1.2}
   },
   {
     "id": "cristallin",
@@ -792,7 +797,8 @@
     "limite": "lim_banquisot",
     "talent": "ecorce",
     "role_combat": "protecteur",
-    "taille": 1.15
+    "taille": 1.15,
+    "resistances": {"glace": -2}
   },
   {
     "id": "serpentox",
@@ -813,7 +819,8 @@
     ],
     "limite": "lim_serpentox",
     "talent": "piquant",
-    "taille": 1.15
+    "taille": 1.15,
+    "resistances": {"poison": -2}
   },
   {
     "id": "noctaile",
@@ -883,7 +890,8 @@
     "limite": "lim_carapic",
     "talent": "carapace",
     "role_combat": "protecteur",
-    "taille": 1.15
+    "taille": 1.15,
+    "resistances": {"physique": 0.6, "magique": 1.2}
   },
   {
     "id": "fulgurin",
@@ -913,7 +921,8 @@
     "apprend": [[1, "gel"], [1, "eclat_glace"], [24, "poudreuse"], [32, "glaciation"], [38, "corne_givre"]],
     "limite": "lim_givrenard",
     "talent": "ecorce",
-    "taille": 1.15
+    "taille": 1.15,
+    "resistances": {"glace": -2}
   },
   {
     "id": "ferrogeant",
@@ -1069,7 +1078,8 @@
     "limite": "lim_esprillon",
     "talent": "furtif",
     "role_combat": "soigneur",
-    "taille": 1.15
+    "taille": 1.15,
+    "resistances": {"physique": 0.55, "magique": 1.15}
   },
   {
     "id": "orbrume",
@@ -1091,7 +1101,8 @@
     ],
     "limite": "lim_galetor",
     "talent": "ecorce",
-    "role_combat": "protecteur"
+    "role_combat": "protecteur",
+    "resistances": {"physique": 0.6, "magique": 1.2}
   },
   {
     "id": "mere_brumes",
@@ -1141,7 +1152,8 @@
     "limite": "lim_carapierre",
     "talent": "carapace",
     "role_combat": "protecteur",
-    "evolution": {"espece": "bastillon", "niveau": 46}
+    "evolution": {"espece": "bastillon", "niveau": 46},
+    "resistances": {"physique": 0.6, "magique": 1.2}
   },
   {
     "id": "bastillon",
@@ -1156,7 +1168,8 @@
     "limite": "lim_carapic",
     "talent": "carapace",
     "role_combat": "protecteur",
-    "taille": 1.15
+    "taille": 1.15,
+    "resistances": {"physique": 0.6, "magique": 1.2}
   },
   {
     "id": "voltanguille",
@@ -1199,7 +1212,8 @@
     "apprend": [[1, "onde"], [1, "soin"], [1, "lame_air"], [44, "tornade"], [45, "cauchemar"]],
     "limite": "lim_zephyrin",
     "talent": "meditation",
-    "role_combat": "soigneur"
+    "role_combat": "soigneur",
+    "resistances": {"physique": 0.55, "magique": 1.15}
   },
   {
     "id": "orageline",
@@ -1228,7 +1242,8 @@
     "couleurs": ["#6ac8c8", "#e0ffff"],
     "apprend": [[1, "onde"], [1, "bulle"], [44, "cauchemar"], [48, "torrent"]],
     "limite": "lim_esprillon",
-    "talent": "furtif"
+    "talent": "furtif",
+    "resistances": {"physique": 0.55, "magique": 1.15}
   },
   {
     "id": "kraken",
@@ -1309,7 +1324,8 @@
     "forme": "fantome",
     "couleurs": ["#e8e0d0", "#8a7a6a"],
     "apprend": [[1, "coup_bas"], [1, "onde"], [44, "cauchemar"], [45, "lame_ombre"], [65, "griffe"]],
-    "talent": "furtif"
+    "talent": "furtif",
+    "resistances": {"physique": 0.55, "magique": 1.15}
   },
   {
     "id": "gobelard",
@@ -1335,7 +1351,8 @@
     "couleurs": ["#4a7a3a", "#8a6a4a"],
     "apprend": [[1, "ruee"], [1, "hurlement"], [14, "seisme"], [45, "mordant"], [65, "avalanche"]],
     "talent": "rage",
-    "role_combat": "protecteur"
+    "role_combat": "protecteur",
+    "resistances": {"physique": 0.6, "magique": 1.2}
   },
   {
     "id": "draconnet",
@@ -1372,7 +1389,8 @@
     "forme": "insecte",
     "couleurs": ["#7fe0e8", "#f0ffff"],
     "apprend": [[1, "lumiere"], [1, "rafale"], [1, "hate"], [1, "prisme"], [58, "lame_air"], [62, "nova"]],
-    "talent": "vif"
+    "talent": "vif",
+    "resistances": {"magique": 0.6, "physique": 1.15}
   },
   {
     "id": "loup_aube",
@@ -1412,7 +1430,8 @@
     "couleurs": ["#f0a0c0", "#fff0f8"],
     "apprend": [[1, "onde"], [1, "cauchemar"], [1, "soins"], [1, "rayon"], [62, "hurlement_spectral"]],
     "talent": "furtif",
-    "role_combat": "soigneur"
+    "role_combat": "soigneur",
+    "resistances": {"physique": 0.55, "magique": 1.15}
   },
   {
     "id": "rocaube",
@@ -1425,7 +1444,8 @@
     "couleurs": ["#c89098", "#ffe0e8"],
     "apprend": [[1, "eboul"], [1, "avalanche"], [1, "carapace"], [1, "seisme"], [62, "prisme"]],
     "talent": "carapace",
-    "role_combat": "protecteur"
+    "role_combat": "protecteur",
+    "resistances": {"physique": 0.6, "magique": 1.2}
   },
   {
     "id": "vasepent",
@@ -1639,7 +1659,8 @@
       [65, "mordant"]
     ],
     "talent": "carapace",
-    "limite": "lim_rocaillou"
+    "limite": "lim_rocaillou",
+    "resistances": {"physique": 0.6, "magique": 1.2}
   },
   {
     "id": "lanternelle",
@@ -1652,7 +1673,8 @@
     "couleurs": ["#ffb060", "#fff0c0"],
     "apprend": [[1, "onde"], [1, "feu"], [1, "cauchemar"], [38, "pyro"], [45, "poing"], [65, "brasier"]],
     "talent": "furtif",
-    "limite": "lim_esprillon"
+    "limite": "lim_esprillon",
+    "resistances": {"physique": 0.55, "magique": 1.15, "esprit": -2}
   },
   {
     "id": "fongombre",
@@ -1724,7 +1746,8 @@
     "couleurs": ["#8a9a80", "#d8e0c8"],
     "apprend": [[1, "eboul"], [1, "etreinte"], [1, "carapace"], [1, "seisme"], [86, "avalanche"]],
     "talent": "carapace",
-    "role_combat": "protecteur"
+    "role_combat": "protecteur",
+    "resistances": {"physique": 0.6, "magique": 1.2}
   },
   {
     "id": "fossiloup",
@@ -1738,7 +1761,8 @@
     "couleurs": ["#9a9088", "#e8e0d8"],
     "apprend": [[1, "morsure"], [1, "eboul"], [1, "cri"], [1, "eclair"], [86, "avalanche"]],
     "talent": "intimidation",
-    "role_combat": "chef"
+    "role_combat": "chef",
+    "resistances": {"physique": 0.6, "magique": 1.2}
   },
   {
     "id": "echoplume",
@@ -1751,7 +1775,8 @@
     "forme": "oiseau",
     "couleurs": ["#9a7ad0", "#f0e8ff"],
     "apprend": [[1, "rafale"], [1, "onde"], [1, "lame_air"], [1, "cauchemar"], [86, "ouragan"]],
-    "talent": "vif"
+    "talent": "vif",
+    "resistances": {"physique": 0.55, "magique": 1.15}
   },
   {
     "id": "cendrelys",
@@ -1763,7 +1788,8 @@
     "forme": "lezard",
     "couleurs": ["#5a8ad8", "#e0f0ff"],
     "apprend": [[1, "flam"], [1, "onde"], [1, "pyro"], [1, "hurlement_spectral"], [88, "brasier"]],
-    "talent": "meditation"
+    "talent": "meditation",
+    "resistances": {"physique": 0.55, "magique": 1.15, "feu": -2}
   },
   {
     "id": "braisaure",
@@ -1776,7 +1802,8 @@
     "couleurs": ["#9a2a1a", "#ffb060"],
     "apprend": [[1, "crocs"], [1, "magma"], [1, "eboul"], [1, "poing"], [88, "seisme"]],
     "talent": "rage",
-    "taille": 1.15
+    "taille": 1.15,
+    "resistances": {"physique": 0.6, "magique": 1.2}
   },
   {
     "id": "spectrecho",
@@ -1789,7 +1816,8 @@
     "couleurs": ["#3aa8a0", "#e0fff8"],
     "apprend": [[1, "onde"], [1, "voile"], [1, "cauchemar"], [1, "eclipse"], [90, "hurlement_spectral"]],
     "talent": "furtif",
-    "role_combat": "soigneur"
+    "role_combat": "soigneur",
+    "resistances": {"physique": 0.55, "magique": 1.15}
   },
   {
     "id": "colosse_echo",

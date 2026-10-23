@@ -63,7 +63,9 @@ build-release/Release/brumeval --partie partie   # toute l'histoire, sans fenêt
 brumeval --demo                                  # la même chose dans la fenêtre (aussi Outils > Démo) ; Espace : pause, Échap : quitter
 ```
 
-Fonctionnement, rapport et mémoire d'une partie à l'autre : compétence `joueur-auto-brumeval`. Un
+Fonctionnement, rapport et mémoire d'une partie à l'autre : compétence `joueur-auto-brumeval`. En démo, il passe par les menus
+comme un joueur (équipement, gemmes, tactiques, formation, Journal, Bestiaire : `Pilot::visit`) ; `BRUMEVAL_DEMO=1 brumeval
+--partie dossier` joue la démo sans fenêtre (capture de chaque menu visité). Un
 nouveau genre d'interaction (objet à utiliser, énigme…) demande d'ajouter un objectif dans `Pilot::goals`.
 
 ## Revue par Codex (relecture seule)
@@ -144,7 +146,15 @@ code) ; `docs/GUIDE.md` les range par domaine.
   *pendant* un `call` sont insérées juste après lui : c'est ce qui enchaîne les
   scènes et les tours de combat.
 - `MenuStack` : pile de menus ; chaque `MenuItem` a un libellé, une valeur à
-  droite, un texte d'aide, une action et un rappel `hover` (ex. curseur de cible).
+  droite, un texte d'aide, une action et un rappel `hover` (ex. curseur de cible),
+  et une icône facultative `icon` (un sprite, ou un dessin de `menuGlyph` dans
+  ui.cpp : patte, damier, viser, parchemin, bulle, carte, engrenage, aide, porte,
+  pas, sablier, echange, duo… ; « #rrggbb » : une pastille de cette couleur, `typeDot` pour les techniques), posée par `setIcons(m, {{T("Équipe"), "ic_casque_1"}…})` : menu de
+  pause, commandes du combat, écran titre ; le libellé passe 11 px plus à droite. `MenuItem::sep` : filet au-dessus
+  (début d'un groupe) ; `MenuItem::notches` : un réglage de 0 à 10 dessiné en crans (volumes des Options). `MenuItem::bar` (0 à 1) : barre
+  d'avancement sous la ligne (Progression). `BRUMEVAL_CAPTURES_TOUR=1 brumeval --test dossier` : une capture `tour_NN` par
+  écran du tour des menus (pour les revoir tous). Tactiques d'un membre : les lignes libres et verrouillées tiennent
+  chacune en une ligne (« + Nouvelle règle »).
   Un menu du dessous n'est pas dessiné si un sous-menu le chevauche sans être
   bien à l'intérieur (4 px de marge). Un libellé trop long est coupé avec « … »
   (signalé par le mode test, sauf `MenuItem::shrink`). Les panneaux à droite
@@ -185,8 +195,20 @@ code) ; `docs/GUIDE.md` les range par domaine.
   réserve. Menu `bestiaryMenu`, fiche `drawBestiaryPanel` (`panelMode_` 3 ; une fois l'espèce obtenue, sa
   `description` : `Species::desc`, écrites par `outils/villes/descriptions.py`).
   L'Expédition repart d'un bestiaire vide.
+- Rééquilibrage (2026-10-23) : `Game::encounter` : au moins `par_allie` ennemis par combattant allié, créatures sauvages
+  au plus `ecart_niveau` sous la moyenne de l'équipe (sans dépasser la zone de `plafond_niveau`), gains de leur niveau
+  d'origine (`Fighter::rewardLvl`) ; jamais en Expédition. Expérience : un adversaire plus de `exp_marge` niveaux sous
+  l'équipe rapporte `exp_ecart` de moins par niveau (au moins `exp_min`), pas en Expédition ; un coup absorbé ou sans
+  effet n'applique ni état ni poussée ; mesures : compétence `equilibrage`. Embuscade (`rencontres.embuscade`,
+  `BattleSetup::ambush`, `Battle::ambush_`) : un tiers des créatures (au moins une) part du fond du camp allié, tournée vers l'équipe,
+  sans Percée ; astuce « embuscade », aide de l'échiquier. `attackScore` : ×1,4 pour frapper un adversaire au contact dans
+  son dos (se retourner) ; le joueur automatique répète une embuscade comme telle (`fight["embuscade"]`). Résistance négative d'une espèce (`resistances`) = elle
+  absorbe ce type (`applyHit` soigne, « Absorbe ! ») ; résistances des créatures sauvages : `outils/villes/resistances.py`.
 - Vente : boutique > « Vendre… » (`Game::sellMenu`), moitié du prix, sauf les
   objets importants.
+- Boutique (2026-10-23) : un équipement survolé montre sous la liste ce qu'il changerait pour chaque membre qui peut le
+  porter (`panelMode_` 5, `shopHover_`, `drawShopPanel`). Ordinateur : `posValue` craint davantage un adversaire qui
+  pourrait le rejoindre par derrière (d'après le regard qu'il aura).
 - Progression : `Game::flags` (`boss1`, `golem`, `boss2`, `maelle`, `brann`,
   `isra`, `pecheur`, `coffre:<carte>:<index>`).
 - Sauvegarde : fichier texte `sauvegarde.txt` dans `SDL_GetPrefPath("Brumeval",
@@ -230,7 +252,11 @@ code) ; `docs/GUIDE.md` les range par domaine.
   pleine, `Battle::tacticTurn` joue la première règle possible
   (`Battle::tacticPlan` choisit la cible et la technique) ; sinon le menu de
   commande s'ouvre. Ajouter une condition : l'entrée dans `CONDS`
-  (tactics.cpp) et son test dans `holds` (battle.cpp). Les simulations
+  (tactics.cpp) et son test dans `holds` (battle.cpp). Conditions du 2026-10-23 : `ennemi_brise`, `ennemi_dos`,
+  `ennemi_role`, `soi_dos_menace` ; actions `briser` (une faiblesse découverte) et `garde` (attendre, `Plan::wait`).
+  Profils (`tactiques.profils` de regles.json, `Rules::tacticProfiles`, « Profils… » dans l'éditeur, `profileRules` :
+  coupés aux lignes du membre en gardant la dernière règle) ; le joueur automatique en choisit un pour chacun
+  (`Pilot::setupTactics` : soigneur, protecteur, briseur, combattant). Les simulations
   (`autoPlay`) n'utilisent les tactiques que si `simTactics` est vrai.
 - Son (audio.hpp) : `audio::play("coup")` joue un bruitage, `audio::music("combat")`
   change de morceau (fondu ; le même morceau continue). `Game::updateMusic`
@@ -334,7 +360,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   lisible (`BRUMEVAL_JOURNAL=Sylvarque brumeval --test captures` l'affiche pour
   la simulation qui contient ce mot).
 - Écran de combat (1.7, refait en 3.2 et 3.3) : rien n'est écrit sur le damier. Panneau du bas (`PANEL_Y`, `dock`) :
-  menu de commande à gauche (5 lignes, il défile), à droite l'ATH en tableau (`Battle::drawHud` : une ligne par allié,
+  menu de commande à gauche (5 lignes, il défile ; depuis le 2026-10-23, « Limite » seulement prête, en or, « Duo » seulement
+  possible, « Changer » seulement avec un remplaçant), à droite l'ATH en tableau (`Battle::drawHud` : une ligne par allié,
   titres PV, PM, ATB, Lim ; barre de PV verte/or/rouge ; compagnon en retrait ; mode Auto/Manuel), remplacé par le
   sous-menu ouvert (`MenuStack::shownDepth`). En haut, l'aide de la ligne survolée en deux lignes au plus (un message
   du combat : trois), puis la ligne de la météo, de l'ordre des tours et des renforts :
@@ -360,7 +387,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   sprite) et des espèces (regard vers la gauche ; boss : `_grand`), `icone` des objets (dessinée devant le nom dans
   tout menu, `itemIcon` de ui.cpp). Ce qui n'a pas de sprite garde son dessin en code. Créatures au repos (`drawCreature`, 2026-10-20) : celles qui volent flottent (l'ombre rétrécit), les autres
   respirent (le haut du sprite descend d'un pixel, puis remonte ; pas en réduction sur la carte). Arbres `T` de la carte : le haut penche d'un pixel par moments (vent, `drawProp`). Papillons au-dessus des fleurs le jour et poissons qui sautent dans l'eau (`drawMapCritters`, après les personnages). Effets de combat (`spriteFx`) : images en fondu et étincelles du type. Personnages de la carte en
-  16×24, combat en ~36 px ; `crisp` n'agrandit que d'un nombre entier de fois. Lior a ses visages (`lior_visage_0..4`,
+  16×24, combat en ~36 px ; `crisp` n'agrandit que d'un nombre entier de fois. Dialogues (2026-10-22) : « Nom : réplique » met le nom dans un onglet au-dessus de la fenêtre
+  (`drawDialogue`). Lior a ses visages (`lior_visage_0..4`,
   portrait des dialogues selon la réplique). Effets des sorts (`spriteFx` : une suite d'images par type, soins),
   invocation au-dessus des cibles d'une Limite (`inv_…` selon le type), textures 32×32 (`texTile` : parquet des
   intérieurs, lave, neige profonde). La « Poké Ball » de la planche n'est pas découpée (marque de Pokémon).
@@ -441,7 +469,10 @@ code) ; `docs/GUIDE.md` les range par domaine.
   passent par-dessus), puis `resumeTurn` rouvre le menu (ou l'ordinateur agit) ; « Attendre » (`waitTurn`, jauge
   rapide). Corps à corps (`reachable`) : adversaire à `reach` (1, boss `allonge_boss`), sinon rejoignable ce tour
   (`approachCell`, le pas est fait au début de `useMove`). `posMult` (dans `applyHit`, `attackScore`, `damageText`) :
-  dans le dos (`behind` : depuis le côté du camp de la cible, × `dos`), encerclé (`encercle` par adversaire au contact
+  dans le dos (`behind` : du côté opposé au regard de la cible, × `dos` ; regard `facing_` (2026-10-23) : vers où il
+  marche (`step`), vers sa cible (`useMove`), vers l'adversaire le plus proche s'il attend (`waitTurn`) ; par défaut vers le
+  camp adverse ; flèche au sol ; « Se déplacer » : dague dorée sur les cases d'où l'on frappe un adversaire dans le dos
+  (`backReach`, aide « Dans le dos de … ») ; 10e nombre de chaque combattant dans `etat`, en miroir chez l'invité du duel), encerclé (`encercle` par adversaire au contact
   au-delà du premier, pas un boss), distance ou magie au contact d'un adversaire (× `contact`, pas un boss). Percée :
   atteindre le bord adverse donne +`percee` en Attaque, Magie et Vitesse une fois (`breakthrough_`). Poussée dans
   l'axe du lanceur (`shoveDest(a, t, m)`), choc contre tout combattant. Terrain : `terrain_[case du plateau]`.
@@ -557,7 +588,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - Expédition 2.9 (procgen.cpp) : talent par type (`typeTalent`) ou par classe, `role_combat` selon le profil, talent
   des gardiens, phases des gardiens, gemme en récompense, gemmes en boutique (`shopStock`). Les nouveaux tirages viennent
   d'un générateur à part semé par l'identifiant (`idHash`, `stream(…, 29)`) : le reste d'un monde ne change pas, mais
-  l'empreinte de la graine 2026 a changé (28da4b9e14a4ce4d ; 3.4 : bottes dans les boutiques, 171c24418b3b440e). Les conseils de l'histoire sont vidés en Expédition.
+  l'empreinte de la graine 2026 a changé (28da4b9e14a4ce4d ; 3.4 : bottes dans les boutiques, 171c24418b3b440e ; 2026-10-23 : conseil « Échap > Préparation > Tactiques », eb8f2be6200f01bc). Les conseils de l'histoire sont vidés en Expédition.
 - Acte 2 (3.0) : cartes `port`, `recif`, `ruines`, `tour` (générées par un script, puis réglées à la main), le bateau
   du pêcheur (page `boss4` de l'événement `pecheur`) et le `passeur`. Énigmes : tuiles `O`/`P`/`D`, `MapDef::puzzle*`
   (champ `enigme`), `solvePuzzle` (world.cpp, recherche en largeur, aussi dans `checkMaps`), `Game::boulders_`
@@ -603,7 +634,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
   `NGP_LEVELS` (12) × tours, ajouté par `makeFoe` et aux créatures sauvages ; posé par `applyNewGamePlus` (nouvelle
   partie : 0, chargement, écran titre : 0). Le joueur automatique répond Non à cette question.
 - Discussions (2026-10-20, `discussions.cpp`, `data/discussions.json`) : conversations courtes entre héros (comme les
-  saynètes des Tales of) : `id`, `titre`, `si`, `membres` (espèces dans l'équipe), `dialogue` ; Échap > Discussions
+  saynètes des Tales of) : `id`, `titre`, `si`, `membres` (espèces dans l'équipe), `dialogue` ; Échap > Journal > Discussions
   (nouvelles d'abord), drapeau `discussion:<id>` ; une nouvelle disponible est annoncée sur la carte
   (`checkDiscussions`, `lastNewTalks_`, remis au chargement). 50 discussions.
 - Exploits (2026-10-20, `exploits.cpp`, `data/exploits.json`) : des succès (`id`, `nom`, `description`, `si`) ;
@@ -651,7 +682,14 @@ code) ; `docs/GUIDE.md` les range par domaine.
   (`Game::coastal` : plus de 15 % d'eau sur la carte) : la mer, une voile et le sable au fond ; mouettes sur ces cartes.
   Orage : éclair dessiné ; fontaine, fenêtres (ombre, coins arrondis), nombres des combats cernés de noir. Intérieurs :
   champ `style` (`MapDef::style`, `roomStyle` dans sprites.cpp : sols et murs propres à la chapelle, l'auberge, la
-  boutique, la maison de soin). Ponts, énigmes (rochers, plaques, herse), escaliers, cristaux, coffres ouverts redessinés. Second dossier de compilation `build-gfx` quand `build-dev` est occupé (démo ouverte).
+  boutique, la maison de soin). Champ `lumiere` (`MapDef::light`, voile de
+  couleur le jour : Aube, Lueurs, Citadelle, Port-Écho, Forêt Pétrifiée, Cratère). Champ `eau` d'une carte (`MapDef::water`, `marais` : eau trouble et nénuphars) ; sol `z`
+  du marais (boue, flaques, quenouilles éparses, bords fondus). Ponts, énigmes (rochers, plaques, herse), escaliers, cristaux, coffres ouverts redessinés. Second dossier de compilation `build-gfx` quand `build-dev` est occupé (démo ouverte). Menus (2026-10-23) :
+  menu de pause en 12 entrées et quatre groupes (`MenuItem::sep`, filet) ; `prepMenu` (Échap > Préparation : Formation,
+  Compagnons, Tactiques, Réserve) ; Discussions et Bestiaire dans le Journal (titre « Quêtes » avant la liste) ;
+  icônes (`MenuItem::icon`, voir `MenuStack`) au menu de pause, aux commandes et techniques du combat, à l'écran titre,
+  au Journal, à la boutique et au Bestiaire ; fines jauges sous les PV, PM, Exp. de la fiche d'équipe et sous les
+  statistiques de la fiche du Bestiaire.
 - Épreuves des gardiens (2026-10-20) : après `aube_fin`, la porte du sanctuaire d'Aube (événement `epreuves`) ouvre huit
   combats contre des esprits gardiens (drapeaux `epreuve1`…`epreuve8`, niveaux 70 à 84), puis Ilya (`epreuve9`,
   Insigne des gardiens) ; quête `epreuves`. Script `outils/villes/epreuves.py` ; une phase à mi-vie pour chaque gardien,

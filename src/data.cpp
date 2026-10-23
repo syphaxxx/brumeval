@@ -113,6 +113,11 @@ Type typeOf(const std::string& id) {
   throw std::runtime_error("Type inconnu : « " + id + " »");
 }
 const char* typeName(Type t) { return t >= 0 && t < (int)TYPES.size() ? TYPES[t].name.c_str() : "?"; }
+std::string typeDot(Type t) {
+  char b[8];
+  std::snprintf(b, sizeof b, "#%06x", t >= 0 && t < (int)TYPES.size() ? (unsigned)(TYPES[t].color & 0xffffff) : 0x8a92b8u);
+  return b;
+}
 float typeEff(Type a, Type d) {
   if (a < 0 || d < 0 || a >= (int)CHART.size() || d >= (int)CHART.size()) return 1.f;
   return CHART[a][d];
@@ -191,6 +196,10 @@ std::vector<RuleField> ruleFields(Rules& r) {
       D("rencontres", "alpha", "Chance d'un alpha à la tête d'une meute", r.alpha, 0, 1, .01),
       I("rencontres", "alpha_niveaux", "Niveaux en plus de l'alpha", r.alphaLevels, 0, 20, 1),
       D("rencontres", "part_nuit", "Part des rencontres de nuit (liste « nuit »)", r.nightShare, 0, 1, .05),
+      D("rencontres", "par_allie", "Ennemis au moins par allié en combat", r.perAlly, 0, 2, .05),
+      D("rencontres", "embuscade", "Chance d'une embuscade (2 créatures ou plus)", r.ambush, 0, 1, .01),
+      I("rencontres", "ecart_niveau", "Niveaux au plus sous l'équipe (0 : non)", r.levelGap, 0, 50, 1),
+      I("rencontres", "plafond_niveau", "… sans dépasser la zone de", r.levelCap, 0, 50, 1),
       D("combat", "atb_base", "Vitesse ATB de base", r.atbBase, 0, 100, 1),
       D("combat", "atb_vitesse", "Multiplicateur de vitesse ATB", r.atbSpeed, .1, 5, .1),
       D("combat", "fuite", "Chance de fuite", r.flee, 0, 1, .05),
@@ -238,6 +247,9 @@ std::vector<RuleField> ruleFields(Rules& r) {
       I("etats", "sommeil_min", "Sommeil : tours minimum", r.sleepMin, 1, 10, 1),
       I("etats", "sommeil_max", "Sommeil : tours maximum", r.sleepMax, 1, 10, 1),
       I("recompenses", "xp_par_niveau", "Expérience par niveau d'ennemi", r.xpPerLevel, 0, 100, 1),
+      D("recompenses", "exp_ecart", "Exp. en moins par niveau sous l'équipe", r.xpGapLoss, 0, 1, .01),
+      I("recompenses", "exp_marge", "… au-delà de (niveaux)", r.xpGapFree, 0, 50, 1),
+      D("recompenses", "exp_min", "… sans descendre sous", r.xpGapMin, 0, 1, .05),
       I("recompenses", "xp_boss", "Multiplicateur d'expérience des boss", r.xpBoss, 1, 20, 1),
       I("recompenses", "or_par_niveau", "Or par niveau d'ennemi", r.goldPerLevel, 0, 100, 1),
       I("recompenses", "or_boss", "Multiplicateur d'or des boss", r.goldBoss, 1, 50, 1),
@@ -346,8 +358,15 @@ static void loadRules(const Json& j) {
     for (auto& [k, v] : need.items()) f.items.push_back({k, v.get<int>()});
     r.forge.push_back(f);
   }
-  if (j.contains("tactiques"))
+  if (j.contains("tactiques")) {
     for (auto& t : j["tactiques"].value("defaut", Json::array())) r.tactics.push_back(tacticFromJson(t));
+    Json profiles = j["tactiques"].value("profils", Json::array());  // variable : la boucle doit la garder en vie
+    for (auto& p : profiles) {
+      Rules::TacticProfile tp{jget<std::string>(p, "id", ""), tr(jget<std::string>(p, "nom", "")), tr(jget<std::string>(p, "aide", "")), {}};
+      for (auto& t : p.value("regles", Json::array())) tp.rules.push_back(tacticFromJson(t));
+      r.tacticProfiles.push_back(tp);
+    }
+  }
   RULES = r;
 }
 
@@ -680,6 +699,8 @@ std::vector<std::string> checkData() {
     for (auto& [id, n] : r.forge[L].items)
       if (id != "trophee" && !hasItem(id)) err.push_back("Forge +" + std::to_string(L + 1) + " : matériau inconnu « " + id + " »");
   for (auto& e : checkTactics(r.tactics, "Tactiques de départ")) err.push_back(e);
+  for (auto& p : r.tacticProfiles)
+    for (auto& e : checkTactics(p.rules, "Profil de tactiques « " + p.id + " »")) err.push_back(e);
   if (r.tacticMax < r.tacticStart) err.push_back("Tactiques : le maximum de lignes est plus petit que le départ");
   return err;
 }

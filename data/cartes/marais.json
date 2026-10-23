@@ -119,5 +119,6 @@
     }
   ],
   "boss": [{"x": 41, "y": 15, "espece": "reine_marais", "drapeau": "reine_marais"}],
-  "carte_monde": [24, 90]
+  "carte_monde": [24, 90],
+  "eau": "marais"
 }

@@ -36,6 +36,17 @@ struct HelpPage {
 static std::vector<HelpPage> helpPages() {
   const Rules& R = rules();
   std::vector<HelpPage> p;
+  p.push_back({::T("Nouveautés 3.6"), ::T("Le regard, les embuscades, des créatures qui se battent autrement, les profils."),
+               {::T("Le dos dépend du regard : chacun regarde vers sa dernière cible, vers où il a marché, ou vers l'adversaire le plus proche s'il attend. Une flèche au sol le montre."),
+                ::T("En choisissant sa case, une dague dorée marque celles d'où l'on frappe un ennemi dans le dos."),
+                ::T("Embuscades : parfois, des créatures surgissent au fond de votre camp, derrière l'équipe. Retournez-vous, ou protégez vos lanceurs de sorts."),
+                ::T("Les rencontres sont à la mesure de l'équipe : plus de créatures contre une équipe nombreuse, jamais trop loin sous votre niveau."),
+                ::T("Carapaces (Roche, Métal) et esprits encaissent les coups physiques ; certaines créatures encaissent la magie ; quelques-unes absorbent leur élément (le coup les soigne). Variez vos combattants."),
+                ::T("Un adversaire bien plus faible que vous rapporte moins d'expérience : les boss s'affrontent au bon niveau."),
+                ::T("Tactiques : nouvelles conditions (Ennemi : brisé, dos exposé, soigneur ou chef ; Soi : dos menacé) et actions (Viser une faiblesse, Se mettre en garde)."),
+                ::T("Tactiques > Profils… : Combattant, Soigneur, Protecteur ou Briseur, des règles toutes faites pour un membre."),
+                ::T("Menus : Échap > Préparation (formation, compagnons, tactiques, réserve) ; Discussions et Bestiaire dans le Journal ; la boutique compare l'équipement avec ce que porte chacun."),
+                ::T("Démo (Outils) : le joueur automatique passe par les menus comme un joueur : équipement, gemmes, tactiques, formation.")}});
   p.push_back({::T("Nouveautés 3.5"), ::T("Primes, quêtes, éclats de brume, l'île d'Aube, musiques."),
                {::T("Primes : les tableaux d'annonces des villages affichent des monstres recherchés. Acceptez, chassez, touchez la prime, et montez en rang de chasseur."),
                 ::T("Quêtes : plus de trente quêtes (Échap > Journal), dont un rival qui revient vous défier et une quête qui donne un compagnon."),
@@ -53,7 +64,7 @@ static std::vector<HelpPage> helpPages() {
                 ::T("Sauvegarde automatique à chaque passage et porte (Options > Sauvegarde auto pour la couper)."),
                 ::T("Voyage rapide : Échap > Carte, flèches pour choisir un village déjà visité, Entrée pour y aller."),
                 ::T("Cinq donjons optionnels (Mines, Glacier, Épave, Abîme, Vieux Phare) et le grand bestiaire de la professeure de la Vallée."),
-                ::T("Discussions : les héros se parlent au fil de l'aventure (Échap > Discussions)."),
+                ::T("Discussions : les héros se parlent au fil de l'aventure (Échap > Journal > Discussions)."),
                 ::T("Exploits : trente-deux défis à relever, de la fin des actes au carnet de pêche complet (Échap > Journal > Exploits)."),
                 ::T("Après l'acte 3, chaque héros a sa quête : quelqu'un de son passé, un adversaire, et une arme que lui seul peut porter."),
                 ::T("Les cartes au trésor de Corbin, au port : chaque trésor caché contient la carte du suivant."),
@@ -96,7 +107,7 @@ static std::vector<HelpPage> helpPages() {
                {::T("Jauge ATB (trait blanc) : pleine, le combattant agit. Le temps s'arrête pendant que vous choisissez."),
                 ::T("Compagnons : chaque héros combat avec sa créature. Leur jauge avance à ") + pct(R.companionAtb) + ::T(" de la vitesse normale."),
                 ::T("Limite (trait rose) : se remplit quand on reçoit des coups. Pleine, la technique ultime du combattant est prête."),
-                ::T("Mode auto (Tab) : chacun joue sa première tactique possible (Échap > Tactiques)."),
+                ::T("Mode auto (Tab) : chacun joue sa première tactique possible (Échap > Préparation > Tactiques)."),
                 ::T("Objets : soins, remèdes. Une lanterne capture une créature sauvage : plus elle est affaiblie, mieux c'est."),
                 ::T("Fuir : ") + pct(R.flee) + ::T(" de chance de réussir, pas contre tous les adversaires."),
                 ::T("Changer : un autre membre de l'équipe prend la place d'un combattant.")}});
@@ -173,14 +184,15 @@ static std::vector<HelpPage> helpPages() {
                     ::T(" cases (une de plus pour les types Vent et Foudre). On traverse ses alliés, pas les ennemis, et on s'arrête en arrivant à leur contact. Les types Vent et Esprit volent par-dessus tout."),
                 ::T("Corps à corps : un ennemi au contact (les 8 cases autour ; un boss frappe plus loin). Si la cible est plus loin mais qu'on peut la rejoindre, on s'approche d'abord."),
                 ::T("À distance (sorts, flèches, jets…) : n'importe quelle case, mais seulement ") + pct(R.contact) + ::T(" des dégâts quand un ennemi est au contact du lanceur."),
-                ::T("Dans le dos : frapper un ennemi depuis le côté de son camp fait ×") + num(R.backStab) + ::T(" de dégâts. Encerclé : chaque adversaire au contact au-delà du premier ajoute ") + pct(R.surround) + ::T(" aux dégâts reçus (pas un boss : trop grand pour être encerclé)."),
+                ::T("Dans le dos : chacun regarde vers sa dernière cible, vers où il a marché, ou vers l'adversaire le plus proche s'il attend ; le frapper au corps à corps depuis l'autre côté fait ×") + num(R.backStab) + ::T(" de dégâts. Encerclé : chaque adversaire au contact au-delà du premier ajoute ") + pct(R.surround) + ::T(" aux dégâts reçus (pas un boss : trop grand pour être encerclé)."),
                 ::T("Percée : le premier qui atteint le bord du camp adverse gagne +") + std::to_string(R.breakthrough) + ::T(" en Attaque, Magie et Vitesse pour le combat (les ennemis aussi : bloquez-les !)."),
                 ::T("Une ligne de combattants protège ceux de derrière : les ennemis doivent la contourner. Attendre : finir son tour sans agir (rejoue plus tôt)."),
+                ::T("Embuscade : parfois, une partie des créatures surgit au fond de votre camp, dans votre dos. Retournez-vous ou protégez vos lanceurs de sorts."),
                 ::T("Obstacles : rochers, buissons ou tonneaux au milieu du plateau. Personne ne s'y arrête ni ne les traverse (sauf en volant) ; une cible poussée contre l'un d'eux subit un choc."),
-                ::T("En choisissant sa case : le chemin s'affiche, et des losanges rouges comptent les ennemis qui pourront y frapper. Tant qu'on n'a pas agi, « Revenir » annule le déplacement."),
+                ::T("En choisissant sa case : le chemin s'affiche, des losanges rouges comptent les ennemis qui pourront y frapper, une dague dorée marque les cases d'où l'on frappe un dos. La flèche au sol montre où chacun regarde. « Revenir » annule le déplacement."),
                 ::T("Certaines techniques bondissent derrière la cible ou échangent les cases. Les bottes (accessoires) font avancer d'une case de plus. Tactiques : S'approcher, Contourner, Protéger."),
                 ::T("Pour s'entraîner : Arène > Défis de l'échiquier (positions imposées, une leçon chacune)."),
-                ::T("Formation (Échap > Formation) : la case de chacun au début du combat, dans votre moitié. Les costauds devant, les lanceurs de sorts derrière.")}});
+                ::T("Formation (Échap > Préparation > Formation) : la case de chacun au début du combat, dans votre moitié. Les costauds devant, les lanceurs de sorts derrière.")}});
   p.push_back({::T("Zones"), ::T("Ligne, colonne, croix, tout le camp ; attaques annoncées."),
                {::T("Une cible : seulement la case visée."),
                 ::T("Ligne : la case visée et toute sa ligne, d'un bord du plateau à l'autre."),

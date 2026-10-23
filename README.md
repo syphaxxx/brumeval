@@ -271,7 +271,7 @@ complète et **équipée**.
 ## Réserve et bestiaire
 
 L'équipe compte 8 membres au plus. Une créature capturée (ou reçue en cadeau)
-quand l'équipe est complète part dans la **Réserve** (Échap > Réserve) : on y
+quand l'équipe est complète part dans la **Réserve** (Échap > Préparation > Réserve) : on y
 dépose une créature, on la reprend, ou on l'échange contre un membre de
 l'équipe.
 
@@ -330,7 +330,7 @@ de niveau 35-40 bien équipée.
 - **Après l'histoire** : les épreuves des gardiens, cinq donjons (Mines,
   Glacier, Épave, Abîme, et le Vieux Phare de l'île des Échos, cinq étages), la **pêche** (canne du maître pêcheur du port, 18
   poissons) et la **Nouvelle partie +**.
-- **Discussions** entre les héros (Échap > Discussions), pluie de temps en temps,
+- **Discussions** entre les héros (Échap > Journal > Discussions), pluie de temps en temps,
   musiques réécrites.
 - **Quêtes des héros** : après l'acte 3, une quête pour chacun des six héros (son passé, un boss, une arme rien qu'à lui).
 - **Cartes au trésor** : Corbin, au port, a caché huit trésors dans des coins perdus ; chacun contient la carte du suivant.
@@ -362,6 +362,25 @@ de niveau 35-40 bien équipée.
 - **Intérieurs** : chapelle à vitraux, auberge, boutique et maison de soin ont chacune leur style ; la nuit, les
   fenêtres sont sombres et la pièce prend la lumière des bougies.
 - **Interface** : titre doré, nom des lieux en ruban à l'arrivée, fenêtres aux coins arrondis.
+
+## Plus exigeant, plus tactique (3.6)
+
+Le dos d'un combattant dépend maintenant de son **regard** : vers sa dernière cible, vers où il a marché, ou vers
+l'adversaire le plus proche s'il attend. Un coup au corps à corps venu de l'autre côté fait ×1,3. Une flèche au sol
+montre où chacun regarde ; en choisissant sa case, une dague dorée marque celles d'où l'on frappe un dos. Parfois,
+une rencontre est une **embuscade** : des créatures surgissent au fond de votre camp, derrière l'équipe.
+
+Les rencontres sont à la mesure de l'équipe (plus de créatures contre une équipe nombreuse, jamais trop loin sous votre
+niveau), et les créatures ne se battent plus toutes pareil : les **carapaces** (Roche, Métal) encaissent les coups
+physiques et craignent la magie, les esprits encaissent les coups physiques, certaines encaissent la magie, et quelques
+élémentaires **absorbent** leur élément (le coup les soigne). Le Bestiaire et l'aperçu des dégâts retiennent ce que vous
+avez découvert. Un adversaire bien plus faible que vous rapporte moins d'expérience : les boss s'affrontent au bon niveau.
+
+Tactiques : conditions « Ennemi : brisé », « dos exposé », « soigneur ou chef », « Soi : dos menacé » ; actions « Viser
+une faiblesse », « Se mettre en garde » ; et « Profils… » (Combattant, Soigneur, Protecteur, Briseur) pour tout régler
+d'un coup. Menus : le menu de pause en quatre groupes, Échap > Préparation (formation, compagnons, tactiques, réserve),
+Discussions et Bestiaire dans le Journal, des icônes et des jauges, la boutique qui compare l'équipement avec ce que
+porte chacun. En démo, le joueur automatique passe par les menus comme un joueur.
 
 ## Mode Expédition (roguelite)
 

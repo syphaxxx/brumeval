@@ -110,3 +110,29 @@ n'en connaît pas le chemin (son graphe ne suit que les `passages` des cartes), 
 passeur et ne revenait jamais. Le bateau est donc un vrai passage, fermé par la condition `boss4`. Leçon : tout
 chemin nécessaire à l'histoire doit être un passage de carte, pas une téléportation. Énigmes : objectif
 `enigme:<carte>` (case de départ de l'énigme), puis `solvePuzzle` (27 et 41 pas). Partie complète : 1 h 25, 2 défaites.
+
+## Démo : tout voir comme un joueur (2026-10-23)
+
+Demandé par l'utilisateur : « en démo je veux voir tout ce que fait le joueur auto, l'équipement, les tactiques, tous
+les menus ». En démo seulement (`demo_`), le pilote fait des **visites** (`Pilot::visit`, `visitStep`) : un chemin de
+libellés choisis un à un avec le curseur depuis le menu de pause (Échap), puis un temps pour regarder, puis il referme.
+`pickItem("Titre|libellé")` choisit le premier libellé après ce titre de section (« Arme|(rien) » : plusieurs
+emplacements vides ont le même libellé). Visites : chaque changement d'équipement (`equipBest(true)` après la boutique :
+Équipement > membre > emplacement > objet), chaque gemme (`socketGems(true)` : Gemmes > « Arme : (vide) » > gemme),
+tactiques puis formation d'un nouveau membre (et les tactiques de Lior au début), Journal à chaque nouvelle quête et
+Bestiaire après une capture (`lookAt`, une par minute de jeu au plus). Après la dernière visite d'équipement,
+`equipBest(false)` finit ce que les menus n'auraient pas fait. Hors démo, rien ne change (les mesures restent rapides).
+`BRUMEVAL_DEMO=1 brumeval --partie dossier` : le pilote de la démo sans fenêtre, une capture `NN_menus.bmp` à chaque
+menu visité et une ligne « Menus : Équipement > Lior > … » dans le rapport.
+
+## Tactiques du joueur automatique (2026-10-23)
+
+Demandé : « développe le mode tactique et que le joueur auto l'utilise ». `Pilot::setupTactics` (à chaque `plan`) donne
+à chaque membre un profil de `rules().tacticProfiles` : Soigneur (sort de soin et Magie ≥ Attaque), Protecteur (rôle
+`protecteur`), Briseur (au moins 3 types d'attaque, pour trouver les faiblesses), sinon Combattant ; refait quand une
+ligne de plus sert le profil (`profileOf_` : profil et lignes). En démo, par les menus (Préparation > Tactiques >
+membre > Profils… > profil). Rapport : « Tactiques : Lior → Combattant ».
+
+Prêt ou pas (2026-10-23) : `Pilot::ready` répète toujours un boss, ou un combat déjà perdu, même loin au-dessus de son
+niveau (avant, 3 niveaux + marge au-dessus suffisaient : la Braisaure ancestrale, trois carapaces, se perdait 8 fois de
+suite avec une équipe sans magie, et la partie se bloquait). Simulation de cette prime dans le mode test.

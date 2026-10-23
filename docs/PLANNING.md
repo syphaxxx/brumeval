@@ -392,6 +392,39 @@ neige ondulée ; ponts ; rochers, plaques, herses et escaliers des énigmes ; cr
 traînée de l'élan ; intérieurs selon le bâtiment (`style`), fenêtres sombres et bougies la nuit, halo autour des pièces ;
 panneau des combats et jauges. Captures du mode test : `donjon_<carte>`, `carte_monde_fin`, `combat_port`,
 `combat_mines`, `meteo_orage`, `interieur_nuit`. Pistes : poses d'attaque des héros, effets de sorts, décors des cartes.
+Après la 3.5 (branche `graphismes-2`) : Marais Pâle (`eau`), lumière des lieux (`lumiere`), nom des boss et « Victoire ! » en
+grand, onglet du nom dans les dialogues, écran de fin à l'aube, icônes et jauges dans les menus.
+
+## Étape 2 nonies — Gameplay et menus (demandé le 2026-10-23)
+
+« Continue en priorisant le gameplay et le game design » ; deux demandes : les attaques dans le dos selon la direction où
+regarde le personnage, et des menus « peut-être un peu simples et surchargés ». Fait :
+- Regard des combattants (`Battle::facing_`) : vers où il marche, vers sa cible, vers l'adversaire le plus proche s'il attend ;
+  « dans le dos » = du côté opposé à son regard ; flèche au sol ; dague dorée sur les cases d'où l'on frappe un dos
+  (« Se déplacer ») ; IA, tactique « Contourner », aperçu des dégâts, réseau. Relu par Codex. Difficulté inchangée.
+- Menu de pause en 12 entrées et quatre groupes ; Échap > Préparation (Formation, Compagnons, Tactiques, Réserve) ;
+  Discussions et Bestiaire dans le Journal ; menu de commande du combat plus court (Limite prête, Duo possible,
+  Changer avec un remplaçant) ; volumes en crans ; « Gains ».
+Pistes : l'ordinateur qui protège son dos (« Attendre » pour se retourner), d'autres menus à regrouper.
+
+## Étape 2 decies — Rééquilibrage (demandé le 2026-10-23)
+
+« Le jeu est trop facile pour le joueur auto ; les ennemis sont parfois trop peu nombreux pour la puissance de l'équipe
+et un peu faibles ; équilibrer les faiblesses pour obliger à adapter son équipe et sa formation (comparer avec
+Expedition 33). » Constat : une rencontre faisait ~2 ennemis contre jusqu'à 6 combattants alliés ; le joueur automatique
+finissait au niveau 119 pour des boss de fin au niveau 100-110. Fait :
+1. Rencontres à la mesure de l'équipe (`par_allie` 0,6 ennemi par allié ; `ecart_niveau` 4 : une créature sauvage au plus
+   4 niveaux sous l'équipe, `plafond_niveau` 6 au-dessus du haut de la zone), gains de son niveau d'origine (`rewardLvl`).
+2. Résistances des créatures sauvages (`outils/villes/resistances.py`) : carapaces (physique ×0,6), esprits (physique
+   ×0,55), peaux d'enchantement (magie ×0,6), élémentaires qui absorbent leur élément (résistance négative : le coup soigne).
+3. Formation : la moitié des créatures sauvages ont déjà des attaques en ligne, colonne ou croix ; plus d'ennemis suffit
+   à punir une équipe groupée.
+4. Expérience : un adversaire plus de 4 niveaux sous l'équipe rapporte 8 % de moins par niveau (au moins 25 %).
+Mesuré (joueur automatique) : 7 h 38, 21 défaites, niveau 102, boss affrontés de −5 à +6 niveaux (avant : +15 à +20) ;
+estimation pour un joueur : 16 h. Piste : le saut de niveaux entre l'acte 3 (60-64) et l'acte 4 (84-90).
+5. Embuscades (une rencontre sur quatorze, un tiers des créatures au fond du camp allié), profils de tactiques, le
+   joueur automatique répète toujours un boss. Partie automatique finale (histoire finie, en cours de mesure à 7:18 de jeu,
+   10 défaites, niveau 90, quatre actes finis en 5 h environ). Publié dans la 3.6 (2026-10-23).
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 

@@ -136,7 +136,24 @@ int Battle::foesAround(const FighterP& d, int cell) const {
 
 bool Battle::behind(const FighterP& a, const FighterP& d, int from) const {
   int ax = boardX(from >= 0 ? from : cellOf(a)), dx = boardX(cellOf(d));
-  return isAlly(d) ? ax < dx : ax > dx;  // du côté du bord de son camp
+  return ax != dx && (ax - dx) * facingOf(d) < 0;  // du côté opposé à son regard (même colonne : de flanc, pas de dos)
+}
+
+FighterP Battle::backReach(const FighterP& a, int cell) const {
+  for (auto& e : oppOf(a))
+    if (e->alive() && cellOf(e) >= 0 && boardDist(cell, cellOf(e)) <= reach(a) && behind(a, e, cell)) return e;
+  return nullptr;
+}
+
+int Battle::facingOf(const FighterP& f) const {
+  auto it = facing_.find(f.get());
+  return it != facing_.end() ? it->second : isAlly(f) ? 1 : -1;
+}
+
+void Battle::face(const FighterP& a, int cell) {
+  int ac = cellOf(a);
+  if (!a || ac < 0 || cell < 0 || boardX(cell) == boardX(ac)) return;
+  facing_[a.get()] = boardX(cell) > boardX(ac) ? 1 : -1;
 }
 
 float Battle::posMult(const FighterP& a, const FighterP& d, const Move& m, int from) const {
@@ -159,8 +176,7 @@ int Battle::approachCell(const FighterP& a, const FighterP& t) const {
   for (auto& [c, d] : walkable(a)) {
     if (boardDist(c, tc) > r) continue;
     float s = -d * 2.f;
-    int ax = boardX(c), dx = boardX(tc);
-    if (isAlly(t) ? ax < dx : ax > dx) s += 6;  // dans son dos
+    if (behind(a, t, c)) s += 6;  // dans son dos (d'après son regard)
     for (auto& o : oppOf(a))
       if (o->alive() && o != t && boardDist(cellOf(o), c) <= 1) s -= 4;  // d'autres adversaires au contact
     if (terrainHurts(a, c)) s -= 10;
@@ -195,7 +211,9 @@ float Battle::zoneScore(const FighterP& a, const Move& m, const FighterP& center
   return s;
 }
 
-bool Battle::facesRight(const FighterP& f) const {
+bool Battle::facesRight(const FighterP& f) const { return facingOf(f) > 0; }
+
+int Battle::nearestFoeSide(const FighterP& f) const {
   int c = cellOf(f), best = 99;
   bool right = isAlly(f);
   for (auto& o : oppOf(f))
@@ -203,7 +221,7 @@ bool Battle::facesRight(const FighterP& f) const {
       int d = boardSteps(c, cellOf(o));
       if (d < best || (d == best && boardX(cellOf(o)) != boardX(c))) best = d, right = boardX(cellOf(o)) > boardX(c) || (boardX(cellOf(o)) == boardX(c) && isAlly(f));
     }
-  return right;
+  return right ? 1 : -1;
 }
 
 // Les cases voyagent dans les coordonnées de l'hôte : seul l'invité du duel les retourne (à la réception de l'état,
@@ -231,6 +249,7 @@ int Battle::netCell(int c) const {
 void Battle::step(const FighterP& a, int cell) {
   if (cell < 0 || cell == cellOf(a)) return;
   if (shown()) slide_[a.get()] = {pos(a), G.time};
+  face(a, cell);  // il regarde où il va
   cells_[a.get()] = cell;
   moved_.insert(a.get());
   sound("pas");
@@ -285,10 +304,18 @@ float Battle::posValue(const FighterP& a, int cell) {
   // Danger : chaque adversaire qui pourra le rejoindre au corps à corps à son prochain tour
   float hpR = float(a->hp) / std::max(1, a->mhp), fear = stalled ? 0.f : (caster ? 7.f : 3.5f) * (1.6f - hpR);
   int nearest = 99;
+  int side = facingOf(a);  // (2026-10-23) son regard à la fin du tour : vers l'adversaire le plus proche de cette case
   for (auto& o : theirs) {
     int d = boardSteps(cellOf(o), cell);
+    if (d < nearest && boardX(cellOf(o)) != boardX(cell)) side = boardX(cellOf(o)) > boardX(cell) ? 1 : -1;
     nearest = std::min(nearest, d);
-    if (d <= moveRange(o) + reach(o)) v -= fear * (o->boss ? 2.f : 1.f);
+  }
+  float backFear = fear * float(rules().backStab - 1) * 3;  // un coup dans le dos fait plus mal : le craindre davantage
+  for (auto& o : theirs) {
+    int d = boardSteps(cellOf(o), cell);
+    if (d > moveRange(o) + reach(o)) continue;
+    v -= fear * (o->boss ? 2.f : 1.f);
+    if ((boardX(cellOf(o)) - boardX(cell)) * side < 0) v -= backFear;  // il viendrait par derrière
   }
   if (int n = foesAround(a); n >= 2) v -= 8.f * (n - 1);  // encerclé
   if (caster) v += std::min(nearest, 4) * 2.f;            // garder ses distances
@@ -334,6 +361,7 @@ void Battle::motionAfterHit(const FighterP& a, const FighterP& t, const Move& m,
     int to = leapDest(a, t);
     if (to < 0) return;
     step(a, to);
+    face(a, cellOf(t));  // retombé derrière elle, il se retourne vers sa cible
     sound("bond");
     pop(a, T("Bond !"), rgb(0xd8e0ff));
     bursts_.push_back({a, "poussiere", G.time + .2f});  // quand il touche le sol
@@ -342,6 +370,7 @@ void Battle::motionAfterHit(const FighterP& a, const FighterP& t, const Move& m,
     if (shown()) slide_[t.get()] = {pos(t), G.time};
     cells_[t.get()] = ca;
     step(a, ct);
+    face(a, ca);  // toujours face à celui avec qui il a échangé
     sound("echange");
     pop(t, T("Échange !"), rgb(0xd8e0ff));
     bursts_.push_back({a, "echange", G.time}), bursts_.push_back({t, "echange", G.time});
@@ -362,6 +391,7 @@ void Battle::moveTo(FighterP a, int cell) {
   moveFrom_.erase(a.get());  // une seule origine : celle de ce déplacement
   int from = cellOf(a);
   bool broke = breakthrough_.count(a.get()) > 0;
+  faceFrom_[a.get()] = facing_.count(a.get()) ? facing_[a.get()] : 0;
   step(a, cell);
   moved_.insert(a.get());
   if (net_ == Net::None && breakthrough_.count(a.get()) == (broke ? 1u : 0u)) moveFrom_[a.get()] = from;  // « Revenir » possible
@@ -396,6 +426,7 @@ void Battle::waitTurn(FighterP a) {
     return;
   }
   log.push_back(a->name() + T(" attend"));
+  facing_[a.get()] = nearestFoeSide(a);  // il se met en garde, face à l'adversaire le plus proche
   sc.say(a->name() + T(" attend."), .45f);
   sc.call([this, a] { afterAction(a, float(rules().quickGauge)); });
 }

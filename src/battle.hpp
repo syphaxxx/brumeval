@@ -47,6 +47,7 @@ struct BattleSetup {
   bool training = false;  // entraînement : ni gains, et une défaite ne coûte rien (Game::startBattle)
   std::string music;      // morceau imposé (« musique » de l'action combat), sinon combat ou boss
   bool rain = false;      // il pleut sur la carte (Game::rainAmount) : la météo d'effet « pluie », si le décor la permet
+  bool ambush = false;    // embuscade (2026-10-23) : la moitié des créatures surgit au fond du camp de l'équipe, face à elle
 };
 
 // Défi de l'échiquier (data/defis.json) : alliés, ennemis, obstacles et décor imposés (faux : défi inconnu)
@@ -149,6 +150,11 @@ class Battle {
   // combattant pendant ce combat ; au départ, la formation de l'équipe (Fighter::cell) pour les alliés, un
   // placement automatique pour les ennemis, chacun dans sa moitié. On peut ensuite passer de l'autre côté.
   std::map<const Fighter*, int> cells_;
+  // Regard (2026-10-23) : +1 vers la droite du plateau, -1 vers la gauche ; absent = vers le camp adverse.
+  // Il se tourne en se déplaçant (vers où il va), en agissant (vers sa cible) et en attendant (vers l'adversaire
+  // le plus proche) ; un coup au corps à corps venu du côté opposé à son regard est « dans le dos ».
+  std::map<const Fighter*, int> facing_;
+  bool ambush_ = false;  // ce combat a commencé par une embuscade
   std::map<const Fighter*, float> koT_;  // moment du K.O. (un ennemi vaincu s'efface en 0,6 s avec un éclat)
   int cellOf(const FighterP& f) const;  // -1 : pas sur le plateau
   void place(const std::vector<FighterP>& v, bool keep, bool left);
@@ -165,6 +171,7 @@ class Battle {
   std::map<int, int> walkable(const FighterP& f, std::map<int, int>* parent = nullptr) const;
   std::vector<int> pathTo(const FighterP& f, int cell) const;  // les cases du chemin, de sa case jusqu'à cell
   std::map<const Fighter*, int> moveFrom_;                   // « Revenir » : sa case avant « Se déplacer » (ce tour)
+  std::map<const Fighter*, int> faceFrom_;                   // … et son regard d'alors (0 : celui par défaut)
   int reach(const FighterP& a) const;                     // portée du corps à corps (1 : les 8 cases autour ; boss : plus)
   // cell / from : la case où il se trouverait (-1 : sa case actuelle)
   bool engaged(const FighterP& f, int cell = -1) const;   // un adversaire est au contact
@@ -188,7 +195,11 @@ class Battle {
   void resumeTurn(FighterP a);                  // après « Se déplacer » : le même combattant choisit son action
   void waitTurn(FighterP a);                    // « Attendre » : finir son tour sans agir (rejoue plus tôt)
   int netCell(int c) const;                     // duel : le plateau est vu en miroir chez l'invité
-  bool facesRight(const FighterP& f) const;     // tourné vers l'adversaire le plus proche
+  bool facesRight(const FighterP& f) const;     // son regard (facing_)
+  int facingOf(const FighterP& f) const;        // +1 ou -1
+  FighterP backReach(const FighterP& a, int cell) const;  // un adversaire que a frapperait dans le dos depuis cette case
+  void face(const FighterP& a, int cell);       // se tourne vers cette case (rien si elle est dans sa colonne)
+  int nearestFoeSide(const FighterP& f) const;  // +1 ou -1 : le côté de l'adversaire le plus proche
   // Adversaires de f qui pourront le frapper au corps à corps s'il se tient sur cette case (au prochain tour :
   // déplacement + portée, sans compter les détours) : marqués en rouge quand on choisit où aller
   int meleeThreat(const FighterP& f, int cell) const;

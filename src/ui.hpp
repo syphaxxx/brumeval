@@ -2,6 +2,7 @@
 #pragma once
 #include <deque>
 #include <functional>
+#include <initializer_list>
 #include <string>
 #include <vector>
 
@@ -83,6 +84,10 @@ struct MenuItem {
   bool header = false;                   // titre de section : le curseur le saute
   uint32_t color = 0;                    // couleur du libellé (0 : blanc)
   bool shrink = false;                   // libellé coupé avec « … » s'il manque de place (sinon le mode test le signale)
+  std::string icon;                      // icône avant le libellé : un sprite (« ic_sac ») ou un dessin de menuGlyph (ui.cpp)
+  bool sep = false;                      // un fin filet au-dessus : début d'un nouveau groupe d'entrées
+  std::function<int()> notches;          // réglage de 0 à 10 dessiné en crans à droite (à la place du texte de droite)
+  float bar = -1;                        // de 0 à 1 : une fine barre d'avancement sous la ligne (-1 : aucune)
 };
 // Titre de section dans un menu
 inline MenuItem menuHeader(const std::string& label) {
@@ -90,6 +95,10 @@ inline MenuItem menuHeader(const std::string& label) {
   it.header = true;
   return it;
 }
+
+struct Menu;
+// Donne une icône (MenuItem::icon) aux entrées de ce libellé (déjà traduit)
+void setIcons(Menu& m, std::initializer_list<std::pair<std::string, const char*>> icons);
 
 struct Menu {
   std::string title;

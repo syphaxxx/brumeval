@@ -144,5 +144,6 @@
   "zones": [],
   "boss": [],
   "declencheurs": [{"x": 21, "y": 24, "l": 2, "h": 1, "evenement": "echos_arrivee", "jusqua": "echos_vue"}],
-  "carte_monde": [6, 30]
+  "carte_monde": [6, 30],
+  "lumiere": "#9a8aff"
 }

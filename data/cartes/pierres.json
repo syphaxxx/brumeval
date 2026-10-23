@@ -93,5 +93,6 @@
       "nuit": ["spectrecho", "noctaile"]
     }
   ],
-  "boss": [{"x": 5, "y": 12, "espece": "colosse_echo", "drapeau": "colosse_echo_vaincu"}]
+  "boss": [{"x": 5, "y": 12, "espece": "colosse_echo", "drapeau": "colosse_echo_vaincu"}],
+  "lumiere": "#8aa0c0"
 }

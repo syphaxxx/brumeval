@@ -1052,7 +1052,7 @@ Region generateRegion(uint64_t seed, int k, Content& c) {
       "Dans les hautes herbes, on croise des " + wildNames[0] + " et des " + wildNames[1] + ".",
       "Une Lanterne capture plus facilement une créature affaiblie.",
       "Les dresseurs postés le long du chemin vous défient dès qu'ils vous voient.",
-      "Échap > Tactiques : votre équipe peut combattre toute seule (Tab en combat).",
+      "Échap > Préparation > Tactiques : votre équipe peut combattre toute seule (Tab en combat).",
       "On raconte que la route continue sans fin, de région en région…",
       "Plus on va loin, plus les créatures sont fortes. Capturez-en de nouvelles !"};
   std::vector<int> tipIx = {0, 1, 2, 3, 4, 5, 6, 7};

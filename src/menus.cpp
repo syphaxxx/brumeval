@@ -35,7 +35,7 @@ void Game::optionsMenu(int sel) {
       applyVolumes();
       saveOptions();
     };
-    it.rightFn = [v] { return *v ? std::to_string(*v) + " / 10" : std::string(T("coupé")); };
+    it.notches = [v] { return *v; };  // des crans plutôt que « 7 / 10 »
     return it;
   };
   m.items.push_back(volume(T("Musique"), &options().music, T("Gauche / droite : volume de la musique.")));
@@ -151,7 +151,7 @@ void Game::drawKeyPrompt() {
 void Game::pauseMenu() {
   panelMode_ = 1;
   Menu m;
-  m.x = 8, m.y = 8, m.w = 100, m.rows = 9;
+  m.x = 8, m.y = 8, m.w = 110, m.rows = 9;  // (la place des icônes ; le panneau de l'équipe à droite, à x = 120)
   if (editorTest_ && editor_)
     m.items.push_back({T("Fin du test"), "", T("Revenir à l'éditeur de cartes, à l'endroit où vous êtes."), true, [this] {
                          panelMode_ = 0;
@@ -170,7 +170,8 @@ void Game::pauseMenu() {
                          px = M().puzzleX, py = M().puzzleY, moving = false;
                        }});
   m.items.push_back({T("Équipe"), "", T("Ordre de combat et fiches."), true, [this] { teamMenu(); }});
-  m.items.push_back({T("Compagnons"), "", T("La créature qui combat aux côtés de chaque héros."), true, [this] { companionsMenu(); }});
+  m.items.push_back({T("Préparation"), "", T("Formation, compagnons, tactiques et réserve : préparer l'équipe aux combats."), true, [this] { prepMenu(); }});
+  m.items.push_back({T("Équipement"), "", T("Armes, armures et accessoires."), true, [this] { gearMenu(); }});
   {
     int waiting = 0;
     for (auto& f : team) waiting += canEvolve(*f) && f->evolveLater;
@@ -178,24 +179,18 @@ void Game::pauseMenu() {
       m.items.push_back({T("Évolution"), std::to_string(waiting), T("Des créatures peuvent évoluer (vous aviez répondu Non)."), true,
                          [this] { evolutionMenu(); }});
   }
-  m.items.push_back({T("Formation"), "", T("La place de chacun sur le damier de combat (avant, milieu, arrière)."), true, [this] { formationMenu(); }});
-  m.items.push_back({T("Réserve"), reserve.empty() ? "" : std::to_string(reserve.size()), T("Les créatures en plus de l'équipe (") +
-                     std::to_string(rules().maxTeam) + T(" membres au plus)."), true, [this] { reserveMenu(); }});
-  m.items.push_back({T("Bestiaire"), "", T("Les créatures rencontrées et obtenues, et leur fiche."), true, [this] { bestiaryMenu(); }});
-  m.items.push_back({T("Tactiques"), "", T("Ce que chaque membre fait tout seul en combat (mode auto : touche Tab)."), true, [this] { tacticsMenu(); }});
-  m.items.push_back({T("Équipement"), "", T("Armes, armures et accessoires."), true, [this] { gearMenu(); }});
-  m.items.push_back({T("Journal"), "", T("Les quêtes en cours et terminées."), true, [this] { journalMenu(); }});
-  if (!inExpedition()) {
-    int n = newDiscussions();
-    m.items.push_back({T("Discussions"), n ? std::to_string(n) : "", T("Ce que se disent les héros au fil de l'aventure."), true, [this] { discussionsMenu(); }});
+  m.items.push_back({T("Objets"), "", T("Utiliser un objet."), true, [this] { itemMenu(); }});
+  m.items.push_back({T("Magie"), "", T("Lancer un sort de soin."), true, [this] { magicMenu(); }});
+  {
+    int n = inExpedition() ? 0 : newDiscussions();  // une nouvelle discussion se voit dès le menu de pause
+    m.items.push_back({T("Journal"), n ? std::to_string(n) : "", T("Quêtes, discussions des héros, Bestiaire, progression et exploits."), true,
+                       [this] { journalMenu(); }});
   }
   if (!inExpedition())
     m.items.push_back({T("Carte"), "", T("La carte du monde : les lieux où vous pouvez aller, et où vous êtes."), true, [this] {
                          worldMapOn_ = true;
                          audio::play("valider");
                        }});
-  m.items.push_back({T("Objets"), "", T("Utiliser un objet."), true, [this] { itemMenu(); }});
-  m.items.push_back({T("Magie"), "", T("Lancer un sort de soin."), true, [this] { magicMenu(); }});
   if (inExpedition()) {
     bool group = online_ && online_->inGroup();
     m.items.push_back({T("Sauvegarder"), "", T("Expédition : ") + expedition_->status() + ".", true,
@@ -218,7 +213,38 @@ void Game::pauseMenu() {
   m.items.push_back({T("Options"), "", T("Volumes, plein écran, vitesse du jeu et touches."), true, [this] { optionsMenu(); }});
   m.items.push_back({T("Aide"), "", T("Statistiques, dégâts, damier, zones, états, tableau des types, touches (F1)."), true, [this] { helpMenu(); }});
   m.items.push_back({T("Reprendre"), "", "", true, [this] { menus.clear(); }});
+  // (2026-10-23) une petite icône devant chaque entrée : la liste se lit d'un coup d'œil
+  setIcons(m, {
+      {T("Fin du test"), "porte"}, {T("Recommencer l'énigme"), "caillou"}, {T("Équipe"), "ic_casque_1"}, {T("Préparation"), "damier"},
+      {T("Évolution"), "etoile"}, {T("Équipement"), "ic_epee_1"}, {T("Journal"), "parchemin"},
+      {T("Carte"), "carte"}, {T("Objets"), "ic_sac"}, {T("Magie"), "ic_baton_1"}, {T("Sauvegarder"), "ic_gemme_cristal"},
+      {T("Groupe"), "ic_casque_2"}, {T("Abandonner"), "drapeau"}, {T("Écran titre"), "porte"}, {T("Options"), "engrenage"},
+      {T("Aide"), "aide"}, {T("Reprendre"), "reprendre"}});
+  // (2026-10-23) l'ordre et les groupes : l'équipe, le sac, l'aventure, la partie
+  for (size_t i = 0; i < m.items.size(); i++)
+    if (m.items[i].label == T("Écran titre") && i + 1 < m.items.size()) {  // juste avant « Reprendre »
+      MenuItem it = m.items[i];
+      m.items.erase(m.items.begin() + (long)i);
+      m.items.insert(m.items.end() - 1, it);
+      break;
+    }
+  for (auto& it : m.items)
+    it.sep = it.label == T("Objets") || it.label == T("Journal") || it.label == T("Sauvegarder") || it.label == T("Reprendre");
   m.rows = std::min(13, (int)m.items.size());  // au-delà, la liste défile (la bande d'aide reste visible)
+  menus.push(m);
+}
+
+// Échap > Préparation (2026-10-23) : ce qui prépare l'équipe aux combats, pour alléger le menu de pause
+void Game::prepMenu() {
+  Menu m;
+  m.title = T("Préparation");
+  m.x = 8, m.y = 8, m.w = 110, m.rows = 6;
+  m.items.push_back({T("Formation"), "", T("La place de chacun sur le damier de combat (avant, milieu, arrière)."), true, [this] { formationMenu(); }});
+  m.items.push_back({T("Compagnons"), "", T("La créature qui combat aux côtés de chaque héros."), true, [this] { companionsMenu(); }});
+  m.items.push_back({T("Tactiques"), "", T("Ce que chaque membre fait tout seul en combat (mode auto : touche Tab)."), true, [this] { tacticsMenu(); }});
+  m.items.push_back({T("Réserve"), reserve.empty() ? "" : std::to_string(reserve.size()), T("Les créatures en plus de l'équipe (") +
+                     std::to_string(rules().maxTeam) + T(" membres au plus)."), true, [this] { reserveMenu(); }});
+  setIcons(m, {{T("Formation"), "damier"}, {T("Compagnons"), "patte"}, {T("Tactiques"), "viser"}, {T("Réserve"), "ic_lanterne"}});
   menus.push(m);
 }
 
@@ -251,7 +277,7 @@ void Game::tacticsMenu(int sel) {
                   openTacticsEditor(*this, t);
                 }};
     it.rightFn = [f] {
-      if (!f->tacticsOn) return std::string("manuel");
+      if (!f->tacticsOn) return std::string(T("manuel"));
       int n = 0, slots = tacticSlots(f->lvl);
       for (int k = 0; k < (int)f->tactics.size() && k < slots; k++) n += f->tactics[k].on;
       return std::to_string(n) + (n > 1 ? T(" règles") : T(" règle"));
@@ -288,6 +314,7 @@ void Game::reserveMenu(int sel) {
       MenuItem it{c->name(), T("N.") + std::to_string(c->lvl), typesName(c->S()) + " · " + std::to_string(c->hp) + "/" + std::to_string(c->mhp) + T(" PV"),
                   true, [done, c] { done(c); }};
       it.shrink = true;
+      it.icon = typeDot(c->S().type);
       p.items.push_back(it);
     }
     menus.push(p);
@@ -323,6 +350,7 @@ void Game::reserveMenu(int sel) {
                   });
                 }};
     it.shrink = true;
+    it.icon = typeDot(r->S().type);
     m.items.push_back(it);
   }
   if (reserve.empty()) m.items.push_back({T("(réserve vide)"), "", T("Les créatures capturées quand l'équipe est complète arrivent ici."), false, nullptr});
@@ -358,7 +386,7 @@ void Game::bestiaryMenu(int sel) {
   for (auto* s : all) nSeen += seen.count(s->id) > 0, nCaught += caught.count(s->id) > 0;
   Menu m;
   m.title = T("Bestiaire  ") + std::to_string(nSeen) + "/" + std::to_string(all.size());
-  m.x = 8, m.y = 8, m.w = 132, m.rows = 12;
+  m.x = 8, m.y = 8, m.w = 142, m.rows = 12;
   for (size_t i = 0; i < all.size(); i++) {
     const Species& s = *all[i];
     bool v = seen.count(s.id), c = caught.count(s.id);
@@ -368,6 +396,7 @@ void Game::bestiaryMenu(int sel) {
     MenuItem it{num + (v ? s.name : std::string("???")), c ? "★" : v ? "vu" : "",
                 c ? T("Obtenue. ") + evolutionText(s) + matchupText(s) : v ? T("Rencontrée, pas encore obtenue. ") + evolutionText(s) + matchupText(s, &weak) : T("Pas encore rencontrée."), true, nullptr, [this, id] { bestiarySel_ = id; }};
     it.shrink = true;
+    it.icon = v ? typeDot(s.type) : "inconnu";  // (2026-10-23) la couleur de son type, une fois rencontrée
     m.items.push_back(it);
   }
   if (!all.empty()) bestiarySel_ = all[(size_t)std::clamp(sel, 0, (int)all.size() - 1)]->id;
@@ -415,7 +444,14 @@ void Game::drawBestiaryPanel(int x, int y) {
   int ly = y + top - 8;
   if (c) {  // statistiques de base, seulement pour une créature obtenue
     const char* names[] = {"PV", "PM", "Att", "Déf", "Mag", "Rés", "Vit"};
-    for (int i = 0; i < N_BASE; i++) g.text(x + 8 + (i % 3) * 50, ly + (i / 3) * 11, std::string(T(names[i])) + " " + std::to_string(s.base[i]), WHITE);
+    const float most[] = {140, 80, 100, 100, 100, 100, 100};  // (2026-10-23) une jauge sous chaque chiffre : forte, faible d'un coup d'œil
+    const uint32_t col[] = {0x6ad87a, 0x6aa8f0, 0xf08a6a, 0xd8b86a, 0xb88af0, 0x8ad8d8, 0xf0e06a};
+    for (int i = 0; i < N_BASE; i++) {
+      float bx = x + 8 + (i % 3) * 50, by = ly + (i / 3) * 11;
+      g.text(bx, by, std::string(T(names[i])) + " " + std::to_string(s.base[i]), WHITE);
+      g.rect(bx, by + 9.5f, 44, 1.5f, rgb(0x03051a, 200));
+      g.rect(bx, by + 9.5f, 44 * std::min(1.f, s.base[i] / most[i]), 1.5f, rgb(col[i]));
+    }
     ly += 36;
   } else {
     g.text(x + 8, ly, T("Pas encore obtenue."), MUTED);
@@ -628,6 +664,7 @@ void Game::gearSlots(FighterP f, int who, int sel) {
                    : T("Seuls les héros portent armes et armures."),
                 ok, [this, f, who, s] { gearPick(f, who, s); }};
     it.shrink = true;
+    if (id.empty()) it.icon = "vide";  // (2026-10-23) une case vide en pointillés ; un objet porté a son icône
     m.items.push_back(it);
   }
   m.sel = 1 + 2 * std::clamp(sel, 0, N_GEAR - 1);
@@ -641,6 +678,8 @@ void Game::gearSlots(FighterP f, int who, int sel) {
                      sockets ? T("Sertir des gemmes dans les chatons de l'équipement porté.") : T("Il faut porter un équipement pour sertir des gemmes."), sockets > 0,
                      [this, f, who] { gemMenu(f, who); }});
   m.items.push_back({T("Retour"), "", "", true, [this] { menus.pop(); }});
+  setIcons(m, {{T("Gemmes"), "ic_gemme_cristal"}, {T("Retour"), "retour"}});
+  m.items[m.items.size() - 2].sep = true;
   teamPanelSel_ = who;
   menus.push(m);
 }
@@ -756,7 +795,7 @@ void Game::journalMenu() {
   panelMode_ = 0;
   Menu m;
   m.title = T("Journal");
-  m.x = 8, m.y = 8, m.w = 220, m.rows = 9;
+  m.x = 8, m.y = 8, m.w = 236, m.rows = 9;  // (236 : la place des icônes)
   if (std::string adv = adviceText(); !adv.empty()) m.items.push_back({T("Prochain gardien"), "", adv, true, nullptr});  // conseil (2.8)
   if (!inExpedition())
     m.items.push_back({T("Progression"), "", T("Ce que vous avez déjà accompli : quêtes, primes, dresseurs, coffres, Bestiaire…"), true, [this] { progressMenu(); }});
@@ -776,6 +815,7 @@ void Game::journalMenu() {
     }
     MenuItem it{tr(jget<std::string>(q, "nom", id)), done ? T("terminée") : T("en cours"), tr(jget<std::string>(q, "lieu", "")) + " — " + help, true, nullptr};
     it.color = done ? 0xaab3d8 : 0;
+    it.icon = done ? "coche" : "parchemin";
     it.shrink = true;
     m.items.push_back(it);
   }
@@ -787,9 +827,31 @@ void Game::journalMenu() {
                 tr(jget<std::string>(b, "lieu", "")) + " — " +
                     (beaten ? std::string(T("Vaincu : toucher la prime à un tableau d'annonces.")) : tr(jget<std::string>(b, "description", ""))),
                 true, nullptr};
+    it.icon = "viser";
     it.shrink = true;
     m.items.push_back(it);
   }
+  if (!inExpedition()) {  // (2026-10-23) venus du menu de pause ; au retour, le Journal retrouve son affichage
+    auto back = [this] {
+      panelMode_ = 0;
+      menus.pop();
+    };
+    int n = newDiscussions();
+    MenuItem talk{T("Discussions"), n ? std::to_string(n) + T(" nouv.") : "", T("Ce que se disent les héros au fil de l'aventure."), true, [this, back] {
+                    discussionsMenu();
+                    menus.top().onCancel = back;
+                  }};
+    MenuItem best{T("Bestiaire"), "", T("Les créatures rencontrées et obtenues, et leur fiche."), true, [this, back] {
+                    bestiaryMenu();
+                    menus.top().onCancel = back;
+                  }};
+    size_t at = 0;  // après Prochain gardien, Progression et Exploits, avant les quêtes
+    while (at < m.items.size() && (m.items[at].label == T("Prochain gardien") || m.items[at].label == T("Progression") || m.items[at].label == T("Exploits"))) at++;
+    m.items.insert(m.items.begin() + (long)at, {talk, best});
+    if (m.items.size() > at + 2) m.items.insert(m.items.begin() + (long)at + 2, menuHeader(T("Quêtes")));  // la liste des quêtes à part
+  }
+  setIcons(m, {{T("Prochain gardien"), "carte"}, {T("Progression"), "etoile"}, {T("Exploits"), "coupe"}, {T("Discussions"), "bulle"},
+               {T("Bestiaire"), "ic_livre"}});
   if (m.items.empty()) m.items.push_back({T("(aucune quête)"), "", T("Parlez aux habitants : certains ont besoin d'aide."), false, nullptr});
   m.onCancel = [this] {
     panelMode_ = 1;
@@ -807,6 +869,7 @@ void Game::progressMenu() {
     if (total <= 0) return;
     MenuItem it{name, std::to_string(done) + " / " + std::to_string(total), help, true, nullptr};
     if (done >= total) it.color = 0xffe066;  // tout est fait : en or
+    it.bar = float(done) / total;
     m.items.push_back(it);
   };
   int q = 0, qd = 0, b = 0, bd = 0, trn = 0, trd = 0, rv = 0, rvd = 0, ch = 0, chd = 0, hid = 0, hidd = 0, sp = 0, cr = 0, talk = 0;
@@ -842,7 +905,7 @@ void Game::progressMenu() {
   line(T("Coffres ouverts"), chd, ch, T("Tous les coffres du monde, éclats de brume compris."));
   line(T("Créatures obtenues"), caughtN, sp, T("Le Bestiaire : les créatures capturées ou reçues (sans les humains ni les boss)."));
   line(T("Poissons pêchés"), fishCaught(), fishSpecies(), T("Le carnet du maître pêcheur du port."));
-  line(T("Discussions écoutées"), talk, discussionCount(), T("Échap > Discussions : ce que se disent les héros."));
+  line(T("Discussions écoutées"), talk, discussionCount(), T("Échap > Journal > Discussions : ce que se disent les héros."));
   line(T("Trésors cachés"), hidd, hid, T("Les trésors des cartes de Corbin, au port : chacun contient la carte du suivant."));
   line(T("Joueurs de cartes battus"), cardsWon(), cardFoeCount(), T("Les joueurs de Cartes des gardiens, dans les auberges et les maisons."));
   line(T("Cartes des gardiens"), (int)cardCollection().size(), cardTotal(), T("Chaque créature obtenue donne sa carte ; les cartes des boss se gagnent aux joueurs."));
@@ -1007,6 +1070,7 @@ void Game::magicMenu() {
                                                   }, [cast](Fighter& f) { cast(&f); });
                                               }});
                          }
+                         for (size_t k = 0; k < heal.size() && k < s.items.size(); k++) s.items[k].icon = typeDot(moveInfo(heal[k]).type);
                          menus.push(s);
                        }});
   }
@@ -1014,8 +1078,42 @@ void Game::magicMenu() {
 }
 
 void Game::shopMenu(const std::vector<std::string>& stock) { shopMenuAt(stock, 0); }
+// Boutique : pour un équipement survolé, chaque membre qui peut le porter et ce qu'il gagnerait (ou perdrait) par
+// rapport à ce qu'il porte ; rien pour un objet ordinaire
+void Game::drawShopPanel(int x, int y) {
+  if (shopHover_.empty() || !hasItem(shopHover_)) return;
+  const ItemDef& d = item(shopHover_);
+  if (d.slot < 0) return;
+  std::vector<std::pair<std::string, std::vector<std::pair<std::string, int>>>> rows;  // nom, (statistique, écart)
+  for (auto& f : team) {
+    if (!canEquip(*f, d) || rows.size() >= 3) continue;  // trois au plus : l'avis « Acheté » s'affiche juste dessous
+    const std::string& cur = f->gear[(size_t)d.slot];
+    std::vector<std::pair<std::string, int>> diff;
+    for (int k = 0; k < N_GEAR_STATS; k++)
+      if (int v = d.bonus[k] - (cur.empty() ? 0 : item(cur).bonus[k])) diff.push_back({gearStatName(k), v});
+    rows.push_back({cur == d.id ? f->name() + T(" (le porte)") : f->name(), diff});
+  }
+  if (rows.empty()) return;
+  int w = 200, h = 8 + 11 * (int)rows.size();
+  g.window(x, y, w, h);
+  for (size_t i = 0; i < rows.size(); i++) {
+    float ly = y + 4 + i * 11;
+    std::string name = utf8Prefix(rows[i].first, 14);
+    g.text(x + 8, ly, name, rgb(0xd8def2));
+    float rx = x + w - 8, stop = x + 8 + Gfx::textW(name) + 6;  // les écarts, de droite à gauche, sans toucher le nom
+    if (rows[i].second.empty()) g.text(rx, ly, "=", rgb(0xaab3d8), 2);
+    for (auto it = rows[i].second.rbegin(); it != rows[i].second.rend(); ++it) {
+      std::string s = (it->second > 0 ? "+" : "") + std::to_string(it->second) + " " + utf8Prefix(it->first, 3);
+      if (rx - Gfx::textW(s) < stop) break;
+      g.text(rx, ly, s, it->second > 0 ? rgb(0x6ad87a) : rgb(0xf06a5a), 2);
+      rx -= Gfx::textW(s) + 6;
+    }
+  }
+}
+
 void Game::shopMenuAt(const std::vector<std::string>& stock, int sel) {
-  panelMode_ = 0;
+  panelMode_ = 5;  // (2026-10-23) sous la liste : ce que l'équipement survolé changerait pour chacun
+  shopHover_.clear();
   Menu m;
   m.title = T("Boutique  ·  ") + std::to_string(gold) + T(" or");
   m.x = 60, m.y = 20, m.w = 200, m.rows = 7;
@@ -1039,15 +1137,18 @@ void Game::shopMenuAt(const std::vector<std::string>& stock, int sel) {
                          menus.pop();
                          shopMenuAt(stock, (int)i);
                        }});
+    m.items.back().hover = [this, id] { shopHover_ = id; };
   }
   m.items.push_back({T("Vendre…"), "", T("Vendre vos objets à la moitié de leur prix."), true, [this, stock] { sellMenu(stock, 0); }});
   m.items.push_back({T("Quitter"), "", "", true, [this] { menus.clear(); }});
+  setIcons(m, {{T("Vendre…"), "piece"}, {T("Quitter"), "porte"}});  // alignés sur les icônes des objets
   m.sel = std::clamp(sel, 0, (int)m.items.size() - 1);
   menus.push(m);
 }
 
 // Vendre : chaque objet du sac (sauf les objets de quête) rapporte la moitié de son prix
 void Game::sellMenu(const std::vector<std::string>& stock, int sel) {
+  panelMode_ = 0;  // pas de comparaison en vendant (le retour reconstruit la boutique)
   Menu m;
   m.title = T("Vendre  ·  ") + std::to_string(gold) + T(" or");
   m.x = 60, m.y = 20, m.w = 200, m.rows = 7;
@@ -1136,9 +1237,18 @@ void Game::drawTeamPanel(int x, int y, int sel) {
     ly += 11;
   };
   row(T("Type"), typesName(f.S()));
+  auto gauge = [&](float part, uint32_t c) {  // (2026-10-23) une fine jauge sous le nombre de la ligne d'avant
+    part = std::clamp(part, 0.f, 1.f);
+    g.rect(x + 54, ly - 1, 48, 2, rgb(0x03051a, 200));
+    g.rect(x + 54, ly - 1, 48 * part, 2, rgb(c));
+  };
+  float hpPart = f.mhp ? (float)f.hp / f.mhp : 0;
   row(T("PV"), std::to_string(f.hp) + "/" + std::to_string(f.mhp));
+  gauge(hpPart, hpPart > .5f ? 0x6ad87a : hpPart > .25f ? 0xffd34d : 0xf06a5a);
   row(T("PM"), std::to_string(f.mp) + "/" + std::to_string(f.mmp));
+  gauge(f.mmp ? (float)f.mp / f.mmp : 0, 0x6aa8f0);
   row(T("Exp."), std::to_string(f.xp) + "/" + std::to_string(f.need()));
+  gauge(f.need() ? (float)f.xp / f.need() : 0, 0xc89af0);
   row(T("Pas"), std::to_string(fighterMoveRange(f)) + T(" cases") + (speciesFlies(f.S()) ? T(", vole") : ""));  // échiquier
   ly += 3;
   // Statistiques sur deux colonnes

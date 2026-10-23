@@ -23,6 +23,7 @@ struct TypeDef {
 const std::vector<TypeDef>& types();
 Type typeOf(const std::string& id);  // erreur si le type n'existe pas
 const char* typeName(Type t);
+std::string typeDot(Type t);  // icône de menu : une pastille de la couleur du type (« #rrggbb », menuGlyph de ui.cpp)
 float typeEff(Type attaque, Type defense);  // 2 = super efficace, 0.5 = peu efficace
 
 enum class Target { Enemy, AllEnemies, Ally, AllAllies, AllyKO };
@@ -226,6 +227,12 @@ struct Rules {
   double alpha = 0;   // chance qu'une meute (2 créatures ou plus) soit menée par un alpha (comme un boss)
   int alphaLevels = 3;     // niveaux en plus de l'alpha
   double nightShare = .5;  // part des rencontres de nuit tirées de la liste « nuit » d'une zone
+  // (2026-10-23, rééquilibrage) des rencontres à la mesure de l'équipe : au moins perAlly ennemis par combattant allié
+  // (arrondi), et des créatures sauvages au plus levelGap niveaux sous la moyenne de l'équipe, sans dépasser le haut de
+  // la zone de plus de levelCap niveaux (0 : réglage coupé ; jamais en Expédition)
+  double perAlly = 0;
+  double ambush = 0;  // chance qu'une rencontre de 2 créatures ou plus soit une embuscade (BattleSetup::ambush)
+  int levelGap = 0, levelCap = 6;
   // Combat
   double atbBase = 20, atbSpeed = 1.1, flee = .7, limitGain = 110, stab = 1.25, spreadMin = .85, dmgDivisor = 40;
   double critMult = 1.5, stageStep = .25;
@@ -263,6 +270,10 @@ struct Rules {
   int sleepMin = 1, sleepMax = 3;
   // Récompenses
   int xpPerLevel = 9, xpBoss = 3, goldPerLevel = 4, goldBoss = 8;
+  // (2026-10-23) un adversaire plus faible que l'équipe rapporte moins : au-delà de xpGapFree niveaux sous la moyenne de
+  // l'équipe, xpGapLoss de son expérience en moins par niveau, au moins xpGapMin (0 : réglage coupé)
+  double xpGapLoss = 0, xpGapMin = .1;
+  int xpGapFree = 2;
   double xpFront = .7, xpReserve = .3;
   std::vector<std::pair<std::string, double>> drops;  // objet, chance
   // Capture
@@ -275,6 +286,12 @@ struct Rules {
   // Tactiques : lignes disponibles (départ, une de plus tous les n niveaux, maximum) et règles de départ
   int tacticStart = 4, tacticPerLvl = 6, tacticMax = 10;
   std::vector<Tactic> tactics;
+  // Profils de tactiques (2026-10-23) : des listes de règles toutes faites (Combattant, Soigneur…), à choisir d'un coup
+  struct TacticProfile {
+    std::string id, name, help;
+    std::vector<Tactic> rules;
+  };
+  std::vector<TacticProfile> tacticProfiles;
   // Butin selon le type d'une créature sauvage vaincue (« butin_type ») : matériaux de la forge
   struct TypeDrop {
     std::string type, item;
@@ -414,6 +431,7 @@ struct Fighter {
   int cell = -1;                         // formation : case choisie sur le damier (-1 : automatique)
   bool evolveLater = false;              // évolution refusée : proposée de nouveau seulement par Échap > Évolution
   bool chroma = false;                   // créature chromatique (2026-10-20) : couleurs rares (sprite « <sprite>_chroma »)
+  int rewardLvl = 0;                     // gains (exp, or) de ce niveau-là s'il n'est pas 0 : créature relevée au niveau de l'équipe
   // Brisure (2.5), seulement pendant un combat : bouclier d'un ennemi ; un coup sur une faiblesse
   // retire un point ; à zéro, il est brisé jusqu'à son prochain tour (perdu) et subit plus de dégâts
   int shield = 0, shieldMax = 0;

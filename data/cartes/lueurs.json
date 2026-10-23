@@ -155,5 +155,6 @@
   ],
   "boss": [{"x": 23, "y": 5, "espece": "gardien_lueurs", "drapeau": "gardien_lueurs"}],
   "declencheurs": [{"x": 23, "y": 37, "l": 2, "h": 2, "evenement": "lueurs_entree", "jusqua": "lueurs_vu"}],
-  "carte_monde": [8, 76]
+  "carte_monde": [8, 76],
+  "lumiere": "#7affd8"
 }

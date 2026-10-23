@@ -203,5 +203,6 @@
   "zones": [],
   "boss": [],
   "declencheurs": [{"x": 20, "y": 21, "l": 2, "h": 1, "evenement": "aube_arrivee", "jusqua": "aube_vue"}],
-  "carte_monde": [10, 92]
+  "carte_monde": [10, 92],
+  "lumiere": "#ff9a7a"
 }

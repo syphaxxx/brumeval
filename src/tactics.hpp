@@ -49,6 +49,8 @@ TSide tacticActSide(const Tactic& t);
 std::string tacticProblem(const Tactic& t, const Fighter* f);
 int tacticSlots(int lvl);                          // lignes utilisables à ce niveau
 std::vector<Tactic> defaultTactics(const Species& s);  // celles de l'espèce, sinon des règles
+// Les règles d'un profil pour ce nombre de lignes : les premières, et toujours la dernière (l'attaque qui sert sinon)
+std::vector<Tactic> profileRules(const Rules::TacticProfile& p, int slots);
 
 Tactic tacticFromJson(const Json& o);
 Json tacticToJson(const Tactic& t);

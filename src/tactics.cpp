@@ -40,6 +40,12 @@ static const std::vector<TacticCond> CONDS = {
     {"ennemis_groupes", ::T("Ennemis : {n} dans la zone"), TSide::Foe, 2, 2, 4, 1,
      ::T("Une cible dont la zone de l'action touche au moins ce nombre d'ennemis (gauche/droite : nombre).")},
     {"allie_avant_pv_moins", ::T("Allié au contact : PV < {n} %"), TSide::Ally, 50, 10, 90, 10, ::T("Un allié au contact d'un ennemi, blessé sous ce seuil (gauche/droite).")},
+    // (2026-10-23) le regard, la Brisure et les rôles
+    {"ennemi_brise", ::T("Ennemi : brisé"), TSide::Foe, 0, 0, 0, 0, ::T("Un ennemi dont le bouclier est brisé : il encaisse beaucoup plus, c'est le moment.")},
+    {"ennemi_dos", ::T("Ennemi : dos exposé"), TSide::Foe, 0, 0, 0, 0,
+     ::T("Un ennemi dont il peut atteindre le dos ce tour-ci (d'où il est, ou en se déplaçant) : coups plus forts.")},
+    {"ennemi_role", ::T("Ennemi : soigneur ou chef"), TSide::Foe, 0, 0, 0, 0, ::T("Un ennemi soigneur ou chef : l'abattre d'abord affaiblit tout son camp.")},
+    {"soi_dos_menace", ::T("Soi : dos menacé"), TSide::Self, 0, 0, 0, 0, ::T("Quand un ennemi au contact est dans son dos (une embuscade, un ennemi qui l'a contourné).")},
 };
 static const std::vector<TacticAuto> AUTOS = {
     {"attaque", ::T("Meilleure attaque"), TSide::Foe, ::T("La technique, le sort ou le duo qui fait le plus de dégâts (peut dépenser des PM).")},
@@ -52,6 +58,9 @@ static const std::vector<TacticAuto> AUTOS = {
     {"approcher", ::T("S'approcher"), TSide::Foe, ::T("Aller vers cet ennemi, au contact si possible. Le tour continue : la règle suivante choisit l'action.")},
     {"contourner", ::T("Contourner"), TSide::Foe, ::T("Passer dans le dos de cet ennemi (coups plus forts). Le tour continue ensuite.")},
     {"proteger", ::T("Protéger"), TSide::Ally, ::T("Se placer à côté de cet allié, du côté des ennemis, pour le couvrir. Le tour continue ensuite.")},
+    {"briser", ::T("Viser une faiblesse"), TSide::Foe,
+     ::T("Une attaque d'un type auquel cet ennemi est faible (faiblesse déjà découverte) : entame son bouclier jusqu'à la Brisure.")},
+    {"garde", ::T("Se mettre en garde"), TSide::Self, ::T("Attendre, face à l'ennemi le plus proche : le dos à l'abri, et il rejoue plus tôt.")},
 };
 
 const std::vector<TacticCond>& tacticConds() { return CONDS; }
@@ -167,6 +176,16 @@ int tacticSlots(int lvl) {
 
 std::vector<Tactic> defaultTactics(const Species& s) { return s.tactics.empty() ? rules().tactics : s.tactics; }
 
+std::vector<Tactic> profileRules(const Rules::TacticProfile& p, int slots) {
+  std::vector<Tactic> v = p.rules;
+  if (slots >= 1 && (int)v.size() > slots) {
+    Tactic last = v.back();
+    v.resize((size_t)slots - 1);
+    v.push_back(last);
+  }
+  return v;
+}
+
 // ---------------------------------------------------------------------------
 // Fichiers : { "si": "allie_pv_moins", "valeur": 40, "faire": "soin" }
 // (ou "technique": identifiant, ou "objet": identifiant ; "active": false)
@@ -249,6 +268,7 @@ class TacticsEditor : public std::enable_shared_from_this<TacticsEditor> {
   void pickAction(int i, bool isNew, const Tactic& draft);
   void setAction(int i, bool isNew, const Tactic& t);
   void confirmReset();
+  void pickProfile();
 };
 
 void TacticsEditor::menuList(int sel) {
@@ -291,15 +311,25 @@ void TacticsEditor::menuList(int sel) {
       } else
         it.help = ::T("Entrée : modifier, désactiver, déplacer ou effacer cette règle.");
       m.items.push_back(it);
-    } else if (i < T.slots)
-      m.items.push_back({num + "—", "", ::T("Ligne libre. Entrée : ajouter une règle."), true, [self] { self->pickCond((int)self->L().size(), true); }});
-    else
-      m.items.push_back({num + ::T("(verrouillée)"), ::T("niveau ") + std::to_string(unlockLevel(i)),
+    } else if (i < T.slots) {  // (2026-10-23) les lignes libres en une seule : la liste reste courte
+      int free = T.slots - i;
+      m.items.push_back({::T("+ Nouvelle règle"), std::to_string(free) + (free > 1 ? ::T(" libres") : ::T(" libre")),
+                         ::T("Entrée : ajouter une règle."), true, [self] { self->pickCond((int)self->L().size(), true); }});
+      i = T.slots - 1;
+    } else {  // les lignes verrouillées aussi : seulement la prochaine
+      m.items.push_back({::T("Lignes verrouillées : ") + std::to_string(lines - i), ::T("prochaine au niveau ") + std::to_string(unlockLevel(i)),
                          ::T("Une ligne de plus tous les ") + std::to_string(rules().tacticPerLvl) + ::T(" niveaux."), false, nullptr});
+      break;
+    }
   }
+  size_t tail = m.items.size();
+  if (T.fighter && !rules().tacticProfiles.empty())
+    m.items.push_back({::T("Profils…"), "", ::T("Des règles toutes faites (Combattant, Soigneur, Protecteur…) à la place des siennes."), true,
+                       [self] { self->pickProfile(); }});
   if (T.fighter)
     m.items.push_back({::T("Tactiques de départ"), "", ::T("Remplacer toutes les règles par celles de départ."), true, [self] { self->confirmReset(); }});
   m.items.push_back({::T("Retour"), "", "", true, [self] { self->close(); }});
+  m.items[tail].sep = true;
   m.onCancel = m.items.back().act;
   G.menus.push(m);
 }
@@ -473,6 +503,24 @@ void TacticsEditor::setAction(int i, bool isNew, const Tactic& t) {
   changed();
   const TacticCond* c = findTacticCond(t.cond);
   reopenRule(i, c && c->hasValue() ? 2 : 1);
+}
+
+void TacticsEditor::pickProfile() {
+  auto self = shared_from_this();
+  Menu m;
+  m.title = ::T("Profils de tactiques");
+  m.x = 40, m.y = 40, m.w = 240, m.rows = 7;
+  for (auto& p : rules().tacticProfiles) {
+    std::string help = p.help;
+    for (size_t k = 0; k < p.rules.size() && k < 4; k++) help += (k ? " · " : " ") + tacticCondName(p.rules[k]) + " > " + tacticActName(p.rules[k]);
+    std::vector<Tactic> list = profileRules(p, T.slots);
+    m.items.push_back({p.name, "", help, true, [self, list] {
+                         *self->T.list = list;
+                         self->changed();
+                         self->menuList(self->first());
+                       }});
+  }
+  G.menus.push(m);
 }
 
 void TacticsEditor::confirmReset() {

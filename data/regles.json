@@ -22,7 +22,11 @@
     "chromatique": 0.006,
     "alpha": 0.06,
     "alpha_niveaux": 3,
-    "part_nuit": 0.5
+    "part_nuit": 0.5,
+    "par_allie": 0.5,
+    "embuscade": 0.07,
+    "ecart_niveau": 4,
+    "plafond_niveau": 6
   },
   "combat": {
     "atb_base": 20,
@@ -281,9 +285,24 @@
       "texte": "Une énigme ! Poussez les rochers sur toutes les dalles en marchant dedans. Un rocher coincé ? Échap > Recommencer l'énigme."
     },
     {
+      "id": "carapace",
+      "aide": "Combat",
+      "texte": "Une carapace ! Cette créature encaisse les coups physiques (ou la magie) : regardez sa fiche au Bestiaire et changez d'attaque, ou de combattant."
+    },
+    {
+      "id": "absorbe",
+      "aide": "Combat",
+      "texte": "Absorbé ! Cette créature se soigne avec cet élément. Le Bestiaire s'en souviendra : attaquez-la autrement."
+    },
+    {
+      "id": "embuscade",
+      "aide": "Échiquier",
+      "texte": "Embuscade ! Des créatures ont surgi derrière l'équipe, qui leur tourne le dos. Retournez-vous en les frappant ou en attendant, ou protégez vos lanceurs de sorts."
+    },
+    {
       "id": "dos",
       "aide": "Échiquier",
-      "texte": "Coup dans le dos ! Frapper un ennemi depuis le côté de son camp fait plus mal. Attention : là-bas, on risque d'être encerclé."
+      "texte": "Coup dans le dos ! Chacun regarde vers sa dernière cible ou vers où il a marché : frappé de l'autre côté, il encaisse plus. Gare à votre propre dos quand vous vous retournez."
     },
     {
       "id": "percee",
@@ -509,6 +528,9 @@
   },
   "recompenses": {
     "xp_par_niveau": 7,
+    "exp_ecart": 0.08,
+    "exp_marge": 4,
+    "exp_min": 0.25,
     "xp_boss": 3,
     "or_par_niveau": 4,
     "or_boss": 8,
@@ -549,6 +571,60 @@
       {"si": "allie_pv_moins", "valeur": 40, "faire": "soin"},
       {"si": "soi_limite", "faire": "limite"},
       {"si": "ennemi", "faire": "attaque"}
+    ],
+    "profils": [
+      {
+        "id": "combattant",
+        "nom": "Combattant",
+        "aide": "Frappe fort : les ennemis brisés, les dos exposés, puis le plus faible.",
+        "regles": [
+          {"si": "soi_limite", "faire": "limite"},
+          {"si": "ennemi_brise", "faire": "attaque"},
+          {"si": "ennemi_dos", "faire": "contourner"},
+          {"si": "ennemi_pv_bas", "faire": "attaque"},
+          {"si": "soi_pv_moins", "valeur": 30, "objet": "potion"},
+          {"si": "ennemi", "faire": "attaque"}
+        ]
+      },
+      {
+        "id": "soigneur",
+        "nom": "Soigneur",
+        "aide": "Garde l'équipe debout : réanime, soigne, guérit, et garde ses PM.",
+        "regles": [
+          {"si": "allie_ko", "faire": "reanimation"},
+          {"si": "allie_pv_moins", "valeur": 45, "faire": "soin"},
+          {"si": "allie_etat", "faire": "guerison"},
+          {"si": "soi_menace", "faire": "esquiver"},
+          {"si": "soi_limite", "faire": "limite"},
+          {"si": "ennemi", "faire": "technique"}
+        ]
+      },
+      {
+        "id": "protecteur",
+        "nom": "Protecteur",
+        "aide": "Tient la ligne : couvre les alliés en danger, se retourne, vise soigneurs et chefs.",
+        "regles": [
+          {"si": "soi_menace", "faire": "esquiver"},
+          {"si": "allie_avant_pv_moins", "valeur": 50, "faire": "proteger"},
+          {"si": "soi_dos_menace", "faire": "garde"},
+          {"si": "ennemi_role", "faire": "attaque"},
+          {"si": "soi_limite", "faire": "limite"},
+          {"si": "ennemi", "faire": "attaque"}
+        ]
+      },
+      {
+        "id": "briseur",
+        "nom": "Briseur",
+        "aide": "Vise les faiblesses découvertes pour briser les boucliers, puis frappe les brisés.",
+        "regles": [
+          {"si": "ennemi_brise", "faire": "attaque"},
+          {"si": "ennemi", "faire": "briser"},
+          {"si": "soi_limite", "faire": "limite"},
+          {"si": "ennemi_role", "faire": "attaque"},
+          {"si": "ennemi_faible", "faire": "attaque"},
+          {"si": "ennemi", "faire": "attaque"}
+        ]
+      }
     ]
   },
   "pension": {
