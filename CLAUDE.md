@@ -63,7 +63,9 @@ build-release/Release/brumeval --partie partie   # toute l'histoire, sans fenêt
 brumeval --demo                                  # la même chose dans la fenêtre (aussi Outils > Démo) ; Espace : pause, Échap : quitter
 ```
 
-Fonctionnement, rapport et mémoire d'une partie à l'autre : compétence `joueur-auto-brumeval`. Un
+Fonctionnement, rapport et mémoire d'une partie à l'autre : compétence `joueur-auto-brumeval`. En démo, il passe par les menus
+comme un joueur (équipement, gemmes, tactiques, formation, Journal, Bestiaire : `Pilot::visit`) ; `BRUMEVAL_DEMO=1 brumeval
+--partie dossier` joue la démo sans fenêtre (capture de chaque menu visité). Un
 nouveau genre d'interaction (objet à utiliser, énigme…) demande d'ajouter un objectif dans `Pilot::goals`.
 
 ## Revue par Codex (relecture seule)
