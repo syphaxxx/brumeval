@@ -360,7 +360,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   sprite) et des espèces (regard vers la gauche ; boss : `_grand`), `icone` des objets (dessinée devant le nom dans
   tout menu, `itemIcon` de ui.cpp). Ce qui n'a pas de sprite garde son dessin en code. Créatures au repos (`drawCreature`, 2026-10-20) : celles qui volent flottent (l'ombre rétrécit), les autres
   respirent (le haut du sprite descend d'un pixel, puis remonte ; pas en réduction sur la carte). Arbres `T` de la carte : le haut penche d'un pixel par moments (vent, `drawProp`). Papillons au-dessus des fleurs le jour et poissons qui sautent dans l'eau (`drawMapCritters`, après les personnages). Effets de combat (`spriteFx`) : images en fondu et étincelles du type. Personnages de la carte en
-  16×24, combat en ~36 px ; `crisp` n'agrandit que d'un nombre entier de fois. Lior a ses visages (`lior_visage_0..4`,
+  16×24, combat en ~36 px ; `crisp` n'agrandit que d'un nombre entier de fois. Dialogues (2026-10-22) : « Nom : réplique » met le nom dans un onglet au-dessus de la fenêtre
+  (`drawDialogue`). Lior a ses visages (`lior_visage_0..4`,
   portrait des dialogues selon la réplique). Effets des sorts (`spriteFx` : une suite d'images par type, soins),
   invocation au-dessus des cibles d'une Limite (`inv_…` selon le type), textures 32×32 (`texTile` : parquet des
   intérieurs, lave, neige profonde). La « Poké Ball » de la planche n'est pas découpée (marque de Pokémon).

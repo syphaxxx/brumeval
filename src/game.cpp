@@ -1744,7 +1744,24 @@ void Game::drawDialogue() {
     done = sc.messageDone();
   } else return;
   int y = askText_.empty() ? 170 : 84;
+  // (2026-10-22) « Nom : réplique » : le nom passe dans un onglet au-dessus de la fenêtre, la réplique seule dedans
+  std::string speaker, body = askText_.empty() ? sc.text() : askText_;
+  if (askText_.empty()) {
+    auto c = body.find(": ");
+    if (c != std::string::npos && c > 0 && c <= 30) {
+      std::string who = body.substr(0, c);
+      while (!who.empty() && who.back() == ' ') who.pop_back();
+      bool sentence = who.find_first_of(".!?,\"") != std::string::npos || who.find("«") != std::string::npos || who.find("»") != std::string::npos;
+      if (!who.empty() && !sentence) {  // (comparer « » en entier : leurs octets se retrouvent dans « ë »)
+        speaker = who;
+        body = body.substr(c + 2);
+        text = text.size() > c + 2 ? text.substr(c + 2) : "";  // le texte visible commence par le même préfixe
+      }
+    }
+  }
+  bool portrait = false;
   if (const Look* lk = askText_.empty() && mode != Mode::Battle ? speakerLook(sc.text()) : nullptr) {  // portrait au-dessus de la fenêtre
+    portrait = true;
     g.window(4, y - 50, 44, 48);
     g.rect(8, y - 46, 36, 40, rgb(0x1a2058));
     if (const SpriteRect* face = lk->sprite.empty() ? nullptr : findSprite(lk->sprite + "_visage_0")) {
@@ -1756,10 +1773,15 @@ void Game::drawDialogue() {
       g.sprite(*face, 26 - face->w / 2, y - 6 - face->h);
     } else drawHuman(g, *lk, 10, y - 44, 2, DOWN, 0, false);
   }
+  if (!speaker.empty()) {  // l'onglet du nom, à côté du portrait
+    int tw = Gfx::textW(speaker) + 14, tx = portrait ? 52 : 8;
+    g.window(tx, y - 15, tw, 15);
+    g.text(tx + 7, y - 12, speaker, GOLD);
+  }
   g.window(4, y, 312, 66);
-  auto full = Gfx::wrap(askText_.empty() ? sc.text() : askText_, 296);
+  auto full = Gfx::wrap(body, 296);
   if (full.size() >= 4 && Gfx::textW(full[3]) > 284)  // la 4e ligne irait sous la flèche « ▼ » : lignes un peu plus courtes
-    full = Gfx::wrap(askText_.empty() ? sc.text() : askText_, 284);
+    full = Gfx::wrap(body, 284);
   // Découpe le texte visible selon les mêmes lignes que le texte complet
   int remaining = 0;
   for (unsigned char c : text)
