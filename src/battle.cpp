@@ -702,10 +702,14 @@ void Battle::tip(const char* id) {
 // Une seule astuce au début d'un combat : la première règle nouvelle qu'on y rencontre
 void Battle::startTips() {
   if (!shown() || autoPlay || net_ != Net::None) return;
-  bool shield = false, role = false, terrain = false;
-  for (auto& f : foes) shield = shield || f->shieldMax > 0, role = role || !f->S().combatRole.empty();
+  bool shield = false, role = false, terrain = false, armor = false;
+  for (auto& f : foes) {
+    shield = shield || f->shieldMax > 0, role = role || !f->S().combatRole.empty();
+    auto& r = f->S().resist;  // carapace ou peau d'enchantement (2026-10-23) : une attaque encaissée
+    armor = armor || (r.count("physique") && r.at("physique") < 1) || (r.count("magique") && r.at("magique") < 1);
+  }
   for (int v : terrain_) terrain = terrain || v >= 0;
-  std::pair<const char*, bool> order[] = {{"embuscade", ambush_}, {"echiquier", true}, {"obstacle", !obstacles_.empty()}, {"bouclier", shield}, {"ordre", true}, {"role", role}, {"meteo", weather_ >= 0}, {"terrain", terrain}, {"talent", true}};
+  std::pair<const char*, bool> order[] = {{"embuscade", ambush_}, {"carapace", armor}, {"echiquier", true}, {"obstacle", !obstacles_.empty()}, {"bouclier", shield}, {"ordre", true}, {"role", role}, {"meteo", weather_ >= 0}, {"terrain", terrain}, {"talent", true}};
   for (auto& [id, ok] : order)
     if (ok && G.tip(id, sc)) return;
 }
@@ -1951,7 +1955,7 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
     pop(d, "+" + std::to_string(h), GREEN);
     pop(d, T("Absorbe !"), rgb(0x7dffa8));
     sound("soin");
-    if (isAlly(a)) G.weak.insert(d->sp + ":" + std::to_string(m.type));
+    if (isAlly(a)) G.weak.insert(d->sp + ":" + std::to_string(m.type)), tip("absorbe");
     log.push_back(a->name() + " > " + d->name() + " : " + m.name + T(" absorbé (+") + std::to_string(h) + T(" PV)"));
     return 0;
   }
