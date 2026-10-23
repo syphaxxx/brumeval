@@ -271,7 +271,7 @@ complète et **équipée**.
 ## Réserve et bestiaire
 
 L'équipe compte 8 membres au plus. Une créature capturée (ou reçue en cadeau)
-quand l'équipe est complète part dans la **Réserve** (Échap > Réserve) : on y
+quand l'équipe est complète part dans la **Réserve** (Échap > Préparation > Réserve) : on y
 dépose une créature, on la reprend, ou on l'échange contre un membre de
 l'équipe.
 
@@ -330,7 +330,7 @@ de niveau 35-40 bien équipée.
 - **Après l'histoire** : les épreuves des gardiens, cinq donjons (Mines,
   Glacier, Épave, Abîme, et le Vieux Phare de l'île des Échos, cinq étages), la **pêche** (canne du maître pêcheur du port, 18
   poissons) et la **Nouvelle partie +**.
-- **Discussions** entre les héros (Échap > Discussions), pluie de temps en temps,
+- **Discussions** entre les héros (Échap > Journal > Discussions), pluie de temps en temps,
   musiques réécrites.
 - **Quêtes des héros** : après l'acte 3, une quête pour chacun des six héros (son passé, un boss, une arme rien qu'à lui).
 - **Cartes au trésor** : Corbin, au port, a caché huit trésors dans des coins perdus ; chacun contient la carte du suivant.

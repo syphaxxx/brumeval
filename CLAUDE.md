@@ -610,7 +610,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
   `NGP_LEVELS` (12) × tours, ajouté par `makeFoe` et aux créatures sauvages ; posé par `applyNewGamePlus` (nouvelle
   partie : 0, chargement, écran titre : 0). Le joueur automatique répond Non à cette question.
 - Discussions (2026-10-20, `discussions.cpp`, `data/discussions.json`) : conversations courtes entre héros (comme les
-  saynètes des Tales of) : `id`, `titre`, `si`, `membres` (espèces dans l'équipe), `dialogue` ; Échap > Discussions
+  saynètes des Tales of) : `id`, `titre`, `si`, `membres` (espèces dans l'équipe), `dialogue` ; Échap > Journal > Discussions
   (nouvelles d'abord), drapeau `discussion:<id>` ; une nouvelle disponible est annoncée sur la carte
   (`checkDiscussions`, `lastNewTalks_`, remis au chargement). 50 discussions.
 - Exploits (2026-10-20, `exploits.cpp`, `data/exploits.json`) : des succès (`id`, `nom`, `description`, `si`) ;
@@ -661,6 +661,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   boutique, la maison de soin). Champ `lumiere` (`MapDef::light`, voile de
   couleur le jour : Aube, Lueurs, Citadelle, Port-Écho, Forêt Pétrifiée, Cratère). Champ `eau` d'une carte (`MapDef::water`, `marais` : eau trouble et nénuphars) ; sol `z`
   du marais (boue, flaques, quenouilles éparses, bords fondus). Ponts, énigmes (rochers, plaques, herse), escaliers, cristaux, coffres ouverts redessinés. Second dossier de compilation `build-gfx` quand `build-dev` est occupé (démo ouverte). Menus (2026-10-23) :
+  menu de pause en 12 entrées et quatre groupes (`MenuItem::sep`, filet) ; `prepMenu` (Échap > Préparation : Formation,
+  Compagnons, Tactiques, Réserve) ; Discussions et Bestiaire dans le Journal (titre « Quêtes » avant la liste) ;
   icônes (`MenuItem::icon`, voir `MenuStack`) au menu de pause, aux commandes et techniques du combat, à l'écran titre,
   au Journal, à la boutique et au Bestiaire ; fines jauges sous les PV, PM, Exp. de la fiche d'équipe et sous les
   statistiques de la fiche du Bestiaire.
