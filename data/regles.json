@@ -285,6 +285,11 @@
       "texte": "Une énigme ! Poussez les rochers sur toutes les dalles en marchant dedans. Un rocher coincé ? Échap > Recommencer l'énigme."
     },
     {
+      "id": "embuscade",
+      "aide": "Échiquier",
+      "texte": "Embuscade ! Des créatures ont surgi derrière l'équipe, qui leur tourne le dos. Retournez-vous en les frappant ou en attendant, ou protégez vos lanceurs de sorts."
+    },
+    {
       "id": "dos",
       "aide": "Échiquier",
       "texte": "Coup dans le dos ! Chacun regarde vers sa dernière cible ou vers où il a marché : frappé de l'autre côté, il encaisse plus. Gare à votre propre dos quand vous vous retournez."

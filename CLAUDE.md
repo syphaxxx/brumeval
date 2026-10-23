@@ -198,7 +198,9 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - Rééquilibrage (2026-10-23) : `Game::encounter` : au moins `par_allie` ennemis par combattant allié, créatures sauvages
   au plus `ecart_niveau` sous la moyenne de l'équipe (sans dépasser la zone de `plafond_niveau`), gains de leur niveau
   d'origine (`Fighter::rewardLvl`) ; jamais en Expédition. Expérience : un adversaire plus de `exp_marge` niveaux sous
-  l'équipe rapporte `exp_ecart` de moins par niveau (au moins `exp_min`) ; mesures : compétence `equilibrage`. Résistance négative d'une espèce (`resistances`) = elle
+  l'équipe rapporte `exp_ecart` de moins par niveau (au moins `exp_min`) ; mesures : compétence `equilibrage`. Embuscade (`rencontres.embuscade`,
+  `BattleSetup::ambush`, `Battle::ambush_`) : la moitié des créatures part du fond du camp allié, tournée vers l'équipe,
+  sans Percée ; astuce « embuscade », aide de l'échiquier. Résistance négative d'une espèce (`resistances`) = elle
   absorbe ce type (`applyHit` soigne, « Absorbe ! ») ; résistances des créatures sauvages : `outils/villes/resistances.py`.
 - Vente : boutique > « Vendre… » (`Game::sellMenu`), moitié du prix, sauf les
   objets importants.

@@ -705,7 +705,7 @@ void Battle::startTips() {
   bool shield = false, role = false, terrain = false;
   for (auto& f : foes) shield = shield || f->shieldMax > 0, role = role || !f->S().combatRole.empty();
   for (int v : terrain_) terrain = terrain || v >= 0;
-  std::pair<const char*, bool> order[] = {{"echiquier", true}, {"obstacle", !obstacles_.empty()}, {"bouclier", shield}, {"ordre", true}, {"role", role}, {"meteo", weather_ >= 0}, {"terrain", terrain}, {"talent", true}};
+  std::pair<const char*, bool> order[] = {{"embuscade", ambush_}, {"echiquier", true}, {"obstacle", !obstacles_.empty()}, {"bouclier", shield}, {"ordre", true}, {"role", role}, {"meteo", weather_ >= 0}, {"terrain", terrain}, {"talent", true}};
   for (auto& [id, ok] : order)
     if (ok && G.tip(id, sc)) return;
 }
