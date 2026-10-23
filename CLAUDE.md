@@ -658,7 +658,10 @@ code) ; `docs/GUIDE.md` les range par domaine.
   champ `style` (`MapDef::style`, `roomStyle` dans sprites.cpp : sols et murs propres à la chapelle, l'auberge, la
   boutique, la maison de soin). Champ `lumiere` (`MapDef::light`, voile de
   couleur le jour : Aube, Lueurs, Citadelle, Port-Écho, Forêt Pétrifiée, Cratère). Champ `eau` d'une carte (`MapDef::water`, `marais` : eau trouble et nénuphars) ; sol `z`
-  du marais (boue, flaques, quenouilles éparses, bords fondus). Ponts, énigmes (rochers, plaques, herse), escaliers, cristaux, coffres ouverts redessinés. Second dossier de compilation `build-gfx` quand `build-dev` est occupé (démo ouverte).
+  du marais (boue, flaques, quenouilles éparses, bords fondus). Ponts, énigmes (rochers, plaques, herse), escaliers, cristaux, coffres ouverts redessinés. Second dossier de compilation `build-gfx` quand `build-dev` est occupé (démo ouverte). Menus (2026-10-23) :
+  icônes (`MenuItem::icon`, voir `MenuStack`) au menu de pause, aux commandes et techniques du combat, à l'écran titre,
+  au Journal, à la boutique et au Bestiaire ; fines jauges sous les PV, PM, Exp. de la fiche d'équipe et sous les
+  statistiques de la fiche du Bestiaire.
 - Épreuves des gardiens (2026-10-20) : après `aube_fin`, la porte du sanctuaire d'Aube (événement `epreuves`) ouvre huit
   combats contre des esprits gardiens (drapeaux `epreuve1`…`epreuve8`, niveaux 70 à 84), puis Ilya (`epreuve9`,
   Insigne des gardiens) ; quête `epreuves`. Script `outils/villes/epreuves.py` ; une phase à mi-vie pour chaque gardien,
