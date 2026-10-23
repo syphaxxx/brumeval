@@ -392,6 +392,20 @@ neige ondulée ; ponts ; rochers, plaques, herses et escaliers des énigmes ; cr
 traînée de l'élan ; intérieurs selon le bâtiment (`style`), fenêtres sombres et bougies la nuit, halo autour des pièces ;
 panneau des combats et jauges. Captures du mode test : `donjon_<carte>`, `carte_monde_fin`, `combat_port`,
 `combat_mines`, `meteo_orage`, `interieur_nuit`. Pistes : poses d'attaque des héros, effets de sorts, décors des cartes.
+Après la 3.5 (branche `graphismes-2`) : Marais Pâle (`eau`), lumière des lieux (`lumiere`), nom des boss et « Victoire ! » en
+grand, onglet du nom dans les dialogues, écran de fin à l'aube, icônes et jauges dans les menus.
+
+## Étape 2 nonies — Gameplay et menus (demandé le 2026-10-23)
+
+« Continue en priorisant le gameplay et le game design » ; deux demandes : les attaques dans le dos selon la direction où
+regarde le personnage, et des menus « peut-être un peu simples et surchargés ». Fait :
+- Regard des combattants (`Battle::facing_`) : vers où il marche, vers sa cible, vers l'adversaire le plus proche s'il attend ;
+  « dans le dos » = du côté opposé à son regard ; flèche au sol ; dague dorée sur les cases d'où l'on frappe un dos
+  (« Se déplacer ») ; IA, tactique « Contourner », aperçu des dégâts, réseau. Relu par Codex. Difficulté inchangée.
+- Menu de pause en 12 entrées et quatre groupes ; Échap > Préparation (Formation, Compagnons, Tactiques, Réserve) ;
+  Discussions et Bestiaire dans le Journal ; menu de commande du combat plus court (Limite prête, Duo possible,
+  Changer avec un remplaçant) ; volumes en crans ; « Gains ».
+Pistes : l'ordinateur qui protège son dos (« Attendre » pour se retourner), d'autres menus à regrouper.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
