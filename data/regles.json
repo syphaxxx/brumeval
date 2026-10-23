@@ -580,7 +580,7 @@
         "regles": [
           {"si": "soi_limite", "faire": "limite"},
           {"si": "ennemi_brise", "faire": "attaque"},
-          {"si": "ennemi_dos", "faire": "contourner"},
+          {"si": "ennemi_dos", "faire": "attaque"},
           {"si": "ennemi_pv_bas", "faire": "attaque"},
           {"si": "soi_pv_moins", "valeur": 30, "objet": "potion"},
           {"si": "ennemi", "faire": "attaque"}
@@ -596,6 +596,7 @@
           {"si": "allie_etat", "faire": "guerison"},
           {"si": "soi_menace", "faire": "esquiver"},
           {"si": "soi_limite", "faire": "limite"},
+          {"si": "ennemi_faible", "faire": "attaque"},
           {"si": "ennemi", "faire": "technique"}
         ]
       },

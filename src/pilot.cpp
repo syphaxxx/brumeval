@@ -280,9 +280,10 @@ Pilot::Info Pilot::inspect(const std::string& id) const {
 // partie, et de la mémoire des précédentes)
 bool Pilot::ready(const Info& in, const std::string& key) {
   int avg = G.avgLevel();
-  // (2026-10-23) loin au-dessus : d'office, sauf un boss ou un combat déjà perdu, toujours répétés (la Braisaure
-  // ancestrale, trois carapaces, se perdait 8 fois de suite avec 12 niveaux d'avance et une équipe sans magie)
-  if (avg >= in.lvl + 3 + margin(key) && !in.boss && !fails_.count(key)) return true;
+  // (2026-10-23) loin au-dessus : d'office, sauf un combat déjà perdu, toujours répété ensuite (la Braisaure ancestrale,
+  // trois carapaces, se perdait 8 fois de suite avec 12 niveaux d'avance et une équipe sans magie). Répéter aussi tous
+  // les boss faisait s'entraîner cinq heures de plus (mesuré : 14 h sans finir).
+  if (avg >= in.lvl + 3 + margin(key) && !fails_.count(key)) return true;
   if (avg < in.lvl - 8 || in.fight.is_null()) return avg >= in.lvl - (in.boss ? 2 : 3) + margin(key);
   std::string sig = teamSignature();
   auto it = chances_.find(key);
@@ -1491,7 +1492,7 @@ int Game::autoGame(SDL_Surface* target, const std::string& out) {
   };
   say("Partie automatique de Brumeval (premier compagnon : " + team.at(1)->name() + ")");
   const float dt = 1 / 30.f;
-  const float limit = 14 * 3600;  // quatorze heures de jeu au plus (rééquilibrage du 2026-10-23 : le jeu est plus long)
+  const float limit = 20 * 3600;  // vingt heures de jeu au plus (rééquilibrage du 2026-10-23 : le jeu est plus long)
   size_t shown = 0;
   for (long i = 0; !P.over() && P.clock < limit; i++) {
     update(dt);
@@ -1509,7 +1510,7 @@ int Game::autoGame(SDL_Surface* target, const std::string& out) {
     if (i % (30 * 600) == 0) say("  … " + P.summary());  // toutes les dix minutes de jeu
   }
   while (shown < P.journal.size()) say(P.journal[shown++]);
-  if (!P.over()) say("ARRÊT : plus de quatorze heures de jeu sans finir");
+  if (!P.over()) say("ARRÊT : plus de vingt heures de jeu sans finir");
   say("");
   // (2026-10-23) les quatre actes finis suffisent (les donjons, primes et épreuves d'après la fin sont en plus) : depuis le
   // rééquilibrage, tout faire prend plus que la limite sur une machine de GitHub
