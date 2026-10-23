@@ -160,6 +160,8 @@ static void menuGlyph(Gfx& g, const std::string& n, float x, float y, uint8_t al
     auto dark = [](uint32_t v) { return ((v >> 1) & 0x7f7f7f); };
     g.ellipse(cx, cy, 4.5f, 4.5f, rgb(dark(c))), g.ellipse(cx, cy, 3.5f, 3.5f, rgb(c));
     g.ellipse(cx - 1.2f, cy - 1.4f, 1.3f, 1, rgb(0xffffff));  // reflet
+  } else if (n == "inconnu") {  // pas encore rencontrée : un rond vide
+    g.ellipse(cx, cy, 4.5f, 4.5f, rgb(0x5a6498)), g.ellipse(cx, cy, 3.5f, 3.5f, rgb(0x1c2660));
   } else if (n == "patte") {  // les compagnons
     g.ellipse(cx, cy + 2, 3, 2.3f, rgb(0xe8c89a));
     for (int i = -1; i <= 1; i++) g.ellipse(cx + i * 3.2f, cy - 1.8f - (i == 0) * 1.2f, 1.3f, 1.4f, rgb(0xe8c89a));

@@ -23,6 +23,7 @@ struct TypeDef {
 const std::vector<TypeDef>& types();
 Type typeOf(const std::string& id);  // erreur si le type n'existe pas
 const char* typeName(Type t);
+std::string typeDot(Type t);  // icône de menu : une pastille de la couleur du type (« #rrggbb », menuGlyph de ui.cpp)
 float typeEff(Type attaque, Type defense);  // 2 = super efficace, 0.5 = peu efficace
 
 enum class Target { Enemy, AllEnemies, Ally, AllAllies, AllyKO };

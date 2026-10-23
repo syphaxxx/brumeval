@@ -113,6 +113,11 @@ Type typeOf(const std::string& id) {
   throw std::runtime_error("Type inconnu : « " + id + " »");
 }
 const char* typeName(Type t) { return t >= 0 && t < (int)TYPES.size() ? TYPES[t].name.c_str() : "?"; }
+std::string typeDot(Type t) {
+  char b[8];
+  std::snprintf(b, sizeof b, "#%06x", t >= 0 && t < (int)TYPES.size() ? (unsigned)(TYPES[t].color & 0xffffff) : 0x8a92b8u);
+  return b;
+}
 float typeEff(Type a, Type d) {
   if (a < 0 || d < 0 || a >= (int)CHART.size() || d >= (int)CHART.size()) return 1.f;
   return CHART[a][d];

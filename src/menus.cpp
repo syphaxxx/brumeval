@@ -366,7 +366,7 @@ void Game::bestiaryMenu(int sel) {
   for (auto* s : all) nSeen += seen.count(s->id) > 0, nCaught += caught.count(s->id) > 0;
   Menu m;
   m.title = T("Bestiaire  ") + std::to_string(nSeen) + "/" + std::to_string(all.size());
-  m.x = 8, m.y = 8, m.w = 132, m.rows = 12;
+  m.x = 8, m.y = 8, m.w = 142, m.rows = 12;
   for (size_t i = 0; i < all.size(); i++) {
     const Species& s = *all[i];
     bool v = seen.count(s.id), c = caught.count(s.id);
@@ -376,6 +376,7 @@ void Game::bestiaryMenu(int sel) {
     MenuItem it{num + (v ? s.name : std::string("???")), c ? "★" : v ? "vu" : "",
                 c ? T("Obtenue. ") + evolutionText(s) + matchupText(s) : v ? T("Rencontrée, pas encore obtenue. ") + evolutionText(s) + matchupText(s, &weak) : T("Pas encore rencontrée."), true, nullptr, [this, id] { bestiarySel_ = id; }};
     it.shrink = true;
+    it.icon = v ? typeDot(s.type) : "inconnu";  // (2026-10-23) la couleur de son type, une fois rencontrée
     m.items.push_back(it);
   }
   if (!all.empty()) bestiarySel_ = all[(size_t)std::clamp(sel, 0, (int)all.size() - 1)]->id;
@@ -423,7 +424,14 @@ void Game::drawBestiaryPanel(int x, int y) {
   int ly = y + top - 8;
   if (c) {  // statistiques de base, seulement pour une créature obtenue
     const char* names[] = {"PV", "PM", "Att", "Déf", "Mag", "Rés", "Vit"};
-    for (int i = 0; i < N_BASE; i++) g.text(x + 8 + (i % 3) * 50, ly + (i / 3) * 11, std::string(T(names[i])) + " " + std::to_string(s.base[i]), WHITE);
+    const float most[] = {140, 80, 100, 100, 100, 100, 100};  // (2026-10-23) une jauge sous chaque chiffre : forte, faible d'un coup d'œil
+    const uint32_t col[] = {0x6ad87a, 0x6aa8f0, 0xf08a6a, 0xd8b86a, 0xb88af0, 0x8ad8d8, 0xf0e06a};
+    for (int i = 0; i < N_BASE; i++) {
+      float bx = x + 8 + (i % 3) * 50, by = ly + (i / 3) * 11;
+      g.text(bx, by, std::string(T(names[i])) + " " + std::to_string(s.base[i]), WHITE);
+      g.rect(bx, by + 9.5f, 44, 1.5f, rgb(0x03051a, 200));
+      g.rect(bx, by + 9.5f, 44 * std::min(1.f, s.base[i] / most[i]), 1.5f, rgb(col[i]));
+    }
     ly += 36;
   } else {
     g.text(x + 8, ly, T("Pas encore obtenue."), MUTED);
