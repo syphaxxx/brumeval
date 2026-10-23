@@ -195,6 +195,9 @@ code) ; `docs/GUIDE.md` les range par domaine.
   L'Expédition repart d'un bestiaire vide.
 - Vente : boutique > « Vendre… » (`Game::sellMenu`), moitié du prix, sauf les
   objets importants.
+- Boutique (2026-10-23) : un équipement survolé montre sous la liste ce qu'il changerait pour chaque membre qui peut le
+  porter (`panelMode_` 5, `shopHover_`, `drawShopPanel`). Ordinateur : `posValue` craint davantage un adversaire qui
+  pourrait le rejoindre par derrière (d'après le regard qu'il aura).
 - Progression : `Game::flags` (`boss1`, `golem`, `boss2`, `maelle`, `brann`,
   `isra`, `pecheur`, `coffre:<carte>:<index>`).
 - Sauvegarde : fichier texte `sauvegarde.txt` dans `SDL_GetPrefPath("Brumeval",
