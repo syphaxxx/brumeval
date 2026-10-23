@@ -215,20 +215,27 @@ std::string matchupText(const Species& sp, const std::set<std::string>* known) {
       if (known->count(sp.id + ":" + std::to_string(t))) found += (found.empty() ? "" : ", ") + std::string(types()[t].name) + T(" (×") + numFr(e) + ")";
       else hidden++;
     }
-    std::string s = T("Faiblesses découvertes : ") + (found.empty() ? std::string("aucune") : found) + ".";
+    std::string absorbs;  // une absorption découverte en la frappant
+    for (Type t = 0; t < (Type)types().size(); t++)
+      if (typeEff(t, sp.type) * (sp.type2 >= 0 ? typeEff(t, sp.type2) : 1.f) * r(types()[t].id) < 0 && known->count(sp.id + ":" + std::to_string(t)))
+        absorbs += (absorbs.empty() ? "" : ", ") + std::string(types()[t].name);
+    std::string s = T("Faiblesses découvertes : ") + (found.empty() ? std::string(T("aucune")) : found) + ".";
+    if (!absorbs.empty()) s += T(" Absorbe : ") + absorbs + ".";
     if (hidden) s += T(" Encore ") + std::to_string(hidden) + T(" à découvrir (frappez-la avec d'autres types).");
     return s;
   }
-  std::string weak, strong, none;
+  std::string weak, strong, none, absorbs;
   for (auto& [e, names] : by) {
     std::string mult = T(" (×") + numFr(e) + ")";
-    if (e == 0) none = names;
+    if (e < 0) absorbs += (absorbs.empty() ? "" : ", ") + names;
+    else if (e == 0) none = names;
     else if (e > 1) weak += (weak.empty() ? "" : ", ") + names + mult;
     else strong += (strong.empty() ? "" : ", ") + names + mult;
   }
-  std::string s = T("Faible contre : ") + (weak.empty() ? std::string("rien") : weak) + ".";
+  std::string s = T("Faible contre : ") + (weak.empty() ? std::string(T("rien")) : weak) + ".";
   if (!strong.empty()) s += T(" Résiste : ") + strong + ".";
   if (!none.empty()) s += T(" Sans effet : ") + none + ".";
+  if (!absorbs.empty()) s += T(" Absorbe : ") + absorbs + ".";
   if (r("physique") != 1) s += std::string(r("physique") < 1 ? T(" Encaisse") : T(" Craint")) + T(" les coups physiques (×") + numFr(r("physique")) + ").";
   if (r("magique") != 1) s += std::string(r("magique") < 1 ? T(" Encaisse") : T(" Craint")) + T(" la magie (×") + numFr(r("magique")) + ").";
   std::string imm;
@@ -1476,6 +1483,7 @@ std::string Battle::damageText(const FighterP& a, const Move& m, const FighterP&
   // Brisure : l'efficacité d'un type n'est comptée qu'une fois découverte (sinon neutre, quelle qu'elle soit : rien ne
   // se devine sans attaquer ; la fiche de la cible montre déjà « ? »)
   float eff = G.weakKnown(d->sp, m.type) ? moveEff(m, d->S()) : 1.f;
+  if (eff < 0) return T(" · absorbé : le soigne !");
   if (eff <= 0) return T(" · aucun effet");
   float A = magic ? a->eMag() : a->eAtk(), D = magic ? d->eRes() : d->eDef();
   float stab = hasType(a->S(), m.type) ? float(R.stab) : 1.f, k = 1;
@@ -1870,6 +1878,8 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
     return -1;
   }
   float eff = moveEff(m, d->S());
+  bool absorb = eff < 0;  // (2026-10-23) il absorbe ce type (résistance négative) : le coup le soigne
+  if (absorb) eff = -eff;
   if (eff <= 0) {
     pop(d, T("Aucun effet"), GREY);
     sound("rate");
@@ -1892,6 +1902,16 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
   k *= guardMult(d);                                                                                 // rôle : protecteur voisin
   if (const Rules::Terrain* tr = terrainAt(a); magic && tr && tr->kind == "magie") k *= 1 + float(tr->value);  // cristaux
   int dmg = std::max(1, int(((2 * a->lvl / 5.f + 2) * m.power * A / std::max(1.f, D) / float(R.dmgDivisor) + 2) * stab * eff * spread * k));
+  if (absorb) {  // soigné au lieu d'être blessé ; l'équipe s'en souvient (aperçu des dégâts, Bestiaire)
+    int h = std::min(dmg, d->mhp - d->hp);
+    d->hp += h;
+    pop(d, "+" + std::to_string(h), GREEN);
+    pop(d, T("Absorbe !"), rgb(0x7dffa8));
+    sound("soin");
+    if (isAlly(a)) G.weak.insert(d->sp + ":" + std::to_string(m.type));
+    log.push_back(a->name() + " > " + d->name() + " : " + m.name + T(" absorbé (+") + std::to_string(h) + T(" PV)"));
+    return 0;
+  }
   d->hp = std::max(0, d->hp - dmg);
   if (eff > 1 && d->shieldMax > 0) {  // Brisure : une faiblesse entame le bouclier, et l'équipe la retient
     if (isAlly(a) && G.weak.insert(d->sp + ":" + std::to_string(m.type)).second) tip("faiblesse");
