@@ -418,7 +418,10 @@ finissait au niveau 119 pour des boss de fin au niveau 100-110. Fait :
 2. Résistances des créatures sauvages (`outils/villes/resistances.py`) : carapaces (physique ×0,6), esprits (physique
    ×0,55), peaux d'enchantement (magie ×0,6), élémentaires qui absorbent leur élément (résistance négative : le coup soigne).
 3. Formation : la moitié des créatures sauvages ont déjà des attaques en ligne, colonne ou croix ; plus d'ennemis suffit
-   à punir une équipe groupée (à mesurer).
+   à punir une équipe groupée.
+4. Expérience : un adversaire plus de 4 niveaux sous l'équipe rapporte 8 % de moins par niveau (au moins 25 %).
+Mesuré (joueur automatique) : 7 h 38, 21 défaites, niveau 102, boss affrontés de −5 à +6 niveaux (avant : +15 à +20) ;
+estimation pour un joueur : 16 h. Piste : le saut de niveaux entre l'acte 3 (60-64) et l'acte 4 (84-90).
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
