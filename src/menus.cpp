@@ -1144,9 +1144,18 @@ void Game::drawTeamPanel(int x, int y, int sel) {
     ly += 11;
   };
   row(T("Type"), typesName(f.S()));
+  auto gauge = [&](float part, uint32_t c) {  // (2026-10-23) une fine jauge sous le nombre de la ligne d'avant
+    part = std::clamp(part, 0.f, 1.f);
+    g.rect(x + 54, ly - 1, 48, 2, rgb(0x03051a, 200));
+    g.rect(x + 54, ly - 1, 48 * part, 2, rgb(c));
+  };
+  float hpPart = f.mhp ? (float)f.hp / f.mhp : 0;
   row(T("PV"), std::to_string(f.hp) + "/" + std::to_string(f.mhp));
+  gauge(hpPart, hpPart > .5f ? 0x6ad87a : hpPart > .25f ? 0xffd34d : 0xf06a5a);
   row(T("PM"), std::to_string(f.mp) + "/" + std::to_string(f.mmp));
+  gauge(f.mmp ? (float)f.mp / f.mmp : 0, 0x6aa8f0);
   row(T("Exp."), std::to_string(f.xp) + "/" + std::to_string(f.need()));
+  gauge(f.need() ? (float)f.xp / f.need() : 0, 0xc89af0);
   row(T("Pas"), std::to_string(fighterMoveRange(f)) + T(" cases") + (speciesFlies(f.S()) ? T(", vole") : ""));  // échiquier
   ly += 3;
   // Statistiques sur deux colonnes
