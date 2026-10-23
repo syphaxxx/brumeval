@@ -200,7 +200,7 @@ void Online::groupMenu() {
   m.x = 112, m.y = 8, m.w = 200, m.rows = (int)players_.size() + 2;
   auto where = [this](int id) {
     const Player* p = player(id);
-    if (!p) return std::string("parti");
+    if (!p) return std::string(T("parti"));
     if (!p->run) return std::string(T("au salon"));
     if (p->hero.empty()) return std::string(T("choisit son héros"));
     if (p->fighting) return T("en combat (région ") + std::to_string(p->region) + ")";
