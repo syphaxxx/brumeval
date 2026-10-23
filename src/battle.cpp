@@ -275,11 +275,11 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
     for (auto& o : foes) taken = taken || cells_[o.get()] == mid;
     if (boardX(c) == GRID && !f->boss && !taken && frand() < .35f) cells_[f.get()] = mid;
   }
-  // Embuscade : la moitié des créatures (au moins une) part du fond du camp allié, tournée vers l'équipe, qui regarde
+  // Embuscade : un tiers des créatures (au moins une) part du fond du camp allié, tournée vers l'équipe, qui regarde
   // de l'autre côté : il faut se retourner, se déplacer ou protéger ses lanceurs de sorts
   ambush_ = s.ambush && foes.size() >= 2 && !s.fixedBoard;
   if (ambush_)
-    for (size_t i = foes.size() / 2; i < foes.size(); i++) {
+    for (size_t i = foes.size() - std::max<size_t>(1, foes.size() / 3); i < foes.size(); i++) {  // un tiers (au moins une)
       int best = -1;
       for (int k = 0; k < GRID && best < 0; k++) {  // la ligne du milieu d'abord, puis de part et d'autre
         int row = (GRID / 2 + (k % 2 ? -(k + 1) / 2 : k / 2) + GRID) % GRID, c = boardAt(row, 0);
@@ -1464,6 +1464,7 @@ float Battle::attackScore(const FighterP& a, const Move& m, const FighterP& t) c
   if (ally && !t->broken && t->shieldMax > 0 && moveEff(m, t->S()) > 1) score *= 1.f + .6f / float(std::max(1, t->shield));  // près de le briser
   score *= posMult(a, t, m);  // échiquier : dans le dos, encerclé, distance au contact
   if (m.melee && boardDist(cellOf(a), cellOf(t)) > reach(a)) score *= .9f;  // il faut d'abord s'approcher
+  if (boardDist(cellOf(a), cellOf(t)) <= 1 && behind(t, a)) score *= 1.4f;  // il est dans mon dos : le frapper, c'est se retourner
   if (!ally) return score / paceTime(m);
   score *= 1 + std::min(1.f, (a->crit + m.critBonus) / 100.f) * float(R.critMult - 1);
   if (score >= t->hp * 1.2f) score += 15;  // achever un adversaire affaibli

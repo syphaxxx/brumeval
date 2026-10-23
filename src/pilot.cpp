@@ -342,6 +342,7 @@ float Pilot::rehearse(const Json& fight, int n, bool fullHealth) {
     if (fight.contains("defi") && fight["defi"].is_string()) challengeSetup(fight["defi"].get<std::string>(), s);  // ses combattants
     for (auto& e : fight.value("ennemis", Json::array())) s.foes.push_back(make(e));
     for (auto& e : fight.value("renforts", Json::array())) s.reserve.push_back(make(e));
+    s.ambush = fight.value("embuscade", false);
     if (s.foes.empty()) {  // rien à combattre : gagné d'avance (l'équipe est remise en place après la boucle)
       wins = n;
       break;
@@ -1388,7 +1389,8 @@ void Pilot::update(float dt) {
         top = std::max(top, f->lvl);
         fight["ennemis"].push_back({{"espece", f->sp}, {"niveau", f->lvl}});
       }
-      if (G.battle_->foes.size() >= 3 || top > G.avgLevel() + 1) {
+      fight["embuscade"] = G.battle_->ambush_;  // une embuscade se répète comme telle
+      if (G.battle_->foes.size() >= 3 || top > G.avgLevel() + 1 || G.battle_->ambush_) {
         float c = prudent(rehearse(fight, 8, false), 8);
         fleeNow_ = c < .7f;  // fuir coûte peu, perdre coûte cher (retour, soins, moitié de l'or)
         if (SDL_getenv("BRUMEVAL_TRACE"))
