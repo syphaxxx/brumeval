@@ -950,7 +950,9 @@ void Battle::command(FighterP a) {
                          dock(t);
                          G.menus.push(t);
                        }});
-  if (!a->S().limit.empty()) {
+  // (2026-10-23) un menu plus court : la Limite n'apparaît que prête (en or ; sa jauge rose est dans l'ATH), le Duo
+  // seulement possible, « Changer » seulement s'il y a un remplaçant
+  if (!a->S().limit.empty() && a->lim >= 100) {
     const Move& lim = moveInfo(a->S().limit);
     m.items.push_back({T("Limite"), "", (a->lim >= 100 ? lim.name + T(" : technique ultime ! ") : T("La jauge Limite (rose) se remplit quand on reçoit des coups. ") + lim.name + " : ") +
                            moveDetails(lim, a.get()),
@@ -958,8 +960,9 @@ void Battle::command(FighterP a) {
                          G.menus.clear();
                          useMove(a, lim.id, lim.target == Target::AllAllies ? alive(allies) : alive(foes), true);
                        }});
+    m.items.back().color = 0xffd34d;
   }
-  if (!duoOptions(a, false).empty()) {  // techniques en duo possibles dans ce combat
+  if (!duoOptions(a).empty()) {  // un duo possible maintenant
     auto duos = duoOptions(a);
     if (!duos.empty()) tip("duo");
     std::string why = T("Technique à deux. Il faut un partenaire dont la jauge ATB atteint ") + std::to_string(rules().duoGauge) +
@@ -1060,8 +1063,8 @@ void Battle::command(FighterP a) {
   bool inTeam = std::find(G.team.begin(), G.team.end(), a) != G.team.end();  // défi : des combattants prêtés, sans remplaçants
   for (auto& r : G.team)
     if (inTeam && r->alive() && !isAlly(r) && (!hasHero_ || r->S().human == a->S().human)) bench.push_back(r);
-  m.items.push_back({T("Changer"), "", bench.empty() ? T("Personne pour vous remplacer.") : T("Faire entrer un remplaçant de l'équipe."), !bench.empty(),
-                     [this, a, bench] {
+  if (!bench.empty())
+    m.items.push_back({T("Changer"), "", T("Faire entrer un remplaçant de l'équipe."), true, [this, a, bench] {
                        Menu t;
                        t.title = T("Remplaçants");
                        t.rows = 5;

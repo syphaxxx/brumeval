@@ -338,7 +338,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   lisible (`BRUMEVAL_JOURNAL=Sylvarque brumeval --test captures` l'affiche pour
   la simulation qui contient ce mot).
 - Écran de combat (1.7, refait en 3.2 et 3.3) : rien n'est écrit sur le damier. Panneau du bas (`PANEL_Y`, `dock`) :
-  menu de commande à gauche (5 lignes, il défile), à droite l'ATH en tableau (`Battle::drawHud` : une ligne par allié,
+  menu de commande à gauche (5 lignes, il défile ; depuis le 2026-10-23, « Limite » seulement prête, en or, « Duo » seulement
+  possible, « Changer » seulement avec un remplaçant), à droite l'ATH en tableau (`Battle::drawHud` : une ligne par allié,
   titres PV, PM, ATB, Lim ; barre de PV verte/or/rouge ; compagnon en retrait ; mode Auto/Manuel), remplacé par le
   sous-menu ouvert (`MenuStack::shownDepth`). En haut, l'aide de la ligne survolée en deux lignes au plus (un message
   du combat : trois), puis la ligne de la météo, de l'ordre des tours et des renforts :
