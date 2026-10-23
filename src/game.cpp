@@ -1696,6 +1696,7 @@ void Game::drawMap() {
   // Fenêtres
   if (panelMode_ == 3 && menus.active()) drawBestiaryPanel(154, 8);  // à droite de la liste (146 px avec ses icônes)
   else if (panelMode_ == 4 && menus.active()) drawFormationPanel(146, 8);
+  else if (panelMode_ == 5 && menus.active()) drawShopPanel(60, 128);
   else if (panelMode_ && menus.active()) drawTeamPanel(panelMode_ == 1 ? 120 : 146, 8, panelMode_ == 2 ? teamPanelSel_ : -1);
   if (menus.active()) menus.draw(g, time);
   drawDialogue();

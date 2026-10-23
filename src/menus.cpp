@@ -1078,8 +1078,40 @@ void Game::magicMenu() {
 }
 
 void Game::shopMenu(const std::vector<std::string>& stock) { shopMenuAt(stock, 0); }
+// Boutique : pour un équipement survolé, chaque membre qui peut le porter et ce qu'il gagnerait (ou perdrait) par
+// rapport à ce qu'il porte ; rien pour un objet ordinaire
+void Game::drawShopPanel(int x, int y) {
+  if (shopHover_.empty() || !hasItem(shopHover_)) return;
+  const ItemDef& d = item(shopHover_);
+  if (d.slot < 0) return;
+  std::vector<std::pair<std::string, std::vector<std::pair<std::string, int>>>> rows;  // nom, (statistique, écart)
+  for (auto& f : team) {
+    if (!canEquip(*f, d) || rows.size() >= 4) continue;
+    const std::string& cur = f->gear[(size_t)d.slot];
+    std::vector<std::pair<std::string, int>> diff;
+    for (int k = 0; k < N_GEAR_STATS; k++)
+      if (int v = d.bonus[k] - (cur.empty() ? 0 : item(cur).bonus[k])) diff.push_back({gearStatName(k), v});
+    rows.push_back({cur == d.id ? f->name() + T(" (le porte)") : f->name(), diff});
+  }
+  if (rows.empty()) return;
+  int w = 200, h = 8 + 11 * (int)rows.size();
+  g.window(x, y, w, h);
+  for (size_t i = 0; i < rows.size(); i++) {
+    float ly = y + 4 + i * 11;
+    g.text(x + 8, ly, utf8Prefix(rows[i].first, 14), rgb(0xd8def2));
+    float rx = x + w - 8;
+    if (rows[i].second.empty()) g.text(rx, ly, "=", rgb(0xaab3d8), 2);
+    for (auto it = rows[i].second.rbegin(); it != rows[i].second.rend() && rx > x + 100; ++it) {  // de droite à gauche
+      std::string s = (it->second > 0 ? "+" : "") + std::to_string(it->second) + " " + utf8Prefix(it->first, 3);
+      g.text(rx, ly, s, it->second > 0 ? rgb(0x6ad87a) : rgb(0xf06a5a), 2);
+      rx -= Gfx::textW(s) + 6;
+    }
+  }
+}
+
 void Game::shopMenuAt(const std::vector<std::string>& stock, int sel) {
-  panelMode_ = 0;
+  panelMode_ = 5;  // (2026-10-23) sous la liste : ce que l'équipement survolé changerait pour chacun
+  shopHover_.clear();
   Menu m;
   m.title = T("Boutique  ·  ") + std::to_string(gold) + T(" or");
   m.x = 60, m.y = 20, m.w = 200, m.rows = 7;
@@ -1103,6 +1135,7 @@ void Game::shopMenuAt(const std::vector<std::string>& stock, int sel) {
                          menus.pop();
                          shopMenuAt(stock, (int)i);
                        }});
+    m.items.back().hover = [this, id] { shopHover_ = id; };
   }
   m.items.push_back({T("Vendre…"), "", T("Vendre vos objets à la moitié de leur prix."), true, [this, stock] { sellMenu(stock, 0); }});
   m.items.push_back({T("Quitter"), "", "", true, [this] { menus.clear(); }});
@@ -1113,6 +1146,7 @@ void Game::shopMenuAt(const std::vector<std::string>& stock, int sel) {
 
 // Vendre : chaque objet du sac (sauf les objets de quête) rapporte la moitié de son prix
 void Game::sellMenu(const std::vector<std::string>& stock, int sel) {
+  panelMode_ = 0;  // pas de comparaison en vendant (le retour reconstruit la boutique)
   Menu m;
   m.title = T("Vendre  ·  ") + std::to_string(gold) + T(" or");
   m.x = 60, m.y = 20, m.w = 200, m.rows = 7;

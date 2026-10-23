@@ -382,7 +382,9 @@ class Game {
   bool arenaBattle_ = false;      // le combat en cours a été lancé depuis l'Arène
   void toolsMenu();
   std::function<void(BattleResult)> afterBattle_;
-  int panelMode_ = 0;        // 0 rien, 1 résumé de l'équipe, 2 fiche détaillée
+  int panelMode_ = 0;        // 0 rien, 1 résumé de l'équipe, 2 fiche détaillée, 5 comparaison de la boutique
+  std::string shopHover_;    // boutique : l'objet survolé (panneau de comparaison, drawShopPanel)
+  void drawShopPanel(int x, int y);
   int teamPanelSel_ = 0;
   int swapFrom_ = -1;
   std::string notice_;       // petit message en bas de l'écran

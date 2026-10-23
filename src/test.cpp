@@ -2564,6 +2564,13 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       if (d.price > 0) stock.push_back(d.id);
     shopMenu(stock);
     show("boutique");
+    for (size_t i = 0; i < stock.size(); i++)  // une armure : le panneau de comparaison sous la liste
+      if (item(stock[i]).slot == G_ARMOR) {
+        menus.top().sel = (int)i;
+        if (auto h = menus.top().items[i].hover) h();  // comme un survol
+        break;
+      }
+    show("boutique : équipement");
     menus.top().sel = (int)stock.size();  // Vendre…
     in.confirm = true;
     show("boutique : vendre");
