@@ -1799,13 +1799,30 @@ void Game::drawDialogue() {
 
 void Game::drawEnding() {
   float L = g.left(), W = (float)g.fullW;
-  g.gradV(L, 0, W, SCREEN_H, rgb(0x0e1550), rgb(0x3a6fb0));
-  g.ellipse(272, 36, 18, 18, rgb(0xfff4c0));  // au-dessus du texte
-  g.poly({{L, 200}, {L, 170}, {0, 200}, {80, 150}, {150, 190}, {230, 140}, {320, 190}, {L + W, 160}, {L + W, 240}, {L, 240}}, rgb(0x2e6b3a));
-  g.textBig(160, 30, T("FIN"), GOLD, 3, 1);
+  // (2026-10-22) l'aube sur Brumeval : le ciel passe de la nuit à l'orange, le soleil se lève derrière les montagnes,
+  // les dernières étoiles s'effacent, des lanternes montent
+  g.gradV(L, 0, W, 150, rgb(0x0e1550), rgb(0xe89a6a));
+  g.gradV(L, 150, W, SCREEN_H - 150, rgb(0xe89a6a), rgb(0xf4c890));
+  for (int i = 0; i < 40 * W / SCREEN_W; i++) {  // les étoiles, seulement en haut, qui s'effacent
+    float x = L + std::fmod(i * 61.f + i * i * .3f, W), y = std::fmod(i * 37.f, 70.f);
+    g.rect(x, y, 1, 1, rgb(0xffffff, uint8_t((70 - y) * 2.6f * (.6f + .4f * std::sin(time * 2 + i)))));
+  }
+  float rise = std::min(1.f, time * .02f + .6f);  // le soleil monte doucement
+  float sy = 168 - rise * 30;
+  for (int r = 5; r >= 1; r--) g.ellipse(250, sy, 18.f + r * 9, 18.f + r * 9, rgb(0xffe0a0, uint8_t(18 + (5 - r) * 6)));  // sa lueur
+  g.ellipse(250, sy, 18, 18, rgb(0xfff4c0));
+  g.poly({{L, 240}, {L, 150}, {0, 165}, {60, 128}, {120, 160}, {190, 120}, {260, 158}, {320, 132}, {L + W, 150}, {L + W, 240}}, rgb(0x8a6a8a));  // au loin
+  g.poly({{L, 240}, {L, 178}, {0, 182}, {70, 150}, {140, 182}, {210, 152}, {290, 184}, {L + W, 166}, {L + W, 240}}, rgb(0x4a5a6a));
+  g.poly({{L, 240}, {L, 200}, {0, 202}, {80, 182}, {160, 200}, {240, 186}, {320, 202}, {L + W, 192}, {L + W, 240}}, rgb(0x2e6b3a));  // la colline
+  for (int i = 0; i < 9 * W / SCREEN_W; i++) {  // des lanternes qui montent vers le ciel
+    float x = L + std::fmod(i * 97.f + std::sin(time * .4f + i) * 10, W), y = 230 - std::fmod(time * (7 + i % 3 * 2) + i * 53.f, 240.f);
+    g.ellipse(x, y, 5, 5, rgb(0xffb04a, 40));
+    g.rect(x - 2, y - 3, 5, 6, rgb(0xff9a3a, 220)), g.rect(x - 1, y - 2, 3, 4, rgb(0xffe08a, 230));
+  }
+  g.textBigFancy(160, 26, T("FIN"), rgb(0xfff0a0), rgb(0xe8902a), rgb(0x2a1606), 3, 1);
   auto lines = Gfx::wrap(endingText_.empty() ? T("La brume se lève enfin sur Brumeval.") : endingText_, 280);
   for (const char* l : {"", T("Un jeu créé avec Claude"), T("C++ et SDL2"), "", T("Appuyez sur Entrée pour continuer")}) lines.push_back(l);
-  for (size_t i = 0; i < lines.size(); i++) g.text(160, 74 + i * 13, lines[i], WHITE, 1);
+  for (size_t i = 0; i < lines.size(); i++) g.text(160, 74 + i * 13, lines[i], WHITE, 1);  // (le texte garde son ombre : lisible sur l'aube)
   auto team = front();  // jusqu'à six combattants (héros et compagnons) : l'écart s'adapte
   float gap = team.size() > 1 ? std::min(100.f, 260.f / (team.size() - 1)) : 0, x = 160 - gap * (team.size() - 1) / 2;
   for (auto& f : team) {
