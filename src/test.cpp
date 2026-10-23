@@ -2514,9 +2514,16 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
 
   // --- Tour des menus : chaque écran est dessiné une fois pour vérifier sa mise en page ---
   {
+    static const bool tourShots = SDL_getenv("BRUMEVAL_CAPTURES_TOUR") != nullptr;  // une capture par écran du tour
+    int tourN = 0;
     auto show = [&](const std::string& name) {
       g.layoutScene = "tour : " + name;
       frame();
+      if (tourShots) {
+        char n[8];
+        std::snprintf(n, sizeof n, "%02d", ++tourN);
+        snap(std::string("tour_") + n);
+      }
     };
     auto back = [&](size_t depth) {
       for (int i = 0; i < 10 && menus.depth() > depth; i++) {

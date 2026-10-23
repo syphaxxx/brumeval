@@ -87,6 +87,7 @@ struct MenuItem {
   std::string icon;                      // icône avant le libellé : un sprite (« ic_sac ») ou un dessin de menuGlyph (ui.cpp)
   bool sep = false;                      // un fin filet au-dessus : début d'un nouveau groupe d'entrées
   std::function<int()> notches;          // réglage de 0 à 10 dessiné en crans à droite (à la place du texte de droite)
+  float bar = -1;                        // de 0 à 1 : une fine barre d'avancement sous la ligne (-1 : aucune)
 };
 // Titre de section dans un menu
 inline MenuItem menuHeader(const std::string& label) {

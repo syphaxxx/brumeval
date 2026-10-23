@@ -314,6 +314,7 @@ void Game::reserveMenu(int sel) {
       MenuItem it{c->name(), T("N.") + std::to_string(c->lvl), typesName(c->S()) + " · " + std::to_string(c->hp) + "/" + std::to_string(c->mhp) + T(" PV"),
                   true, [done, c] { done(c); }};
       it.shrink = true;
+      it.icon = typeDot(c->S().type);
       p.items.push_back(it);
     }
     menus.push(p);
@@ -349,6 +350,7 @@ void Game::reserveMenu(int sel) {
                   });
                 }};
     it.shrink = true;
+    it.icon = typeDot(r->S().type);
     m.items.push_back(it);
   }
   if (reserve.empty()) m.items.push_back({T("(réserve vide)"), "", T("Les créatures capturées quand l'équipe est complète arrivent ici."), false, nullptr});
@@ -867,6 +869,7 @@ void Game::progressMenu() {
     if (total <= 0) return;
     MenuItem it{name, std::to_string(done) + " / " + std::to_string(total), help, true, nullptr};
     if (done >= total) it.color = 0xffe066;  // tout est fait : en or
+    it.bar = float(done) / total;
     m.items.push_back(it);
   };
   int q = 0, qd = 0, b = 0, bd = 0, trn = 0, trd = 0, rv = 0, rvd = 0, ch = 0, chd = 0, hid = 0, hidd = 0, sp = 0, cr = 0, talk = 0;
@@ -1067,6 +1070,7 @@ void Game::magicMenu() {
                                                   }, [cast](Fighter& f) { cast(&f); });
                                               }});
                          }
+                         for (size_t k = 0; k < heal.size() && k < s.items.size(); k++) s.items[k].icon = typeDot(moveInfo(heal[k]).type);
                          menus.push(s);
                        }});
   }

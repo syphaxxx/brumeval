@@ -423,6 +423,11 @@ void MenuStack::draw(Gfx& g, float t) const {
       }
       g.text(m.x + 13 + ix, y, fit(g, it.label, m.w - 19 - rw - ix, it.shrink), c);
       if (!right.empty()) g.text(m.x + m.w - 6, y, right, it.enabled ? (it.adjust ? rgb(0xffe066) : rgb(0xd8def2)) : rgb(0x8a92b8), 2);
+      if (it.bar >= 0) {  // (2026-10-23) l'avancement, sous la ligne
+        float bx = m.x + 13 + ix, bw = m.x + m.w - 6 - bx;
+        g.rect(bx, y + 10.5f, bw, 1, rgb(0x03051a, 170));
+        g.rect(bx, y + 10.5f, bw * std::clamp(it.bar, 0.f, 1.f), 1, it.bar >= 1 ? rgb(0xffe066) : rgb(0x6ad87a));
+      }
       if (it.notches) {  // (2026-10-23) dix crans, pleins jusqu'à la valeur ; flèches gauche/droite sur la ligne choisie
         int v = std::clamp(it.notches(), 0, 10);
         float bx = m.x + m.w - 56;
