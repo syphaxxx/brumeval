@@ -1060,7 +1060,7 @@ void Battle::command(FighterP a) {
                          log.push_back(a->name() + T(" revient sur ses pas"));
                          command(a);
                        }});
-  m.items.push_back({T("Attendre"), "", T("Finir son tour sans agir : rejoue plus tôt."), true, [this, a] { waitTurn(a); }});
+  m.items.push_back({T("Attendre"), "", T("Finir son tour sans agir : rejoue plus tôt, face à l'ennemi le plus proche (le dos à l'abri)."), true, [this, a] { waitTurn(a); }});
   std::vector<FighterP> bench;  // avec des héros : un héros n'est remplacé que par un héros
   bool inTeam = std::find(G.team.begin(), G.team.end(), a) != G.team.end();  // défi : des combattants prêtés, sans remplaçants
   for (auto& r : G.team)
