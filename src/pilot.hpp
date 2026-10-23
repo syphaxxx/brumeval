@@ -191,6 +191,9 @@ class Pilot {
   bool visitStep();  // vrai tant qu'une visite occupe le pilote
   std::vector<int> puzzleMoves_;  // énigme en cours : les directions à suivre (3.0)
   void socketGems(bool show = false);  // gemmes du sac dans les chatons libres (2.7)
+  // Tactiques (2026-10-23) : un profil pour chacun selon ce qu'il sait faire (soigneur, protecteur, briseur, combattant)
+  std::map<const Fighter*, std::string> profileOf_;
+  void setupTactics(bool show);
   void forging();            // forge : renforce l'équipement porté tant que l'or et les matériaux le permettent
   bool forgeWanted() const;  // une arme ou armure portée peut être forgée maintenant
   float gearScore(const Fighter& f, const ItemDef& d) const;

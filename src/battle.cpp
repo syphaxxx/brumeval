@@ -1652,6 +1652,7 @@ bool Battle::tacticTurn(FighterP a) {
   }
   actor = a;
   log.push_back(a->name() + T(" : tactique ") + std::to_string(p.tactic + 1));
+  if (p.wait) return waitTurn(a), true;  // se mettre en garde
   if (p.cell >= 0 && follower()) return moveTo(a, p.cell), true;  // le chef déplace, puis renvoie « tour » (bouge)
   if (p.cell >= 0) {  // se mettre à l'abri, puis agir (une autre règle, sinon l'ordinateur)
     step(a, p.cell);
@@ -1715,6 +1716,20 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
     if (c == "soi_limite") return a->lim >= 100;
     if (c == "soi_menace") return threatened(a);
     if (c == "allie_avant_pv_moins") return engaged(t) && t->hp * 100 < tc.value * t->mhp;  // au contact d'un ennemi
+    if (c == "ennemi_brise") return t->broken;
+    if (c == "ennemi_role") return t->S().combatRole == "soigneur" || t->S().combatRole == "chef";
+    if (c == "ennemi_dos") {  // son dos est à portée : d'ici, ou d'une case où il peut aller ce tour
+      if (boardDist(cellOf(a), cellOf(t)) <= reach(a) && behind(a, t)) return true;
+      if (moved_.count(a.get())) return false;
+      for (auto& [w, steps] : walkable(a))
+        if (boardDist(w, cellOf(t)) <= reach(a) && behind(a, t, w)) return true;
+      return false;
+    }
+    if (c == "soi_dos_menace") {
+      for (auto& o : liveFoes)
+        if (boardDist(cellOf(o), cellOf(a)) <= 1 && behind(o, a)) return true;
+      return false;
+    }
     if (c == "ennemis_groupes") {
       if (!x.m) return false;
       if (x.m->zone == Area::All) return (int)liveFoes.size() >= tc.value;
@@ -1810,6 +1825,15 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
       out = Plan{};
       out.tactic = i, out.cell = cell;
       return true;
+    } else if (tc.act == "garde") {  // se mettre en garde : attendre, face à l'ennemi le plus proche
+      bool cond = false;
+      if (c->side == TSide::Self) cond = holds(tc, Act{}, a);
+      else
+        for (auto& t : c->side == TSide::Foe ? liveFoes : liveAllies) cond = cond || holds(tc, Act{}, t);
+      if (!cond) continue;
+      out = Plan{};
+      out.tactic = i, out.wait = true;
+      return true;
     } else if (tc.act == "limite") {
       if (a->lim >= 100 && !a->S().limit.empty()) acts.push_back({&moveInfo(a->S().limit), "", true});
     } else
@@ -1817,7 +1841,7 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
         const Move& m = moveInfo(id);
         if (a->mp < m.cost) continue;
         const std::string& k = tc.act;
-        if ((k == "attaque" && m.damaging()) || (k == "technique" && m.damaging() && m.cost == 0) ||
+        if ((k == "attaque" && m.damaging()) || (k == "technique" && m.damaging() && m.cost == 0) || (k == "briser" && m.damaging()) ||
             (k == "soin" && m.kind == Kind::Heal && m.power > 0) || (k == "reanimation" && m.kind == Kind::Revive) ||
             (k == "guerison" && m.kind == Kind::Heal && cures(m)))
           acts.push_back({&m});
@@ -1845,6 +1869,7 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
       auto& side = onAllies ? liveAllies : liveFoes;
       for (auto& t : pool) {
         if (!holds(tc, x, t) || !useful(x, t)) continue;
+        if (tc.act == "briser" && !(x.m && G.weakKnown(t->sp, x.m->type) && moveEff(*x.m, t->S()) > 1)) continue;  // une faiblesse connue
         float key = order(tc.cond, t), score = 1;
         if (x.m && x.m->damaging()) {
           score = 0;

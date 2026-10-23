@@ -286,6 +286,12 @@ struct Rules {
   // Tactiques : lignes disponibles (départ, une de plus tous les n niveaux, maximum) et règles de départ
   int tacticStart = 4, tacticPerLvl = 6, tacticMax = 10;
   std::vector<Tactic> tactics;
+  // Profils de tactiques (2026-10-23) : des listes de règles toutes faites (Combattant, Soigneur…), à choisir d'un coup
+  struct TacticProfile {
+    std::string id, name, help;
+    std::vector<Tactic> rules;
+  };
+  std::vector<TacticProfile> tacticProfiles;
   // Butin selon le type d'une créature sauvage vaincue (« butin_type ») : matériaux de la forge
   struct TypeDrop {
     std::string type, item;

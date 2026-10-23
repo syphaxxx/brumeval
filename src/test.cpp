@@ -761,9 +761,22 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       std::swap(B.allies[0], B.allies[1]);  // Maëlle en chef d'équipe
       bool cover = B.tacticPlan(lior, p) && p.cell >= 0 && inBoardZone(Area::Cross, boardAt(2, 1), p.cell);
       std::swap(B.allies[0], B.allies[1]);
+      // (2026-10-23) « Ennemi : brisé » vise l'ennemi brisé ; un profil coupé à 4 lignes garde sa dernière règle
+      lior->tactics = {Tactic{true, "ennemi_brise", 0, Tactic::Act::Auto, "attaque"}};
+      B.cells_[lior.get()] = boardAt(1, 3), B.cells_[brute.get()] = boardAt(1, 4), B.cells_[mage.get()] = boardAt(2, 4);
+      mage->broken = true;
+      bool brk = B.tacticPlan(lior, p) && !p.targets.empty() && p.targets[0] == mage;
+      mage->broken = false;
+      bool trim = false;
+      if (!rules().tacticProfiles.empty()) {
+        auto& pr = rules().tacticProfiles[0];
+        auto v = profileRules(pr, 4);
+        trim = v.size() == std::min<size_t>(4, pr.rules.size()) && v.back().cond == pr.rules.back().cond && v.back().act == pr.rules.back().act;
+      }
       brute->hp = brute->mhp;
       lior->tactics = keepT, lior->tacticsOn = keepOn;
       check(closer && around && cover, "tactiques : s'approcher, contourner (dans le dos), protéger un allié");
+      check(brk && trim, "tactiques : « Ennemi : brisé » vise l'ennemi brisé ; un profil coupé à ses lignes garde sa dernière règle");
     }
     lior->stage.fill(0);
     B.moved_.clear();

@@ -358,8 +358,15 @@ static void loadRules(const Json& j) {
     for (auto& [k, v] : need.items()) f.items.push_back({k, v.get<int>()});
     r.forge.push_back(f);
   }
-  if (j.contains("tactiques"))
+  if (j.contains("tactiques")) {
     for (auto& t : j["tactiques"].value("defaut", Json::array())) r.tactics.push_back(tacticFromJson(t));
+    Json profiles = j["tactiques"].value("profils", Json::array());  // variable : la boucle doit la garder en vie
+    for (auto& p : profiles) {
+      Rules::TacticProfile tp{jget<std::string>(p, "id", ""), tr(jget<std::string>(p, "nom", "")), tr(jget<std::string>(p, "aide", "")), {}};
+      for (auto& t : p.value("regles", Json::array())) tp.rules.push_back(tacticFromJson(t));
+      r.tacticProfiles.push_back(tp);
+    }
+  }
   RULES = r;
 }
 
@@ -692,6 +699,8 @@ std::vector<std::string> checkData() {
     for (auto& [id, n] : r.forge[L].items)
       if (id != "trophee" && !hasItem(id)) err.push_back("Forge +" + std::to_string(L + 1) + " : matériau inconnu « " + id + " »");
   for (auto& e : checkTactics(r.tactics, "Tactiques de départ")) err.push_back(e);
+  for (auto& p : r.tacticProfiles)
+    for (auto& e : checkTactics(p.rules, "Profil de tactiques « " + p.id + " »")) err.push_back(e);
   if (r.tacticMax < r.tacticStart) err.push_back("Tactiques : le maximum de lignes est plus petit que le départ");
   return err;
 }
