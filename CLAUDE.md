@@ -250,7 +250,11 @@ code) ; `docs/GUIDE.md` les range par domaine.
   pleine, `Battle::tacticTurn` joue la première règle possible
   (`Battle::tacticPlan` choisit la cible et la technique) ; sinon le menu de
   commande s'ouvre. Ajouter une condition : l'entrée dans `CONDS`
-  (tactics.cpp) et son test dans `holds` (battle.cpp). Les simulations
+  (tactics.cpp) et son test dans `holds` (battle.cpp). Conditions du 2026-10-23 : `ennemi_brise`, `ennemi_dos`,
+  `ennemi_role`, `soi_dos_menace` ; actions `briser` (une faiblesse découverte) et `garde` (attendre, `Plan::wait`).
+  Profils (`tactiques.profils` de regles.json, `Rules::tacticProfiles`, « Profils… » dans l'éditeur, `profileRules` :
+  coupés aux lignes du membre en gardant la dernière règle) ; le joueur automatique en choisit un pour chacun
+  (`Pilot::setupTactics` : soigneur, protecteur, briseur, combattant). Les simulations
   (`autoPlay`) n'utilisent les tactiques que si `simTactics` est vrai.
 - Son (audio.hpp) : `audio::play("coup")` joue un bruitage, `audio::music("combat")`
   change de morceau (fondu ; le même morceau continue). `Game::updateMusic`

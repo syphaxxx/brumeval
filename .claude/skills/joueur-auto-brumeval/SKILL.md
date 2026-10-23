@@ -124,3 +124,11 @@ Bestiaire après une capture (`lookAt`, une par minute de jeu au plus). Après l
 `equipBest(false)` finit ce que les menus n'auraient pas fait. Hors démo, rien ne change (les mesures restent rapides).
 `BRUMEVAL_DEMO=1 brumeval --partie dossier` : le pilote de la démo sans fenêtre, une capture `NN_menus.bmp` à chaque
 menu visité et une ligne « Menus : Équipement > Lior > … » dans le rapport.
+
+## Tactiques du joueur automatique (2026-10-23)
+
+Demandé : « développe le mode tactique et que le joueur auto l'utilise ». `Pilot::setupTactics` (à chaque `plan`) donne
+à chaque membre un profil de `rules().tacticProfiles` : Soigneur (sort de soin et Magie ≥ Attaque), Protecteur (rôle
+`protecteur`), Briseur (au moins 3 types d'attaque, pour trouver les faiblesses), sinon Combattant ; refait quand une
+ligne de plus sert le profil (`profileOf_` : profil et lignes). En démo, par les menus (Préparation > Tactiques >
+membre > Profils… > profil). Rapport : « Tactiques : Lior → Combattant ».
