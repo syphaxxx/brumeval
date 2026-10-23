@@ -83,6 +83,7 @@ struct MenuItem {
   bool header = false;                   // titre de section : le curseur le saute
   uint32_t color = 0;                    // couleur du libellé (0 : blanc)
   bool shrink = false;                   // libellé coupé avec « … » s'il manque de place (sinon le mode test le signale)
+  std::string icon;                      // icône avant le libellé : un sprite (« ic_sac ») ou un dessin de menuGlyph (ui.cpp)
 };
 // Titre de section dans un menu
 inline MenuItem menuHeader(const std::string& label) {

@@ -151,7 +151,7 @@ void Game::drawKeyPrompt() {
 void Game::pauseMenu() {
   panelMode_ = 1;
   Menu m;
-  m.x = 8, m.y = 8, m.w = 100, m.rows = 9;
+  m.x = 8, m.y = 8, m.w = 110, m.rows = 9;  // (la place des icônes ; le panneau de l'équipe à droite, à x = 120)
   if (editorTest_ && editor_)
     m.items.push_back({T("Fin du test"), "", T("Revenir à l'éditeur de cartes, à l'endroit où vous êtes."), true, [this] {
                          panelMode_ = 0;
@@ -218,6 +218,17 @@ void Game::pauseMenu() {
   m.items.push_back({T("Options"), "", T("Volumes, plein écran, vitesse du jeu et touches."), true, [this] { optionsMenu(); }});
   m.items.push_back({T("Aide"), "", T("Statistiques, dégâts, damier, zones, états, tableau des types, touches (F1)."), true, [this] { helpMenu(); }});
   m.items.push_back({T("Reprendre"), "", "", true, [this] { menus.clear(); }});
+  // (2026-10-23) une petite icône devant chaque entrée : la liste se lit d'un coup d'œil
+  const std::pair<std::string, const char*> icons[] = {
+      {T("Fin du test"), "porte"}, {T("Recommencer l'énigme"), "caillou"}, {T("Équipe"), "ic_casque_1"}, {T("Compagnons"), "patte"},
+      {T("Évolution"), "etoile"}, {T("Formation"), "damier"}, {T("Réserve"), "ic_lanterne"}, {T("Bestiaire"), "ic_livre"},
+      {T("Tactiques"), "viser"}, {T("Équipement"), "ic_epee_1"}, {T("Journal"), "parchemin"}, {T("Discussions"), "bulle"},
+      {T("Carte"), "carte"}, {T("Objets"), "ic_sac"}, {T("Magie"), "ic_baton_1"}, {T("Sauvegarder"), "ic_gemme_cristal"},
+      {T("Groupe"), "ic_casque_2"}, {T("Abandonner"), "drapeau"}, {T("Écran titre"), "porte"}, {T("Options"), "engrenage"},
+      {T("Aide"), "aide"}, {T("Reprendre"), "reprendre"}};
+  for (auto& it : m.items)
+    for (auto& [label, ic] : icons)
+      if (it.label == label) it.icon = ic;
   m.rows = std::min(13, (int)m.items.size());  // au-delà, la liste défile (la bande d'aide reste visible)
   menus.push(m);
 }

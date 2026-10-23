@@ -151,6 +151,56 @@ static const SpriteRect* itemIcon(const std::string& label) {
   return it == names.end() ? nullptr : findSprite(it->second);
 }
 
+// (2026-10-23) Petits dessins pour les entrées de menu qui n'ont pas de sprite (case de 11x11 en x, y)
+static void menuGlyph(Gfx& g, const std::string& n, float x, float y) {
+  float cx = x + 5.5f, cy = y + 5.5f;
+  if (n == "patte") {  // les compagnons
+    g.ellipse(cx, cy + 2, 3, 2.3f, rgb(0xe8c89a));
+    for (int i = -1; i <= 1; i++) g.ellipse(cx + i * 3.2f, cy - 1.8f - (i == 0) * 1.2f, 1.3f, 1.4f, rgb(0xe8c89a));
+  } else if (n == "damier") {  // la formation : le damier de combat
+    for (int i = 0; i < 9; i++) g.rect(x + 1 + i % 3 * 3.2f, y + 1 + i / 3 * 3.2f, 2.6f, 2.6f, rgb((i % 3 + i / 3) % 2 ? 0x4a5a98 : 0xb8c8f0));
+  } else if (n == "viser") {  // les tactiques
+    g.ellipse(cx, cy, 5, 5, rgb(0xd84a3a)), g.ellipse(cx, cy, 3.5f, 3.5f, rgb(0xf4ecd8));
+    g.ellipse(cx, cy, 2, 2, rgb(0xd84a3a)), g.rect(cx - .5f, cy - .5f, 1, 1, rgb(0xf4ecd8));
+  } else if (n == "bulle") {  // les discussions
+    g.ellipse(cx, cy - 1, 5, 3.6f, rgb(0xf4ecd8));
+    g.tri(cx - 3, cy + 1, cx - 1, cy + 2, cx - 4, cy + 5, rgb(0xf4ecd8));
+    for (int i = -1; i <= 1; i++) g.rect(cx + i * 2.4f - .5f, cy - 1.5f, 1.2f, 1.2f, rgb(0x5a5a7a));
+  } else if (n == "carte") {  // la carte du monde : un parchemin plié, un chemin et une croix
+    g.rect(x + 1, y + 2, 9, 7, rgb(0xe8d4a0));
+    g.rect(x + 4, y + 2, 1, 7, rgb(0xc0a870)), g.rect(x + 7, y + 2, 1, 7, rgb(0xc0a870));
+    g.line(x + 2, y + 7, x + 5, y + 4, 1, rgb(0x6a8a4a)), g.line(x + 5, y + 4, x + 8, y + 5, 1, rgb(0x6a8a4a));
+    g.line(x + 7, y + 3, x + 9, y + 5, 1, rgb(0xc83a2a)), g.line(x + 9, y + 3, x + 7, y + 5, 1, rgb(0xc83a2a));
+  } else if (n == "engrenage") {  // les options
+    for (int i = 0; i < 8; i++) {
+      float a = i * 3.14159f / 4;
+      g.line(cx + std::cos(a) * 2, cy + std::sin(a) * 2, cx + std::cos(a) * 5, cy + std::sin(a) * 5, 2, rgb(0xa8b0c0));
+    }
+    g.ellipse(cx, cy, 3.6f, 3.6f, rgb(0xa8b0c0)), g.ellipse(cx, cy, 1.4f, 1.4f, rgb(0x2a2e48));
+  } else if (n == "parchemin") {  // le journal des quêtes
+    g.rect(x + 2, y + 1, 7, 9, rgb(0xe8d4a0));
+    g.rect(x + 1, y + 1, 9, 2, rgb(0xc0a870)), g.rect(x + 1, y + 9, 9, 2, rgb(0xc0a870));
+    for (int i = 0; i < 3; i++) g.rect(x + 3, y + 4 + i * 1.6f, 5 - i % 2 * 2, 1, rgb(0x6a5a3a));
+  } else if (n == "aide") {
+    g.ellipse(cx, cy, 5, 5, rgb(0x4a7ad8));
+    g.text(cx + .5f, y + 1, "?", rgb(0xffffff), 1);
+  } else if (n == "porte") {  // l'écran titre
+    g.ellipse(cx, y + 4, 3.5f, 3, rgb(0x8a5a2a)), g.rect(cx - 3.5f, y + 4, 7, 6, rgb(0x8a5a2a));
+    g.rect(cx - .5f, y + 2, 1, 8, rgb(0x5a3a1a)), g.rect(cx + 1.5f, y + 6, 1, 1, rgb(0xffd34d));
+  } else if (n == "reprendre") {
+    g.tri(x + 3, y + 1, x + 3, y + 10, x + 9, y + 5.5f, rgb(0x6ad87a));
+  } else if (n == "etoile") {  // l'évolution
+    std::vector<Pt> p;
+    for (int i = 0; i < 10; i++) {
+      float a = -1.5708f + i * 3.14159f / 5, r = i % 2 ? 2.2f : 5.2f;
+      p.push_back({cx + std::cos(a) * r, cy + 0.5f + std::sin(a) * r});
+    }
+    g.poly(p, rgb(0xffd34d));
+  } else if (n == "drapeau") {  // abandonner l'expédition
+    g.rect(x + 2, y + 1, 1, 10, rgb(0xc0c0c8)), g.tri(x + 3, y + 1, x + 3, y + 6, x + 9, y + 3.5f, rgb(0xf4ecd8));
+  }
+}
+
 size_t MenuStack::shownDepth() const {
   size_t n = 0;
   for (auto& m : st_) n += !m.hidden;
@@ -316,9 +366,13 @@ void MenuStack::draw(Gfx& g, float t) const {
       Color c = !it.enabled ? rgb(0x8a92b8) : it.color ? rgb(it.color) : rgb(0xffffff);
       std::string right = it.rightFn ? it.rightFn() : it.right;
       int rw = right.empty() ? 0 : Gfx::textW(right) + 6;
-      int ix = 0;  // un objet du jeu : son icône avant le nom
-      if (const SpriteRect* ic = itemIcon(it.label)) {
-        g.sprite(*ic, m.x + 13 + (11 - ic->w) / 2, y + 1 + (11 - ic->h) / 2, false, 1, it.enabled ? rgb(0xffffff) : rgb(0x8a8a9a));
+      int ix = 0;  // un objet du jeu (ou une icône donnée) : son icône avant le nom
+      if (const SpriteRect* ic = it.icon.empty() ? itemIcon(it.label) : findSprite(it.icon)) {
+        float k = it.icon.empty() ? 1 : std::min(1.f, 11.f / std::max(ic->w, ic->h));  // une icône donnée tient dans sa case
+        g.sprite(*ic, m.x + 13 + (11 - ic->w * k) / 2, y + 1 + (11 - ic->h * k) / 2, false, k, it.enabled ? rgb(0xffffff) : rgb(0x8a8a9a));
+        ix = 13;
+      } else if (!it.icon.empty()) {
+        menuGlyph(g, it.icon, m.x + 13, y + 1);
         ix = 13;
       }
       g.text(m.x + 13 + ix, y, fit(g, it.label, m.w - 19 - rw - ix, it.shrink), c);
