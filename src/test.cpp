@@ -639,6 +639,16 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     check(turnedBack > turnedFront * 1.15 && turns,
           "échiquier : le dos dépend du regard (retourné : " + std::to_string(turnedBack) + " contre " + std::to_string(turnedFront) +
               ") ; on se tourne vers où l'on va");
+    {  // (2026-10-23) absorption : une résistance négative, le coup soigne au lieu de blesser
+      FighterP cend = makeFighter("cendrelys", 20);
+      B.foes.push_back(cend);
+      B.cells_[cend.get()] = boardAt(2, 5), B.cells_[lior.get()] = boardAt(2, 4);
+      cend->hp = cend->mhp / 2;
+      int before = cend->hp, r = B.applyHit(lior, cend, moveInfo("flam"));
+      bool absorbs = r == 0 && cend->hp > before && weakKnown(cend->sp, moveInfo("flam").type);
+      B.foes.pop_back();
+      check(absorbs, "combat : Cendrelys absorbe le Feu (Flam le soigne, dégâts 0, retenu par l'équipe)");
+    }
     check(back > front * 1.15 && near > 0 && near < far * 0.85,
           "échiquier : un coup dans le dos fait plus mal (" + std::to_string(back) + " contre " + std::to_string(front) +
               ") ; à distance, moins fort au contact (" + std::to_string(near) + " contre " + std::to_string(far) + ")");
