@@ -152,7 +152,8 @@ static const SpriteRect* itemIcon(const std::string& label) {
 }
 
 // (2026-10-23) Petits dessins pour les entrées de menu qui n'ont pas de sprite (case de 11x11 en x, y)
-static void menuGlyph(Gfx& g, const std::string& n, float x, float y) {
+static void menuGlyph(Gfx& g, const std::string& n, float x, float y, uint8_t alpha) {
+  auto rgb = [alpha](uint32_t c) { return ::rgb(c, alpha); };  // une entrée grisée : le dessin à moitié transparent
   float cx = x + 5.5f, cy = y + 5.5f;
   if (n == "patte") {  // les compagnons
     g.ellipse(cx, cy + 2, 3, 2.3f, rgb(0xe8c89a));
@@ -196,6 +197,23 @@ static void menuGlyph(Gfx& g, const std::string& n, float x, float y) {
       p.push_back({cx + std::cos(a) * r, cy + 0.5f + std::sin(a) * r});
     }
     g.poly(p, rgb(0xffd34d));
+  } else if (n == "duo") {  // deux silhouettes côte à côte
+    g.ellipse(x + 3.5f, y + 3, 1.8f, 1.8f, rgb(0xf4ecd8)), g.ellipse(x + 3.5f, y + 8, 2.8f, 2.5f, rgb(0xf4ecd8));
+    g.ellipse(x + 7.5f, y + 3.5f, 1.8f, 1.8f, rgb(0xffb04a)), g.ellipse(x + 7.5f, y + 8.5f, 2.8f, 2.5f, rgb(0xffb04a));
+  } else if (n == "pas") {  // se déplacer : deux empreintes
+    for (int k = 0; k < 2; k++) {  // semelle, puis talon
+      float fx = x + 3.5f + k * 4, fy = y + 5 - k * 2.5f;
+      g.ellipse(fx, fy, 1.8f, 2.4f, rgb(0xe8c89a)), g.ellipse(fx, fy + 3.6f, 1.3f, 1.2f, rgb(0xe8c89a));
+    }
+  } else if (n == "retour") {  // revenir sur ses pas : une flèche vers la gauche
+    g.tri(x + 1, cy, x + 5, cy - 4, x + 5, cy + 4, rgb(0x8ab8f0)), g.rect(x + 5, cy - 1.5f, 5, 3, rgb(0x8ab8f0));
+  } else if (n == "sablier") {  // attendre
+    g.rect(x + 2, y + 1, 7, 1, rgb(0x8a5a2a)), g.rect(x + 2, y + 9, 7, 1, rgb(0x8a5a2a));
+    g.tri(x + 3, y + 2, x + 8, y + 2, cx, cy, rgb(0xd8e4f4)), g.tri(x + 3, y + 9, x + 8, y + 9, cx, cy, rgb(0xd8e4f4));
+    g.tri(x + 4, y + 9, x + 7, y + 9, cx, y + 6.5f, rgb(0xffd34d));
+  } else if (n == "echange") {  // changer de combattant : deux flèches
+    g.rect(x + 1, y + 3, 6, 2, rgb(0x6ad87a)), g.tri(x + 7, y + 1, x + 7, y + 7, x + 10, y + 4, rgb(0x6ad87a));
+    g.rect(x + 4, y + 7, 6, 2, rgb(0xf08a6a)), g.tri(x + 4, y + 5, x + 4, y + 11, x + 1, y + 8, rgb(0xf08a6a));
   } else if (n == "drapeau") {  // abandonner l'expédition
     g.rect(x + 2, y + 1, 1, 10, rgb(0xc0c0c8)), g.tri(x + 3, y + 1, x + 3, y + 6, x + 9, y + 3.5f, rgb(0xf4ecd8));
   }
@@ -369,11 +387,11 @@ void MenuStack::draw(Gfx& g, float t) const {
       int ix = 0;  // un objet du jeu (ou une icône donnée) : son icône avant le nom
       if (const SpriteRect* ic = it.icon.empty() ? itemIcon(it.label) : findSprite(it.icon)) {
         float k = it.icon.empty() ? 1 : std::min(1.f, 11.f / std::max(ic->w, ic->h));  // une icône donnée tient dans sa case
-        g.sprite(*ic, m.x + 13 + (11 - ic->w * k) / 2, y + 1 + (11 - ic->h * k) / 2, false, k, it.enabled ? rgb(0xffffff) : rgb(0x8a8a9a));
-        ix = 13;
+        g.sprite(*ic, m.x + 12 + (11 - ic->w * k) / 2, y + 1 + (11 - ic->h * k) / 2, false, k, it.enabled ? rgb(0xffffff) : rgb(0x8a8a9a));
+        ix = 11;
       } else if (!it.icon.empty()) {
-        menuGlyph(g, it.icon, m.x + 13, y + 1);
-        ix = 13;
+        menuGlyph(g, it.icon, m.x + 12, y + 1, it.enabled ? 255 : 90);
+        ix = 11;
       }
       g.text(m.x + 13 + ix, y, fit(g, it.label, m.w - 19 - rw - ix, it.shrink), c);
       if (!right.empty()) g.text(m.x + m.w - 6, y, right, it.enabled ? (it.adjust ? rgb(0xffe066) : rgb(0xd8def2)) : rgb(0x8a92b8), 2);
@@ -382,9 +400,9 @@ void MenuStack::draw(Gfx& g, float t) const {
         else g.rect(m.x + 4, y + 3, 4, 4, rgb(0xffd34d, 150));
       }
     }
-    if (m.top > 0) g.tri(m.x + m.w - 10, m.y + th + 6, m.x + m.w - 6, m.y + th + 6, m.x + m.w - 8, m.y + th + 3, rgb(0xffd34d));
+    if (m.top > 0) g.tri(m.x + m.w - 7, m.y + th + 6, m.x + m.w - 2, m.y + th + 6, m.x + m.w - 4.5f, m.y + th + 3, rgb(0xffd34d));  // sur le bord : jamais sur un libellé
     if (m.top + shown < (int)m.items.size())
-      g.tri(m.x + m.w - 10, m.y + h - 6, m.x + m.w - 6, m.y + h - 6, m.x + m.w - 8, m.y + h - 3, rgb(0xffd34d));
+      g.tri(m.x + m.w - 7, m.y + h - 6, m.x + m.w - 2, m.y + h - 6, m.x + m.w - 4.5f, m.y + h - 3, rgb(0xffd34d));
     if (!top) {
       Gfx& gg = g;
       gg.rect(m.x, m.y, m.w, h, rgb(0x000010, 70));

@@ -1078,6 +1078,13 @@ void Battle::command(FighterP a) {
                                  [d](const MenuItem& it) { return (d && it.label == T("Objet")) || it.label == T("Changer"); }),
                   m.items.end());
   }
+  // (2026-10-23) une petite icône devant chaque commande, comme au menu de pause
+  const std::pair<std::string, const char*> icons[] = {
+      {T("Attaquer"), "ic_epee_1"}, {T("Magie"), "ic_baton_1"}, {T("Limite"), "etoile"}, {T("Duo"), "duo"}, {T("Objet"), "ic_sac"},
+      {T("Se déplacer"), "pas"}, {T("Revenir"), "retour"}, {T("Attendre"), "sablier"}, {T("Changer"), "echange"}, {T("Fuir"), "drapeau"}};
+  for (auto& it : m.items)
+    for (auto& [label, ic] : icons)
+      if (it.label == label) it.icon = ic;
   // Le curseur sur la première action possible (rien à portée : « Se déplacer »)
   for (size_t i = 0; i < m.items.size(); i++)
     if (m.items[i].enabled && (anyTech || m.items[i].label == T("Se déplacer") || m.items[i].label == T("Attendre"))) {
