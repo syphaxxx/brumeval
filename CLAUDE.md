@@ -253,7 +253,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   (`Battle::tacticPlan` choisit la cible et la technique) ; sinon le menu de
   commande s'ouvre. Ajouter une condition : l'entrée dans `CONDS`
   (tactics.cpp) et son test dans `holds` (battle.cpp). Conditions du 2026-10-23 : `ennemi_brise`, `ennemi_dos`,
-  `ennemi_role`, `soi_dos_menace` ; actions `briser` (une faiblesse découverte) et `garde` (attendre, `Plan::wait`).
+  `ennemi_role`, `soi_dos_menace` ; actions `briser` (une faiblesse découverte), `garde` (attendre, `Plan::wait`) et
+  `attaque_prudente` (la meilleure attaque qui laisse 40 % des PM, sinon une technique gratuite : le profil Soigneur).
   Profils (`tactiques.profils` de regles.json, `Rules::tacticProfiles`, « Profils… » dans l'éditeur, `profileRules` :
   coupés aux lignes du membre en gardant la dernière règle) ; le joueur automatique en choisit un pour chacun
   (`Pilot::setupTactics` : soigneur, protecteur, briseur, combattant). Les simulations
