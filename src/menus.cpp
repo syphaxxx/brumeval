@@ -1086,7 +1086,7 @@ void Game::drawShopPanel(int x, int y) {
   if (d.slot < 0) return;
   std::vector<std::pair<std::string, std::vector<std::pair<std::string, int>>>> rows;  // nom, (statistique, écart)
   for (auto& f : team) {
-    if (!canEquip(*f, d) || rows.size() >= 4) continue;
+    if (!canEquip(*f, d) || rows.size() >= 3) continue;  // trois au plus : l'avis « Acheté » s'affiche juste dessous
     const std::string& cur = f->gear[(size_t)d.slot];
     std::vector<std::pair<std::string, int>> diff;
     for (int k = 0; k < N_GEAR_STATS; k++)
@@ -1098,11 +1098,13 @@ void Game::drawShopPanel(int x, int y) {
   g.window(x, y, w, h);
   for (size_t i = 0; i < rows.size(); i++) {
     float ly = y + 4 + i * 11;
-    g.text(x + 8, ly, utf8Prefix(rows[i].first, 14), rgb(0xd8def2));
-    float rx = x + w - 8;
+    std::string name = utf8Prefix(rows[i].first, 14);
+    g.text(x + 8, ly, name, rgb(0xd8def2));
+    float rx = x + w - 8, stop = x + 8 + Gfx::textW(name) + 6;  // les écarts, de droite à gauche, sans toucher le nom
     if (rows[i].second.empty()) g.text(rx, ly, "=", rgb(0xaab3d8), 2);
-    for (auto it = rows[i].second.rbegin(); it != rows[i].second.rend() && rx > x + 100; ++it) {  // de droite à gauche
+    for (auto it = rows[i].second.rbegin(); it != rows[i].second.rend(); ++it) {
       std::string s = (it->second > 0 ? "+" : "") + std::to_string(it->second) + " " + utf8Prefix(it->first, 3);
+      if (rx - Gfx::textW(s) < stop) break;
       g.text(rx, ly, s, it->second > 0 ? rgb(0x6ad87a) : rgb(0xf06a5a), 2);
       rx -= Gfx::textW(s) + 6;
     }

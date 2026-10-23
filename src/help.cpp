@@ -177,7 +177,7 @@ static std::vector<HelpPage> helpPages() {
                 ::T("Percée : le premier qui atteint le bord du camp adverse gagne +") + std::to_string(R.breakthrough) + ::T(" en Attaque, Magie et Vitesse pour le combat (les ennemis aussi : bloquez-les !)."),
                 ::T("Une ligne de combattants protège ceux de derrière : les ennemis doivent la contourner. Attendre : finir son tour sans agir (rejoue plus tôt)."),
                 ::T("Obstacles : rochers, buissons ou tonneaux au milieu du plateau. Personne ne s'y arrête ni ne les traverse (sauf en volant) ; une cible poussée contre l'un d'eux subit un choc."),
-                ::T("En choisissant sa case : le chemin s'affiche, et des losanges rouges comptent les ennemis qui pourront y frapper. Tant qu'on n'a pas agi, « Revenir » annule le déplacement."),
+                ::T("En choisissant sa case : le chemin s'affiche, des losanges rouges comptent les ennemis qui pourront y frapper, une dague dorée marque les cases d'où l'on frappe un dos. La flèche au sol montre où chacun regarde. « Revenir » annule le déplacement."),
                 ::T("Certaines techniques bondissent derrière la cible ou échangent les cases. Les bottes (accessoires) font avancer d'une case de plus. Tactiques : S'approcher, Contourner, Protéger."),
                 ::T("Pour s'entraîner : Arène > Défis de l'échiquier (positions imposées, une leçon chacune)."),
                 ::T("Formation (Échap > Préparation > Formation) : la case de chacun au début du combat, dans votre moitié. Les costauds devant, les lanceurs de sorts derrière.")}});
