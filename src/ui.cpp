@@ -155,7 +155,12 @@ static const SpriteRect* itemIcon(const std::string& label) {
 static void menuGlyph(Gfx& g, const std::string& n, float x, float y, uint8_t alpha) {
   auto rgb = [alpha](uint32_t c) { return ::rgb(c, alpha); };  // une entrée grisée : le dessin à moitié transparent
   float cx = x + 5.5f, cy = y + 5.5f;
-  if (n == "patte") {  // les compagnons
+  if (n.size() == 7 && n[0] == '#') {  // « #rrggbb » : une pastille de cette couleur (le type d'une technique)
+    uint32_t c = (uint32_t)std::stoul(n.substr(1), nullptr, 16);
+    auto dark = [](uint32_t v) { return ((v >> 1) & 0x7f7f7f); };
+    g.ellipse(cx, cy, 4.5f, 4.5f, rgb(dark(c))), g.ellipse(cx, cy, 3.5f, 3.5f, rgb(c));
+    g.ellipse(cx - 1.2f, cy - 1.4f, 1.3f, 1, rgb(0xffffff));  // reflet
+  } else if (n == "patte") {  // les compagnons
     g.ellipse(cx, cy + 2, 3, 2.3f, rgb(0xe8c89a));
     for (int i = -1; i <= 1; i++) g.ellipse(cx + i * 3.2f, cy - 1.8f - (i == 0) * 1.2f, 1.3f, 1.4f, rgb(0xe8c89a));
   } else if (n == "damier") {  // la formation : le damier de combat

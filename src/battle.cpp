@@ -903,6 +903,13 @@ bool Battle::skipTurn(FighterP f) {
 // ---------------------------------------------------------------------------
 // Menus de commande
 // ---------------------------------------------------------------------------
+// L'icône d'une technique dans les menus : une pastille de la couleur de son type (menuGlyph, ui.cpp)
+static std::string typeDot(Type t) {
+  char b[8];
+  std::snprintf(b, sizeof b, "#%06x", (unsigned)(types()[t].color & 0xffffff));
+  return b;
+}
+
 void Battle::command(FighterP a) {
   actor = a;
   Menu m;
@@ -928,6 +935,7 @@ void Battle::command(FighterP a) {
                          if (ok && t.sel < 0) t.sel = (int)t.items.size();
                          t.items.push_back({mv.name, ok ? typeName(mv.type) : T("hors d'atteinte"), moveBrief(mv, a.get()), ok,
                                             [this, a, id] { moveTarget(a, id); }, [this, a, id] { previewMove(a, id); }});
+                         t.items.back().icon = typeDot(mv.type);
                        }
                        t.sel = std::max(0, t.sel);
                        dock(t);
@@ -944,6 +952,7 @@ void Battle::command(FighterP a) {
                            bool ok = inReach(mv);
                            t.items.push_back({mv.name, ok ? std::to_string(mv.cost) + T(" PM") : T("hors d'atteinte"), moveBrief(mv, a.get()),
                                               ok && a->mp >= mv.cost, [this, a, id] { moveTarget(a, id); }, [this, a, id] { previewMove(a, id); }});
+                           t.items.back().icon = typeDot(mv.type);
                          }
                          dock(t);
                          G.menus.push(t);
