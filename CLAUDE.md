@@ -146,7 +146,9 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - `MenuStack` : pile de menus ; chaque `MenuItem` a un libellé, une valeur à
   droite, un texte d'aide, une action et un rappel `hover` (ex. curseur de cible),
   et une icône facultative `icon` (un sprite, ou un dessin de `menuGlyph` dans
-  ui.cpp : patte, damier, viser, parchemin, bulle, carte, engrenage, aide, porte…).
+  ui.cpp : patte, damier, viser, parchemin, bulle, carte, engrenage, aide, porte,
+  pas, sablier, echange, duo…), posée par `setIcons(m, {{T("Équipe"), "ic_casque_1"}…})` : menu de
+  pause, commandes du combat, écran titre ; le libellé passe 11 px plus à droite.
   Un menu du dessous n'est pas dessiné si un sous-menu le chevauche sans être
   bien à l'intérieur (4 px de marge). Un libellé trop long est coupé avec « … »
   (signalé par le mode test, sauf `MenuItem::shrink`). Les panneaux à droite
