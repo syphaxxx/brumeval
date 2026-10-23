@@ -2019,6 +2019,28 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
           battle_->start = time - 5;
           run(.5f);
           snap("defi_dos");
+          {  // (2026-10-23) « Se déplacer » près d'un soigneur : les cases d'où on le frappe dans le dos portent une dague dorée
+            FighterP lior = battle_->allies[0];
+            battle_->cells_[lior.get()] = boardAt(3, 5);
+            for (auto& f : battle_->foes)
+              if (battle_->cellOf(f) == boardAt(2, 6)) battle_->facing_[f.get()] = 1;  // le soigneur s'est retourné (il a soigné derrière lui)
+            battle_->moved_.clear();
+            menus.clear();
+            battle_->command(lior);
+            bool moveOk = false;
+            for (size_t i = 0; i < menus.top().items.size() && !moveOk; i++)
+              if (menus.top().items[i].label == T("Se déplacer")) {
+                auto act = menus.top().items[i].act;  // copie : l'action change les menus
+                act();
+                moveOk = true;
+              }
+            battle_->start = time - 5;
+            run(.1f);
+            snap("defi_dos_deplacer");
+            bool mark = moveOk && battle_->backReach(lior, boardAt(2, 5)) && !battle_->backReach(lior, boardAt(3, 4));
+            check(mark, "échiquier : en se déplaçant, les cases d'où l'on frappe un ennemi dans le dos sont marquées");
+            menus.clear();
+          }
           for (auto& f : battle_->foes) f->hp = 0, battle_->knockOut(f);
           battle_->sc.clear();
           battle_->checkEnd();

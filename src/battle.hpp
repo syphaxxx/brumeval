@@ -195,6 +195,7 @@ class Battle {
   int netCell(int c) const;                     // duel : le plateau est vu en miroir chez l'invité
   bool facesRight(const FighterP& f) const;     // son regard (facing_)
   int facingOf(const FighterP& f) const;        // +1 ou -1
+  FighterP backReach(const FighterP& a, int cell) const;  // un adversaire que a frapperait dans le dos depuis cette case
   void face(const FighterP& a, int cell);       // se tourne vers cette case (rien si elle est dans sa colonne)
   int nearestFoeSide(const FighterP& f) const;  // +1 ou -1 : le côté de l'adversaire le plus proche
   // Adversaires de f qui pourront le frapper au corps à corps s'il se tient sur cette case (au prochain tour :

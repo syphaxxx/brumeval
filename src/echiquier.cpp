@@ -139,6 +139,12 @@ bool Battle::behind(const FighterP& a, const FighterP& d, int from) const {
   return ax != dx && (ax - dx) * facingOf(d) < 0;  // du côté opposé à son regard (même colonne : de flanc, pas de dos)
 }
 
+FighterP Battle::backReach(const FighterP& a, int cell) const {
+  for (auto& e : oppOf(a))
+    if (e->alive() && cellOf(e) >= 0 && boardDist(cell, cellOf(e)) <= reach(a) && behind(a, e, cell)) return e;
+  return nullptr;
+}
+
 int Battle::facingOf(const FighterP& f) const {
   auto it = facing_.find(f.get());
   return it != facing_.end() ? it->second : isAlly(f) ? 1 : -1;

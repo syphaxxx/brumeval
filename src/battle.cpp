@@ -1030,12 +1030,14 @@ void Battle::command(FighterP a) {
                            const Rules::Terrain* tr = terrainOf(c);
                            std::string where = boardX(c) == edge && !breakthrough_.count(a.get()) && rules().breakthrough > 0
                                                    ? T("Bord adverse : Percée ! Attaque, Magie et Vitesse +") + std::to_string(rules().breakthrough) + "."
-                                               : !inHalf(true, c) ? T("Camp adverse : on peut frapper dans le dos, mais gare à l'encerclement.")
+                                               : !inHalf(true, c) ? T("Camp adverse : gare à l'encerclement.")
                                                                   : std::string();
                            int threat = meleeThreat(a, c);
                            std::string danger = threat == 0 ? std::string(T(" · Hors de portée des ennemis au prochain tour."))
                                                             : T(" · Danger : ") + std::to_string(threat) + T(" ennemi(s) pourront frapper ici.");
-                           t.items.push_back({boardName(c), "", boardName(c) + (tr ? " · " + tr->name + " : " + tr->desc : where.empty() ? "" : " · " + where) + danger, true,
+                           FighterP e = backReach(a, c);  // le plus utile d'abord : l'aide est coupée après deux lignes
+                           std::string back = e ? T(" · Dans le dos de ") + e->name() + "." : std::string();
+                           t.items.push_back({boardName(c), "", boardName(c) + back + (tr ? " · " + tr->name + " : " + tr->desc : where.empty() ? "" : " · " + where) + danger, true,
                                               [this, a, c] { moveTo(a, c); }});
                          }
                          // la case la plus proche du combattant d'abord
@@ -2593,6 +2595,12 @@ void Battle::drawZones(float t) {
         for (int k = 0; k < n; k++) {
           float x = p.x - (n - 1) * 3.f + k * 6, y = p.y + 13;
           g.poly({{x, y - 2.5f}, {x + 2.5f, y}, {x, y + 2.5f}, {x - 2.5f, y}}, rgb(0xff4a3a, 220));
+        }
+        if (backReach(actor, pick_.cells[i])) {  // (2026-10-23) d'ici, un ennemi au contact est frappé dans le dos : une dague dorée
+          float x = p.x - 12, y = p.y + 11;  // au coin gauche de la case (le centre porte l'aperçu du combattant)
+          g.line(x - 3, y + 3, x + 3, y - 3, 2, rgb(0x2a1606, 200));
+          g.line(x - 3, y + 3, x + 3, y - 3, 1, rgb(0xffe066));
+          g.line(x - 3, y - 1, x + 1, y + 3, 1, rgb(0xffb04a));  // la garde
         }
       }
     if (pick_.move && center >= 0 && actor) {  // le chemin jusqu'à la case : des points le long des pas
