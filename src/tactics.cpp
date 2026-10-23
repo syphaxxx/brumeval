@@ -291,15 +291,22 @@ void TacticsEditor::menuList(int sel) {
       } else
         it.help = ::T("Entrée : modifier, désactiver, déplacer ou effacer cette règle.");
       m.items.push_back(it);
-    } else if (i < T.slots)
-      m.items.push_back({num + "—", "", ::T("Ligne libre. Entrée : ajouter une règle."), true, [self] { self->pickCond((int)self->L().size(), true); }});
-    else
-      m.items.push_back({num + ::T("(verrouillée)"), ::T("niveau ") + std::to_string(unlockLevel(i)),
+    } else if (i < T.slots) {  // (2026-10-23) les lignes libres en une seule : la liste reste courte
+      int free = T.slots - i;
+      m.items.push_back({::T("+ Nouvelle règle"), std::to_string(free) + (free > 1 ? ::T(" libres") : ::T(" libre")),
+                         ::T("Entrée : ajouter une règle."), true, [self] { self->pickCond((int)self->L().size(), true); }});
+      i = T.slots - 1;
+    } else {  // les lignes verrouillées aussi : seulement la prochaine
+      m.items.push_back({::T("Lignes verrouillées : ") + std::to_string(lines - i), ::T("prochaine au niveau ") + std::to_string(unlockLevel(i)),
                          ::T("Une ligne de plus tous les ") + std::to_string(rules().tacticPerLvl) + ::T(" niveaux."), false, nullptr});
+      break;
+    }
   }
+  size_t tail = m.items.size();
   if (T.fighter)
     m.items.push_back({::T("Tactiques de départ"), "", ::T("Remplacer toutes les règles par celles de départ."), true, [self] { self->confirmReset(); }});
   m.items.push_back({::T("Retour"), "", "", true, [self] { self->close(); }});
+  m.items[tail].sep = true;
   m.onCancel = m.items.back().act;
   G.menus.push(m);
 }

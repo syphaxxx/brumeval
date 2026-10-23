@@ -277,7 +277,7 @@ void Game::tacticsMenu(int sel) {
                   openTacticsEditor(*this, t);
                 }};
     it.rightFn = [f] {
-      if (!f->tacticsOn) return std::string("manuel");
+      if (!f->tacticsOn) return std::string(T("manuel"));
       int n = 0, slots = tacticSlots(f->lvl);
       for (int k = 0; k < (int)f->tactics.size() && k < slots; k++) n += f->tactics[k].on;
       return std::to_string(n) + (n > 1 ? T(" règles") : T(" règle"));
