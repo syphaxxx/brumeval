@@ -564,7 +564,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - Expédition 2.9 (procgen.cpp) : talent par type (`typeTalent`) ou par classe, `role_combat` selon le profil, talent
   des gardiens, phases des gardiens, gemme en récompense, gemmes en boutique (`shopStock`). Les nouveaux tirages viennent
   d'un générateur à part semé par l'identifiant (`idHash`, `stream(…, 29)`) : le reste d'un monde ne change pas, mais
-  l'empreinte de la graine 2026 a changé (28da4b9e14a4ce4d ; 3.4 : bottes dans les boutiques, 171c24418b3b440e). Les conseils de l'histoire sont vidés en Expédition.
+  l'empreinte de la graine 2026 a changé (28da4b9e14a4ce4d ; 3.4 : bottes dans les boutiques, 171c24418b3b440e ; 2026-10-23 : conseil « Échap > Préparation > Tactiques », eb8f2be6200f01bc). Les conseils de l'histoire sont vidés en Expédition.
 - Acte 2 (3.0) : cartes `port`, `recif`, `ruines`, `tour` (générées par un script, puis réglées à la main), le bateau
   du pêcheur (page `boss4` de l'événement `pecheur`) et le `passeur`. Énigmes : tuiles `O`/`P`/`D`, `MapDef::puzzle*`
   (champ `enigme`), `solvePuzzle` (world.cpp, recherche en largeur, aussi dans `checkMaps`), `Game::boulders_`

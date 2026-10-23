@@ -170,7 +170,8 @@ void Game::pauseMenu() {
                          px = M().puzzleX, py = M().puzzleY, moving = false;
                        }});
   m.items.push_back({T("Équipe"), "", T("Ordre de combat et fiches."), true, [this] { teamMenu(); }});
-  m.items.push_back({T("Compagnons"), "", T("La créature qui combat aux côtés de chaque héros."), true, [this] { companionsMenu(); }});
+  m.items.push_back({T("Préparation"), "", T("Formation, compagnons, tactiques et réserve : préparer l'équipe aux combats."), true, [this] { prepMenu(); }});
+  m.items.push_back({T("Équipement"), "", T("Armes, armures et accessoires."), true, [this] { gearMenu(); }});
   {
     int waiting = 0;
     for (auto& f : team) waiting += canEvolve(*f) && f->evolveLater;
@@ -178,24 +179,18 @@ void Game::pauseMenu() {
       m.items.push_back({T("Évolution"), std::to_string(waiting), T("Des créatures peuvent évoluer (vous aviez répondu Non)."), true,
                          [this] { evolutionMenu(); }});
   }
-  m.items.push_back({T("Formation"), "", T("La place de chacun sur le damier de combat (avant, milieu, arrière)."), true, [this] { formationMenu(); }});
-  m.items.push_back({T("Réserve"), reserve.empty() ? "" : std::to_string(reserve.size()), T("Les créatures en plus de l'équipe (") +
-                     std::to_string(rules().maxTeam) + T(" membres au plus)."), true, [this] { reserveMenu(); }});
-  m.items.push_back({T("Bestiaire"), "", T("Les créatures rencontrées et obtenues, et leur fiche."), true, [this] { bestiaryMenu(); }});
-  m.items.push_back({T("Tactiques"), "", T("Ce que chaque membre fait tout seul en combat (mode auto : touche Tab)."), true, [this] { tacticsMenu(); }});
-  m.items.push_back({T("Équipement"), "", T("Armes, armures et accessoires."), true, [this] { gearMenu(); }});
-  m.items.push_back({T("Journal"), "", T("Les quêtes en cours et terminées."), true, [this] { journalMenu(); }});
-  if (!inExpedition()) {
-    int n = newDiscussions();
-    m.items.push_back({T("Discussions"), n ? std::to_string(n) : "", T("Ce que se disent les héros au fil de l'aventure."), true, [this] { discussionsMenu(); }});
+  m.items.push_back({T("Objets"), "", T("Utiliser un objet."), true, [this] { itemMenu(); }});
+  m.items.push_back({T("Magie"), "", T("Lancer un sort de soin."), true, [this] { magicMenu(); }});
+  {
+    int n = inExpedition() ? 0 : newDiscussions();  // une nouvelle discussion se voit dès le menu de pause
+    m.items.push_back({T("Journal"), n ? std::to_string(n) : "", T("Quêtes, discussions des héros, Bestiaire, progression et exploits."), true,
+                       [this] { journalMenu(); }});
   }
   if (!inExpedition())
     m.items.push_back({T("Carte"), "", T("La carte du monde : les lieux où vous pouvez aller, et où vous êtes."), true, [this] {
                          worldMapOn_ = true;
                          audio::play("valider");
                        }});
-  m.items.push_back({T("Objets"), "", T("Utiliser un objet."), true, [this] { itemMenu(); }});
-  m.items.push_back({T("Magie"), "", T("Lancer un sort de soin."), true, [this] { magicMenu(); }});
   if (inExpedition()) {
     bool group = online_ && online_->inGroup();
     m.items.push_back({T("Sauvegarder"), "", T("Expédition : ") + expedition_->status() + ".", true,
@@ -220,13 +215,36 @@ void Game::pauseMenu() {
   m.items.push_back({T("Reprendre"), "", "", true, [this] { menus.clear(); }});
   // (2026-10-23) une petite icône devant chaque entrée : la liste se lit d'un coup d'œil
   setIcons(m, {
-      {T("Fin du test"), "porte"}, {T("Recommencer l'énigme"), "caillou"}, {T("Équipe"), "ic_casque_1"}, {T("Compagnons"), "patte"},
-      {T("Évolution"), "etoile"}, {T("Formation"), "damier"}, {T("Réserve"), "ic_lanterne"}, {T("Bestiaire"), "ic_livre"},
-      {T("Tactiques"), "viser"}, {T("Équipement"), "ic_epee_1"}, {T("Journal"), "parchemin"}, {T("Discussions"), "bulle"},
+      {T("Fin du test"), "porte"}, {T("Recommencer l'énigme"), "caillou"}, {T("Équipe"), "ic_casque_1"}, {T("Préparation"), "damier"},
+      {T("Évolution"), "etoile"}, {T("Équipement"), "ic_epee_1"}, {T("Journal"), "parchemin"},
       {T("Carte"), "carte"}, {T("Objets"), "ic_sac"}, {T("Magie"), "ic_baton_1"}, {T("Sauvegarder"), "ic_gemme_cristal"},
       {T("Groupe"), "ic_casque_2"}, {T("Abandonner"), "drapeau"}, {T("Écran titre"), "porte"}, {T("Options"), "engrenage"},
       {T("Aide"), "aide"}, {T("Reprendre"), "reprendre"}});
+  // (2026-10-23) l'ordre et les groupes : l'équipe, le sac, l'aventure, la partie
+  for (size_t i = 0; i < m.items.size(); i++)
+    if (m.items[i].label == T("Écran titre") && i + 1 < m.items.size()) {  // juste avant « Reprendre »
+      MenuItem it = m.items[i];
+      m.items.erase(m.items.begin() + (long)i);
+      m.items.insert(m.items.end() - 1, it);
+      break;
+    }
+  for (auto& it : m.items)
+    it.sep = it.label == T("Objets") || it.label == T("Journal") || it.label == T("Sauvegarder") || it.label == T("Reprendre");
   m.rows = std::min(13, (int)m.items.size());  // au-delà, la liste défile (la bande d'aide reste visible)
+  menus.push(m);
+}
+
+// Échap > Préparation (2026-10-23) : ce qui prépare l'équipe aux combats, pour alléger le menu de pause
+void Game::prepMenu() {
+  Menu m;
+  m.title = T("Préparation");
+  m.x = 8, m.y = 8, m.w = 110, m.rows = 6;
+  m.items.push_back({T("Formation"), "", T("La place de chacun sur le damier de combat (avant, milieu, arrière)."), true, [this] { formationMenu(); }});
+  m.items.push_back({T("Compagnons"), "", T("La créature qui combat aux côtés de chaque héros."), true, [this] { companionsMenu(); }});
+  m.items.push_back({T("Tactiques"), "", T("Ce que chaque membre fait tout seul en combat (mode auto : touche Tab)."), true, [this] { tacticsMenu(); }});
+  m.items.push_back({T("Réserve"), reserve.empty() ? "" : std::to_string(reserve.size()), T("Les créatures en plus de l'équipe (") +
+                     std::to_string(rules().maxTeam) + T(" membres au plus)."), true, [this] { reserveMenu(); }});
+  setIcons(m, {{T("Formation"), "damier"}, {T("Compagnons"), "patte"}, {T("Tactiques"), "viser"}, {T("Réserve"), "ic_lanterne"}});
   menus.push(m);
 }
 
@@ -808,7 +826,27 @@ void Game::journalMenu() {
     it.shrink = true;
     m.items.push_back(it);
   }
-  setIcons(m, {{T("Prochain gardien"), "carte"}, {T("Progression"), "etoile"}, {T("Exploits"), "coupe"}});
+  if (!inExpedition()) {  // (2026-10-23) venus du menu de pause ; au retour, le Journal retrouve son affichage
+    auto back = [this] {
+      panelMode_ = 0;
+      menus.pop();
+    };
+    int n = newDiscussions();
+    MenuItem talk{T("Discussions"), n ? std::to_string(n) + T(" nouv.") : "", T("Ce que se disent les héros au fil de l'aventure."), true, [this, back] {
+                    discussionsMenu();
+                    menus.top().onCancel = back;
+                  }};
+    MenuItem best{T("Bestiaire"), "", T("Les créatures rencontrées et obtenues, et leur fiche."), true, [this, back] {
+                    bestiaryMenu();
+                    menus.top().onCancel = back;
+                  }};
+    size_t at = 0;  // après Prochain gardien, Progression et Exploits, avant les quêtes
+    while (at < m.items.size() && (m.items[at].label == T("Prochain gardien") || m.items[at].label == T("Progression") || m.items[at].label == T("Exploits"))) at++;
+    m.items.insert(m.items.begin() + (long)at, {talk, best});
+    if (m.items.size() > at + 2) m.items.insert(m.items.begin() + (long)at + 2, menuHeader(T("Quêtes")));  // la liste des quêtes à part
+  }
+  setIcons(m, {{T("Prochain gardien"), "carte"}, {T("Progression"), "etoile"}, {T("Exploits"), "coupe"}, {T("Discussions"), "bulle"},
+               {T("Bestiaire"), "ic_livre"}});
   if (m.items.empty()) m.items.push_back({T("(aucune quête)"), "", T("Parlez aux habitants : certains ont besoin d'aide."), false, nullptr});
   m.onCancel = [this] {
     panelMode_ = 1;
@@ -861,7 +899,7 @@ void Game::progressMenu() {
   line(T("Coffres ouverts"), chd, ch, T("Tous les coffres du monde, éclats de brume compris."));
   line(T("Créatures obtenues"), caughtN, sp, T("Le Bestiaire : les créatures capturées ou reçues (sans les humains ni les boss)."));
   line(T("Poissons pêchés"), fishCaught(), fishSpecies(), T("Le carnet du maître pêcheur du port."));
-  line(T("Discussions écoutées"), talk, discussionCount(), T("Échap > Discussions : ce que se disent les héros."));
+  line(T("Discussions écoutées"), talk, discussionCount(), T("Échap > Journal > Discussions : ce que se disent les héros."));
   line(T("Trésors cachés"), hidd, hid, T("Les trésors des cartes de Corbin, au port : chacun contient la carte du suivant."));
   line(T("Joueurs de cartes battus"), cardsWon(), cardFoeCount(), T("Les joueurs de Cartes des gardiens, dans les auberges et les maisons."));
   line(T("Cartes des gardiens"), (int)cardCollection().size(), cardTotal(), T("Chaque créature obtenue donne sa carte ; les cartes des boss se gagnent aux joueurs."));

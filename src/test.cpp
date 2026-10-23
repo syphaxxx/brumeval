@@ -2404,13 +2404,16 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       }
       check(mode == Mode::Map && !menu, "tactiques : le combat se joue tout seul en mode auto, sans ouvrir de menu");
     }
-    // Éditeur des tactiques : menu de pause > Tactiques > Lior
+    // Éditeur des tactiques : menu de pause > Préparation > Tactiques > Lior
     skipScript();
     menus.clear();
     sc.clear();
     in.menu = true;
     frame();
-    bool inMenu = selectLabel("Tactiques");
+    bool inMenu = selectLabel("Préparation");
+    in.confirm = true;
+    frame();
+    inMenu = selectLabel("Tactiques") && inMenu;
     in.confirm = true;
     frame();
     run(.1f);
@@ -2511,6 +2514,10 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     banner = 0;
     pauseMenu();
     show("pause");
+    prepMenu();
+    show("préparation");
+    menus.clear();
+    pauseMenu();
     teamMenuAt(1);
     show("équipe");
     menus.clear();
@@ -3204,7 +3211,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
             "expédition : la même graine redonne exactement le même monde");
       // À plusieurs, chaque joueur génère le monde chez lui : l'empreinte doit être la même sous Windows, Mac et Linux
       std::string wh = Expedition::worldHash(2026, 3);
-      check(wh == "171c24418b3b440e", "expédition : la graine 2026 donne le même monde sur tous les systèmes (empreinte " + wh + ")");
+      check(wh == "eb8f2be6200f01bc", "expédition : la graine 2026 donne le même monde sur tous les systèmes (empreinte " + wh + ")");
       procgen::Content c1 = procgen::generateBase(7), c6 = c1;
       std::string shop1 = procgen::generateRegion(7, 1, c1).events.dump(), shop6;
       for (int k = 1; k <= 6; k++) shop6 = procgen::generateRegion(7, k, c6).events.dump();

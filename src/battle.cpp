@@ -2337,7 +2337,7 @@ void Battle::useItem(FighterP a, const std::string& id, FighterP t) {
         (full ? G.reserve : G.team).push_back(t);
         G.caught.insert(t->sp);
         sc.call([this] { sound("capture"); });
-        sc.say(T("Capturé ! ") + t->name() + (full ? T(" est envoyé dans la réserve (Échap > Réserve).") : T(" rejoint l'équipe.")), 1.5f);
+        sc.say(T("Capturé ! ") + t->name() + (full ? T(" est envoyé dans la réserve (Échap > Préparation > Réserve).") : T(" rejoint l'équipe.")), 1.5f);
       } else {
         sc.call([this] { sound("capture_rate"); });
         sc.say(t->name() + T(" s'échappe de la lumière !"), 1.0f);

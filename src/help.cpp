@@ -53,7 +53,7 @@ static std::vector<HelpPage> helpPages() {
                 ::T("Sauvegarde automatique à chaque passage et porte (Options > Sauvegarde auto pour la couper)."),
                 ::T("Voyage rapide : Échap > Carte, flèches pour choisir un village déjà visité, Entrée pour y aller."),
                 ::T("Cinq donjons optionnels (Mines, Glacier, Épave, Abîme, Vieux Phare) et le grand bestiaire de la professeure de la Vallée."),
-                ::T("Discussions : les héros se parlent au fil de l'aventure (Échap > Discussions)."),
+                ::T("Discussions : les héros se parlent au fil de l'aventure (Échap > Journal > Discussions)."),
                 ::T("Exploits : trente-deux défis à relever, de la fin des actes au carnet de pêche complet (Échap > Journal > Exploits)."),
                 ::T("Après l'acte 3, chaque héros a sa quête : quelqu'un de son passé, un adversaire, et une arme que lui seul peut porter."),
                 ::T("Les cartes au trésor de Corbin, au port : chaque trésor caché contient la carte du suivant."),
@@ -96,7 +96,7 @@ static std::vector<HelpPage> helpPages() {
                {::T("Jauge ATB (trait blanc) : pleine, le combattant agit. Le temps s'arrête pendant que vous choisissez."),
                 ::T("Compagnons : chaque héros combat avec sa créature. Leur jauge avance à ") + pct(R.companionAtb) + ::T(" de la vitesse normale."),
                 ::T("Limite (trait rose) : se remplit quand on reçoit des coups. Pleine, la technique ultime du combattant est prête."),
-                ::T("Mode auto (Tab) : chacun joue sa première tactique possible (Échap > Tactiques)."),
+                ::T("Mode auto (Tab) : chacun joue sa première tactique possible (Échap > Préparation > Tactiques)."),
                 ::T("Objets : soins, remèdes. Une lanterne capture une créature sauvage : plus elle est affaiblie, mieux c'est."),
                 ::T("Fuir : ") + pct(R.flee) + ::T(" de chance de réussir, pas contre tous les adversaires."),
                 ::T("Changer : un autre membre de l'équipe prend la place d'un combattant.")}});
@@ -180,7 +180,7 @@ static std::vector<HelpPage> helpPages() {
                 ::T("En choisissant sa case : le chemin s'affiche, et des losanges rouges comptent les ennemis qui pourront y frapper. Tant qu'on n'a pas agi, « Revenir » annule le déplacement."),
                 ::T("Certaines techniques bondissent derrière la cible ou échangent les cases. Les bottes (accessoires) font avancer d'une case de plus. Tactiques : S'approcher, Contourner, Protéger."),
                 ::T("Pour s'entraîner : Arène > Défis de l'échiquier (positions imposées, une leçon chacune)."),
-                ::T("Formation (Échap > Formation) : la case de chacun au début du combat, dans votre moitié. Les costauds devant, les lanceurs de sorts derrière.")}});
+                ::T("Formation (Échap > Préparation > Formation) : la case de chacun au début du combat, dans votre moitié. Les costauds devant, les lanceurs de sorts derrière.")}});
   p.push_back({::T("Zones"), ::T("Ligne, colonne, croix, tout le camp ; attaques annoncées."),
                {::T("Une cible : seulement la case visée."),
                 ::T("Ligne : la case visée et toute sa ligne, d'un bord du plateau à l'autre."),

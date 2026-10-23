@@ -169,6 +169,7 @@ class Game {
   std::string autoSaveFile_ = "sauvegarde.txt";  // seule la vraie partie se sauvegarde seule (le mode test le change)
   void newGame(const std::string& starter);
   void pauseMenu();
+  void prepMenu();  // Échap > Préparation : formation, compagnons, tactiques, réserve
   void tacticsMenu(int sel = 0);
   void teamMenu();
   void itemMenu();

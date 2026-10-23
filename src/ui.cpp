@@ -403,6 +403,7 @@ void MenuStack::draw(Gfx& g, float t) const {
         g.rect(m.x + 8 + Gfx::textW(label), y + 5, m.w - 16 - Gfx::textW(label), 1, rgb(0x8090c8, 140));
         continue;
       }
+      if (it.sep && i > 0) g.rect(m.x + 12, y - 1, m.w - 24, 1, rgb(0x8090c8, 90));  // début d'un groupe
       Color c = !it.enabled ? rgb(0x8a92b8) : it.color ? rgb(it.color) : rgb(0xffffff);
       std::string right = it.rightFn ? it.rightFn() : it.right;
       int rw = right.empty() ? 0 : Gfx::textW(right) + 6;
