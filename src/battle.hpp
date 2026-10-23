@@ -149,6 +149,10 @@ class Battle {
   // combattant pendant ce combat ; au départ, la formation de l'équipe (Fighter::cell) pour les alliés, un
   // placement automatique pour les ennemis, chacun dans sa moitié. On peut ensuite passer de l'autre côté.
   std::map<const Fighter*, int> cells_;
+  // Regard (2026-10-23) : +1 vers la droite du plateau, -1 vers la gauche ; absent = vers le camp adverse.
+  // Il se tourne en se déplaçant (vers où il va), en agissant (vers sa cible) et en attendant (vers l'adversaire
+  // le plus proche) ; un coup au corps à corps venu du côté opposé à son regard est « dans le dos ».
+  std::map<const Fighter*, int> facing_;
   std::map<const Fighter*, float> koT_;  // moment du K.O. (un ennemi vaincu s'efface en 0,6 s avec un éclat)
   int cellOf(const FighterP& f) const;  // -1 : pas sur le plateau
   void place(const std::vector<FighterP>& v, bool keep, bool left);
@@ -188,7 +192,10 @@ class Battle {
   void resumeTurn(FighterP a);                  // après « Se déplacer » : le même combattant choisit son action
   void waitTurn(FighterP a);                    // « Attendre » : finir son tour sans agir (rejoue plus tôt)
   int netCell(int c) const;                     // duel : le plateau est vu en miroir chez l'invité
-  bool facesRight(const FighterP& f) const;     // tourné vers l'adversaire le plus proche
+  bool facesRight(const FighterP& f) const;     // son regard (facing_)
+  int facingOf(const FighterP& f) const;        // +1 ou -1
+  void face(const FighterP& a, int cell);       // se tourne vers cette case (rien si elle est dans sa colonne)
+  int nearestFoeSide(const FighterP& f) const;  // +1 ou -1 : le côté de l'adversaire le plus proche
   // Adversaires de f qui pourront le frapper au corps à corps s'il se tient sur cette case (au prochain tour :
   // déplacement + portée, sans compter les détours) : marqués en rouge quand on choisit où aller
   int meleeThreat(const FighterP& f, int cell) const;

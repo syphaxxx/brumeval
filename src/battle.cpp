@@ -2196,6 +2196,7 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
       step(a, c);
     }
   }
+  if (!targets.empty() && targets[0] && targets[0] != a) face(a, cellOf(targets[0]));  // il se tourne vers sa cible
   // Zone autour d'une cible : les combattants voisins sont touchés aussi, un peu moins fort
   FighterP center = boost == 1 && m.zone != Area::Single && m.zone != Area::All && targets.size() == 1 ? targets[0] : nullptr;
   if (center) targets = zoneTargets(m, center);
@@ -2966,6 +2967,14 @@ void Battle::draw() {
         if (c == zCenter || (zm && (zm->zone == Area::All || inBoardZone(zm->zone, zCenter, c)))) zCells.insert(c);
     }
   }
+  // Le regard (2026-10-23) : une petite flèche au sol, devant les pieds, de la couleur du camp ; le dos est de l'autre côté
+  for (auto& f : shown)
+    if (f->alive() && cellOf(f) >= 0 && !ending_) {
+      Pt p = pos(f);
+      float d = facesRight(f) ? 1.f : -1.f, x0 = p.x + d * (f->boss ? 20 : 14), y0 = p.y + 14;
+      g.tri(x0 - d, y0 - 4, x0 - d, y0 + 4, x0 + d * 6, y0, rgb(0x0a0f33, 140));  // contour sombre
+      g.tri(x0, y0 - 2.8f, x0, y0 + 2.8f, x0 + d * 4.5f, y0, isAlly(f) ? rgb(0x8fd0ff, 230) : rgb(0xff8a7a, 230));
+    }
   for (auto& f : shown) {
     Pt p = pos(f);
     Pt o = offset(f);
@@ -3330,7 +3339,7 @@ Json Battle::netState() const {
     for (auto& f : v) {
       Json st = Json::array();
       for (int k = 0; k < N_STAGES; k++) st.push_back(f->stage[k]);
-      a.push_back(Json::array({f->hp, f->mp, (int)std::lround(f->atb), (int)std::lround(f->lim), (int)f->status, st, netCell(cellOf(f)), f->shield, f->broken ? 1 : 0}));
+      a.push_back(Json::array({f->hp, f->mp, (int)std::lround(f->atb), (int)std::lround(f->lim), (int)f->status, st, netCell(cellOf(f)), f->shield, f->broken ? 1 : 0, facingOf(f)}));
     }
     return a;
   };
@@ -3381,6 +3390,7 @@ void Battle::netMessage(const Json& m) {
             cells_[&f] = c;
           }
           if (x.size() > 8) f.shield = x.at(7).get<int>(), f.broken = x.at(8).get<int>() != 0;  // Brisure
+          if (x.size() > 9) facing_[&f] = (x.at(9).get<int>() < 0 ? -1 : 1) * (net_ == Net::Guest ? -1 : 1);  // regard (miroir chez l'invité)
           // at() : une liste trop courte lève une erreur (rattrapée par Online::update) au lieu de lire n'importe quoi
           f.hp = x.at(0).get<int>(), f.mp = x.at(1).get<int>(), f.atb = x.at(2).get<float>(), f.lim = x.at(3).get<float>();
           f.status = Status(std::clamp(x.at(4).get<int>(), 0, 4));

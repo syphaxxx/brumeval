@@ -596,7 +596,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     bool blocked = true;
     for (auto& [c, d] : B.walkable(lior)) blocked = blocked && boardX(c) <= GRID;
     check(reach && afterMove && blocked, "échiquier : le corps à corps vise un ennemi au contact ou qu'on peut rejoindre ; on s'arrête au contact d'un ennemi");
-    // Dans le dos : même coup, même hasard, frappé depuis le côté de son camp
+    // Dans le dos : même coup, même hasard, frappé du côté opposé à son regard
     auto hitFrom = [&](const FighterP& d, int from, const Move& m) {
       B.cells_[lior.get()] = from;
       seedRandom(2026);  // la même suite de tirages : seule la case change
@@ -613,7 +613,20 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     long long front = hitFrom(extra, boardAt(0, 4), bite), back = hitFrom(extra, boardAt(0, 6), bite);
     // Distance au contact : moins fort
     long long far = hitFrom(extra, boardAt(2, 2), wave), near = hitFrom(extra, boardAt(0, 4), wave);
+    // Le regard (2026-10-23) : retourné vers son camp, son dos est de l'autre côté ; il se tourne vers où il va
+    B.facing_[extra.get()] = 1;
+    long long turnedFront = hitFrom(extra, boardAt(0, 6), bite), turnedBack = hitFrom(extra, boardAt(0, 4), bite);
+    B.facing_.erase(extra.get());
+    B.cells_[lior.get()] = boardAt(2, 2);
+    B.face(lior, boardAt(2, 0));
+    bool turns = !B.facesRight(lior);
+    B.face(lior, boardAt(0, 2));  // même colonne : il garde son regard
+    turns = turns && !B.facesRight(lior);
+    B.facing_.erase(lior.get());
     seedRandom(std::random_device{}());  // la suite du mode test retrouve son hasard
+    check(turnedBack > turnedFront * 1.15 && turns,
+          "échiquier : le dos dépend du regard (retourné : " + std::to_string(turnedBack) + " contre " + std::to_string(turnedFront) +
+              ") ; on se tourne vers où l'on va");
     check(back > front * 1.15 && near > 0 && near < far * 0.85,
           "échiquier : un coup dans le dos fait plus mal (" + std::to_string(back) + " contre " + std::to_string(front) +
               ") ; à distance, moins fort au contact (" + std::to_string(near) + " contre " + std::to_string(far) + ")");

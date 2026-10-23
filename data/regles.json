@@ -283,7 +283,7 @@
     {
       "id": "dos",
       "aide": "Échiquier",
-      "texte": "Coup dans le dos ! Frapper un ennemi depuis le côté de son camp fait plus mal. Attention : là-bas, on risque d'être encerclé."
+      "texte": "Coup dans le dos ! Chacun regarde vers sa dernière cible ou vers où il a marché : frappé de l'autre côté, il encaisse plus. Gare à votre propre dos quand vous vous retournez."
     },
     {
       "id": "percee",
