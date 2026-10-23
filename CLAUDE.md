@@ -144,7 +144,9 @@ code) ; `docs/GUIDE.md` les range par domaine.
   *pendant* un `call` sont insérées juste après lui : c'est ce qui enchaîne les
   scènes et les tours de combat.
 - `MenuStack` : pile de menus ; chaque `MenuItem` a un libellé, une valeur à
-  droite, un texte d'aide, une action et un rappel `hover` (ex. curseur de cible).
+  droite, un texte d'aide, une action et un rappel `hover` (ex. curseur de cible),
+  et une icône facultative `icon` (un sprite, ou un dessin de `menuGlyph` dans
+  ui.cpp : patte, damier, viser, parchemin, bulle, carte, engrenage, aide, porte…).
   Un menu du dessous n'est pas dessiné si un sous-menu le chevauche sans être
   bien à l'intérieur (4 px de marge). Un libellé trop long est coupé avec « … »
   (signalé par le mode test, sauf `MenuItem::shrink`). Les panneaux à droite
