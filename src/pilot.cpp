@@ -1455,7 +1455,7 @@ int Game::autoGame(SDL_Surface* target, const std::string& out) {
   };
   say("Partie automatique de Brumeval (premier compagnon : " + team.at(1)->name() + ")");
   const float dt = 1 / 30.f;
-  const float limit = 10 * 3600;  // dix heures de jeu au plus
+  const float limit = 14 * 3600;  // quatorze heures de jeu au plus (rééquilibrage du 2026-10-23 : le jeu est plus long)
   size_t shown = 0;
   for (long i = 0; !P.over() && P.clock < limit; i++) {
     update(dt);
@@ -1473,7 +1473,7 @@ int Game::autoGame(SDL_Surface* target, const std::string& out) {
     if (i % (30 * 600) == 0) say("  … " + P.summary());  // toutes les dix minutes de jeu
   }
   while (shown < P.journal.size()) say(P.journal[shown++]);
-  if (!P.over()) say("ARRÊT : plus de dix heures de jeu sans finir");
+  if (!P.over()) say("ARRÊT : plus de quatorze heures de jeu sans finir");
   say("");
   say(P.finished ? "RÉSULTAT : histoire terminée" : "RÉSULTAT : histoire NON terminée");
   say(P.summary());

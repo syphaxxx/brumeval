@@ -23,7 +23,7 @@
     "alpha": 0.06,
     "alpha_niveaux": 3,
     "part_nuit": 0.5,
-    "par_allie": 0.6,
+    "par_allie": 0.5,
     "ecart_niveau": 4,
     "plafond_niveau": 6
   },
@@ -512,9 +512,9 @@
   },
   "recompenses": {
     "xp_par_niveau": 7,
-    "exp_ecart": 0.12,
-    "exp_marge": 2,
-    "exp_min": 0.1,
+    "exp_ecart": 0.08,
+    "exp_marge": 4,
+    "exp_min": 0.25,
     "xp_boss": 3,
     "or_par_niveau": 4,
     "or_boss": 8,
