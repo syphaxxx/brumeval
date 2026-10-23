@@ -219,6 +219,12 @@ static void menuGlyph(Gfx& g, const std::string& n, float x, float y, uint8_t al
   }
 }
 
+void setIcons(Menu& m, std::initializer_list<std::pair<std::string, const char*>> icons) {
+  for (auto& it : m.items)
+    for (auto& [label, ic] : icons)
+      if (it.label == label) it.icon = ic;
+}
+
 size_t MenuStack::shownDepth() const {
   size_t n = 0;
   for (auto& m : st_) n += !m.hidden;

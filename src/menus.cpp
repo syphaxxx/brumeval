@@ -219,16 +219,13 @@ void Game::pauseMenu() {
   m.items.push_back({T("Aide"), "", T("Statistiques, dégâts, damier, zones, états, tableau des types, touches (F1)."), true, [this] { helpMenu(); }});
   m.items.push_back({T("Reprendre"), "", "", true, [this] { menus.clear(); }});
   // (2026-10-23) une petite icône devant chaque entrée : la liste se lit d'un coup d'œil
-  const std::pair<std::string, const char*> icons[] = {
+  setIcons(m, {
       {T("Fin du test"), "porte"}, {T("Recommencer l'énigme"), "caillou"}, {T("Équipe"), "ic_casque_1"}, {T("Compagnons"), "patte"},
       {T("Évolution"), "etoile"}, {T("Formation"), "damier"}, {T("Réserve"), "ic_lanterne"}, {T("Bestiaire"), "ic_livre"},
       {T("Tactiques"), "viser"}, {T("Équipement"), "ic_epee_1"}, {T("Journal"), "parchemin"}, {T("Discussions"), "bulle"},
       {T("Carte"), "carte"}, {T("Objets"), "ic_sac"}, {T("Magie"), "ic_baton_1"}, {T("Sauvegarder"), "ic_gemme_cristal"},
       {T("Groupe"), "ic_casque_2"}, {T("Abandonner"), "drapeau"}, {T("Écran titre"), "porte"}, {T("Options"), "engrenage"},
-      {T("Aide"), "aide"}, {T("Reprendre"), "reprendre"}};
-  for (auto& it : m.items)
-    for (auto& [label, ic] : icons)
-      if (it.label == label) it.icon = ic;
+      {T("Aide"), "aide"}, {T("Reprendre"), "reprendre"}});
   m.rows = std::min(13, (int)m.items.size());  // au-delà, la liste défile (la bande d'aide reste visible)
   menus.push(m);
 }

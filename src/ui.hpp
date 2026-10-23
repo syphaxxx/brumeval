@@ -2,6 +2,7 @@
 #pragma once
 #include <deque>
 #include <functional>
+#include <initializer_list>
 #include <string>
 #include <vector>
 
@@ -91,6 +92,10 @@ inline MenuItem menuHeader(const std::string& label) {
   it.header = true;
   return it;
 }
+
+struct Menu;
+// Donne une icône (MenuItem::icon) aux entrées de ce libellé (déjà traduit)
+void setIcons(Menu& m, std::initializer_list<std::pair<std::string, const char*>> icons);
 
 struct Menu {
   std::string title;

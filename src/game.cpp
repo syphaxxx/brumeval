@@ -903,7 +903,7 @@ void Game::titleMenu() {
   editorTest_ = storyTest_ = false;
   menus.clear();
   Menu m;
-  m.x = 102, m.y = 110, m.w = 116, m.rows = 8, m.cancelable = false;
+  m.x = 100, m.y = 110, m.w = 120, m.rows = 8, m.cancelable = false;  // (la place des icônes)
   bool can = saveExists();
   m.items.push_back({T("Nouvelle partie"), "", "", true, [this, can] {
                        if (!can) return starterMenu();
@@ -938,6 +938,8 @@ void Game::titleMenu() {
   m.items.push_back({T("Options"), "", T("Volumes, plein écran, vitesse du jeu et touches."), true, [this] { optionsMenu(); }});
   m.items.push_back({T("Aide"), "", T("Statistiques, dégâts, damier, zones, états, tableau des types, touches (F1)."), true, [this] { helpMenu(); }});
   m.items.push_back({T("Quitter"), "", "", true, [this] { quit = true; }});
+  setIcons(m, {{T("Nouvelle partie"), "etoile"}, {T("Continuer"), "reprendre"}, {T("Expédition"), "carte"}, {T("Multijoueur"), "duo"},
+               {T("Outils"), "ic_marteau_1"}, {T("Options"), "engrenage"}, {T("Aide"), "aide"}, {T("Quitter"), "porte"}});
   if (can) m.sel = 1;
   menus.push(m);
 }
