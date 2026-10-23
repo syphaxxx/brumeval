@@ -227,6 +227,11 @@ struct Rules {
   double alpha = 0;   // chance qu'une meute (2 créatures ou plus) soit menée par un alpha (comme un boss)
   int alphaLevels = 3;     // niveaux en plus de l'alpha
   double nightShare = .5;  // part des rencontres de nuit tirées de la liste « nuit » d'une zone
+  // (2026-10-23, rééquilibrage) des rencontres à la mesure de l'équipe : au moins perAlly ennemis par combattant allié
+  // (arrondi), et des créatures sauvages au plus levelGap niveaux sous la moyenne de l'équipe, sans dépasser le haut de
+  // la zone de plus de levelCap niveaux (0 : réglage coupé ; jamais en Expédition)
+  double perAlly = 0;
+  int levelGap = 0, levelCap = 6;
   // Combat
   double atbBase = 20, atbSpeed = 1.1, flee = .7, limitGain = 110, stab = 1.25, spreadMin = .85, dmgDivisor = 40;
   double critMult = 1.5, stageStep = .25;

@@ -735,13 +735,23 @@ void Game::encounter() {
     n = std::min(n, z.maxN);
     // Meute : au plus profond de la nature, des créatures en plus
     float deep = std::min(1.f, wildDepth(px, py) / float(std::max(1.0, rules().packDistance)));
-    for (int k = n; k < (z.packCap > 0 ? z.packCap : rules().packMax); k++)
+    int most = z.packCap > 0 ? z.packCap : rules().packMax;
+    for (int k = n; k < most; k++)
       if (frand() < .5f * deep) n++;
+    // (2026-10-23) à la mesure de l'équipe : une équipe de six ne croise plus deux créatures seules
+    auto fr = front();
+    if (!inExpedition() && rules().perAlly > 0) n = std::clamp((int)std::lround(fr.size() * rules().perAlly), n, std::max(n, most));
+    int floorLvl = -1;  // les créatures sauvages ne restent pas trop loin sous l'équipe
+    if (!inExpedition() && rules().levelGap > 0 && !fr.empty()) {
+      int sum = 0;
+      for (auto& f : fr) sum += f->lvl;
+      floorLvl = std::min(sum / (int)fr.size() - rules().levelGap, z.hi + rules().levelCap);
+    }
     std::vector<FighterP> foes;
     bool night = !z.night.empty() && nightAmount() > .5f && frand() < rules().nightShare;  // la nuit, ses créatures à elle
     const auto& pool = night ? z.night : z.pool;
     for (int i = 0; i < n; i++) {
-      foes.push_back(makeFighter(pool[irand(0, (int)pool.size() - 1)], irand(z.lo, z.hi) + foeLevelBonus));
+      foes.push_back(makeFighter(pool[irand(0, (int)pool.size() - 1)], std::max(irand(z.lo, z.hi), floorLvl) + foeLevelBonus));
       if (!inExpedition() && frand() < rules().chroma) foes.back()->chroma = true;  // couleurs rares
     }
     if (n >= 2 && !inExpedition() && frand() < rules().alpha) {  // une meute menée par un alpha : plus fort, traité comme un boss
