@@ -8,6 +8,7 @@
 // coffre, entrer dans une nouvelle carte, affronter un boss quand l'équipe est prête…).
 // Ainsi, il suit l'histoire même si les données changent, et signale où il reste bloqué.
 #pragma once
+#include <deque>
 #include <map>
 #include <set>
 #include <string>
@@ -171,9 +172,25 @@ class Pilot {
   std::vector<std::string> buyList_;
   bool shopPlanned_ = false;
   void shopping();
-  void equipBest();
+  void equipBest(bool show = false);  // show (démo) : par les menus, comme un joueur
+  // Démo (2026-10-23) : des « visites » de menus, comme un joueur : un chemin de libellés choisis l'un après l'autre
+  // depuis le menu de pause (Échap), puis un temps pour regarder ; l'équipement et les gemmes passent par là en démo,
+  // et il ouvre aussi les tactiques, la formation, le Journal et le Bestiaire aux bons moments
+  struct Visit {
+    std::vector<std::string> path;
+    float look = 2.5f;
+    bool gear = false;  // un changement d'équipement : à la fin, equipBest() finit ce que les menus n'ont pas fait
+  };
+  std::deque<Visit> visits_;
+  size_t visitStep_ = 0;
+  bool visitOpen_ = false, visitClosing_ = false;
+  float lastLook_ = -1e9f;  // dernière visite « pour voir » (pas plus d'une par minute de jeu)
+  size_t seenTeam_ = 0;
+  void visit(std::vector<std::string> path, float look, bool gear = false);
+  void lookAt(std::vector<std::string> path, float look = 3);  // visite pour voir, si la dernière date d'une minute
+  bool visitStep();  // vrai tant qu'une visite occupe le pilote
   std::vector<int> puzzleMoves_;  // énigme en cours : les directions à suivre (3.0)
-  void socketGems();  // gemmes du sac dans les chatons libres (2.7)
+  void socketGems(bool show = false);  // gemmes du sac dans les chatons libres (2.7)
   void forging();            // forge : renforce l'équipement porté tant que l'or et les matériaux le permettent
   bool forgeWanted() const;  // une arme ou armure portée peut être forgée maintenant
   float gearScore(const Fighter& f, const ItemDef& d) const;
