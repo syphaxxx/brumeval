@@ -363,6 +363,25 @@ de niveau 35-40 bien équipée.
   fenêtres sont sombres et la pièce prend la lumière des bougies.
 - **Interface** : titre doré, nom des lieux en ruban à l'arrivée, fenêtres aux coins arrondis.
 
+## Plus exigeant, plus tactique (3.6)
+
+Le dos d'un combattant dépend maintenant de son **regard** : vers sa dernière cible, vers où il a marché, ou vers
+l'adversaire le plus proche s'il attend. Un coup au corps à corps venu de l'autre côté fait ×1,3. Une flèche au sol
+montre où chacun regarde ; en choisissant sa case, une dague dorée marque celles d'où l'on frappe un dos. Parfois,
+une rencontre est une **embuscade** : des créatures surgissent au fond de votre camp, derrière l'équipe.
+
+Les rencontres sont à la mesure de l'équipe (plus de créatures contre une équipe nombreuse, jamais trop loin sous votre
+niveau), et les créatures ne se battent plus toutes pareil : les **carapaces** (Roche, Métal) encaissent les coups
+physiques et craignent la magie, les esprits encaissent les coups physiques, certaines encaissent la magie, et quelques
+élémentaires **absorbent** leur élément (le coup les soigne). Le Bestiaire et l'aperçu des dégâts retiennent ce que vous
+avez découvert. Un adversaire bien plus faible que vous rapporte moins d'expérience : les boss s'affrontent au bon niveau.
+
+Tactiques : conditions « Ennemi : brisé », « dos exposé », « soigneur ou chef », « Soi : dos menacé » ; actions « Viser
+une faiblesse », « Se mettre en garde » ; et « Profils… » (Combattant, Soigneur, Protecteur, Briseur) pour tout régler
+d'un coup. Menus : le menu de pause en quatre groupes, Échap > Préparation (formation, compagnons, tactiques, réserve),
+Discussions et Bestiaire dans le Journal, des icônes et des jauges, la boutique qui compare l'équipement avec ce que
+porte chacun. En démo, le joueur automatique passe par les menus comme un joueur.
+
 ## Mode Expédition (roguelite)
 
 Depuis l'écran titre, **Expédition** lance une aventure où tout est généré à

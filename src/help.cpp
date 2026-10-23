@@ -36,6 +36,17 @@ struct HelpPage {
 static std::vector<HelpPage> helpPages() {
   const Rules& R = rules();
   std::vector<HelpPage> p;
+  p.push_back({::T("Nouveautés 3.6"), ::T("Le regard, les embuscades, des créatures qui se battent autrement, les profils."),
+               {::T("Le dos dépend du regard : chacun regarde vers sa dernière cible, vers où il a marché, ou vers l'adversaire le plus proche s'il attend. Une flèche au sol le montre."),
+                ::T("En choisissant sa case, une dague dorée marque celles d'où l'on frappe un ennemi dans le dos."),
+                ::T("Embuscades : parfois, des créatures surgissent au fond de votre camp, derrière l'équipe. Retournez-vous, ou protégez vos lanceurs de sorts."),
+                ::T("Les rencontres sont à la mesure de l'équipe : plus de créatures contre une équipe nombreuse, jamais trop loin sous votre niveau."),
+                ::T("Carapaces (Roche, Métal) et esprits encaissent les coups physiques ; certaines créatures encaissent la magie ; quelques-unes absorbent leur élément (le coup les soigne). Variez vos combattants."),
+                ::T("Un adversaire bien plus faible que vous rapporte moins d'expérience : les boss s'affrontent au bon niveau."),
+                ::T("Tactiques : nouvelles conditions (Ennemi : brisé, dos exposé, soigneur ou chef ; Soi : dos menacé) et actions (Viser une faiblesse, Se mettre en garde)."),
+                ::T("Tactiques > Profils… : Combattant, Soigneur, Protecteur ou Briseur, des règles toutes faites pour un membre."),
+                ::T("Menus : Échap > Préparation (formation, compagnons, tactiques, réserve) ; Discussions et Bestiaire dans le Journal ; la boutique compare l'équipement avec ce que porte chacun."),
+                ::T("Démo (Outils) : le joueur automatique passe par les menus comme un joueur : équipement, gemmes, tactiques, formation.")}});
   p.push_back({::T("Nouveautés 3.5"), ::T("Primes, quêtes, éclats de brume, l'île d'Aube, musiques."),
                {::T("Primes : les tableaux d'annonces des villages affichent des monstres recherchés. Acceptez, chassez, touchez la prime, et montez en rang de chasseur."),
                 ::T("Quêtes : plus de trente quêtes (Échap > Journal), dont un rival qui revient vous défier et une quête qui donne un compagnon."),
