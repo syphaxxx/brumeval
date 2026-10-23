@@ -3222,7 +3222,8 @@ void Battle::draw() {
     w = std::min(312, w + 18);
     int x = std::max(4, 316 - w), h = 36 + 11 * (int)summary_.size(), y = std::max(26, 92 - h / 2);
     g.window(x, y, w, h);
-    g.text(x + w / 2, y + 5, T("Victoire !"), GOLD, 1);
+    bool big = Gfx::textW(T("Victoire !")) * 2 <= x - 8;  // le grand titre a la place à gauche : la fenêtre dit « Gains »
+    g.text(x + w / 2, y + 5, big ? T("Gains") : T("Victoire !"), GOLD, 1);
     {  // (2026-10-22) en grand, à gauche de la fenêtre : « Victoire ! » qui tombe en place, avec deux éclats
       std::string v = T("Victoire !");
       float vw = Gfx::textW(v) * 2.f, cx = (4 + x) / 2.f, age = t - summaryT_;

@@ -160,6 +160,11 @@ static void menuGlyph(Gfx& g, const std::string& n, float x, float y, uint8_t al
     auto dark = [](uint32_t v) { return ((v >> 1) & 0x7f7f7f); };
     g.ellipse(cx, cy, 4.5f, 4.5f, rgb(dark(c))), g.ellipse(cx, cy, 3.5f, 3.5f, rgb(c));
     g.ellipse(cx - 1.2f, cy - 1.4f, 1.3f, 1, rgb(0xffffff));  // reflet
+  } else if (n == "vide") {  // un emplacement libre : un carré en pointillés
+    for (int k = 0; k < 4; k++) {
+      g.rect(x + 1.5f + k * 2.2f, y + 1.5f, 1.2f, 1, rgb(0x8a92b8)), g.rect(x + 1.5f + k * 2.2f, y + 9.5f, 1.2f, 1, rgb(0x8a92b8));
+      g.rect(x + 1.5f, y + 1.5f + k * 2.2f, 1, 1.2f, rgb(0x8a92b8)), g.rect(x + 9.5f, y + 1.5f + k * 2.2f, 1, 1.2f, rgb(0x8a92b8));
+    }
   } else if (n == "inconnu") {  // pas encore rencontrée : un rond vide
     g.ellipse(cx, cy, 4.5f, 4.5f, rgb(0x5a6498)), g.ellipse(cx, cy, 3.5f, 3.5f, rgb(0x1c2660));
   } else if (n == "patte") {  // les compagnons
@@ -405,8 +410,8 @@ void MenuStack::draw(Gfx& g, float t) const {
       }
       if (it.sep && i > 0) g.rect(m.x + 12, y - 1, m.w - 24, 1, rgb(0x8090c8, 90));  // début d'un groupe
       Color c = !it.enabled ? rgb(0x8a92b8) : it.color ? rgb(it.color) : rgb(0xffffff);
-      std::string right = it.rightFn ? it.rightFn() : it.right;
-      int rw = right.empty() ? 0 : Gfx::textW(right) + 6;
+      std::string right = it.notches ? std::string() : it.rightFn ? it.rightFn() : it.right;
+      int rw = it.notches ? 58 : right.empty() ? 0 : Gfx::textW(right) + 6;
       int ix = 0;  // un objet du jeu (ou une icône donnée) : son icône avant le nom
       if (const SpriteRect* ic = it.icon.empty() ? itemIcon(it.label) : findSprite(it.icon)) {
         float k = it.icon.empty() ? 1 : std::min(1.f, 11.f / std::max(ic->w, ic->h));  // une icône donnée tient dans sa case
@@ -418,6 +423,18 @@ void MenuStack::draw(Gfx& g, float t) const {
       }
       g.text(m.x + 13 + ix, y, fit(g, it.label, m.w - 19 - rw - ix, it.shrink), c);
       if (!right.empty()) g.text(m.x + m.w - 6, y, right, it.enabled ? (it.adjust ? rgb(0xffe066) : rgb(0xd8def2)) : rgb(0x8a92b8), 2);
+      if (it.notches) {  // (2026-10-23) dix crans, pleins jusqu'à la valeur ; flèches gauche/droite sur la ligne choisie
+        int v = std::clamp(it.notches(), 0, 10);
+        float bx = m.x + m.w - 56;
+        for (int k = 0; k < 10; k++) {
+          float hgt = 3 + k * .5f;  // de plus en plus hauts, comme un volume
+          g.rect(bx + k * 5, y + 9 - hgt, 4, hgt, k < v ? rgb(0xffe066) : rgb(0x03051a, 160));
+        }
+        if (idx == m.sel && top) {
+          g.tri(bx - 3, y + 2.5f, bx - 3, y + 7.5f, bx - 6, y + 5, rgb(0xffd34d));
+          g.tri(bx + 50, y + 2.5f, bx + 50, y + 7.5f, bx + 53, y + 5, rgb(0xffd34d));
+        }
+      }
       if (idx == m.sel) {
         if (top) g.cursor(m.x + 4 + (int(t * 4) % 2), y + 1);
         else g.rect(m.x + 4, y + 3, 4, 4, rgb(0xffd34d, 150));

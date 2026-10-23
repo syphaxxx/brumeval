@@ -35,7 +35,7 @@ void Game::optionsMenu(int sel) {
       applyVolumes();
       saveOptions();
     };
-    it.rightFn = [v] { return *v ? std::to_string(*v) + " / 10" : std::string(T("coupé")); };
+    it.notches = [v] { return *v; };  // des crans plutôt que « 7 / 10 »
     return it;
   };
   m.items.push_back(volume(T("Musique"), &options().music, T("Gauche / droite : volume de la musique.")));
@@ -662,6 +662,7 @@ void Game::gearSlots(FighterP f, int who, int sel) {
                    : T("Seuls les héros portent armes et armures."),
                 ok, [this, f, who, s] { gearPick(f, who, s); }};
     it.shrink = true;
+    if (id.empty()) it.icon = "vide";  // (2026-10-23) une case vide en pointillés ; un objet porté a son icône
     m.items.push_back(it);
   }
   m.sel = 1 + 2 * std::clamp(sel, 0, N_GEAR - 1);
@@ -675,6 +676,8 @@ void Game::gearSlots(FighterP f, int who, int sel) {
                      sockets ? T("Sertir des gemmes dans les chatons de l'équipement porté.") : T("Il faut porter un équipement pour sertir des gemmes."), sockets > 0,
                      [this, f, who] { gemMenu(f, who); }});
   m.items.push_back({T("Retour"), "", "", true, [this] { menus.pop(); }});
+  setIcons(m, {{T("Gemmes"), "ic_gemme_cristal"}, {T("Retour"), "retour"}});
+  m.items[m.items.size() - 2].sep = true;
   teamPanelSel_ = who;
   menus.push(m);
 }
