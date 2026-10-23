@@ -1848,6 +1848,7 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
         if (a->mp < m.cost) continue;
         const std::string& k = tc.act;
         if ((k == "attaque" && m.damaging()) || (k == "technique" && m.damaging() && m.cost == 0) || (k == "briser" && m.damaging()) ||
+            (k == "attaque_prudente" && m.damaging() && (m.cost == 0 || a->mp - m.cost >= .4f * a->mmp)) ||
             (k == "soin" && m.kind == Kind::Heal && m.power > 0) || (k == "reanimation" && m.kind == Kind::Revive) ||
             (k == "guerison" && m.kind == Kind::Heal && cures(m)))
           acts.push_back({&m});

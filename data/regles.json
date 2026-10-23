@@ -576,12 +576,12 @@
       {
         "id": "combattant",
         "nom": "Combattant",
-        "aide": "Frappe fort : les ennemis brisés, les dos exposés, puis le plus faible.",
+        "aide": "Frappe fort : les ennemis brisés, les dos exposés, achève les presque morts.",
         "regles": [
           {"si": "soi_limite", "faire": "limite"},
           {"si": "ennemi_brise", "faire": "attaque"},
           {"si": "ennemi_dos", "faire": "attaque"},
-          {"si": "ennemi_pv_bas", "faire": "attaque"},
+          {"si": "ennemi_pv_moins", "valeur": 30, "faire": "attaque"},
           {"si": "soi_pv_moins", "valeur": 30, "objet": "potion"},
           {"si": "ennemi", "faire": "attaque"}
         ]
@@ -589,15 +589,14 @@
       {
         "id": "soigneur",
         "nom": "Soigneur",
-        "aide": "Garde l'équipe debout : réanime, soigne, guérit, et garde ses PM.",
+        "aide": "Garde l'équipe debout : réanime, soigne, guérit ; lance ses sorts en gardant de quoi soigner.",
         "regles": [
           {"si": "allie_ko", "faire": "reanimation"},
           {"si": "allie_pv_moins", "valeur": 45, "faire": "soin"},
           {"si": "allie_etat", "faire": "guerison"},
           {"si": "soi_menace", "faire": "esquiver"},
           {"si": "soi_limite", "faire": "limite"},
-          {"si": "ennemi_faible", "faire": "attaque"},
-          {"si": "ennemi", "faire": "technique"}
+          {"si": "ennemi", "faire": "attaque_prudente"}
         ]
       },
       {

@@ -61,6 +61,8 @@ static const std::vector<TacticAuto> AUTOS = {
     {"briser", ::T("Viser une faiblesse"), TSide::Foe,
      ::T("Une attaque d'un type auquel cet ennemi est faible (faiblesse déjà découverte) : entame son bouclier jusqu'à la Brisure.")},
     {"garde", ::T("Se mettre en garde"), TSide::Self, ::T("Attendre, face à l'ennemi le plus proche : le dos à l'abri, et il rejoue plus tôt.")},
+    {"attaque_prudente", ::T("Attaque, PM gardés"), TSide::Foe,
+     ::T("La meilleure attaque qui lui laisse 40 % de ses PM (sinon une technique gratuite) : pour un soigneur qui doit garder de quoi soigner.")},
 };
 
 const std::vector<TacticCond>& tacticConds() { return CONDS; }
