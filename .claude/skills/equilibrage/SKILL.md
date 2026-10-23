@@ -28,7 +28,12 @@ Méthode :
   défaites dans l'Abîme et le Vieux Phare (contenu facultatif). Limite du joueur automatique : 14 h de jeu.
   Avec les embuscades (0,07, un tiers derrière), les profils de tactiques et la répétition systématique des boss : à
   7:18 de jeu, 10 défaites, niveau 90, trois actes finis (Seigneur des Orages 4 h 04, Aube 6 h 11 ; avant : 2 h 29 et
-  3 h 39) ; mesure en cours à la publication de la 3.6. Embuscades à
+  3 h 39) ; mesure en cours à la publication de la 3.6 ; cette partie a fini à 14 h sans tout faire (50
+  défaites, 43 dans l'Abîme et le Phare), comme la vérification GitHub (14 h, 76 défaites). Causes (analyse d'un agent) :
+  profil Soigneur sans sorts, Combattant qui impose « le moins de PV », répétition de tous les boss (318 min
+  d'entraînement). Corrigé (branche tactiques-2 : action « Attaque, PM gardés », le Combattant n'achève que sous 30 %,
+  ready() ne répète que les combats perdus) : **sans mémoire, tout fini en 7 h 40, 27 défaites, niveau 103** (quatre
+  actes à 5 h 34). Embuscades à
   0,1 et la moitié derrière : 48 défaites, fin non atteinte en 14 h (trop dur, retiré). Prime la plus dure : la Braisaure
   ancestrale (trois carapaces : il faut de la magie).
 

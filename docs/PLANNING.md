@@ -425,7 +425,9 @@ estimation pour un joueur : 16 h. Piste : le saut de niveaux entre l'acte 3 (60-
 5. Embuscades (une rencontre sur quatorze, un tiers des créatures au fond du camp allié), profils de tactiques, le
    joueur automatique répète toujours un boss. Partie automatique finale, en cours à la publication : 7 h 18 de jeu,
    10 défaites, niveau 90, trois actes finis (Seigneur des Orages à 4 h 04, île d'Aube à 6 h 11 : plus lent qu'avant, le
-   jeu est plus exigeant). Publié dans la 3.6 (2026-10-23).
+   jeu est plus exigeant). Publié dans la 3.6 (2026-10-23). Ensuite (branche tactiques-2) : profils corrigés
+   d'après l'analyse d'un agent (le Soigneur lance ses sorts en gardant 40 % de PM, action « Attaque, PM gardés » ; le
+   Combattant n'achève qu'un ennemi sous 30 %) : sans mémoire, tout fini en 7 h 40, 27 défaites, niveau 103.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
