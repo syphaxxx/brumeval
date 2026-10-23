@@ -197,6 +197,7 @@ std::vector<RuleField> ruleFields(Rules& r) {
       I("rencontres", "alpha_niveaux", "Niveaux en plus de l'alpha", r.alphaLevels, 0, 20, 1),
       D("rencontres", "part_nuit", "Part des rencontres de nuit (liste « nuit »)", r.nightShare, 0, 1, .05),
       D("rencontres", "par_allie", "Ennemis au moins par allié en combat", r.perAlly, 0, 2, .05),
+      D("rencontres", "embuscade", "Chance d'une embuscade (2 créatures ou plus)", r.ambush, 0, 1, .01),
       I("rencontres", "ecart_niveau", "Niveaux au plus sous l'équipe (0 : non)", r.levelGap, 0, 50, 1),
       I("rencontres", "plafond_niveau", "… sans dépasser la zone de", r.levelCap, 0, 50, 1),
       D("combat", "atb_base", "Vitesse ATB de base", r.atbBase, 0, 100, 1),

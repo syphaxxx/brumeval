@@ -569,6 +569,18 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     check(cellCol(cells[0]) == 0 && cellCol(cells[1]) == BACK_COL && cellCol(cells[2]) == 0 && cells[0] != cells[2],
           "damier : placement automatique (Louvet et Galetor devant, Esprillon derrière)");
     team = {makeFighter("lior", 20), makeFighter("maelle", 20)};
+    {  // embuscade (2026-10-23) : une partie des créatures part du fond du camp allié, tournée vers l'équipe
+      BattleSetup s;
+      s.foes = {makeFighter("mulotin", 5), makeFighter("mulotin", 5), makeFighter("mulotin", 5)};
+      s.ambush = true;
+      startBattle(std::move(s), nullptr);
+      int behind = 0;
+      for (auto& f : battle_->foes) behind += inHalf(true, battle_->cellOf(f)) && battle_->facesRight(f);
+      check(behind >= 1 && battle_->ambush_, "embuscade : " + std::to_string(behind) + " créature(s) au fond de notre camp, tournées vers l'équipe");
+      battle_->start = time - 5;
+      run(.4f);
+      snap("embuscade");
+    }
     startBattle({brute, mage, extra}, false, nullptr);
     Battle& B = *battle_;
     bool halves = true;  // échiquier (3.4) : chaque camp part de sa moitié du plateau

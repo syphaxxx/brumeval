@@ -47,6 +47,7 @@ struct BattleSetup {
   bool training = false;  // entraînement : ni gains, et une défaite ne coûte rien (Game::startBattle)
   std::string music;      // morceau imposé (« musique » de l'action combat), sinon combat ou boss
   bool rain = false;      // il pleut sur la carte (Game::rainAmount) : la météo d'effet « pluie », si le décor la permet
+  bool ambush = false;    // embuscade (2026-10-23) : la moitié des créatures surgit au fond du camp de l'équipe, face à elle
 };
 
 // Défi de l'échiquier (data/defis.json) : alliés, ennemis, obstacles et décor imposés (faux : défi inconnu)
@@ -153,6 +154,7 @@ class Battle {
   // Il se tourne en se déplaçant (vers où il va), en agissant (vers sa cible) et en attendant (vers l'adversaire
   // le plus proche) ; un coup au corps à corps venu du côté opposé à son regard est « dans le dos ».
   std::map<const Fighter*, int> facing_;
+  bool ambush_ = false;  // ce combat a commencé par une embuscade
   std::map<const Fighter*, float> koT_;  // moment du K.O. (un ennemi vaincu s'efface en 0,6 s avec un éclat)
   int cellOf(const FighterP& f) const;  // -1 : pas sur le plateau
   void place(const std::vector<FighterP>& v, bool keep, bool left);

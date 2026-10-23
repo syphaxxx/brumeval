@@ -275,6 +275,21 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
     for (auto& o : foes) taken = taken || cells_[o.get()] == mid;
     if (boardX(c) == GRID && !f->boss && !taken && frand() < .35f) cells_[f.get()] = mid;
   }
+  // Embuscade : la moitié des créatures (au moins une) part du fond du camp allié, tournée vers l'équipe, qui regarde
+  // de l'autre côté : il faut se retourner, se déplacer ou protéger ses lanceurs de sorts
+  ambush_ = s.ambush && foes.size() >= 2 && !s.fixedBoard;
+  if (ambush_)
+    for (size_t i = foes.size() / 2; i < foes.size(); i++) {
+      int best = -1;
+      for (int k = 0; k < GRID && best < 0; k++) {  // la ligne du milieu d'abord, puis de part et d'autre
+        int row = (GRID / 2 + (k % 2 ? -(k + 1) / 2 : k / 2) + GRID) % GRID, c = boardAt(row, 0);
+        if (!at(c)) best = c;
+      }
+      if (best < 0) break;
+      cells_[foes[i].get()] = best;
+      facing_[foes[i].get()] = 1;
+      breakthrough_.insert(foes[i].get());  // déjà au bord : pas de Percée pour avoir longé le fond
+    }
   start = G.time;
   std::map<std::string, int> cnt, seen;
   for (auto* v : {&foes, &reserve})
@@ -363,6 +378,7 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
   if (foeName.empty() && !boss && leader->boss && !leader->S().human) intro = T("Une meute menée par un alpha : ") + leader->name() + " !";
   for (auto& e : foes)
     if (e->chroma && foeName.empty() && !boss) intro = T("Une créature chromatique ! ") + e->name() + T(" brille de couleurs rares.");
+  if (ambush_) intro = T("Embuscade ! Des créatures surgissent derrière vous.");
   if (!s.intro.empty()) intro = s.intro;
   sc.say(intro, s.intro.empty() ? 1.3f : 0.f);  // la leçon d'un défi attend Entrée
 }

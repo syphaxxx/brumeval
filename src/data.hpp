@@ -231,6 +231,7 @@ struct Rules {
   // (arrondi), et des créatures sauvages au plus levelGap niveaux sous la moyenne de l'équipe, sans dépasser le haut de
   // la zone de plus de levelCap niveaux (0 : réglage coupé ; jamais en Expédition)
   double perAlly = 0;
+  double ambush = 0;  // chance qu'une rencontre de 2 créatures ou plus soit une embuscade (BattleSetup::ambush)
   int levelGap = 0, levelCap = 6;
   // Combat
   double atbBase = 20, atbSpeed = 1.1, flee = .7, limitGain = 110, stab = 1.25, spreadMin = .85, dmgDivisor = 40;

@@ -761,7 +761,10 @@ void Game::encounter() {
       foes[0] = makeFighter(foes[0]->sp, foes[0]->lvl + rules().alphaLevels);
       foes[0]->boss = true, foes[0]->chroma = chroma;
     }
-    startBattle(foes, false, nullptr);
+    BattleSetup s;
+    s.foes = foes;
+    s.ambush = !inExpedition() && n >= 2 && frand() < rules().ambush;  // (2026-10-23) certaines surgissent derrière l'équipe
+    startBattle(std::move(s), nullptr);
     return;
   }
 }
