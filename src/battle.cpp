@@ -2321,7 +2321,7 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
         landed = true;
       } else {
         int dmg = applyHit(a, t, m, (center && t != center ? float(rules().zoneSide) : 1.f) * boost);
-        if (dmg < 0) continue;
+        if (dmg <= 0) continue;  // raté, sans effet ou absorbé : ni état, ni poussée, ni bonus pour le lanceur (relecture de Codex)
         landed = true;
         if (!t->alive()) ko->push_back(t);
         else {
