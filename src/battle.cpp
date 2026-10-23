@@ -1048,6 +1048,8 @@ void Battle::command(FighterP a) {
                          if (shown()) slide_[a.get()] = {pos(a), G.time};
                          cells_[a.get()] = moveFrom_[a.get()];
                          moveFrom_.erase(a.get());
+                         if (int f = faceFrom_[a.get()]) facing_[a.get()] = f;  // il retrouve aussi son regard
+                         else facing_.erase(a.get());
                          moved_.erase(a.get());
                          sound("pas");
                          log.push_back(a->name() + T(" revient sur ses pas"));
@@ -1301,6 +1303,7 @@ void Battle::duoMove(FighterP a, FighterP p, const std::string& id, std::vector<
   pop(p, T("Duo !"), rgb(0xffd34d));
   log.push_back(a->name() + " + " + p->name() + T(" : duo"));
   duoPartner_ = p;
+  if (!targets.empty() && targets[0]) face(p, cellOf(targets[0]));  // le partenaire se tourne aussi vers la cible
   useMove(a, id, std::move(targets));
   duoPartner_ = nullptr;
 }
@@ -2287,6 +2290,7 @@ void Battle::useItem(FighterP a, const std::string& id, FighterP t) {
     return;
   }
   if (mineToCommand(a)) G.items[id]--;  // l'objet d'un autre joueur a déjà été pris dans son sac
+  if (t && t != a) face(a, cellOf(t));  // vers celui qu'il soigne ou capture
   const ItemDef& d = item(id);
   startAnim(a, {t}, d.capture > 0 ? Fx::Capture : Fx::Heal, d.capture > 0 ? rgb(0xffe27a) : rgb(0x7dffa8));
   sc.say(a->name() + T(" utilise : ") + d.name, .7f);

@@ -377,6 +377,7 @@ void Battle::moveTo(FighterP a, int cell) {
   moveFrom_.erase(a.get());  // une seule origine : celle de ce déplacement
   int from = cellOf(a);
   bool broke = breakthrough_.count(a.get()) > 0;
+  faceFrom_[a.get()] = facing_.count(a.get()) ? facing_[a.get()] : 0;
   step(a, cell);
   moved_.insert(a.get());
   if (net_ == Net::None && breakthrough_.count(a.get()) == (broke ? 1u : 0u)) moveFrom_[a.get()] = from;  // « Revenir » possible
