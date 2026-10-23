@@ -422,6 +422,9 @@ finissait au niveau 119 pour des boss de fin au niveau 100-110. Fait :
 4. Expérience : un adversaire plus de 4 niveaux sous l'équipe rapporte 8 % de moins par niveau (au moins 25 %).
 Mesuré (joueur automatique) : 7 h 38, 21 défaites, niveau 102, boss affrontés de −5 à +6 niveaux (avant : +15 à +20) ;
 estimation pour un joueur : 16 h. Piste : le saut de niveaux entre l'acte 3 (60-64) et l'acte 4 (84-90).
+5. Embuscades (une rencontre sur quatorze, un tiers des créatures au fond du camp allié), profils de tactiques, le
+   joueur automatique répète toujours un boss. Partie automatique finale (histoire finie, en cours de mesure à 7:18 de jeu,
+   10 défaites, niveau 90, quatre actes finis en 5 h environ). Publié dans la 3.6 (2026-10-23).
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 

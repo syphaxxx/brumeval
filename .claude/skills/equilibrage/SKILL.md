@@ -26,6 +26,10 @@ Méthode :
   10 h (saut de 20 niveaux entre l'acte 3, Citadelle 60-64, et l'acte 4, 84-90) ; réglage final : **7 h 38, 21 défaites,
   N.102**, boss affrontés de −5 à +6 niveaux (Givrecorne 45, Mère des Brumes 49, Kraken 57, Ombre 90, Veilleur 105),
   défaites dans l'Abîme et le Vieux Phare (contenu facultatif). Limite du joueur automatique : 14 h de jeu.
+  Avec les embuscades (0,07, un tiers derrière), les profils de tactiques et la répétition systématique des boss : à
+  7:18 de jeu, 10 défaites, niveau 90 (les quatre actes finis ; mesure en cours à la publication de la 3.6). Embuscades à
+  0,1 et la moitié derrière : 48 défaites, fin non atteinte en 14 h (trop dur, retiré). Prime la plus dure : la Braisaure
+  ancestrale (trois carapaces : il faut de la magie).
 
 - **Acte 2** (3.0, 2026-10-15) : le Seigneur des Orages battait toutes les équipes (journal : Foudre noire en croix à
   55-90 % des PV de trois alliés par tour, ~3000 PV) ; Magie 80 → 68, PV de base 110 → 100, Foudre noire 82 → 70,
