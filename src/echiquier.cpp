@@ -304,10 +304,18 @@ float Battle::posValue(const FighterP& a, int cell) {
   // Danger : chaque adversaire qui pourra le rejoindre au corps à corps à son prochain tour
   float hpR = float(a->hp) / std::max(1, a->mhp), fear = stalled ? 0.f : (caster ? 7.f : 3.5f) * (1.6f - hpR);
   int nearest = 99;
+  int side = facingOf(a);  // (2026-10-23) son regard à la fin du tour : vers l'adversaire le plus proche de cette case
   for (auto& o : theirs) {
     int d = boardSteps(cellOf(o), cell);
+    if (d < nearest && boardX(cellOf(o)) != boardX(cell)) side = boardX(cellOf(o)) > boardX(cell) ? 1 : -1;
     nearest = std::min(nearest, d);
-    if (d <= moveRange(o) + reach(o)) v -= fear * (o->boss ? 2.f : 1.f);
+  }
+  float backFear = fear * float(rules().backStab - 1) * 3;  // un coup dans le dos fait plus mal : le craindre davantage
+  for (auto& o : theirs) {
+    int d = boardSteps(cellOf(o), cell);
+    if (d > moveRange(o) + reach(o)) continue;
+    v -= fear * (o->boss ? 2.f : 1.f);
+    if ((boardX(cellOf(o)) - boardX(cell)) * side < 0) v -= backFear;  // il viendrait par derrière
   }
   if (int n = foesAround(a); n >= 2) v -= 8.f * (n - 1);  // encerclé
   if (caster) v += std::min(nearest, 4) * 2.f;            // garder ses distances
