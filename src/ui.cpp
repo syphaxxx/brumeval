@@ -219,6 +219,15 @@ static void menuGlyph(Gfx& g, const std::string& n, float x, float y, uint8_t al
   } else if (n == "echange") {  // changer de combattant : deux flèches
     g.rect(x + 1, y + 3, 6, 2, rgb(0x6ad87a)), g.tri(x + 7, y + 1, x + 7, y + 7, x + 10, y + 4, rgb(0x6ad87a));
     g.rect(x + 4, y + 7, 6, 2, rgb(0xf08a6a)), g.tri(x + 4, y + 5, x + 4, y + 11, x + 1, y + 8, rgb(0xf08a6a));
+  } else if (n == "piece") {  // vendre : une pièce d'or
+    g.ellipse(cx, cy, 4.5f, 4.5f, rgb(0xa8741a)), g.ellipse(cx, cy, 3.6f, 3.6f, rgb(0xffd34d));
+    g.rect(cx - .5f, cy - 2, 1, 4, rgb(0xa8741a)), g.ellipse(cx - 1.5f, cy - 1.8f, 1, .8f, rgb(0xfff4c0));
+  } else if (n == "coupe") {  // les exploits
+    g.ellipse(cx, y + 3.5f, 3.6f, 3, rgb(0xffd34d)), g.rect(cx - 3.6f, y + 1, 7.2f, 2.5f, rgb(0xffd34d));
+    g.rect(cx - 5, y + 2, 1.4f, 3, rgb(0xe8a83a)), g.rect(cx + 3.6f, y + 2, 1.4f, 3, rgb(0xe8a83a));  // les anses
+    g.rect(cx - .7f, y + 6, 1.4f, 2.5f, rgb(0xe8a83a)), g.rect(cx - 2.5f, y + 8.5f, 5, 1.5f, rgb(0xa8741a));
+  } else if (n == "coche") {  // une quête terminée
+    g.line(x + 1.5f, cy, x + 4.5f, y + 9, 2, rgb(0x6ad87a)), g.line(x + 4.5f, y + 9, x + 9.5f, y + 2, 2, rgb(0x6ad87a));
   } else if (n == "drapeau") {  // abandonner l'expédition
     g.rect(x + 2, y + 1, 1, 10, rgb(0xc0c0c8)), g.tri(x + 3, y + 1, x + 3, y + 6, x + 9, y + 3.5f, rgb(0xf4ecd8));
   }

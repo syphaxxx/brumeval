@@ -764,7 +764,7 @@ void Game::journalMenu() {
   panelMode_ = 0;
   Menu m;
   m.title = T("Journal");
-  m.x = 8, m.y = 8, m.w = 220, m.rows = 9;
+  m.x = 8, m.y = 8, m.w = 236, m.rows = 9;  // (236 : la place des icônes)
   if (std::string adv = adviceText(); !adv.empty()) m.items.push_back({T("Prochain gardien"), "", adv, true, nullptr});  // conseil (2.8)
   if (!inExpedition())
     m.items.push_back({T("Progression"), "", T("Ce que vous avez déjà accompli : quêtes, primes, dresseurs, coffres, Bestiaire…"), true, [this] { progressMenu(); }});
@@ -784,6 +784,7 @@ void Game::journalMenu() {
     }
     MenuItem it{tr(jget<std::string>(q, "nom", id)), done ? T("terminée") : T("en cours"), tr(jget<std::string>(q, "lieu", "")) + " — " + help, true, nullptr};
     it.color = done ? 0xaab3d8 : 0;
+    it.icon = done ? "coche" : "parchemin";
     it.shrink = true;
     m.items.push_back(it);
   }
@@ -795,9 +796,11 @@ void Game::journalMenu() {
                 tr(jget<std::string>(b, "lieu", "")) + " — " +
                     (beaten ? std::string(T("Vaincu : toucher la prime à un tableau d'annonces.")) : tr(jget<std::string>(b, "description", ""))),
                 true, nullptr};
+    it.icon = "viser";
     it.shrink = true;
     m.items.push_back(it);
   }
+  setIcons(m, {{T("Prochain gardien"), "carte"}, {T("Progression"), "etoile"}, {T("Exploits"), "coupe"}});
   if (m.items.empty()) m.items.push_back({T("(aucune quête)"), "", T("Parlez aux habitants : certains ont besoin d'aide."), false, nullptr});
   m.onCancel = [this] {
     panelMode_ = 1;
@@ -1050,6 +1053,7 @@ void Game::shopMenuAt(const std::vector<std::string>& stock, int sel) {
   }
   m.items.push_back({T("Vendre…"), "", T("Vendre vos objets à la moitié de leur prix."), true, [this, stock] { sellMenu(stock, 0); }});
   m.items.push_back({T("Quitter"), "", "", true, [this] { menus.clear(); }});
+  setIcons(m, {{T("Vendre…"), "piece"}, {T("Quitter"), "porte"}});  // alignés sur les icônes des objets
   m.sel = std::clamp(sel, 0, (int)m.items.size() - 1);
   menus.push(m);
 }
