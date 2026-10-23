@@ -512,6 +512,9 @@
   },
   "recompenses": {
     "xp_par_niveau": 7,
+    "exp_ecart": 0.12,
+    "exp_marge": 2,
+    "exp_min": 0.1,
     "xp_boss": 3,
     "or_par_niveau": 4,
     "or_boss": 8,

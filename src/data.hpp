@@ -269,6 +269,10 @@ struct Rules {
   int sleepMin = 1, sleepMax = 3;
   // Récompenses
   int xpPerLevel = 9, xpBoss = 3, goldPerLevel = 4, goldBoss = 8;
+  // (2026-10-23) un adversaire plus faible que l'équipe rapporte moins : au-delà de xpGapFree niveaux sous la moyenne de
+  // l'équipe, xpGapLoss de son expérience en moins par niveau, au moins xpGapMin (0 : réglage coupé)
+  double xpGapLoss = 0, xpGapMin = .1;
+  int xpGapFree = 2;
   double xpFront = .7, xpReserve = .3;
   std::vector<std::pair<std::string, double>> drops;  // objet, chance
   // Capture

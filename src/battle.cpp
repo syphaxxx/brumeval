@@ -2507,10 +2507,14 @@ void Battle::victory() {
     return;
   }
   const Rules& R = rules();
-  int total = 0, goldGain = 0;
+  int total = 0, goldGain = 0, sumLvl = 0;
+  for (auto& a : allies) sumLvl += a->lvl;
+  float teamLvl = allies.empty() ? 0.f : float(sumLvl) / allies.size();
   for (auto& d : defeated) {
     int lv = d->rewardLvl > 0 ? d->rewardLvl : d->lvl;  // relevée au niveau de l'équipe : les gains de sa zone (sinon l'équipe file devant)
-    total += lv * R.xpPerLevel * (d->boss ? R.xpBoss : 1);
+    // trop faible pour l'équipe : moins d'expérience (l'équipe ne file plus loin devant l'histoire)
+    float gap = teamLvl - lv - R.xpGapFree, k = R.xpGapLoss > 0 && gap > 0 ? std::max(float(R.xpGapMin), 1 - gap * float(R.xpGapLoss)) : 1.f;
+    total += int(lv * R.xpPerLevel * (d->boss ? R.xpBoss : 1) * k + .5f);
     goldGain += lv * R.goldPerLevel * (d->boss ? R.goldBoss : 1);
   }
   sound("victoire", false);  // chacun joue la fin chez lui
