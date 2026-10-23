@@ -280,7 +280,9 @@ Pilot::Info Pilot::inspect(const std::string& id) const {
 // partie, et de la mémoire des précédentes)
 bool Pilot::ready(const Info& in, const std::string& key) {
   int avg = G.avgLevel();
-  if (avg >= in.lvl + 3 + margin(key)) return true;
+  // (2026-10-23) loin au-dessus : d'office, sauf un boss ou un combat déjà perdu, toujours répétés (la Braisaure
+  // ancestrale, trois carapaces, se perdait 8 fois de suite avec 12 niveaux d'avance et une équipe sans magie)
+  if (avg >= in.lvl + 3 + margin(key) && !in.boss && !fails_.count(key)) return true;
   if (avg < in.lvl - 8 || in.fight.is_null()) return avg >= in.lvl - (in.boss ? 2 : 3) + margin(key);
   std::string sig = teamSignature();
   auto it = chances_.find(key);

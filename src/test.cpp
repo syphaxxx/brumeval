@@ -4124,6 +4124,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   simSetup("Veilleur du phare (équipe N.110)", {{"lior", 110}, {"maelle", 110}, {"isra", 110}, {"braisenard", 110}, {"gouttelin", 110}, {"ronceau", 110}},
            bossEvent("phare5_boss"), 10);
   // Quêtes des héros (2026-10-20, outils/villes/liens.py), après l'acte 3
+  // (2026-10-23) la prime la plus dure du joueur automatique : trois carapaces, dont la Braisaure ancestrale (N.90, PV ×4)
+  simSetup("Braisaure ancestrale (équipe N.102)", {{"lior", 102}, {"maelle", 102}, {"isra", 102}, {"braisenard", 102}, {"gouttelin", 102}, {"ronceau", 102}},
+           bossEvent("prime:braisaure_ancestrale"), 20);
+  simSetup("Braisaure ancestrale (équipe N.102, tactiques)", {{"lior", 102}, {"maelle", 102}, {"isra", 102}, {"braisenard", 102}, {"gouttelin", 102}, {"ronceau", 102}},
+           bossEvent("prime:braisaure_ancestrale"), 20, true);
   for (auto [name, ev, hero] : std::vector<std::array<const char*, 3>>{{"Brumeroi", "brumeroi", "lior"}, {"Sentinelle d'aurore", "sentinelle_aurore", "maelle"},
                                                                          {"Golem de magma", "golem_magma", "brann"}, {"Ombre des galeries", "ombre_galeries", "isra"},
                                                                          {"Varn le braconnier", "varn", "kael"}, {"Chevalier de glace", "chevalier_glace", "selene"}})
