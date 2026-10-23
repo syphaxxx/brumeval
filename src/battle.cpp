@@ -2846,6 +2846,18 @@ void Battle::draw() {
       g.sprite(*r, std::round(x), std::round(y), i % 2);
     }
   }
+  if (shown() && G.mapId >= 0 && G.mapId < (int)maps().size()) {  // (2026-10-22) comme sur la carte du lieu
+    const MapDef& here = G.M();
+    if (here.light) g.rect(L, 0, W, SCREEN_H, rgb(here.light, uint8_t(42 * (1 - G.nightAmount()))));  // sa lumière
+    if (here.water == "marais" && bg == Theme::Foret)  // des flaques troubles et des quenouilles sur le sol du combat
+      for (int i = 0; i < 9 * more / 100; i++) {
+        float px0 = L + std::fmod(i * 83.f + 31, W), py0 = HZ + 18 + std::fmod(i * 47.f, 120.f), w2 = 8 + i % 3 * 4;
+        g.ellipse(px0, py0, w2, 3, rgb(0x3e5a4a, 200));
+        g.ellipse(px0 - w2 * .3f, py0 - 1, w2 * .3f, 1, rgb(0x8aa87a, 120));
+        g.line(px0 + w2, py0, px0 + w2 + std::sin(t + i) * .8f, py0 - 9, 1, rgb(0x6a8a3a));
+        g.rect(px0 + w2 - .5f + std::sin(t + i) * .8f, py0 - 11, 2, 3, rgb(0x7a4a28));
+      }
+  }
   if (float night = shown() ? G.nightAmount() : 0.f; night > 0)  // jour et nuit (2.6), comme sur la carte
     g.rect(L, 0, W, SCREEN_H, rgb(0x0a1440, uint8_t(80 * night)));
   for (int i = 0; i < 28; i++) {  // vignette (2026-10-21) : les bords de l'écran un peu plus sombres, le regard va au centre
