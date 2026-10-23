@@ -27,7 +27,8 @@ Méthode :
   N.102**, boss affrontés de −5 à +6 niveaux (Givrecorne 45, Mère des Brumes 49, Kraken 57, Ombre 90, Veilleur 105),
   défaites dans l'Abîme et le Vieux Phare (contenu facultatif). Limite du joueur automatique : 14 h de jeu.
   Avec les embuscades (0,07, un tiers derrière), les profils de tactiques et la répétition systématique des boss : à
-  7:18 de jeu, 10 défaites, niveau 90 (les quatre actes finis ; mesure en cours à la publication de la 3.6). Embuscades à
+  7:18 de jeu, 10 défaites, niveau 90, trois actes finis (Seigneur des Orages 4 h 04, Aube 6 h 11 ; avant : 2 h 29 et
+  3 h 39) ; mesure en cours à la publication de la 3.6. Embuscades à
   0,1 et la moitié derrière : 48 défaites, fin non atteinte en 14 h (trop dur, retiré). Prime la plus dure : la Braisaure
   ancestrale (trois carapaces : il faut de la magie).
 

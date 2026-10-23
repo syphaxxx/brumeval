@@ -423,8 +423,9 @@ finissait au niveau 119 pour des boss de fin au niveau 100-110. Fait :
 Mesuré (joueur automatique) : 7 h 38, 21 défaites, niveau 102, boss affrontés de −5 à +6 niveaux (avant : +15 à +20) ;
 estimation pour un joueur : 16 h. Piste : le saut de niveaux entre l'acte 3 (60-64) et l'acte 4 (84-90).
 5. Embuscades (une rencontre sur quatorze, un tiers des créatures au fond du camp allié), profils de tactiques, le
-   joueur automatique répète toujours un boss. Partie automatique finale (histoire finie, en cours de mesure à 7:18 de jeu,
-   10 défaites, niveau 90, quatre actes finis en 5 h environ). Publié dans la 3.6 (2026-10-23).
+   joueur automatique répète toujours un boss. Partie automatique finale, en cours à la publication : 7 h 18 de jeu,
+   10 défaites, niveau 90, trois actes finis (Seigneur des Orages à 4 h 04, île d'Aube à 6 h 11 : plus lent qu'avant, le
+   jeu est plus exigeant). Publié dans la 3.6 (2026-10-23).
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
