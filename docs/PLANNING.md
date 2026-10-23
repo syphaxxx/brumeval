@@ -407,6 +407,19 @@ regarde le personnage, et des menus « peut-être un peu simples et surchargés 
   Changer avec un remplaçant) ; volumes en crans ; « Gains ».
 Pistes : l'ordinateur qui protège son dos (« Attendre » pour se retourner), d'autres menus à regrouper.
 
+## Étape 2 decies — Rééquilibrage (demandé le 2026-10-23)
+
+« Le jeu est trop facile pour le joueur auto ; les ennemis sont parfois trop peu nombreux pour la puissance de l'équipe
+et un peu faibles ; équilibrer les faiblesses pour obliger à adapter son équipe et sa formation (comparer avec
+Expedition 33). » Constat : une rencontre faisait ~2 ennemis contre jusqu'à 6 combattants alliés ; le joueur automatique
+finissait au niveau 119 pour des boss de fin au niveau 100-110. Fait :
+1. Rencontres à la mesure de l'équipe (`par_allie` 0,6 ennemi par allié ; `ecart_niveau` 4 : une créature sauvage au plus
+   4 niveaux sous l'équipe, `plafond_niveau` 6 au-dessus du haut de la zone), gains de son niveau d'origine (`rewardLvl`).
+2. Résistances des créatures sauvages (`outils/villes/resistances.py`) : carapaces (physique ×0,6), esprits (physique
+   ×0,55), peaux d'enchantement (magie ×0,6), élémentaires qui absorbent leur élément (résistance négative : le coup soigne).
+3. Formation : la moitié des créatures sauvages ont déjà des attaques en ligne, colonne ou croix ; plus d'ennemis suffit
+   à punir une équipe groupée (à mesurer).
+
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
 - Fait en 1.6 : **réserve de créatures** (au-delà de 8 membres) et

@@ -195,6 +195,10 @@ code) ; `docs/GUIDE.md` les range par domaine.
   réserve. Menu `bestiaryMenu`, fiche `drawBestiaryPanel` (`panelMode_` 3 ; une fois l'espèce obtenue, sa
   `description` : `Species::desc`, écrites par `outils/villes/descriptions.py`).
   L'Expédition repart d'un bestiaire vide.
+- Rééquilibrage (2026-10-23) : `Game::encounter` : au moins `par_allie` ennemis par combattant allié, créatures sauvages
+  au plus `ecart_niveau` sous la moyenne de l'équipe (sans dépasser la zone de `plafond_niveau`), gains de leur niveau
+  d'origine (`Fighter::rewardLvl`) ; jamais en Expédition. Résistance négative d'une espèce (`resistances`) = elle
+  absorbe ce type (`applyHit` soigne, « Absorbe ! ») ; résistances des créatures sauvages : `outils/villes/resistances.py`.
 - Vente : boutique > « Vendre… » (`Game::sellMenu`), moitié du prix, sauf les
   objets importants.
 - Boutique (2026-10-23) : un équipement survolé montre sous la liste ce qu'il changerait pour chaque membre qui peut le
