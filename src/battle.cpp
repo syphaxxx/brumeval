@@ -2509,8 +2509,9 @@ void Battle::victory() {
   const Rules& R = rules();
   int total = 0, goldGain = 0;
   for (auto& d : defeated) {
-    total += d->lvl * R.xpPerLevel * (d->boss ? R.xpBoss : 1);
-    goldGain += d->lvl * R.goldPerLevel * (d->boss ? R.goldBoss : 1);
+    int lv = d->rewardLvl > 0 ? d->rewardLvl : d->lvl;  // relevée au niveau de l'équipe : les gains de sa zone (sinon l'équipe file devant)
+    total += lv * R.xpPerLevel * (d->boss ? R.xpBoss : 1);
+    goldGain += lv * R.goldPerLevel * (d->boss ? R.goldBoss : 1);
   }
   sound("victoire", false);  // chacun joue la fin chez lui
   sc.wait(.6f);

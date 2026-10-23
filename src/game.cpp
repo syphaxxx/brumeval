@@ -751,7 +751,9 @@ void Game::encounter() {
     bool night = !z.night.empty() && nightAmount() > .5f && frand() < rules().nightShare;  // la nuit, ses créatures à elle
     const auto& pool = night ? z.night : z.pool;
     for (int i = 0; i < n; i++) {
-      foes.push_back(makeFighter(pool[irand(0, (int)pool.size() - 1)], std::max(irand(z.lo, z.hi), floorLvl) + foeLevelBonus));
+      int lv = irand(z.lo, z.hi);
+      foes.push_back(makeFighter(pool[irand(0, (int)pool.size() - 1)], std::max(lv, floorLvl) + foeLevelBonus));
+      if (floorLvl > lv) foes.back()->rewardLvl = lv + foeLevelBonus;
       if (!inExpedition() && frand() < rules().chroma) foes.back()->chroma = true;  // couleurs rares
     }
     if (n >= 2 && !inExpedition() && frand() < rules().alpha) {  // une meute menée par un alpha : plus fort, traité comme un boss

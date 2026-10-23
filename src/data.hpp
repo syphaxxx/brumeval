@@ -420,6 +420,7 @@ struct Fighter {
   int cell = -1;                         // formation : case choisie sur le damier (-1 : automatique)
   bool evolveLater = false;              // évolution refusée : proposée de nouveau seulement par Échap > Évolution
   bool chroma = false;                   // créature chromatique (2026-10-20) : couleurs rares (sprite « <sprite>_chroma »)
+  int rewardLvl = 0;                     // gains (exp, or) de ce niveau-là s'il n'est pas 0 : créature relevée au niveau de l'équipe
   // Brisure (2.5), seulement pendant un combat : bouclier d'un ennemi ; un coup sur une faiblesse
   // retire un point ; à zéro, il est brisé jusqu'à son prochain tour (perdu) et subit plus de dégâts
   int shield = 0, shieldMax = 0;
