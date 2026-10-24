@@ -434,7 +434,7 @@ estimation pour un joueur : 16 h. Piste : le saut de niveaux entre l'acte 3 (60-
 « Améliore le jeu : graphisme, gameplay, game design ; je veux un jeu dur mais très tactique. » Principe : la difficulté
 doit venir de choix lisibles, pas du hasard. Ce qui rend un combat tactique (Into the Breach, Expedition 33, Octopath) :
 voir venir le danger, avoir plusieurs réponses, et payer cher une équipe mal placée. Fait :
-1. **Intentions des ennemis** : à 70 % de sa jauge, chaque ennemi annonce ce qu'il va faire (icône au-dessus de lui,
+1. **Intentions des ennemis** : à la moitié de sa jauge (70 % d'abord : trop tard pour être lues), chaque ennemi annonce ce qu'il va faire (icône au-dessus de lui,
    chevron orange sur l'allié visé, zone en orange au sol, « Prépare Crocs sur Lior » dans l'aide de la cible). Il
    l'exécute à son tour si c'est encore possible, sinon il réfléchit à nouveau : écarter la cible, la couvrir ou abattre
    l'ennemi d'abord sont trois vraies réponses. Les boss aussi (sauf quand leur zone rouge est déjà annoncée).

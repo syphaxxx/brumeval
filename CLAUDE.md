@@ -211,7 +211,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
   garde (`Battle::guarding_`) : dégâts reçus × `combat.garde` (0,75) et riposte à tout coup au corps à corps (chance
   `combat.garde_riposte`, 1 ; même code que la gemme de riposte, ×0,7) jusqu'à ce que sa jauge soit pleine (`tickATB`) ;
   petit bouclier à côté de la tête (à gauche de la barre de PV chez un ennemi) ; astuce « garde ». **Intentions** (Into
-  the Breach) : à `combat.intention` % (70) de sa jauge, un ennemi (un boss aussi, sauf quand sa zone rouge attend
+  the Breach) : à `combat.intention` % (50 ; 70 au départ : trop tard, le menu du joueur s'ouvrait sans elles) de sa jauge, un ennemi (un boss aussi, sauf quand sa zone rouge attend
   (`announced`) ; ni brisé, ni en duel, ni chez l'invité) annonce ce qu'il fera (`declareIntent` : `planMove`, puis `think` depuis sa future case ; un
   soigneur annonce le soin que `roleHeal` jouerait ; rangé dans `intents_`) : icône à droite de sa barre de PV (épée,
   orbe de la couleur du type, croix verte pour un soin, sablier pour une garde), chevron orange au-dessus de chaque allié

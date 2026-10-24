@@ -17,7 +17,7 @@ Méthode :
 
 - **Dur mais tactique** (2026-10-24, branche `jeu-tactique`, « un jeu dur mais très tactique ») : garde (« Attendre » :
   dégâts × 0,75 et riposte à chaque coup au corps à corps (`garde_riposte` 1, ×0,7) jusqu'au tour suivant), intentions
-  des ennemis (annoncées à 70 % de la jauge, exécutées si elles tiennent encore ; les boss aussi, sauf zone rouge en
+  des ennemis (annoncées à la moitié de la jauge (70 % d'abord), exécutées si elles tiennent encore ; les boss aussi, sauf zone rouge en
   attente), ciblage `lure` (soigneurs, lanceurs, blessés attirent ; +0,75 par intention déjà sur l'allié : la meute
   s'acharne), `dangerAt` (l'IA alliée s'écarte d'un corps à corps annoncé). Puis, repris d'un agent : les profils de tactiques soignent tous (un seul soigneur faisait
   perdre les meutes de fin de partie), et les créatures sauvages n'ont plus d'attaque sur toute l'équipe

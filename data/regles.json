@@ -46,7 +46,7 @@
     "compagnon_atb": 0.5,
     "garde": 0.75,
     "garde_riposte": 1,
-    "intention": 70
+    "intention": 50
   },
   "brisure": {"bouclier": 2, "bouclier_boss": 8, "degats": 1.5},
   "roles": {"protection": 0.3, "chef": 0.2},
