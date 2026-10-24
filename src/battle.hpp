@@ -287,6 +287,14 @@ class Battle {
   // Dégâts prévus (3.3, aide du choix de la cible) : « ≈ 18-24 PV · 95 % » (sans coup critique). L'efficacité d'un type
   // n'est comptée qu'une fois découverte (Brisure) : sinon neutre, pour ne rien dévoiler.
   std::string damageText(const FighterP& a, const Move& m, const FighterP& d) const;
+  // Dégâts prévus d'une attaque (même formule qu'applyHit, sans hasard ni critique) ; eff < 0 : absorbé, 0 : sans effet ;
+  // fromCell : la case d'où l'attaquant frappera (sinon celle où il s'approchera)
+  struct Preview {
+    int lo = 0, hi = 0;
+    float hit = 0, eff = 1;
+    bool back = false;
+  };
+  Preview preview(const FighterP& a, const Move& m, const FighterP& d, int fromCell = -1) const;
   // Tactiques (tactics.hpp) : première règle possible de l'allié a, puis son exécution
   bool tacticsActive() const;
   bool tacticPlan(FighterP a, Plan& out);

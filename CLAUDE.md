@@ -214,7 +214,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
   (`announced`) ; ni brisé, ni en duel, ni chez l'invité) annonce ce qu'il fera (`declareIntent` : `planMove`, puis `think` depuis sa future case ; un
   soigneur annonce le soin que `roleHeal` jouerait ; rangé dans `intents_`) : icône à droite de sa barre de PV (épée,
   orbe de la couleur du type, croix verte pour un soin, sablier pour une garde), chevron orange au-dessus de chaque allié
-  visé, zone en orange au sol, « Prépare X sur Y » dans l'aide de la cible (`pickFoe`, `intentText`). À son tour
+  visé avec les dégâts prévus « ≈ lo-hi » (`preview`, la formule de `damageText`, additionnés), zone en orange au sol, « Prépare X sur Y » dans l'aide de la cible (`pickFoe`, `intentText`). À son tour
   (`enemyTurn`), il l'exécute si elle tient encore (case encore accessible, cibles encore au combat, portée, PM, soin
   encore utile ; listes « tout un camp » refaites), sinon « Déjoué ! » et il réfléchit à nouveau ; effacée par la Brisure
   (`breakFoe`).

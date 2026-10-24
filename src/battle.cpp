@@ -1523,8 +1523,8 @@ float Battle::attackScore(const FighterP& a, const Move& m, const FighterP& t) c
   return score / paceTime(m);
 }
 
-std::string Battle::damageText(const FighterP& a, const Move& m, const FighterP& d) const {
-  if (!m.damaging() || !a || !d) return "";
+Battle::Preview Battle::preview(const FighterP& a, const Move& m, const FighterP& d, int fromCell) const {
+  Preview pv;
   const Rules& R = rules();
   bool magic = m.kind == Kind::Magic;
   float hit = m.acc / 100.f * a->acc / 100.f - (magic ? 0 : d->eva / 100.f);
@@ -1534,14 +1534,14 @@ std::string Battle::damageText(const FighterP& a, const Move& m, const FighterP&
   // Brisure : l'efficacité d'un type n'est comptée qu'une fois découverte (sinon neutre, quelle qu'elle soit : rien ne
   // se devine sans attaquer ; la fiche de la cible montre déjà « ? »)
   float eff = G.weakKnown(d->sp, m.type) ? moveEff(m, d->S()) : 1.f;
-  if (eff < 0) return T(" · absorbé : le soigne !");
-  if (eff <= 0) return T(" · aucun effet");
+  pv.eff = eff, pv.hit = std::clamp(hit, 0.f, 1.f);
+  if (eff <= 0) return pv;
   float A = magic ? a->eMag() : a->eAtk(), D = magic ? d->eRes() : d->eDef();
   float stab = hasType(a->S(), m.type) ? float(R.stab) : 1.f, k = 1;
   // Échiquier : au corps à corps, il s'approche d'abord (vers la case que choisira approachCell)
-  int from = m.melee && boardDist(cellOf(a), cellOf(d)) > reach(a) ? approachCell(a, d) : -1;
+  int from = fromCell >= 0 ? fromCell : m.melee && boardDist(cellOf(a), cellOf(d)) > reach(a) ? approachCell(a, d) : -1;
   k *= posMult(a, d, m, from);
-  bool back = m.melee && behind(a, d, from);
+  pv.back = m.melee && behind(a, d, from);
   if (d->broken) k *= float(R.breakDamage);
   k *= 1 - float(talentValue(d->S(), magic ? "resiste_magie" : "resiste_physique"));
   if (hasType(a->S(), m.type) && a->hp * 3 < a->mhp) k *= 1 + float(talentValue(a->S(), "rage"));
@@ -1549,10 +1549,18 @@ std::string Battle::damageText(const FighterP& a, const Move& m, const FighterP&
   if (guarding_.count(d.get())) k *= float(R.guard);  // en garde
   if (const Rules::Terrain* tr = terrainAt(a); magic && tr && tr->kind == "magie") k *= 1 + float(tr->value);
   float base = ((2 * a->lvl / 5.f + 2) * m.power * A / std::max(1.f, D) / float(R.dmgDivisor) + 2) * stab * eff * k;
-  int lo = std::max(1, int(base * float(R.spreadMin))), hi = std::max(1, int(base));
-  std::string s = T(" · ≈ ") + std::to_string(lo) + (hi > lo ? "-" + std::to_string(hi) : "") + T(" PV");
-  s += " · " + std::to_string(int(std::lround(std::clamp(hit, 0.f, 1.f) * 100))) + " %";
-  if (back) s += T(" · dans le dos");
+  pv.lo = std::max(1, int(base * float(R.spreadMin))), pv.hi = std::max(1, int(base));
+  return pv;
+}
+
+std::string Battle::damageText(const FighterP& a, const Move& m, const FighterP& d) const {
+  if (!m.damaging() || !a || !d) return "";
+  Preview pv = preview(a, m, d);
+  if (pv.eff < 0) return T(" · absorbé : le soigne !");
+  if (pv.eff <= 0) return T(" · aucun effet");
+  std::string s = T(" · ≈ ") + std::to_string(pv.lo) + (pv.hi > pv.lo ? "-" + std::to_string(pv.hi) : "") + T(" PV");
+  s += " · " + std::to_string(int(std::lround(pv.hit * 100))) + " %";
+  if (pv.back) s += T(" · dans le dos");
   return s;
 }
 
@@ -3358,6 +3366,7 @@ void Battle::draw() {
   // Intentions des ennemis (2026-10-24) : un chevron orange au-dessus de chaque allié visé, la zone en orange au sol
   {
     std::map<const Fighter*, int> aimed;
+    std::map<const Fighter*, std::pair<int, int>> dmg;  // dégâts prévus, additionnés quand plusieurs le visent
     for (auto& [who, in] : intents_) {
       if (in.move.empty() || !hasMove(in.move)) continue;
       FighterP src;
@@ -3371,6 +3380,8 @@ void Battle::draw() {
           for (int c = 0; c < BOARD_CELLS; c++)
             if (inBoardZone(m.zone, cellOf(tg), c)) tile(g, cellPos(c), rgb(0xff9a3a, 60));
         aimed[tg.get()]++;
+        if (m.damaging())
+          if (Preview pv = preview(src, m, tg, in.cell); pv.eff > 0) dmg[tg.get()].first += pv.lo, dmg[tg.get()].second += pv.hi;
         if (cursor == src) {  // l'ennemi survolé : un pointillé vers sa cible
           Pt a = pos(src), b = pos(tg);
           float dx = b.x - a.x, dy = b.y - a.y, len = std::max(1.f, std::sqrt(dx * dx + dy * dy));
@@ -3389,6 +3400,8 @@ void Battle::draw() {
           g.tri(x - 4, y, x + 4, y, x, y + 5, rgb(0x2a1606, 220));
           g.tri(x - 3, y + .5f, x + 3, y + .5f, x, y + 4, rgb(0xff9a3a));
         }
+        if (auto [lo, hi] = dmg[a.get()]; lo > 0)  // ce qu'il va prendre : de quoi décider (garde, soin, recul)
+          g.text(p.x, y - 8, "≈ " + std::to_string(lo) + (hi > lo ? "-" + std::to_string(hi) : ""), rgb(0xff9a3a), 1);
       }
   }
   // Par-dessus les combattants : contour de la zone et flèche au-dessus de la cible (le sprite cache sa case)
