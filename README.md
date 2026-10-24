@@ -363,7 +363,7 @@ de niveau 35-40 bien équipée.
   fenêtres sont sombres et la pièce prend la lumière des bougies.
 - **Interface** : titre doré, nom des lieux en ruban à l'arrivée, fenêtres aux coins arrondis.
 
-## Dur mais très tactique (prochaine version, branche `jeu-tactique`)
+## Dur mais très tactique (3.7)
 
 Chaque ennemi **annonce ce qu'il prépare** à la moitié de sa jauge : une icône à côté de sa barre de PV (épée, orbe du
 type, croix verte pour un soin, sablier s'il va se mettre en garde), un chevron orange au-dessus de l'allié visé avec
