@@ -79,8 +79,11 @@ Méthode :
   plus tous les 15 niveaux au lieu de 10 (`meute_par_niveau` 15 : 4 au plus à N.30, 5 à N.45, 6 à N.60). bot27 (cet état) : tout fini en 16 h 41, 26 défaites
   dont 23 dans l'histoire (quatre actes en 8 h 11), niveau 121, estimation joueur 32 h ; boss perdus : Kraken ×2, Griffon,
   Ignarok de la prime ×2, Brume Noire, Colosse, Phénix, Ombre du Gardien, plus des meutes. Sur trois parties corrigées :
-  7 h 43 à 8 h 29 pour les quatre actes, 13 à 23 défaites dans l'histoire. À vérifier : les boss d'acte 2-4 (Kraken,
-  Griffon, Colosse, Phénix, Ombre), réglés eux aussi contre le Braisenard rapide.
+  7 h 43 à 8 h 29 pour les quatre actes, 13 à 23 défaites dans l'histoire. Simulations complètes ensuite (IA / tactiques /
+  boutiques / forgé) : Kraken 96 / – / 100 / 100 %, Griffon 30 / – / 43 / 70, Seigneur 53 / 83 / 90, Phénix 70 (équipé),
+  Colosse, Ombre, Orage ancien, Veilleur 100 : seuls le Griffon et le Phénix avaient baissé → Griffon N.53 ×13 (N.55 ×15
+  avant), Phénix N.86 ×4 (N.87 ×4,5) ; mesuré après : Griffon 43 / 66 / 73 %, Phénix 100 %. Braconnier 33 % (IA, N.6 :
+  le premier dresseur, évitable), Chef des bandits 26 % (IA), défi « Les ailes » 10 %.
 - **Rééquilibrage « trop facile »** (2026-10-23, demandé par l'utilisateur, comparé à Expedition 33) : le joueur automatique
   arrivait aux boss du milieu de l'histoire avec 15 à 20 niveaux d'avance (Givrecorne N.39 au niveau 58, Mère des Brumes
   N.44 au niveau 61) et ~2 créatures par rencontre contre jusqu'à 6 alliés. Réglages (`regles.json`) : `par_allie` 0,5
