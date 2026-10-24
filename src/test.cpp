@@ -606,7 +606,18 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
           coherent = coherent && battle_->threatened(tg);
       }
       check(coherent, "intentions : un allié visé au corps à corps, à portée, est menacé (l'IA et « Se mettre à l'abri » réagissent)");
+      battle_->cursor = battle_->foes[0];  // ennemi survolé : pointillé vers sa cible
       snap("garde_intention");
+      battle_->cursor = nullptr;
+      FighterP aimedAlly;
+      for (auto& [who, in] : battle_->intents_)
+        for (auto& tg : in.targets)
+          if (tg && battle_->isAlly(tg) && !in.wait && hasMove(in.move) && moveInfo(in.move).damaging()) aimedAlly = tg;
+      if (aimedAlly) {
+        float with = battle_->lure(aimedAlly);
+        battle_->intents_.clear();
+        check(with > battle_->lure(aimedAlly), "meute : un allié déjà visé par une intention attire davantage les autres ennemis");
+      }
     }
     startBattle({brute, mage, extra}, false, nullptr);
     Battle& B = *battle_;
@@ -679,10 +690,16 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     {  // (2026-10-24) la garde : en attendant, on encaisse une part des dégâts ; l'intention : annoncée avant d'agir
       long long plain = hitFrom(extra, boardAt(0, 4), bite);
       B.guarding_.insert(extra.get());
+      B.countering_ = true;  // pas de riposte pendant la mesure (200 coups)
       long long braced = hitFrom(extra, boardAt(0, 4), bite);
-      B.guarding_.erase(extra.get());
+      B.countering_ = false;
       check(braced > plain * .65 && braced < plain * .85,
             "combat : en garde, on encaisse un quart de dégâts en moins (" + std::to_string(braced) + " contre " + std::to_string(plain) + ")");
+      lior->hp = lior->mhp, extra->hp = extra->mhp;
+      B.applyHit(lior, extra, bite);
+      check(lior->hp < lior->mhp, "combat : en garde, on riposte à un coup au corps à corps (Lior perd " + std::to_string(lior->mhp - lior->hp) + " PV)");
+      lior->hp = lior->mhp, extra->hp = extra->mhp;
+      B.guarding_.erase(extra.get());
       B.cells_[brute.get()] = boardAt(1, 4), B.cells_[lior.get()] = boardAt(1, 3);
       B.declareIntent(brute);
       auto it = B.intents_.find(brute.get());

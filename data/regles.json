@@ -45,6 +45,7 @@
     "retard_lourde": 25,
     "compagnon_atb": 0.5,
     "garde": 0.75,
+    "garde_riposte": 1,
     "intention": 70
   },
   "brisure": {"bouclier": 2, "bouclier_boss": 8, "degats": 1.5},
@@ -289,12 +290,12 @@
     {
       "id": "intention",
       "aide": "Échiquier",
-      "texte": "Cet ennemi annonce ce qu'il prépare : une icône au-dessus de lui, un chevron orange sur sa cible. Écartez la cible, mettez-la en garde (Attendre), ou frappez-le d'abord."
+      "texte": "Cet ennemi annonce ce qu'il prépare : une icône à côté de sa barre de PV, un chevron orange sur sa cible. Écartez la cible, mettez-la en garde (Attendre), ou frappez-le d'abord."
     },
     {
       "id": "garde",
       "aide": "Échiquier",
-      "texte": "En garde ! Attendre, c'est encaisser un quart de dégâts en moins jusqu'à son prochain tour, face à l'ennemi le plus proche : utile quand on est visé."
+      "texte": "En garde ! Attendre, c'est encaisser un quart de dégâts en moins et riposter à chaque coup au corps à corps jusqu'à son prochain tour, face à l'ennemi le plus proche : utile quand on est visé."
     },
     {
       "id": "carapace",

@@ -171,7 +171,8 @@ class Battle {
   void declareIntent(const FighterP& e);
   std::string intentText(const Fighter& e) const;
   float lure(const FighterP& t) const;  // attrait d'une cible pour les ennemis (soigneur, lanceur, blessé)
-  bool dangerAt(const FighterP& f, int cell) const;  // terrain qui blesse, zone rouge d'un boss, intention ennemie  // « Prépare Charge sur Maëlle » (vide : rien d'annoncé)
+  bool dangerAt(const FighterP& f, int cell) const;  // terrain qui blesse, zone rouge d'un boss, intention ennemie
+  bool announced(const FighterP& f) const;           // ce boss a une attaque annoncée (zone rouge) en attente  // « Prépare Charge sur Maëlle » (vide : rien d'annoncé)
   std::map<const Fighter*, float> koT_;  // moment du K.O. (un ennemi vaincu s'efface en 0,6 s avec un éclat)
   int cellOf(const FighterP& f) const;  // -1 : pas sur le plateau
   void place(const std::vector<FighterP>& v, bool keep, bool left);

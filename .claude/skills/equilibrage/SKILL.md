@@ -16,9 +16,10 @@ Méthode :
 ## Historique des mesures
 
 - **Dur mais tactique** (2026-10-24, branche `jeu-tactique`, « un jeu dur mais très tactique ») : garde (« Attendre » :
-  dégâts × 0,75 jusqu'au tour suivant), intentions des ennemis (annoncées à 70 % de la jauge, exécutées si elles tiennent
-  encore ; pas les boss), ciblage `lure` (soigneurs, lanceurs, blessés attirent), `dangerAt` (l'IA alliée s'écarte d'un
-  corps à corps annoncé). Puis, repris d'un agent : les profils de tactiques soignent tous (un seul soigneur faisait
+  dégâts × 0,75 et riposte à chaque coup au corps à corps (`garde_riposte` 1, ×0,7) jusqu'au tour suivant), intentions
+  des ennemis (annoncées à 70 % de la jauge, exécutées si elles tiennent encore ; les boss aussi, sauf zone rouge en
+  attente), ciblage `lure` (soigneurs, lanceurs, blessés attirent ; +0,75 par intention déjà sur l'allié : la meute
+  s'acharne), `dangerAt` (l'IA alliée s'écarte d'un corps à corps annoncé). Puis, repris d'un agent : les profils de tactiques soignent tous (un seul soigneur faisait
   perdre les meutes de fin de partie), et les créatures sauvages n'ont plus d'attaque sur toute l'équipe
   (`outils/villes/meutes.py` : zone d'un de leurs types à la place). Mesuré (BRUMEVAL_SIMULATIONS=1, ±10 ; IA / tactiques /
   boutiques / forgé) : Sylvarque 7 / 26 / 57 / 52 %, Golem 25 / – / 75 / 85 %, Ronce-Mère 0 / – / 33 / 53 %, Ignarok

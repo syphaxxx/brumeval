@@ -874,9 +874,9 @@ void Battle::tickATB(float dt) {
   for (auto& f : all) {
     f->atb += dt * atbRate(f);
     // Intention (2026-10-24) : un ennemi annonce ce qu'il prépare avant d'agir
-    if (!isAlly(f) && !f->boss && !f->broken && rules().intentAt > 0 && f->atb >= rules().intentAt && f->atb < 100 && !intents_.count(f.get()) &&
-        !duel() && !follower())
-      declareIntent(f);  // (un boss garde ses attaques annoncées en zone rouge)
+    if (!isAlly(f) && !announced(f) && !f->broken && rules().intentAt > 0 && f->atb >= rules().intentAt && f->atb < 100 &&
+        !intents_.count(f.get()) && !duel() && !follower())
+      declareIntent(f);  // (un boss dont la zone rouge attend : elle est déjà son intention)
     if (f->atb >= 100) {
       f->atb = 100;
       guarding_.erase(f.get());  // sa garde tombe quand son tour revient
@@ -1093,7 +1093,7 @@ void Battle::command(FighterP a) {
                          log.push_back(a->name() + T(" revient sur ses pas"));
                          command(a);
                        }});
-  m.items.push_back({T("Attendre"), "", T("Se mettre en garde : un quart de dégâts en moins jusqu'à son prochain tour, face à l'ennemi le plus proche ; il rejoue plus tôt."), true, [this, a] { waitTurn(a); }});
+  m.items.push_back({T("Attendre"), "", T("Se mettre en garde jusqu'à son prochain tour : un quart de dégâts en moins, une riposte à chaque coup au corps à corps, face à l'ennemi le plus proche ; il rejoue plus tôt."), true, [this, a] { waitTurn(a); }});
   std::vector<FighterP> bench;  // avec des héros : un héros n'est remplacé que par un héros
   bool inTeam = std::find(G.team.begin(), G.team.end(), a) != G.team.end();  // défi : des combattants prêtés, sans remplaçants
   for (auto& r : G.team)
@@ -1476,6 +1476,9 @@ float Battle::lure(const FighterP& t) const {
   if (heals) w += 1;
   if (t->eMag() > t->eAtk()) w += .5f;
   w += 1.5f * (1 - float(t->hp) / std::max(1, t->mhp));
+  for (auto& [who, in] : intents_)  // meute (2026-10-24) : déjà visé par un des leurs, les autres s'y mettent
+    for (auto& tg : in.targets)
+      if (tg == t && !in.wait && hasMove(in.move) && moveInfo(in.move).damaging()) w += .75f;
   return w;
 }
 
@@ -1676,6 +1679,11 @@ bool Battle::dangerAt(const FighterP& f, int c) const {
   return false;
 }
 bool Battle::threatened(const FighterP& f) const { return dangerAt(f, cellOf(f)); }
+bool Battle::announced(const FighterP& f) const {
+  for (auto& w : warnings_)
+    if (w.who == f) return true;
+  return false;
+}
 int Battle::safeCell(const FighterP& f) const {
   int from = cellOf(f), best = -1, bestD = 99;
   if (moved_.count(f.get())) return -1;
@@ -2091,7 +2099,9 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
     a->hp = std::min(a->mhp, a->hp + h);
     pop(a, "+" + std::to_string(h), GREEN);
   }
-  if (m.melee && a->alive() && d->alive() && !countering_ && frand() < gemSupport(*d, "contre") && !d->techs().empty()) {  // gemme de riposte
+  // Riposte : gemme de riposte, ou (2026-10-24) en garde (« Attendre ») : un coup au corps à corps lui en vaut un en retour
+  if (m.melee && a->alive() && d->alive() && !countering_ && !d->techs().empty() &&
+      frand() < gemSupport(*d, "contre") + (guarding_.count(d.get()) ? R.guardRiposte : 0)) {
     const Move& c = moveInfo(d->techs()[0]);
     if (c.damaging()) {
       countering_ = true;
@@ -3333,9 +3343,10 @@ void Battle::draw() {
     std::map<const Fighter*, int> aimed;
     for (auto& [who, in] : intents_) {
       if (in.move.empty() || !hasMove(in.move)) continue;
-      bool up = false;
-      for (auto& e : foes) up = up || (e.get() == who && e->alive());
-      if (!up) continue;
+      FighterP src;
+      for (auto& e : foes)
+        if (e.get() == who && e->alive()) src = e;
+      if (!src) continue;
       const Move& m = moveInfo(in.move);
       for (auto& tg : in.targets) {
         if (!tg || !tg->alive() || !isAlly(tg)) continue;
@@ -3343,6 +3354,12 @@ void Battle::draw() {
           for (int c = 0; c < BOARD_CELLS; c++)
             if (inBoardZone(m.zone, cellOf(tg), c)) tile(g, cellPos(c), rgb(0xff9a3a, 60));
         aimed[tg.get()]++;
+        if (cursor == src) {  // l'ennemi survolé : un pointillé vers sa cible
+          Pt a = pos(src), b = pos(tg);
+          float dx = b.x - a.x, dy = b.y - a.y, len = std::max(1.f, std::sqrt(dx * dx + dy * dy));
+          for (float k = 8; k < len - 8; k += 6)
+            g.rect(std::round(a.x + dx * k / len) - 1, std::round(a.y + dy * k / len) - 1, 2, 2, rgb(0xff9a3a, 210));
+        }
       }
     }
     for (auto& a : allies)

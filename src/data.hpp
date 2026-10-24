@@ -243,6 +243,7 @@ struct Rules {
   double bossBurst = 1.6;                // puissance de l'attaque annoncée (sur ceux restés dans la zone)
   double companionAtb = .5;              // compagnons : vitesse de leur jauge ATB (ils agissent moins souvent que les héros)
   double guard = .75;     // garde (2026-10-24, « Attendre ») : part des dégâts reçus jusqu'à son prochain tour
+  double guardRiposte = 1;  // en garde : chance de riposter à un coup au corps à corps (comme la gemme de riposte)
   double intentAt = 70;   // les ennemis annoncent leur intention à ce point de leur jauge (0 : jamais)
   // Brisure (2.5, inspirée d'Octopath Traveler) : bouclier des ennemis (créature, boss), dégâts sur un ennemi brisé
   int breakShield = 2, breakShieldBoss = 8;

@@ -207,18 +207,20 @@ code) ; `docs/GUIDE.md` les range par domaine.
   Meutes (2026-10-24) : une créature sauvage n'apprend jamais d'attaque sur tous les ennemis (`outils/villes/meutes.py` la
   remplace par une attaque de zone d'un de ses types, sinon la retire ; les boss gardent les leurs).
 - Dur mais tactique (2026-10-24, branche `jeu-tactique`). **Garde** : « Attendre » (`waitTurn`) met le combattant en
-  garde (`Battle::guarding_`) : dégâts reçus × `combat.garde` (0,75) jusqu'à ce que sa jauge soit pleine (`tickATB`) ;
+  garde (`Battle::guarding_`) : dégâts reçus × `combat.garde` (0,75) et riposte à tout coup au corps à corps (chance
+  `combat.garde_riposte`, 1 ; même code que la gemme de riposte, ×0,7) jusqu'à ce que sa jauge soit pleine (`tickATB`) ;
   petit bouclier à côté de la tête (à gauche de la barre de PV chez un ennemi) ; astuce « garde ». **Intentions** (Into
-  the Breach) : à `combat.intention` % (70) de sa jauge, un ennemi (ni boss : il garde ses zones rouges ; ni brisé, ni en
-  duel, ni chez l'invité) annonce ce qu'il fera (`declareIntent` : `planMove`, puis `think` depuis sa future case ; un
+  the Breach) : à `combat.intention` % (70) de sa jauge, un ennemi (un boss aussi, sauf quand sa zone rouge attend
+  (`announced`) ; ni brisé, ni en duel, ni chez l'invité) annonce ce qu'il fera (`declareIntent` : `planMove`, puis `think` depuis sa future case ; un
   soigneur annonce le soin que `roleHeal` jouerait ; rangé dans `intents_`) : icône à droite de sa barre de PV (épée,
   orbe de la couleur du type, croix verte pour un soin, sablier pour une garde), chevron orange au-dessus de chaque allié
   visé, zone en orange au sol, « Prépare X sur Y » dans l'aide de la cible (`pickFoe`, `intentText`). À son tour
   (`enemyTurn`), il l'exécute si elle tient encore (case encore accessible, cibles encore au combat, portée, PM, soin
   encore utile ; listes « tout un camp » refaites), sinon il réfléchit à nouveau ; effacée par la Brisure (`breakFoe`).
   Dessin chez l'hôte seulement (rien dans `etat`). **Ciblage** : quand un ennemi frappe « au hasard » (65 % des tours),
-  la cible est tirée selon `lure` (soigneur ou soins connus +1, lanceur de sorts +0,5, blessé jusqu'à +1,5) : couvrir ses
-  soigneurs et ses blessés compte. **Menace** : `dangerAt(f, case)` réunit terrain qui blesse, zone rouge d'un boss et
+  la cible est tirée selon `lure` (soigneur ou soins connus +1, lanceur de sorts +0,5, blessé jusqu'à +1,5, +0,75 par
+  intention déjà annoncée sur lui : la meute s'acharne) : couvrir ses soigneurs et ses blessés compte. Ennemi survolé
+  au choix de la cible : un pointillé orange vers l'allié qu'il vise. **Menace** : `dangerAt(f, case)` réunit terrain qui blesse, zone rouge d'un boss et
   intention (visé au corps à corps : les cases hors de portée de l'ennemi sont sûres ; voisin visé par une zone : s'en
   écarter) ; `threatened`, `safeCell`, l'IA alliée et « Se mettre à l'abri » s'en servent. Astuces « intention » et
   « garde », aide de l'échiquier, capture `garde_intention`, mesures : compétence `equilibrage`.

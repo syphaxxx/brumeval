@@ -437,11 +437,13 @@ voir venir le danger, avoir plusieurs réponses, et payer cher une équipe mal p
 1. **Intentions des ennemis** : à 70 % de sa jauge, chaque ennemi annonce ce qu'il va faire (icône au-dessus de lui,
    chevron orange sur l'allié visé, zone en orange au sol, « Prépare Crocs sur Lior » dans l'aide de la cible). Il
    l'exécute à son tour si c'est encore possible, sinon il réfléchit à nouveau : écarter la cible, la couvrir ou abattre
-   l'ennemi d'abord sont trois vraies réponses.
-2. **Garde** : « Attendre » n'est plus un tour perdu : le combattant encaisse un quart de dégâts en moins jusqu'à son
-   prochain tour (bouclier dessiné à côté de sa tête), face à l'ennemi le plus proche, et rejoue plus tôt.
+   l'ennemi d'abord sont trois vraies réponses. Les boss aussi (sauf quand leur zone rouge est déjà annoncée).
+2. **Garde** : « Attendre » n'est plus un tour perdu : le combattant encaisse un quart de dégâts en moins et riposte à
+   chaque coup au corps à corps jusqu'à son prochain tour (bouclier dessiné à côté de sa tête), face à l'ennemi le plus
+   proche, et rejoue plus tôt. Un ennemi qui annonce une garde (sablier) se frappe de loin.
 3. **Ciblage** : quand un ennemi frappe « au hasard », les soigneurs, les lanceurs de sorts et les blessés l'attirent
-   (`Battle::lure`) : couvrir sa ligne arrière compte, un blessé laissé devant est achevé.
+   (`Battle::lure`), et un allié déjà visé par un des leurs attire les autres (la meute s'acharne, deux chevrons) :
+   couvrir sa ligne arrière compte, un blessé laissé devant est achevé. Ennemi survolé : pointillé vers sa cible.
 Astuces « intention » et « garde », aide de l'échiquier, tests (garde ≈ 0,75 ; une intention annoncée vise un allié).
 4. **Menace** (`dangerAt`) : l'IA alliée et la tactique « Se mettre à l'abri » s'écartent d'un corps à corps annoncé (hors
    de portée de l'ennemi : il devra choisir autre chose) et de la zone annoncée sur un voisin.
