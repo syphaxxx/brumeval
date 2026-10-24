@@ -204,17 +204,24 @@ code) ; `docs/GUIDE.md` les range par domaine.
   sans Percée ; astuce « embuscade », aide de l'échiquier. `attackScore` : ×1,4 pour frapper un adversaire au contact dans
   son dos (se retourner) ; le joueur automatique répète une embuscade comme telle (`fight["embuscade"]`). Résistance négative d'une espèce (`resistances`) = elle
   absorbe ce type (`applyHit` soigne, « Absorbe ! ») ; résistances des créatures sauvages : `outils/villes/resistances.py`.
+  Meutes (2026-10-24) : une créature sauvage n'apprend jamais d'attaque sur tous les ennemis (`outils/villes/meutes.py` la
+  remplace par une attaque de zone d'un de ses types, sinon la retire ; les boss gardent les leurs).
 - Dur mais tactique (2026-10-24, branche `jeu-tactique`). **Garde** : « Attendre » (`waitTurn`) met le combattant en
   garde (`Battle::guarding_`) : dégâts reçus × `combat.garde` (0,75) jusqu'à ce que sa jauge soit pleine (`tickATB`) ;
-  petit bouclier à côté de la tête ; astuce « garde ». **Intentions** (Into the Breach) : à `combat.intention` % (70)
-  de sa jauge, un ennemi (ni en duel ni chez l'invité) annonce ce qu'il fera (`declareIntent` : `planMove`, puis `think`
-  depuis sa future case ; rangé dans `intents_`) : icône au-dessus de lui (épée, orbe de la couleur du type, croix verte
-  pour un soin, sablier pour une garde), chevron orange au-dessus de chaque allié visé, zone en orange au sol, « Prépare
-  X sur Y » dans l'aide de la cible (`pickFoe`, `intentText`). À son tour (`enemyTurn`), il l'exécute si elle tient
-  encore (cibles vivantes, à portée, PM), sinon il réfléchit à nouveau ; effacée s'il est brisé (`skipTurn`). Dessin chez
-  l'hôte seulement (rien dans `etat`). **Ciblage** : quand un ennemi frappe « au hasard » (65 % des tours), la cible est
-  tirée selon `lure` (soigneur ou soins connus +1, lanceur de sorts +0,5, blessé jusqu'à +1,5) : couvrir ses soigneurs
-  et ses blessés compte. Astuces « intention » et « garde », aide de l'échiquier, mesures : compétence `equilibrage`.
+  petit bouclier à côté de la tête (à gauche de la barre de PV chez un ennemi) ; astuce « garde ». **Intentions** (Into
+  the Breach) : à `combat.intention` % (70) de sa jauge, un ennemi (ni boss : il garde ses zones rouges ; ni brisé, ni en
+  duel, ni chez l'invité) annonce ce qu'il fera (`declareIntent` : `planMove`, puis `think` depuis sa future case ; un
+  soigneur annonce le soin que `roleHeal` jouerait ; rangé dans `intents_`) : icône à droite de sa barre de PV (épée,
+  orbe de la couleur du type, croix verte pour un soin, sablier pour une garde), chevron orange au-dessus de chaque allié
+  visé, zone en orange au sol, « Prépare X sur Y » dans l'aide de la cible (`pickFoe`, `intentText`). À son tour
+  (`enemyTurn`), il l'exécute si elle tient encore (case encore accessible, cibles encore au combat, portée, PM, soin
+  encore utile ; listes « tout un camp » refaites), sinon il réfléchit à nouveau ; effacée par la Brisure (`breakFoe`).
+  Dessin chez l'hôte seulement (rien dans `etat`). **Ciblage** : quand un ennemi frappe « au hasard » (65 % des tours),
+  la cible est tirée selon `lure` (soigneur ou soins connus +1, lanceur de sorts +0,5, blessé jusqu'à +1,5) : couvrir ses
+  soigneurs et ses blessés compte. **Menace** : `dangerAt(f, case)` réunit terrain qui blesse, zone rouge d'un boss et
+  intention (visé au corps à corps : les cases hors de portée de l'ennemi sont sûres ; voisin visé par une zone : s'en
+  écarter) ; `threatened`, `safeCell`, l'IA alliée et « Se mettre à l'abri » s'en servent. Astuces « intention » et
+  « garde », aide de l'échiquier, capture `garde_intention`, mesures : compétence `equilibrage`.
 - Vente : boutique > « Vendre… » (`Game::sellMenu`), moitié du prix, sauf les
   objets importants.
 - Boutique (2026-10-23) : un équipement survolé montre sous la liste ce qu'il changerait pour chaque membre qui peut le
@@ -266,10 +273,12 @@ code) ; `docs/GUIDE.md` les range par domaine.
   (tactics.cpp) et son test dans `holds` (battle.cpp). Conditions du 2026-10-23 : `ennemi_brise`, `ennemi_dos`,
   `ennemi_role`, `soi_dos_menace` ; actions `briser` (une faiblesse découverte), `garde` (attendre, `Plan::wait`) et
   `attaque_prudente` (la meilleure attaque qui laisse 40 % des PM, sinon une technique gratuite : le profil Soigneur).
-  Profils (`tactiques.profils` de regles.json, `Rules::tacticProfiles`, « Profils… » dans l'éditeur, `profileRules` :
-  coupés aux lignes du membre en gardant la dernière règle) ; le joueur automatique en choisit un pour chacun
-  (`Pilot::setupTactics` : soigneur, protecteur, briseur, combattant). Les simulations
-  (`autoPlay`) n'utilisent les tactiques que si `simTactics` est vrai.
+  Profils (`tactiques.profils` de regles.json, `Rules::tacticProfiles`, « Profils… » dans l'éditeur, `profileRules(p, lignes,
+  combattant)` : sans les règles de soin qu'il ne peut pas suivre, coupés à ses lignes en gardant la dernière règle) ;
+  chaque profil réanime et soigne un allié en danger avant d'attaquer (2026-10-24 : avec un seul soigneur, l'équipe du
+  joueur automatique perdait contre les meutes de fin de partie) ; `bestProfile(f)` : le profil conseillé (Soigneur,
+  Protecteur, Briseur ou Combattant), marqué « (conseillé) » dans le menu et choisi par le joueur automatique
+  (`Pilot::setupTactics`). Les simulations (`autoPlay`) n'utilisent les tactiques que si `simTactics` est vrai.
 - Son (audio.hpp) : `audio::play("coup")` joue un bruitage, `audio::music("combat")`
   change de morceau (fondu ; le même morceau continue). `Game::updateMusic`
   choisit la musique à chaque image (lieu selon `themeName`, combat, boss,

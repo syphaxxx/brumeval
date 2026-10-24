@@ -1101,29 +1101,16 @@ void Pilot::equipBest(bool show) {
 // Tactiques : le profil qui convient à chacun, d'après ce qu'il sait faire ; refait quand il apprend de quoi soigner ou
 // qu'il gagne des types d'attaque
 void Pilot::setupTactics(bool show) {
-  const auto& profiles = rules().tacticProfiles;
-  auto find = [&](const char* id) -> const Rules::TacticProfile* {
-    for (auto& p : profiles)
-      if (p.id == id) return &p;
-    return nullptr;
-  };
   for (auto& f : G.team) {
-    bool heals = false;
-    std::set<Type> types;
-    auto known = f->techs(), sp = f->spells();
-    known.insert(known.end(), sp.begin(), sp.end());
-    for (auto& id : known) {
-      const Move& m = moveInfo(id);
-      heals = heals || (m.kind == ::Kind::Heal && m.power > 0);
-      if (m.damaging()) types.insert(m.type);
-    }
-    const char* want = heals && f->mag >= f->atk ? "soigneur" : f->S().combatRole == "protecteur" ? "protecteur" : types.size() >= 3 ? "briseur" : "combattant";
-    const Rules::TacticProfile* p = find(want);
-    std::string key = std::string(want) + ":" + std::to_string(std::min(tacticSlots(f->lvl), (int)(p ? p->rules.size() : 0)));
-    if (!p || profileOf_[f.get()] == key) continue;  // refait quand une ligne de plus sert le profil
+    const Rules::TacticProfile* p = bestProfile(*f);
+    if (!p) continue;
+    std::vector<Tactic> list = profileRules(*p, tacticSlots(f->lvl), f.get());
+    std::string key = p->id;  // refait quand une ligne de plus, ou une technique apprise (soin), change ses règles
+    for (auto& t : list) key += "," + t.cond + ">" + t.act;
+    if (profileOf_[f.get()] == key) continue;
     profileOf_[f.get()] = key;
-    if (show) visit({T("Préparation"), T("Tactiques"), f->name(), T("Profils…"), p->name}, 3.f);
-    else f->tactics = profileRules(*p, tacticSlots(f->lvl));
+    if (show) visit({T("Préparation"), T("Tactiques"), f->name(), T("Profils…"), p->name + T(" (conseillé)")}, 3.f);
+    else f->tactics = list;
     note("Tactiques : " + f->name() + " → " + p->name);
   }
 }

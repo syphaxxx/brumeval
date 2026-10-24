@@ -3348,7 +3348,7 @@ void Battle::draw() {
     for (auto& a : allies)
       if (int n = aimed[a.get()]; n > 0 && a->alive()) {
         Pt p = pos(a);
-        float y = std::max(44.f, p.y - fighterTop(*a, 1) - 14) + std::sin(t * 6) * 1.5f;
+        float y = std::max(44.f, p.y - fighterTop(*a, 1) - 9) + std::sin(t * 6) * 1.5f;
         int k2 = std::min(n, 3);
         for (int k = 0; k < k2; k++) {
           float x = p.x + (k - (k2 - 1) * .5f) * 7;

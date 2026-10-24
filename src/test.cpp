@@ -825,11 +825,16 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         auto& pr = rules().tacticProfiles[0];
         auto v = profileRules(pr, 4);
         trim = v.size() == std::min<size_t>(4, pr.rules.size()) && v.back().cond == pr.rules.back().cond && v.back().act == pr.rules.back().act;
+        // (2026-10-24) pour un combattant sans soin, les règles de soin sont retirées ; Maëlle : profil conseillé Soigneur
+        auto rock = makeFighter("rocaillou", 5);
+        for (auto& t : profileRules(pr, 10, rock.get())) trim = trim && t.act != "soin" && t.act != "reanimation" && t.act != "guerison";
+        const Rules::TacticProfile* bp = bestProfile(*maelle);
+        trim = trim && bp && bp->id == "soigneur";
       }
       brute->hp = brute->mhp;
       lior->tactics = keepT, lior->tacticsOn = keepOn;
       check(closer && around && cover, "tactiques : s'approcher, contourner (dans le dos), protéger un allié");
-      check(brk && trim, "tactiques : « Ennemi : brisé » vise l'ennemi brisé ; un profil coupé à ses lignes garde sa dernière règle");
+      check(brk && trim, "tactiques : « Ennemi : brisé » vise l'ennemi brisé ; un profil coupé à ses lignes garde sa dernière règle, sans soin pour qui ne soigne pas ; Maëlle : Soigneur conseillé");
     }
     lior->stage.fill(0);
     B.moved_.clear();
@@ -3886,15 +3891,17 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   // BRUMEVAL_SIMULATIONS=5 : cinq fois plus de combats par ligne (mesure plus précise, plus longue)
   const char* simEnv = SDL_getenv("BRUMEVAL_SIMULATIONS");
   int simFactor = simEnv ? std::max(1, std::atoi(simEnv)) : 1;
-  // Équipement des boutiques (1 : vallée, 2 : Forgeroc, 3 : Givreval) : le meilleur de chaque
+  // Équipement des boutiques (1 : vallée, 2 : Forgeroc, 3 : Givreval, 4 : Port-Écho) : le meilleur de chaque
   // emplacement ; arme de magie pour les mages (plus de Magie que d'Attaque), accessoire seul pour une créature
   int simGear = 0, simForge = 0;
+  bool simProfiles = false;  // les profils de tactiques conseillés (ceux du joueur automatique) au lieu des règles de départ
   bool simEvolve = !SDL_getenv("BRUMEVAL_SANS_EVOLUTION");  // pour comparer : équipes sans évolution  // simForge : armes et armures forgées à ce niveau (forge de Forgeroc)
   auto equipParty = [&](std::vector<FighterP>& t, int tier) {
-    static const char* GEAR[3][5] = {{"epee_fer", "baton_chene", "tunique_cuir", "tunique_cuir", "amulette_vie"},
+    static const char* GEAR[4][5] = {{"epee_fer", "baton_chene", "tunique_cuir", "tunique_cuir", "amulette_vie"},
                                      {"hache_braise", "baton_lune", "cotte_mailles", "robe_mage", "bague_vif"},
-                                     {"lame_givre", "sceptre_aurore", "armure_givre", "robe_mage", "pendentif_brume"}};
-    const char* const* g = GEAR[std::clamp(tier, 1, 3) - 1];
+                                     {"lame_givre", "sceptre_aurore", "armure_givre", "robe_mage", "pendentif_brume"},
+                                     {"lame_echo", "baton_echo", "armure_petrifiee", "robe_echo", "pendentif_brume"}};
+    const char* const* g = GEAR[std::clamp(tier, 1, 4) - 1];
     for (auto& f : t) {
       bool mage = f->S().base[B_MAG] > f->S().base[B_ATK];
       if (f->S().human) f->gear = {mage ? g[1] : g[0], mage ? g[3] : g[2], g[4]};
@@ -3928,6 +3935,9 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         while (simEvolve && canEvolve(*team.back())) evolve(*team.back());  // l'équipe a accepté ses évolutions
       }
       if (simGear) equipParty(team, simGear);
+      if (simProfiles)
+        for (auto& f : team)
+          if (auto* p = bestProfile(*f)) f->tactics = profileRules(*p, tacticSlots(f->lvl), f.get());
       menus.clear();
       sc.clear();
       mode = Mode::Map;
@@ -4170,6 +4180,24 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   // (2026-10-23) la prime la plus dure du joueur automatique : trois carapaces, dont la Braisaure ancestrale (N.90, PV ×4)
   simSetup("Braisaure ancestrale (équipe N.102)", {{"lior", 102}, {"maelle", 102}, {"isra", 102}, {"braisenard", 102}, {"gouttelin", 102}, {"ronceau", 102}},
            bossEvent("prime:braisaure_ancestrale"), 20);
+  // (2026-10-24) meutes de fin de partie, équipement de Port-Écho : trois créatures sauvages aux attaques sur toute l'équipe
+  // battaient une équipe de six avec 4 à 14 niveaux d'avance (70 défaites du joueur automatique dans l'Abîme et le Phare)
+  simGear = 4;
+  sim("Vieux Phare (N.104, 3 x N.100)", {{"lior", 104}, {"maelle", 104}, {"kael", 104}, {"braisenard", 104}, {"gouttelin", 104}, {"ronceau", 104}},
+      group({"braisaure", "petrolin", "fossiloup", "echoplume", "spectrecho", "cendrelys"}, 100, 100, 3), false, 30);
+  sim("Vieux Phare, tactiques (N.104)", {{"lior", 104}, {"maelle", 104}, {"kael", 104}, {"braisenard", 104}, {"gouttelin", 104}, {"ronceau", 104}},
+      group({"braisaure", "petrolin", "fossiloup", "echoplume", "spectrecho", "cendrelys"}, 100, 100, 3), false, 30, true);
+  sim("Abîme (N.100, 3 x N.96)", {{"lior", 100}, {"maelle", 100}, {"isra", 100}, {"braisenard", 100}, {"gouttelin", 100}, {"ronceau", 100}},
+      group({"rocaube", "aubespectre", "nacrelin", "loup_aube", "brumeloup", "nebulis"}, 96, 96, 3), false, 30);
+  sim("Abîme, tactiques (N.100)", {{"lior", 100}, {"maelle", 100}, {"isra", 100}, {"braisenard", 100}, {"gouttelin", 100}, {"ronceau", 100}},
+      group({"rocaube", "aubespectre", "nacrelin", "loup_aube", "brumeloup", "nebulis"}, 96, 96, 3), false, 30, true);
+  simProfiles = true;  // avec les profils du joueur automatique (un seul soigneur : c'est ainsi qu'il perdait)
+  sim("Vieux Phare, profils (N.104)", {{"lior", 104}, {"maelle", 104}, {"kael", 104}, {"braisenard", 104}, {"gouttelin", 104}, {"ronceau", 104}},
+      group({"braisaure", "petrolin", "fossiloup", "echoplume", "spectrecho", "cendrelys"}, 100, 100, 3), false, 30, true);
+  sim("Abîme, profils (N.100)", {{"lior", 100}, {"maelle", 100}, {"isra", 100}, {"braisenard", 100}, {"gouttelin", 100}, {"ronceau", 100}},
+      group({"rocaube", "aubespectre", "nacrelin", "loup_aube", "brumeloup", "nebulis"}, 96, 96, 3), false, 30, true);
+  simProfiles = false;
+  simGear = 3;
   simSetup("Braisaure ancestrale (équipe N.102, tactiques)", {{"lior", 102}, {"maelle", 102}, {"isra", 102}, {"braisenard", 102}, {"gouttelin", 102}, {"ronceau", 102}},
            bossEvent("prime:braisaure_ancestrale"), 20, true);
   for (auto [name, ev, hero] : std::vector<std::array<const char*, 3>>{{"Brumeroi", "brumeroi", "lior"}, {"Sentinelle d'aurore", "sentinelle_aurore", "maelle"},
