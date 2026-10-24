@@ -465,8 +465,9 @@ finale, mêmes règles) quatre actes en 4 h 40 et 8 défaites dans l'histoire, p
 d'où `adaptTeam`) ; bot16 (0,6 créature par allié, écart 3) quatre actes en 6 h 20, 9 défaites dans l'histoire : réglage
 adopté ; bot17 (compagnons adaptés, zones de fin jaugées à mi-fourchette) tout fini en 12 h 23, 16 défaites, niveau 118,
 estimation joueur 24 h. Point dur commun à toutes les parties : la Citadelle des gardiens (meutes de 4 esprits et carapaces
-au niveau de l'équipe : 4 à 6 défaites par partie) → meutes de 3 au plus, comme l'Abîme et le Phare. Mesures : compétence
-`equilibrage`.
+au niveau de l'équipe : 4 à 6 défaites par partie) → meutes de 3 au plus, comme l'Abîme et le Phare. bot18 (règles denses,
+compagnons adaptés, sans ce plafond) : quatre actes en 6 h 48, 12 défaites dans l'histoire dont 6 à la Citadelle. Mesures :
+compétence `equilibrage`.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 

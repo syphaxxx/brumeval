@@ -40,7 +40,9 @@ Méthode :
   mi-fourchette, règles 0,5/4) : tout fini en 12 h 23, 16 défaites, N.118, quatre actes en 6 h 21 ; estimation joueur
   24 h. Point dur de l'histoire dans toutes les parties : la **Citadelle des gardiens** (meutes de 4 Aubespectres,
   Nacrelins, Rocaubes et Loups d'aube au niveau de l'équipe, qui résistent au physique : 4 à 6 défaites par partie, une
-  seule ailleurs) → `meute_max` 3 sur sa zone, comme l'Abîme et le Phare.
+  seule ailleurs) → `meute_max` 3 sur sa zone, comme l'Abîme et le Phare. bot18 (règles 0,6/3 + adaptTeam, sans ce
+  plafond) : quatre actes en 6 h 48 (boss5 2:57, aube_fin 5:12), 12 défaites dans l'histoire dont 6 à la Citadelle, puis
+  5 au Phare (arrêté à 9 h 40, niveau 111). Mesures suivantes : bot19 (plafond Citadelle) et bot20 (+ capture étendue).
 - **Rééquilibrage « trop facile »** (2026-10-23, demandé par l'utilisateur, comparé à Expedition 33) : le joueur automatique
   arrivait aux boss du milieu de l'histoire avec 15 à 20 niveaux d'avance (Givrecorne N.39 au niveau 58, Mère des Brumes
   N.44 au niveau 61) et ~2 créatures par rencontre contre jusqu'à 6 alliés. Réglages (`regles.json`) : `par_allie` 0,5
