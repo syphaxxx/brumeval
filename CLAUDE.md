@@ -223,8 +223,9 @@ code) ; `docs/GUIDE.md` les range par domaine.
   intention déjà annoncée sur lui : la meute s'acharne) : couvrir ses soigneurs et ses blessés compte. Ennemi survolé
   au choix de la cible : un pointillé orange vers l'allié qu'il vise. **Menace** : `dangerAt(f, case)` réunit terrain qui blesse, zone rouge d'un boss et
   intention (visé au corps à corps : les cases hors de portée de l'ennemi sont sûres ; voisin visé par une zone : s'en
-  écarter) ; `threatened`, `safeCell`, l'IA alliée et « Se mettre à l'abri » s'en servent. Astuces « intention » et
-  « garde », aide de l'échiquier, capture `garde_intention`, mesures : compétence `equilibrage`.
+  écarter) ; `threatened`, `safeCell`, l'IA alliée et « Se mettre à l'abri » s'en servent. Sons `garde` et `dejoue`
+  (data/sons.json). Astuces « intention » et « garde », aide de l'échiquier, capture `garde_intention`, mesures :
+  compétence `equilibrage`.
 - Vente : boutique > « Vendre… » (`Game::sellMenu`), moitié du prix, sauf les
   objets importants.
 - Boutique (2026-10-23) : un équipement survolé montre sous la liste ce qu'il changerait pour chaque membre qui peut le

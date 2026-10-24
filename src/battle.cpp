@@ -1609,7 +1609,7 @@ void Battle::enemyTurn(FighterP e) {
   if (valid) return useMove(e, in.move, in.targets);
   if (declared && !in.wait && !in.move.empty()) {  // l'annonce ne tient plus : le joueur a bien réagi, qu'il le sache
     log.push_back(e->name() + T(" : intention déjouée"));
-    if (shown()) pop(e, T("Déjoué !"), rgb(0x8fd0ff));
+    if (shown()) pop(e, T("Déjoué !"), rgb(0x8fd0ff)), sound("dejoue");
   }
   if (declared && in.wait) return waitTurn(e);
   if (roleHeal(e)) return;

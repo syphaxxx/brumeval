@@ -428,6 +428,7 @@ void Battle::waitTurn(FighterP a) {
   log.push_back(a->name() + T(" se met en garde"));
   facing_[a.get()] = nearestFoeSide(a);  // face à l'adversaire le plus proche
   guarding_.insert(a.get());             // (2026-10-24) et il encaisse moins jusqu'à son prochain tour
+  sound("garde");
   if (isAlly(a) && shown()) tip("garde");
   sc.say(a->name() + T(" se met en garde."), .45f);
   sc.call([this, a] { afterAction(a, float(rules().quickGauge)); });
