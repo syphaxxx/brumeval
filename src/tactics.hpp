@@ -50,7 +50,12 @@ std::string tacticProblem(const Tactic& t, const Fighter* f);
 int tacticSlots(int lvl);                          // lignes utilisables à ce niveau
 std::vector<Tactic> defaultTactics(const Species& s);  // celles de l'espèce, sinon des règles
 // Les règles d'un profil pour ce nombre de lignes : les premières, et toujours la dernière (l'attaque qui sert sinon)
-std::vector<Tactic> profileRules(const Rules::TacticProfile& p, int slots);
+// Les règles d'un profil pour un combattant : sans celles qu'il ne peut pas suivre (soigner, réanimer ou guérir sans
+// la technique), coupées à ses lignes en gardant la dernière (la règle de secours) ; sans combattant, seulement coupées
+std::vector<Tactic> profileRules(const Rules::TacticProfile& p, int slots, const Fighter* f = nullptr);
+// Le profil conseillé pour ce combattant : Soigneur s'il soigne en mage, Protecteur selon son rôle, Briseur s'il attaque
+// de trois types, Combattant sinon (le joueur automatique le choisit, l'éditeur le marque « conseillé »)
+const Rules::TacticProfile* bestProfile(const Fighter& f);
 
 Tactic tacticFromJson(const Json& o);
 Json tacticToJson(const Tactic& t);

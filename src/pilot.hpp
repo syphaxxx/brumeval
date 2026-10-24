@@ -10,6 +10,7 @@
 #pragma once
 #include <deque>
 #include <map>
+#include <functional>
 #include <set>
 #include <string>
 #include <vector>
@@ -180,6 +181,7 @@ class Pilot {
     std::vector<std::string> path;
     float look = 2.5f;
     bool gear = false;  // un changement d'équipement : à la fin, equipBest() finit ce que les menus n'ont pas fait
+    std::function<void()> after;  // à la fin : ce que les menus n'auraient pas fait (compagnons, réserve)
   };
   std::deque<Visit> visits_;
   size_t visitStep_ = 0;
@@ -194,6 +196,8 @@ class Pilot {
   // Tactiques (2026-10-23) : un profil pour chacun selon ce qu'il sait faire (soigneur, protecteur, briseur, combattant)
   std::map<const Fighter*, std::string> profileOf_;
   void setupTactics(bool show);
+  void adaptTeam(bool show);  // compagnons selon les créatures du lieu (2026-10-24)
+  std::string adaptKey_;      // lieu et équipe de la dernière adaptation
   void forging();            // forge : renforce l'équipement porté tant que l'or et les matériaux le permettent
   bool forgeWanted() const;  // une arme ou armure portée peut être forgée maintenant
   float gearScore(const Fighter& f, const ItemDef& d) const;

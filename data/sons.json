@@ -1095,6 +1095,20 @@
       {"onde": "bruit", "de": 4000, "a": 900, "duree": 0.16, "volume": 0.2},
       {"onde": "sinus", "de": 220, "a": 520, "duree": 0.12, "volume": 0.18}
     ],
+    "garde": {
+      "variation": 0.05,
+      "sons": [
+        {"onde": "carree", "de": 480, "a": 720, "duree": 0.06, "volume": 0.15, "rapport": 0.3, "depart": 0},
+        {"onde": "triangle", "de": 1200, "a": 1150, "duree": 0.1, "volume": 0.14, "depart": 0.05}
+      ]
+    },
+    "dejoue": {
+      "variation": 0.05,
+      "sons": [
+        {"onde": "triangle", "de": "E5", "duree": 0.06, "volume": 0.18, "depart": 0},
+        {"onde": "triangle", "de": "A5", "duree": 0.1, "volume": 0.18, "depart": 0.06}
+      ]
+    },
     "echange": [
       {"onde": "sinus", "de": 900, "a": 400, "duree": 0.14, "volume": 0.2},
       {"onde": "sinus", "de": 400, "a": 900, "duree": 0.14, "volume": 0.2, "depart": 0}

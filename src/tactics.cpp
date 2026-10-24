@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <set>
 #include <stdexcept>
 
 #include "battle.hpp"
@@ -46,6 +47,9 @@ static const std::vector<TacticCond> CONDS = {
      ::T("Un ennemi dont il peut atteindre le dos ce tour-ci (d'où il est, ou en se déplaçant) : coups plus forts.")},
     {"ennemi_role", ::T("Ennemi : soigneur ou chef"), TSide::Foe, 0, 0, 0, 0, ::T("Un ennemi soigneur ou chef : l'abattre d'abord affaiblit tout son camp.")},
     {"soi_dos_menace", ::T("Soi : dos menacé"), TSide::Self, 0, 0, 0, 0, ::T("Quand un ennemi au contact est dans son dos (une embuscade, un ennemi qui l'a contourné).")},
+    // (2026-10-24) les intentions
+    {"soi_vise", ::T("Soi : visé"), TSide::Self, 0, 0, 0, 0, ::T("Quand un ennemi a annoncé une attaque sur lui (chevron orange) : se mettre en garde fait riposter.")},
+    {"allie_vise", ::T("Allié : visé"), TSide::Ally, 0, 0, 0, 0, ::T("Un allié qu'un ennemi a annoncé vouloir frapper (chevron orange) : le couvrir, le soigner d'avance.")},
 };
 static const std::vector<TacticAuto> AUTOS = {
     {"attaque", ::T("Meilleure attaque"), TSide::Foe, ::T("La technique, le sort ou le duo qui fait le plus de dégâts (peut dépenser des PM).")},
@@ -61,6 +65,8 @@ static const std::vector<TacticAuto> AUTOS = {
     {"briser", ::T("Viser une faiblesse"), TSide::Foe,
      ::T("Une attaque d'un type auquel cet ennemi est faible (faiblesse déjà découverte) : entame son bouclier jusqu'à la Brisure.")},
     {"garde", ::T("Se mettre en garde"), TSide::Self, ::T("Attendre, face à l'ennemi le plus proche : le dos à l'abri, et il rejoue plus tôt.")},
+    {"attaque_prudente", ::T("Attaque, PM gardés"), TSide::Foe,
+     ::T("La meilleure attaque qui lui laisse 40 % de ses PM (sinon une technique gratuite) : pour un soigneur qui doit garder de quoi soigner.")},
 };
 
 const std::vector<TacticCond>& tacticConds() { return CONDS; }
@@ -176,14 +182,49 @@ int tacticSlots(int lvl) {
 
 std::vector<Tactic> defaultTactics(const Species& s) { return s.tactics.empty() ? rules().tactics : s.tactics; }
 
-std::vector<Tactic> profileRules(const Rules::TacticProfile& p, int slots) {
-  std::vector<Tactic> v = p.rules;
+// Ce combattant peut-il suivre cette règle ? Soigner, réanimer ou guérir demandent la technique (une règle qu'il ne
+// peut pas suivre lui gaspillerait une ligne : les profils en ont pour que chacun soigne s'il le peut)
+static bool canFollow(const Fighter& f, const Tactic& t) {
+  if (t.kind == Tactic::Act::Item) return true;
+  if (t.kind == Tactic::Act::Auto && t.act != "soin" && t.act != "reanimation" && t.act != "guerison") return true;
+  auto ids = f.techs(), sp = f.spells();
+  ids.insert(ids.end(), sp.begin(), sp.end());
+  if (t.kind == Tactic::Act::Move) return std::find(ids.begin(), ids.end(), t.act) != ids.end();
+  for (auto& id : ids) {
+    const Move& m = moveInfo(id);
+    if (t.act == "soin" && m.kind == Kind::Heal && m.power > 0) return true;
+    if (t.act == "reanimation" && m.kind == Kind::Revive) return true;
+    if (t.act == "guerison" && m.kind == Kind::Heal && cures(m)) return true;
+  }
+  return false;
+}
+
+std::vector<Tactic> profileRules(const Rules::TacticProfile& p, int slots, const Fighter* f) {
+  std::vector<Tactic> v;
+  for (auto& t : p.rules)
+    if (!f || canFollow(*f, t)) v.push_back(t);
   if (slots >= 1 && (int)v.size() > slots) {
     Tactic last = v.back();
     v.resize((size_t)slots - 1);
     v.push_back(last);
   }
   return v;
+}
+
+const Rules::TacticProfile* bestProfile(const Fighter& f) {
+  bool heals = false;
+  std::set<Type> types;
+  auto ids = f.techs(), sp = f.spells();
+  ids.insert(ids.end(), sp.begin(), sp.end());
+  for (auto& id : ids) {
+    const Move& m = moveInfo(id);
+    heals = heals || (m.kind == Kind::Heal && m.power > 0);
+    if (m.damaging()) types.insert(m.type);
+  }
+  const char* want = heals && f.mag >= f.atk ? "soigneur" : f.S().combatRole == "protecteur" ? "protecteur" : types.size() >= 3 ? "briseur" : "combattant";
+  for (auto& p : rules().tacticProfiles)
+    if (p.id == want) return &p;
+  return nullptr;
 }
 
 // ---------------------------------------------------------------------------
@@ -510,11 +551,12 @@ void TacticsEditor::pickProfile() {
   Menu m;
   m.title = ::T("Profils de tactiques");
   m.x = 40, m.y = 40, m.w = 240, m.rows = 7;
+  const Rules::TacticProfile* best = T.fighter ? bestProfile(*T.fighter) : nullptr;
   for (auto& p : rules().tacticProfiles) {
     std::string help = p.help;
     for (size_t k = 0; k < p.rules.size() && k < 4; k++) help += (k ? " · " : " ") + tacticCondName(p.rules[k]) + " > " + tacticActName(p.rules[k]);
-    std::vector<Tactic> list = profileRules(p, T.slots);
-    m.items.push_back({p.name, "", help, true, [self, list] {
+    std::vector<Tactic> list = profileRules(p, T.slots, T.fighter.get());
+    m.items.push_back({p.name + (&p == best ? ::T(" (conseillé)") : ""), "", help, true, [self, list] {
                          *self->T.list = list;
                          self->changed();
                          self->menuList(self->first());

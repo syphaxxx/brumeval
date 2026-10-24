@@ -425,7 +425,63 @@ estimation pour un joueur : 16 h. Piste : le saut de niveaux entre l'acte 3 (60-
 5. Embuscades (une rencontre sur quatorze, un tiers des créatures au fond du camp allié), profils de tactiques, le
    joueur automatique répète toujours un boss. Partie automatique finale, en cours à la publication : 7 h 18 de jeu,
    10 défaites, niveau 90, trois actes finis (Seigneur des Orages à 4 h 04, île d'Aube à 6 h 11 : plus lent qu'avant, le
-   jeu est plus exigeant). Publié dans la 3.6 (2026-10-23).
+   jeu est plus exigeant). Publié dans la 3.6 (2026-10-23). Ensuite (branche tactiques-2) : profils corrigés
+   d'après l'analyse d'un agent (le Soigneur lance ses sorts en gardant 40 % de PM, action « Attaque, PM gardés » ; le
+   Combattant n'achève qu'un ennemi sous 30 %) : sans mémoire, tout fini en 7 h 40, 27 défaites, niveau 103.
+
+## Étape 2 undecies — Dur mais très tactique (demandé le 2026-10-23 au soir, branche `jeu-tactique`)
+
+« Améliore le jeu : graphisme, gameplay, game design ; je veux un jeu dur mais très tactique. » Principe : la difficulté
+doit venir de choix lisibles, pas du hasard. Ce qui rend un combat tactique (Into the Breach, Expedition 33, Octopath) :
+voir venir le danger, avoir plusieurs réponses, et payer cher une équipe mal placée. Fait :
+1. **Intentions des ennemis** : à la moitié de sa jauge (70 % d'abord : trop tard pour être lues), chaque ennemi annonce ce qu'il va faire (icône au-dessus de lui,
+   chevron orange sur l'allié visé, zone en orange au sol, « Prépare Crocs sur Lior » dans l'aide de la cible). Il
+   l'exécute à son tour si c'est encore possible, sinon il réfléchit à nouveau : écarter la cible, la couvrir ou abattre
+   l'ennemi d'abord sont trois vraies réponses. Les boss aussi (sauf quand leur zone rouge est déjà annoncée).
+2. **Garde** : « Attendre » n'est plus un tour perdu : le combattant encaisse un quart de dégâts en moins et riposte à
+   chaque coup au corps à corps jusqu'à son prochain tour (bouclier dessiné à côté de sa tête), face à l'ennemi le plus
+   proche, et rejoue plus tôt. Un ennemi qui annonce une garde (sablier) se frappe de loin.
+3. **Ciblage** : quand un ennemi frappe « au hasard », les soigneurs, les lanceurs de sorts et les blessés l'attirent
+   (`Battle::lure`), et un allié déjà visé par un des leurs attire les autres (la meute s'acharne, deux chevrons) :
+   couvrir sa ligne arrière compte, un blessé laissé devant est achevé. Ennemi survolé : pointillé vers sa cible.
+Astuces « intention » et « garde », aide de l'échiquier, tests (garde ≈ 0,75 ; une intention annoncée vise un allié).
+4. **Menace** (`dangerAt`) : l'IA alliée et la tactique « Se mettre à l'abri » s'écartent d'un corps à corps annoncé (hors
+   de portée de l'ennemi : il devra choisir autre chose) et de la zone annoncée sur un voisin.
+5. Repris d'un agent d'analyse : chaque profil de tactiques réanime et soigne (un seul soigneur faisait perdre les meutes de
+   fin de partie), « (conseillé) » dans Profils… ; les créatures sauvages n'ont plus d'attaque sur toute l'équipe
+   (`outils/villes/meutes.py`, zone d'un de leurs types à la place : la formation compte) ; simulations des meutes du
+   Vieux Phare et de l'Abîme (100 %).
+6. Garde qui riposte (chaque coup au corps à corps reçu), meute qui s'acharne sur un allié déjà visé, boss qui annoncent
+   aussi leurs coups ordinaires, « Déjoué ! » quand une annonce ne tient plus ; tactiques « Soi : visé » (le Protecteur se
+   met en garde quand une attaque est annoncée sur lui) et « Allié : visé » (il va couvrir l'allié visé) ; l'icône d'intention apparaît en se posant ; au-dessus de l'allié
+   visé, les dégâts qu'il va prendre (« ≈ 61-68 », additionnés si plusieurs ennemis le visent) : de quoi décider.
+7. Joueur automatique : il adapte ses compagnons aux créatures du lieu (`Pilot::adaptTeam` ; en démo, par les menus Réserve
+   et Compagnons) et jauge les zones de fin de partie au milieu de leur fourchette : ses défaites au Vieux Phare (quinze dans
+   bot15, deux Champignards et un Flammenard contre des Cendrelys qui absorbent le Feu) étaient celles d'un joueur qui ne
+   change jamais d'équipe. Deux relectures Codex (5 remarques corrigées).
+Mesuré (joueur automatique sans mémoire, bot14) : tout fini en 8 h 20, 10 défaites (27 avant), niveau 112, quatre actes en
+5 h 40, estimation joueur 16 h 46 ; les défaites restantes : meutes du Vieux Phare. Mesuré ensuite : bot15 (version
+finale, mêmes règles) quatre actes en 4 h 40 et 8 défaites dans l'histoire, puis 20 au Vieux Phare (équipe jamais changée :
+d'où `adaptTeam`) ; bot16 (0,6 créature par allié, écart 3) quatre actes en 6 h 20, 9 défaites dans l'histoire : réglage
+adopté ; bot17 (compagnons adaptés, zones de fin jaugées à mi-fourchette) tout fini en 12 h 23, 16 défaites, niveau 118,
+estimation joueur 24 h. Point dur commun à toutes les parties : la Citadelle des gardiens (meutes de 4 esprits et carapaces
+au niveau de l'équipe : 4 à 6 défaites par partie) → meutes de 3 au plus, comme l'Abîme et le Phare. bot18 (règles denses,
+compagnons adaptés, sans ce plafond) : quatre actes en 6 h 48, 12 défaites dans l'histoire dont 6 à la Citadelle. **État final
+(bot19) : tout fini en 9 h 07, 11 défaites (4 dans l'histoire, 0 à la Citadelle), niveau 105, quatre actes en 5 h 28,
+estimation joueur 18 h 22.** Essai retiré : capturer aussi les créatures d'un type absent du vivier (bot20 : 14 h 26,
+17 défaites, 30 changements de compagnons ; plus lent, pas mieux au Phare). Débuts : une meute fait au plus 2 créatures +
+une par tranche de 10 niveaux de l'équipe (plus de défaite sauvage dans les dix premières minutes, bot22). Le pilote
+répète un combat dans le décor de son lieu (bot22 : Phénix perdu quatre fois après une répétition sans la canicule du
+Cratère). D'une partie à l'autre l'écart est grand (9 h / 11 défaites à 17 h / 29 ; bot23 : 12 h 17, 15 défaites, estimation
+joueur 24 h) : juger un réglage sur plusieurs parties. La garde et les intentions voyagent en réseau (invité du duel,
+joueurs du gardien). Coquille corrigée : la Vitesse de Braisenard était 200 depuis le 6 octobre (60 avant, les autres
+créatures entre 24 et 90) : le compagnon de départ par défaut jouait trois à quatre fois plus souvent ; remis à 60
+(Flammenard 66), et les boss, réglés contre ce Braisenard-là, ramenés d'un ou deux niveaux (Sylvarque 13, Golem 26,
+Ignarok 24, Ronce-Mère 20, Givrecorne 37, Mère des Brumes 40) pour retrouver les taux d'avant. Mesuré ensuite : quatre
+actes en 8 h 29 (anciens boss) et 7 h 43 (boss ramenés), 13 à 14 défaites dans l'histoire, contre 5 h 30 à 7 h avec le
+Braisenard trop rapide : le jeu corrigé est bien plus dur ; meutes adoucies au milieu (une créature de plus tous les 15
+niveaux au lieu de 10) ; Griffon et Phénix ramenés aussi (les autres boss tardifs tiennent). Mesures : compétence
+`equilibrage`.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
@@ -463,7 +519,10 @@ estimation pour un joueur : 16 h. Piste : le saut de niveaux entre l'acte 3 (60-
 
 - Fait le 2026-10-10 : `game.cpp` découpé (900 lignes) en `menus.cpp` et
   `save.cpp`.
-- Le mode test prend 43 s : c'est correct ; le garder sous la minute.
+- Le mode test prenait 43 s, puis 7 minutes avec les simulations d'équilibrage : depuis le 2026-10-24 elles ne se jouent
+  qu'avec `BRUMEVAL_SIMULATIONS=1`, et le test repasse à 1 min 50 (FR) ; graine fixe (`BRUMEVAL_GRAINE`) : un échec se
+  rejoue. Audit du 2026-10-24 (ponytail) : sain ; restent à faire le découpage de `Game::selfTest()` par domaine et le
+  dessin des combattants en un seul bloc (ennemis et alliés), la mémoire du pilote par dossier de partie.
 - Relancer `/graphify . --update` et l'audit (`/ponytail-audit`) après chaque
   grosse étape.
 

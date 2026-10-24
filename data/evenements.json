@@ -321,7 +321,7 @@
             "action": "combat",
             "ennemis": [
               {"espece": "brumelin", "niveau": 9},
-              {"espece": "sylvarque", "niveau": 15, "pv": 6.5, "boss": true, "phases": [{"pv": 0.5, "message": "La Sylvarque se dresse, furieuse ! Un champichou accourt la soigner.", "bonus": {"attaque": 1}, "renforts": [{"espece": "champichou", "niveau": 10}]}]},
+              {"espece": "sylvarque", "niveau": 13, "pv": 5.5, "boss": true, "phases": [{"pv": 0.5, "message": "La Sylvarque se dresse, furieuse ! Un champichou accourt la soigner.", "bonus": {"attaque": 1}, "renforts": [{"espece": "champichou", "niveau": 10}]}]},
               {"espece": "brumelin", "niveau": 9}
             ],
             "boss": true,
@@ -355,7 +355,7 @@
         "oui": [
           {
             "action": "combat",
-            "ennemis": [{"espece": "golem", "niveau": 28, "pv": 16, "bouclier": 12, "boss": true, "phases": [{"pv": 0.5, "message": "Le golem s'embrase de suie ! Son armure se reforme.", "bouclier": 14, "bonus": {"attaque": 1, "vitesse": 1}}]}],
+            "ennemis": [{"espece": "golem", "niveau": 26, "pv": 12, "bouclier": 10, "boss": true, "phases": [{"pv": 0.5, "message": "Le golem s'embrase de suie ! Son armure se reforme.", "bouclier": 14, "bonus": {"attaque": 1, "vitesse": 1}}]}],
             "boss": true,
             "fuite": false,
             "capture": false,
@@ -382,7 +382,7 @@
             "action": "combat",
             "ennemis": [
               {"espece": "tisonnel", "niveau": 19},
-              {"espece": "ignarok", "niveau": 25, "pv": 8, "boss": true, "phases": [{"pv": 0.6, "message": "Ignarok s'embrase : sa carapace de lave se reforme !", "bouclier": 10}, {"pv": 0.3, "message": "Ignarok rugit et appelle un tisonnel !", "renforts": [{"espece": "tisonnel", "niveau": 20}]}]},
+              {"espece": "ignarok", "niveau": 24, "pv": 7.5, "boss": true, "phases": [{"pv": 0.6, "message": "Ignarok s'embrase : sa carapace de lave se reforme !", "bouclier": 10}, {"pv": 0.3, "message": "Ignarok rugit et appelle un tisonnel !", "renforts": [{"espece": "tisonnel", "niveau": 20}]}]},
               {"espece": "tisonnel", "niveau": 19}
             ],
             "boss": true,
@@ -896,7 +896,7 @@
             "action": "combat",
             "ennemis": [
               {"espece": "serpentin", "niveau": 14},
-              {"espece": "ronce_mere", "niveau": 23, "pv": 8.5, "boss": true, "phases": [{"pv": 0.5, "message": "La Ronce-Mère fait germer un champignon guérisseur !", "renforts": [{"espece": "champichou", "niveau": 16}]}]},
+              {"espece": "ronce_mere", "niveau": 20, "pv": 7, "boss": true, "phases": [{"pv": 0.5, "message": "La Ronce-Mère fait germer un champignon guérisseur !", "renforts": [{"espece": "champichou", "niveau": 16}]}]},
               {"espece": "serpentin", "niveau": 14}
             ],
             "renforts": [{"espece": "crapoison", "niveau": 13}],
@@ -1493,7 +1493,7 @@
         "oui": [
           {
             "action": "combat",
-            "ennemis": [{"espece": "nebulis", "niveau": 36}, {"espece": "mere_brumes", "niveau": 42, "pv": 7.5, "boss": true, "phases": [{"pv": 0.66, "message": "La brume s'épaissit autour de la Mère des Brumes…", "meteo": "brume"}, {"pv": 0.33, "message": "La Mère des Brumes se déchaîne !", "bonus": {"magie": 1}, "techniques": ["suie"]}]}, {"espece": "brumeloup", "niveau": 36}],
+            "ennemis": [{"espece": "nebulis", "niveau": 36}, {"espece": "mere_brumes", "niveau": 40, "pv": 6.5, "boss": true, "phases": [{"pv": 0.66, "message": "La brume s'épaissit autour de la Mère des Brumes…", "meteo": "brume"}, {"pv": 0.33, "message": "La Mère des Brumes se déchaîne !", "bonus": {"magie": 1}, "techniques": ["suie"]}]}, {"espece": "brumeloup", "niveau": 36}],
             "renforts": [{"espece": "orbrume", "niveau": 36}],
             "boss": true,
             "fuite": false,
@@ -1526,7 +1526,7 @@
             "action": "combat",
             "ennemis": [
               {"espece": "givrelin", "niveau": 27},
-              {"espece": "givrecorne", "niveau": 39, "pv": 11, "boss": true, "phases": [{"pv": 0.5, "message": "Le Givrecorne déchaîne le blizzard !", "meteo": "blizzard", "bonus": {"defense": 1}}]},
+              {"espece": "givrecorne", "niveau": 37, "pv": 10, "boss": true, "phases": [{"pv": 0.5, "message": "Le Givrecorne déchaîne le blizzard !", "meteo": "blizzard", "bonus": {"defense": 1}}]},
               {"espece": "givrelin", "niveau": 27}
             ],
             "renforts": [{"espece": "cristallin", "niveau": 26}],
@@ -2166,8 +2166,8 @@
               {"espece": "orageline", "niveau": 49},
               {
                 "espece": "griffon",
-                "niveau": 55,
-                "pv": 15,
+                "niveau": 53,
+                "pv": 13,
                 "boss": true,
                 "phases": [
                   {
@@ -8814,8 +8814,8 @@
               {"espece": "petrolin", "niveau": 86},
               {
                 "espece": "phenix_echo",
-                "niveau": 87,
-                "pv": 4.5,
+                "niveau": 86,
+                "pv": 4,
                 "boss": true,
                 "bouclier": 12,
                 "phases": [

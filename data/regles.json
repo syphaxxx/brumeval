@@ -23,9 +23,10 @@
     "alpha": 0.06,
     "alpha_niveaux": 3,
     "part_nuit": 0.5,
-    "par_allie": 0.5,
+    "par_allie": 0.6,
     "embuscade": 0.07,
-    "ecart_niveau": 4,
+    "ecart_niveau": 3,
+    "meute_par_niveau": 15,
     "plafond_niveau": 6
   },
   "combat": {
@@ -43,7 +44,10 @@
     "critique_base": 5,
     "jauge_rapide": 25,
     "retard_lourde": 25,
-    "compagnon_atb": 0.5
+    "compagnon_atb": 0.5,
+    "garde": 0.75,
+    "garde_riposte": 1,
+    "intention": 50
   },
   "brisure": {"bouclier": 2, "bouclier_boss": 8, "degats": 1.5},
   "roles": {"protection": 0.3, "chef": 0.2},
@@ -283,6 +287,16 @@
       "id": "enigme",
       "aide": "Énigmes",
       "texte": "Une énigme ! Poussez les rochers sur toutes les dalles en marchant dedans. Un rocher coincé ? Échap > Recommencer l'énigme."
+    },
+    {
+      "id": "intention",
+      "aide": "Échiquier",
+      "texte": "Cet ennemi annonce ce qu'il prépare : une icône à côté de sa barre de PV, un chevron orange sur sa cible. Écartez la cible, mettez-la en garde (Attendre), ou frappez-le d'abord."
+    },
+    {
+      "id": "garde",
+      "aide": "Échiquier",
+      "texte": "En garde ! Attendre, c'est encaisser un quart de dégâts en moins et riposter à chaque coup au corps à corps jusqu'à son prochain tour, face à l'ennemi le plus proche : utile quand on est visé."
     },
     {
       "id": "carapace",
@@ -576,12 +590,14 @@
       {
         "id": "combattant",
         "nom": "Combattant",
-        "aide": "Frappe fort : les ennemis brisés, les dos exposés, puis le plus faible.",
+        "aide": "Frappe fort : les ennemis brisés, les dos exposés, achève les presque morts.",
         "regles": [
           {"si": "soi_limite", "faire": "limite"},
+          {"si": "allie_ko", "faire": "reanimation"},
+          {"si": "allie_pv_moins", "valeur": 40, "faire": "soin"},
           {"si": "ennemi_brise", "faire": "attaque"},
           {"si": "ennemi_dos", "faire": "attaque"},
-          {"si": "ennemi_pv_bas", "faire": "attaque"},
+          {"si": "ennemi_pv_moins", "valeur": 30, "faire": "attaque"},
           {"si": "soi_pv_moins", "valeur": 30, "objet": "potion"},
           {"si": "ennemi", "faire": "attaque"}
         ]
@@ -589,15 +605,14 @@
       {
         "id": "soigneur",
         "nom": "Soigneur",
-        "aide": "Garde l'équipe debout : réanime, soigne, guérit, et garde ses PM.",
+        "aide": "Garde l'équipe debout : réanime, soigne, guérit ; lance ses sorts en gardant de quoi soigner.",
         "regles": [
           {"si": "allie_ko", "faire": "reanimation"},
           {"si": "allie_pv_moins", "valeur": 45, "faire": "soin"},
           {"si": "allie_etat", "faire": "guerison"},
           {"si": "soi_menace", "faire": "esquiver"},
           {"si": "soi_limite", "faire": "limite"},
-          {"si": "ennemi_faible", "faire": "attaque"},
-          {"si": "ennemi", "faire": "technique"}
+          {"si": "ennemi", "faire": "attaque_prudente"}
         ]
       },
       {
@@ -605,7 +620,11 @@
         "nom": "Protecteur",
         "aide": "Tient la ligne : couvre les alliés en danger, se retourne, vise soigneurs et chefs.",
         "regles": [
+          {"si": "soi_vise", "faire": "garde"},
           {"si": "soi_menace", "faire": "esquiver"},
+          {"si": "allie_vise", "faire": "proteger"},
+          {"si": "allie_ko", "faire": "reanimation"},
+          {"si": "allie_pv_moins", "valeur": 40, "faire": "soin"},
           {"si": "allie_avant_pv_moins", "valeur": 50, "faire": "proteger"},
           {"si": "soi_dos_menace", "faire": "garde"},
           {"si": "ennemi_role", "faire": "attaque"},
@@ -618,6 +637,8 @@
         "nom": "Briseur",
         "aide": "Vise les faiblesses découvertes pour briser les boucliers, puis frappe les brisés.",
         "regles": [
+          {"si": "allie_ko", "faire": "reanimation"},
+          {"si": "allie_pv_moins", "valeur": 40, "faire": "soin"},
           {"si": "ennemi_brise", "faire": "attaque"},
           {"si": "ennemi", "faire": "briser"},
           {"si": "soi_limite", "faire": "limite"},

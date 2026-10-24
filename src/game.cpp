@@ -733,20 +733,23 @@ void Game::encounter() {
     if (px < z.x || py < z.y || px >= z.x + z.w || py >= z.y + z.h) continue;
     int n = 1 + (frand() < rules().second) + (frand() < rules().third);
     n = std::min(n, z.maxN);
-    // Meute : au plus profond de la nature, des créatures en plus
+    // Meute : au plus profond de la nature, des créatures en plus ; (2026-10-24) jamais plus de 2 + une par tranche de
+    // meute_par_niveau niveaux de l'équipe : les premières heures se jouent à deux ou trois contre deux (chaque partie
+    // automatique perdait dans ses dix premières minutes contre trois créatures)
     float deep = std::min(1.f, wildDepth(px, py) / float(std::max(1.0, rules().packDistance)));
+    auto fr = front();
+    int avg = 0;
+    for (auto& f : fr) avg += f->lvl;
+    avg = fr.empty() ? 0 : avg / (int)fr.size();
     int most = z.packCap > 0 ? z.packCap : rules().packMax;
+    if (!inExpedition() && rules().packPerLevels > 0 && !fr.empty()) most = std::min(most, 2 + avg / rules().packPerLevels);
+    n = std::min(n, std::max(1, most));
     for (int k = n; k < most; k++)
       if (frand() < .5f * deep) n++;
     // (2026-10-23) à la mesure de l'équipe : une équipe de six ne croise plus deux créatures seules
-    auto fr = front();
     if (!inExpedition() && rules().perAlly > 0) n = std::clamp((int)std::lround(fr.size() * rules().perAlly), n, std::max(n, most));
     int floorLvl = -1;  // les créatures sauvages ne restent pas trop loin sous l'équipe
-    if (!inExpedition() && rules().levelGap > 0 && !fr.empty()) {
-      int sum = 0;
-      for (auto& f : fr) sum += f->lvl;
-      floorLvl = std::min(sum / (int)fr.size() - rules().levelGap, z.hi + rules().levelCap);
-    }
+    if (!inExpedition() && rules().levelGap > 0 && !fr.empty()) floorLvl = std::min(avg - rules().levelGap, z.hi + rules().levelCap);
     std::vector<FighterP> foes;
     bool night = !z.night.empty() && nightAmount() > .5f && frand() < rules().nightShare;  // la nuit, ses créatures à elle
     const auto& pool = night ? z.night : z.pool;
@@ -1110,8 +1113,11 @@ void Game::draw() {
   if (pilot_ && pilot_->demo()) {  // bandeau de la démo, en haut de l'écran ; en pause, les commandes
     std::string s = T("DÉMO · ") + pilot_->status;
     if (s.size() > 60) s = utf8Prefix(s, 44) + "…";
+    bool keepCheck = g.checkLayout;  // le bandeau se superpose à tout (fenêtre des messages du combat) : pas un défaut
+    g.checkLayout = false;
     g.rect(g.left(), 0, g.fullW, 11, rgb(0x000010, 170));
     g.text(160, 2, s, rgb(0xffd34d), 1);
+    g.checkLayout = keepCheck;
     if (demoPaused_) {
       g.rect(g.left(), 11, g.fullW, SCREEN_H - 11, rgb(0x000010, 110));
       g.newLayer();

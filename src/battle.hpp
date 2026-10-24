@@ -155,6 +155,25 @@ class Battle {
   // le plus proche) ; un coup au corps à corps venu du côté opposé à son regard est « dans le dos ».
   std::map<const Fighter*, int> facing_;
   bool ambush_ = false;  // ce combat a commencé par une embuscade
+  std::set<const Fighter*> guarding_;  // en garde (2026-10-24, « Attendre ») : dégâts reçus × rules().guard jusqu'à son tour
+  // Intention (2026-10-24) : à rules().intentAt % de sa jauge, un ennemi annonce ce qu'il va faire (case, technique,
+  // cibles) ; dessinée au-dessus de lui et sur ses cibles. À son tour, il l'exécute si elle tient toujours (cibles
+  // vivantes et à portée), sinon il réfléchit à nouveau. C'est ce qui laisse le temps de réagir : écarter la cible,
+  // la mettre en garde, frapper l'ennemi d'abord.
+  struct Intent {
+    int cell = -1;
+    std::string move;
+    std::vector<FighterP> targets;
+    bool wait = false;
+    float t0 = 0;
+  };
+  std::map<const Fighter*, Intent> intents_;
+  void declareIntent(const FighterP& e);
+  std::string intentText(const Fighter& e) const;
+  float lure(const FighterP& t) const;  // attrait d'une cible pour les ennemis (soigneur, lanceur, blessé)
+  bool dangerAt(const FighterP& f, int cell) const;  // terrain qui blesse, zone rouge d'un boss, intention ennemie
+  bool announced(const FighterP& f) const;           // ce boss a une attaque annoncée (zone rouge) en attente
+  int aimedBy(const FighterP& f) const;              // ennemis vivants qui ont annoncé une attaque sur lui  // « Prépare Charge sur Maëlle » (vide : rien d'annoncé)
   std::map<const Fighter*, float> koT_;  // moment du K.O. (un ennemi vaincu s'efface en 0,6 s avec un éclat)
   int cellOf(const FighterP& f) const;  // -1 : pas sur le plateau
   void place(const std::vector<FighterP>& v, bool keep, bool left);
@@ -269,6 +288,14 @@ class Battle {
   // Dégâts prévus (3.3, aide du choix de la cible) : « ≈ 18-24 PV · 95 % » (sans coup critique). L'efficacité d'un type
   // n'est comptée qu'une fois découverte (Brisure) : sinon neutre, pour ne rien dévoiler.
   std::string damageText(const FighterP& a, const Move& m, const FighterP& d) const;
+  // Dégâts prévus d'une attaque (même formule qu'applyHit, sans hasard ni critique) ; eff < 0 : absorbé, 0 : sans effet ;
+  // fromCell : la case d'où l'attaquant frappera (sinon celle où il s'approchera)
+  struct Preview {
+    int lo = 0, hi = 0;
+    float hit = 0, eff = 1;
+    bool back = false;
+  };
+  Preview preview(const FighterP& a, const Move& m, const FighterP& d, int fromCell = -1) const;
   // Tactiques (tactics.hpp) : première règle possible de l'allié a, puis son exécution
   bool tacticsActive() const;
   bool tacticPlan(FighterP a, Plan& out);

@@ -363,6 +363,20 @@ de niveau 35-40 bien équipée.
   fenêtres sont sombres et la pièce prend la lumière des bougies.
 - **Interface** : titre doré, nom des lieux en ruban à l'arrivée, fenêtres aux coins arrondis.
 
+## Dur mais très tactique (3.7)
+
+Chaque ennemi **annonce ce qu'il prépare** à la moitié de sa jauge : une icône à côté de sa barre de PV (épée, orbe du
+type, croix verte pour un soin, sablier s'il va se mettre en garde), un chevron orange au-dessus de l'allié visé avec
+les dégâts prévus, la zone en orange au sol, « Prépare Morsure sur Lior » quand on le survole. Il fait ce qu'il a
+annoncé si c'est encore possible, sinon « Déjoué ! » : écarter la cible, la mettre en garde ou abattre l'ennemi d'abord
+sont trois vraies réponses. **Attendre** met en garde : un quart de dégâts en moins et une riposte à chaque coup au
+corps à corps jusqu'au tour suivant. Les ennemis visent les soigneurs, les lanceurs de sorts et les blessés, et la meute
+s'acharne sur un allié déjà visé. Les rencontres sont plus denses (0,6 créature par allié, jamais plus de 3 niveaux sous
+l'équipe), les créatures sauvages n'ont plus d'attaque sur toute l'équipe (une zone à la place : la formation compte),
+et chaque profil de tactiques soigne ; tactiques « Soi : visé » et « Allié : visé ». Le joueur automatique adapte ses
+compagnons aux créatures du lieu et capture ce qui manque à son vivier. Mesuré sans mémoire : tout fini en 9 h 07 avec
+11 défaites (estimation pour un joueur : 18 h).
+
 ## Plus exigeant, plus tactique (3.6)
 
 Le dos d'un combattant dépend maintenant de son **regard** : vers sa dernière cible, vers où il a marché, ou vers

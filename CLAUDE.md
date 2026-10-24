@@ -44,8 +44,10 @@ Procédure complète : compétence `publier-version` (`.claude/skills/`). Augmen
 
 Le mode test (src/test.cpp) vérifie les données, joue des scènes (titre, village,
 dialogue, recrutement, combat piloté par les menus, sauvegarde/chargement),
-enregistre des captures `.bmp` dans `captures/` et simule des combats pour
-l'équilibrage. Il doit finir par « TOUS LES TESTS PASSENT ». Regarde les captures
+enregistre des captures `.bmp` dans `captures/` et, avec `BRUMEVAL_SIMULATIONS=1`
+(2026-10-24 : sinon elles sont sautées, elles prenaient 6 des 7 minutes), simule des
+combats pour l'équilibrage. Il doit finir par « TOUS LES TESTS PASSENT ». Les tirages
+au hasard partent d'une graine fixe (`BRUMEVAL_GRAINE` pour en changer) : un échec se rejoue. Regarde les captures
 après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
 
 Chaque image dessinée pendant les tests est vérifiée (`Gfx::checkLayout`,
@@ -64,7 +66,8 @@ brumeval --demo                                  # la même chose dans la fenêt
 ```
 
 Fonctionnement, rapport et mémoire d'une partie à l'autre : compétence `joueur-auto-brumeval`. En démo, il passe par les menus
-comme un joueur (équipement, gemmes, tactiques, formation, Journal, Bestiaire : `Pilot::visit`) ; `BRUMEVAL_DEMO=1 brumeval
+comme un joueur (équipement, gemmes, tactiques, formation, compagnons et réserve selon les créatures du lieu
+(`Pilot::adaptTeam`, 2026-10-24), Journal, Bestiaire : `Pilot::visit`) ; `BRUMEVAL_DEMO=1 brumeval
 --partie dossier` joue la démo sans fenêtre (capture de chaque menu visité). Un
 nouveau genre d'interaction (objet à utiliser, énigme…) demande d'ajouter un objectif dans `Pilot::goals`.
 
@@ -195,8 +198,9 @@ code) ; `docs/GUIDE.md` les range par domaine.
   réserve. Menu `bestiaryMenu`, fiche `drawBestiaryPanel` (`panelMode_` 3 ; une fois l'espèce obtenue, sa
   `description` : `Species::desc`, écrites par `outils/villes/descriptions.py`).
   L'Expédition repart d'un bestiaire vide.
-- Rééquilibrage (2026-10-23) : `Game::encounter` : au moins `par_allie` ennemis par combattant allié, créatures sauvages
-  au plus `ecart_niveau` sous la moyenne de l'équipe (sans dépasser la zone de `plafond_niveau`), gains de leur niveau
+- Rééquilibrage (2026-10-23) : `Game::encounter` : au moins `par_allie` ennemis par combattant allié (0,6 depuis le
+  2026-10-24), meutes d'au plus 2 + une créature par tranche de `meute_par_niveau` (15) niveaux de l'équipe (2026-10-24 :
+  les débuts se jouent à deux contre deux), créatures sauvages au plus `ecart_niveau` (3) sous la moyenne de l'équipe (sans dépasser la zone de `plafond_niveau`), gains de leur niveau
   d'origine (`Fighter::rewardLvl`) ; jamais en Expédition. Expérience : un adversaire plus de `exp_marge` niveaux sous
   l'équipe rapporte `exp_ecart` de moins par niveau (au moins `exp_min`), pas en Expédition ; un coup absorbé ou sans
   effet n'applique ni état ni poussée ; mesures : compétence `equilibrage`. Embuscade (`rencontres.embuscade`,
@@ -204,6 +208,29 @@ code) ; `docs/GUIDE.md` les range par domaine.
   sans Percée ; astuce « embuscade », aide de l'échiquier. `attackScore` : ×1,4 pour frapper un adversaire au contact dans
   son dos (se retourner) ; le joueur automatique répète une embuscade comme telle (`fight["embuscade"]`). Résistance négative d'une espèce (`resistances`) = elle
   absorbe ce type (`applyHit` soigne, « Absorbe ! ») ; résistances des créatures sauvages : `outils/villes/resistances.py`.
+  Meutes (2026-10-24) : une créature sauvage n'apprend jamais d'attaque sur tous les ennemis (`outils/villes/meutes.py` la
+  remplace par une attaque de zone d'un de ses types, sinon la retire ; les boss gardent les leurs).
+- Dur mais tactique (2026-10-24, branche `jeu-tactique`). **Garde** : « Attendre » (`waitTurn`) met le combattant en
+  garde (`Battle::guarding_`) : dégâts reçus × `combat.garde` (0,75) et riposte à tout coup au corps à corps (chance
+  `combat.garde_riposte`, 1 ; même code que la gemme de riposte, ×0,7) jusqu'à ce que sa jauge soit pleine (`tickATB`) ;
+  petit bouclier à côté de la tête (à gauche de la barre de PV chez un ennemi) ; astuce « garde ». **Intentions** (Into
+  the Breach) : à `combat.intention` % (50 ; 70 au départ : trop tard, le menu du joueur s'ouvrait sans elles) de sa jauge, un ennemi (un boss aussi, sauf quand sa zone rouge attend
+  (`announced`) ; ni brisé, ni en duel, ni chez l'invité) annonce ce qu'il fera (`declareIntent` : `planMove`, puis `think` depuis sa future case ; un
+  soigneur annonce le soin que `roleHeal` jouerait ; rangé dans `intents_`) : icône à droite de sa barre de PV (épée,
+  orbe de la couleur du type, croix verte pour un soin, sablier pour une garde), chevron orange au-dessus de chaque allié
+  visé avec les dégâts prévus « ≈ lo-hi » (`preview`, la formule de `damageText`, additionnés), zone en orange au sol, « Prépare X sur Y » dans l'aide de la cible (`pickFoe`, `intentText`). À son tour
+  (`enemyTurn`), il l'exécute si elle tient encore (case encore accessible, cibles encore au combat, portée, PM, soin
+  encore utile ; listes « tout un camp » refaites), sinon « Déjoué ! » et il réfléchit à nouveau ; effacée par la Brisure
+  (`breakFoe`). Réseau : la garde est le 11e nombre de chaque combattant de `etat`, les intentions la liste `i`
+  (ennemi, technique, case, alliés visés) : les autres joueurs du gardien les voient comme le chef. **Ciblage** : quand un ennemi frappe « au hasard » (65 % des tours),
+  la cible est tirée selon `lure` (soigneur ou soins connus +1, lanceur de sorts +0,5, blessé jusqu'à +1,5, +0,75 par
+  intention déjà annoncée sur lui : la meute s'acharne) : couvrir ses soigneurs et ses blessés compte. Ennemi survolé
+  au choix de la cible : un pointillé orange vers l'allié qu'il vise. **Menace** : `dangerAt(f, case)` réunit terrain qui blesse, zone rouge d'un boss et
+  intention (visé au corps à corps : les cases hors de portée de l'ennemi sont sûres ; voisin visé par une zone : s'en
+  écarter) ; `threatened`, `safeCell`, l'IA alliée et « Se mettre à l'abri » s'en servent ; `aimedBy(f)` compte les intentions
+  qui le visent (meute, tactiques, ATH : bouclier de garde et chevron après le nom). Sons `garde` et `dejoue`
+  (data/sons.json). Astuces « intention » et « garde », aide de l'échiquier, capture `garde_intention`, mesures :
+  compétence `equilibrage`.
 - Vente : boutique > « Vendre… » (`Game::sellMenu`), moitié du prix, sauf les
   objets importants.
 - Boutique (2026-10-23) : un équipement survolé montre sous la liste ce qu'il changerait pour chaque membre qui peut le
@@ -253,11 +280,15 @@ code) ; `docs/GUIDE.md` les range par domaine.
   (`Battle::tacticPlan` choisit la cible et la technique) ; sinon le menu de
   commande s'ouvre. Ajouter une condition : l'entrée dans `CONDS`
   (tactics.cpp) et son test dans `holds` (battle.cpp). Conditions du 2026-10-23 : `ennemi_brise`, `ennemi_dos`,
-  `ennemi_role`, `soi_dos_menace` ; actions `briser` (une faiblesse découverte) et `garde` (attendre, `Plan::wait`).
-  Profils (`tactiques.profils` de regles.json, `Rules::tacticProfiles`, « Profils… » dans l'éditeur, `profileRules` :
-  coupés aux lignes du membre en gardant la dernière règle) ; le joueur automatique en choisit un pour chacun
-  (`Pilot::setupTactics` : soigneur, protecteur, briseur, combattant). Les simulations
-  (`autoPlay`) n'utilisent les tactiques que si `simTactics` est vrai.
+  `ennemi_role`, `soi_dos_menace` ; (2026-10-24) `soi_vise` : une intention ennemie le vise, hors zone rouge (le profil
+  Protecteur se met alors en garde : riposte), `allie_vise` : un allié visé (le Protecteur va le couvrir : `proteger`) ; actions `briser` (une faiblesse découverte), `garde` (attendre, `Plan::wait`) et
+  `attaque_prudente` (la meilleure attaque qui laisse 40 % des PM, sinon une technique gratuite : le profil Soigneur).
+  Profils (`tactiques.profils` de regles.json, `Rules::tacticProfiles`, « Profils… » dans l'éditeur, `profileRules(p, lignes,
+  combattant)` : sans les règles de soin qu'il ne peut pas suivre, coupés à ses lignes en gardant la dernière règle) ;
+  chaque profil réanime et soigne un allié en danger avant d'attaquer (2026-10-24 : avec un seul soigneur, l'équipe du
+  joueur automatique perdait contre les meutes de fin de partie) ; `bestProfile(f)` : le profil conseillé (Soigneur,
+  Protecteur, Briseur ou Combattant), marqué « (conseillé) » dans le menu et choisi par le joueur automatique
+  (`Pilot::setupTactics`). Les simulations (`autoPlay`) n'utilisent les tactiques que si `simTactics` est vrai.
 - Son (audio.hpp) : `audio::play("coup")` joue un bruitage, `audio::music("combat")`
   change de morceau (fondu ; le même morceau continue). `Game::updateMusic`
   choisit la musique à chaque image (lieu selon `themeName`, combat, boss,

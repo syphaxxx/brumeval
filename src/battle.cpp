@@ -873,8 +873,13 @@ void Battle::tickATB(float dt) {
   for (auto& e : alive(foes)) all.push_back(e);
   for (auto& f : all) {
     f->atb += dt * atbRate(f);
+    // Intention (2026-10-24) : un ennemi annonce ce qu'il prépare avant d'agir
+    if (!isAlly(f) && !announced(f) && !f->broken && rules().intentAt > 0 && f->atb >= rules().intentAt && f->atb < 100 &&
+        !intents_.count(f.get()) && !duel() && !follower())
+      declareIntent(f);  // (un boss dont la zone rouge attend : elle est déjà son intention)
     if (f->atb >= 100) {
       f->atb = 100;
+      guarding_.erase(f.get());  // sa garde tombe quand son tour revient
       if (skipTurn(f)) return;
       if (isAlly(f) && coop() && owner(f) != me_) {  // gardien : allié d'un autre joueur
         if (owner(f) < 0) autoCommand(f);            // joueur parti : l'ordinateur joue
@@ -900,6 +905,7 @@ void Battle::tickATB(float dt) {
 bool Battle::skipTurn(FighterP f) {
   if (f->broken) {  // brisé : il perd ce tour, puis se ressaisit (bouclier rechargé)
     actor = f;
+    intents_.erase(f.get());
     f->broken = false;
     f->shield = f->shieldMax;
     log.push_back("  " + f->name() + T(" se ressaisit (brisé)"));
@@ -1087,7 +1093,7 @@ void Battle::command(FighterP a) {
                          log.push_back(a->name() + T(" revient sur ses pas"));
                          command(a);
                        }});
-  m.items.push_back({T("Attendre"), "", T("Finir son tour sans agir : rejoue plus tôt, face à l'ennemi le plus proche (le dos à l'abri)."), true, [this, a] { waitTurn(a); }});
+  m.items.push_back({T("Attendre"), "", T("Se mettre en garde jusqu'à son prochain tour : un quart de dégâts en moins, une riposte à chaque coup au corps à corps, face à l'ennemi le plus proche ; il rejoue plus tôt."), true, [this, a] { waitTurn(a); }});
   std::vector<FighterP> bench;  // avec des héros : un héros n'est remplacé que par un héros
   bool inTeam = std::find(G.team.begin(), G.team.end(), a) != G.team.end();  // défi : des combattants prêtés, sans remplaçants
   for (auto& r : G.team)
@@ -1152,8 +1158,9 @@ void Battle::pickFoe(const std::string& title, std::function<std::string(const F
   std::vector<int> cells;
   for (auto& f : list) {
     if (f == cursor) t.sel = (int)t.items.size();  // la cible de l'aperçu
-    t.items.push_back({f->name(), T("N.") + std::to_string(f->lvl), f->name() + T(" N.") + std::to_string(f->lvl) + " · " + info(*f), true,
-                       [done, f] { done(f); }, [this, f] { cursor = f; }});
+    std::string plan = intentText(*f);  // ce qu'il prépare (2026-10-24)
+    t.items.push_back({f->name(), T("N.") + std::to_string(f->lvl), f->name() + T(" N.") + std::to_string(f->lvl) + " · " + (plan.empty() ? "" : plan + " · ") + info(*f),
+                       true, [done, f] { done(f); }, [this, f] { cursor = f; }});
     cells.push_back(cellOf(f));
   }
   boardMenu(t, cells);
@@ -1355,8 +1362,16 @@ Battle::Plan Battle::think(FighterP a) {
   std::vector<std::string> moves = a->techs();
   for (auto& id : a->spells())
     if (a->mp >= moveInfo(id).cost) moves.push_back(id);
-  // Les ennemis ne visent pas toujours la meilleure cible : souvent, ils frappent au hasard
-  FighterP focus = !ally && frand() < .65f ? theirs[irand(0, (int)theirs.size() - 1)] : nullptr;
+  // Les ennemis ne visent pas toujours la meilleure cible : souvent, ils frappent « au hasard », mais (2026-10-24) les
+  // soigneurs, les lanceurs de sorts et les blessés les attirent : l'équipe doit les couvrir (garde, protecteur, recul)
+  FighterP focus;
+  if (!ally && frand() < .65f) {
+    float sum = 0;
+    for (auto& t : theirs) sum += lure(t);
+    float r = frand() * sum;
+    for (auto& t : theirs)
+      if (focus = t, (r -= lure(t)) <= 0) break;
+  }
 
   Plan best;
   float bestScore = 0;
@@ -1452,6 +1467,19 @@ Battle::Plan Battle::think(FighterP a) {
 }
 
 
+// Attrait d'un combattant pour les ennemis qui choisissent qui frapper : un soigneur vaut le double, un lanceur de
+// sorts un peu plus, un blessé attire d'autant plus qu'il est bas (achever) ; un boss n'y est pas plus sensible
+float Battle::lure(const FighterP& t) const {
+  float w = 1;
+  bool heals = t->S().combatRole == "soigneur";
+  for (auto& id : t->spells()) heals = heals || moveInfo(id).kind == Kind::Heal || moveInfo(id).kind == Kind::Revive;
+  if (heals) w += 1;
+  if (t->eMag() > t->eAtk()) w += .5f;
+  w += 1.5f * (1 - float(t->hp) / std::max(1, t->mhp));
+  w += .75f * aimedBy(t);  // meute (2026-10-24) : déjà visé par un des leurs, les autres s'y mettent
+  return w;
+}
+
 // Intérêt d'une attaque sur une cible (sans hasard), dans l'unité de Battle::think :
 // dégâts attendus (puissance x efficacité x Attaque/Défense x précision), divisés par
 // le temps que prend la technique (rapide ou lourde). Les alliés comptent aussi les
@@ -1493,8 +1521,8 @@ float Battle::attackScore(const FighterP& a, const Move& m, const FighterP& t) c
   return score / paceTime(m);
 }
 
-std::string Battle::damageText(const FighterP& a, const Move& m, const FighterP& d) const {
-  if (!m.damaging() || !a || !d) return "";
+Battle::Preview Battle::preview(const FighterP& a, const Move& m, const FighterP& d, int fromCell) const {
+  Preview pv;
   const Rules& R = rules();
   bool magic = m.kind == Kind::Magic;
   float hit = m.acc / 100.f * a->acc / 100.f - (magic ? 0 : d->eva / 100.f);
@@ -1504,24 +1532,33 @@ std::string Battle::damageText(const FighterP& a, const Move& m, const FighterP&
   // Brisure : l'efficacité d'un type n'est comptée qu'une fois découverte (sinon neutre, quelle qu'elle soit : rien ne
   // se devine sans attaquer ; la fiche de la cible montre déjà « ? »)
   float eff = G.weakKnown(d->sp, m.type) ? moveEff(m, d->S()) : 1.f;
-  if (eff < 0) return T(" · absorbé : le soigne !");
-  if (eff <= 0) return T(" · aucun effet");
+  pv.eff = eff, pv.hit = std::clamp(hit, 0.f, 1.f);
+  if (eff <= 0) return pv;
   float A = magic ? a->eMag() : a->eAtk(), D = magic ? d->eRes() : d->eDef();
   float stab = hasType(a->S(), m.type) ? float(R.stab) : 1.f, k = 1;
   // Échiquier : au corps à corps, il s'approche d'abord (vers la case que choisira approachCell)
-  int from = m.melee && boardDist(cellOf(a), cellOf(d)) > reach(a) ? approachCell(a, d) : -1;
+  int from = fromCell >= 0 ? fromCell : m.melee && boardDist(cellOf(a), cellOf(d)) > reach(a) ? approachCell(a, d) : -1;
   k *= posMult(a, d, m, from);
-  bool back = m.melee && behind(a, d, from);
+  pv.back = m.melee && behind(a, d, from);
   if (d->broken) k *= float(R.breakDamage);
   k *= 1 - float(talentValue(d->S(), magic ? "resiste_magie" : "resiste_physique"));
   if (hasType(a->S(), m.type) && a->hp * 3 < a->mhp) k *= 1 + float(talentValue(a->S(), "rage"));
   k *= weatherMult(m.type) * guardMult(d);
+  if (guarding_.count(d.get())) k *= float(R.guard);  // en garde
   if (const Rules::Terrain* tr = terrainAt(a); magic && tr && tr->kind == "magie") k *= 1 + float(tr->value);
   float base = ((2 * a->lvl / 5.f + 2) * m.power * A / std::max(1.f, D) / float(R.dmgDivisor) + 2) * stab * eff * k;
-  int lo = std::max(1, int(base * float(R.spreadMin))), hi = std::max(1, int(base));
-  std::string s = T(" · ≈ ") + std::to_string(lo) + (hi > lo ? "-" + std::to_string(hi) : "") + T(" PV");
-  s += " · " + std::to_string(int(std::lround(std::clamp(hit, 0.f, 1.f) * 100))) + " %";
-  if (back) s += T(" · dans le dos");
+  pv.lo = std::max(1, int(base * float(R.spreadMin))), pv.hi = std::max(1, int(base));
+  return pv;
+}
+
+std::string Battle::damageText(const FighterP& a, const Move& m, const FighterP& d) const {
+  if (!m.damaging() || !a || !d) return "";
+  Preview pv = preview(a, m, d);
+  if (pv.eff < 0) return T(" · absorbé : le soigne !");
+  if (pv.eff <= 0) return T(" · aucun effet");
+  std::string s = T(" · ≈ ") + std::to_string(pv.lo) + (pv.hi > pv.lo ? "-" + std::to_string(pv.hi) : "") + T(" PV");
+  s += " · " + std::to_string(int(std::lround(pv.hit * 100))) + " %";
+  if (pv.back) s += T(" · dans le dos");
   return s;
 }
 
@@ -1541,14 +1578,79 @@ void Battle::autoCommand(FighterP a) {
 
 void Battle::enemyTurn(FighterP e) {
   actor = e;
-  if (bossPlan(e) || roleHeal(e)) return;
+  auto it = intents_.find(e.get());
+  bool declared = it != intents_.end();
+  Intent in = declared ? it->second : Intent{};
+  if (declared) intents_.erase(it);
+  if (bossPlan(e)) return;
   if (!moved_.count(e.get())) {
-    step(e, planMove(e));
+    int c = -1;  // la case annoncée, si un chemin y mène encore (un allié a pu fermer le passage, une poussée le déplacer)
+    if (declared && in.cell >= 0)
+      for (auto& [w, steps] : walkable(e)) c = w == in.cell ? w : c;
+    if (declared && in.cell == cellOf(e)) c = in.cell;
+    step(e, c >= 0 ? c : planMove(e));
     moved_.insert(e.get());
   }
+  // L'intention annoncée, si elle tient toujours (cibles encore au combat, à portée, PM, soin encore utile) ; sinon il
+  // réfléchit à nouveau
+  bool valid = declared && !in.wait && !in.move.empty() && hasMove(in.move) && e->mp >= moveInfo(in.move).cost;
+  if (valid) {
+    const Move& m = moveInfo(in.move);
+    if (m.target == Target::AllEnemies) in.targets = alive(allies);  // tout un camp : ceux du moment
+    else if (m.target == Target::AllAllies) in.targets = alive(foes);
+    valid = !in.targets.empty();
+    for (auto& t : in.targets)  // encore au combat (pas un allié qui a reculé : sa case reste dans cells_)
+      valid = valid && t && t->alive() && (std::count(allies.begin(), allies.end(), t) || std::count(foes.begin(), foes.end(), t));
+    if (valid && in.targets.size() == 1 && !reachable(e, m, in.targets[0])) valid = false;
+    if (valid && m.kind == Kind::Heal && in.targets[0]->hp * 4 >= in.targets[0]->mhp * 3) valid = false;  // déjà remis
+  }
+  if (valid) return useMove(e, in.move, in.targets);
+  if (declared && !in.wait && !in.move.empty()) {  // l'annonce ne tient plus : le joueur a bien réagi, qu'il le sache
+    log.push_back(e->name() + T(" : intention déjouée"));
+    if (shown()) pop(e, T("Déjoué !"), rgb(0x8fd0ff)), sound("dejoue");
+  }
+  if (declared && in.wait) return waitTurn(e);
+  if (roleHeal(e)) return;
   Plan p = think(e);
   if (p.wait) waitTurn(e);
   else useMove(e, p.move, p.targets);
+}
+
+// Ce qu'il fera à son tour, décidé comme à son tour (sa case, puis son action de là), gardé pour l'affichage
+void Battle::declareIntent(const FighterP& e) {
+  Intent in;
+  in.t0 = G.time;
+  int keep = cellOf(e);
+  bool had = moved_.count(e.get()) > 0;
+  if (!had && keep >= 0) in.cell = planMove(e);
+  if (in.cell >= 0) cells_[e.get()] = in.cell, moved_.insert(e.get());
+  Plan p = think(e);
+  if (in.cell >= 0) cells_[e.get()] = keep;
+  if (!had) moved_.erase(e.get());
+  if (e->S().combatRole == "soigneur" && hasMove("soin") && frand() >= .25f) {  // comme roleHeal : le plus mal en point des siens
+    FighterP worst;
+    for (auto& o : alive(foes))
+      if (o->hp * 2 < o->mhp && (!worst || o->hp * worst->mhp < worst->hp * o->mhp)) worst = o;
+    if (worst) p = Plan{"soin", {worst}, false};
+  }
+  in.move = p.move, in.targets = p.targets, in.wait = p.wait;
+  intents_[e.get()] = in;
+  if (shown() && !autoPlay && !in.wait && !in.move.empty()) tip("intention");
+}
+
+std::string Battle::intentText(const Fighter& e) const {
+  auto it = intents_.find(&e);
+  if (it == intents_.end() || !e.alive()) return "";
+  const Intent& in = it->second;
+  if (in.wait) return T("Se met en garde");
+  if (in.move.empty() || !hasMove(in.move)) return "";
+  std::string who;
+  for (auto& t : in.targets)
+    if (t && t->alive()) who += (who.empty() ? "" : ", ") + t->name();
+  std::string s = who.empty() ? T("Prépare {t}") : T("Prépare {t} sur {c}");
+  if (size_t at = s.find("{t}"); at != std::string::npos) s.replace(at, 3, moveInfo(in.move).name);
+  if (size_t at = s.find("{c}"); at != std::string::npos) s.replace(at, 3, who);
+  return s;
 }
 
 // ---------------------------------------------------------------------------
@@ -1560,20 +1662,51 @@ bool Battle::tacticsActive() const { return autoPlay ? simTactics : G.tacticsAut
 // ---------------------------------------------------------------------------
 // Damier : attaques annoncées des boss, déplacements de l'ordinateur
 // ---------------------------------------------------------------------------
-bool Battle::threatened(const FighterP& f) const {
-  int c = cellOf(f);
-  if (terrainHurts(f, c)) return true;  // braises, ronces, verglas : mieux vaut changer de case
+// Une case dangereuse pour f : terrain qui blesse (braises, ronces, verglas) ; pour un allié, la zone rouge d'un boss, ou
+// (2026-10-24) une intention ennemie : visé lui-même au corps à corps, seules les cases hors de portée de l'ennemi sont
+// sûres (il devra choisir autre chose) ; un voisin visé par une zone, s'en écarter. Un sort à distance n'est pas un
+// danger de case : rien à y faire en bougeant (se mettre en garde, ou frapper l'ennemi d'abord)
+bool Battle::dangerAt(const FighterP& f, int c) const {
+  if (terrainHurts(f, c)) return true;
   if (!isAlly(f)) return false;  // les attaques annoncées visent les alliés
   for (auto& w : warnings_)
     if (inBoardZone(w.zone, w.center, c)) return true;
+  for (auto& e : foes) {
+    auto it = intents_.find(e.get());
+    if (it == intents_.end() || !e->alive()) continue;
+    const Intent& in = it->second;
+    if (in.wait || in.move.empty() || !hasMove(in.move) || !moveInfo(in.move).damaging()) continue;
+    const Move& m = moveInfo(in.move);
+    int from = in.cell >= 0 ? in.cell : cellOf(e);
+    for (auto& tg : in.targets) {
+      if (!tg || !tg->alive()) continue;
+      if (tg == f) {
+        if (m.melee && from >= 0 && boardDist(from, c) <= reach(e)) return true;
+      } else if (m.zone != Area::Single && m.zone != Area::All && cellOf(tg) >= 0 && inBoardZone(m.zone, cellOf(tg), c))
+        return true;
+    }
+  }
+  return false;
+}
+bool Battle::threatened(const FighterP& f) const { return dangerAt(f, cellOf(f)); }
+int Battle::aimedBy(const FighterP& f) const {
+  int n = 0;
+  for (auto& [who, in] : intents_) {
+    if (!who->alive() || in.wait || in.move.empty() || !hasMove(in.move) || !moveInfo(in.move).damaging()) continue;
+    for (auto& tg : in.targets) n += tg == f;
+  }
+  return n;
+}
+bool Battle::announced(const FighterP& f) const {
+  for (auto& w : warnings_)
+    if (w.who == f) return true;
   return false;
 }
 int Battle::safeCell(const FighterP& f) const {
   int from = cellOf(f), best = -1, bestD = 99;
   if (moved_.count(f.get())) return -1;
   for (auto& [c, steps] : walkable(f)) {
-    bool danger = terrainHurts(f, c);
-    for (auto& w : warnings_) danger = danger || (isAlly(f) && inBoardZone(w.zone, w.center, c));
+    bool danger = dangerAt(f, c);
     int d = steps * 2 + (inHalf(isAlly(f), c) ? 0 : 3) + std::abs(boardY(c) - boardY(from));  // rester chez soi si possible
     if (!danger && d < bestD) best = c, bestD = d;
   }
@@ -1731,6 +1864,12 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
         if (boardDist(w, cellOf(t)) <= reach(a) && behind(a, t, w)) return true;
       return false;
     }
+    if (c == "allie_vise") return aimedBy(t) > 0;  // un ennemi a annoncé une attaque sur cet allié
+    if (c == "soi_vise") {  // une intention ennemie le vise (pas dans une zone rouge : là, il vaut mieux s'écarter)
+      for (auto& w : warnings_)
+        if (inBoardZone(w.zone, w.center, cellOf(a))) return false;
+      return aimedBy(a) > 0;
+    }
     if (c == "soi_dos_menace") {
       for (auto& o : liveFoes)
         if (boardDist(cellOf(o), cellOf(a)) <= 1 && behind(o, a)) return true;
@@ -1817,11 +1956,7 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
             for (auto& o : liveFoes) near = std::min(near, boardSteps(cellOf(o), w));
             score = near * 10 + steps;
           }
-          if (threatened(a) && isAlly(a)) {
-            bool danger = terrainHurts(a, w);
-            for (auto& wn : warnings_) danger = danger || inBoardZone(wn.zone, wn.center, w);
-            if (danger) continue;
-          }
+          if (threatened(a) && isAlly(a) && dangerAt(a, w)) continue;
           if (score < best) best = score, cell = w;
         }
         if (tc.act == "approcher" && cell >= 0 && boardDist(cell, tcell) >= boardDist(cellOf(a), tcell)) cell = -1;  // pas plus près
@@ -1848,6 +1983,7 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
         if (a->mp < m.cost) continue;
         const std::string& k = tc.act;
         if ((k == "attaque" && m.damaging()) || (k == "technique" && m.damaging() && m.cost == 0) || (k == "briser" && m.damaging()) ||
+            (k == "attaque_prudente" && m.damaging() && (m.cost == 0 || a->mp - m.cost >= .4f * a->mmp)) ||
             (k == "soin" && m.kind == Kind::Heal && m.power > 0) || (k == "reanimation" && m.kind == Kind::Revive) ||
             (k == "guerison" && m.kind == Kind::Heal && cures(m)))
           acts.push_back({&m});
@@ -1947,6 +2083,7 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
   if (hasType(a->S(), m.type) && a->hp * 3 < a->mhp) k *= 1 + float(talentValue(a->S(), "rage"));  // talent Rage
   k *= weatherMult(m.type);                                                                          // météo
   k *= guardMult(d);                                                                                 // rôle : protecteur voisin
+  if (guarding_.count(d.get())) k *= float(R.guard);                                                 // en garde (Attendre)
   if (const Rules::Terrain* tr = terrainAt(a); magic && tr && tr->kind == "magie") k *= 1 + float(tr->value);  // cristaux
   int dmg = std::max(1, int(((2 * a->lvl / 5.f + 2) * m.power * A / std::max(1.f, D) / float(R.dmgDivisor) + 2) * stab * eff * spread * k));
   if (absorb) {  // soigné au lieu d'être blessé ; l'équipe s'en souvient (aperçu des dégâts, Bestiaire)
@@ -1972,7 +2109,7 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
   std::string fx = crit ? "critique" : magic ? "sort_" + types()[m.type].id : m.pace == Pace::Quick ? "coup_rapide" : m.pace == Pace::Heavy ? "coup_lourd" : "coup";
   if (!audio::has(fx)) fx = magic ? "sort" : "coup";
   sound(fx);
-  pop(d, std::to_string(dmg), eff > 1 ? GOLD : eff < 1 ? GREY : WHITE);
+  pop(d, std::to_string(dmg), eff > 1 ? GOLD : guarding_.count(d.get()) ? rgb(0x8fd0ff) : eff < 1 ? GREY : WHITE);  // bleu : encaissé en garde
   if (crit) pop(d, T("Critique !"), RED), shakeT_ = G.time;
   if (back) {
     pop(d, T("Dans le dos !"), rgb(0xffb070));
@@ -1986,9 +2123,15 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
     a->hp = std::min(a->mhp, a->hp + h);
     pop(a, "+" + std::to_string(h), GREEN);
   }
-  if (m.melee && a->alive() && d->alive() && !countering_ && frand() < gemSupport(*d, "contre") && !d->techs().empty()) {  // gemme de riposte
-    const Move& c = moveInfo(d->techs()[0]);
-    if (c.damaging()) {
+  // Riposte : gemme de riposte, ou (2026-10-24) en garde (« Attendre ») : un coup au corps à corps lui en vaut un en retour
+  if (m.melee && a->alive() && d->alive() && !countering_ && !d->techs().empty() &&
+      frand() < gemSupport(*d, "contre") + (guarding_.count(d.get()) ? R.guardRiposte : 0)) {
+    std::string counter;  // sa première technique qui blesse, une cible de préférence (la toute première peut être un cri)
+    for (auto& id : d->techs())
+      if (const Move& t = moveInfo(id); t.damaging() && (counter.empty() || (t.target == Target::Enemy && moveInfo(counter).target != Target::Enemy)))
+        counter = id;
+    if (!counter.empty()) {
+      const Move& c = moveInfo(counter);
       countering_ = true;
       pop(d, T("Riposte !"), rgb(0xffd34d));
       log.push_back("  " + d->name() + T(" riposte"));
@@ -2195,6 +2338,7 @@ bool Battle::roleHeal(const FighterP& e) {
 void Battle::breakFoe(const FighterP& d) {
   d->broken = true;
   d->atb = 0;
+  intents_.erase(d.get());
   for (auto it = warnings_.begin(); it != warnings_.end();)
     if (it->who == d) it = warnings_.erase(it);
     else ++it;
@@ -2778,6 +2922,15 @@ void Battle::drawHud(float t) {
       Color sc2 = rgb(statusColor(a->status));
       g.rect(hx + 45, y + 1, 5, 5, sc2);
     }
+    if (a->alive() && guarding_.count(a.get())) {  // (2026-10-24) en garde : un petit bouclier
+      float gx = hx + 56, gy = y;
+      g.poly({{gx - 3, gy}, {gx + 3, gy}, {gx + 3, gy + 3}, {gx, gy + 6}, {gx - 3, gy + 3}}, rgb(0x8fd0ff));
+      g.poly({{gx - 1.5f, gy + 1}, {gx + 1.5f, gy + 1}, {gx + 1.5f, gy + 3}, {gx, gy + 4.5f}, {gx - 1.5f, gy + 3}}, rgb(0x1c2a78));
+    }
+    if (a->alive() && aimedBy(a) > 0) {  // visé par une intention : le chevron orange, comme au-dessus de sa tête
+      float cx = hx + 65, cy = y + 1;
+      g.tri(cx - 3, cy, cx + 3, cy, cx, cy + 4, rgb(0xff9a3a));
+    }
     float r = a->mhp ? float(a->hp) / a->mhp : 0;
     Color hc = r > .5f ? GREEN : r > .25f ? GOLD : RED;
     g.text(hx + 92, y - 2, std::to_string(std::max(0, a->hp)), a->alive() ? (r <= .25f ? hc : WHITE) : rgb(0xff7b6b), 2);
@@ -3063,6 +3216,37 @@ void Battle::draw() {
       g.tri(x0 - d, y0 - 4, x0 - d, y0 + 4, x0 + d * 6, y0, rgb(0x0a0f33, 140));  // contour sombre
       g.tri(x0, y0 - 2.8f, x0, y0 + 2.8f, x0 + d * 4.5f, y0, isAlly(f) ? rgb(0x8fd0ff, 230) : rgb(0xff8a7a, 230));
     }
+  // Garde et intention (2026-10-24) : un petit bouclier, et l'icône de ce qu'un ennemi prépare (épée, orbe de la couleur
+  // du type, croix verte pour un soin, sablier pour une garde) ; chez un ennemi, de part et d'autre de sa barre de PV
+  auto drawGuard = [&](const FighterP& f, float gx, float gy) {
+    if (!guarding_.count(f.get()) || !f->alive()) return;
+    g.poly({{gx - 4, gy}, {gx + 4, gy}, {gx + 4, gy + 4}, {gx, gy + 8}, {gx - 4, gy + 4}}, rgb(0x1c2a78, 235));
+    g.poly({{gx - 2.5f, gy + 1.5f}, {gx + 2.5f, gy + 1.5f}, {gx + 2.5f, gy + 4}, {gx, gy + 6.3f}, {gx - 2.5f, gy + 4}}, rgb(0x8fd0ff, 235));
+  };
+  auto drawIntent = [&](const FighterP& f, float ix, float iy) {
+    auto it = intents_.find(f.get());
+    if (it == intents_.end() || !f->alive() || !(it->second.wait || hasMove(it->second.move))) return;
+    const Intent& in = it->second;
+    iy += std::sin(t * 5) * 1.f;
+    float sc = 1 + std::max(0.f, (.35f - (t - in.t0)) * 2);  // apparaît en grand, se pose en 0,35 s
+    g.ellipse(ix, iy, 6 * sc, 6 * sc, rgb(0x0a0f33, 210));
+    if (in.wait) {  // sablier : il se met en garde
+      g.tri(ix - 3, iy - 3.5f, ix + 3, iy - 3.5f, ix, iy, rgb(0xd8e4f4)), g.tri(ix - 3, iy + 3.5f, ix + 3, iy + 3.5f, ix, iy, rgb(0xd8e4f4));
+      return;
+    }
+    const Move& m = moveInfo(in.move);
+    if (m.kind == Kind::Heal || m.kind == Kind::Revive) {  // croix verte : il va soigner un des siens
+      g.rect(ix - 1, iy - 4, 2, 8, rgb(0x6ad87a)), g.rect(ix - 4, iy - 1, 8, 2, rgb(0x6ad87a));
+    } else if (m.kind == Kind::Magic || m.kind == Kind::Status) {  // orbe de la couleur du type
+      uint32_t col = m.type >= 0 && m.type < (int)types().size() ? types()[(size_t)m.type].color : 0xc8a8ff;
+      g.ellipse(ix, iy, 3.5f, 3.5f, rgb(col)), g.ellipse(ix - 1.2f, iy - 1.2f, 1.2f, 1, rgb(0xffffff, 200));
+    } else if (const SpriteRect* ic = findSprite("ic_epee_1")) {  // un coup : l'épée du menu Attaquer
+      float k = std::min(1.f, 9.f / std::max(ic->w, ic->h));
+      g.sprite(*ic, ix - ic->w * k / 2, iy - ic->h * k / 2, false, k);
+    } else {
+      g.line(ix - 3, iy + 3, ix + 3, iy - 3, 2, rgb(0xf4f8ff)), g.line(ix - 3, iy - 1, ix - 1, iy + 1, 1, rgb(0xc08040));
+    }
+  };
   for (auto& f : shown) {
     Pt p = pos(f);
     Pt o = offset(f);
@@ -3132,6 +3316,8 @@ void Battle::draw() {
           nw++;
         }
       drawStatusTag(*f, p.x, by - 10);
+      drawGuard(f, p.x - bw + 2, by - 10);
+      drawIntent(f, p.x + bw - 2, by - 10);
       g.alpha = 1;
       continue;
     }
@@ -3173,6 +3359,7 @@ void Battle::draw() {
       drawFighterSprite(g, *f, p.x + o.x, p.y + o.y + hop, 1, facesRight(f), t + p.x * .01f);  // vers l'adversaire le plus proche
     g.alpha = 1;
     drawStatusTag(*f, p.x - 24, p.y - 16);
+    drawGuard(f, p.x - 13, std::max(44.f, p.y - fighterTop(*f, 1) - 4));  // en garde : à côté de la tête
     if (actor == f) {  // celui qui choisit son action : une flèche au-dessus de sa tête
       float ty = std::max(44.f, p.y - fighterTop(*f, 1) - 10);
       g.tri(p.x - 4, ty, p.x + 4, ty, p.x, ty + 6, rgb(0xffd34d));
@@ -3192,6 +3379,47 @@ void Battle::draw() {
       g.rect(p.x - 11, p.y - 7, 22, 9, rgb(0x0a0f33, 200));
       g.text(p.x, p.y - 8, T("K.O."), rgb(0xff7b6b), 1, false);
     }
+  // Intentions des ennemis (2026-10-24) : un chevron orange au-dessus de chaque allié visé, la zone en orange au sol
+  {
+    std::map<const Fighter*, int> aimed;
+    std::map<const Fighter*, std::pair<int, int>> dmg;  // dégâts prévus, additionnés quand plusieurs le visent
+    for (auto& [who, in] : intents_) {
+      if (in.move.empty() || !hasMove(in.move)) continue;
+      FighterP src;
+      for (auto& e : foes)
+        if (e.get() == who && e->alive()) src = e;
+      if (!src) continue;
+      const Move& m = moveInfo(in.move);
+      for (auto& tg : in.targets) {
+        if (!tg || !tg->alive() || !isAlly(tg)) continue;
+        if (m.zone != Area::Single && m.zone != Area::All && cellOf(tg) >= 0)
+          for (int c = 0; c < BOARD_CELLS; c++)
+            if (inBoardZone(m.zone, cellOf(tg), c)) tile(g, cellPos(c), rgb(0xff9a3a, 60));
+        aimed[tg.get()]++;
+        if (m.damaging())
+          if (Preview pv = preview(src, m, tg, in.cell); pv.eff > 0) dmg[tg.get()].first += pv.lo, dmg[tg.get()].second += pv.hi;
+        if (cursor == src) {  // l'ennemi survolé : un pointillé vers sa cible
+          Pt a = pos(src), b = pos(tg);
+          float dx = b.x - a.x, dy = b.y - a.y, len = std::max(1.f, std::sqrt(dx * dx + dy * dy));
+          for (float k = 8; k < len - 8; k += 6)
+            g.rect(std::round(a.x + dx * k / len) - 1, std::round(a.y + dy * k / len) - 1, 2, 2, rgb(0xff9a3a, 210));
+        }
+      }
+    }
+    for (auto& a : allies)
+      if (int n = aimed[a.get()]; n > 0 && a->alive()) {
+        Pt p = pos(a);
+        float y = std::max(44.f, p.y - fighterTop(*a, 1) - 9) + std::sin(t * 6) * 1.5f;
+        int k2 = std::min(n, 3);
+        for (int k = 0; k < k2; k++) {
+          float x = p.x + (k - (k2 - 1) * .5f) * 7;
+          g.tri(x - 4, y, x + 4, y, x, y + 5, rgb(0x2a1606, 220));
+          g.tri(x - 3, y + .5f, x + 3, y + .5f, x, y + 4, rgb(0xff9a3a));
+        }
+        if (auto [lo, hi] = dmg[a.get()]; lo > 0)  // ce qu'il va prendre : de quoi décider (garde, soin, recul)
+          g.text(p.x, y - 8, "≈ " + std::to_string(lo) + (hi > lo ? "-" + std::to_string(hi) : ""), rgb(0xff9a3a), 1);
+      }
+  }
   // Par-dessus les combattants : contour de la zone et flèche au-dessus de la cible (le sprite cache sa case)
   if (zSide >= 0) {
     for (int c : zCells) tile(g, cellPos(c), rgb(c == zCenter ? 0xfff2a0 : 0xffb050, 210), true);
@@ -3428,7 +3656,8 @@ Json Battle::netState() const {
     for (auto& f : v) {
       Json st = Json::array();
       for (int k = 0; k < N_STAGES; k++) st.push_back(f->stage[k]);
-      a.push_back(Json::array({f->hp, f->mp, (int)std::lround(f->atb), (int)std::lround(f->lim), (int)f->status, st, netCell(cellOf(f)), f->shield, f->broken ? 1 : 0, facingOf(f)}));
+      a.push_back(Json::array({f->hp, f->mp, (int)std::lround(f->atb), (int)std::lround(f->lim), (int)f->status, st, netCell(cellOf(f)), f->shield, f->broken ? 1 : 0, facingOf(f),
+                               guarding_.count(f.get()) ? 1 : 0}));
     }
     return a;
   };
@@ -3444,8 +3673,19 @@ Json Battle::netState() const {
   for (int v : terrain_) ter.push_back(v);
   Json obs = Json::array();
   for (auto& [c, spr] : obstacles_) obs.push_back(Json::array({netCell(c), spr}));
+  // (2026-10-24) les intentions des ennemis, pour que les autres joueurs du gardien les voient aussi : ennemi (indice),
+  // technique, case annoncée, alliés visés (indices)
+  Json intents = Json::array();
+  for (size_t i = 0; i < foes.size(); i++)
+    if (auto it = intents_.find(foes[i].get()); it != intents_.end() && foes[i]->alive()) {
+      Json tg = Json::array();
+      for (auto& t : it->second.targets)
+        for (size_t j = 0; j < allies.size(); j++)
+          if (allies[j] == t) tg.push_back((int)j);
+      intents.push_back(Json{{"f", (int)i}, {"m", it->second.move}, {"c", netCell(it->second.cell)}, {"t", tg}, {"w", it->second.wait}});
+    }
   return Json{{"t", "etat"}, {"a", pack(allies)}, {"b", pack(foes)}, {"msg", sc.showingMessage() ? sc.text() : std::string()}, {"attente", wait},
-              {"w", warn}, {"meteo", weather_}, {"terrain", ter}, {"obstacles", obs}};
+              {"w", warn}, {"meteo", weather_}, {"terrain", ter}, {"obstacles", obs}, {"i", intents}};
 }
 
 void Battle::netMessage(const Json& m) {
@@ -3480,6 +3720,10 @@ void Battle::netMessage(const Json& m) {
           }
           if (x.size() > 8) f.shield = x.at(7).get<int>(), f.broken = x.at(8).get<int>() != 0;  // Brisure
           if (x.size() > 9) facing_[&f] = (x.at(9).get<int>() < 0 ? -1 : 1) * (net_ == Net::Guest ? -1 : 1);  // regard (miroir chez l'invité)
+          if (x.size() > 10) {  // en garde (2026-10-24)
+            if (x.at(10).get<int>()) guarding_.insert(&f);
+            else guarding_.erase(&f);
+          }
           // at() : une liste trop courte lève une erreur (rattrapée par Online::update) au lieu de lire n'importe quoi
           f.hp = x.at(0).get<int>(), f.mp = x.at(1).get<int>(), f.atb = x.at(2).get<float>(), f.lim = x.at(3).get<float>();
           f.status = Status(std::clamp(x.at(4).get<int>(), 0, 4));
@@ -3506,6 +3750,26 @@ void Battle::netMessage(const Json& m) {
       for (auto& o : m.value("obstacles", Json::array()))
         if (o.is_array() && o.size() == 2 && o[0].is_number_integer() && o[1].is_string())
           obstacles_[netCell(std::clamp(o[0].get<int>(), 0, BOARD_CELLS - 1))] = o[1].get<std::string>();
+      if (m.contains("i") && m["i"].is_array()) {  // intentions des ennemis (2026-10-24), dessinées comme chez le chef
+        std::map<const Fighter*, Intent> seen;
+        for (auto& o : m["i"]) {
+          int fi = jget(o, "f", -1);
+          if (!o.is_object() || fi < 0 || fi >= (int)foes.size()) continue;
+          FighterP e = foes[(size_t)fi];
+          Intent in;
+          in.move = jget<std::string>(o, "m", "");
+          if (!in.move.empty() && !hasMove(in.move)) continue;
+          int c = jget(o, "c", -1);
+          in.cell = c >= 0 && c < BOARD_CELLS ? netCell(c) : -1;
+          in.wait = jget(o, "w", false);
+          for (auto& t : o.value("t", Json::array()))
+            if (t.is_number_integer() && t.get<int>() >= 0 && t.get<int>() < (int)allies.size()) in.targets.push_back(allies[(size_t)t.get<int>()]);
+          auto old = intents_.find(e.get());  // la même annonce garde son heure (l'icône ne se repose pas à chaque état)
+          in.t0 = old != intents_.end() && old->second.move == in.move ? old->second.t0 : G.time;
+          seen[e.get()] = in;
+        }
+        intents_ = seen;
+      }
     } else if (k == "tour") {
       int i = jget(m, "i", -1);
       if (i < 0 || i >= (int)allies.size() || !allies[(size_t)i]->alive() || !mineToCommand(allies[(size_t)i])) return;

@@ -1,16 +1,17 @@
 ## Nouveautés
 
-Une version plus exigeante et plus tactique : les combats demandent d'adapter son équipe, les menus sont plus clairs, et la démo montre tout ce que fait le joueur automatique.
+Un jeu plus dur, mais où l'on voit venir chaque coup : les ennemis annoncent ce qu'ils préparent, et « Attendre » devient une vraie garde.
 
-- **Le dos dépend du regard** : chaque combattant regarde vers sa dernière cible, vers où il a marché, ou vers l'adversaire le plus proche s'il attend. Un coup venu de l'autre côté est dans le dos. Une flèche au sol montre où chacun regarde ; en choisissant sa case, une dague dorée marque celles d'où l'on frappe un dos.
-- **Embuscades** : parfois, des créatures surgissent au fond de votre camp, derrière l'équipe. Retournez-vous, ou protégez vos lanceurs de sorts.
-- **Un jeu plus exigeant** : des rencontres à la mesure de l'équipe, des créatures sauvages qui restent près de votre niveau, et qui ne se battent plus toutes pareil : les carapaces encaissent les coups physiques, les esprits aussi, certaines encaissent la magie, et quelques élémentaires absorbent leur propre élément (le coup les soigne !). Un adversaire bien plus faible rapporte moins d'expérience : les boss s'affrontent au bon niveau. Le Bestiaire et l'aperçu des dégâts retiennent ce que vous avez découvert.
-- **Tactiques** : de nouvelles conditions (Ennemi : brisé, dos exposé, soigneur ou chef ; Soi : dos menacé), de nouvelles actions (Viser une faiblesse, Se mettre en garde), et des profils tout faits (Combattant, Soigneur, Protecteur, Briseur) à choisir d'un coup.
-- **Des menus plus clairs** : le menu de pause en quatre groupes avec Préparation (formation, compagnons, tactiques, réserve), le Journal qui accueille Discussions et Bestiaire, des icônes partout, des jauges sous les PV, PM et statistiques, la couleur du type devant chaque technique, la boutique qui compare l'équipement avec ce que porte chacun, un menu de combat qui ne montre que ce qui est possible.
-- **La démo montre tout** : le joueur automatique passe par les menus comme un joueur (équipement, gemmes, tactiques, formation, Journal, Bestiaire).
-- **Et encore** : le Marais Pâle en eau trouble, la lumière propre à chaque lieu, le nom des boss en grand, l'onglet du nom dans les dialogues, un écran de fin à l'aube.
+- **Intentions** : à la moitié de sa jauge, chaque ennemi annonce ce qu'il va faire — une icône à côté de sa barre de PV (épée, orbe du type, croix verte pour un soin, sablier s'il va se mettre en garde), un chevron orange et les dégâts prévus au-dessus de l'allié visé, la zone en orange au sol, un pointillé vers sa cible quand on le survole. Il fait ce qu'il a annoncé si c'est encore possible, sinon « Déjoué ! » : écarter la cible, la mettre en garde ou abattre l'ennemi d'abord sont trois vraies réponses. Les boss aussi, sauf quand leur zone rouge est déjà annoncée.
+- **Garde** : « Attendre » n'est plus un tour perdu : un quart de dégâts en moins et une **riposte** à chaque coup au corps à corps jusqu'à votre prochain tour, face à l'ennemi le plus proche ; un bouclier le signale, à côté de la tête et dans le tableau du bas.
+- **Des ennemis qui choisissent** : soigneurs, lanceurs de sorts et blessés les attirent, et la meute s'acharne sur un allié déjà visé. Couvrez votre ligne arrière.
+- **Tactiques** : « Soi : visé » (le Protecteur se met en garde) et « Allié : visé » (il va le couvrir) ; chaque profil réanime et soigne avant d'attaquer ; « (conseillé) » marque le profil qui convient à un membre.
+- **Rencontres** : plus denses (0,6 créature par allié, jamais plus de 3 niveaux sous l'équipe), des meutes de 2 au début puis une créature de plus tous les 15 niveaux ; les créatures sauvages n'ont plus d'attaque sur toute l'équipe (une zone à la place : la formation compte) ; les meutes de la Citadelle plafonnées à trois.
+- **Une coquille corrigée** : Braisenard courait quatre fois trop vite depuis le 6 octobre ; les boss, réglés contre lui, sont ramenés d'un ou deux niveaux.
+- **Démo** : le joueur automatique change de compagnons selon les créatures du lieu et répète un boss dans le décor de son combat.
+- **Réseau** : l'invité du duel et les autres joueurs du gardien voient la garde et les intentions.
 
-Dans la 3.5 : deux actes de plus, l'échiquier de combat, les primes et les quêtes. Dans la 3.3 : des sprites plus nets. Dans la 3.1 : le jeu en anglais.
+Dans la 3.6 : le regard, les embuscades, des créatures qui se battent autrement, les profils de tactiques. Dans la 3.5 : deux actes de plus, l'échiquier de combat, les primes et les quêtes. Dans la 3.1 : le jeu en anglais.
 
 ## Télécharger
 

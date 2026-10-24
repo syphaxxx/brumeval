@@ -37,6 +37,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   tipsOff_ = true;                     // les astuces aussi (2.8)
   exploitsOff_ = true;                 // et les exploits (sinon leur annonce passe sur les captures), sauf dans leur test
   g.spotFrench = translating();        // en anglais : repérer ce qui reste en français (3.1)
+  // (2026-10-24) même suite de tirages à chaque passage (BRUMEVAL_GRAINE pour en changer) : un test qui dépend d'un coup
+  // qui touche échouait une fois sur trente, sans qu'on puisse le rejouer
+  const char* seedEnv = SDL_getenv("BRUMEVAL_GRAINE");
+  unsigned seed = seedEnv ? unsigned(std::atoi(seedEnv)) : 2026u;
+  seedRandom(seed);
   int fails = 0;
   auto check = [&](bool ok, const std::string& what) {
     std::printf("%s %s\n", ok ? "[ok]    " : "[ÉCHEC] ", what.c_str());
@@ -581,6 +586,56 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       run(.4f);
       snap("embuscade");
     }
+    {  // garde et intentions (2026-10-24) : Lior en garde, les ennemis annoncent ce qu'ils préparent
+      BattleSetup s;
+      s.foes = {makeFighter("mulotin", 5), makeFighter("mulotin", 5), makeFighter("esprillon", 6)};
+      startBattle(std::move(s), nullptr);
+      battle_->start = time - 5;
+      battle_->guarding_.insert(team[0].get());
+      for (auto& f : battle_->allies) f->atb = 0;
+      for (auto& f : battle_->foes) f->atb = 70;  // l'intention s'annonce à 70 % de la jauge
+      for (int i = 0; i < 300 && battle_->sc.busy(); i++) in.confirm = true, frame();  // le message d'entrée (le temps ne passe pas)
+      in.confirm = false;
+      run(.4f);
+      int declared = 0;
+      for (auto& f : battle_->foes) declared += battle_->intents_.count(f.get()) > 0;
+      check(declared == (int)battle_->foes.size(), "intentions : " + std::to_string(declared) + " ennemi(s) sur 3 annoncent ce qu'ils préparent (" + battle_->intentText(*battle_->foes[0]) + ")");
+      bool coherent = true;
+      for (auto& f : battle_->foes) {
+        auto it = battle_->intents_.find(f.get());
+        if (it == battle_->intents_.end() || it->second.wait || it->second.targets.empty() || !hasMove(it->second.move)) continue;
+        const Move& m = moveInfo(it->second.move);
+        FighterP tg = it->second.targets[0];
+        int from = it->second.cell >= 0 ? it->second.cell : battle_->cellOf(f);
+        if (m.melee && m.damaging() && tg && battle_->isAlly(tg) && boardDist(from, battle_->cellOf(tg)) <= battle_->reach(f))
+          coherent = coherent && battle_->threatened(tg);
+      }
+      check(coherent, "intentions : un allié visé au corps à corps, à portée, est menacé (l'IA et « Se mettre à l'abri » réagissent)");
+      battle_->cursor = battle_->foes[0];  // ennemi survolé : pointillé vers sa cible
+      snap("garde_intention");
+      battle_->cursor = nullptr;
+      FighterP aimedAlly;
+      for (auto& [who, in] : battle_->intents_)
+        for (auto& tg : in.targets)
+          if (tg && battle_->isAlly(tg) && !in.wait && hasMove(in.move) && moveInfo(in.move).damaging()) aimedAlly = tg;
+      if (aimedAlly) {
+        auto keepT = aimedAlly->tactics;
+        bool keepOn = aimedAlly->tacticsOn;
+        aimedAlly->tactics = {tacticFromJson(Json{{"si", "soi_vise"}, {"faire", "garde"}})}, aimedAlly->tacticsOn = true;
+        Battle::Plan p;
+        check(battle_->tacticPlan(aimedAlly, p) && p.wait, "tactiques : « Soi : visé » → « Se mettre en garde » quand un ennemi a annoncé une attaque sur lui");
+        aimedAlly->tactics = keepT, aimedAlly->tacticsOn = keepOn;
+        FighterP mate = aimedAlly == team[0] ? team[1] : team[0];  // « Allié : visé » chez son coéquipier
+        keepT = mate->tactics, keepOn = mate->tacticsOn;
+        mate->tactics = {tacticFromJson(Json{{"si", "allie_vise"}, {"faire", "garde"}})}, mate->tacticsOn = true;
+        Battle::Plan q;
+        check(battle_->tacticPlan(mate, q) && q.wait, "tactiques : « Allié : visé » s'applique quand un ennemi a annoncé une attaque sur un allié");
+        mate->tactics = keepT, mate->tacticsOn = keepOn;
+        float with = battle_->lure(aimedAlly);
+        battle_->intents_.clear();
+        check(with > battle_->lure(aimedAlly), "meute : un allié déjà visé par une intention attire davantage les autres ennemis");
+      }
+    }
     startBattle({brute, mage, extra}, false, nullptr);
     Battle& B = *battle_;
     bool halves = true;  // échiquier (3.4) : chaque camp part de sa moitié du plateau
@@ -635,7 +690,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     B.face(lior, boardAt(0, 2));  // même colonne : il garde son regard
     turns = turns && !B.facesRight(lior);
     B.facing_.erase(lior.get());
-    seedRandom(std::random_device{}());  // la suite du mode test retrouve son hasard
+    seedRandom(seed + 1);  // la suite du mode test reprend une suite de tirages à elle
     check(turnedBack > turnedFront * 1.15 && turns,
           "échiquier : le dos dépend du regard (retourné : " + std::to_string(turnedBack) + " contre " + std::to_string(turnedFront) +
               ") ; on se tourne vers où l'on va");
@@ -644,10 +699,40 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       B.foes.push_back(cend);
       B.cells_[cend.get()] = boardAt(2, 5), B.cells_[lior.get()] = boardAt(2, 4);
       cend->hp = cend->mhp / 2;
-      int before = cend->hp, r = B.applyHit(lior, cend, moveInfo("flam"));
+      int before = cend->hp, r = -1;
+      for (int k = 0; k < 6 && r != 0; k++) cend->hp = before, r = B.applyHit(lior, cend, moveInfo("flam"));  // un coup peut rater (échec vu une fois sur ~30)
       bool absorbs = r == 0 && cend->hp > before && weakKnown(cend->sp, moveInfo("flam").type);
       B.foes.pop_back();
       check(absorbs, "combat : Cendrelys absorbe le Feu (Flam le soigne, dégâts 0, retenu par l'équipe)");
+    }
+    {  // (2026-10-24) la garde : en attendant, on encaisse une part des dégâts ; l'intention : annoncée avant d'agir
+      long long plain = hitFrom(extra, boardAt(0, 4), bite);
+      B.guarding_.insert(extra.get());
+      B.countering_ = true;  // pas de riposte pendant la mesure (200 coups)
+      long long braced = hitFrom(extra, boardAt(0, 4), bite);
+      B.countering_ = false;
+      check(braced > plain * .65 && braced < plain * .85,
+            "combat : en garde, on encaisse un quart de dégâts en moins (" + std::to_string(braced) + " contre " + std::to_string(plain) + ")");
+      lior->hp = lior->mhp, extra->hp = extra->mhp;
+      B.applyHit(lior, extra, bite);
+      check(lior->hp < lior->mhp, "combat : en garde, on riposte à un coup au corps à corps (Lior perd " + std::to_string(lior->mhp - lior->hp) + " PV)");
+      lior->hp = lior->mhp, extra->hp = extra->mhp;
+      B.guarding_.erase(extra.get());
+      auto lior50 = makeFighter("lior", 50);  // Codex : sa première technique est Cri (sans dégâts) : la riposte prend la première qui blesse
+      B.guarding_.insert(lior50.get());
+      brute->hp = brute->mhp;
+      for (int k = 0; k < 5 && brute->hp == brute->mhp; k++) B.applyHit(brute, lior50, bite);  // (un coup peut rater)
+      check(brute->hp < brute->mhp, "combat : en garde, Lior N.50 (Cri en première technique) riposte quand même");
+      B.guarding_.erase(lior50.get());
+      brute->hp = brute->mhp;
+      B.cells_[brute.get()] = boardAt(1, 4), B.cells_[lior.get()] = boardAt(1, 3);
+      B.declareIntent(brute);
+      auto it = B.intents_.find(brute.get());
+      bool declared = it != B.intents_.end() && (!it->second.move.empty() || it->second.wait);
+      bool aimsAlly = declared && (it->second.wait || (!it->second.targets.empty() && it->second.targets[0] && B.isAlly(it->second.targets[0])));
+      check(declared && aimsAlly, "combat : un ennemi annonce son intention (" + B.intentText(*brute) + ")");
+      B.intents_.erase(brute.get());
+      seedRandom(seed + 2);
     }
     check(back > front * 1.15 && near > 0 && near < far * 0.85,
           "échiquier : un coup dans le dos fait plus mal (" + std::to_string(back) + " contre " + std::to_string(front) +
@@ -782,11 +867,16 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         auto& pr = rules().tacticProfiles[0];
         auto v = profileRules(pr, 4);
         trim = v.size() == std::min<size_t>(4, pr.rules.size()) && v.back().cond == pr.rules.back().cond && v.back().act == pr.rules.back().act;
+        // (2026-10-24) pour un combattant sans soin, les règles de soin sont retirées ; Maëlle : profil conseillé Soigneur
+        auto rock = makeFighter("rocaillou", 5);
+        for (auto& t : profileRules(pr, 10, rock.get())) trim = trim && t.act != "soin" && t.act != "reanimation" && t.act != "guerison";
+        const Rules::TacticProfile* bp = bestProfile(*maelle);
+        trim = trim && bp && bp->id == "soigneur";
       }
       brute->hp = brute->mhp;
       lior->tactics = keepT, lior->tacticsOn = keepOn;
       check(closer && around && cover, "tactiques : s'approcher, contourner (dans le dos), protéger un allié");
-      check(brk && trim, "tactiques : « Ennemi : brisé » vise l'ennemi brisé ; un profil coupé à ses lignes garde sa dernière règle");
+      check(brk && trim, "tactiques : « Ennemi : brisé » vise l'ennemi brisé ; un profil coupé à ses lignes garde sa dernière règle, sans soin pour qui ne soigne pas ; Maëlle : Soigneur conseillé");
     }
     lior->stage.fill(0);
     B.moved_.clear();
@@ -948,6 +1038,17 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     check(deepD > nearD && deepD >= 10 && packs > 0 && most <= rules().packMax,
           "meutes : au plus profond de la vallée (" + std::to_string(deepD) + " cases du village), " + std::to_string(packs) +
               " meutes de 4 créatures ou plus sur 60 rencontres (au plus " + std::to_string(most) + ")");
+    {  // (2026-10-24) deux débutants : jamais plus de deux créatures, même au plus profond
+      team = {makeFighter("lior", 5), makeFighter("braisenard", 5)};
+      int small = 0;
+      for (int k = 0; k < 40; k++) {
+        encounter();
+        if (battle_) small = std::max(small, (int)battle_->foes.size()), battle_.reset();
+        mode = Mode::Map;
+        menus.clear();
+      }
+      check(small <= 2, "meutes : deux débutants de niveau 5 ne croisent jamais plus de deux créatures (au plus " + std::to_string(small) + ")");
+    }
     team = keepTeam;
   }
 
@@ -3481,6 +3582,13 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         mirrored = h >= 0 && v == boardAt(boardY(h), BOARD_W - 1 - boardX(h));
       }
     }
+    bool guardSeen = false;  // (2026-10-24) la garde voyage dans « etat » : l'invité la voit sur le combattant de l'hôte
+    if (mirrored && battle_ && guest.battle_ && !battle_->allies.empty() && !guest.battle_->foes.empty()) {
+      battle_->guarding_.insert(battle_->allies[0].get());
+      for (int i = 0; i < 30 && !guardSeen; i++) both(1), guardSeen = guest.battle_ && guest.battle_->guarding_.count(guest.battle_->foes[0].get()) > 0;
+      if (battle_) battle_->guarding_.erase(battle_->allies[0].get());
+    }
+    check(guardSeen, "multijoueur : la garde d'un combattant de l'hôte se voit chez l'invité");
     size_t guestTurns = 0;
     for (int i = 0; i < 60 * 900 && (mode == Mode::Battle || guest.mode == Mode::Battle); i++) {
       if (guest.battle_) guestTurns = std::max(guestTurns, guest.battle_->log.size());
@@ -3839,19 +3947,27 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   }
 
   // --- Simulation d'équilibrage (IA simple, sans objets) ---
-  std::printf("\nÉquilibrage (combats simulés, IA automatique) :\n");
-  // BRUMEVAL_SIMULATIONS=5 : cinq fois plus de combats par ligne (mesure plus précise, plus longue)
+  // (2026-10-24) seulement avec BRUMEVAL_SIMULATIONS (=1 : mesure ordinaire, =5 : cinq fois plus de combats par ligne,
+  // plus précise, plus longue) : ce sont des mesures sans vérification, et elles prenaient 6 des 7 minutes du mode test
   const char* simEnv = SDL_getenv("BRUMEVAL_SIMULATIONS");
-  int simFactor = simEnv ? std::max(1, std::atoi(simEnv)) : 1;
-  // Équipement des boutiques (1 : vallée, 2 : Forgeroc, 3 : Givreval) : le meilleur de chaque
+  if (!simEnv) {
+    std::printf("\nSimulations d'équilibrage : non jouées (BRUMEVAL_SIMULATIONS=1 pour les jouer)\n");
+    std::printf("\n%s (%d échec%s)\n", fails ? "TESTS EN ÉCHEC" : "TOUS LES TESTS PASSENT", fails, fails > 1 ? "s" : "");
+    return fails ? 1 : 0;
+  }
+  std::printf("\nÉquilibrage (combats simulés, IA automatique) :\n");
+  int simFactor = std::max(1, std::atoi(simEnv));
+  // Équipement des boutiques (1 : vallée, 2 : Forgeroc, 3 : Givreval, 4 : Port-Écho) : le meilleur de chaque
   // emplacement ; arme de magie pour les mages (plus de Magie que d'Attaque), accessoire seul pour une créature
   int simGear = 0, simForge = 0;
+  bool simProfiles = false;  // les profils de tactiques conseillés (ceux du joueur automatique) au lieu des règles de départ
   bool simEvolve = !SDL_getenv("BRUMEVAL_SANS_EVOLUTION");  // pour comparer : équipes sans évolution  // simForge : armes et armures forgées à ce niveau (forge de Forgeroc)
   auto equipParty = [&](std::vector<FighterP>& t, int tier) {
-    static const char* GEAR[3][5] = {{"epee_fer", "baton_chene", "tunique_cuir", "tunique_cuir", "amulette_vie"},
+    static const char* GEAR[4][5] = {{"epee_fer", "baton_chene", "tunique_cuir", "tunique_cuir", "amulette_vie"},
                                      {"hache_braise", "baton_lune", "cotte_mailles", "robe_mage", "bague_vif"},
-                                     {"lame_givre", "sceptre_aurore", "armure_givre", "robe_mage", "pendentif_brume"}};
-    const char* const* g = GEAR[std::clamp(tier, 1, 3) - 1];
+                                     {"lame_givre", "sceptre_aurore", "armure_givre", "robe_mage", "pendentif_brume"},
+                                     {"lame_echo", "baton_echo", "armure_petrifiee", "robe_echo", "pendentif_brume"}};
+    const char* const* g = GEAR[std::clamp(tier, 1, 4) - 1];
     for (auto& f : t) {
       bool mage = f->S().base[B_MAG] > f->S().base[B_ATK];
       if (f->S().human) f->gear = {mage ? g[1] : g[0], mage ? g[3] : g[2], g[4]};
@@ -3885,6 +4001,9 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         while (simEvolve && canEvolve(*team.back())) evolve(*team.back());  // l'équipe a accepté ses évolutions
       }
       if (simGear) equipParty(team, simGear);
+      if (simProfiles)
+        for (auto& f : team)
+          if (auto* p = bestProfile(*f)) f->tactics = profileRules(*p, tacticSlots(f->lvl), f.get());
       menus.clear();
       sc.clear();
       mode = Mode::Map;
@@ -4127,6 +4246,24 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   // (2026-10-23) la prime la plus dure du joueur automatique : trois carapaces, dont la Braisaure ancestrale (N.90, PV ×4)
   simSetup("Braisaure ancestrale (équipe N.102)", {{"lior", 102}, {"maelle", 102}, {"isra", 102}, {"braisenard", 102}, {"gouttelin", 102}, {"ronceau", 102}},
            bossEvent("prime:braisaure_ancestrale"), 20);
+  // (2026-10-24) meutes de fin de partie, équipement de Port-Écho : trois créatures sauvages aux attaques sur toute l'équipe
+  // battaient une équipe de six avec 4 à 14 niveaux d'avance (70 défaites du joueur automatique dans l'Abîme et le Phare)
+  simGear = 4;
+  sim("Vieux Phare (N.104, 3 x N.100)", {{"lior", 104}, {"maelle", 104}, {"kael", 104}, {"braisenard", 104}, {"gouttelin", 104}, {"ronceau", 104}},
+      group({"braisaure", "petrolin", "fossiloup", "echoplume", "spectrecho", "cendrelys"}, 100, 100, 3), false, 30);
+  sim("Vieux Phare, tactiques (N.104)", {{"lior", 104}, {"maelle", 104}, {"kael", 104}, {"braisenard", 104}, {"gouttelin", 104}, {"ronceau", 104}},
+      group({"braisaure", "petrolin", "fossiloup", "echoplume", "spectrecho", "cendrelys"}, 100, 100, 3), false, 30, true);
+  sim("Abîme (N.100, 3 x N.96)", {{"lior", 100}, {"maelle", 100}, {"isra", 100}, {"braisenard", 100}, {"gouttelin", 100}, {"ronceau", 100}},
+      group({"rocaube", "aubespectre", "nacrelin", "loup_aube", "brumeloup", "nebulis"}, 96, 96, 3), false, 30);
+  sim("Abîme, tactiques (N.100)", {{"lior", 100}, {"maelle", 100}, {"isra", 100}, {"braisenard", 100}, {"gouttelin", 100}, {"ronceau", 100}},
+      group({"rocaube", "aubespectre", "nacrelin", "loup_aube", "brumeloup", "nebulis"}, 96, 96, 3), false, 30, true);
+  simProfiles = true;  // avec les profils du joueur automatique (un seul soigneur : c'est ainsi qu'il perdait)
+  sim("Vieux Phare, profils (N.104)", {{"lior", 104}, {"maelle", 104}, {"kael", 104}, {"braisenard", 104}, {"gouttelin", 104}, {"ronceau", 104}},
+      group({"braisaure", "petrolin", "fossiloup", "echoplume", "spectrecho", "cendrelys"}, 100, 100, 3), false, 30, true);
+  sim("Abîme, profils (N.100)", {{"lior", 100}, {"maelle", 100}, {"isra", 100}, {"braisenard", 100}, {"gouttelin", 100}, {"ronceau", 100}},
+      group({"rocaube", "aubespectre", "nacrelin", "loup_aube", "brumeloup", "nebulis"}, 96, 96, 3), false, 30, true);
+  simProfiles = false;
+  simGear = 3;
   simSetup("Braisaure ancestrale (équipe N.102, tactiques)", {{"lior", 102}, {"maelle", 102}, {"isra", 102}, {"braisenard", 102}, {"gouttelin", 102}, {"ronceau", 102}},
            bossEvent("prime:braisaure_ancestrale"), 20, true);
   for (auto [name, ev, hero] : std::vector<std::array<const char*, 3>>{{"Brumeroi", "brumeroi", "lior"}, {"Sentinelle d'aurore", "sentinelle_aurore", "maelle"},

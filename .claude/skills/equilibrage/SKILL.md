@@ -7,14 +7,83 @@ description: "Brumeval : mesurer et régler la difficulté (simulations du mode 
 
 Méthode :
 
-- Le mode test simule des combats (fin de la sortie de `--test`) : IA seule, tactiques de départ, équipement des boutiques, forge, Expédition.
-- `BRUMEVAL_SIMULATIONS=4` joue 4 fois plus de combats (±4-5 % au lieu de ±10 %). Pour comparer deux réglages, copier l'exécutable et `data/` dans deux dossiers temporaires (le jeu cherche `data/` à côté du programme) et lancer les deux mesures **l'une après l'autre** : en parallèle, le test multijoueur se dispute le port 47475 et une mesure s'arrête.
+- Le mode test simule des combats (fin de la sortie de `--test`, seulement avec `BRUMEVAL_SIMULATIONS` défini depuis le
+  2026-10-24) : IA seule, tactiques de départ, équipement des boutiques, forge, Expédition.
+- `BRUMEVAL_SIMULATIONS=1` joue les simulations ; `=4` joue 4 fois plus de combats (±4-5 % au lieu de ±10 %). Pour comparer deux réglages, copier l'exécutable et `data/` dans deux dossiers temporaires (le jeu cherche `data/` à côté du programme) et lancer les deux mesures **l'une après l'autre** : en parallèle, le test multijoueur se dispute le port 47475 et une mesure s'arrête.
 - `BRUMEVAL_SANS_EVOLUTION=1` : équipes sans évolution (pour mesurer l'effet des évolutions). `BRUMEVAL_JOURNAL=<mot>` affiche le journal d'une simulation.
 - Plus de PV pour un boss change peu le résultat quand le combat se joue sur la survie de l'équipe : relever son niveau agit davantage.
 - Après un réglage, lancer aussi le joueur automatique (`--partie`) : l'histoire doit rester faisable.
 
 ## Historique des mesures
 
+- **Dur mais tactique** (2026-10-24, branche `jeu-tactique`, « un jeu dur mais très tactique ») : garde (« Attendre » :
+  dégâts × 0,75 et riposte à chaque coup au corps à corps (`garde_riposte` 1, ×0,7) jusqu'au tour suivant), intentions
+  des ennemis (annoncées à la moitié de la jauge (70 % d'abord), exécutées si elles tiennent encore ; les boss aussi, sauf zone rouge en
+  attente), ciblage `lure` (soigneurs, lanceurs, blessés attirent ; +0,75 par intention déjà sur l'allié : la meute
+  s'acharne), `dangerAt` (l'IA alliée s'écarte d'un corps à corps annoncé). Puis, repris d'un agent : les profils de tactiques soignent tous (un seul soigneur faisait
+  perdre les meutes de fin de partie), et les créatures sauvages n'ont plus d'attaque sur toute l'équipe
+  (`outils/villes/meutes.py` : zone d'un de leurs types à la place). Mesuré (BRUMEVAL_SIMULATIONS=1, ±10 ; IA / tactiques /
+  boutiques / forgé) : Sylvarque 7 / 26 / 57 / 52 %, Golem 25 / – / 75 / 85 %, Ronce-Mère 0 / – / 33 / 53 %, Ignarok
+  20 / 10 / 65 / 65 %, Givrecorne 35 / 56 / 85 / 95 %, cristal 93 / 93 / 100 / 100 %, Mère des Brumes 0 / 0 / 56 / 50 %,
+  Seigneur 73 / – / 96 / 96 %, Phénix 90 %, Ombre 100 %, Braisaure ancestrale 100 % : les boss ne bougent pas (dans le
+  bruit). Meutes du Vieux Phare (3 × N.100 contre N.104) et de l'Abîme (3 × N.96 contre N.100), équipement de Port-Écho :
+  100 % en IA, tactiques et profils (avant le script : 70 défaites du joueur automatique en trois parties). Joueur
+  automatique sans mémoire (bot14, avant la riposte et les boss qui annoncent) : **tout fini en 8 h 20, 10 défaites,
+  niveau 112** (référence tactiques-2 : 7 h 40, 27, 103), quatre actes en 5 h 40 (boss5 2:38, aube_fin 3:31), une seule
+  défaite contre un boss (Mère des Brumes N.42, équipe N.46), les autres contre des meutes (Vallée au début, Cendrelys
+  et Pétrolin du Vieux Phare à la fin) ; estimation joueur 16 h 46. Les défaites « sans rien à faire » ont disparu. bot15 (riposte, boss qui
+  annoncent, mêmes règles) : quatre actes en **4 h 40** (boss5 2:12, aube_fin 3:12), 8 défaites dans l'histoire, puis
+  20 de plus au Vieux Phare après la fin (arrêté à 11 h 46 : deux Champignards et un Flammenard contre des Cendrelys qui
+  absorbent le Feu, l'équipe ne changeait jamais → `Pilot::adaptTeam`). bot16 (`par_allie` 0,6 et `ecart_niveau` 3) :
+  quatre actes en 6 h 20 (boss5 2:58, aube_fin 5:02), 9 défaites dans l'histoire (quatre à la Citadelle contre des meutes
+  de 4), même tail au Phare ; arrêté à 10 h. Adopté : rencontres à 0,6 par allié et créatures sauvages au plus 3 niveaux
+  sous l'équipe (histoire un peu plus longue et plus dense ; plus d'intentions à lire). bot17 (adaptTeam, zones ≥ 80 à
+  mi-fourchette, règles 0,5/4) : tout fini en 12 h 23, 16 défaites, N.118, quatre actes en 6 h 21 ; estimation joueur
+  24 h. Point dur de l'histoire dans toutes les parties : la **Citadelle des gardiens** (meutes de 4 Aubespectres,
+  Nacrelins, Rocaubes et Loups d'aube au niveau de l'équipe, qui résistent au physique : 4 à 6 défaites par partie, une
+  seule ailleurs) → `meute_max` 3 sur sa zone, comme l'Abîme et le Phare. bot18 (règles 0,6/3 + adaptTeam, sans ce
+  plafond) : quatre actes en 6 h 48 (boss5 2:57, aube_fin 5:12), 12 défaites dans l'histoire dont 6 à la Citadelle, puis
+  5 au Phare (arrêté à 9 h 40, niveau 111). **bot19 (état final : règles 0,6/3, plafond Citadelle, intentions à mi-jauge,
+  compagnons adaptés) : tout fini en 9 h 07, 11 défaites, niveau 105** ; quatre actes en 5 h 28 (boss5 2:28, aube_fin 3:34),
+  4 défaites dans l'histoire (0 à la Citadelle), 7 après la fin (Abîme, Phare, dont l'Orage ancien et le Veilleur) ;
+  estimation joueur 18 h 22. bot20 (+ capture des types absents du vivier) : tout fini en 14 h 26, 17 défaites, quatre
+  actes en 7 h 21, 7 captures et 30 changements de compagnons (contre 9 pour bot17) : plus lent et pas moins de défaites
+  au Phare (les captures sont de bas niveau, l'expérience se disperse) → capture étendue retirée ; adaptTeam gardé.
+  Débuts : chaque partie perdait dans ses dix premières minutes (trois créatures contre deux combattants de niveau 5) →
+  `rencontres.meute_par_niveau` 10 : une meute fait au plus 2 + une créature par tranche de 10 niveaux de l'équipe
+  (bot22 : plus de défaite contre une meute sauvage dans les dix premières minutes ; mais 17 h 07 et 29 défaites au
+  total, niveau 121 : le Phénix d'écho perdu quatre fois de suite à +3..+5 niveaux après une répétition « sûre » jouée
+  depuis la ville, sans la canicule du Cratère → répétition dans le décor du lieu du combat ; d'une partie à l'autre,
+  l'écart va de 9 h / 11 défaites (bot19) à 17 h / 29 : une seule partie ne suffit pas pour juger un réglage).
+  bot23 (état final : répétition dans le décor, meutes par niveau) : tout fini en 12 h 17, 15 défaites, niveau 123,
+  quatre actes en 6 h 07, estimation joueur 24 h ; le Phénix n'est plus perdu. Sur quatre parties du même état :
+  9 h à 17 h, 11 à 30 défaites, quatre actes en 5 h 30 à 7 h ; les défaites de l'histoire sont la Citadelle (Brume
+  Noire), le Cratère (Phénix) et des meutes d'esprits et de carapaces ; après la fin, le Vieux Phare. bot24 (même état
+  que bot23) : quatre actes en 5 h 18 avec 10 défaites, puis 29 de plus au Vieux Phare (arrêté à 17 h 18, niveau 134) :
+  la traîne d'après la fin vient de l'équipe jamais changée (3 ou 4 créatures captées en tout), pas de l'histoire.
+  **Coquille trouvée le 2026-10-24** : la Vitesse de base de Braisenard était 200 (Flammenard 220) depuis la refonte du
+  combat du 6 octobre (60 avant ; la deuxième espèce la plus rapide est à 90, la médiane à 56) : le compagnon de départ
+  par défaut, celui de toutes les parties automatiques, jouait trois à quatre fois plus souvent que les autres. Remis à
+  60 / 66 (×1,1). Toutes les mesures d'avant sont faites avec ce Braisenard-là ; celles d'après sont plus dures.
+  Mesuré aussitôt (BRUMEVAL_SIMULATIONS=1 ; boutiques / forgé) : Sylvarque 17 / 25 %, Ronce-Mère 6 / 10, Golem 35 / 30,
+  Ignarok 40 / 32, Givrecorne 57 / 67, Mère des Brumes 33 / 30 — contre 57 / 60, 43 / 53, 75 / 85, 65 / 67, 85 / 92,
+  56 / 56 juste avant : les boss avaient été réglés contre un Braisenard quatre fois trop rapide. Boss ramenés
+  (`evenements.json`) : Sylvarque N.13 ×5,5, Golem N.26 ×12 bouclier 10, Ignarok N.24 ×7,5, Ronce-Mère N.20 ×7, Givrecorne
+  N.37 ×10, Mère des Brumes N.40 ×6,5. Mesuré après (deux tours) : Sylvarque 65 / 45 %, Ronce-Mère 43 / 36, Golem 50 / 60,
+  Ignarok 62 / 90, Givrecorne 52 / 75, Mère des Brumes 46 / 66, cristal 100, Seigneur 90 / 100 : proche d'avant, un peu
+  plus dur au milieu (Givrecorne, Golem). Joueur automatique, sans mémoire : bot25 (vitesse corrigée, anciens boss) : quatre
+  actes en 8 h 29, 13 défaites dans l'histoire (Givrecorne, Seigneur, Brume Noire, Phénix une fois chacun, le reste des
+  meutes) ; bot26 (boss ramenés) : quatre actes en 7 h 43, 14 défaites dans l'histoire (aucun boss de l'histoire perdu,
+  des meutes de 3 à 5 esprits et carapaces, l'Ombre du Gardien une fois). Contre 5 h 30 à 7 h avec le Braisenard trop
+  rapide : le jeu corrigé est nettement plus dur pour le joueur automatique. Meutes adoucies au milieu : une créature de
+  plus tous les 15 niveaux au lieu de 10 (`meute_par_niveau` 15 : 4 au plus à N.30, 5 à N.45, 6 à N.60). bot27 (cet état) : tout fini en 16 h 41, 26 défaites
+  dont 23 dans l'histoire (quatre actes en 8 h 11), niveau 121, estimation joueur 32 h ; boss perdus : Kraken ×2, Griffon,
+  Ignarok de la prime ×2, Brume Noire, Colosse, Phénix, Ombre du Gardien, plus des meutes. Sur trois parties corrigées :
+  7 h 43 à 8 h 29 pour les quatre actes, 13 à 23 défaites dans l'histoire. Simulations complètes ensuite (IA / tactiques /
+  boutiques / forgé) : Kraken 96 / – / 100 / 100 %, Griffon 30 / – / 43 / 70, Seigneur 53 / 83 / 90, Phénix 70 (équipé),
+  Colosse, Ombre, Orage ancien, Veilleur 100 : seuls le Griffon et le Phénix avaient baissé → Griffon N.53 ×13 (N.55 ×15
+  avant), Phénix N.86 ×4 (N.87 ×4,5) ; mesuré après : Griffon 43 / 66 / 73 %, Phénix 100 %. Braconnier 33 % (IA, N.6 :
+  le premier dresseur, évitable), Chef des bandits 26 % (IA), défi « Les ailes » 10 %.
 - **Rééquilibrage « trop facile »** (2026-10-23, demandé par l'utilisateur, comparé à Expedition 33) : le joueur automatique
   arrivait aux boss du milieu de l'histoire avec 15 à 20 niveaux d'avance (Givrecorne N.39 au niveau 58, Mère des Brumes
   N.44 au niveau 61) et ~2 créatures par rencontre contre jusqu'à 6 alliés. Réglages (`regles.json`) : `par_allie` 0,5
@@ -28,7 +97,12 @@ Méthode :
   défaites dans l'Abîme et le Vieux Phare (contenu facultatif). Limite du joueur automatique : 14 h de jeu.
   Avec les embuscades (0,07, un tiers derrière), les profils de tactiques et la répétition systématique des boss : à
   7:18 de jeu, 10 défaites, niveau 90, trois actes finis (Seigneur des Orages 4 h 04, Aube 6 h 11 ; avant : 2 h 29 et
-  3 h 39) ; mesure en cours à la publication de la 3.6. Embuscades à
+  3 h 39) ; mesure en cours à la publication de la 3.6 ; cette partie a fini à 14 h sans tout faire (50
+  défaites, 43 dans l'Abîme et le Phare), comme la vérification GitHub (14 h, 76 défaites). Causes (analyse d'un agent) :
+  profil Soigneur sans sorts, Combattant qui impose « le moins de PV », répétition de tous les boss (318 min
+  d'entraînement). Corrigé (branche tactiques-2 : action « Attaque, PM gardés », le Combattant n'achève que sous 30 %,
+  ready() ne répète que les combats perdus) : **sans mémoire, tout fini en 7 h 40, 27 défaites, niveau 103** (quatre
+  actes à 5 h 34). La 3.6 publiée (profils d'avant), même mesure : tout fini mais en 15 h 20, 42 défaites, niveau 128. Embuscades à
   0,1 et la moitié derrière : 48 défaites, fin non atteinte en 14 h (trop dur, retiré). Prime la plus dure : la Braisaure
   ancestrale (trois carapaces : il faut de la magie).
 

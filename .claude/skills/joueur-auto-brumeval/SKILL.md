@@ -136,3 +136,23 @@ membre > Profils… > profil). Rapport : « Tactiques : Lior → Combattant ».
 Prêt ou pas (2026-10-23) : `Pilot::ready` répète toujours un boss, ou un combat déjà perdu, même loin au-dessus de son
 niveau (avant, 3 niveaux + marge au-dessus suffisaient : la Braisaure ancestrale, trois carapaces, se perdait 8 fois de
 suite avec une équipe sans magie, et la partie se bloquait). Simulation de cette prime dans le mode test.
+
+**Dur mais tactique** (2026-10-24, branche `jeu-tactique`) : `Pilot::setupTactics` choisit `bestProfile(f)` (le même
+que l'éditeur marque « (conseillé) ») et `profileRules(p, lignes, f)` : les règles de soin sont retirées à qui ne sait pas
+soigner, sinon tout le monde réanime et soigne (un seul soigneur faisait perdre les meutes de fin de partie) ; refait
+quand ses règles changent (technique apprise, ligne de plus). En combat, l'IA alliée (`autoCommand`, `safeCell`) et la
+tactique « Se mettre à l'abri » tiennent compte des intentions annoncées par les ennemis (`dangerAt`) ; « Attendre » met
+en garde (× 0,75). Mesure sans mémoire (bot14) : tout fini en 8 h 20, 10 défaites, niveau 112 (7 h 40 / 27 / 103 avant) ; voir la
+compétence `equilibrage`. Les zones de niveau 80 et plus (`zoneLo_`) se jaugent au milieu de leur fourchette (lo+hi)/2 :
+il entrait dans l'Abîme et le Vieux Phare au bas de la zone et y perdait en boucle (bot15 : 15 défaites au Phare).
+
+**Compagnons selon le lieu** (2026-10-24, `Pilot::adaptTeam`, à chaque `plan`) : pour les espèces des zones de la carte, il
+note chaque créature (équipe et réserve) par sa meilleure attaque contre chacune (efficacité × puissance, le niveau compte)
+et donne les trois meilleures aux trois héros de tête (réserve échangée contre les moins bonnes), seulement pour +20 % ;
+en démo, par Préparation > Réserve et Compagnons. Avant : quinze défaites au Vieux Phare avec deux Champignards et un
+Flammenard contre des Cendrelys qui absorbent le Feu. Journal : « Compagnon : Lior → Gouttelin (Le Vieux Phare) ».
+
+**Répétition dans le bon décor** (2026-10-24) : `rehearse` jouait dans le thème de la carte où se tenait le pilote (souvent
+une ville) ; météo et terrain, tirés selon le thème, manquaient : la canicule du Cratère des Échos renforce le Phénix, le
+combat « sûr à 85 % » se perdait quatre fois de suite (bot22). Le combat d'un objectif porte maintenant sa carte
+(`fight["carte"]`, posé dans `goals` et `watchSight`) et la répétition se joue dans son thème.

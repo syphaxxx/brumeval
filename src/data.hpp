@@ -233,6 +233,7 @@ struct Rules {
   double perAlly = 0;
   double ambush = 0;  // chance qu'une rencontre de 2 créatures ou plus soit une embuscade (BattleSetup::ambush)
   int levelGap = 0, levelCap = 6;
+  int packPerLevels = 15;  // (2026-10-24) meutes de 2 + une créature par tranche de N niveaux de l'équipe (0 : non)
   // Combat
   double atbBase = 20, atbSpeed = 1.1, flee = .7, limitGain = 110, stab = 1.25, spreadMin = .85, dmgDivisor = 40;
   double critMult = 1.5, stageStep = .25;
@@ -242,6 +243,9 @@ struct Rules {
   double bossWarn = .35;                 // chance qu'un boss annonce sa plus grosse attaque (un tour à l'avance)
   double bossBurst = 1.6;                // puissance de l'attaque annoncée (sur ceux restés dans la zone)
   double companionAtb = .5;              // compagnons : vitesse de leur jauge ATB (ils agissent moins souvent que les héros)
+  double guard = .75;     // garde (2026-10-24, « Attendre ») : part des dégâts reçus jusqu'à son prochain tour
+  double guardRiposte = 1;  // en garde : chance de riposter à un coup au corps à corps (comme la gemme de riposte)
+  double intentAt = 70;   // les ennemis annoncent leur intention à ce point de leur jauge (0 : jamais)
   // Brisure (2.5, inspirée d'Octopath Traveler) : bouclier des ennemis (créature, boss), dégâts sur un ennemi brisé
   int breakShield = 2, breakShieldBoss = 8;
   double breakDamage = 1.5;

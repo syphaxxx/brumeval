@@ -16,3 +16,5 @@ outils/sprites/apercu.png
 outils/blender/rendus/
 outils/godot/effets/rendus/
 outils/godot/effets/.godot/
+partie/
+*.log
