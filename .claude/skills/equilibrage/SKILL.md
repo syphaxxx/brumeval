@@ -36,7 +36,11 @@ Méthode :
   absorbent le Feu, l'équipe ne changeait jamais → `Pilot::adaptTeam`). bot16 (`par_allie` 0,6 et `ecart_niveau` 3) :
   quatre actes en 6 h 20 (boss5 2:58, aube_fin 5:02), 9 défaites dans l'histoire (quatre à la Citadelle contre des meutes
   de 4), même tail au Phare ; arrêté à 10 h. Adopté : rencontres à 0,6 par allié et créatures sauvages au plus 3 niveaux
-  sous l'équipe (histoire un peu plus longue et plus dense ; plus d'intentions à lire).
+  sous l'équipe (histoire un peu plus longue et plus dense ; plus d'intentions à lire). bot17 (adaptTeam, zones ≥ 80 à
+  mi-fourchette, règles 0,5/4) : tout fini en 12 h 23, 16 défaites, N.118, quatre actes en 6 h 21 ; estimation joueur
+  24 h. Point dur de l'histoire dans toutes les parties : la **Citadelle des gardiens** (meutes de 4 Aubespectres,
+  Nacrelins, Rocaubes et Loups d'aube au niveau de l'équipe, qui résistent au physique : 4 à 6 défaites par partie, une
+  seule ailleurs) → `meute_max` 3 sur sa zone, comme l'Abîme et le Phare.
 - **Rééquilibrage « trop facile »** (2026-10-23, demandé par l'utilisateur, comparé à Expedition 33) : le joueur automatique
   arrivait aux boss du milieu de l'histoire avec 15 à 20 niveaux d'avance (Givrecorne N.39 au niveau 58, Mère des Brumes
   N.44 au niveau 61) et ~2 créatures par rencontre contre jusqu'à 6 alliés. Réglages (`regles.json`) : `par_allie` 0,5
