@@ -3240,7 +3240,10 @@ void Battle::draw() {
     } else if (m.kind == Kind::Magic || m.kind == Kind::Status) {  // orbe de la couleur du type
       uint32_t col = m.type >= 0 && m.type < (int)types().size() ? types()[(size_t)m.type].color : 0xc8a8ff;
       g.ellipse(ix, iy, 3.5f, 3.5f, rgb(col)), g.ellipse(ix - 1.2f, iy - 1.2f, 1.2f, 1, rgb(0xffffff, 200));
-    } else {  // épée : un coup
+    } else if (const SpriteRect* ic = findSprite("ic_epee_1")) {  // un coup : l'épée du menu Attaquer
+      float k = std::min(1.f, 9.f / std::max(ic->w, ic->h));
+      g.sprite(*ic, ix - ic->w * k / 2, iy - ic->h * k / 2, false, k);
+    } else {
       g.line(ix - 3, iy + 3, ix + 3, iy - 3, 2, rgb(0xf4f8ff)), g.line(ix - 3, iy - 1, ix - 1, iy + 1, 1, rgb(0xc08040));
     }
   };
