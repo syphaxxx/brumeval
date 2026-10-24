@@ -1476,9 +1476,7 @@ float Battle::lure(const FighterP& t) const {
   if (heals) w += 1;
   if (t->eMag() > t->eAtk()) w += .5f;
   w += 1.5f * (1 - float(t->hp) / std::max(1, t->mhp));
-  for (auto& [who, in] : intents_)  // meute (2026-10-24) : déjà visé par un des leurs, les autres s'y mettent
-    for (auto& tg : in.targets)
-      if (tg == t && !in.wait && hasMove(in.move) && moveInfo(in.move).damaging()) w += .75f;
+  w += .75f * aimedBy(t);  // meute (2026-10-24) : déjà visé par un des leurs, les autres s'y mettent
   return w;
 }
 
@@ -1691,6 +1689,14 @@ bool Battle::dangerAt(const FighterP& f, int c) const {
   return false;
 }
 bool Battle::threatened(const FighterP& f) const { return dangerAt(f, cellOf(f)); }
+int Battle::aimedBy(const FighterP& f) const {
+  int n = 0;
+  for (auto& [who, in] : intents_) {
+    if (!who->alive() || in.wait || in.move.empty() || !hasMove(in.move) || !moveInfo(in.move).damaging()) continue;
+    for (auto& tg : in.targets) n += tg == f;
+  }
+  return n;
+}
 bool Battle::announced(const FighterP& f) const {
   for (auto& w : warnings_)
     if (w.who == f) return true;
@@ -1858,19 +1864,11 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
         if (boardDist(w, cellOf(t)) <= reach(a) && behind(a, t, w)) return true;
       return false;
     }
-    if (c == "allie_vise") {  // un ennemi a annoncé une attaque sur cet allié
-      for (auto& [who, in] : intents_)
-        for (auto& tg : in.targets)
-          if (tg == t && !in.wait && hasMove(in.move) && moveInfo(in.move).damaging()) return true;
-      return false;
-    }
+    if (c == "allie_vise") return aimedBy(t) > 0;  // un ennemi a annoncé une attaque sur cet allié
     if (c == "soi_vise") {  // une intention ennemie le vise (pas dans une zone rouge : là, il vaut mieux s'écarter)
       for (auto& w : warnings_)
         if (inBoardZone(w.zone, w.center, cellOf(a))) return false;
-      for (auto& [who, in] : intents_)
-        for (auto& tg : in.targets)
-          if (tg == a && !in.wait && hasMove(in.move) && moveInfo(in.move).damaging()) return true;
-      return false;
+      return aimedBy(a) > 0;
     }
     if (c == "soi_dos_menace") {
       for (auto& o : liveFoes)
@@ -2923,6 +2921,15 @@ void Battle::drawHud(float t) {
     if (a->status != Status::None && a->alive()) {  // état : sa pastille à la fin du nom
       Color sc2 = rgb(statusColor(a->status));
       g.rect(hx + 45, y + 1, 5, 5, sc2);
+    }
+    if (a->alive() && guarding_.count(a.get())) {  // (2026-10-24) en garde : un petit bouclier
+      float gx = hx + 56, gy = y;
+      g.poly({{gx - 3, gy}, {gx + 3, gy}, {gx + 3, gy + 3}, {gx, gy + 6}, {gx - 3, gy + 3}}, rgb(0x8fd0ff));
+      g.poly({{gx - 1.5f, gy + 1}, {gx + 1.5f, gy + 1}, {gx + 1.5f, gy + 3}, {gx, gy + 4.5f}, {gx - 1.5f, gy + 3}}, rgb(0x1c2a78));
+    }
+    if (a->alive() && aimedBy(a) > 0) {  // visé par une intention : le chevron orange, comme au-dessus de sa tête
+      float cx = hx + 65, cy = y + 1;
+      g.tri(cx - 3, cy, cx + 3, cy, cx, cy + 4, rgb(0xff9a3a));
     }
     float r = a->mhp ? float(a->hp) / a->mhp : 0;
     Color hc = r > .5f ? GREEN : r > .25f ? GOLD : RED;
