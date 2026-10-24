@@ -58,7 +58,9 @@ Méthode :
   bot23 (état final : répétition dans le décor, meutes par niveau) : tout fini en 12 h 17, 15 défaites, niveau 123,
   quatre actes en 6 h 07, estimation joueur 24 h ; le Phénix n'est plus perdu. Sur quatre parties du même état :
   9 h à 17 h, 11 à 30 défaites, quatre actes en 5 h 30 à 7 h ; les défaites de l'histoire sont la Citadelle (Brume
-  Noire), le Cratère (Phénix) et des meutes d'esprits et de carapaces ; après la fin, le Vieux Phare.
+  Noire), le Cratère (Phénix) et des meutes d'esprits et de carapaces ; après la fin, le Vieux Phare. bot24 (même état
+  que bot23) : quatre actes en 5 h 18 avec 10 défaites, puis 29 de plus au Vieux Phare (arrêté à 17 h 18, niveau 134) :
+  la traîne d'après la fin vient de l'équipe jamais changée (3 ou 4 créatures captées en tout), pas de l'histoire.
   **Coquille trouvée le 2026-10-24** : la Vitesse de base de Braisenard était 200 (Flammenard 220) depuis la refonte du
   combat du 6 octobre (60 avant ; la deuxième espèce la plus rapide est à 90, la médiane à 56) : le compagnon de départ
   par défaut, celui de toutes les parties automatiques, jouait trois à quatre fois plus souvent que les autres. Remis à
