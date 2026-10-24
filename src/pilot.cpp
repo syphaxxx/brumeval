@@ -878,10 +878,10 @@ void Pilot::battleStep() {
     const ItemDef* lantern = nullptr;
     for (auto& d : allItems())
       if (d.capture > 0 && G.items.count(d.id) && G.items[d.id] > 0 && (!lantern || d.capture > lantern->capture)) lantern = &d;
-    if (lantern && B.canCapture) {
+    if (lantern && B.canCapture && creaturesWanted() > 0 && (int)G.team.size() < rules().maxTeam) {
       float bestCh = .2f;  // pas la peine en dessous (lanterne d'argent sur une créature en pleine forme : 24 %)
       for (auto& f : B.alive(B.foes))
-        if (wantsCapture(*f) && captureChance(*f, lantern->capture) > bestCh) bestCh = captureChance(*f, lantern->capture), capture_ = f->name();
+        if (!f->S().human && !f->boss && captureChance(*f, lantern->capture) > bestCh) bestCh = captureChance(*f, lantern->capture), capture_ = f->name();
     }
     if (!capture_.empty()) {
       lantern_ = lantern->name;
@@ -919,20 +919,6 @@ int Pilot::creaturesWanted() const {
   int heroes = 0, creatures = 0;
   for (auto& f : G.team) (f->S().human ? heroes : creatures)++;
   return std::max(2, std::min(3, heroes) + 1) - creatures;
-}
-
-// Capturer cette créature sauvage ? S'il manque des compagnons aux héros (équipe pas pleine), ou (2026-10-24) si son type
-// manque au vivier (équipe et réserve : six en réserve au plus) et qu'elle n'est pas trop faible : de quoi adapter
-// l'équipe au lieu (adaptTeam). Avec 3 ou 4 créatures en tout, il n'avait rien à changer contre les carapaces et les
-// esprits de la Citadelle et du Vieux Phare
-bool Pilot::wantsCapture(const Fighter& f) const {
-  if (f.S().human || f.boss) return false;
-  if (creaturesWanted() > 0 && (int)G.team.size() < rules().maxTeam) return true;
-  if (G.reserve.size() >= 6 || f.lvl + 6 < G.avgLevel()) return false;
-  for (auto* v : {&G.team, &G.reserve})
-    for (auto& c : *v)
-      if (!c->S().human && hasType(c->S(), f.S().type)) return false;
-  return true;
 }
 
 // Intérêt d'un équipement pour ce combattant (les mages préfèrent la Magie)
@@ -979,8 +965,8 @@ std::vector<std::string> Pilot::wishes(const std::vector<std::string>& stock) co
       buy.push_back(pick);
       money -= item(pick).price;
     }
-  // des lanternes : cinq s'il manque des compagnons, sinon deux pour une créature d'un type qui manque au vivier
-  stockUp([](const ItemDef& d, const ItemDef* p) { return d.capture > 0 && (!p || d.capture > p->capture); }, creaturesWanted() > 0 ? 5 : 2);
+  if (creaturesWanted() > 0)
+    stockUp([](const ItemDef& d, const ItemDef* p) { return d.capture > 0 && (!p || d.capture > p->capture); }, 5);
   // Le reste de l'or en soins : plus il est riche, plus il en garde (de 4 à 15), et des plumes
   stockUp(heal, std::clamp(G.gold / 400, 4, 15));
   stockUp([](const ItemDef& d, const ItemDef* p) { return d.revive > 0 && (!p || d.revive > p->revive); }, G.gold > 1500 ? 4 : 1);
@@ -1500,9 +1486,7 @@ void Pilot::update(float dt) {
     const Battle& B = *G.battle_;
     bool lantern = false;
     for (auto& d : allItems()) lantern = lantern || (d.capture > 0 && G.items.count(d.id) && G.items.at(d.id) > 0);
-    bool wanted = false;
-    for (auto& f : B.foes) wanted = wanted || wantsCapture(*f);
-    G.tacticsAuto = !(lantern && B.canCapture && B.foeName.empty() && wanted);
+    G.tacticsAuto = !(lantern && B.canCapture && B.foeName.empty() && creaturesWanted() > 0 && (int)G.team.size() < rules().maxTeam);
   }
   if (battle && !engaged_.empty()) engagedFought_ = true;
   if (!battle && inBattle_) inBattle_ = false, needPlan_ = true, G.tacticsAuto = true;  // fin d'un combat

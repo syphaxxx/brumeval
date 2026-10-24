@@ -206,7 +206,6 @@ class Pilot {
   // Sinon il refait seulement le plein quand il passe devant (sans quoi il ferait des allers-retours)
   bool worthTrip(const std::vector<std::string>& stock) const;
   int creaturesWanted() const;  // créatures qui manquent pour accompagner les héros
-  bool wantsCapture(const Fighter& f) const;  // il manque des compagnons, ou son type manque au vivier (2026-10-24)
 
   // Progrès (pour repérer un blocage)
   long progress_ = -1;
