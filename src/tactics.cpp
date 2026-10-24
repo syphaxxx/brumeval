@@ -49,6 +49,7 @@ static const std::vector<TacticCond> CONDS = {
     {"soi_dos_menace", ::T("Soi : dos menacé"), TSide::Self, 0, 0, 0, 0, ::T("Quand un ennemi au contact est dans son dos (une embuscade, un ennemi qui l'a contourné).")},
     // (2026-10-24) les intentions
     {"soi_vise", ::T("Soi : visé"), TSide::Self, 0, 0, 0, 0, ::T("Quand un ennemi a annoncé une attaque sur lui (chevron orange) : se mettre en garde fait riposter.")},
+    {"allie_vise", ::T("Allié : visé"), TSide::Ally, 0, 0, 0, 0, ::T("Un allié qu'un ennemi a annoncé vouloir frapper (chevron orange) : le couvrir, le soigner d'avance.")},
 };
 static const std::vector<TacticAuto> AUTOS = {
     {"attaque", ::T("Meilleure attaque"), TSide::Foe, ::T("La technique, le sort ou le duo qui fait le plus de dégâts (peut dépenser des PM).")},

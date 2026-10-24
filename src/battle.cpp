@@ -1858,6 +1858,12 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
         if (boardDist(w, cellOf(t)) <= reach(a) && behind(a, t, w)) return true;
       return false;
     }
+    if (c == "allie_vise") {  // un ennemi a annoncé une attaque sur cet allié
+      for (auto& [who, in] : intents_)
+        for (auto& tg : in.targets)
+          if (tg == t && !in.wait && hasMove(in.move) && moveInfo(in.move).damaging()) return true;
+      return false;
+    }
     if (c == "soi_vise") {  // une intention ennemie le vise (pas dans une zone rouge : là, il vaut mieux s'écarter)
       for (auto& w : warnings_)
         if (inBoardZone(w.zone, w.center, cellOf(a))) return false;

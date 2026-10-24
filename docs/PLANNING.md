@@ -452,8 +452,8 @@ Astuces « intention » et « garde », aide de l'échiquier, tests (garde ≈ 0
    (`outils/villes/meutes.py`, zone d'un de leurs types à la place : la formation compte) ; simulations des meutes du
    Vieux Phare et de l'Abîme (100 %).
 6. Garde qui riposte (chaque coup au corps à corps reçu), meute qui s'acharne sur un allié déjà visé, boss qui annoncent
-   aussi leurs coups ordinaires, « Déjoué ! » quand une annonce ne tient plus ; tactique « Soi : visé » (le Protecteur se
-   met en garde quand une attaque est annoncée sur lui) ; l'icône d'intention apparaît en se posant ; au-dessus de l'allié
+   aussi leurs coups ordinaires, « Déjoué ! » quand une annonce ne tient plus ; tactiques « Soi : visé » (le Protecteur se
+   met en garde quand une attaque est annoncée sur lui) et « Allié : visé » (il va couvrir l'allié visé) ; l'icône d'intention apparaît en se posant ; au-dessus de l'allié
    visé, les dégâts qu'il va prendre (« ≈ 61-68 », additionnés si plusieurs ennemis le visent) : de quoi décider.
 7. Joueur automatique : il adapte ses compagnons aux créatures du lieu (`Pilot::adaptTeam` ; en démo, par les menus Réserve
    et Compagnons) et jauge les zones de fin de partie au milieu de leur fourchette : ses défaites au Vieux Phare (quinze dans

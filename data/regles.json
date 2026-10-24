@@ -621,6 +621,7 @@
         "regles": [
           {"si": "soi_vise", "faire": "garde"},
           {"si": "soi_menace", "faire": "esquiver"},
+          {"si": "allie_vise", "faire": "proteger"},
           {"si": "allie_ko", "faire": "reanimation"},
           {"si": "allie_pv_moins", "valeur": 40, "faire": "soin"},
           {"si": "allie_avant_pv_moins", "valeur": 50, "faire": "proteger"},
