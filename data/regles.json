@@ -23,9 +23,9 @@
     "alpha": 0.06,
     "alpha_niveaux": 3,
     "part_nuit": 0.5,
-    "par_allie": 0.5,
+    "par_allie": 0.6,
     "embuscade": 0.07,
-    "ecart_niveau": 4,
+    "ecart_niveau": 3,
     "plafond_niveau": 6
   },
   "combat": {

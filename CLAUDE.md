@@ -196,8 +196,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   réserve. Menu `bestiaryMenu`, fiche `drawBestiaryPanel` (`panelMode_` 3 ; une fois l'espèce obtenue, sa
   `description` : `Species::desc`, écrites par `outils/villes/descriptions.py`).
   L'Expédition repart d'un bestiaire vide.
-- Rééquilibrage (2026-10-23) : `Game::encounter` : au moins `par_allie` ennemis par combattant allié, créatures sauvages
-  au plus `ecart_niveau` sous la moyenne de l'équipe (sans dépasser la zone de `plafond_niveau`), gains de leur niveau
+- Rééquilibrage (2026-10-23) : `Game::encounter` : au moins `par_allie` ennemis par combattant allié (0,6 depuis le
+  2026-10-24), créatures sauvages au plus `ecart_niveau` (3) sous la moyenne de l'équipe (sans dépasser la zone de `plafond_niveau`), gains de leur niveau
   d'origine (`Fighter::rewardLvl`) ; jamais en Expédition. Expérience : un adversaire plus de `exp_marge` niveaux sous
   l'équipe rapporte `exp_ecart` de moins par niveau (au moins `exp_min`), pas en Expédition ; un coup absorbé ou sans
   effet n'applique ni état ni poussée ; mesures : compétence `equilibrage`. Embuscade (`rencontres.embuscade`,
