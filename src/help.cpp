@@ -36,6 +36,16 @@ struct HelpPage {
 static std::vector<HelpPage> helpPages() {
   const Rules& R = rules();
   std::vector<HelpPage> p;
+  p.push_back({::T("Nouveautés 3.7"), ::T("Les intentions des ennemis, la garde qui riposte, des combats plus durs mais lisibles."),
+               {::T("Intentions : à la moitié de sa jauge, chaque ennemi annonce ce qu'il prépare (icône à côté de sa barre de PV, chevron orange et dégâts prévus au-dessus de l'allié visé, zone en orange au sol)."),
+                ::T("Il fait ce qu'il a annoncé si c'est encore possible, sinon « Déjoué ! » : écartez la cible, mettez-la en garde, ou frappez-le d'abord. Un sablier : il va se mettre en garde, frappez-le de loin."),
+                ::T("Attendre = se mettre en garde : un quart de dégâts en moins et une riposte à chaque coup au corps à corps jusqu'à votre prochain tour ; bouclier à côté de la tête et dans le tableau du bas."),
+                ::T("Les ennemis visent les soigneurs, les lanceurs de sorts et les blessés, et s'acharnent sur un allié déjà visé : couvrez votre ligne arrière."),
+                ::T("Tactiques : « Soi : visé » (le Protecteur se met en garde) et « Allié : visé » (il va le couvrir) ; chaque profil réanime et soigne, « (conseillé) » marque le profil qui convient."),
+                ::T("Rencontres plus denses (0,6 créature par allié, jamais plus de 3 niveaux sous l'équipe), meutes de 2 créatures au début puis une de plus tous les 15 niveaux ; les créatures sauvages n'ont plus d'attaque sur toute l'équipe : une zone, que la formation évite."),
+                ::T("Braisenard courait quatre fois trop vite depuis le 6 octobre (une coquille) : corrigé, et les boss réglés en conséquence."),
+                ::T("Démo : le joueur automatique change de compagnons selon les créatures du lieu (Préparation > Réserve, Compagnons) et répète un boss dans le décor du combat."),
+                ::T("En réseau, l'invité du duel et les autres joueurs du gardien voient aussi la garde et les intentions.")}});
   p.push_back({::T("Nouveautés 3.6"), ::T("Le regard, les embuscades, des créatures qui se battent autrement, les profils."),
                {::T("Le dos dépend du regard : chacun regarde vers sa dernière cible, vers où il a marché, ou vers l'adversaire le plus proche s'il attend. Une flèche au sol le montre."),
                 ::T("En choisissant sa case, une dague dorée marque celles d'où l'on frappe un ennemi dans le dos."),
