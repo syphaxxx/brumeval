@@ -458,7 +458,7 @@ Astuces « intention » et « garde », aide de l'échiquier, tests (garde ≈ 0
 7. Joueur automatique : il adapte ses compagnons aux créatures du lieu (`Pilot::adaptTeam` ; en démo, par les menus Réserve
    et Compagnons) et jauge les zones de fin de partie au milieu de leur fourchette : ses défaites au Vieux Phare (quinze dans
    bot15, deux Champignards et un Flammenard contre des Cendrelys qui absorbent le Feu) étaient celles d'un joueur qui ne
-   change jamais d'équipe. Deux relectures Codex (5 remarques corrigées).
+   change jamais d'équipe. Il capture aussi les créatures d'un type qui manque à son vivier, pour avoir de quoi choisir. Deux relectures Codex (5 remarques corrigées).
 Mesuré (joueur automatique sans mémoire, bot14) : tout fini en 8 h 20, 10 défaites (27 avant), niveau 112, quatre actes en
 5 h 40, estimation joueur 16 h 46 ; les défaites restantes : meutes du Vieux Phare. Mesuré ensuite : bot15 (version
 finale, mêmes règles) quatre actes en 4 h 40 et 8 défaites dans l'histoire, puis 20 au Vieux Phare (équipe jamais changée :

@@ -150,4 +150,6 @@ il entrait dans l'Abîme et le Vieux Phare au bas de la zone et y perdait en bou
 note chaque créature (équipe et réserve) par sa meilleure attaque contre chacune (efficacité × puissance, le niveau compte)
 et donne les trois meilleures aux trois héros de tête (réserve échangée contre les moins bonnes), seulement pour +20 % ;
 en démo, par Préparation > Réserve et Compagnons. Avant : quinze défaites au Vieux Phare avec deux Champignards et un
-Flammenard contre des Cendrelys qui absorbent le Feu. Journal : « Compagnon : Lior → Gouttelin (Le Vieux Phare) ».
+Flammenard contre des Cendrelys qui absorbent le Feu. Journal : « Compagnon : Lior → Gouttelin (Le Vieux Phare) ». Pour avoir de quoi choisir, il capture aussi (`wantsCapture`)
+une créature sauvage dont le type manque au vivier (équipe et réserve, six en réserve au plus) si elle n'est pas plus de
+6 niveaux sous l'équipe ; il garde deux lanternes pour cela (avant : 3 ou 4 créatures en tout, rien à changer).
