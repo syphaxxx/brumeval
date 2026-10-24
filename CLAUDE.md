@@ -216,7 +216,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   orbe de la couleur du type, croix verte pour un soin, sablier pour une garde), chevron orange au-dessus de chaque allié
   visé, zone en orange au sol, « Prépare X sur Y » dans l'aide de la cible (`pickFoe`, `intentText`). À son tour
   (`enemyTurn`), il l'exécute si elle tient encore (case encore accessible, cibles encore au combat, portée, PM, soin
-  encore utile ; listes « tout un camp » refaites), sinon il réfléchit à nouveau ; effacée par la Brisure (`breakFoe`).
+  encore utile ; listes « tout un camp » refaites), sinon « Déjoué ! » et il réfléchit à nouveau ; effacée par la Brisure
+  (`breakFoe`).
   Dessin chez l'hôte seulement (rien dans `etat`). **Ciblage** : quand un ennemi frappe « au hasard » (65 % des tours),
   la cible est tirée selon `lure` (soigneur ou soins connus +1, lanceur de sorts +0,5, blessé jusqu'à +1,5, +0,75 par
   intention déjà annoncée sur lui : la meute s'acharne) : couvrir ses soigneurs et ses blessés compte. Ennemi survolé

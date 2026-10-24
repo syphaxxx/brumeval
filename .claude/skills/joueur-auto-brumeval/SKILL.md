@@ -142,4 +142,5 @@ que l'éditeur marque « (conseillé) ») et `profileRules(p, lignes, f)` : les 
 soigner, sinon tout le monde réanime et soigne (un seul soigneur faisait perdre les meutes de fin de partie) ; refait
 quand ses règles changent (technique apprise, ligne de plus). En combat, l'IA alliée (`autoCommand`, `safeCell`) et la
 tactique « Se mettre à l'abri » tiennent compte des intentions annoncées par les ennemis (`dangerAt`) ; « Attendre » met
-en garde (× 0,75). Mesure sans mémoire : voir la compétence `equilibrage` (bot14).
+en garde (× 0,75). Mesure sans mémoire (bot14) : tout fini en 8 h 20, 10 défaites, niveau 112 (7 h 40 / 27 / 103 avant) ; voir la
+compétence `equilibrage`.

@@ -27,7 +27,12 @@ Méthode :
   Seigneur 73 / – / 96 / 96 %, Phénix 90 %, Ombre 100 %, Braisaure ancestrale 100 % : les boss ne bougent pas (dans le
   bruit). Meutes du Vieux Phare (3 × N.100 contre N.104) et de l'Abîme (3 × N.96 contre N.100), équipement de Port-Écho :
   100 % en IA, tactiques et profils (avant le script : 70 défaites du joueur automatique en trois parties). Joueur
-  automatique sans mémoire : mesure en cours (bot14).
+  automatique sans mémoire (bot14, avant la riposte et les boss qui annoncent) : **tout fini en 8 h 20, 10 défaites,
+  niveau 112** (référence tactiques-2 : 7 h 40, 27, 103), quatre actes en 5 h 40 (boss5 2:38, aube_fin 3:31), une seule
+  défaite contre un boss (Mère des Brumes N.42, équipe N.46), les autres contre des meutes (Vallée au début, Cendrelys
+  et Pétrolin du Vieux Phare à la fin) ; estimation joueur 16 h 46. Les défaites « sans rien à faire » ont disparu ; pour
+  durcir sans tricher : essai bot16 avec `par_allie` 0,6 et `ecart_niveau` 3 (mesure en cours), bot15 = même version
+  finale sans ce réglage.
 - **Rééquilibrage « trop facile »** (2026-10-23, demandé par l'utilisateur, comparé à Expedition 33) : le joueur automatique
   arrivait aux boss du milieu de l'histoire avec 15 à 20 niveaux d'avance (Givrecorne N.39 au niveau 58, Mère des Brumes
   N.44 au niveau 61) et ~2 créatures par rencontre contre jusqu'à 6 alliés. Réglages (`regles.json`) : `par_allie` 0,5

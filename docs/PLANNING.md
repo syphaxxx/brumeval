@@ -451,7 +451,11 @@ Astuces « intention » et « garde », aide de l'échiquier, tests (garde ≈ 0
    fin de partie), « (conseillé) » dans Profils… ; les créatures sauvages n'ont plus d'attaque sur toute l'équipe
    (`outils/villes/meutes.py`, zone d'un de leurs types à la place : la formation compte) ; simulations des meutes du
    Vieux Phare et de l'Abîme (100 %).
-Mesures : compétence `equilibrage`.
+6. Garde qui riposte (chaque coup au corps à corps reçu), meute qui s'acharne sur un allié déjà visé, boss qui annoncent
+   aussi leurs coups ordinaires, « Déjoué ! » quand une annonce ne tient plus. Deux relectures Codex (5 remarques corrigées).
+Mesuré (joueur automatique sans mémoire, bot14) : tout fini en 8 h 20, 10 défaites (27 avant), niveau 112, quatre actes en
+5 h 40, estimation joueur 16 h 46 ; les défaites restantes : meutes du Vieux Phare. Essai en cours : rencontres plus
+nombreuses (0,6 par allié) et plus proches du niveau (écart 3). Mesures : compétence `equilibrage`.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 

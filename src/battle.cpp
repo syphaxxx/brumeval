@@ -1599,6 +1599,10 @@ void Battle::enemyTurn(FighterP e) {
     if (valid && m.kind == Kind::Heal && in.targets[0]->hp * 4 >= in.targets[0]->mhp * 3) valid = false;  // déjà remis
   }
   if (valid) return useMove(e, in.move, in.targets);
+  if (declared && !in.wait && !in.move.empty()) {  // l'annonce ne tient plus : le joueur a bien réagi, qu'il le sache
+    log.push_back(e->name() + T(" : intention déjouée"));
+    if (shown()) pop(e, T("Déjoué !"), rgb(0x8fd0ff));
+  }
   if (declared && in.wait) return waitTurn(e);
   if (roleHeal(e)) return;
   Plan p = think(e);
