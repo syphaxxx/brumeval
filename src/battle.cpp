@@ -2102,8 +2102,12 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
   // Riposte : gemme de riposte, ou (2026-10-24) en garde (« Attendre ») : un coup au corps à corps lui en vaut un en retour
   if (m.melee && a->alive() && d->alive() && !countering_ && !d->techs().empty() &&
       frand() < gemSupport(*d, "contre") + (guarding_.count(d.get()) ? R.guardRiposte : 0)) {
-    const Move& c = moveInfo(d->techs()[0]);
-    if (c.damaging()) {
+    std::string counter;  // sa première technique qui blesse, une cible de préférence (la toute première peut être un cri)
+    for (auto& id : d->techs())
+      if (const Move& t = moveInfo(id); t.damaging() && (counter.empty() || (t.target == Target::Enemy && moveInfo(counter).target != Target::Enemy)))
+        counter = id;
+    if (!counter.empty()) {
+      const Move& c = moveInfo(counter);
       countering_ = true;
       pop(d, T("Riposte !"), rgb(0xffd34d));
       log.push_back("  " + d->name() + T(" riposte"));

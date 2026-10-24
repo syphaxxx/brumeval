@@ -700,6 +700,13 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       check(lior->hp < lior->mhp, "combat : en garde, on riposte à un coup au corps à corps (Lior perd " + std::to_string(lior->mhp - lior->hp) + " PV)");
       lior->hp = lior->mhp, extra->hp = extra->mhp;
       B.guarding_.erase(extra.get());
+      auto lior50 = makeFighter("lior", 50);  // Codex : sa première technique est Cri (sans dégâts) : la riposte prend la première qui blesse
+      B.guarding_.insert(lior50.get());
+      brute->hp = brute->mhp;
+      for (int k = 0; k < 5 && brute->hp == brute->mhp; k++) B.applyHit(brute, lior50, bite);  // (un coup peut rater)
+      check(brute->hp < brute->mhp, "combat : en garde, Lior N.50 (Cri en première technique) riposte quand même");
+      B.guarding_.erase(lior50.get());
+      brute->hp = brute->mhp;
       B.cells_[brute.get()] = boardAt(1, 4), B.cells_[lior.get()] = boardAt(1, 3);
       B.declareIntent(brute);
       auto it = B.intents_.find(brute.get());
