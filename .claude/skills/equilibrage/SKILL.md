@@ -7,8 +7,9 @@ description: "Brumeval : mesurer et régler la difficulté (simulations du mode 
 
 Méthode :
 
-- Le mode test simule des combats (fin de la sortie de `--test`) : IA seule, tactiques de départ, équipement des boutiques, forge, Expédition.
-- `BRUMEVAL_SIMULATIONS=4` joue 4 fois plus de combats (±4-5 % au lieu de ±10 %). Pour comparer deux réglages, copier l'exécutable et `data/` dans deux dossiers temporaires (le jeu cherche `data/` à côté du programme) et lancer les deux mesures **l'une après l'autre** : en parallèle, le test multijoueur se dispute le port 47475 et une mesure s'arrête.
+- Le mode test simule des combats (fin de la sortie de `--test`, seulement avec `BRUMEVAL_SIMULATIONS` défini depuis le
+  2026-10-24) : IA seule, tactiques de départ, équipement des boutiques, forge, Expédition.
+- `BRUMEVAL_SIMULATIONS=1` joue les simulations ; `=4` joue 4 fois plus de combats (±4-5 % au lieu de ±10 %). Pour comparer deux réglages, copier l'exécutable et `data/` dans deux dossiers temporaires (le jeu cherche `data/` à côté du programme) et lancer les deux mesures **l'une après l'autre** : en parallèle, le test multijoueur se dispute le port 47475 et une mesure s'arrête.
 - `BRUMEVAL_SANS_EVOLUTION=1` : équipes sans évolution (pour mesurer l'effet des évolutions). `BRUMEVAL_JOURNAL=<mot>` affiche le journal d'une simulation.
 - Plus de PV pour un boss change peu le résultat quand le combat se joue sur la survie de l'équipe : relever son niveau agit davantage.
 - Après un réglage, lancer aussi le joueur automatique (`--partie`) : l'histoire doit rester faisable.

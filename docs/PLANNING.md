@@ -507,7 +507,10 @@ estimation joueur 18 h 22.** Essai retiré : capturer aussi les créatures d'un 
 
 - Fait le 2026-10-10 : `game.cpp` découpé (900 lignes) en `menus.cpp` et
   `save.cpp`.
-- Le mode test prend 43 s : c'est correct ; le garder sous la minute.
+- Le mode test prenait 43 s, puis 7 minutes avec les simulations d'équilibrage : depuis le 2026-10-24 elles ne se jouent
+  qu'avec `BRUMEVAL_SIMULATIONS=1`, et le test repasse à 1 min 50 (FR) ; graine fixe (`BRUMEVAL_GRAINE`) : un échec se
+  rejoue. Audit du 2026-10-24 (ponytail) : sain ; restent à faire le découpage de `Game::selfTest()` par domaine et le
+  dessin des combattants en un seul bloc (ennemis et alliés), la mémoire du pilote par dossier de partie.
 - Relancer `/graphify . --update` et l'audit (`/ponytail-audit`) après chaque
   grosse étape.
 

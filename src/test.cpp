@@ -37,6 +37,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   tipsOff_ = true;                     // les astuces aussi (2.8)
   exploitsOff_ = true;                 // et les exploits (sinon leur annonce passe sur les captures), sauf dans leur test
   g.spotFrench = translating();        // en anglais : repérer ce qui reste en français (3.1)
+  // (2026-10-24) même suite de tirages à chaque passage (BRUMEVAL_GRAINE pour en changer) : un test qui dépend d'un coup
+  // qui touche échouait une fois sur trente, sans qu'on puisse le rejouer
+  const char* seedEnv = SDL_getenv("BRUMEVAL_GRAINE");
+  unsigned seed = seedEnv ? unsigned(std::atoi(seedEnv)) : 2026u;
+  seedRandom(seed);
   int fails = 0;
   auto check = [&](bool ok, const std::string& what) {
     std::printf("%s %s\n", ok ? "[ok]    " : "[ÉCHEC] ", what.c_str());
@@ -685,7 +690,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     B.face(lior, boardAt(0, 2));  // même colonne : il garde son regard
     turns = turns && !B.facesRight(lior);
     B.facing_.erase(lior.get());
-    seedRandom(std::random_device{}());  // la suite du mode test retrouve son hasard
+    seedRandom(seed + 1);  // la suite du mode test reprend une suite de tirages à elle
     check(turnedBack > turnedFront * 1.15 && turns,
           "échiquier : le dos dépend du regard (retourné : " + std::to_string(turnedBack) + " contre " + std::to_string(turnedFront) +
               ") ; on se tourne vers où l'on va");
@@ -727,7 +732,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       bool aimsAlly = declared && (it->second.wait || (!it->second.targets.empty() && it->second.targets[0] && B.isAlly(it->second.targets[0])));
       check(declared && aimsAlly, "combat : un ennemi annonce son intention (" + B.intentText(*brute) + ")");
       B.intents_.erase(brute.get());
-      seedRandom(std::random_device{}());
+      seedRandom(seed + 2);
     }
     check(back > front * 1.15 && near > 0 && near < far * 0.85,
           "échiquier : un coup dans le dos fait plus mal (" + std::to_string(back) + " contre " + std::to_string(front) +
@@ -3924,10 +3929,16 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   }
 
   // --- Simulation d'équilibrage (IA simple, sans objets) ---
-  std::printf("\nÉquilibrage (combats simulés, IA automatique) :\n");
-  // BRUMEVAL_SIMULATIONS=5 : cinq fois plus de combats par ligne (mesure plus précise, plus longue)
+  // (2026-10-24) seulement avec BRUMEVAL_SIMULATIONS (=1 : mesure ordinaire, =5 : cinq fois plus de combats par ligne,
+  // plus précise, plus longue) : ce sont des mesures sans vérification, et elles prenaient 6 des 7 minutes du mode test
   const char* simEnv = SDL_getenv("BRUMEVAL_SIMULATIONS");
-  int simFactor = simEnv ? std::max(1, std::atoi(simEnv)) : 1;
+  if (!simEnv) {
+    std::printf("\nSimulations d'équilibrage : non jouées (BRUMEVAL_SIMULATIONS=1 pour les jouer)\n");
+    std::printf("\n%s (%d échec%s)\n", fails ? "TESTS EN ÉCHEC" : "TOUS LES TESTS PASSENT", fails, fails > 1 ? "s" : "");
+    return fails ? 1 : 0;
+  }
+  std::printf("\nÉquilibrage (combats simulés, IA automatique) :\n");
+  int simFactor = std::max(1, std::atoi(simEnv));
   // Équipement des boutiques (1 : vallée, 2 : Forgeroc, 3 : Givreval, 4 : Port-Écho) : le meilleur de chaque
   // emplacement ; arme de magie pour les mages (plus de Magie que d'Attaque), accessoire seul pour une créature
   int simGear = 0, simForge = 0;
