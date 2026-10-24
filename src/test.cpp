@@ -694,7 +694,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       B.foes.push_back(cend);
       B.cells_[cend.get()] = boardAt(2, 5), B.cells_[lior.get()] = boardAt(2, 4);
       cend->hp = cend->mhp / 2;
-      int before = cend->hp, r = B.applyHit(lior, cend, moveInfo("flam"));
+      int before = cend->hp, r = -1;
+      for (int k = 0; k < 6 && r != 0; k++) cend->hp = before, r = B.applyHit(lior, cend, moveInfo("flam"));  // un coup peut rater (échec vu une fois sur ~30)
       bool absorbs = r == 0 && cend->hp > before && weakKnown(cend->sp, moveInfo("flam").type);
       B.foes.pop_back();
       check(absorbs, "combat : Cendrelys absorbe le Feu (Flam le soigne, dégâts 0, retenu par l'équipe)");
