@@ -30,9 +30,13 @@ Méthode :
   automatique sans mémoire (bot14, avant la riposte et les boss qui annoncent) : **tout fini en 8 h 20, 10 défaites,
   niveau 112** (référence tactiques-2 : 7 h 40, 27, 103), quatre actes en 5 h 40 (boss5 2:38, aube_fin 3:31), une seule
   défaite contre un boss (Mère des Brumes N.42, équipe N.46), les autres contre des meutes (Vallée au début, Cendrelys
-  et Pétrolin du Vieux Phare à la fin) ; estimation joueur 16 h 46. Les défaites « sans rien à faire » ont disparu ; pour
-  durcir sans tricher : essai bot16 avec `par_allie` 0,6 et `ecart_niveau` 3 (mesure en cours), bot15 = même version
-  finale sans ce réglage.
+  et Pétrolin du Vieux Phare à la fin) ; estimation joueur 16 h 46. Les défaites « sans rien à faire » ont disparu. bot15 (riposte, boss qui
+  annoncent, mêmes règles) : quatre actes en **4 h 40** (boss5 2:12, aube_fin 3:12), 8 défaites dans l'histoire, puis
+  20 de plus au Vieux Phare après la fin (arrêté à 11 h 46 : deux Champignards et un Flammenard contre des Cendrelys qui
+  absorbent le Feu, l'équipe ne changeait jamais → `Pilot::adaptTeam`). bot16 (`par_allie` 0,6 et `ecart_niveau` 3) :
+  quatre actes en 6 h 20 (boss5 2:58, aube_fin 5:02), 9 défaites dans l'histoire (quatre à la Citadelle contre des meutes
+  de 4), même tail au Phare ; arrêté à 10 h. Adopté : rencontres à 0,6 par allié et créatures sauvages au plus 3 niveaux
+  sous l'équipe (histoire un peu plus longue et plus dense ; plus d'intentions à lire).
 - **Rééquilibrage « trop facile »** (2026-10-23, demandé par l'utilisateur, comparé à Expedition 33) : le joueur automatique
   arrivait aux boss du milieu de l'histoire avec 15 à 20 niveaux d'avance (Givrecorne N.39 au niveau 58, Mère des Brumes
   N.44 au niveau 61) et ~2 créatures par rencontre contre jusqu'à 6 alliés. Réglages (`regles.json`) : `par_allie` 0,5

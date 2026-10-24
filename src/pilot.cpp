@@ -1246,7 +1246,8 @@ void Pilot::adaptTeam(bool show) {
       heroes[i]->companion = wanted[i];
     }
   };
-  for (size_t i = 0; i < heroes.size(); i++) note("Compagnon : " + heroes[i]->name() + " → " + wanted[i]->name() + " (" + M.name + ")");
+  for (size_t i = 0; i < heroes.size(); i++)
+    if (companionOf(G.team, heroes[i]) != wanted[i]) note("Compagnon : " + heroes[i]->name() + " → " + wanted[i]->name() + " (" + M.name + ")");
   if (!show) return apply();
   // Démo : Échap > Préparation > Réserve > la créature > celle qu'elle remplace ; puis Compagnons > le héros > la créature
   for (auto& [out, in] : swaps) visits_.push_back({{T("Préparation"), T("Réserve"), in->name(), out->name()}, 2.f});
