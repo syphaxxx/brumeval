@@ -477,8 +477,10 @@ joueur 24 h) : juger un réglage sur plusieurs parties. La garde et les intentio
 joueurs du gardien). Coquille corrigée : la Vitesse de Braisenard était 200 depuis le 6 octobre (60 avant, les autres
 créatures entre 24 et 90) : le compagnon de départ par défaut jouait trois à quatre fois plus souvent ; remis à 60
 (Flammenard 66), et les boss, réglés contre ce Braisenard-là, ramenés d'un ou deux niveaux (Sylvarque 13, Golem 26,
-Ignarok 24, Ronce-Mère 20, Givrecorne 37, Mère des Brumes 40) pour retrouver les taux d'avant. Mesures : compétence
-`equilibrage`.
+Ignarok 24, Ronce-Mère 20, Givrecorne 37, Mère des Brumes 40) pour retrouver les taux d'avant. Mesuré ensuite : quatre
+actes en 8 h 29 (anciens boss) et 7 h 43 (boss ramenés), 13 à 14 défaites dans l'histoire, contre 5 h 30 à 7 h avec le
+Braisenard trop rapide : le jeu corrigé est bien plus dur ; meutes adoucies au milieu (une créature de plus tous les 15
+niveaux au lieu de 10). Mesures : compétence `equilibrage`.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 

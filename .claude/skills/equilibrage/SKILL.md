@@ -71,8 +71,12 @@ Méthode :
   (`evenements.json`) : Sylvarque N.13 ×5,5, Golem N.26 ×12 bouclier 10, Ignarok N.24 ×7,5, Ronce-Mère N.20 ×7, Givrecorne
   N.37 ×10, Mère des Brumes N.40 ×6,5. Mesuré après (deux tours) : Sylvarque 65 / 45 %, Ronce-Mère 43 / 36, Golem 50 / 60,
   Ignarok 62 / 90, Givrecorne 52 / 75, Mère des Brumes 46 / 66, cristal 100, Seigneur 90 / 100 : proche d'avant, un peu
-  plus dur au milieu (Givrecorne, Golem). Joueur automatique : bot25 (vitesse corrigée, anciens boss) et bot26 (boss
-  réglés) en cours.
+  plus dur au milieu (Givrecorne, Golem). Joueur automatique, sans mémoire : bot25 (vitesse corrigée, anciens boss) : quatre
+  actes en 8 h 29, 13 défaites dans l'histoire (Givrecorne, Seigneur, Brume Noire, Phénix une fois chacun, le reste des
+  meutes) ; bot26 (boss ramenés) : quatre actes en 7 h 43, 14 défaites dans l'histoire (aucun boss de l'histoire perdu,
+  des meutes de 3 à 5 esprits et carapaces, l'Ombre du Gardien une fois). Contre 5 h 30 à 7 h avec le Braisenard trop
+  rapide : le jeu corrigé est nettement plus dur pour le joueur automatique. Meutes adoucies au milieu : une créature de
+  plus tous les 15 niveaux au lieu de 10 (`meute_par_niveau` 15 : 4 au plus à N.30, 5 à N.45, 6 à N.60 ; bot27 en cours).
 - **Rééquilibrage « trop facile »** (2026-10-23, demandé par l'utilisateur, comparé à Expedition 33) : le joueur automatique
   arrivait aux boss du milieu de l'histoire avec 15 à 20 niveaux d'avance (Givrecorne N.39 au niveau 58, Mère des Brumes
   N.44 au niveau 61) et ~2 créatures par rencontre contre jusqu'à 6 alliés. Réglages (`regles.json`) : `par_allie` 0,5
