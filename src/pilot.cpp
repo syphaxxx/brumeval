@@ -53,7 +53,12 @@ Pilot::Pilot(Game& g, bool demo) : G(g), demo_(demo) {
   for (int m = 0; m < (int)maps().size(); m++)
     for (auto& z : maps()[m].zones)
       for (int y = z.y; y < z.y + z.h && y < maps()[m].h(); y++)
-        for (int x = z.x; x < z.x + z.w && x < maps()[m].w(); x++) zoneLo_[(size_t)node(m, x, y)] = std::max(zoneLo_[(size_t)node(m, x, y)], z.lo);
+        for (int x = z.x; x < z.x + z.w && x < maps()[m].w(); x++) {
+          // (2026-10-24) les zones de fin de partie (Abîme, Vieux Phare) se jaugent au milieu de leur fourchette : les
+          // créatures y sont relevées près du niveau de l'équipe, et il y entrait au bas de la zone pour fuir en boucle
+          int lo = z.lo >= 80 ? (z.lo + z.hi) / 2 : z.lo;
+          zoneLo_[(size_t)node(m, x, y)] = std::max(zoneLo_[(size_t)node(m, x, y)], lo);
+        }
 }
 
 int Pilot::fear(int m) const {
