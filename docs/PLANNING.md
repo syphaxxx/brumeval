@@ -468,7 +468,8 @@ estimation joueur 24 h. Point dur commun à toutes les parties : la Citadelle de
 au niveau de l'équipe : 4 à 6 défaites par partie) → meutes de 3 au plus, comme l'Abîme et le Phare. bot18 (règles denses,
 compagnons adaptés, sans ce plafond) : quatre actes en 6 h 48, 12 défaites dans l'histoire dont 6 à la Citadelle. **État final
 (bot19) : tout fini en 9 h 07, 11 défaites (4 dans l'histoire, 0 à la Citadelle), niveau 105, quatre actes en 5 h 28,
-estimation joueur 18 h 22.** Mesures : compétence `equilibrage`.
+estimation joueur 18 h 22.** Essai retiré : capturer aussi les créatures d'un type absent du vivier (bot20 : 14 h 26,
+17 défaites, 30 changements de compagnons ; plus lent, pas mieux au Phare). Mesures : compétence `equilibrage`.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 

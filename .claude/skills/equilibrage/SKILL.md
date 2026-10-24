@@ -45,7 +45,9 @@ Méthode :
   5 au Phare (arrêté à 9 h 40, niveau 111). **bot19 (état final : règles 0,6/3, plafond Citadelle, intentions à mi-jauge,
   compagnons adaptés) : tout fini en 9 h 07, 11 défaites, niveau 105** ; quatre actes en 5 h 28 (boss5 2:28, aube_fin 3:34),
   4 défaites dans l'histoire (0 à la Citadelle), 7 après la fin (Abîme, Phare, dont l'Orage ancien et le Veilleur) ;
-  estimation joueur 18 h 22. bot20 (+ capture étendue) : en cours.
+  estimation joueur 18 h 22. bot20 (+ capture des types absents du vivier) : tout fini en 14 h 26, 17 défaites, quatre
+  actes en 7 h 21, 7 captures et 30 changements de compagnons (contre 9 pour bot17) : plus lent et pas moins de défaites
+  au Phare (les captures sont de bas niveau, l'expérience se disperse) → capture étendue retirée ; adaptTeam gardé.
 - **Rééquilibrage « trop facile »** (2026-10-23, demandé par l'utilisateur, comparé à Expedition 33) : le joueur automatique
   arrivait aux boss du milieu de l'histoire avec 15 à 20 niveaux d'avance (Givrecorne N.39 au niveau 58, Mère des Brumes
   N.44 au niveau 61) et ~2 créatures par rencontre contre jusqu'à 6 alliés. Réglages (`regles.json`) : `par_allie` 0,5
