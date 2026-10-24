@@ -64,7 +64,8 @@ brumeval --demo                                  # la même chose dans la fenêt
 ```
 
 Fonctionnement, rapport et mémoire d'une partie à l'autre : compétence `joueur-auto-brumeval`. En démo, il passe par les menus
-comme un joueur (équipement, gemmes, tactiques, formation, Journal, Bestiaire : `Pilot::visit`) ; `BRUMEVAL_DEMO=1 brumeval
+comme un joueur (équipement, gemmes, tactiques, formation, compagnons et réserve selon les créatures du lieu
+(`Pilot::adaptTeam`, 2026-10-24), Journal, Bestiaire : `Pilot::visit`) ; `BRUMEVAL_DEMO=1 brumeval
 --partie dossier` joue la démo sans fenêtre (capture de chaque menu visité). Un
 nouveau genre d'interaction (objet à utiliser, énigme…) demande d'ajouter un objectif dans `Pilot::goals`.
 

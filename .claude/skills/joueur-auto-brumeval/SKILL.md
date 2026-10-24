@@ -145,3 +145,9 @@ tactique « Se mettre à l'abri » tiennent compte des intentions annoncées par
 en garde (× 0,75). Mesure sans mémoire (bot14) : tout fini en 8 h 20, 10 défaites, niveau 112 (7 h 40 / 27 / 103 avant) ; voir la
 compétence `equilibrage`. Les zones de niveau 80 et plus (`zoneLo_`) se jaugent au milieu de leur fourchette (lo+hi)/2 :
 il entrait dans l'Abîme et le Vieux Phare au bas de la zone et y perdait en boucle (bot15 : 15 défaites au Phare).
+
+**Compagnons selon le lieu** (2026-10-24, `Pilot::adaptTeam`, à chaque `plan`) : pour les espèces des zones de la carte, il
+note chaque créature (équipe et réserve) par sa meilleure attaque contre chacune (efficacité × puissance, le niveau compte)
+et donne les trois meilleures aux trois héros de tête (réserve échangée contre les moins bonnes), seulement pour +20 % ;
+en démo, par Préparation > Réserve et Compagnons. Avant : quinze défaites au Vieux Phare avec deux Champignards et un
+Flammenard contre des Cendrelys qui absorbent le Feu. Journal : « Compagnon : Lior → Gouttelin (Le Vieux Phare) ».

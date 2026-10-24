@@ -454,7 +454,11 @@ Astuces « intention » et « garde », aide de l'échiquier, tests (garde ≈ 0
 6. Garde qui riposte (chaque coup au corps à corps reçu), meute qui s'acharne sur un allié déjà visé, boss qui annoncent
    aussi leurs coups ordinaires, « Déjoué ! » quand une annonce ne tient plus ; tactique « Soi : visé » (le Protecteur se
    met en garde quand une attaque est annoncée sur lui) ; l'icône d'intention apparaît en se posant ; au-dessus de l'allié
-   visé, les dégâts qu'il va prendre (« ≈ 61-68 », additionnés si plusieurs ennemis le visent) : de quoi décider. Deux relectures Codex (5 remarques corrigées).
+   visé, les dégâts qu'il va prendre (« ≈ 61-68 », additionnés si plusieurs ennemis le visent) : de quoi décider.
+7. Joueur automatique : il adapte ses compagnons aux créatures du lieu (`Pilot::adaptTeam` ; en démo, par les menus Réserve
+   et Compagnons) et jauge les zones de fin de partie au milieu de leur fourchette : ses défaites au Vieux Phare (quinze dans
+   bot15, deux Champignards et un Flammenard contre des Cendrelys qui absorbent le Feu) étaient celles d'un joueur qui ne
+   change jamais d'équipe. Deux relectures Codex (5 remarques corrigées).
 Mesuré (joueur automatique sans mémoire, bot14) : tout fini en 8 h 20, 10 défaites (27 avant), niveau 112, quatre actes en
 5 h 40, estimation joueur 16 h 46 ; les défaites restantes : meutes du Vieux Phare. Essai en cours : rencontres plus
 nombreuses (0,6 par allié) et plus proches du niveau (écart 3). Mesures : compétence `equilibrage`.
