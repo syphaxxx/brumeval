@@ -469,7 +469,11 @@ au niveau de l'équipe : 4 à 6 défaites par partie) → meutes de 3 au plus, c
 compagnons adaptés, sans ce plafond) : quatre actes en 6 h 48, 12 défaites dans l'histoire dont 6 à la Citadelle. **État final
 (bot19) : tout fini en 9 h 07, 11 défaites (4 dans l'histoire, 0 à la Citadelle), niveau 105, quatre actes en 5 h 28,
 estimation joueur 18 h 22.** Essai retiré : capturer aussi les créatures d'un type absent du vivier (bot20 : 14 h 26,
-17 défaites, 30 changements de compagnons ; plus lent, pas mieux au Phare). Mesures : compétence `equilibrage`.
+17 défaites, 30 changements de compagnons ; plus lent, pas mieux au Phare). Débuts : une meute fait au plus 2 créatures +
+une par tranche de 10 niveaux de l'équipe (plus de défaite sauvage dans les dix premières minutes, bot22). Le pilote
+répète un combat dans le décor de son lieu (bot22 : Phénix perdu quatre fois après une répétition sans la canicule du
+Cratère). D'une partie à l'autre l'écart est grand (9 h / 11 défaites à 17 h / 29) : juger un réglage sur plusieurs
+parties. Mesures : compétence `equilibrage`.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 

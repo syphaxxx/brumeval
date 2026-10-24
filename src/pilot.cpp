@@ -357,7 +357,10 @@ float Pilot::rehearse(const Json& fight, int n, bool fullHealth) {
     }
     s.boss = jget(fight, "boss", false);
     s.canFlee = false, s.canCapture = false;
-    Battle b(G, std::move(s), maps()[G.mapId].theme);
+    // (2026-10-24) dans le décor du lieu du combat (météo et terrain sont tirés selon le thème) : répétée depuis la ville,
+    // la canicule du Cratère ne jouait pas et le Phénix d'écho gagnait quatre fois de suite un combat « sûr à 85 % »
+    int where = fight.value("carte", -1);
+    Battle b(G, std::move(s), maps()[(size_t)(where >= 0 && where < (int)maps().size() ? where : G.mapId)].theme);
     b.autoPlay = true;
     b.simTactics = true;
     for (float t = 0; t < 600 && !b.finished(); t += .05f) {
@@ -395,6 +398,7 @@ std::vector<Pilot::Goal> Pilot::goals() {
     // Un événement à lancer : selon ce qu'il ferait maintenant
     auto byEvent = [&](Goal g, const std::string& ev) {
       Info in = inspect(ev);
+      if (in.fight.is_object()) in.fight["carte"] = m;  // (2026-10-24) la répétition se joue dans le décor de ce lieu
       g.sig = in.sig;
       bool seen = doneSig_.count(g.key) > 0;
       if (in.combat) {  // pas encore prêt : objectif d'entraînement (seulement s'il est accessible, voir plan)
@@ -696,6 +700,7 @@ void Pilot::watchSight() {
       const Npc& n = M.npcs[i];
       if (n.sight <= 0 || n.event.empty() || !G.npcVisible(n) || (!n.sightUntil.empty() && G.has(n.sightUntil))) continue;
       Info in = inspect(n.event);
+      if (in.fight.is_object()) in.fight["carte"] = m;
       if (!in.combat || ready(in, "pnj:" + M.id + ":" + std::to_string(i))) continue;
       int dx = n.dir == LEFT ? -1 : n.dir == RIGHT ? 1 : 0, dy = n.dir == UP ? -1 : n.dir == DOWN ? 1 : 0;
       for (int k = 1; k <= n.sight; k++) {

@@ -51,7 +51,10 @@ Méthode :
   au Phare (les captures sont de bas niveau, l'expérience se disperse) → capture étendue retirée ; adaptTeam gardé.
   Débuts : chaque partie perdait dans ses dix premières minutes (trois créatures contre deux combattants de niveau 5) →
   `rencontres.meute_par_niveau` 10 : une meute fait au plus 2 + une créature par tranche de 10 niveaux de l'équipe
-  (mesure bot22 en cours).
+  (bot22 : plus de défaite contre une meute sauvage dans les dix premières minutes ; mais 17 h 07 et 29 défaites au
+  total, niveau 121 : le Phénix d'écho perdu quatre fois de suite à +3..+5 niveaux après une répétition « sûre » jouée
+  depuis la ville, sans la canicule du Cratère → répétition dans le décor du lieu du combat ; d'une partie à l'autre,
+  l'écart va de 9 h / 11 défaites (bot19) à 17 h / 29 : une seule partie ne suffit pas pour juger un réglage).
 - **Rééquilibrage « trop facile »** (2026-10-23, demandé par l'utilisateur, comparé à Expedition 33) : le joueur automatique
   arrivait aux boss du milieu de l'histoire avec 15 à 20 niveaux d'avance (Givrecorne N.39 au niveau 58, Mère des Brumes
   N.44 au niveau 61) et ~2 créatures par rencontre contre jusqu'à 6 alliés. Réglages (`regles.json`) : `par_allie` 0,5

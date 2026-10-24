@@ -151,3 +151,8 @@ note chaque créature (équipe et réserve) par sa meilleure attaque contre chac
 et donne les trois meilleures aux trois héros de tête (réserve échangée contre les moins bonnes), seulement pour +20 % ;
 en démo, par Préparation > Réserve et Compagnons. Avant : quinze défaites au Vieux Phare avec deux Champignards et un
 Flammenard contre des Cendrelys qui absorbent le Feu. Journal : « Compagnon : Lior → Gouttelin (Le Vieux Phare) ».
+
+**Répétition dans le bon décor** (2026-10-24) : `rehearse` jouait dans le thème de la carte où se tenait le pilote (souvent
+une ville) ; météo et terrain, tirés selon le thème, manquaient : la canicule du Cratère des Échos renforce le Phénix, le
+combat « sûr à 85 % » se perdait quatre fois de suite (bot22). Le combat d'un objectif porte maintenant sa carte
+(`fight["carte"]`, posé dans `goals` et `watchSight`) et la répétition se joue dans son thème.
