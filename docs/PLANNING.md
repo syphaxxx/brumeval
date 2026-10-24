@@ -476,7 +476,9 @@ Cratère). D'une partie à l'autre l'écart est grand (9 h / 11 défaites à 17 
 joueur 24 h) : juger un réglage sur plusieurs parties. La garde et les intentions voyagent en réseau (invité du duel,
 joueurs du gardien). Coquille corrigée : la Vitesse de Braisenard était 200 depuis le 6 octobre (60 avant, les autres
 créatures entre 24 et 90) : le compagnon de départ par défaut jouait trois à quatre fois plus souvent ; remis à 60
-(Flammenard 66). Mesures : compétence `equilibrage`.
+(Flammenard 66), et les boss, réglés contre ce Braisenard-là, ramenés d'un ou deux niveaux (Sylvarque 13, Golem 26,
+Ignarok 24, Ronce-Mère 20, Givrecorne 37, Mère des Brumes 40) pour retrouver les taux d'avant. Mesures : compétence
+`equilibrage`.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 

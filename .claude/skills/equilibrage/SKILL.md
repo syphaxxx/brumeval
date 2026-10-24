@@ -63,6 +63,14 @@ Méthode :
   combat du 6 octobre (60 avant ; la deuxième espèce la plus rapide est à 90, la médiane à 56) : le compagnon de départ
   par défaut, celui de toutes les parties automatiques, jouait trois à quatre fois plus souvent que les autres. Remis à
   60 / 66 (×1,1). Toutes les mesures d'avant sont faites avec ce Braisenard-là ; celles d'après sont plus dures.
+  Mesuré aussitôt (BRUMEVAL_SIMULATIONS=1 ; boutiques / forgé) : Sylvarque 17 / 25 %, Ronce-Mère 6 / 10, Golem 35 / 30,
+  Ignarok 40 / 32, Givrecorne 57 / 67, Mère des Brumes 33 / 30 — contre 57 / 60, 43 / 53, 75 / 85, 65 / 67, 85 / 92,
+  56 / 56 juste avant : les boss avaient été réglés contre un Braisenard quatre fois trop rapide. Boss ramenés
+  (`evenements.json`) : Sylvarque N.13 ×5,5, Golem N.26 ×12 bouclier 10, Ignarok N.24 ×7,5, Ronce-Mère N.20 ×7, Givrecorne
+  N.37 ×10, Mère des Brumes N.40 ×6,5. Mesuré après (deux tours) : Sylvarque 65 / 45 %, Ronce-Mère 43 / 36, Golem 50 / 60,
+  Ignarok 62 / 90, Givrecorne 52 / 75, Mère des Brumes 46 / 66, cristal 100, Seigneur 90 / 100 : proche d'avant, un peu
+  plus dur au milieu (Givrecorne, Golem). Joueur automatique : bot25 (vitesse corrigée, anciens boss) et bot26 (boss
+  réglés) en cours.
 - **Rééquilibrage « trop facile »** (2026-10-23, demandé par l'utilisateur, comparé à Expedition 33) : le joueur automatique
   arrivait aux boss du milieu de l'histoire avec 15 à 20 niveaux d'avance (Givrecorne N.39 au niveau 58, Mère des Brumes
   N.44 au niveau 61) et ~2 créatures par rencontre contre jusqu'à 6 alliés. Réglages (`regles.json`) : `par_allie` 0,5
