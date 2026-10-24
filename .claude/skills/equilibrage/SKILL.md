@@ -59,6 +59,10 @@ Méthode :
   quatre actes en 6 h 07, estimation joueur 24 h ; le Phénix n'est plus perdu. Sur quatre parties du même état :
   9 h à 17 h, 11 à 30 défaites, quatre actes en 5 h 30 à 7 h ; les défaites de l'histoire sont la Citadelle (Brume
   Noire), le Cratère (Phénix) et des meutes d'esprits et de carapaces ; après la fin, le Vieux Phare.
+  **Coquille trouvée le 2026-10-24** : la Vitesse de base de Braisenard était 200 (Flammenard 220) depuis la refonte du
+  combat du 6 octobre (60 avant ; la deuxième espèce la plus rapide est à 90, la médiane à 56) : le compagnon de départ
+  par défaut, celui de toutes les parties automatiques, jouait trois à quatre fois plus souvent que les autres. Remis à
+  60 / 66 (×1,1). Toutes les mesures d'avant sont faites avec ce Braisenard-là ; celles d'après sont plus dures.
 - **Rééquilibrage « trop facile »** (2026-10-23, demandé par l'utilisateur, comparé à Expedition 33) : le joueur automatique
   arrivait aux boss du milieu de l'histoire avec 15 à 20 niveaux d'avance (Givrecorne N.39 au niveau 58, Mère des Brumes
   N.44 au niveau 61) et ~2 créatures par rencontre contre jusqu'à 6 alliés. Réglages (`regles.json`) : `par_allie` 0,5

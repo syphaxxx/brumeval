@@ -474,7 +474,9 @@ une par tranche de 10 niveaux de l'équipe (plus de défaite sauvage dans les di
 répète un combat dans le décor de son lieu (bot22 : Phénix perdu quatre fois après une répétition sans la canicule du
 Cratère). D'une partie à l'autre l'écart est grand (9 h / 11 défaites à 17 h / 29 ; bot23 : 12 h 17, 15 défaites, estimation
 joueur 24 h) : juger un réglage sur plusieurs parties. La garde et les intentions voyagent en réseau (invité du duel,
-joueurs du gardien). Mesures : compétence `equilibrage`.
+joueurs du gardien). Coquille corrigée : la Vitesse de Braisenard était 200 depuis le 6 octobre (60 avant, les autres
+créatures entre 24 et 90) : le compagnon de départ par défaut jouait trois à quatre fois plus souvent ; remis à 60
+(Flammenard 66). Mesures : compétence `equilibrage`.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
