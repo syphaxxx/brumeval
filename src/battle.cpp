@@ -2109,7 +2109,7 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
   std::string fx = crit ? "critique" : magic ? "sort_" + types()[m.type].id : m.pace == Pace::Quick ? "coup_rapide" : m.pace == Pace::Heavy ? "coup_lourd" : "coup";
   if (!audio::has(fx)) fx = magic ? "sort" : "coup";
   sound(fx);
-  pop(d, std::to_string(dmg), eff > 1 ? GOLD : eff < 1 ? GREY : WHITE);
+  pop(d, std::to_string(dmg), eff > 1 ? GOLD : guarding_.count(d.get()) ? rgb(0x8fd0ff) : eff < 1 ? GREY : WHITE);  // bleu : encaissé en garde
   if (crit) pop(d, T("Critique !"), RED), shakeT_ = G.time;
   if (back) {
     pop(d, T("Dans le dos !"), rgb(0xffb070));
