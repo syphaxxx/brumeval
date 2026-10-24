@@ -155,6 +155,23 @@ class Battle {
   // le plus proche) ; un coup au corps à corps venu du côté opposé à son regard est « dans le dos ».
   std::map<const Fighter*, int> facing_;
   bool ambush_ = false;  // ce combat a commencé par une embuscade
+  std::set<const Fighter*> guarding_;  // en garde (2026-10-24, « Attendre ») : dégâts reçus × rules().guard jusqu'à son tour
+  // Intention (2026-10-24) : à rules().intentAt % de sa jauge, un ennemi annonce ce qu'il va faire (case, technique,
+  // cibles) ; dessinée au-dessus de lui et sur ses cibles. À son tour, il l'exécute si elle tient toujours (cibles
+  // vivantes et à portée), sinon il réfléchit à nouveau. C'est ce qui laisse le temps de réagir : écarter la cible,
+  // la mettre en garde, frapper l'ennemi d'abord.
+  struct Intent {
+    int cell = -1;
+    std::string move;
+    std::vector<FighterP> targets;
+    bool wait = false;
+    float t0 = 0;
+  };
+  std::map<const Fighter*, Intent> intents_;
+  void declareIntent(const FighterP& e);
+  std::string intentText(const Fighter& e) const;
+  float lure(const FighterP& t) const;  // attrait d'une cible pour les ennemis (soigneur, lanceur, blessé)
+  bool dangerAt(const FighterP& f, int cell) const;  // terrain qui blesse, zone rouge d'un boss, intention ennemie  // « Prépare Charge sur Maëlle » (vide : rien d'annoncé)
   std::map<const Fighter*, float> koT_;  // moment du K.O. (un ennemi vaincu s'efface en 0,6 s avec un éclat)
   int cellOf(const FighterP& f) const;  // -1 : pas sur le plateau
   void place(const std::vector<FighterP>& v, bool keep, bool left);

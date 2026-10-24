@@ -43,7 +43,9 @@
     "critique_base": 5,
     "jauge_rapide": 25,
     "retard_lourde": 25,
-    "compagnon_atb": 0.5
+    "compagnon_atb": 0.5,
+    "garde": 0.75,
+    "intention": 70
   },
   "brisure": {"bouclier": 2, "bouclier_boss": 8, "degats": 1.5},
   "roles": {"protection": 0.3, "chef": 0.2},
@@ -283,6 +285,16 @@
       "id": "enigme",
       "aide": "Énigmes",
       "texte": "Une énigme ! Poussez les rochers sur toutes les dalles en marchant dedans. Un rocher coincé ? Échap > Recommencer l'énigme."
+    },
+    {
+      "id": "intention",
+      "aide": "Échiquier",
+      "texte": "Cet ennemi annonce ce qu'il prépare : une icône au-dessus de lui, un chevron orange sur sa cible. Écartez la cible, mettez-la en garde (Attendre), ou frappez-le d'abord."
+    },
+    {
+      "id": "garde",
+      "aide": "Échiquier",
+      "texte": "En garde ! Attendre, c'est encaisser un quart de dégâts en moins jusqu'à son prochain tour, face à l'ennemi le plus proche : utile quand on est visé."
     },
     {
       "id": "carapace",

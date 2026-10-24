@@ -429,6 +429,22 @@ estimation pour un joueur : 16 h. Piste : le saut de niveaux entre l'acte 3 (60-
    d'après l'analyse d'un agent (le Soigneur lance ses sorts en gardant 40 % de PM, action « Attaque, PM gardés » ; le
    Combattant n'achève qu'un ennemi sous 30 %) : sans mémoire, tout fini en 7 h 40, 27 défaites, niveau 103.
 
+## Étape 2 undecies — Dur mais très tactique (demandé le 2026-10-23 au soir, branche `jeu-tactique`)
+
+« Améliore le jeu : graphisme, gameplay, game design ; je veux un jeu dur mais très tactique. » Principe : la difficulté
+doit venir de choix lisibles, pas du hasard. Ce qui rend un combat tactique (Into the Breach, Expedition 33, Octopath) :
+voir venir le danger, avoir plusieurs réponses, et payer cher une équipe mal placée. Fait :
+1. **Intentions des ennemis** : à 70 % de sa jauge, chaque ennemi annonce ce qu'il va faire (icône au-dessus de lui,
+   chevron orange sur l'allié visé, zone en orange au sol, « Prépare Crocs sur Lior » dans l'aide de la cible). Il
+   l'exécute à son tour si c'est encore possible, sinon il réfléchit à nouveau : écarter la cible, la couvrir ou abattre
+   l'ennemi d'abord sont trois vraies réponses.
+2. **Garde** : « Attendre » n'est plus un tour perdu : le combattant encaisse un quart de dégâts en moins jusqu'à son
+   prochain tour (bouclier dessiné à côté de sa tête), face à l'ennemi le plus proche, et rejoue plus tôt.
+3. **Ciblage** : quand un ennemi frappe « au hasard », les soigneurs, les lanceurs de sorts et les blessés l'attirent
+   (`Battle::lure`) : couvrir sa ligne arrière compte, un blessé laissé devant est achevé.
+Astuces « intention » et « garde », aide de l'échiquier, tests (garde ≈ 0,75 ; une intention annoncée vise un allié).
+Mesures : compétence `equilibrage`.
+
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
 - Fait en 1.6 : **réserve de créatures** (au-delà de 8 membres) et

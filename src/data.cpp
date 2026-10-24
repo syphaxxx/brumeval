@@ -218,6 +218,8 @@ std::vector<RuleField> ruleFields(Rules& r) {
       D("combat", "boss_annonce_puissance", "Boss : puissance de l'attaque annoncée", r.bossBurst, 1, 5, .1),
       I("combat", "retard_lourde", "Technique lourde : retard de la jauge (%)", r.heavyDelay, 0, 200, 5),
       D("combat", "compagnon_atb", "Compagnons : vitesse de la jauge ATB", r.companionAtb, .1, 2, .05),
+      D("combat", "garde", "Garde (Attendre) : part des dégâts reçus", r.guard, .1, 1, .05),
+      D("combat", "intention", "Les ennemis annoncent à ce point de jauge (0 : jamais)", r.intentAt, 0, 100, 5),
       I("brisure", "bouclier", "Brisure : bouclier d'un ennemi", r.breakShield, 0, 20, 1),
       I("brisure", "bouclier_boss", "Brisure : bouclier d'un boss", r.breakShieldBoss, 0, 40, 1),
       D("brisure", "degats", "Brisure : dégâts reçus par un ennemi brisé", r.breakDamage, 1, 5, .05),

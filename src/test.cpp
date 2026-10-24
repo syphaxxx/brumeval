@@ -581,6 +581,33 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       run(.4f);
       snap("embuscade");
     }
+    {  // garde et intentions (2026-10-24) : Lior en garde, les ennemis annoncent ce qu'ils préparent
+      BattleSetup s;
+      s.foes = {makeFighter("mulotin", 5), makeFighter("mulotin", 5), makeFighter("esprillon", 6)};
+      startBattle(std::move(s), nullptr);
+      battle_->start = time - 5;
+      battle_->guarding_.insert(team[0].get());
+      for (auto& f : battle_->allies) f->atb = 0;
+      for (auto& f : battle_->foes) f->atb = 70;  // l'intention s'annonce à 70 % de la jauge
+      for (int i = 0; i < 300 && battle_->sc.busy(); i++) in.confirm = true, frame();  // le message d'entrée (le temps ne passe pas)
+      in.confirm = false;
+      run(.4f);
+      int declared = 0;
+      for (auto& f : battle_->foes) declared += battle_->intents_.count(f.get()) > 0;
+      check(declared == (int)battle_->foes.size(), "intentions : " + std::to_string(declared) + " ennemi(s) sur 3 annoncent ce qu'ils préparent (" + battle_->intentText(*battle_->foes[0]) + ")");
+      bool coherent = true;
+      for (auto& f : battle_->foes) {
+        auto it = battle_->intents_.find(f.get());
+        if (it == battle_->intents_.end() || it->second.wait || it->second.targets.empty() || !hasMove(it->second.move)) continue;
+        const Move& m = moveInfo(it->second.move);
+        FighterP tg = it->second.targets[0];
+        int from = it->second.cell >= 0 ? it->second.cell : battle_->cellOf(f);
+        if (m.melee && m.damaging() && tg && battle_->isAlly(tg) && boardDist(from, battle_->cellOf(tg)) <= battle_->reach(f))
+          coherent = coherent && battle_->threatened(tg);
+      }
+      check(coherent, "intentions : un allié visé au corps à corps, à portée, est menacé (l'IA et « Se mettre à l'abri » réagissent)");
+      snap("garde_intention");
+    }
     startBattle({brute, mage, extra}, false, nullptr);
     Battle& B = *battle_;
     bool halves = true;  // échiquier (3.4) : chaque camp part de sa moitié du plateau
@@ -648,6 +675,22 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       bool absorbs = r == 0 && cend->hp > before && weakKnown(cend->sp, moveInfo("flam").type);
       B.foes.pop_back();
       check(absorbs, "combat : Cendrelys absorbe le Feu (Flam le soigne, dégâts 0, retenu par l'équipe)");
+    }
+    {  // (2026-10-24) la garde : en attendant, on encaisse une part des dégâts ; l'intention : annoncée avant d'agir
+      long long plain = hitFrom(extra, boardAt(0, 4), bite);
+      B.guarding_.insert(extra.get());
+      long long braced = hitFrom(extra, boardAt(0, 4), bite);
+      B.guarding_.erase(extra.get());
+      check(braced > plain * .65 && braced < plain * .85,
+            "combat : en garde, on encaisse un quart de dégâts en moins (" + std::to_string(braced) + " contre " + std::to_string(plain) + ")");
+      B.cells_[brute.get()] = boardAt(1, 4), B.cells_[lior.get()] = boardAt(1, 3);
+      B.declareIntent(brute);
+      auto it = B.intents_.find(brute.get());
+      bool declared = it != B.intents_.end() && (!it->second.move.empty() || it->second.wait);
+      bool aimsAlly = declared && (it->second.wait || (!it->second.targets.empty() && it->second.targets[0] && B.isAlly(it->second.targets[0])));
+      check(declared && aimsAlly, "combat : un ennemi annonce son intention (" + B.intentText(*brute) + ")");
+      B.intents_.erase(brute.get());
+      seedRandom(std::random_device{}());
     }
     check(back > front * 1.15 && near > 0 && near < far * 0.85,
           "échiquier : un coup dans le dos fait plus mal (" + std::to_string(back) + " contre " + std::to_string(front) +

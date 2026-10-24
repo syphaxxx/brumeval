@@ -204,6 +204,17 @@ code) ; `docs/GUIDE.md` les range par domaine.
   sans Percée ; astuce « embuscade », aide de l'échiquier. `attackScore` : ×1,4 pour frapper un adversaire au contact dans
   son dos (se retourner) ; le joueur automatique répète une embuscade comme telle (`fight["embuscade"]`). Résistance négative d'une espèce (`resistances`) = elle
   absorbe ce type (`applyHit` soigne, « Absorbe ! ») ; résistances des créatures sauvages : `outils/villes/resistances.py`.
+- Dur mais tactique (2026-10-24, branche `jeu-tactique`). **Garde** : « Attendre » (`waitTurn`) met le combattant en
+  garde (`Battle::guarding_`) : dégâts reçus × `combat.garde` (0,75) jusqu'à ce que sa jauge soit pleine (`tickATB`) ;
+  petit bouclier à côté de la tête ; astuce « garde ». **Intentions** (Into the Breach) : à `combat.intention` % (70)
+  de sa jauge, un ennemi (ni en duel ni chez l'invité) annonce ce qu'il fera (`declareIntent` : `planMove`, puis `think`
+  depuis sa future case ; rangé dans `intents_`) : icône au-dessus de lui (épée, orbe de la couleur du type, croix verte
+  pour un soin, sablier pour une garde), chevron orange au-dessus de chaque allié visé, zone en orange au sol, « Prépare
+  X sur Y » dans l'aide de la cible (`pickFoe`, `intentText`). À son tour (`enemyTurn`), il l'exécute si elle tient
+  encore (cibles vivantes, à portée, PM), sinon il réfléchit à nouveau ; effacée s'il est brisé (`skipTurn`). Dessin chez
+  l'hôte seulement (rien dans `etat`). **Ciblage** : quand un ennemi frappe « au hasard » (65 % des tours), la cible est
+  tirée selon `lure` (soigneur ou soins connus +1, lanceur de sorts +0,5, blessé jusqu'à +1,5) : couvrir ses soigneurs
+  et ses blessés compte. Astuces « intention » et « garde », aide de l'échiquier, mesures : compétence `equilibrage`.
 - Vente : boutique > « Vendre… » (`Game::sellMenu`), moitié du prix, sauf les
   objets importants.
 - Boutique (2026-10-23) : un équipement survolé montre sous la liste ce qu'il changerait pour chaque membre qui peut le
