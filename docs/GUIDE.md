@@ -54,7 +54,7 @@ importantes ont un commentaire d'une ligne au-dessus.
 | Menus | `menus.cpp` | Menu de pause (équipe, compagnons, réserve, bestiaire, équipement, journal, objets, magie), boutique, options |
 | Sauvegarde | `save.cpp` | `saveGame`, `loadGame`, `readMemberLine` |
 | Événements, quêtes | `events.hpp/.cpp` | Actions des événements (`Game::execAction`), conditions, quêtes |
-| Combat | `battle.hpp/.cpp`, `echiquier.cpp`, `tactics.hpp/.cpp` | Jauges ATB, dégâts, IA, tactiques, animations, combat en ligne ; `echiquier.cpp` : plateau commun, déplacements, portée, dos/encerclement, Percée, choix de case de l'ordinateur, défis |
+| Combat | `battle.hpp/.cpp`, `echiquier.cpp`, `tactics.hpp/.cpp` | Jauges ATB, dégâts, IA (intentions annoncées, ciblage `lure`), garde et riposte, tactiques, animations, combat en ligne ; `echiquier.cpp` : plateau commun, déplacements, portée, dos/encerclement, Percée, choix de case de l'ordinateur, défis |
 | Données | `data.hpp/.cpp`, `world.hpp/.cpp`, `store.hpp/.cpp` | Lecture et vérification de `data/`, cartes, fichiers du joueur |
 | Dessin | `gfx.hpp/.cpp`, `sprites.hpp/.cpp`, `ui.hpp/.cpp` | Formes, police, fenêtres ; créatures, humains, tuiles ; menus |
 | Son | `audio.hpp/.cpp` | Synthèse des musiques et bruitages de `data/sons.json` |
