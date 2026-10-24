@@ -136,3 +136,10 @@ membre > Profils… > profil). Rapport : « Tactiques : Lior → Combattant ».
 Prêt ou pas (2026-10-23) : `Pilot::ready` répète toujours un boss, ou un combat déjà perdu, même loin au-dessus de son
 niveau (avant, 3 niveaux + marge au-dessus suffisaient : la Braisaure ancestrale, trois carapaces, se perdait 8 fois de
 suite avec une équipe sans magie, et la partie se bloquait). Simulation de cette prime dans le mode test.
+
+**Dur mais tactique** (2026-10-24, branche `jeu-tactique`) : `Pilot::setupTactics` choisit `bestProfile(f)` (le même
+que l'éditeur marque « (conseillé) ») et `profileRules(p, lignes, f)` : les règles de soin sont retirées à qui ne sait pas
+soigner, sinon tout le monde réanime et soigne (un seul soigneur faisait perdre les meutes de fin de partie) ; refait
+quand ses règles changent (technique apprise, ligne de plus). En combat, l'IA alliée (`autoCommand`, `safeCell`) et la
+tactique « Se mettre à l'abri » tiennent compte des intentions annoncées par les ennemis (`dangerAt`) ; « Attendre » met
+en garde (× 0,75). Mesure sans mémoire : voir la compétence `equilibrage` (bot14).

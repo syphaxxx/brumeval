@@ -15,6 +15,18 @@ Méthode :
 
 ## Historique des mesures
 
+- **Dur mais tactique** (2026-10-24, branche `jeu-tactique`, « un jeu dur mais très tactique ») : garde (« Attendre » :
+  dégâts × 0,75 jusqu'au tour suivant), intentions des ennemis (annoncées à 70 % de la jauge, exécutées si elles tiennent
+  encore ; pas les boss), ciblage `lure` (soigneurs, lanceurs, blessés attirent), `dangerAt` (l'IA alliée s'écarte d'un
+  corps à corps annoncé). Puis, repris d'un agent : les profils de tactiques soignent tous (un seul soigneur faisait
+  perdre les meutes de fin de partie), et les créatures sauvages n'ont plus d'attaque sur toute l'équipe
+  (`outils/villes/meutes.py` : zone d'un de leurs types à la place). Mesuré (BRUMEVAL_SIMULATIONS=1, ±10 ; IA / tactiques /
+  boutiques / forgé) : Sylvarque 7 / 26 / 57 / 52 %, Golem 25 / – / 75 / 85 %, Ronce-Mère 0 / – / 33 / 53 %, Ignarok
+  20 / 10 / 65 / 65 %, Givrecorne 35 / 56 / 85 / 95 %, cristal 93 / 93 / 100 / 100 %, Mère des Brumes 0 / 0 / 56 / 50 %,
+  Seigneur 73 / – / 96 / 96 %, Phénix 90 %, Ombre 100 %, Braisaure ancestrale 100 % : les boss ne bougent pas (dans le
+  bruit). Meutes du Vieux Phare (3 × N.100 contre N.104) et de l'Abîme (3 × N.96 contre N.100), équipement de Port-Écho :
+  100 % en IA, tactiques et profils (avant le script : 70 défaites du joueur automatique en trois parties). Joueur
+  automatique sans mémoire : mesure en cours (bot14).
 - **Rééquilibrage « trop facile »** (2026-10-23, demandé par l'utilisateur, comparé à Expedition 33) : le joueur automatique
   arrivait aux boss du milieu de l'histoire avec 15 à 20 niveaux d'avance (Givrecorne N.39 au niveau 58, Mère des Brumes
   N.44 au niveau 61) et ~2 créatures par rencontre contre jusqu'à 6 alliés. Réglages (`regles.json`) : `par_allie` 0,5

@@ -443,6 +443,12 @@ voir venir le danger, avoir plusieurs réponses, et payer cher une équipe mal p
 3. **Ciblage** : quand un ennemi frappe « au hasard », les soigneurs, les lanceurs de sorts et les blessés l'attirent
    (`Battle::lure`) : couvrir sa ligne arrière compte, un blessé laissé devant est achevé.
 Astuces « intention » et « garde », aide de l'échiquier, tests (garde ≈ 0,75 ; une intention annoncée vise un allié).
+4. **Menace** (`dangerAt`) : l'IA alliée et la tactique « Se mettre à l'abri » s'écartent d'un corps à corps annoncé (hors
+   de portée de l'ennemi : il devra choisir autre chose) et de la zone annoncée sur un voisin.
+5. Repris d'un agent d'analyse : chaque profil de tactiques réanime et soigne (un seul soigneur faisait perdre les meutes de
+   fin de partie), « (conseillé) » dans Profils… ; les créatures sauvages n'ont plus d'attaque sur toute l'équipe
+   (`outils/villes/meutes.py`, zone d'un de leurs types à la place : la formation compte) ; simulations des meutes du
+   Vieux Phare et de l'Abîme (100 %).
 Mesures : compétence `equilibrage`.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
