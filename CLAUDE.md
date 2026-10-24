@@ -274,7 +274,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   (`Battle::tacticPlan` choisit la cible et la technique) ; sinon le menu de
   commande s'ouvre. Ajouter une condition : l'entrée dans `CONDS`
   (tactics.cpp) et son test dans `holds` (battle.cpp). Conditions du 2026-10-23 : `ennemi_brise`, `ennemi_dos`,
-  `ennemi_role`, `soi_dos_menace` ; actions `briser` (une faiblesse découverte), `garde` (attendre, `Plan::wait`) et
+  `ennemi_role`, `soi_dos_menace` ; (2026-10-24) `soi_vise` : une intention ennemie le vise, hors zone rouge (le profil
+  Protecteur se met alors en garde : riposte) ; actions `briser` (une faiblesse découverte), `garde` (attendre, `Plan::wait`) et
   `attaque_prudente` (la meilleure attaque qui laisse 40 % des PM, sinon une technique gratuite : le profil Soigneur).
   Profils (`tactiques.profils` de regles.json, `Rules::tacticProfiles`, « Profils… » dans l'éditeur, `profileRules(p, lignes,
   combattant)` : sans les règles de soin qu'il ne peut pas suivre, coupés à ses lignes en gardant la dernière règle) ;

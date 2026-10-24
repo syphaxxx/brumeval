@@ -1402,6 +1402,8 @@
   "Un ennemi soigneur ou chef : l'abattre d'abord affaiblit tout son camp.": "A healer or leader enemy: taking it down first weakens its whole side.",
   "Soi : dos menacé": "Self: back threatened",
   "Quand un ennemi au contact est dans son dos (une embuscade, un ennemi qui l'a contourné).": "When an adjacent enemy is behind them (an ambush, an enemy that went around).",
+  "Soi : visé": "Self: targeted",
+  "Quand un ennemi a annoncé une attaque sur lui (chevron orange) : se mettre en garde fait riposter.": "When an enemy has announced an attack on them (orange chevron): bracing makes them riposte.",
   "Meilleure attaque": "Best attack",
   "La technique, le sort ou le duo qui fait le plus de dégâts (peut dépenser des PM).": "The technique, spell or duo that deals the most damage (may spend MP).",
   "Attaque sans PM": "Attack without MP",

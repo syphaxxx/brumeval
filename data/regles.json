@@ -619,6 +619,7 @@
         "nom": "Protecteur",
         "aide": "Tient la ligne : couvre les alliés en danger, se retourne, vise soigneurs et chefs.",
         "regles": [
+          {"si": "soi_vise", "faire": "garde"},
           {"si": "soi_menace", "faire": "esquiver"},
           {"si": "allie_ko", "faire": "reanimation"},
           {"si": "allie_pv_moins", "valeur": 40, "faire": "soin"},

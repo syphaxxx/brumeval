@@ -614,6 +614,12 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         for (auto& tg : in.targets)
           if (tg && battle_->isAlly(tg) && !in.wait && hasMove(in.move) && moveInfo(in.move).damaging()) aimedAlly = tg;
       if (aimedAlly) {
+        auto keepT = aimedAlly->tactics;
+        bool keepOn = aimedAlly->tacticsOn;
+        aimedAlly->tactics = {tacticFromJson(Json{{"si", "soi_vise"}, {"faire", "garde"}})}, aimedAlly->tacticsOn = true;
+        Battle::Plan p;
+        check(battle_->tacticPlan(aimedAlly, p) && p.wait, "tactiques : « Soi : visé » → « Se mettre en garde » quand un ennemi a annoncé une attaque sur lui");
+        aimedAlly->tactics = keepT, aimedAlly->tacticsOn = keepOn;
         float with = battle_->lure(aimedAlly);
         battle_->intents_.clear();
         check(with > battle_->lure(aimedAlly), "meute : un allié déjà visé par une intention attire davantage les autres ennemis");

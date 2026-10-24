@@ -47,6 +47,8 @@ static const std::vector<TacticCond> CONDS = {
      ::T("Un ennemi dont il peut atteindre le dos ce tour-ci (d'où il est, ou en se déplaçant) : coups plus forts.")},
     {"ennemi_role", ::T("Ennemi : soigneur ou chef"), TSide::Foe, 0, 0, 0, 0, ::T("Un ennemi soigneur ou chef : l'abattre d'abord affaiblit tout son camp.")},
     {"soi_dos_menace", ::T("Soi : dos menacé"), TSide::Self, 0, 0, 0, 0, ::T("Quand un ennemi au contact est dans son dos (une embuscade, un ennemi qui l'a contourné).")},
+    // (2026-10-24) les intentions
+    {"soi_vise", ::T("Soi : visé"), TSide::Self, 0, 0, 0, 0, ::T("Quand un ennemi a annoncé une attaque sur lui (chevron orange) : se mettre en garde fait riposter.")},
 };
 static const std::vector<TacticAuto> AUTOS = {
     {"attaque", ::T("Meilleure attaque"), TSide::Foe, ::T("La technique, le sort ou le duo qui fait le plus de dégâts (peut dépenser des PM).")},

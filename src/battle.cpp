@@ -1850,6 +1850,14 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
         if (boardDist(w, cellOf(t)) <= reach(a) && behind(a, t, w)) return true;
       return false;
     }
+    if (c == "soi_vise") {  // une intention ennemie le vise (pas dans une zone rouge : là, il vaut mieux s'écarter)
+      for (auto& w : warnings_)
+        if (inBoardZone(w.zone, w.center, cellOf(a))) return false;
+      for (auto& [who, in] : intents_)
+        for (auto& tg : in.targets)
+          if (tg == a && !in.wait && hasMove(in.move) && moveInfo(in.move).damaging()) return true;
+      return false;
+    }
     if (c == "soi_dos_menace") {
       for (auto& o : liveFoes)
         if (boardDist(cellOf(o), cellOf(a)) <= 1 && behind(o, a)) return true;
@@ -3199,7 +3207,8 @@ void Battle::draw() {
     if (it == intents_.end() || !f->alive() || !(it->second.wait || hasMove(it->second.move))) return;
     const Intent& in = it->second;
     iy += std::sin(t * 5) * 1.f;
-    g.ellipse(ix, iy, 6, 6, rgb(0x0a0f33, 210));
+    float sc = 1 + std::max(0.f, (.35f - (t - in.t0)) * 2);  // apparaît en grand, se pose en 0,35 s
+    g.ellipse(ix, iy, 6 * sc, 6 * sc, rgb(0x0a0f33, 210));
     if (in.wait) {  // sablier : il se met en garde
       g.tri(ix - 3, iy - 3.5f, ix + 3, iy - 3.5f, ix, iy, rgb(0xd8e4f4)), g.tri(ix - 3, iy + 3.5f, ix + 3, iy + 3.5f, ix, iy, rgb(0xd8e4f4));
       return;
