@@ -463,7 +463,10 @@ Mesuré (joueur automatique sans mémoire, bot14) : tout fini en 8 h 20, 10 déf
 5 h 40, estimation joueur 16 h 46 ; les défaites restantes : meutes du Vieux Phare. Mesuré ensuite : bot15 (version
 finale, mêmes règles) quatre actes en 4 h 40 et 8 défaites dans l'histoire, puis 20 au Vieux Phare (équipe jamais changée :
 d'où `adaptTeam`) ; bot16 (0,6 créature par allié, écart 3) quatre actes en 6 h 20, 9 défaites dans l'histoire : réglage
-adopté. Mesures : compétence `equilibrage`.
+adopté ; bot17 (compagnons adaptés, zones de fin jaugées à mi-fourchette) tout fini en 12 h 23, 16 défaites, niveau 118,
+estimation joueur 24 h. Point dur commun à toutes les parties : la Citadelle des gardiens (meutes de 4 esprits et carapaces
+au niveau de l'équipe : 4 à 6 défaites par partie) → meutes de 3 au plus, comme l'Abîme et le Phare. Mesures : compétence
+`equilibrage`.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 
