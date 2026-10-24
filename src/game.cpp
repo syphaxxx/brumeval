@@ -1110,8 +1110,11 @@ void Game::draw() {
   if (pilot_ && pilot_->demo()) {  // bandeau de la démo, en haut de l'écran ; en pause, les commandes
     std::string s = T("DÉMO · ") + pilot_->status;
     if (s.size() > 60) s = utf8Prefix(s, 44) + "…";
+    bool keepCheck = g.checkLayout;  // le bandeau se superpose à tout (fenêtre des messages du combat) : pas un défaut
+    g.checkLayout = false;
     g.rect(g.left(), 0, g.fullW, 11, rgb(0x000010, 170));
     g.text(160, 2, s, rgb(0xffd34d), 1);
+    g.checkLayout = keepCheck;
     if (demoPaused_) {
       g.rect(g.left(), 11, g.fullW, SCREEN_H - 11, rgb(0x000010, 110));
       g.newLayer();
