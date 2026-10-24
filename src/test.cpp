@@ -3582,6 +3582,13 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         mirrored = h >= 0 && v == boardAt(boardY(h), BOARD_W - 1 - boardX(h));
       }
     }
+    bool guardSeen = false;  // (2026-10-24) la garde voyage dans « etat » : l'invité la voit sur le combattant de l'hôte
+    if (mirrored && battle_ && guest.battle_ && !battle_->allies.empty() && !guest.battle_->foes.empty()) {
+      battle_->guarding_.insert(battle_->allies[0].get());
+      for (int i = 0; i < 30 && !guardSeen; i++) both(1), guardSeen = guest.battle_ && guest.battle_->guarding_.count(guest.battle_->foes[0].get()) > 0;
+      if (battle_) battle_->guarding_.erase(battle_->allies[0].get());
+    }
+    check(guardSeen, "multijoueur : la garde d'un combattant de l'hôte se voit chez l'invité");
     size_t guestTurns = 0;
     for (int i = 0; i < 60 * 900 && (mode == Mode::Battle || guest.mode == Mode::Battle); i++) {
       if (guest.battle_) guestTurns = std::max(guestTurns, guest.battle_->log.size());

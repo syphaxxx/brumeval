@@ -78,3 +78,9 @@ description: "Brumeval : protocole du multijoueur (net, online, coop, trade, upn
   pendant l'expédition, c'est `G.team`, sauvegardée aussitôt. Le menu de
   l'échange (titre « Échange : … ») s'ouvre dans `updateTrade` dès que le joueur
   est libre (ni combat, ni dialogue) ; l'échange s'arrête si l'autre part.
+
+**2026-10-24 (branche jeu-tactique, à publier avec un `BRUMEVAL_VERSION` plus grand)** : `etat` porte pour chaque
+combattant un 11e nombre (1 : en garde) et une liste `i` des intentions des ennemis (`f` indice de l'ennemi, `m`
+technique, `c` case annoncée, `t` indices des alliés visés, `w` garde annoncée) ; l'invité et les autres joueurs du
+gardien les dessinent comme le chef (icône, chevrons, dégâts prévus, ATH). Test : la garde de l'hôte se voit chez
+l'invité du duel.

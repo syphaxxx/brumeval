@@ -3656,7 +3656,8 @@ Json Battle::netState() const {
     for (auto& f : v) {
       Json st = Json::array();
       for (int k = 0; k < N_STAGES; k++) st.push_back(f->stage[k]);
-      a.push_back(Json::array({f->hp, f->mp, (int)std::lround(f->atb), (int)std::lround(f->lim), (int)f->status, st, netCell(cellOf(f)), f->shield, f->broken ? 1 : 0, facingOf(f)}));
+      a.push_back(Json::array({f->hp, f->mp, (int)std::lround(f->atb), (int)std::lround(f->lim), (int)f->status, st, netCell(cellOf(f)), f->shield, f->broken ? 1 : 0, facingOf(f),
+                               guarding_.count(f.get()) ? 1 : 0}));
     }
     return a;
   };
@@ -3672,8 +3673,19 @@ Json Battle::netState() const {
   for (int v : terrain_) ter.push_back(v);
   Json obs = Json::array();
   for (auto& [c, spr] : obstacles_) obs.push_back(Json::array({netCell(c), spr}));
+  // (2026-10-24) les intentions des ennemis, pour que les autres joueurs du gardien les voient aussi : ennemi (indice),
+  // technique, case annoncée, alliés visés (indices)
+  Json intents = Json::array();
+  for (size_t i = 0; i < foes.size(); i++)
+    if (auto it = intents_.find(foes[i].get()); it != intents_.end() && foes[i]->alive()) {
+      Json tg = Json::array();
+      for (auto& t : it->second.targets)
+        for (size_t j = 0; j < allies.size(); j++)
+          if (allies[j] == t) tg.push_back((int)j);
+      intents.push_back(Json{{"f", (int)i}, {"m", it->second.move}, {"c", netCell(it->second.cell)}, {"t", tg}, {"w", it->second.wait}});
+    }
   return Json{{"t", "etat"}, {"a", pack(allies)}, {"b", pack(foes)}, {"msg", sc.showingMessage() ? sc.text() : std::string()}, {"attente", wait},
-              {"w", warn}, {"meteo", weather_}, {"terrain", ter}, {"obstacles", obs}};
+              {"w", warn}, {"meteo", weather_}, {"terrain", ter}, {"obstacles", obs}, {"i", intents}};
 }
 
 void Battle::netMessage(const Json& m) {
@@ -3708,6 +3720,10 @@ void Battle::netMessage(const Json& m) {
           }
           if (x.size() > 8) f.shield = x.at(7).get<int>(), f.broken = x.at(8).get<int>() != 0;  // Brisure
           if (x.size() > 9) facing_[&f] = (x.at(9).get<int>() < 0 ? -1 : 1) * (net_ == Net::Guest ? -1 : 1);  // regard (miroir chez l'invité)
+          if (x.size() > 10) {  // en garde (2026-10-24)
+            if (x.at(10).get<int>()) guarding_.insert(&f);
+            else guarding_.erase(&f);
+          }
           // at() : une liste trop courte lève une erreur (rattrapée par Online::update) au lieu de lire n'importe quoi
           f.hp = x.at(0).get<int>(), f.mp = x.at(1).get<int>(), f.atb = x.at(2).get<float>(), f.lim = x.at(3).get<float>();
           f.status = Status(std::clamp(x.at(4).get<int>(), 0, 4));
@@ -3734,6 +3750,26 @@ void Battle::netMessage(const Json& m) {
       for (auto& o : m.value("obstacles", Json::array()))
         if (o.is_array() && o.size() == 2 && o[0].is_number_integer() && o[1].is_string())
           obstacles_[netCell(std::clamp(o[0].get<int>(), 0, BOARD_CELLS - 1))] = o[1].get<std::string>();
+      if (m.contains("i") && m["i"].is_array()) {  // intentions des ennemis (2026-10-24), dessinées comme chez le chef
+        std::map<const Fighter*, Intent> seen;
+        for (auto& o : m["i"]) {
+          int fi = jget(o, "f", -1);
+          if (!o.is_object() || fi < 0 || fi >= (int)foes.size()) continue;
+          FighterP e = foes[(size_t)fi];
+          Intent in;
+          in.move = jget<std::string>(o, "m", "");
+          if (!in.move.empty() && !hasMove(in.move)) continue;
+          int c = jget(o, "c", -1);
+          in.cell = c >= 0 && c < BOARD_CELLS ? netCell(c) : -1;
+          in.wait = jget(o, "w", false);
+          for (auto& t : o.value("t", Json::array()))
+            if (t.is_number_integer() && t.get<int>() >= 0 && t.get<int>() < (int)allies.size()) in.targets.push_back(allies[(size_t)t.get<int>()]);
+          auto old = intents_.find(e.get());  // la même annonce garde son heure (l'icône ne se repose pas à chaque état)
+          in.t0 = old != intents_.end() && old->second.move == in.move ? old->second.t0 : G.time;
+          seen[e.get()] = in;
+        }
+        intents_ = seen;
+      }
     } else if (k == "tour") {
       int i = jget(m, "i", -1);
       if (i < 0 || i >= (int)allies.size() || !allies[(size_t)i]->alive() || !mineToCommand(allies[(size_t)i])) return;
