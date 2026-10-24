@@ -1038,6 +1038,17 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     check(deepD > nearD && deepD >= 10 && packs > 0 && most <= rules().packMax,
           "meutes : au plus profond de la vallée (" + std::to_string(deepD) + " cases du village), " + std::to_string(packs) +
               " meutes de 4 créatures ou plus sur 60 rencontres (au plus " + std::to_string(most) + ")");
+    {  // (2026-10-24) deux débutants : jamais plus de deux créatures, même au plus profond
+      team = {makeFighter("lior", 5), makeFighter("braisenard", 5)};
+      int small = 0;
+      for (int k = 0; k < 40; k++) {
+        encounter();
+        if (battle_) small = std::max(small, (int)battle_->foes.size()), battle_.reset();
+        mode = Mode::Map;
+        menus.clear();
+      }
+      check(small <= 2, "meutes : deux débutants de niveau 5 ne croisent jamais plus de deux créatures (au plus " + std::to_string(small) + ")");
+    }
     team = keepTeam;
   }
 

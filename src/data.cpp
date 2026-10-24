@@ -199,6 +199,7 @@ std::vector<RuleField> ruleFields(Rules& r) {
       D("rencontres", "par_allie", "Ennemis au moins par allié en combat", r.perAlly, 0, 2, .05),
       D("rencontres", "embuscade", "Chance d'une embuscade (2 créatures ou plus)", r.ambush, 0, 1, .01),
       I("rencontres", "ecart_niveau", "Niveaux au plus sous l'équipe (0 : non)", r.levelGap, 0, 50, 1),
+      I("rencontres", "meute_par_niveau", "Meutes : 2 + une créature tous les N niveaux (0 : non)", r.packPerLevels, 0, 30, 1),
       I("rencontres", "plafond_niveau", "… sans dépasser la zone de", r.levelCap, 0, 50, 1),
       D("combat", "atb_base", "Vitesse ATB de base", r.atbBase, 0, 100, 1),
       D("combat", "atb_vitesse", "Multiplicateur de vitesse ATB", r.atbSpeed, .1, 5, .1),
