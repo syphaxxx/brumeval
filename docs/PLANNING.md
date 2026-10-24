@@ -472,8 +472,9 @@ estimation joueur 18 h 22.** Essai retiré : capturer aussi les créatures d'un 
 17 défaites, 30 changements de compagnons ; plus lent, pas mieux au Phare). Débuts : une meute fait au plus 2 créatures +
 une par tranche de 10 niveaux de l'équipe (plus de défaite sauvage dans les dix premières minutes, bot22). Le pilote
 répète un combat dans le décor de son lieu (bot22 : Phénix perdu quatre fois après une répétition sans la canicule du
-Cratère). D'une partie à l'autre l'écart est grand (9 h / 11 défaites à 17 h / 29) : juger un réglage sur plusieurs
-parties. Mesures : compétence `equilibrage`.
+Cratère). D'une partie à l'autre l'écart est grand (9 h / 11 défaites à 17 h / 29 ; bot23 : 12 h 17, 15 défaites, estimation
+joueur 24 h) : juger un réglage sur plusieurs parties. La garde et les intentions voyagent en réseau (invité du duel,
+joueurs du gardien). Mesures : compétence `equilibrage`.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
 

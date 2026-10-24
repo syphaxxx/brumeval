@@ -55,6 +55,10 @@ Méthode :
   total, niveau 121 : le Phénix d'écho perdu quatre fois de suite à +3..+5 niveaux après une répétition « sûre » jouée
   depuis la ville, sans la canicule du Cratère → répétition dans le décor du lieu du combat ; d'une partie à l'autre,
   l'écart va de 9 h / 11 défaites (bot19) à 17 h / 29 : une seule partie ne suffit pas pour juger un réglage).
+  bot23 (état final : répétition dans le décor, meutes par niveau) : tout fini en 12 h 17, 15 défaites, niveau 123,
+  quatre actes en 6 h 07, estimation joueur 24 h ; le Phénix n'est plus perdu. Sur quatre parties du même état :
+  9 h à 17 h, 11 à 30 défaites, quatre actes en 5 h 30 à 7 h ; les défaites de l'histoire sont la Citadelle (Brume
+  Noire), le Cratère (Phénix) et des meutes d'esprits et de carapaces ; après la fin, le Vieux Phare.
 - **Rééquilibrage « trop facile »** (2026-10-23, demandé par l'utilisateur, comparé à Expedition 33) : le joueur automatique
   arrivait aux boss du milieu de l'histoire avec 15 à 20 niveaux d'avance (Givrecorne N.39 au niveau 58, Mère des Brumes
   N.44 au niveau 61) et ~2 créatures par rencontre contre jusqu'à 6 alliés. Réglages (`regles.json`) : `par_allie` 0,5
