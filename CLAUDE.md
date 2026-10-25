@@ -233,7 +233,11 @@ code) ; `docs/GUIDE.md` les range par domaine.
   intention (visé au corps à corps : les cases hors de portée de l'ennemi sont sûres ; voisin visé par une zone : s'en
   écarter) ; `threatened`, `safeCell`, l'IA alliée et « Se mettre à l'abri » s'en servent ; `aimedBy(f)` compte les intentions
   qui le visent (meute, tactiques, ATH : bouclier de garde et chevron après le nom) ; frise de l'ordre des tours : un
-  chevron orange sur le prochain tour d'un ennemi qui a annoncé une attaque (`drawTurnOrder`). Sons `garde` et `dejoue`
+  chevron orange sur le prochain tour d'un ennemi qui a annoncé une attaque (`drawTurnOrder`). **IA plus tactique** (2026-10-25) :
+  un ennemi ne frappe pas au corps à corps un allié en garde (`attackScore` ×0,4 chez les ennemis, et `think` cherche une
+  autre cible : il riposterait) ; un protecteur ennemi va se placer en croix d'un blessé des siens (`posValue` : +30 × PV
+  perdus sous la moitié) et son intention le dit (« … (couvre X) », `intentText`) ; un soigneur ennemi (`soigneur`, soin
+  connu) garde ses distances comme un lanceur de sorts (`posValue`). L'intention affichée reste celle qu'il exécute. Sons `garde` et `dejoue`
   (data/sons.json). Astuces « intention » et « garde », aide de l'échiquier, capture `garde_intention`, mesures :
   compétence `equilibrage`.
 - Vente : boutique > « Vendre… » (`Game::sellMenu`), moitié du prix, sauf les
@@ -286,7 +290,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
   commande s'ouvre. Ajouter une condition : l'entrée dans `CONDS`
   (tactics.cpp) et son test dans `holds` (battle.cpp). Conditions du 2026-10-23 : `ennemi_brise`, `ennemi_dos`,
   `ennemi_role`, `soi_dos_menace` ; (2026-10-24) `soi_vise` : une intention ennemie le vise, hors zone rouge (le profil
-  Protecteur se met alors en garde : riposte), `allie_vise` : un allié visé (le Protecteur va le couvrir : `proteger`) ; actions `briser` (une faiblesse découverte), `garde` (attendre, `Plan::wait`) et
+  Protecteur se met alors en garde : riposte), `allie_vise` : un allié visé (le Protecteur va le couvrir : `proteger`) ; actions `briser` (une faiblesse découverte), `garde` (attendre, `Plan::wait`) et
   `attaque_prudente` (la meilleure attaque qui laisse 40 % des PM, sinon une technique gratuite : le profil Soigneur).
   Profils (`tactiques.profils` de regles.json, `Rules::tacticProfiles`, « Profils… » dans l'éditeur, `profileRules(p, lignes,
   combattant)` : sans les règles de soin qu'il ne peut pas suivre, coupés à ses lignes en gardant la dernière règle) ;

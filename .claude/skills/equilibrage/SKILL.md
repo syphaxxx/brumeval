@@ -16,6 +16,15 @@ Méthode :
 
 ## Historique des mesures
 
+- **IA plus tactique** (2026-10-25) : les ennemis évitent le corps à corps sur un allié en garde, un protecteur va
+  couvrir un blessé des siens, un soigneur reste à l'arrière. Mesuré (BRUMEVAL_SIMULATIONS=2, même graine, avant →
+  après ; IA / tactiques / boutiques / forgé) : Sylvarque 11 → 16 / 13 → 16 / 48 → 67 / 62 → 48 %, Golem 25 → 22 / – /
+  47 → 55 / 52 → 45, Ronce-Mère 8 → 8 / – / 35 → 46 / 31 → 51, Ignarok 22 → 12 / 15 → 18 / 60 → 61 / 66 → 62,
+  Givrecorne 23 → 16 / 33 → 31 / 66 → 78 / 82 → 83, cristal 76 → 66 / 73 → 71 / 100 / 100, Mère des Brumes 1 → 5 / 0 →
+  0 / 50 → 51 / 73 → 73, Griffon 31 → 33 / – / 70 → 65 / 75 → 71, Seigneur 45 → 35 / – / 85 → 85 / 83 → 88 ; le reste à
+  100 % (Orage ancien 95) : aucun boss ne perd plus de 10 points, les écarts vont dans les deux sens (bruit ±7). Une
+  première mesure à ×1 donnait cristal (tactiques) 93 → 66 : refaite à ×2, 73 → 71 (bruit).
+
 - **Dur mais tactique** (2026-10-24, branche `jeu-tactique`, « un jeu dur mais très tactique ») : garde (« Attendre » :
   dégâts × 0,75 et riposte à chaque coup au corps à corps (`garde_riposte` 1, ×0,7) jusqu'au tour suivant), intentions
   des ennemis (annoncées à la moitié de la jauge (70 % d'abord), exécutées si elles tiennent encore ; les boss aussi, sauf zone rouge en
