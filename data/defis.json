@@ -81,5 +81,29 @@
       {"espece": "tisonnel", "niveau": 15, "case": [2, 4]}
     ],
     "obstacles": [[1, 5], [2, 5]]
+  },
+  {
+    "id": "intentions",
+    "nom": "Lire les intentions",
+    "decor": "vallee",
+    "description": "Le Ferrolin annonce ses coups : chevron orange sur sa cible. Écartez Isra avant qu'il frappe ; sa magie le vaincra.",
+    "allies": [
+      {"espece": "lior", "niveau": 12, "case": [3, 1]},
+      {"espece": "isra", "niveau": 12, "case": [1, 2]}
+    ],
+    "ennemis": [{"espece": "ferrolin", "niveau": 20, "case": [1, 5]}]
+  },
+  {
+    "id": "garde",
+    "nom": "La garde",
+    "decor": "foret",
+    "description": "Quatre Mulotins rapides acculent Brann dans un coin. Attendez : en garde, il encaisse moins et riposte à chaque coup.",
+    "allies": [{"espece": "brann", "niveau": 14, "case": [0, 0]}],
+    "ennemis": [
+      {"espece": "mulotin", "niveau": 12, "pv": 0.65, "case": [0, 5]},
+      {"espece": "mulotin", "niveau": 12, "pv": 0.65, "case": [1, 6]},
+      {"espece": "mulotin", "niveau": 12, "pv": 0.65, "case": [2, 6]},
+      {"espece": "mulotin", "niveau": 12, "pv": 0.65, "case": [3, 5]}
+    ]
   }
 ]

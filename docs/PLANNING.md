@@ -461,6 +461,11 @@ Astuces « intention » et « garde », aide de l'échiquier, tests (garde ≈ 0
    et Compagnons) et jauge les zones de fin de partie au milieu de leur fourchette : ses défaites au Vieux Phare (quinze dans
    bot15, deux Champignards et un Flammenard contre des Cendrelys qui absorbent le Feu) étaient celles d'un joueur qui ne
    change jamais d'équipe. Deux relectures Codex (5 remarques corrigées).
+8. (2026-10-25) Deux défis d'entraînement pour apprendre la 3.7 par la pratique (Arène > Défis, et le maître d'armes de
+   la Vallée après son premier défi) : « Lire les intentions » (un Ferrolin lent annonce Coup d'acier sur Isra : l'écarter
+   à temps ; simulé sur 100 combats : IA 96 %, Isra qui ne bouge jamais 20 %) et « La garde » (Brann acculé par quatre
+   Mulotins rapides : IA qui frappe 37 %, Brann toujours en garde 79 %). Un défi qui mêle les deux a été essayé puis
+   écarté : la garde seule y perd contre le Ferrolin, les mesures ne départageaient rien.
 Mesuré (joueur automatique sans mémoire, bot14) : tout fini en 8 h 20, 10 défaites (27 avant), niveau 112, quatre actes en
 5 h 40, estimation joueur 16 h 46 ; les défaites restantes : meutes du Vieux Phare. Mesuré ensuite : bot15 (version
 finale, mêmes règles) quatre actes en 4 h 40 et 8 défaites dans l'histoire, puis 20 au Vieux Phare (équipe jamais changée :

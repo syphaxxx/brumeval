@@ -542,11 +542,15 @@ code) ; `docs/GUIDE.md` les range par domaine.
   par `adjust`, souris sur le dessin (`formationPick_`, `formationCellAt`). Équipement : champ `mouvement`
   (`ItemDef::moveBonus`, ajouté dans `moveRange`) : Bottes de vent, Bottes ailées. Défis : `data/defis.json` (alliés,
   ennemis et obstacles avec `case` [ligne, colonne] du plateau, `decor`), `Arena::menuChallenges`/`startChallenge`,
-  `BattleSetup::fixedBoard` (`allyCells`, `foeCells`, `obstacleCells` ; ni météo ni terrain), `challengeSetup(id)` (battle.cpp,
+  `BattleSetup::fixedBoard` (`allyCells`, `foeCells`, `obstacleCells` ; ni météo ni terrain), `challengeSetup(id)` (echiquier.cpp,
   partagé par l'Arène, les événements et le joueur automatique). Action `combat` d'un événement : `defi` (ce défi, ses
   combattants prêtés : pas de « Changer ») et `entrainement` (ni gains ni évolutions, une défaite ne coûte rien :
   `BattleSetup::training`) ; maître d'armes de la Vallée (événement `maitre_armes`, drapeau `maitre_bottes`, Bottes de
-  vent). Mesuré (BRUMEVAL_SIMULATIONS=2) : sans
+  vent ; ensuite, trois questions en chaîne : « Lire les intentions », « La garde », « Dans le dos »). Sept défis : `dos`,
+  `percee`, `ailes`, `mur`, `bousculade`, et (2026-10-25, pour apprendre la 3.7) `intentions` (un Ferrolin N.20 lent, blindé
+  et faible à la magie annonce Coup d'acier sur Isra : l'écarter, Lior peut barrer la route ; simulé : IA 96 %, Isra qui ne
+  bouge jamais 20 %) et `garde` (Brann acculé dans un coin par quatre Mulotins rapides : IA 37 %, toujours en garde 79 %).
+  Mesuré (BRUMEVAL_SIMULATIONS=2) : sans
   réglage, boss bien plus faciles (encerclés par 6 alliés : +60 %) ; après (boss ni encerclés ni gênés au contact,
   encerclement 10 %, Ignarok N.25, Ronce-Mère N.22, Mère des Brumes N.41), difficulté proche de la 3.3.
 - Primes (demandé le 2026-10-19 : « au moins 20 heures de jeu ») : `data/primes.json`, `primes.hpp` (chargées par

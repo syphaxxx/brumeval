@@ -1033,8 +1033,40 @@
           {"action": "dire", "texte": "Maître d'armes : Encore un peu d'entraînement ? D'autres défis vous attendent dans l'Arène."},
           {
             "action": "question",
-            "texte": "Reprendre le défi « Dans le dos » ?",
-            "oui": [{"action": "combat", "defi": "dos", "entrainement": true, "fuite": true}]
+            "texte": "Apprendre à lire les intentions des ennemis ?",
+            "oui": [
+              {"action": "dire", "texte": "Maître d'armes : Chaque ennemi annonce son coup : un chevron orange au-dessus de sa cible, et les dégâts prévus."},
+              {
+                "action": "combat",
+                "defi": "intentions",
+                "entrainement": true,
+                "fuite": true,
+                "defaite": [{"action": "dire", "texte": "Maître d'armes : Quand le chevron est sur Isra, faites-la reculer avant qu'il frappe, puis lancez vos sorts."}]
+              }
+            ],
+            "non": [
+              {
+                "action": "question",
+                "texte": "Apprendre la garde ?",
+                "oui": [
+                  {"action": "dire", "texte": "Maître d'armes : Attendre, c'est se mettre en garde : on encaisse moins, et on rend chaque coup reçu au corps à corps."},
+                  {
+                    "action": "combat",
+                    "defi": "garde",
+                    "entrainement": true,
+                    "fuite": true,
+                    "defaite": [{"action": "dire", "texte": "Maître d'armes : Ne frappez pas à chaque tour : choisissez Attendre, et laissez-les venir."}]
+                  }
+                ],
+                "non": [
+                  {
+                    "action": "question",
+                    "texte": "Reprendre le défi « Dans le dos » ?",
+                    "oui": [{"action": "combat", "defi": "dos", "entrainement": true, "fuite": true}]
+                  }
+                ]
+              }
+            ]
           }
         ]
       },
