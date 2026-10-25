@@ -187,6 +187,7 @@ class Battle {
   };
   std::map<const Fighter*, IntentFx> intentFx_;
   std::map<const Fighter*, float> guardT_;
+  float aimSoundT_ = -10;  // dernier son « vise » (une meute annonce presque en même temps : un seul signal)
   void declareIntent(const FighterP& e);
   std::string intentText(const Fighter& e) const;
   float lure(const FighterP& t) const;  // attrait d'une cible pour les ennemis (soigneur, lanceur, blessé)
