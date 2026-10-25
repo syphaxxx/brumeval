@@ -19,6 +19,17 @@ Méthode :
 
 ## Historique des mesures
 
+- **Mécaniques des gardiens de l'Expédition** (2026-10-26) : dès la région 3, une mécanique de boss selon les types
+  (`procgen.cpp`, `genBoss`). Mesuré (BRUMEVAL_SIMULATIONS=4, `BRUMEVAL_SIM_FILTRE=gion,avec` ; IA / avec équipement,
+  avant → après) : comme dans l'histoire, une posture coûte un tour d'attaque au gardien : sans réglage, les cinq gardiens
+  à posture (région 3 graines 11 et 22, région 8 graines 11, 22, 33) passaient de 61 / 89 % à 65 / 97 % en moyenne ;
+  avec **+1 niveau pour une posture** (retenu) : 61 / 94 %. Détail (avant → après) : région 3 graine 11 (cuirasse)
+  78 → 81 / 100 → 100, graine 22 (voile) 96 → 91 / 100 → 100 ; région 8 graine 11 (voile) 13 → 13 / 56 → 75, graine 22
+  (cuirasse) 21 → 28 / 90 → 95, graine 33 (cuirasse) 95 → 91 / 100 → 100. Les ronces ne changent rien (elles remplacent
+  les zones rouges au hasard ; niveau inchangé) : région 3 graine 33 35 → 41 / 93 → 86, région 5 graines 11, 22, 33 :
+  8 → 11 / 33 → 23, 60 → 50 / 88 → 95, 1 → 1 / 11 → 16. Aucune charge parmi les graines mesurées. Les lignes « à 2, 3, 4 »
+  (gardien à plusieurs) jouent sans mécanique, comme en jeu.
+
 - **Mécaniques des boss** (2026-10-25, « dur mais très tactique ») : cuirasse du Golem de suie (un tour sur trois, magie
   conseillée), voile de la Mère des Brumes (seul le corps à corps passe), ronces de la Ronce-Mère (zone rouge, terrain qui
   reste), charge d'Ignarok (une ligne, recul). Une posture coûte un tour d'attaque au boss : sans réglage, Golem (N.26) 31 → 46

@@ -561,8 +561,8 @@ static std::string genCreature(Content& c, Rng& r, const std::string& id, const 
   return id;
 }
 
-// Gardien d'une région
-static std::string genBoss(Content& c, Rng& r, const std::string& id, const std::string& t1, std::string t2, std::string& name) {
+// Gardien d'une région ; mech reçoit sa mécanique propre (posée sur lui à partir de la région 3)
+static std::string genBoss(Content& c, Rng& r, const std::string& id, const std::string& t1, std::string t2, std::string& name, Json& mech) {
   if (t2 == t1) t2.clear();
   name = unique(c, [&] {
     std::string end = r.pick(BOSS_SUFFIX);  // un tirage après l'autre (voir genCreature)
@@ -582,7 +582,24 @@ static std::string genBoss(Content& c, Rng& r, const std::string& id, const std:
   auto sup = typeSupport(c, t2.empty() ? t1 : t2);
   if (!sup.empty() && r.chance(.6f)) l.push_back({1, r.pick(sup)});
   o["apprend"] = learnJson(l);
-  o["talent"] = Rng(stream(idHash(id), 29)).chance(.5f) ? "cuirasse" : "rage";  // 2.9
+  Rng extra(stream(idHash(id), 29));  // 2.9 : tirages à part, le reste du monde ne change pas
+  o["talent"] = extra.chance(.5f) ? "cuirasse" : "rage";
+  // (2026-10-26) mécanique selon ses types ; deux types, deux mécaniques : tirée à part ; aucun : selon son jeu
+  auto kindOf = [](const std::string& t) -> std::string {
+    if (t == "roche" || t == "metal" || t == "glace") return "cuirasse";
+    if (t == "esprit" || t == "ombre") return "voile";
+    if (t == "plante" || t == "poison") return "ronces";
+    if (t == "feu" || t == "vent" || t == "foudre") return "charge";
+    return "";
+  };
+  std::string k1 = kindOf(t1), k2 = t2.empty() ? "" : kindOf(t2);
+  std::string kind = !k1.empty() && !k2.empty() ? (extra.chance(.5f) ? k1 : k2) : !k1.empty() ? k1 : !k2.empty() ? k2 : mg ? "voile" : "cuirasse";
+  std::string msg = kind == "cuirasse" ? " se couvre d'une carapace : il va se cuirasser !"
+                    : kind == "voile"  ? " s'estompe dans la brume : il va se voiler !"
+                    : kind == "ronces" ? " plonge ses racines sous la zone rouge : des ronces vont en jaillir, et elles resteront !"
+                                       : " gratte le sol, les yeux sur la ligne rouge : il va la charger !";
+  mech = Json{{"genre", kind}, {"tous", 3}, {"message", name + msg}};
+  if (kind == "ronces") mech["terrain"] = "epines";
   c.species.push_back(o);
   return id;
 }
@@ -858,7 +875,9 @@ Region generateRegion(uint64_t seed, int k, Content& c) {
   }
   std::string bt1 = themeType(r, theme), bt2 = r.chance(.6f) ? themeType(r, theme) : "";
   if (bt2 == bt1) bt2.clear();
-  std::string boss = genBoss(c, r, px + "b", bt1, bt2, R.bossName);
+  Json mech;
+  std::string boss = genBoss(c, r, px + "b", bt1, bt2, R.bossName, mech);
+  std::string mechKind = k >= 3 ? mech["genre"].get<std::string>() : "";  // (2026-10-26) les deux premières restent simples
   const auto& CL = classes();
   std::string tr[2];
   for (int i = 0; i < 2; i++) {
@@ -1048,7 +1067,12 @@ Region generateRegion(uint64_t seed, int k, Content& c) {
   std::vector<std::string> tips = {
       "Bienvenue à " + R.village + " ! Les voyageurs se font rares par ici.",
       R.bossName + " garde la route vers " + R.nextName + "." +
-          (weak.empty() ? " Personne ne sait ce qu'il craint…" : " Il paraît qu'il craint le type " + weak + "."),
+          (weak.empty() ? " Personne ne sait ce qu'il craint…" : " Il paraît qu'il craint le type " + weak + ".") +
+          (mechKind == "cuirasse" ? " Quand il se cuirasse, la magie passe."
+           : mechKind == "voile"  ? " Voilé, seul le corps à corps l'atteint."
+           : mechKind == "ronces" ? " Fuyez la zone rouge : ses ronces y poussent."
+           : mechKind == "charge" ? " Il charge toute une ligne : ne vous alignez pas !"
+                                  : ""),
       "Dans les hautes herbes, on croise des " + wildNames[0] + " et des " + wildNames[1] + ".",
       "Une Lanterne capture plus facilement une créature affaiblie.",
       "Les dresseurs postés le long du chemin vous défient dès qu'ils vous voient.",
@@ -1207,7 +1231,7 @@ Region generateRegion(uint64_t seed, int k, Content& c) {
                                                                                Json{{"action", "donner"}, {"objet", "potion"}, {"quantite", 2}}})}},
                                                  Json{{"actions", Json::array({say("Habitante : " + tips[tipIx[nVill % tips.size()]])})}}})}};
   // Gardien : un acolyte dans les deux premières régions, deux ensuite, des renforts à partir de la région 5
-  int bossLvl = L + 2;
+  int bossLvl = L + 2 + (mechKind == "cuirasse" || mechKind == "voile");  // une posture lui coûte un tour d'attaque
   float hpMult = std::min(3.2f, 2.f + .08f * k);
   // Phases (2.9) : il se déchaîne à mi-vie (bouclier rechargé, plus vif), change le temps dès la région 2, et
   // appelle un renfort à un quart de ses PV dès la région 4
@@ -1224,6 +1248,7 @@ Region generateRegion(uint64_t seed, int k, Content& c) {
   }
   Json foes = Json::array({Json{{"espece", R.wild[0]}, {"niveau", L - 1}},
                            Json{{"espece", boss}, {"niveau", bossLvl}, {"pv", std::round(hpMult * 10) / 10}, {"boss", true}, {"phases", phases}}});
+  if (!mechKind.empty()) foes[1]["mecanique"] = mech;  // jamais en ligne (coop.cpp ne la lit pas, Battle::mech non plus)
   if (k >= 3) foes.push_back(Json{{"espece", R.wild[(size_t)nWild - 1]}, {"niveau", L - 1}});
   Json fight = Json{{"action", "combat"}, {"ennemis", foes}};
   if (k >= 5) fight["renforts"] = Json::array({Json{{"espece", R.wild[2]}, {"niveau", L}}});

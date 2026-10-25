@@ -293,7 +293,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
   sauvegardes d'expédition en cours).
   À plusieurs, voir « Expédition à plusieurs » plus bas.
   `BRUMEVAL_MONDE=brume brumeval --test captures` affiche le monde de la graine
-  « brume » (héros, créatures, gardiens et techniques des trois premières régions).
+  « brume » (héros, créatures, gardiens et leur mécanique, techniques des trois premières régions).
 - Multijoueur (net, online, coop, trade, upnp) : protocole, duel, expédition à plusieurs, échanges,
   code de partie → compétence `multijoueur`. Augmenter `BRUMEVAL_VERSION` si les messages changent.
 - Le monde généré (Expédition) doit être identique sur tous les ordinateurs : `-ffp-contract=off` (GCC,
@@ -658,7 +658,12 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - Expédition 2.9 (procgen.cpp) : talent par type (`typeTalent`) ou par classe, `role_combat` selon le profil, talent
   des gardiens, phases des gardiens, gemme en récompense, gemmes en boutique (`shopStock`). Les nouveaux tirages viennent
   d'un générateur à part semé par l'identifiant (`idHash`, `stream(…, 29)`) : le reste d'un monde ne change pas, mais
-  l'empreinte de la graine 2026 a changé (28da4b9e14a4ce4d ; 3.4 : bottes dans les boutiques, 171c24418b3b440e ; 2026-10-23 : conseil « Échap > Préparation > Tactiques », eb8f2be6200f01bc). Les conseils de l'histoire sont vidés en Expédition.
+  l'empreinte de la graine 2026 a changé (28da4b9e14a4ce4d ; 3.4 : bottes dans les boutiques, 171c24418b3b440e ; 2026-10-23 : conseil « Échap > Préparation > Tactiques », eb8f2be6200f01bc ; 2026-10-26 : mécaniques des gardiens, 988a5d6200505022). Les conseils de l'histoire sont vidés en Expédition.
+  Mécaniques des gardiens (2026-10-26) : dès la région 3, le gardien a une `mecanique` de boss (`genBoss`, tirage à part) selon
+  ses types : Roche/Métal/Glace `cuirasse`, Esprit/Ombre `voile`, Plante/Poison `ronces` (`epines`), Feu/Vent/Foudre `charge` (deux
+  types, deux mécaniques : l'une au hasard ; aucun : `voile` s'il a plus de Magie que d'Attaque, sinon `cuirasse`), un tour sur 3 ;
+  +1 niveau avec une posture (cuirasse, voile : elle lui coûte un tour d'attaque) ; l'habitant qui donne son point faible dit
+  aussi la parade ; jamais en ligne (coop.cpp ne la lit pas, `Battle::mech` vide). Mesures : compétence `equilibrage`.
 - Acte 2 (3.0) : cartes `port`, `recif`, `ruines`, `tour` (générées par un script, puis réglées à la main), le bateau
   du pêcheur (page `boss4` de l'événement `pecheur`) et le `passeur`. Énigmes : tuiles `O`/`P`/`D`, `MapDef::puzzle*`
   (champ `enigme`), `solvePuzzle` (world.cpp, recherche en largeur, aussi dans `checkMaps`), `Game::boulders_`
