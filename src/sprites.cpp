@@ -837,6 +837,25 @@ static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, 
         g.rect(sx, sy, 16, 16, rgb(0xa8a49c));
         g.frame(sx, sy, 16, 16, rgb(0x8a867e));
       }
+      // (2026-10-25) une bordure de pierres là où la place touche l'herbe ou la terre, et des brins qui la débordent
+      for (int s = 0; s < 4; s++) {
+        int nx = x + (s == 1) - (s == 3), ny = y + (s == 2) - (s == 0);
+        char n = at(nx, ny);
+        if (n != '.' && n != ',' && n != 'g' && n != 'F' && n != '=') continue;
+        bool horiz = s % 2 == 0;
+        int ex = s == 1 ? sx + 14 : sx, ey = s == 2 ? sy + 14 : sy;
+        g.rect(ex, ey, horiz ? 16 : 2, horiz ? 2 : 16, rgb(0x8a847a));
+        for (int i = 0; i < 4; i++) g.rect(ex + (horiz ? i * 4 + 1 : 0), ey + (horiz ? 0 : i * 4 + 1), horiz ? 2 : 1, horiz ? 1 : 2, rgb(0xc8c2b6));
+        if (s != 2) g.rect(ex + (s == 1 ? -1 : horiz ? 0 : 2), ey + (horiz ? 2 : 0), horiz ? 16 : 1, horiz ? 1 : 16, rgb(0x000000, 35));  // l'ombre du rebord
+        uint32_t blade = th == Theme::Neige ? 0xeef3fa : th == Theme::Foret ? 0x3f7a35 : th == Theme::Vallee ? 0x5aa83a : 0;
+        if (n == '=' || !blade) continue;
+        int hh = hsh(nx * 3 + s, ny * 5);
+        for (int k = 0; k < 2 + hh % 2; k++) {  // deux ou trois brins qui débordent sur la bordure
+          int o = 2 + (hh >> (3 + k * 4)) % 12;
+          if (horiz) g.rect(sx + o, ey + (s == 0 ? 0 : 1), 1, 2, rgb(blade)), g.rect(sx + o + 1, ey + (s == 0 ? 0 : 1), 1, 1, rgb(blade));
+          else g.rect(ex + (s == 3 ? 0 : 1), sy + o, 2, 1, rgb(blade)), g.rect(ex + (s == 3 ? 0 : 1), sy + o + 1, 1, 1, rgb(blade));
+        }
+      }
       break;
     }
     case 'H': {  // clôture
