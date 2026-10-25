@@ -124,6 +124,7 @@ class Battle {
     std::string move;
     Area zone;
     int center;
+    std::string kind;  // (2026-10-25) mécanique du boss : « ronces » (le terrain y pousse), « charge » (recul) ; vide : classique
   };
   std::vector<Warning> warnings_;
   std::vector<std::pair<int, int>> netWarn_;  // chez l'invité : zones annoncées reçues (case, zone)
@@ -176,6 +177,7 @@ class Battle {
     std::vector<FighterP> targets;
     bool wait = false;
     float t0 = 0;
+    std::string posture;  // (2026-10-25) avec wait : la posture d'un boss (« cuirasse », « voile »)
   };
   std::map<const Fighter*, Intent> intents_;
   // Dessin seul (2026-10-25) : une intention qui vient de quitter intents_, exécutée (l'icône pulse) ou déjouée (elle se
@@ -193,6 +195,16 @@ class Battle {
   float lure(const FighterP& t) const;  // attrait d'une cible pour les ennemis (soigneur, lanceur, blessé)
   bool dangerAt(const FighterP& f, int cell) const;  // terrain qui blesse, zone rouge d'un boss, intention ennemie
   bool announced(const FighterP& f) const;           // ce boss a une attaque annoncée (zone rouge) en attente
+  // Mécaniques des boss (2026-10-25) : la « mecanique » d'un ennemi (evenements.json) revient un tour sur « tous », toujours
+  // annoncée : posture (cuirasse : la magie passe, le corps à corps est puni ; voile : seul le corps à corps passe), annoncée
+  // par son intention, ou zone rouge (ronces : le terrain y pousse ; charge : toute une ligne, ceux qui y restent reculent)
+  std::string mech(const FighterP& e) const;          // son genre (vide : aucune ; jamais en ligne)
+  bool mechDue(const FighterP& e) const;              // son prochain tour est celui de sa mécanique
+  std::map<const Fighter*, int> mechTurns_;           // tours déjà joués par chaque boss à mécanique
+  std::map<const Fighter*, std::string> posture_;     // posture prise, jusqu'à son prochain tour
+  std::map<int, int> grown_;                          // ronces : case → son terrain d'avant (les anciennes se fanent)
+  void takePosture(const FighterP& e, const std::string& kind);
+  float postureMult(const FighterP& d, const Move& m) const;  // part d'un coup que laisse passer sa posture (0 : traverse)
   int aimedBy(const FighterP& f) const;              // ennemis vivants qui ont annoncé une attaque sur lui  // « Prépare Charge sur Maëlle » (vide : rien d'annoncé)
   std::map<const Fighter*, float> koT_;  // moment du K.O. (un ennemi vaincu s'efface en 0,6 s avec un éclat)
   int cellOf(const FighterP& f) const;  // -1 : pas sur le plateau
@@ -345,8 +357,9 @@ class Battle {
   Json mine(const FighterP& f) const;
   FighterP other(const Json& s) const;  // le même, vu par celui qui le reçoit
   void setBlink(const FighterP& f);
-  // boost > 1 : attaque annoncée (cibles déjà choisies, pas de zone autour, dégâts multipliés)
-  void useMove(FighterP a, const std::string& mv, std::vector<FighterP> targets, bool isLimit = false, float boost = 1);
+  // boost > 1 : attaque annoncée (cibles déjà choisies, pas de zone autour, dégâts multipliés) ; charge : chaque cible
+  // touchée recule d'une case, loin du lanceur (charge d'un boss)
+  void useMove(FighterP a, const std::string& mv, std::vector<FighterP> targets, bool isLimit = false, float boost = 1, bool charge = false);
   void useItem(FighterP a, const std::string& it, FighterP target);
   void swapIn(FighterP a, FighterP r);
   void tryFlee(FighterP a);
@@ -373,6 +386,7 @@ class Battle {
   // 2.6 : pousser / tirer (Into the Breach). La cible change de colonne ; case prise ou bord : choc.
   // Les combattants mis K.O. par le choc sont ajoutés à ko.
   void shove(const FighterP& a, const FighterP& t, const Move& m, int dmg, std::vector<FighterP>& ko);
+  void shoveTo(const FighterP& t, int to, bool push, int dmg, std::vector<FighterP>& ko);  // to : comme shoveDest
   // Case d'arrivée, dans l'axe du lanceur (-1 : bord ; -2 : boss ou rien à faire, ne bouge pas)
   int shoveDest(const FighterP& a, const FighterP& t, const Move& m) const;
   // Techniques de mouvement (3.4) : bond derrière la cible, échange de cases ; case d'arrivée du bond (-1 : impossible)

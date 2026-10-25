@@ -1752,6 +1752,135 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     mode = Mode::Map;
   }
 
+  // --- Mécaniques des boss (2026-10-25) : chacune annoncée, avec sa contre-mesure (données de evenements.json) ---
+  {
+    // l'ennemi « espece » du combat de l'événement, tel qu'il est dans les données
+    std::function<Json(const Json&, const std::string&)> foeIn = [&](const Json& j, const std::string& sp) -> Json {
+      if (j.is_object() && jget<std::string>(j, "espece", "") == sp && j.contains("mecanique")) return j;
+      if (j.is_object() || j.is_array())
+        for (auto& v : j)
+          if (Json r = foeIn(v, sp); !r.is_null()) return r;
+      return Json();
+    };
+    auto story = [&](const std::string& ev, const std::string& sp) { return makeFoe(foeIn(*findEvent(ev), sp), 1); };
+    auto begin = [&](FighterP boss, std::vector<FighterP> party) -> Battle& {
+      sc.clear(), menus.clear();
+      mode = Mode::Map;
+      team = party;
+      startBattle({boss}, true, nullptr, false, false);
+      for (int i = 0; i < 300 && battle_->sc.busy(); i++) in.confirm = true, frame();  // le message d'entrée
+      in.confirm = false;
+      battle_->start = time - 5;
+      for (auto& f : battle_->allies) f->atb = 0, f->acc = 1000;
+      boss->atb = 0, boss->acc = 1000, boss->eva = 0;
+      battle_->terrain_.fill(-1), battle_->obstacles_.clear();
+      return *battle_;
+    };
+    auto settle = [&](Battle& B) {  // joue ce que le script a en attente (messages, coups), sans laisser passer le temps
+      for (int i = 0; i < 600 && B.sc.busy(); i++) in.confirm = true, frame();
+      in.confirm = false;
+      for (auto& f : B.allies) f->atb = 0;
+      for (auto& f : B.foes) f->atb = 0;
+    };
+    auto lior = makeFighter("lior", 30), maelle = makeFighter("maelle", 30), kael = makeFighter("kael", 30);
+    const Move &blade = moveInfo("lame"), &light = moveInfo("lumiere");
+    {  // Cuirasse (Golem de suie) : annoncée par son intention (un écu), la magie passe, le corps à corps est puni
+      auto golem = story("golem", "golem");
+      Battle& B = begin(golem, {lior, maelle});
+      B.cells_[lior.get()] = boardAt(1, 3), B.cells_[maelle.get()] = boardAt(2, 1), B.cells_[golem.get()] = boardAt(1, 4);
+      float meleeBefore = B.attackScore(lior, blade, golem), magicBefore = B.attackScore(maelle, light, golem);
+      B.mechTurns_[golem.get()] = jget(golem->mech, "tous", 3) - 1;  // son prochain tour est celui de sa mécanique
+      B.declareIntent(golem);
+      auto it = B.intents_.find(golem.get());
+      bool told = it != B.intents_.end() && it->second.wait && it->second.posture == "cuirasse" && !B.intentText(*golem).empty();
+      run(.6f);  // le message s'écrit (le temps du combat ne passe pas pendant un message)
+      snap("boss_cuirasse_annonce");
+      B.sc.clear();
+      B.enemyTurn(golem);
+      bool posed = B.posture_.count(golem.get()) && B.guarding_.count(golem.get());
+      run(.6f);
+      snap("boss_cuirasse");
+      bool magicPasses = B.attackScore(maelle, light, golem) > magicBefore * .5f;
+      bool meleeAvoided = B.attackScore(lior, blade, golem) < meleeBefore * .3f;
+      bool riposteWarned = B.damageText(lior, blade, golem).find(T(" · il riposte")) != std::string::npos;
+      int hpL = lior->hp;
+      B.applyHit(lior, golem, blade);  // au corps à corps : il riposte
+      check(told && posed && magicPasses && meleeAvoided && riposteWarned && lior->hp < hpL,
+            "boss : le Golem de suie annonce sa cuirasse (écu), la prend à son tour, la magie passe, le corps à corps est puni (riposte)");
+      settle(B);
+      battle_.reset();
+    }
+    {  // Voile (Mère des Brumes) : sorts, tirs et états la traversent, seul le corps à corps l'atteint
+      auto mere = story("mere_brumes", "mere_brumes");
+      lior->hp = lior->mhp;
+      Battle& B = begin(mere, {lior, maelle});
+      B.cells_[lior.get()] = boardAt(1, 3), B.cells_[maelle.get()] = boardAt(2, 1), B.cells_[mere.get()] = boardAt(1, 4);
+      B.mechTurns_[mere.get()] = jget(mere->mech, "tous", 3) - 1;
+      B.declareIntent(mere);
+      bool told = B.intents_.count(mere.get()) && B.intents_[mere.get()].posture == "voile";
+      B.sc.clear();
+      B.enemyTurn(mere);
+      run(.6f);
+      snap("boss_voile");
+      int hp0 = mere->hp;
+      bool through = B.applyHit(maelle, mere, light) == 0 && mere->hp == hp0 && B.attackScore(maelle, light, mere) == 0 &&
+                     B.damageText(maelle, light, mere).find(T(" · traverse la brume : au contact !")) != std::string::npos;
+      bool melee = B.applyHit(lior, mere, blade) > 0 && mere->hp < hp0;
+      check(told && B.posture_.count(mere.get()) && through && melee,
+            "boss : la Mère des Brumes annonce son voile, puis les sorts la traversent et seul le corps à corps l'atteint");
+      settle(B);
+      battle_.reset();
+    }
+    {  // Ronces (Ronce-Mère) : zone rouge annoncée, puis des ronces qui blessent y restent ; s'écarter suffit
+      auto ronce = story("ronce_mere", "ronce_mere");
+      lior->hp = lior->mhp, maelle->hp = maelle->mhp;
+      Battle& B = begin(ronce, {lior, maelle});
+      B.cells_[lior.get()] = boardAt(1, 2), B.cells_[maelle.get()] = boardAt(1, 1), B.cells_[ronce.get()] = boardAt(1, 5);
+      B.mechTurns_[ronce.get()] = jget(ronce->mech, "tous", 3) - 1;
+      B.bossPlan(ronce);  // l'annonce : zone rouge sur les deux
+      bool warned = B.warnings_.size() == 1 && B.warnings_[0].kind == "ronces" && B.threatened(lior) && B.threatened(maelle);
+      run(.6f);
+      snap("boss_ronces_annonce");
+      B.sc.clear();
+      int center = B.warnings_.empty() ? -1 : B.warnings_[0].center;
+      for (auto& [c, steps] : B.walkable(maelle))  // Maëlle s'écarte, Lior reste
+        if (!B.dangerAt(maelle, c)) B.cells_[maelle.get()] = c;
+      int hpL = lior->hp, hpM = maelle->hp;
+      B.bossPlan(ronce);  // elles jaillissent
+      settle(B);
+      const Rules::Terrain* tr = B.terrainOf(center);
+      bool grown = tr && tr->id == jget<std::string>(ronce->mech, "terrain", "") && B.terrainHurts(lior, B.cellOf(lior)) &&
+                   !B.terrainHurts(ronce, center) && B.threatened(lior) && !B.threatened(maelle);
+      frame();
+      snap("boss_ronces");
+      check(warned && grown && lior->hp < hpL && maelle->hp == hpM,
+            "boss : la Ronce-Mère annonce ses ronces (zone rouge), elles frappent qui reste et couvrent la zone (terrain qui blesse)");
+      battle_.reset();
+    }
+    {  // Charge (Ignarok) : toute une ligne annoncée ; ceux qui y restent sont frappés et reculent (choc contre le bord)
+      auto igna = story("ignarok", "ignarok");
+      lior->hp = lior->mhp, maelle->hp = maelle->mhp;
+      Battle& B = begin(igna, {lior, maelle, kael});
+      B.cells_[lior.get()] = boardAt(2, 2), B.cells_[maelle.get()] = boardAt(2, 0), B.cells_[kael.get()] = boardAt(0, 2);
+      B.cells_[igna.get()] = boardAt(1, 5);
+      B.mechTurns_[igna.get()] = jget(igna->mech, "tous", 3) - 1;
+      B.bossPlan(igna);
+      bool warned = B.warnings_.size() == 1 && B.warnings_[0].kind == "charge" && B.warnings_[0].zone == Area::Line &&
+                    boardY(B.warnings_[0].center) == 2 && B.threatened(lior) && !B.threatened(kael);
+      run(.6f);
+      snap("boss_charge_annonce");
+      B.sc.clear();
+      int hpL = lior->hp, hpM = maelle->hp, hpK = kael->hp;
+      B.bossPlan(igna);
+      settle(B);
+      bool pushed = B.cellOf(lior) == boardAt(2, 1) && B.cellOf(maelle) == boardAt(2, 0) && lior->hp < hpL && maelle->hp < hpM && kael->hp == hpK;
+      check(warned && pushed, "boss : Ignarok annonce sa charge (une ligne), frappe et repousse ceux qui y restent (choc contre le bord)");
+      battle_.reset();
+    }
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+  }
+
   // --- Techniques en duo (2.6) ---
   {
     sc.clear(), menus.clear();
@@ -4077,6 +4206,15 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   }
   std::printf("\nÉquilibrage (combats simulés, IA automatique) :\n");
   int simFactor = std::max(1, std::atoi(simEnv));
+  // (2026-10-25) BRUMEVAL_SIM_FILTRE=Golem,Ignarok : seulement les lignes dont le nom contient l'un de ces mots
+  const char* onlyEnv = SDL_getenv("BRUMEVAL_SIM_FILTRE");
+  auto simWanted = [&](const std::string& name) {
+    if (!onlyEnv || !*onlyEnv) return true;
+    std::stringstream ss(onlyEnv);
+    for (std::string w; std::getline(ss, w, ',');)
+      if (!w.empty() && name.find(w) != std::string::npos) return true;
+    return false;
+  };
   // Équipement des boutiques (1 : vallée, 2 : Forgeroc, 3 : Givreval, 4 : Port-Écho) : le meilleur de chaque
   // emplacement ; arme de magie pour les mages (plus de Magie que d'Attaque), accessoire seul pour une créature
   int simGear = 0, simForge = 0;
@@ -4111,6 +4249,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   };
   auto simSetup = [&](const char* name, std::vector<std::pair<std::string, int>> party, std::function<BattleSetup()> mk, int n,
                       bool tac = false) {
+    if (!simWanted(name)) return;
     n *= simFactor;
     int wins = 0;
     float total = 0;

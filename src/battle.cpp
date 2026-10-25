@@ -892,6 +892,7 @@ void Battle::tickATB(float dt) {
     if (f->atb >= 100) {
       f->atb = 100;
       guarding_.erase(f.get());  // sa garde tombe quand son tour revient
+      posture_.erase(f.get());   // (2026-10-25) la posture d'un boss aussi
       if (skipTurn(f)) return;
       if (isAlly(f) && coop() && owner(f) != me_) {  // gardien : allié d'un autre joueur
         if (owner(f) < 0) autoCommand(f);            // joueur parti : l'ordinateur joue
@@ -1511,7 +1512,8 @@ float Battle::attackScore(const FighterP& a, const Move& m, const FighterP& t) c
   score *= posMult(a, t, m);  // échiquier : dans le dos, encerclé, distance au contact
   if (m.melee && boardDist(cellOf(a), cellOf(t)) > reach(a)) score *= .9f;  // il faut d'abord s'approcher
   if (boardDist(cellOf(a), cellOf(t)) <= 1 && behind(t, a)) score *= 1.4f;  // il est dans mon dos : le frapper, c'est se retourner
-  if (!ally && m.melee && guarding_.count(t.get())) score *= .4f;  // (2026-10-25) en garde, il riposterait : frapper ailleurs
+  if (m.melee && guarding_.count(t.get())) score *= .4f;  // (2026-10-25) en garde, il riposterait : frapper ailleurs
+  score *= postureMult(t, m);                             // un boss cuirassé (coups physiques) ou voilé (hors corps à corps)
   if (!ally) return score / paceTime(m);
   score *= 1 + std::min(1.f, (a->crit + m.critBonus) / 100.f) * float(R.critMult - 1);
   if (score >= t->hp * 1.2f) score += 15;  // achever un adversaire affaibli
@@ -1547,6 +1549,7 @@ Battle::Preview Battle::preview(const FighterP& a, const Move& m, const FighterP
   // Brisure : l'efficacité d'un type n'est comptée qu'une fois découverte (sinon neutre, quelle qu'elle soit : rien ne
   // se devine sans attaquer ; la fiche de la cible montre déjà « ? »)
   float eff = G.weakKnown(d->sp, m.type) ? moveEff(m, d->S()) : 1.f;
+  if (postureMult(d, m) <= 0) eff = 0;  // (2026-10-25) voilé de brume : le coup le traverse
   pv.eff = eff, pv.hit = std::clamp(hit, 0.f, 1.f);
   if (eff <= 0) return pv;
   float A = magic ? a->eMag() : a->eAtk(), D = magic ? d->eRes() : d->eDef();
@@ -1560,6 +1563,7 @@ Battle::Preview Battle::preview(const FighterP& a, const Move& m, const FighterP
   if (hasType(a->S(), m.type) && a->hp * 3 < a->mhp) k *= 1 + float(talentValue(a->S(), "rage"));
   k *= weatherMult(m.type) * guardMult(d);
   if (guarding_.count(d.get())) k *= float(R.guard);  // en garde
+  k *= postureMult(d, m);                             // cuirasse d'un boss
   if (const Rules::Terrain* tr = terrainAt(a); magic && tr && tr->kind == "magie") k *= 1 + float(tr->value);
   float base = ((2 * a->lvl / 5.f + 2) * m.power * A / std::max(1.f, D) / float(R.dmgDivisor) + 2) * stab * eff * k;
   pv.lo = std::max(1, int(base * float(R.spreadMin))), pv.hi = std::max(1, int(base));
@@ -1570,10 +1574,12 @@ std::string Battle::damageText(const FighterP& a, const Move& m, const FighterP&
   if (!m.damaging() || !a || !d) return "";
   Preview pv = preview(a, m, d);
   if (pv.eff < 0) return T(" · absorbé : le soigne !");
+  if (postureMult(d, m) <= 0) return T(" · traverse la brume : au contact !");
   if (pv.eff <= 0) return T(" · aucun effet");
   std::string s = T(" · ≈ ") + std::to_string(pv.lo) + (pv.hi > pv.lo ? "-" + std::to_string(pv.hi) : "") + T(" PV");
   s += " · " + std::to_string(int(std::lround(pv.hit * 100))) + " %";
   if (pv.back) s += T(" · dans le dos");
+  if (m.melee && guarding_.count(d.get()) && isAlly(a) != isAlly(d)) s += T(" · il riposte");  // (2026-10-25) en garde, cuirassé
   // (2026-10-25) ce que le coup changerait : l'abattre annule son intention, le briser lui fait perdre son tour
   if (d->alive() && pv.lo >= d->hp) s += T(" · l'abat");
   else if (d->alive() && pv.hi >= d->hp) s += T(" · peut l'abattre");
@@ -1603,6 +1609,7 @@ void Battle::enemyTurn(FighterP e) {
   bool declared = it != intents_.end();
   Intent in = declared ? it->second : Intent{};
   if (declared) intents_.erase(it);
+  if (!mech(e).empty()) mechTurns_[e.get()]++;  // (2026-10-25) le tour qui commence compte pour sa mécanique
   if (bossPlan(e)) return;
   if (!moved_.count(e.get())) {
     int c = -1;  // la case annoncée, si un chemin y mène encore (un allié a pu fermer le passage, une poussée le déplacer)
@@ -1632,7 +1639,7 @@ void Battle::enemyTurn(FighterP e) {
     log.push_back(e->name() + T(" : intention déjouée"));
     if (shown()) pop(e, T("Déjoué !"), rgb(0x8fd0ff)), sound("dejoue");
   }
-  if (declared && in.wait) return waitTurn(e);
+  if (declared && in.wait) return in.posture.empty() ? waitTurn(e) : takePosture(e, in.posture);
   if (roleHeal(e)) return;
   Plan p = think(e);
   if (p.wait) waitTurn(e);
@@ -1656,6 +1663,12 @@ void Battle::declareIntent(const FighterP& e) {
       if (o->hp * 2 < o->mhp && (!worst || o->hp * worst->mhp < worst->hp * o->mhp)) worst = o;
     if (worst) p = Plan{"soin", {worst}, false};
   }
+  // (2026-10-25) un boss à posture (cuirasse, voile) la prend un tour sur « tous » : annoncée ici, avec son message
+  if (std::string k = mech(e); (k == "cuirasse" || k == "voile") && mechDue(e)) {
+    p = Plan{}, p.wait = true, in.posture = k;
+    if (std::string msg = tr(jget<std::string>(e->mech, "message", "")); !msg.empty()) sc.say(msg, 1.2f);
+    tip(k.c_str());
+  }
   in.move = p.move, in.targets = p.targets, in.wait = p.wait;
   intents_[e.get()] = in;
   if (shown() && !autoPlay && !in.wait && !in.move.empty()) tip("intention");
@@ -1677,7 +1690,10 @@ std::string Battle::intentText(const Fighter& e) const {
     for (auto& o : foes)
       if (o.get() != &e && o->alive() && o->hp * 2 < o->mhp && o->S().combatRole != "protecteur" && inBoardZone(Area::Cross, from, cellOf(o)))
         cover = T(" (couvre {c})"), cover.replace(cover.find("{c}"), 3, o->name());
-  if (in.wait) return T("Se met en garde") + cover;
+  if (in.wait)
+    return (in.posture == "cuirasse" ? T("Va se cuirasser : la magie passe, le corps à corps est puni")
+            : in.posture == "voile"  ? T("Va se voiler : seul le corps à corps l'atteindra")
+                                     : T("Se met en garde")) + cover;
   if (in.move.empty() || !hasMove(in.move)) return "";
   std::string who;
   for (auto& t : in.targets)
@@ -1756,38 +1772,102 @@ bool Battle::bossPlan(FighterP e) {
       std::vector<FighterP> hit;
       for (auto& a : alive(allies))
         if (inBoardZone(w.zone, w.center, cellOf(a))) hit.push_back(a);
+      if (w.kind == "ronces") {  // (2026-10-25) les ronces poussent sur toute la zone et y restent ; les anciennes se fanent
+        int ti = -1;
+        for (size_t i = 0; i < rules().terrains.size(); i++)
+          if (rules().terrains[i].id == jget<std::string>(e->mech, "terrain", "")) ti = (int)i;
+        if (ti >= 0) {
+          for (auto& [c, old] : grown_) terrain_[(size_t)c] = old;
+          grown_.clear();
+          for (int c = 0; c < BOARD_CELLS; c++)
+            if (inBoardZone(w.zone, w.center, c) && !blockedCell(c)) grown_[c] = terrain_[(size_t)c], terrain_[(size_t)c] = ti;
+          log.push_back("  " + rules().terrains[(size_t)ti].name + " : " + zoneName(w.zone) + ", " + boardName(w.center));
+          sound("statut");
+          sc.say(T("Des ronces jaillissent et couvrent la zone : n'y finissez pas votre tour !"), 1.1f);
+        }
+      }
       if (hit.empty()) {
         log.push_back(e->name() + " : " + moveInfo(w.move).name + T(" (annoncée), personne dans la zone"));
         sc.say(e->name() + T(" déchaîne ") + moveInfo(w.move).name + T("… mais tout le monde s'est écarté !"), 1.2f);
         return false;  // il joue tout de même une attaque normale
       }
       log.push_back(e->name() + " : " + moveInfo(w.move).name + T(" (annoncée) sur ") + std::to_string(hit.size()));
-      useMove(e, w.move, hit, false, float(rules().bossBurst));
+      bool charge = w.kind == "charge";
+      if (charge) {  // (2026-10-25) toute la ligne : les plus éloignés reculent d'abord (ceux qui suivent les heurtent)
+        int ex = boardX(cellOf(e));
+        std::stable_sort(hit.begin(), hit.end(), [&](const FighterP& x, const FighterP& y) {
+          return std::abs(boardX(cellOf(x)) - ex) > std::abs(boardX(cellOf(y)) - ex);
+        });
+        sc.say(e->name() + T(" charge à travers la ligne !"), .8f);
+      }
+      useMove(e, w.move, hit, false, float(rules().bossBurst), charge);
       return true;
     }
-  if (alive(allies).empty() || frand() >= rules().bossWarn) return false;
-  // Sa plus forte attaque, concentrée sur la zone où se trouvent le plus d'alliés
-  std::string best;
+  // (2026-10-25) un boss à mécanique de zone (ronces, charge) l'annonce un tour sur « tous », à la place des annonces au hasard
+  std::string k = mech(e);
+  bool zoned = k == "ronces" || k == "charge";
+  if (!zoned && !k.empty() && mechDue(e)) return false;  // sa posture vient au tour suivant : pas de zone rouge qui l'empêche
+  if (alive(allies).empty() || (zoned ? !mechDue(e) : frand() >= rules().bossWarn)) return false;
+  // Sa plus forte attaque (ou celle de sa mécanique), concentrée sur la zone où se trouvent le plus d'alliés
+  std::string best = zoned ? jget<std::string>(e->mech, "technique", "") : "";
+  if (!best.empty() && (!hasMove(best) || e->mp < moveInfo(best).cost)) best.clear();
   int power = 0;
   std::vector<std::string> moves = e->techs();
   for (auto& id : e->spells())
     if (e->mp >= moveInfo(id).cost) moves.push_back(id);
-  for (auto& id : moves)
-    if (moveInfo(id).damaging() && moveInfo(id).power > power) power = moveInfo(id).power, best = id;
+  if (best.empty())
+    for (auto& id : moves)
+      if (moveInfo(id).damaging() && moveInfo(id).power > power) power = moveInfo(id).power, best = id;
   if (best.empty()) return false;
+  std::vector<Area> shapes = {Area::Column, Area::Cross, Area::Line};
+  if (k == "charge") shapes = {Area::Line};
+  if (k == "ronces")
+    for (Area z : {Area::Line, Area::Column, Area::Cross})
+      if (jget<std::string>(e->mech, "zone", "croix") == zoneId(z)) shapes = {z};
   int center = -1, most = 0;
-  Area zone = Area::Cross;
-  for (Area z : {Area::Column, Area::Cross, Area::Line})
+  Area zone = shapes[0];
+  for (Area z : shapes)
     for (auto& a : alive(allies)) {
       int n = 0;
       for (auto& b : alive(allies)) n += inBoardZone(z, cellOf(a), cellOf(b));
       if (n > most || (n == most && frand() < .3f)) most = n, zone = z, center = cellOf(a);
     }
-  warnings_.push_back({e, best, zone, center});
+  warnings_.push_back({e, best, zone, center, zoned ? k : ""});
   log.push_back(e->name() + T(" annonce ") + moveInfo(best).name + " (" + zoneName(zone) + ", " + boardName(center) + ")");
   sound("statut");
-  sc.say(e->name() + T(" prépare ") + moveInfo(best).name + T(" ! Écartez-vous de la zone rouge."), 1.4f);
+  std::string msg = zoned ? tr(jget<std::string>(e->mech, "message", "")) : "";
+  if (msg.empty()) msg = e->name() + T(" prépare ") + moveInfo(best).name + T(" ! Écartez-vous de la zone rouge.");
+  if (zoned) tip(k.c_str());
+  sc.say(msg, 1.4f);
   return false;  // l'annonce ne lui coûte pas son tour : il attaque aussitôt
+}
+
+// Mécaniques des boss (2026-10-25), voir battle.hpp
+std::string Battle::mech(const FighterP& e) const {
+  if (net_ != Net::None || !e || !e->boss || isAlly(e) || !e->mech.is_object()) return "";
+  return jget<std::string>(e->mech, "genre", "");
+}
+bool Battle::mechDue(const FighterP& e) const {
+  auto it = mechTurns_.find(e.get());
+  return ((it == mechTurns_.end() ? 0 : it->second) + 1) % std::max(2, jget(e->mech, "tous", 3)) == 0;
+}
+// Posture prise à son tour (son intention l'annonçait) : jusqu'à son prochain tour. Cuirasse : en garde (il riposte à
+// chaque coup au corps à corps), les coups physiques à « valeur » ; voile : seuls les coups au corps à corps l'atteignent
+void Battle::takePosture(const FighterP& e, const std::string& kind) {
+  bool armor = kind == "cuirasse";
+  posture_[e.get()] = kind;
+  if (armor) guarding_.insert(e.get()), facing_[e.get()] = nearestFoeSide(e);
+  log.push_back(e->name() + (armor ? T(" se cuirasse") : T(" se voile de brume")));
+  pop(e, armor ? T("Cuirasse !") : T("Voile !"), armor ? rgb(0xc8d6f0) : rgb(0xc8b8ff));
+  sound(armor ? "garde" : "statut");
+  sc.say(e->name() + (armor ? T(" se cuirasse : la magie passe, le corps à corps est puni !") : T(" se voile : seul le corps à corps l'atteint !")), 1.1f);
+  sc.call([this, e] { afterAction(e, float(rules().quickGauge)); });
+}
+float Battle::postureMult(const FighterP& d, const Move& m) const {
+  auto it = posture_.find(d.get());
+  if (it == posture_.end()) return 1;
+  if (it->second == "voile") return m.melee ? 1.f : 0.f;  // sorts, tirs et états la traversent
+  return m.kind == Kind::Physical ? jget(d->mech, "valeur", .5f) : 1.f;
 }
 bool Battle::tacticTurn(FighterP a) {
   if (!a->tacticsOn) return false;
@@ -2084,6 +2164,13 @@ bool Battle::tacticPlan(FighterP a, Plan& out) {
 int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float mult) {
   const Rules& R = rules();
   bool magic = m.kind == Kind::Magic;
+  if (postureMult(d, m) <= 0) {  // (2026-10-25) voilé de brume : sorts et tirs le traversent
+    pop(d, T("Traverse la brume"), rgb(0xc8b8ff));
+    sound("rate");
+    log.push_back(a->name() + " > " + d->name() + " : " + m.name + T(" traverse la brume"));
+    if (isAlly(a)) tip("voile");
+    return 0;
+  }
   // Précision : l'esquive ne joue que contre les attaques physiques
   float hit = m.acc / 100.f * a->acc / 100.f - (magic ? 0 : d->eva / 100.f);
   if (!magic && !engaged(d)) hit -= float(talentValue(d->S(), "esquive_arriere"));  // talent Furtif : loin de la mêlée
@@ -2123,6 +2210,7 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
   k *= weatherMult(m.type);                                                                          // météo
   k *= guardMult(d);                                                                                 // rôle : protecteur voisin
   if (guarding_.count(d.get())) k *= float(R.guard);                                                 // en garde (Attendre)
+  k *= postureMult(d, m);                                                                            // cuirasse d'un boss
   if (const Rules::Terrain* tr = terrainAt(a); magic && tr && tr->kind == "magie") k *= 1 + float(tr->value);  // cristaux
   int dmg = std::max(1, int(((2 * a->lvl / 5.f + 2) * m.power * A / std::max(1.f, D) / float(R.dmgDivisor) + 2) * stab * eff * spread * k));
   if (absorb) {  // soigné au lieu d'être blessé ; l'équipe s'en souvient (aperçu des dégâts, Bestiaire)
@@ -2218,8 +2306,10 @@ int Battle::shoveDest(const FighterP& a, const FighterP& t, const Move& m) const
 }
 
 void Battle::shove(const FighterP& a, const FighterP& t, const Move& m, int dmg, std::vector<FighterP>& ko) {
-  int to = shoveDest(a, t, m);
   if (isAlly(a)) tip("pousser");
+  shoveTo(t, shoveDest(a, t, m), m.shove > 0, dmg, ko);
+}
+void Battle::shoveTo(const FighterP& t, int to, bool push, int dmg, std::vector<FighterP>& ko) {
   if (to == -2) {
     if (t->boss) pop(t, T("Inébranlable"), GREY);
     return;
@@ -2232,7 +2322,7 @@ void Battle::shove(const FighterP& a, const FighterP& t, const Move& m, int dmg,
     if (!f->alive() && std::find(ko.begin(), ko.end(), f) == ko.end()) ko.push_back(f);
   };
   if (to == -1) {  // pousser contre le bord du damier : choc ; tirer depuis l'avant : rien
-    if (m.shove > 0) {
+    if (push) {
       hurt(t);
       pop(t, T("Choc !"), rgb(0xffb070));
       shakeT_ = G.time;
@@ -2257,8 +2347,8 @@ void Battle::shove(const FighterP& a, const FighterP& t, const Move& m, int dmg,
   }
   if (shown()) slide_[t.get()] = {pos(t), G.time};
   cells_[t.get()] = to;
-  pop(t, m.shove > 0 ? T("Recule") : T("Avance"), rgb(0xd8e0ff));
-  log.push_back("  " + t->name() + (m.shove > 0 ? T(" poussé : ") : T(" tiré : ")) + boardName(to));
+  pop(t, push ? T("Recule") : T("Avance"), rgb(0xd8e0ff));
+  log.push_back("  " + t->name() + (push ? T(" poussé : ") : T(" tiré : ")) + boardName(to));
   if (terrainTurn(t, true) && std::find(ko.begin(), ko.end(), t) == ko.end()) ko.push_back(t);
 }
 
@@ -2430,7 +2520,7 @@ void Battle::knockOut(const FighterP& f) {
   koT_[f.get()] = G.time;  // dessin : l'ennemi s'efface (3.3)
 }
 
-void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> targets, bool isLimit, float boost) {
+void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> targets, bool isLimit, float boost, bool charge) {
   if (follower()) {  // l'invité envoie son ordre ; l'hôte (ou le chef) le joue et renvoie le résultat
     Json t = Json::array();
     for (auto& f : targets) t.push_back(mine(f));
@@ -2469,7 +2559,7 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
   else sc.say(isLimit ? T("LIMITE — ") + a->name() + " : " + m.name + " !" : a->name() + " : " + m.name, isLimit ? .9f : .55f);
   bool duo = duoPartner_ != nullptr;
   auto ko = std::make_shared<std::vector<FighterP>>();
-  sc.call([this, a, targets, center, &m, isLimit, ko, boost, duo] {
+  sc.call([this, a, targets, center, &m, isLimit, ko, boost, duo, charge] {
     if (isLimit || duo) sound("limite");
     if (m.kind == Kind::Heal || m.kind == Kind::Revive) sound("soin");
     if (isLimit || duo || m.target == Target::AllEnemies) {
@@ -2503,6 +2593,10 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
         landed = true;
       } else if (m.kind == Kind::Status) {
         bool hostile = isAlly(a) != isAlly(t);
+        if (hostile && postureMult(t, m) <= 0) {  // (2026-10-25) voilé de brume : l'état le traverse aussi
+          pop(t, T("Traverse la brume"), rgb(0xc8b8ff));
+          continue;
+        }
         if (hostile && frand() >= m.acc / 100.f * a->acc / 100.f) {
           pop(t, T("Raté"), GREY);
           continue;
@@ -2519,6 +2613,10 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
           for (auto& e : m.effects)
             if (!e.self) applyEffect(t, e);
           if (m.shove && t == targets[0] && dmg > 0) shove(a, t, m, dmg, *ko);
+          if (charge) {  // (2026-10-25) charge d'un boss : chaque cible recule d'une case, loin de lui (choc contre le bord ou un voisin)
+            int c = cellOf(t), x = boardX(c) + (boardX(c) >= boardX(cellOf(a)) ? 1 : -1);
+            shoveTo(t, x < 0 || x >= BOARD_W ? -1 : boardAt(boardY(c), x), true, dmg, *ko);
+          }
         }
         if (!m.motion.empty() && t == targets[0] && a->alive()) motionAfterHit(a, t, m, *ko);
       }
@@ -3179,8 +3277,11 @@ void Battle::draw() {
         col.a = 120;
         g.poly({{p.x - 14, p.y + 13}, {p.x, p.y + 8}, {p.x + 14, p.y + 13}, {p.x, p.y + 18}}, col);
         float ph = t * 3 + c * 1.3f + side * 5;
-        const std::string& k = tr->kind;
-        if (k == "degats")  // braises qui rougeoient
+        const std::string& k = tr->look;
+        if (k == "epines")  // (2026-10-25) ronces acérées de la Ronce-Mère : de grandes épines dressées
+          for (int i = 0; i < 4; i++)
+            g.tri(p.x - 10 + i * 6, p.y + 15, p.x - 6 + i * 6, p.y + 15, p.x - 8 + i * 6 + std::sin(ph + i) * .6f, p.y + 7 - (i % 2) * 2, rgb(0x3a1a0c, 230));
+        else if (k == "degats")  // braises qui rougeoient
           for (int i = 0; i < 3; i++) g.ellipse(p.x - 6 + i * 6, p.y + 13 + (i % 2) * 2 - std::fmod(ph + i, 3.f), 1.5f, 1.5f, rgb(i % 2 ? 0xffd34d : 0xff5a1a));
         else if (k == "poison")  // épines
           for (int i = 0; i < 4; i++) g.line(p.x - 8 + i * 5, p.y + 15, p.x - 6 + i * 5, p.y + 10, 1, rgb(0x2e4a1e));
@@ -3207,6 +3308,19 @@ void Battle::draw() {
         Pt p = cellPos(c);
         g.ellipse(p.x, p.y + 13, 14, 5, rgb(0xff3b30, uint8_t(120 + 90 * std::sin(t * 7))));
       }
+  for (auto& w : warnings_)  // (2026-10-25) mécanique d'un boss : la charge montre où ils reculeront, les ronces percent le sol
+    for (int c = 0; c < BOARD_CELLS && !w.kind.empty(); c++) {
+      if (!inBoardZone(w.zone, w.center, c)) continue;
+      Pt p = cellPos(c);
+      if (w.kind == "charge") {
+        float d = boardX(c) < boardX(cellOf(w.who)) ? -1.f : 1.f, k = std::fmod(t * 1.5f + 10 - boardX(c) * .2f * d, 1.f);
+        g.tri(p.x + d * 5, p.y + 13, p.x - d * 2, p.y + 9.5f, p.x - d * 2, p.y + 16.5f, rgb(0xffe0b0, uint8_t(120 + 120 * k)));
+      } else if (w.kind == "ronces")
+        for (int i = 0; i < 3; i++) {
+          float h = 2 + 2.5f * std::max(0.f, std::sin(t * 4 + i * 2 + c));
+          g.tri(p.x - 7 + i * 7, p.y + 15, p.x - 5 + i * 7, p.y + 15, p.x - 6 + i * 7, p.y + 15 - h, rgb(0x3a1a0c, 220));
+        }
+    }
   // Limite (3.4) : un cercle d'invocation (Godot) tourne au sol sous chaque cible, sous les combattants
   if (anim_.limit && t - anim_.t0 >= 0 && t - anim_.t0 < .8f)
     if (const SpriteRect* r = findSprite("gfx_cercle_" + std::to_string(std::clamp(int((t - anim_.t0) / .8f * 8), 0, 7))))
@@ -3275,7 +3389,7 @@ void Battle::draw() {
     g.poly({{gx - 2.5f * w, gy + 1.5f}, {gx + 2.5f * w, gy + 1.5f}, {gx + 2.5f * w, gy + 4}, {gx, gy + 6.3f}, {gx - 2.5f * w, gy + 4}}, rgb(0x8fd0ff, 235));
   };
   auto intentCol = [&](const Intent& in) {  // la couleur de son icône (aussi celle des éclats quand elle se brise)
-    if (in.wait) return rgb(0xd8e4f4);
+    if (in.wait) return in.posture == "cuirasse" ? rgb(0xc8d6f0) : in.posture == "voile" ? rgb(0xc8b8ff) : rgb(0xd8e4f4);
     const Move& m = moveInfo(in.move);
     if (m.kind == Kind::Heal || m.kind == Kind::Revive) return rgb(0x6ad87a);
     if (m.kind == Kind::Magic || m.kind == Kind::Status) return rgb(m.type >= 0 && m.type < (int)types().size() ? types()[(size_t)m.type].color : 0xc8a8ff);
@@ -3284,6 +3398,15 @@ void Battle::draw() {
   auto intentIcon = [&](const Intent& in, float ix, float iy, float s) {  // s : échelle
     Color c = intentCol(in);
     g.ellipse(ix, iy, 6 * s, 6 * s, rgb(0x0a0f33, 210));
+    if (in.wait && in.posture == "cuirasse") {  // (2026-10-25) un écu : il va se cuirasser
+      g.poly({{ix - 3.5f * s, iy - 3.5f * s}, {ix + 3.5f * s, iy - 3.5f * s}, {ix + 3.5f * s, iy + .5f * s}, {ix, iy + 4 * s}, {ix - 3.5f * s, iy + .5f * s}}, c);
+      g.rect(ix - .5f * s, iy - 2.5f * s, s, 5 * s, rgb(0x5a6070));
+      return;
+    }
+    if (in.wait && in.posture == "voile") {  // trois volutes de brume : il va se voiler
+      for (int i = 0; i < 3; i++) g.ellipse(ix + (i - 1) * 2.5f * s, iy + (i == 1 ? -1.5f : 1.f) * s, 2.2f * s, 1.4f * s, c);
+      return;
+    }
     if (in.wait) {  // sablier : il se met en garde
       g.tri(ix - 3 * s, iy - 3.5f * s, ix + 3 * s, iy - 3.5f * s, ix, iy, c), g.tri(ix - 3 * s, iy + 3.5f * s, ix + 3 * s, iy + 3.5f * s, ix, iy, c);
       return;
@@ -3376,7 +3499,28 @@ void Battle::draw() {
         g.alpha = 1;
         continue;
       }
+      // (2026-10-25) posture d'un boss : cuirassé, il prend la teinte de la pierre ; voilé, il pâlit dans des volutes de brume
+      auto pz = posture_.find(f.get());
+      bool veil = pz != posture_.end() && pz->second == "voile", armor = pz != posture_.end() && pz->second == "cuirasse";
+      float a0 = g.alpha;
+      if (veil) g.alpha = a0 * .45f;
+      if (armor) g.spriteTint = rgb(0xa8b4c8);
       if (!(blinking && blink == f)) drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, s, facesRight(f), t + p.x * .01f);  // vers l'adversaire le plus proche
+      g.spriteTint = rgb(0xffffff), g.alpha = a0;
+      if (veil)
+        for (int i = 0; i < 6; i++) {
+          float ang = t * 1.3f + i * 1.047f;
+          g.ellipse(p.x + std::cos(ang) * 18, p.y - 8 + std::sin(ang) * 6, 9, 3.5f, rgb(0xd8d4e8, uint8_t(70 + 40 * std::sin(t * 2 + i))));
+        }
+      if (armor) {  // un anneau de pierre au sol, et des écailles qui luisent l'une après l'autre
+        float top = fighterTop(*f, s), cy = p.y - top * .45f;
+        g.ellipse(p.x, p.y + 13, 24, 7, rgb(0xc8d6f0, uint8_t(60 + 40 * std::sin(t * 4))));
+        for (int i = 0; i < 6; i++) {
+          float ang = i * 1.047f + .3f, x = p.x + std::cos(ang) * top * .4f, y = cy + std::sin(ang) * top * .35f;
+          float glint = std::max(0.f, std::sin(t * 3 - i * 1.3f));
+          g.poly({{x, y - 3}, {x + 2.5f, y}, {x, y + 3}, {x - 2.5f, y}}, rgb(0xe8f0ff, uint8_t(80 + 160 * glint)));
+        }
+      }
       float bw = f->boss ? 24 : 15, by = std::max(46.f, p.y - fighterTop(*f, s) - 6);
       g.rect(p.x - bw - 1, by - 1, bw * 2 + 2, 4, rgb(0x0a0f33));
       g.rect(p.x - bw, by, bw * 2 * f->hp / f->mhp, 2, rgb(f->broken ? 0xffe066 : 0xff8a7a));

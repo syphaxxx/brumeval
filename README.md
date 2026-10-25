@@ -167,6 +167,10 @@ temps :
 - **Phases des boss** : sous un seuil de PV, un boss change : bouclier rechargé,
   bonus, nouvelles techniques, autre météo, renforts (Ignarok reforme sa carapace
   (sa carapace se reforme) puis appelle un tisonnel, la Ronce-Mère fait germer des soigneurs…).
+- **Mécaniques des boss** (2026-10-25), toujours annoncées, chacune avec sa parade : le Golem de suie
+  se cuirasse (la magie passe, le corps à corps est puni par sa riposte), la Mère des Brumes se voile
+  (seul le corps à corps l'atteint), la Ronce-Mère fait jaillir des ronces qui restent au sol (quittez
+  la zone rouge), Ignarok charge toute une ligne et repousse ceux qui y restent (changez de ligne).
 - **Portraits** dans les dialogues, **écran titre** animé (étoiles, étoile filante,
   lucioles, reflet sur le titre).
 
