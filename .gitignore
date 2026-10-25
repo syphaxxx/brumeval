@@ -18,3 +18,4 @@ outils/godot/effets/rendus/
 outils/godot/effets/.godot/
 partie/
 *.log
+.claude/worktrees/
