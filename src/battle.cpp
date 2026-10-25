@@ -847,6 +847,7 @@ void Battle::drawTurnOrder(float y, float minX, float maxX) {
   if (order.empty()) return;
   float x = std::clamp(160 - order.size() * 12.f, minX, maxX - order.size() * 24.f);
   std::map<const Fighter*, int> seenOnce;  // un ennemi brisé : seul son prochain tour est perdu
+  std::set<const Fighter*> marked;         // (2026-10-25) son prochain tour porte son intention : un chevron orange
   for (size_t i = 0; i < order.size(); i++, x += 24) {
     const FighterP& f = order[i];
     bool ally = isAlly(f), lost = !ally && f->broken && seenOnce[f.get()]++ == 0;
@@ -859,6 +860,11 @@ void Battle::drawTurnOrder(float y, float minX, float maxX) {
       g.text(x + 11, y + 1, utf8Prefix(f->name(), 3), lost ? GREY : ally ? WHITE : edge, 1, false);
     g.alpha = 1;
     if (lost) g.rect(x + 2, y + 6, 18, 1, rgb(0xffe066));  // barré : tour perdu (brisé)
+    if (auto it = intents_.find(f.get()); !ally && !lost && it != intents_.end() && marked.insert(f.get()).second && !it->second.wait &&
+                                          hasMove(it->second.move) && moveInfo(it->second.move).damaging()) {
+      g.tri(x + 15, y + 8, x + 21, y + 8, x + 18, y + 11, rgb(0x2a1606, 220));
+      g.tri(x + 16, y + 8.5f, x + 20, y + 8.5f, x + 18, y + 10.5f, rgb(0xff9a3a));
+    }
   }
 }
 
