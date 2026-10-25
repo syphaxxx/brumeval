@@ -131,6 +131,7 @@ class Pilot {
   // Chemin en cours
   Goal goal_;
   bool hasGoal_ = false, needPlan_ = true;
+  int planMap_ = -1;  // carte où le chemin a été choisi
   std::vector<Step> path_;
   int target_ = -1, targetFace_ = -1;
   int lastNode_ = -1;
@@ -196,8 +197,14 @@ class Pilot {
   // Tactiques (2026-10-23) : un profil pour chacun selon ce qu'il sait faire (soigneur, protecteur, briseur, combattant)
   std::map<const Fighter*, std::string> profileOf_;
   void setupTactics(bool show);
-  void adaptTeam(bool show);  // compagnons selon les créatures du lieu (2026-10-24)
+  // compagnons selon les créatures du lieu (2026-10-24), ou celles d'un combat difficile (fight) ; vrai s'il en change
+  bool adaptTeam(bool show, const Json* fight = nullptr);
   std::string adaptKey_;      // lieu et équipe de la dernière adaptation
+  std::string bossAdapted_;   // combat difficile pour lequel les compagnons viennent d'être choisis
+  bool quiet_ = false;        // essai de compagnons (bossTeam) : rien au journal
+  // Avant un combat difficile (2026-10-25) : les compagnons choisis contre ses combattants (adaptTeam), gardés seulement
+  // si la répétition les donne nettement meilleurs que l'équipe du moment ; vrai s'il en change
+  bool bossTeam(const Json& fight);
   void forging();            // forge : renforce l'équipement porté tant que l'or et les matériaux le permettent
   bool forgeWanted() const;  // une arme ou armure portée peut être forgée maintenant
   float gearScore(const Fighter& f, const ItemDef& d) const;

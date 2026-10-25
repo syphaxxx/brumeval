@@ -245,8 +245,15 @@ void Pilot::inspectList(const Json& list, Info& in, int depth) const {
       if (!in.combat) in.fight = a;
       in.combat = true;
       in.boss = in.boss || jget(a, "boss", false);
-      Json foes = a.value("ennemis", Json::array());  // un défi (« defi ») n'a pas de liste d'ennemis
-      for (auto& e : foes) in.lvl = std::max(in.lvl, jget(e, "niveau", G.avgLevel()));
+      for (const Json* c = &a; c;) {  // (2026-10-25) et les combats qui suivent sa victoire (Ligue : trois d'affilée)
+        Json foes = c->value("ennemis", Json::array());  // un défi (« defi ») n'a pas de liste d'ennemis
+        for (auto& e : foes) in.lvl = std::max(in.lvl, jget(e, "niveau", G.avgLevel()));
+        const Json* next = nullptr;
+        if (c->contains("victoire") && (*c)["victoire"].is_array())
+          for (auto& v : (*c)["victoire"])
+            if (!next && v.is_object() && jget<std::string>(v, "action", "") == "combat") next = &v;
+        c = next;
+      }
     } else if (k == "boutique") {
       for (auto& id : nameList(a["objets"])) in.shop.push_back(id);
     } else if (k == "forge") in.forge = true;
@@ -345,29 +352,44 @@ float Pilot::rehearse(const Json& fight, int n, bool fullHealth) {
       else c->companion.reset();
     }
     G.team = team, G.reserve.clear(), G.items = keepItems, G.gold = keepGold;
-    BattleSetup s;
-    auto make = [&](const Json& e) { return makeFoe(e, G.avgLevel()); };
-    if (fight.contains("defi") && fight["defi"].is_string()) challengeSetup(fight["defi"].get<std::string>(), s);  // ses combattants
-    for (auto& e : fight.value("ennemis", Json::array())) s.foes.push_back(make(e));
-    for (auto& e : fight.value("renforts", Json::array())) s.reserve.push_back(make(e));
-    s.ambush = fight.value("embuscade", false);
-    if (s.foes.empty()) {  // rien à combattre : gagné d'avance (l'équipe est remise en place après la boucle)
+    // (2026-10-25) un combat suivi d'autres sans soin entre eux (rangs de la Ligue : trois d'affilée) se répète en entier,
+    // les PV et PM de l'un passant au suivant ; avant, seul le premier était répété et il perdait plus loin
+    bool won = true, empty = false;
+    for (const Json* cur = &fight; cur && won;) {
+      const Json& f = *cur;
+      BattleSetup s;
+      auto make = [&](const Json& e) { return makeFoe(e, G.avgLevel()); };
+      if (f.contains("defi") && f["defi"].is_string()) challengeSetup(f["defi"].get<std::string>(), s);  // ses combattants
+      for (auto& e : f.value("ennemis", Json::array())) s.foes.push_back(make(e));
+      for (auto& e : f.value("renforts", Json::array())) s.reserve.push_back(make(e));
+      s.ambush = f.value("embuscade", false);
+      if (s.foes.empty()) {  // rien à combattre : gagné d'avance (l'équipe est remise en place après la boucle)
+        empty = cur == &fight;
+        break;
+      }
+      s.boss = jget(f, "boss", false);
+      s.canFlee = false, s.canCapture = false;
+      // (2026-10-24) dans le décor du lieu du combat (météo et terrain sont tirés selon le thème) : répétée depuis la ville,
+      // la canicule du Cratère ne jouait pas et le Phénix d'écho gagnait quatre fois de suite un combat « sûr à 85 % »
+      int where = fight.value("carte", -1);
+      Battle b(G, std::move(s), maps()[(size_t)(where >= 0 && where < (int)maps().size() ? where : G.mapId)].theme);
+      b.autoPlay = true;
+      b.simTactics = true;
+      for (float t = 0; t < 600 && !b.finished(); t += .05f) {
+        G.in.confirm = true;
+        b.update(.05f);
+      }
+      won = b.finished() && b.result() == BattleResult::Win;
+      cur = nullptr;  // le combat suivant : le premier « combat » de sa victoire
+      if (f.contains("victoire") && f["victoire"].is_array())
+        for (auto& a : f["victoire"])
+          if (!cur && a.is_object() && jget<std::string>(a, "action", "") == "combat") cur = &a;
+    }
+    if (empty) {
       wins = n;
       break;
     }
-    s.boss = jget(fight, "boss", false);
-    s.canFlee = false, s.canCapture = false;
-    // (2026-10-24) dans le décor du lieu du combat (météo et terrain sont tirés selon le thème) : répétée depuis la ville,
-    // la canicule du Cratère ne jouait pas et le Phénix d'écho gagnait quatre fois de suite un combat « sûr à 85 % »
-    int where = fight.value("carte", -1);
-    Battle b(G, std::move(s), maps()[(size_t)(where >= 0 && where < (int)maps().size() ? where : G.mapId)].theme);
-    b.autoPlay = true;
-    b.simTactics = true;
-    for (float t = 0; t < 600 && !b.finished(); t += .05f) {
-      G.in.confirm = true;
-      b.update(.05f);
-    }
-    if (b.finished() && b.result() == BattleResult::Win) wins++;
+    if (won) wins++;
   }
   G.team = keepTeam, G.reserve = keepReserve, G.items = keepItems, G.gold = keepGold;
   G.seen = keepSeen, G.caught = keepCaught, G.tacticsAuto = keepAuto;
@@ -492,6 +514,7 @@ std::vector<Pilot::Goal> Pilot::goals() {
 void Pilot::plan() {
   needPlan_ = false;
   hasGoal_ = false;
+  planMap_ = G.mapId;
   path_.clear();
   grind_.clear();
   int cur = node(G.mapId, G.px, G.py);
@@ -510,7 +533,8 @@ void Pilot::plan() {
   for (auto& g : gs)
     if (g.kind == Grind && std::any_of(g.spots.begin(), g.spots.end(), [&](const Spot& s) { return dist_[s.node] < INT_MAX; }))
       need_ = need_ ? std::min(need_, g.need) : g.need;
-  bool hurt = ko || frac < (G.front().size() <= 3 ? .6f : .5f);  // petite équipe : plus prudente
+  // petite équipe : plus prudente ; (2026-10-25) à sec de PM aussi : sans sorts, ni soins ni magie contre les carapaces
+  bool hurt = ko || frac < (G.front().size() <= 3 ? .6f : .5f) || (mmp > 0 && mpFrac < .25f);
 
   // Le plus proche objectif de ce genre dont le chemin ne traverse pas d'herbes trop fortes pour
   // l'équipe (créatures de plus d'un niveau au-dessus) ; sinon il s'entraînera d'abord (need_)
@@ -732,6 +756,10 @@ void Pilot::walk(float dt) {
     if (puzzleMoves_.empty()) needPlan_ = true;
     return;
   }
+  if (G.mapId != planMap_) {  // (2026-10-25) nouvelle carte : revoir les compagnons (adaptTeam) avant la première rencontre
+    needPlan_ = true;
+    return;
+  }
   int cur = node(G.mapId, G.px, G.py);
   if (cur == lastNode_) sameT_ += dt;
   else sameT_ = 0, lastNode_ = cur;
@@ -776,7 +804,40 @@ void Pilot::walk(float dt) {
   needPlan_ = true;  // pas sur le chemin prévu (événement, téléportation…)
 }
 
+bool Pilot::bossTeam(const Json& fight) {
+  auto team = G.team, reserve = G.reserve;
+  std::vector<std::weak_ptr<Fighter>> comp;
+  for (auto& f : team) comp.push_back(f->companion);
+  auto restore = [&] {
+    G.team = team, G.reserve = reserve;
+    for (size_t i = 0; i < team.size(); i++) team[i]->companion = comp[i];
+  };
+  std::string key = adaptKey_;
+  float before = prudent(rehearse(fight, 16, false), 16);
+  quiet_ = true;
+  bool changed = adaptTeam(false, &fight);
+  quiet_ = false;
+  float after = changed ? prudent(rehearse(fight, 16, false), 16) : 0;
+  restore();
+  adaptKey_ = key;
+  if (!changed || after < before + .05f) {
+    if (changed) note("Compagnons gardés pour « " + goal_.what + " » (" + std::to_string(int(before * 100 + .5f)) + " % contre " + std::to_string(int(after * 100 + .5f)) + " %)");
+    return false;
+  }
+  note("Compagnons pour « " + goal_.what + " » : " + std::to_string(int(before * 100 + .5f)) + " → " + std::to_string(int(after * 100 + .5f)) + " % en répétition");
+  adaptKey_.clear();
+  return adaptTeam(demo_, &fight);
+}
+
 void Pilot::interactNow() {
+  // (2026-10-25) devant un boss ou un dresseur : essayer les compagnons qui passent le mieux sur ses combattants à lui,
+  // comme un joueur qui lit le Bestiaire avant d'entrer ; gardés seulement si la répétition les donne meilleurs (une
+  // fois par combat ; en démo, par les menus, puis il revient ici)
+  if (goal_.kind == Danger && goal_.fight.is_object() && bossAdapted_ != goal_.key) {
+    bossAdapted_ = goal_.key;
+    if (bossTeam(goal_.fight) && demo_) return;
+  }
+  bossAdapted_.clear();
   G.in.confirm = true;
   paused_ = false;
   doneSig_[goal_.key] = goal_.sig;
@@ -917,7 +978,8 @@ bool Pilot::shouldFlee() const {
   for (auto& a : B.allies) ah += std::max(0, a->hp), am += a->mhp;
   for (auto& f : B.foes) fh += std::max(0, f->hp), fm += f->mhp;
   for (auto& f : B.reserve) fh += f->hp, fm += f->mhp;
-  return am > 0 && fm > 0 && ah * 3 < am && fh * 2 > fm;
+  // (2026-10-25) aussi plus tôt : la moitié des PV perdue quand l'adversaire garde les deux tiers des siens
+  return am > 0 && fm > 0 && ((ah * 3 < am && fh * 2 > fm) || (ah * 2 < am && fh * 3 > fm * 2));
 }
 
 int Pilot::creaturesWanted() const {
@@ -1186,20 +1248,33 @@ void Pilot::socketGems(bool show) {
 // d'équipe, comme un joueur le ferait d'après le Bestiaire (il perdait quinze fois au Vieux Phare avec deux Champignards
 // et un Flammenard contre des Cendrelys qui absorbent le Feu). Refait quand le lieu ou l'équipe change ; seulement
 // pour nettement mieux (+20 %) : pas de valse des compagnons
-void Pilot::adaptTeam(bool show) {
+bool Pilot::adaptTeam(bool show, const Json* fight) {
   const MapDef& M = maps()[(size_t)G.mapId];
   std::set<std::string> threat;
-  for (auto& z : M.zones)
-    for (auto* pool : {&z.pool, &z.night})
-      for (auto& s : *pool)
-        if (hasSpecies(s)) threat.insert(s);
-  if (threat.size() < 2) return;  // villes, intérieurs
+  if (fight) {  // (2026-10-25) avant un boss : contre ses combattants à lui (et ses renforts), pas ceux des herbes
+    for (const char* k : {"ennemis", "renforts"})
+      if (fight->contains(k) && (*fight)[k].is_array())
+        for (auto& e : (*fight)[k])
+          if (e.is_object() && e.contains("espece") && e["espece"].is_string() && hasSpecies(e["espece"].get<std::string>()))
+            threat.insert(e["espece"].get<std::string>());
+    if (threat.empty()) return false;
+  } else {
+    for (auto& z : M.zones)
+      for (auto* pool : {&z.pool, &z.night})
+        for (auto& s : *pool)
+          if (hasSpecies(s)) threat.insert(s);
+    if (threat.size() < 2) return false;  // villes, intérieurs
+  }
   std::string key = M.id;
+  for (auto& s : threat) key += "/" + s;
   for (auto& f : G.team) key += "," + f->sp + ":" + std::to_string(f->lvl / 5);
   for (auto& f : G.reserve) key += ";" + f->sp + ":" + std::to_string(f->lvl / 5);
-  if (adaptKey_ == key) return;
+  if (adaptKey_ == key) return false;
   adaptKey_ = key;
-  auto power = [&](const FighterP& c) {  // sa meilleure attaque contre chaque espèce du lieu (efficacité × puissance) ; le niveau compte
+  // Sa meilleure attaque contre chaque espèce du lieu : efficacité × puissance × type du lanceur × sa statistique
+  // contre la défense de l'espèce (2026-10-25 : physique contre Défense, magie contre Résistance ; avant, ni les
+  // statistiques ni le type du lanceur : un attaquant physique semblait aussi bon qu'un mage contre les carapaces)
+  auto power = [&](const FighterP& c) {
     float sum = 0;
     auto moves = c->techs(), sp = c->spells();
     moves.insert(moves.end(), sp.begin(), sp.end());
@@ -1207,10 +1282,15 @@ void Pilot::adaptTeam(bool show) {
       const Species& s = species(sid);
       float best = 0;
       for (auto& id : moves)
-        if (const Move& m = moveInfo(id); m.damaging()) best = std::max(best, std::max(0.f, moveEff(m, s)) * m.power);
+        if (const Move& m = moveInfo(id); m.damaging()) {
+          bool magic = m.kind == ::Kind::Magic;
+          float A = float(magic ? c->mag : c->atk), D = float(std::max(1, s.base[magic ? B_RES : B_DEF]));
+          float stab = hasType(c->S(), m.type) ? float(rules().stab) : 1.f;
+          best = std::max(best, std::max(0.f, moveEff(m, s)) * m.power * stab * A / D);
+        }
       sum += best;
     }
-    return sum / threat.size() * (c->lvl + 20);
+    return sum / threat.size();
   };
   std::vector<FighterP> heroes, pool;
   for (auto& f : G.team) {
@@ -1218,7 +1298,7 @@ void Pilot::adaptTeam(bool show) {
     else if (heroes.size() < 3) heroes.push_back(f);
   }
   for (auto& f : G.reserve) pool.push_back(f);
-  if (heroes.empty() || pool.size() <= heroes.size()) return;
+  if (heroes.empty() || pool.size() <= heroes.size()) return false;
   std::vector<std::pair<float, FighterP>> ranked;
   for (auto& c : pool) ranked.push_back({power(c), c});
   std::stable_sort(ranked.begin(), ranked.end(), [](const auto& a, const auto& b) { return a.first > b.first; });
@@ -1228,7 +1308,7 @@ void Pilot::adaptTeam(bool show) {
     now += cur ? power(cur) : 0;
     best += ranked[i].first;
   }
-  if (best < now * 1.2f) return;
+  if (best <= now * 1.2f) return false;
   std::vector<FighterP> wanted;
   for (size_t i = 0; i < heroes.size(); i++) wanted.push_back(ranked[i].second);
   auto inTeam = [&](const FighterP& f) { return std::find(G.team.begin(), G.team.end(), f) != G.team.end(); };
@@ -1240,7 +1320,7 @@ void Pilot::adaptTeam(bool show) {
         if (inTeam(it->second) && std::find(wanted.begin(), wanted.end(), it->second) == wanted.end() &&
             std::none_of(swaps.begin(), swaps.end(), [&](const auto& p) { return p.first == it->second; }))
           out = it->second;
-      if (!out) return;  // (équipe sans créature à céder : rien)
+      if (!out) return false;  // (équipe sans créature à céder : rien)
       swaps.push_back({out, w});
     }
   auto apply = [this, swaps, heroes, wanted] {
@@ -1252,8 +1332,9 @@ void Pilot::adaptTeam(bool show) {
     }
   };
   for (size_t i = 0; i < heroes.size(); i++)
-    if (companionOf(G.team, heroes[i]) != wanted[i]) note("Compagnon : " + heroes[i]->name() + " → " + wanted[i]->name() + " (" + M.name + ")");
-  if (!show) return apply();
+    if (!quiet_ && companionOf(G.team, heroes[i]) != wanted[i])
+      note("Compagnon : " + heroes[i]->name() + " → " + wanted[i]->name() + " (" + (fight ? "combat difficile, " : "") + M.name + ")");
+  if (!show) return apply(), true;
   // Démo : Échap > Préparation > Réserve > la créature > celle qu'elle remplace ; puis Compagnons > le héros > la créature
   for (auto& [out, in] : swaps) visits_.push_back({{T("Préparation"), T("Réserve"), in->name(), out->name()}, 2.f});
   for (size_t i = 0; i < heroes.size(); i++) {
@@ -1261,6 +1342,7 @@ void Pilot::adaptTeam(bool show) {
     if (i + 1 == heroes.size()) v.after = apply;  // la dernière finit ce que les menus n'auraient pas fait
     visits_.push_back(v);
   }
+  return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -1472,12 +1554,15 @@ void Pilot::update(float dt) {
       Json fight = {{"ennemis", Json::array()}};
       for (auto& f : G.battle_->foes) {
         top = std::max(top, f->lvl);
-        fight["ennemis"].push_back({{"espece", f->sp}, {"niveau", f->lvl}});
+        fight["ennemis"].push_back({{"espece", f->sp}, {"niveau", f->lvl}, {"boss", f->boss}});  // un alpha reste un alpha
       }
       fight["embuscade"] = G.battle_->ambush_;  // une embuscade se répète comme telle
-      if (G.battle_->foes.size() >= 3 || top > G.avgLevel() + 1 || G.battle_->ambush_) {
-        float c = prudent(rehearse(fight, 8, false), 8);
-        fleeNow_ = c < .7f;  // fuir coûte peu, perdre coûte cher (retour, soins, moitié de l'or)
+      // (2026-10-25) toute rencontre à sa mesure, pas seulement les grandes meutes : il perdait contre deux créatures de son
+      // niveau (Échoplume et Pétrolin du Vieux Phare), et même contre un Cendrelys seul, sans les avoir jaugés
+      bool big = G.battle_->foes.size() >= 3 || top > G.avgLevel() + 1 || G.battle_->ambush_;
+      if (big || top >= G.avgLevel() - 5) {
+        float c = prudent(rehearse(fight, 10, false), 10);
+        fleeNow_ = c < .8f;   // fuir coûte peu, perdre coûte cher (retour, soins, moitié de l'or)
         if (SDL_getenv("BRUMEVAL_TRACE"))
           std::printf("  [%s] meute de %d (N.%d max) : %d %% de victoires%s\n", hms().c_str(), (int)G.battle_->foes.size(), top, int(c * 100 + .5f),
                       fleeNow_ ? ", il fuit" : "");

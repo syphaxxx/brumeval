@@ -608,7 +608,7 @@
         "aide": "Garde l'équipe debout : réanime, soigne, guérit ; lance ses sorts en gardant de quoi soigner.",
         "regles": [
           {"si": "allie_ko", "faire": "reanimation"},
-          {"si": "allie_pv_moins", "valeur": 45, "faire": "soin"},
+          {"si": "allie_pv_moins", "valeur": 55, "faire": "soin"},
           {"si": "allie_etat", "faire": "guerison"},
           {"si": "soi_menace", "faire": "esquiver"},
           {"si": "soi_limite", "faire": "limite"},
