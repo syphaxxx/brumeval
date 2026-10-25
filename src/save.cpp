@@ -43,8 +43,14 @@ bool Game::saveGame() {
   }
   for (auto& w : weak) {  // « espèce:numéro du type » : écrit avec l'identifiant du type (stable si on en ajoute)
     auto c = w.find(':');
-    int t = std::atoi(w.c_str() + c + 1);
-    if (hasSpecies(w.substr(0, c)) && t >= 0 && t < (int)types().size()) f << "faible " << w.substr(0, c) << ' ' << types()[t].id << '\n';
+    std::string sp = w.substr(0, c), rest = w.substr(c + 1);
+    if (!hasSpecies(sp)) continue;
+    if (rest == "phys" || rest == "mag") {  // (2026-10-25) l'effet des coups physiques / magiques, découvert en frappant
+      f << "faible " << sp << ' ' << (rest == "phys" ? "physique" : "magique") << '\n';
+      continue;
+    }
+    int t = std::atoi(rest.c_str());
+    if (t >= 0 && t < (int)types().size()) f << "faible " << sp << ' ' << types()[t].id << '\n';
   }
   static const char KIND[] = {'a', 't', 'o'};  // action automatique, technique, objet
   auto member = [&](const FighterP& m) {
@@ -231,6 +237,7 @@ bool Game::loadGame() {
     } else if (k == "faible") {
       std::string t;
       s >> v >> t;
+      if (hasSpecies(v) && (t == "physique" || t == "magique")) weak.insert(v + (t == "physique" ? ":phys" : ":mag"));
       for (int i = 0; i < (int)types().size(); i++)
         if (types()[i].id == t && hasSpecies(v)) weak.insert(v + ":" + std::to_string(i));
     } else if (k == "pension_niveaux") {

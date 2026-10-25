@@ -1458,9 +1458,10 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     B.sc.clear();
     battle_.reset();
     mode = Mode::Map;
+    weak.insert("brumelin:mag");  // (2026-10-25) l'effet de la magie, découvert en frappant, se garde aussi
     bool saved = saveGame();
     weak.clear();
-    bool kept = saved && loadGame() && weakKnown("brumelin", light.type);
+    bool kept = saved && loadGame() && weakKnown("brumelin", light.type) && weak.count("brumelin:mag");
     check(shield && broken && more && skipped && kept,
           "brisure : chaque faiblesse entame le bouclier et se découvre ; brisé, l'ennemi perd sa jauge, encaisse plus, saute son tour ; faiblesse gardée dans la sauvegarde");
     sc.clear(), menus.clear();
