@@ -31,6 +31,15 @@ std::string itemHelp(const ItemDef& d);
 // Forces et faiblesses d'une espèce (types, résistances propres, états impossibles), pour sa fiche
 // known : faiblesses découvertes (Game::weak) ; seulement celles-là sont citées (créature pas encore obtenue)
 std::string matchupText(const Species& s, const std::set<std::string>* known = nullptr);
+// La même chose en listes (fiche tactique du Bestiaire) : known nul = tout est connu (espèce obtenue) ; sinon seules
+// les faiblesses et absorptions découvertes, les résistances restent inconnues (full faux)
+struct Matchup {
+  std::vector<std::pair<Type, float>> weak, resist, absorb;  // type et multiplicateur (résiste : de 0 à 1)
+  int hidden = 0;            // faiblesses pas encore découvertes
+  float phys = 1, mag = 1;   // coups physiques, magie (résistances propres et talent)
+  bool full = false;
+};
+Matchup knownMatchup(const Species& s, const std::set<std::string>* known);
 
 // Préparation d'un combat
 struct BattleSetup {

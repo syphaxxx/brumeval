@@ -230,6 +230,7 @@ class Game {
   int formationCellAt(int mx, int my) const;  // case de la formation sous la souris (-1 : aucune)
   void drawFormationPanel(int x, int y);
   std::string bestiarySel_;          // espèce dont la fiche est affichée (panelMode_ 3)
+  int bestiaryPage_ = 0;             // 0 : la fiche ; 1 : ce que l'équipe sait pour la combattre (Gauche/Droite)
   void drawBestiaryPanel(int x, int y);
   void swapReserve(FighterP out, FighterP in);  // out : de l'équipe à la réserve ; in : de la réserve à l'équipe
   void sellMenu(const std::vector<std::string>& stock, int sel);  // boutique : vendre à moitié prix

@@ -112,7 +112,7 @@ static std::vector<HelpPage> helpPages() {
                 ::T("Type efficace : ×2 (×4 si les deux types de la cible sont faibles). Peu efficace : ×0,5. Sans effet : 0. Voir la page Types."),
                 ::T("Critique : ×") + num(R.critMult) + ::T(". Un peu de hasard : de ") + pct(R.spreadMin) + ::T(" à 100 % des dégâts."),
                 ::T("Bonus et malus : de −3 à +3 par statistique, ") + pct(R.stageStep) + ::T(" de plus par niveau (un malus divise d'autant). Tout s'efface à la fin du combat."),
-                ::T("Certaines créatures résistent en plus aux coups physiques, à la magie ou à un type : leur fiche du Bestiaire donne leurs faiblesses.")}});
+                ::T("Certaines créatures résistent en plus aux coups physiques, à la magie ou à un type. Bestiaire, Droite sur une fiche : son rôle, ses attaques de zone et ce que l'équipe a découvert.")}});
   p.push_back({::T("Combat"), ::T("Jauge ATB, Limite, mode auto, objets, fuite."),
                {::T("Jauge ATB (trait blanc) : pleine, le combattant agit. Le temps s'arrête pendant que vous choisissez."),
                 ::T("Compagnons : chaque héros combat avec sa créature. Leur jauge avance à ") + pct(R.companionAtb) + ::T(" de la vitesse normale."),

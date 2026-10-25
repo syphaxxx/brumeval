@@ -3189,6 +3189,47 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     in.press[DOWN] = true;
     show("bestiaire : jamais vue");
     menus.clear();
+    {  // Page tactique : seules les faiblesses découvertes, les résistances inconnues tant qu'elle n'est pas obtenue
+      auto keepSeen = seen, keepCaught = caught;
+      auto keepWeak = weak;
+      std::vector<const Species*> list;
+      for (auto& sp : allSpecies())
+        if (!sp.human) list.push_back(&sp);
+      int at = -1;
+      Type found = -1;
+      for (int i = 0; i < (int)list.size() && at < 0; i++) {
+        const Species& sp = *list[i];
+        Matchup all = knownMatchup(sp, nullptr);
+        bool zone = std::any_of(sp.learn.begin(), sp.learn.end(), [](const Learn& l) { return hasMove(l.move) && moveInfo(l.move).zone != Area::Single; });
+        if (zone && !sp.combatRole.empty() && all.weak.size() >= 2 && !all.resist.empty()) at = i, found = all.weak[0].first;
+      }
+      if (at >= 0) {
+        const Species& sp = *list[at];
+        std::set<std::string> none, one = {sp.id + ":" + std::to_string(found)};
+        Matchup m0 = knownMatchup(sp, &none), m1 = knownMatchup(sp, &one), mf = knownMatchup(sp, nullptr);
+        check(m0.weak.empty() && m0.hidden == (int)mf.weak.size() && m0.resist.empty() && !m0.full && m1.weak.size() == 1 &&
+                  m1.weak[0].first == found && m1.hidden + 1 == (int)mf.weak.size() && mf.full && !mf.resist.empty(),
+              "bestiaire : la page tactique ne montre que les faiblesses découvertes, les résistances une fois obtenue (" + sp.id + ")");
+        seen = {sp.id}, caught.clear(), weak = one;
+        bestiaryMenu(at);
+        in.press[RIGHT] = true;
+        show("bestiaire : page tactique");
+        check(bestiaryPage_ == 1, "bestiaire : Droite ouvre la page tactique de la fiche");
+        snap("bestiaire_tactique");
+        caught = {sp.id};
+        menus.clear();
+        bestiaryMenu(at);
+        in.press[RIGHT] = true;
+        show("bestiaire : page tactique, obtenue");
+        snap("bestiaire_tactique_obtenue");
+        in.press[LEFT] = true;
+        show("bestiaire : retour à la fiche");
+        check(bestiaryPage_ == 0, "bestiaire : Gauche revient à la fiche");
+      } else
+        check(false, "bestiaire : une espèce à rôle, attaque de zone, deux faiblesses et une résistance pour la page tactique");
+      menus.clear();
+      seen = keepSeen, caught = keepCaught, weak = keepWeak;
+    }
     helpMenu();  // Aide : la liste, puis chaque page (F1 l'ouvre aussi)
     show("aide");
     int helpN = (int)menus.top().items.size() - 1, typesPage = -1;
