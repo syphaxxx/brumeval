@@ -500,6 +500,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
   l'ouest le matin, courtes à midi, vers l'est le soir, pâles au crépuscule et sous la pluie) ; pavés `q` bordés d'un
   rebord de pierres là où ils touchent l'herbe ou la terre, avec des brins qui débordent.
 - Graphismes (1.8) : décor des combats avec l'horizon à y 56 (`HZ` dans `Battle::draw`, reliefs à moitié de hauteur) pour que les trois rangées du damier soient sur le sol ; dalles en losange ; sur les cartes, écume le long des berges et ombre au pied des arbres (sprites.cpp).
+- Décors des combats (2026-10-25) : selon la carte (`share` dans `Battle::draw` : lave : volcan, glace : séracs, eau d'une grotte : lac ; `lumiere` : ciel teinté ou rais) ; caverne à piliers et stalagmites, col venteux ; boss : orage (Vallée), aurore (neige). Captures `combat_<lieu>`, `boss_<lieu>`.
 - Meutes (1.7) : `Game::wildDepth`, distance à pied du plus proche bâtiment ou
   passage ; plus on s'enfonce (jusqu'à `meute_distance` cases), plus les
   rencontres sont fréquentes (+`nature_dense`) et les groupes grands (jusqu'à

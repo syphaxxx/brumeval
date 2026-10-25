@@ -3020,10 +3020,32 @@ void Battle::draw() {
     return p;
   };
   auto ground = [&](uint32_t far, uint32_t nearC) { g.gradV(L, HZ - 2, W, SCREEN_H - HZ + 2, rgb(far), rgb(nearC)); };
+  // la carte du lieu, quand le combat s'y passe (pas un décor imposé d'un autre thème)
+  const MapDef* hm = G.mapId >= 0 && G.mapId < (int)maps().size() && G.M().theme == bg ? &G.M() : nullptr;
+  auto share = [&](char ch) {  // (2026-10-25) part des cases `ch` sur cette carte : lave, glace, eau
+    int n = 0, tot = 0;
+    if (hm)
+      for (auto& r : hm->rows)
+        for (char c : r) n += c == ch, tot++;
+    return tot ? float(n) / tot : 0.f;
+  };
+  auto hs = [](int i, int k) {  // hasard fixe (0 à 1) de l'élément i du décor
+    uint32_t h = uint32_t(i) * 0x9E3779B1u ^ uint32_t(k + 1) * 0x85EBCA77u;
+    h ^= h >> 16, h *= 0x85EBCA6Bu, h ^= h >> 13, h *= 0xC2B2AE35u, h ^= h >> 16;
+    return (h & 1023) / 1023.f;
+  };
+  auto cap = [&](Pt a, Pt p, Pt b, float d, Color c) {  // neige sur le sommet p d'un relief (a, b : creux voisins), d de haut
+    Pt l{p.x + (a.x - p.x) * d / (a.y - p.y), Y(p.y + d)}, r{p.x + (b.x - p.x) * d / (b.y - p.y), Y(p.y + d)};
+    g.poly({l, {p.x, Y(p.y)}, r, {(p.x + r.x) / 2, Y(p.y + d * .6f)}, {p.x, Y(p.y + d)}, {(l.x + p.x) / 2, Y(p.y + d * .5f)}}, c);
+  };
   // un combat dans un lieu au bord de la mer (le port, les îles) : la mer remplace les collines et les arbres du fond
-  bool seaside = bg == Theme::Vallee && !boss && G.mapId >= 0 && G.mapId < (int)maps().size() && G.M().theme == Theme::Vallee && G.coastal(G.M());
+  bool seaside = bg == Theme::Vallee && hm && G.coastal(*hm);
+  bool ice = bg == Theme::Neige && share('i') > .08f;  // le glacier, le sanctuaire : des séracs au lieu des sapins
+  bool fire = bg == Theme::Cendres && (!hm || share('l') > 0);  // de la lave sur la carte : un volcan au fond (sinon le col)
   if (bg == Theme::Vallee && !boss) {
-    g.gradV(L, 0, W, HZ, rgb(0x8fc0db), rgb(0xdfeac0));
+    uint32_t lt = hm ? hm->light : 0;  // (2026-10-25) la lumière du lieu (Aube : l'aurore, Port-Écho : le violet) teinte le ciel, soleil bas
+    g.gradV(L, 0, W, HZ, lt ? mix(rgb(0x8fc0db), rgb(lt), .3f) : rgb(0x8fc0db), lt ? mix(rgb(0xdfeac0), rgb(lt), .55f) : rgb(0xdfeac0));
+    if (lt) g.ellipse(262, 24, 24, 15, mix(rgb(lt, 80), rgb(0xffffff, 80), .4f)), g.ellipse(262, 24, 7, 7, rgb(0xfff6e8));
     // montagnes lointaines (bleutées par la distance) et nuages qui passent lentement
     g.poly(ridge({{0, 112}, {40, 70}, {90, 96}, {150, 58}, {205, 92}, {255, 66}, {320, 98}, {320, 112}}, 84, 90), rgb(0xa9c6d8));
     g.poly(ridge({{0, 112}, {70, 88}, {120, 104}, {190, 82}, {250, 102}, {320, 90}, {320, 112}}, 96, 94), rgb(0xb8d2c4));
@@ -3036,6 +3058,10 @@ void Battle::draw() {
       for (int i = 0; i < 26 * more / 100; i++) {
         float x = L + std::fmod(i * 47.f + t * (6 + i % 3 * 3), W + 20) - 10, y = HZ - 14 + (i * 7) % 12;
         g.rect(x, y, 4 + i % 3 * 2, 1, rgb(0xd8ecff, uint8_t(120 + 60 * std::sin(t * 2 + i))));
+      }
+      for (int k = 0; lt && k < 7; k++) {  // le reflet du soleil bas sur l'eau
+        float w = 3 + k * 1.5f;
+        g.rect(262 - w / 2 + std::sin(t * 3 + k * 1.9f) * 2, HZ - 15 + k * 2, w, 1, rgb(0xfff2d8, uint8_t(110 + 70 * std::sin(t * 4 + k))));
       }
       float bx = L + std::fmod(t * 3 + 90, W + 60) - 30, by = HZ - 9;
       g.poly({{bx - 6, by + 2}, {bx + 6, by + 2}, {bx + 4, by + 4}, {bx - 4, by + 4}}, rgb(0x6a4a2a));  // la coque
@@ -3052,10 +3078,37 @@ void Battle::draw() {
       ground(0x8cba6c, 0xa8d488);
     }
     for (int i = 0; i < 22 * more / 100; i++) g.rect(L + std::fmod(i * 53 + 11.f, W), HZ + 6 + (i * 13) % 120, 8, 2, rgb(0xb6dc94));
-  } else if (bg == Theme::Vallee) {
-    g.gradV(L, 0, W, HZ, rgb(0x1d1838), rgb(0x5a4d80));
-    ground(0x2e2650, 0x463c72);
-    for (int i = 0; i < 8 * more / 100; i++) g.ellipse(L + std::fmod(i * 70 + t * 12, W + 100) - 50, HZ + 4 + (i % 8) * 14, 60, 6, rgb(0xd8d0ff, 26));
+  } else if (bg == Theme::Vallee) {  // (2026-10-25) un boss : le même pays sous un ciel d'orage, au couchant
+    g.gradV(L, 0, W, HZ, rgb(0x1a1430), rgb(0x8a3e4a));
+    g.ellipse(232, HZ - 6, 110, 20, rgb(0xff8a5a, 36)), g.ellipse(232, HZ - 3, 54, 9, rgb(0xffb070, 46));  // le soleil derrière l'orage
+    float fl = std::fmod(t, 6.7f);  // un éclair au loin, de temps en temps
+    if (fl < .3f && int(fl / .07f) % 2 == 0) {
+      g.rect(L, 0, W, HZ, rgb(0xd8c8ff, 34));
+      float bx = 70 + std::fmod(std::floor(t / 6.7f) * 97, 180.f), y = 10;
+      for (int k = 0; k < 5; k++, y += 6) {
+        float nx = bx + (hs(k, (int)(t / 6.7f)) - .5f) * 10;
+        g.line(bx, y, nx, y + 6, 1, rgb(0xf4ecff)), bx = nx;
+      }
+    }
+    for (int i = 0; i < 7 * more / 100 + 1; i++) {  // de lourds nuages, éclairés par en dessous
+      float cx = L + std::fmod(i * 89.f + t * 5, W + 160) - 80, cy = 14 + (i % 3) * 7.f;
+      g.ellipse(cx, cy + 3, 24, 6, rgb(0xc8707a, 120));
+      g.ellipse(cx, cy, 24, 6, rgb(0x433457)), g.ellipse(cx - 13, cy + 1, 13, 5, rgb(0x3a2d4c)), g.ellipse(cx + 12, cy - 2, 14, 6, rgb(0x4c3c60));
+    }
+    g.poly(ridge({{0, 112}, {40, 70}, {90, 96}, {150, 58}, {205, 92}, {255, 66}, {320, 98}, {320, 112}}, 84, 90), rgb(0x3e2c4e));
+    if (seaside) {  // une mer grise, des moutons d'écume
+      g.gradV(L, HZ - 15, W, 15, rgb(0x34385a), rgb(0x22263e));
+      for (int i = 0; i < 22 * more / 100; i++) {
+        float x = L + std::fmod(i * 53.f + t * (9 + i % 3 * 4), W + 20) - 10, y = HZ - 13 + (i * 7) % 12;
+        g.rect(x, y, 3 + i % 3 * 2, 1, rgb(0xc8d0f0, uint8_t(70 + 70 * std::sin(t * 2.5f + i))));
+      }
+      g.rect(L, HZ - 2, W, 2, rgb(0xb8c0e0, 110));
+      ground(0x5a5044, 0x3c4a3c);
+    } else {
+      g.poly(ridge({{0, 112}, {70, 88}, {120, 104}, {190, 82}, {250, 102}, {320, 90}, {320, 112}}, 96, 94), rgb(0x2e2440));
+      ground(0x26302e, 0x3a4c40);
+    }
+    for (int i = 0; i < 8 * more / 100; i++) g.ellipse(L + std::fmod(i * 70 + t * 12, W + 100) - 50, HZ + 4 + (i % 8) * 14, 60, 6, rgb(0xc8c0e8, 18));
   } else if (bg == Theme::Foret) {
     g.gradV(L, 0, W, HZ, rgb(0x1e3a2a), rgb(0x4a7a4a));
     for (int i = L < 0 ? (int)std::floor(L / 40) - 1 : 0; i * 40.f - 10 < R + 30; i++) {
@@ -3068,40 +3121,159 @@ void Battle::draw() {
     for (int i = 0; i < 14 * more / 100; i++)
       g.ellipse(L + std::fmod(i * 53.f + std::sin(t + i) * 8 + 10, W), 12 + std::fmod(i * 23.f, 150.f), 1.5f, 1.5f,
                 rgb(0xe8ff9a, uint8_t(100 + 80 * std::sin(t * 3 + i))));
-  } else if (bg == Theme::Neige) {
-    g.gradV(L, 0, W, HZ, boss ? rgb(0x2a3a5a) : rgb(0x9ab8d8), boss ? rgb(0x7a9ac8) : rgb(0xe6eef8));
-    g.poly(ridge({{0, 112}, {50, 50}, {100, 90}, {160, 30}, {220, 86}, {270, 56}, {320, 80}, {320, 112}}, 66, 58), rgb(0xc8d6e8));
-    g.poly({{150, Y(42)}, {160, Y(30)}, {171, Y(42)}}, rgb(0xffffff));
-    ground(0xd6e0ec, 0xf2f6fb);
-    for (int i = 0; i < 30 * more / 100; i++)
-      g.rect(L + std::fmod(i * 41 + t * 8 + std::sin(t + i) * 4 + 10, W), std::fmod(i * 23 + t * 20, 180.f), 1, 1, rgb(0xffffff, 220));
-  } else if (bg == Theme::Cendres) {
-    g.gradV(L, 0, W, HZ, boss ? rgb(0x2a0e08) : rgb(0x3a2420), boss ? rgb(0xa8321e) : rgb(0x8a4a2a));
-    g.poly(ridge({{0, 112}, {60, 60}, {110, 100}, {170, 40}, {240, 96}, {290, 70}, {320, 90}, {320, 112}}, 70, 64), rgb(0x4a3a36));
-    ground(0x5c524c, 0x7c7068);
-    g.rect(L, HZ - 2, W, 2, rgb(0xd9541e));
-    for (int i = 0; i < 18 * more / 100; i++)
-      g.rect(L + std::fmod(i * 41 + t * 6, W), std::fmod(i * 23 + t * 14, 180.f), 1, 1, rgb(0xffb347, 160));
+  } else if (bg == Theme::Neige) {  // (2026-10-25) deux rangs de cimes enneigées, séracs sur la glace, aurore sur un boss
+    g.gradV(L, 0, W, HZ, boss ? rgb(0x101a34) : rgb(0x9ab8d8), boss ? rgb(0x4a6a9c) : rgb(0xe6eef8));
+    if (boss) {
+      for (int i = 0; i < 24 * more / 100; i++)  // étoiles
+        g.rect(L + hs(i, 1) * W, hs(i, 2) * (HZ - 14), 1, 1, rgb(0xffffff, uint8_t(130 + 90 * std::sin(t * 2 + i * 1.7f))));
+      for (int b = 0; b < 2; b++)  // aurore : deux rubans qui ondulent
+        for (float x = L; x < R; x += 2) {
+          float y0 = 8 + b * 8 + 5 * std::sin(x * .021f + t * .35f + b * 2), h = 10 + 5 * std::sin(x * .047f - t * .5f + b);
+          Color c = rgb(b ? 0x9a7aff : 0x6affc0, uint8_t(26 + 18 * std::sin(x * .03f + t + b * 3)));
+          g.rect(x, y0, 2, h, c), g.rect(x, y0 + h * .5f, 2, h * .5f, c);
+        }
+    }
+    std::vector<Pt> far{{0, 112}, {30, 70}, {75, 92}, {120, 52}, {185, 88}, {235, 46}, {290, 84}, {320, 70}, {320, 112}};
+    g.poly(ridge(far, 76, 72), boss ? rgb(0x5a6c94) : rgb(0xdbe4f0));
+    for (size_t k = 1; k + 2 < far.size(); k += 2) cap(far[k - 1], far[k], far[k + 1], 12, boss ? rgb(0x8a9cc4) : rgb(0xf6f9fd));
+    std::vector<Pt> nr{{0, 112}, {50, 50}, {100, 90}, {160, 30}, {220, 86}, {270, 56}, {320, 80}, {320, 112}};
+    g.poly(ridge(nr, 66, 58), boss ? rgb(0x3e4c70) : rgb(0xc8d6e8));
+    for (size_t k = 1; k + 1 < nr.size(); k += 2) {  // le versant à l'ombre, puis la neige du sommet
+      g.tri(nr[k].x, Y(nr[k].y), nr[k + 1].x, Y(nr[k + 1].y), nr[k].x + (nr[k + 1].x - nr[k].x) * .3f, HZ, boss ? rgb(0x34405e) : rgb(0xb4c4dc));
+      cap(nr[k - 1], nr[k], nr[k + 1], 14, boss ? rgb(0x7a8cb4) : rgb(0xffffff));
+    }
+    if (boss) ground(0x8a9ab8, 0xb8c6da);  // la neige sous la nuit
+    else ground(0xd6e0ec, 0xf2f6fb);
+    if (ice) {  // le glacier : une bande de glace bleutée et des séracs qui scintillent
+      g.rect(L, HZ - 3, W, 3, rgb(0xa8cce8));
+      for (int i = (int)std::floor(L / 19) - 1; i * 19.f < R + 10; i++) {
+        float x = i * 19.f + hs(i, 3) * 8, h = 7 + hs(i, 4) * 15, w = 4 + hs(i, 5) * 4;
+        g.poly({{x - w, HZ + 1}, {x - w * .4f, HZ - h * .8f}, {x, HZ - h}, {x + w * .5f, HZ - h * .7f}, {x + w, HZ + 1}}, rgb(0xa4cbe8));
+        g.poly({{x - w, HZ + 1}, {x - w * .4f, HZ - h * .8f}, {x, HZ - h}, {x - w * .1f, HZ + 1}}, rgb(0xe4f4ff));
+        if (std::sin(t * 1.3f + i * 2.3f) > .95f) g.rect(x - 2, HZ - h + 2, 5, 1, rgb(0xffffff)), g.rect(x, HZ - h, 1, 5, rgb(0xffffff));
+      }
+    }
+    for (int i = 0; i < 30 * more / 100; i++) {  // flocons ; un sur quatre plus gros (plus proche), qui tombe plus vite
+      int s = 1 + (i % 4 == 0);
+      g.rect(L + std::fmod(i * 41 + t * (5 + s * 3) + std::sin(t * .9f + i) * 5 + 10, W), std::fmod(i * 23 + t * (12 + s * 9), 180.f), s, s, rgb(0xffffff, 220));
+    }
+  } else if (bg == Theme::Cendres) {  // (2026-10-25) un volcan qui fume et des fissures de lave si la carte a de la lave ; sinon (le col) le vent
+    if (fire) g.gradV(L, 0, W, HZ, boss ? rgb(0x2a0e08) : rgb(0x3a2420), boss ? rgb(0xa8321e) : rgb(0x8a4a2a));
+    else g.gradV(L, 0, W, HZ, boss ? rgb(0x2a2c3a) : rgb(0x5c6476), boss ? rgb(0x7a7280) : rgb(0xb4aca2));
+    std::vector<Pt> far{{0, 112}, {35, 74}, {85, 94}, {130, 64}, {195, 90}, {250, 60}, {320, 86}, {320, 112}};
+    if (!fire) far = {{0, 112}, {35, 50}, {85, 86}, {130, 34}, {195, 84}, {250, 28}, {320, 70}, {320, 112}};  // plus hautes : les Pics Givrés
+    g.poly(ridge(far, fire ? 80 : 60, fire ? 80 : 64), fire ? rgb(0x5e3a32) : rgb(0x9a98a6));
+    if (!fire)
+      for (size_t k = 1; k + 1 < far.size(); k += 2) cap(far[k - 1], far[k], far[k + 1], 18, rgb(0xeef2f8));
+    if (fire) {  // le volcan : panache de fumée, cratère qui rougeoie, coulée de lave
+      float vx = 240, top = 26, glow = .75f + .25f * std::sin(t * 2.3f);
+      for (int k = 0; k < 10; k++) {
+        float ph = std::fmod(t * .1f + k / 10.f, 1.f);
+        g.ellipse(vx + ph * ph * 46 + std::sin(t * .5f + k) * 2, top - 1 - ph * 30, 3 + ph * 12, 2 + ph * 7, rgb(ph < .15f ? 0xb0583a : 0x8a7672, uint8_t(150 * (1 - ph))));
+      }
+      g.poly({{vx - 58, HZ}, {vx - 9, top + 1}, {vx - 4, top + 3}, {vx + 4, top + 3}, {vx + 9, top}, {vx + 62, HZ}}, rgb(0x4e322c));
+      g.tri(vx + 9, top, vx + 62, HZ, vx + 16, HZ, rgb(0x3e2824));
+      g.ellipse(vx, top + 1, 18, 7, rgb(0xff6a2a, uint8_t(70 * glow)));
+      g.ellipse(vx, top + 2, 7, 2, rgb(0xffb050));
+      float x = vx - 1, y = top + 3;  // une coulée qui serpente sur le flanc
+      for (int k = 0; k < 7; k++) {
+        float nx = x + (k % 2 ? 3.f : -4.f) + (hs(k, 40) - .5f) * 2, ny = y + 4;
+        g.line(x, y, nx, ny, 3 - k * .2f, rgb(0xd8481a, uint8_t(220 - k * 22)));
+        g.line(x, y, nx, ny, 1, rgb(0xffc060, uint8_t((170 - k * 20) * glow)));
+        x = nx, y = ny;
+      }
+    }
+    g.poly(ridge({{0, 112}, {60, 60}, {110, 100}, {170, 40}, {240, 96}, {290, 70}, {320, 90}, {320, 112}}, 70, 64), fire ? rgb(0x4a3a36) : rgb(0x5e5a60));
+    if (fire) {
+      ground(0x5c524c, 0x7c7068);
+      g.rect(L, HZ - 2, W, 2, rgb(0xd9541e));
+      for (int i = (int)std::floor(L / 47) - 1; i * 47.f < R; i++) {  // fissures de lave près de l'horizon, qui pulsent
+        if (hs(i, 6) < .35f) continue;
+        float x = i * 47.f + hs(i, 7) * 20, y = HZ + 3 + hs(i, 8) * 9, k = .6f + .4f * std::sin(t * 1.8f + i);
+        g.ellipse(x + 8, y + .5f, 12, 3, rgb(0xff5a1a, uint8_t(34 * k)));
+        Pt p[4] = {{x, y}, {x + 6, y + 1.5f}, {x + 10, y - .5f}, {x + 17, y + 1}};
+        for (int j = 0; j < 3; j++) g.line(p[j].x, p[j].y, p[j + 1].x, p[j + 1].y, 1, rgb(0xff6a1a, uint8_t(210 * k)));
+      }
+      for (int i = 0; i < 22 * more / 100; i++) {  // braises qui montent du sol
+        float ph = std::fmod(t * (9 + i % 5 * 3) + i * 37.f, 190.f), x = L + std::fmod(i * 41.f + 7, W) + std::sin(t * 1.3f + i) * 4;
+        int s = 1 + (i % 4 == 0);
+        g.rect(x, 172 - ph, s, s, rgb(i % 3 ? 0xffb347 : 0xff6a2a, uint8_t(220 * (1 - ph / 190))));
+      }
+    } else {
+      ground(0x6e685c, 0x8a8474);
+      for (int i = 0; i < 14 * more / 100; i++) {  // les rafales des Hurlevents
+        float x = R + 40 - std::fmod(t * (80 + i % 4 * 30) + i * 71.f, W + 120), y = 4 + std::fmod(i * 29.f, 96.f);
+        g.rect(x, y, 8 + i % 3 * 7, 1, rgb(0xffffff, uint8_t(i % 2 ? 50 : 80)));
+      }
+    }
   } else {
     // (2026-10-21) la roche du donjon où l'on se bat (« teinte_murs » de la carte) colore la grotte du combat
-    uint32_t rock = G.mapId >= 0 && G.mapId < (int)maps().size() && G.M().theme == Theme::Grotte && G.M().wallTint ? G.M().wallTint : 0x46405a;
+    uint32_t rock = hm && hm->wallTint ? hm->wallTint : 0x46405a;
     auto tone = [&](float k) {
       auto c = [&](int sh) { return uint32_t(std::min(255, int(((rock >> sh) & 255) * k))); };
       return c(16) << 16 | c(8) << 8 | c(0);
     };
+    bool lake = share('~') > .02f;  // l'Épave, la Grotte des Marées : un lac sous terre à l'horizon
     g.gradV(L, 0, W, HZ, rgb(tone(.28f)), rgb(tone(.65f)));
-    for (int i = L < 0 ? (int)std::floor(L / 23) - 1 : 0; i * 23.f < R; i++) {  // stalactites, et une goutte qui tombe de temps en temps
-      float x = i * 23.f + (i * 7) % 9, len = 8 + (i * 13) % 14;
+    // (2026-10-25) la profondeur de la caverne : strates de la roche, piliers au loin, voûte déchiquetée, corniche au fond
+    for (int k = 0; k < 3; k++)
+      for (float x = L; x < R; x += 4) g.rect(x, 20 + k * 11 + 2 * std::sin(x * .05f + k * 2), 4, 1, rgb(tone(.18f), 60));
+    for (int i = (int)std::floor(L / 96) - 1; i * 96.f < R + 20; i++) {
+      float x = 30 + i * 96.f + hs(i, 1) * 30, w = 5 + hs(i, 2) * 5;
+      g.poly({{x - w * 1.5f, 0}, {x + w * 1.5f, 0}, {x + w, HZ * .48f}, {x + w * 1.5f, HZ}, {x - w * 1.5f, HZ}, {x - w, HZ * .5f}}, rgb(tone(.34f)));
+      g.line(x - w + 1, HZ * .5f, x - w * 1.5f + 1, HZ, 1, rgb(tone(.58f)));  // le bas du pilier prend la lumière
+    }
+    std::vector<Pt> roof{{L - 8, 0}};
+    for (int i = (int)std::floor(L / 8) - 1; i * 8.f < R + 8; i++) roof.push_back({i * 8.f, 3 + hs(i, 9) * 5});
+    roof.push_back({R + 8, 0});
+    g.poly(roof, rgb(tone(.22f)));
+    for (int i = (int)std::floor(L / 23) - 1; i * 23.f < R; i++) {  // stalactites, et une goutte qui tombe de temps en temps
+      float x = i * 23.f + hs(i, 10) * 9, len = 9 + hs(i, 11) * 16;
       g.tri(x - 4, 0, x + 4, 0, x, len, rgb(tone(.52f)));
       g.tri(x - 2, 0, x + 1, 0, x - 1, len - 3, rgb(tone(.8f)));
-      float ph = std::fmod(t * .7f + i * .37f, 3.f);
+      float ph = std::fmod(t * .7f + hs(i, 12) * 3, 3.f);
       if (ph < 1) g.rect(x, len + ph * (HZ - len), 1, 2, rgb(0x9fd8ff, 160));
     }
     ground(tone(.82f), tone(1.25f));
-    for (int i = L < 0 ? (int)std::floor((L - 20) / 70) : 0; 20 + i * 70.f < R; i++) {
-      float x = 20 + i * 70.f;
-      g.ellipse(x, HZ - 4, 9, 6, rgb(0x7fd6ff, uint8_t(40 + 30 * std::sin(t * 2 + i))));
-      g.tri(x - 4, HZ - 1, x, HZ - 16, x + 4, HZ - 1, rgb(0x7fd6ff));
+    std::vector<Pt> ledge{{L - 6, HZ + 1}};  // la corniche du fond, hérissée de stalagmites
+    for (int i = (int)std::floor(L / 6) - 1; i * 6.f < R + 6; i++)
+      ledge.push_back({i * 6.f, HZ - 2 - hs(i, 13) * 4 - (hs(i, 14) > .78f ? 6 + hs(i, 15) * 13 : 0)});
+    ledge.push_back({R + 6, HZ + 1});
+    g.poly(ledge, rgb(tone(.46f)));
+    for (size_t k = 1; k + 2 < ledge.size(); k++)
+      if (ledge[k + 1].y < ledge[k].y) g.line(ledge[k].x, ledge[k].y, ledge[k + 1].x, ledge[k + 1].y, 1, rgb(tone(.78f), 170));  // côté éclairé
+    if (lake) {
+      g.gradV(L, HZ - 3, W, 9, rgb(0x163452), rgb(0x2a5878));
+      g.rect(L, HZ - 3, W, 1, rgb(0x9fd8ff, 90));
+      for (int i = 0; i < 18 * more / 100; i++)
+        g.rect(L + std::fmod(i * 61.f + t * 3, W), HZ - 1 + (i * 5) % 6, 3 + i % 3 * 2, 1, rgb(0x9fd8ff, uint8_t(60 + 50 * std::sin(t * 2 + i))));
+      for (int i = (int)std::floor(L / 23) - 1; i * 23.f < R; i++) {  // les gouttes des stalactites y font des ronds
+        float ph = std::fmod(t * .7f + hs(i, 12) * 3, 3.f), x = i * 23.f + hs(i, 10) * 9;
+        if (ph >= 1 && ph < 1.6f) g.ellipse(x, HZ + 1, (ph - 1) * 14, (ph - 1) * 3, rgb(0xbfe8ff, uint8_t(150 * (1.6f - ph))));
+      }
+    }
+    if (hm && hm->light)  // des rais de lumière tombent des fissures de la voûte (Citadelle)
+      for (int i = (int)std::floor(L / 110) - 1; i * 110.f < R; i++) {
+        float x = 40 + i * 110.f + hs(i, 16) * 30, a = 22 + 10 * std::sin(t * .7f + i * 2);
+        g.poly({{x, 0}, {x + 7, 0}, {x + 30, HZ + 12}, {x + 14, HZ + 12}}, rgb(hm->light, uint8_t(a)));
+        g.ellipse(x + 22, HZ + 12, 12, 3, rgb(hm->light, uint8_t(a)));
+      }
+    for (int i = (int)std::floor((L - 20) / 70) - 1; 20 + i * 70.f < R + 20; i++) {  // grappes de cristaux qui luisent
+      if (hs(i, 22) < .25f) continue;
+      float x = 20 + i * 70.f + hs(i, 17) * 30, pulse = .5f + .5f * std::sin(t * 2 + i), sc = .65f + hs(i, 23) * .55f;
+      g.ellipse(x, HZ - 4, 15 * sc, 8 * sc, rgb(0x7fd6ff, uint8_t(20 + 26 * pulse)));
+      for (int k : {0, 2, 1}) {
+        float cx = x + (k - 1) * 4.5f * sc, h = (k == 1 ? 15 : 8 + hs(i, 18 + k) * 5) * sc, lean = (k - 1) * 2.5f, w = k == 1 ? 3.f : 2.f, y = HZ + 1;
+        Pt b0{cx - w, y}, l{cx - w + lean * .7f, y - h + 3}, tip{cx + lean, y - h}, r{cx + w + lean * .7f, y - h + 3}, b1{cx + w, y};
+        g.poly({b0, l, tip, r, b1}, rgb(0x3e8ac8));
+        g.poly({b0, l, tip, {cx + lean * .4f, y}}, rgb(0x7fd6ff));
+        g.line(cx - w * .3f, y - 2, tip.x - .5f, tip.y + 2, 1, rgb(0xdaf6ff));
+      }
+      if (std::fmod(t * .9f + hs(i, 21) * 4, 4.f) < .25f) g.rect(x - 2, HZ - 14 * sc, 5, 1, rgb(0xffffff)), g.rect(x, HZ - 14 * sc - 2, 1, 5, rgb(0xffffff));
+    }
+    for (int i = 0; i < 12 * more / 100; i++) {  // poussière qui flotte dans l'air immobile
+      float x = L + std::fmod(i * 67.f + t * 2 + std::sin(t * .4f + i) * 6 + 10, W), y = 8 + std::fmod(i * 37.f + t * 1.5f, 130.f);
+      g.rect(x, y, 1, 1, rgb(tone(2.2f), uint8_t(70 + 40 * std::sin(t + i))));
     }
   }
   {  // Profondeur (2026-10-21) : bandes du sol de plus en plus larges vers l'avant (perspective), brume à l'horizon
@@ -3115,20 +3287,25 @@ void Battle::draw() {
   }
   {  // Décor de l'horizon (3.3) : arbres, sapins ou rochers de la planche, en rang au fond et quelques-uns plus près
     std::vector<const char*> back, near;
+    Color far = rgb(0xb8c4d8);  // plus pâles : la distance
     if (bg == Theme::Vallee && !boss && seaside) near = {"touffe_1", "caillou", "touffe_3"};  // pas d'arbres devant la mer
     else if (bg == Theme::Vallee && !boss) back = {"arbre", "arbre_petit", "arbre", "buisson", "arbre_automne"}, near = {"touffe_1", "fleurette_1", "touffe_3"};
+    else if (bg == Theme::Vallee && !seaside) back = {"arbre", "arbre_petit", "buisson", "arbre"}, far = rgb(0x30283e);  // boss : des silhouettes sous l'orage
     else if (bg == Theme::Foret) back = {"sapin", "arbre", "sapin_petit", "sapin"}, near = {"touffe_2", "touffe_4", "fleurette_2"};
-    else if (bg == Theme::Neige && !boss) back = {"sapin_neige", "sapin_neige_petit"}, near = {};
+    else if (bg == Theme::Neige && !boss && !ice) back = {"sapin_neige", "sapin_neige_petit"}, near = {};
+    else if (bg == Theme::Cendres && !fire) back = {"rochers", "rocher"}, near = {"touffe_3", "caillou", "cailloux"};
     else if (bg == Theme::Cendres) back = {"rochers", "rocher"}, near = {"caillou", "cailloux"};
+    else if (bg == Theme::Grotte) near = {"caillou", "cailloux"};
     // les arbres de la carte (« arbres » : pierre, lueur…) se retrouvent au fond du combat
-    std::string kind = G.mapId >= 0 && G.mapId < (int)maps().size() && G.M().theme == bg ? G.M().trees : "";
+    std::string kind = hm ? hm->trees : "";
     for (int i = 0; !back.empty() && L - 30 + i * 34.f < R + 30; i++) {  // au fond, posés sur l'horizon
+      if (bg == Theme::Cendres && hs(i, 30) < .45f) continue;  // des rochers épars, pas une rangée
       std::string name = back[(size_t)(i * 7 + 3) % back.size()];
       const SpriteRect* r = kind.empty() ? nullptr : findSprite(name + "_" + kind);
       if (!r) r = findSprite(name);
       if (!r) break;
       float x = L - 30 + i * 34.f + (i * 13) % 11;
-      g.sprite(*r, std::round(x - r->w / 2.f), std::round(HZ + 4 - r->h + (i % 3)), i % 2, 1, rgb(0xb8c4d8));  // plus pâles : la distance
+      g.sprite(*r, std::round(x - r->w / 2.f), std::round(HZ + 4 - r->h + (i % 3)), i % 2, 1, far);
     }
     for (int i = 0; !near.empty() && i < 9 * more / 100; i++) {  // touffes et cailloux devant, entre les deux damiers
       const SpriteRect* r = findSprite(near[(size_t)i % near.size()]);
