@@ -58,7 +58,7 @@ importantes ont un commentaire d'une ligne au-dessus.
 | Données | `data.hpp/.cpp`, `world.hpp/.cpp`, `store.hpp/.cpp` | Lecture et vérification de `data/`, cartes, fichiers du joueur |
 | Dessin | `gfx.hpp/.cpp`, `sprites.hpp/.cpp`, `ui.hpp/.cpp` | Formes, police, fenêtres ; créatures, humains, tuiles ; menus |
 | Son | `audio.hpp/.cpp` | Synthèse des musiques et bruitages de `data/sons.json` |
-| Options | `options.hpp/.cpp` | Volumes, plein écran, vitesse du jeu, touches (`options.txt`) |
+| Options | `options.hpp/.cpp` | Volumes, plein écran, vitesse du jeu, touches, types lisibles sans couleur (`options.txt`) |
 | Évolution | `evolution.cpp` | Question « Évoluer ? » après un combat, effet de lumière, menu Échap > Évolution |
 | Forge | `forge.cpp` | Forge de Forgeroc : menu, coûts, forger (objets forgés générés dans `data.cpp`) |
 | Aide | `help.cpp` | Pages d'aide (Échap > Aide, F1) : statistiques, dégâts, échiquier, zones, rythme, états, tableau des types, touches |

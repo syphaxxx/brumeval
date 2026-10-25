@@ -142,7 +142,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     frame();
     snap("86_options");
     bool louder = options().music == std::min(10, vol + 1);
-    menus.top().sel = 7;  // Touches (après Langue, Astuces et Sauvegarde auto)
+    menus.top().sel = 8;  // Touches (après Langue, Astuces, Sauvegarde auto et Types lisibles sans couleur)
     in.confirm = true;
     frame();
     snap("87_touches");
@@ -173,6 +173,13 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     options().autosave = true;
     check(opened && louder && waiting && bound && fast && reread && options().autosave,
           "options : écran titre > Options, volume de la musique, nouvelle touche pour « Haut », vitesse ×3 (F2), relues depuis le fichier");
+    bool marksOff = !options().typeMarks;  // (2026-10-25) « Types lisibles sans couleur » : coupée par défaut
+    options().typeMarks = true;
+    saveOptions();
+    options() = Options{};
+    loadOptions();
+    check(marksOff && options().typeMarks, "options : « Types lisibles sans couleur » coupée par défaut, écrite puis relue une fois activée");
+    options().typeMarks = false;
     {  // une partie sauvegardée : « Nouvelle partie » demande d'abord (la sauvegarde auto la remplacerait)
       bool made = !saveExists() && saveGame();  // fichier du mode test, retiré ensuite
       titleMenu();
@@ -613,6 +620,15 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       check(coherent, "intentions : un allié visé au corps à corps, à portée, est menacé (l'IA et « Se mettre à l'abri » réagissent)");
       battle_->cursor = battle_->foes[0];  // ennemi survolé : pointillé vers sa cible
       snap("garde_intention");
+      {  // (2026-10-25) types lisibles sans couleur : faiblesses (toutes, ici) sous la barre de PV et orbe d'une intention
+        auto keepWeak = weak;
+        for (auto& f : battle_->foes)
+          for (auto& [ty, e] : knownMatchup(f->S(), nullptr).weak) weak.insert(f->sp + ":" + std::to_string(ty));
+        options().typeMarks = true;
+        snap("garde_intention_motifs");
+        options().typeMarks = false;
+        weak = keepWeak;
+      }
       battle_->cursor = nullptr;
       {  // (2026-10-25) les mêmes, à l'œil, figés au bon moment : le bouclier de Maëlle se déplie, celui de Lior encaisse
          // et il riposte vers le premier ennemi, dont l'intention pulse (exécutée) ; celle du deuxième vole en éclats (déjouée)
@@ -1246,6 +1262,9 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   in.confirm = true;
   frame();
   snap("09_combat_techniques");
+  options().typeMarks = true;  // (2026-10-25) types lisibles sans couleur : le motif de chaque type sur sa pastille
+  snap("09_combat_techniques_motifs");
+  options().typeMarks = false;
   in.confirm = true;
   frame();
   snap("10_combat_cible");
@@ -2942,7 +2961,12 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       for (int i = 0; i < 60 * 60 && cards_.on; i++) {
         int placed = 0;
         for (auto& c : cards_.cell) placed += !c.empty();
-        if (placed >= 4 && !shot) draw(), snap("cartes"), shot = true;
+        if (placed >= 4 && !shot) {
+          draw(), snap("cartes"), shot = true;
+          options().typeMarks = true;  // (2026-10-25) types lisibles sans couleur : le motif du type en haut à droite
+          snap("cartes_motifs");
+          options().typeMarks = false;
+        }
         in.confirm = cards_.over || (cards_.turn == 0 && cards_.wait <= 0);  // la carte, la première case libre ; le score
         frame();
       }
@@ -3305,6 +3329,9 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         in.press[RIGHT] = true;
         show("bestiaire : page tactique, obtenue");
         snap("bestiaire_tactique_obtenue");
+        options().typeMarks = true;  // (2026-10-25) types lisibles sans couleur
+        snap("bestiaire_tactique_motifs");
+        options().typeMarks = false;
         in.press[LEFT] = true;
         show("bestiaire : retour à la fiche");
         check(bestiaryPage_ == 0, "bestiaire : Gauche revient à la fiche");

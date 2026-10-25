@@ -1015,6 +1015,8 @@
   "Expliquer chaque nouvelle règle la première fois qu'on la rencontre (F1 : en savoir plus).": "Explain each new rule the first time you meet it (F1: learn more).",
   "Sauvegarde auto": "Autosave",
   "Sauvegarder la partie à chaque passage d'une carte à l'autre et à chaque porte.": "Save the game every time you go from one map to another and through every door.",
+  "Types lisibles sans couleur": "Colorblind-friendly types",
+  "Un motif sur chaque pastille de type (flamme : Feu, goutte : Eau…), pour les reconnaître sans les couleurs.": "A symbol on every type dot (flame: Fire, drop: Water…), to tell them apart without colors.",
   "Changer les touches du clavier. La manette se branche toute seule.": "Change the keyboard keys. A gamepad works as soon as it's plugged in.",
   "Entrée : appuyer ensuite sur la nouvelle touche. Les flèches, Entrée et Échap marchent toujours.": "Enter: then press the new key. Arrows, Enter and Esc always work.",
   "Touches par défaut": "Default keys",

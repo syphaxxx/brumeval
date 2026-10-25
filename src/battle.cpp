@@ -9,6 +9,7 @@
 
 #include "audio.hpp"
 #include "game.hpp"
+#include "options.hpp"
 #include "sprites.hpp"
 #include "store.hpp"
 #include "tactics.hpp"
@@ -3469,7 +3470,8 @@ void Battle::draw() {
     if (m.kind == Kind::Heal || m.kind == Kind::Revive) {  // croix verte : il va soigner un des siens
       g.rect(ix - s, iy - 4 * s, 2 * s, 8 * s, c), g.rect(ix - 4 * s, iy - s, 8 * s, 2 * s, c);
     } else if (m.kind == Kind::Magic || m.kind == Kind::Status) {  // orbe de la couleur du type
-      g.ellipse(ix, iy, 3.5f * s, 3.5f * s, c), g.ellipse(ix - 1.2f * s, iy - 1.2f * s, 1.2f * s, s, rgb(0xffffff, 200));
+      g.ellipse(ix, iy, 3.5f * s, 3.5f * s, c);
+      if (!typeMark(g, ix, iy, m.type)) g.ellipse(ix - 1.2f * s, iy - 1.2f * s, 1.2f * s, s, rgb(0xffffff, 200));
     } else if (const SpriteRect* ic = findSprite("ic_epee_1")) {  // un coup : l'épée du menu Attaquer
       float k = std::min(1.f, 9.f / std::max(ic->w, ic->h)) * s;
       g.sprite(*ic, ix - ic->w * k / 2, iy - ic->h * k / 2, false, k);
@@ -3580,10 +3582,16 @@ void Battle::draw() {
         }
       }
       int nw = 0;
+      bool marks = options().typeMarks;  // (2026-10-25) types lisibles sans couleur : un carré de 7 px par faiblesse, son motif dedans
       for (int ty = 0; ty < (int)types().size(); ty++)
         if (G.weakKnown(f->sp, ty)) {
-          g.rect(p.x - bw + nw * 5, by + 4, 4, 3, rgb(0x0a0f33));
-          g.rect(p.x - bw + nw * 5, by + 4, 3, 2, rgb(types()[ty].color));
+          if (marks) {
+            float wx = std::round(p.x - bw) + nw * 7, wy = std::round(by) + 3;
+            g.rect(wx, wy, 7, 7, rgb((types()[ty].color >> 1) & 0x7f7f7f)), typeMark(g, wx + 3.5f, wy + 3.5f, ty);  // bord : comme une pastille
+          } else {
+            g.rect(p.x - bw + nw * 5, by + 4, 4, 3, rgb(0x0a0f33));
+            g.rect(p.x - bw + nw * 5, by + 4, 3, 2, rgb(types()[ty].color));
+          }
           nw++;
         }
       drawStatusTag(*f, p.x, by - 10);

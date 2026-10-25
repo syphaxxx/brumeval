@@ -294,6 +294,7 @@ void Game::drawCard(float x, float y, float w, float h, const std::string& sp, i
   } else
     drawCreature(g, sp, x + w / 2, y + h - 22, .8f, false, 0);
   g.rect(x + 2, y + h - 3, w - 4, 2, rgb(types()[(size_t)s.type].color));  // le type, en couleur
+  typeMark(g, x + w - 6.5f, y + 5.5f, s.type);                              // et son motif (types lisibles sans couleur)
   auto v = cardValues(sp);
   g.rect(x + 1, y + 1, 21, 23, rgb(0x0a0f22, 140));  // fond sombre sous les valeurs
   g.text(x + 10, y + 1, valueText(v[0]), WHITE, 1);
