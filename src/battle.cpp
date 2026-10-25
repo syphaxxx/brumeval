@@ -886,8 +886,12 @@ void Battle::tickATB(float dt) {
   for (auto& f : all) {
     f->atb += dt * atbRate(f);
     // Intention (2026-10-24) : un ennemi annonce ce qu'il prépare avant d'agir
-    if (!isAlly(f) && !announced(f) && !f->broken && rules().intentAt > 0 && f->atb >= rules().intentAt && f->atb < 100 &&
-        !intents_.count(f.get()) && !duel() && !follower())
+    // (Codex, 2026-10-25) la posture d'un boss (cuirasse, voile) s'annonce toujours, même intentions coupées (à mi-jauge)
+    std::string mk = isAlly(f) ? std::string() : mech(f);
+    bool posture = (mk == "cuirasse" || mk == "voile") && mechDue(f);
+    float at = rules().intentAt > 0 && rules().intentAt < 100 ? float(rules().intentAt) : posture ? 50.f : 1000.f;
+    if (!isAlly(f) && !announced(f) && !f->broken && f->atb >= at && f->atb < 100 && !intents_.count(f.get()) && !duel() &&
+        !follower())
       declareIntent(f);  // (un boss dont la zone rouge attend : elle est déjà son intention)
     if (f->atb >= 100) {
       f->atb = 100;
@@ -1446,7 +1450,7 @@ Battle::Plan Battle::think(FighterP a) {
             if (e.stat >= 0 && !e.self && (e.stages > 0 ? t->stage[e.stat] < 2 : t->stage[e.stat] > -2)) v += 18;
             if (e.stat >= 0 && e.self && a->stage[e.stat] < 2) v += 16;
           }
-          if (v <= 0) continue;
+          if (v <= 0 || (onFoes && postureMult(t, m) <= 0)) continue;  // voilé de brume : l'état le traverse
           if (m.target == Target::AllEnemies || m.target == Target::AllAllies) consider(id, pool, v * (.6f + .4f * pool.size()));
           else if (!focus || !onFoes || t == focus) consider(id, {t}, v);
         }
@@ -1513,6 +1517,7 @@ float Battle::attackScore(const FighterP& a, const Move& m, const FighterP& t) c
   if (m.melee && boardDist(cellOf(a), cellOf(t)) > reach(a)) score *= .9f;  // il faut d'abord s'approcher
   if (boardDist(cellOf(a), cellOf(t)) <= 1 && behind(t, a)) score *= 1.4f;  // il est dans mon dos : le frapper, c'est se retourner
   if (m.melee && guarding_.count(t.get())) score *= .4f;  // (2026-10-25) en garde, il riposterait : frapper ailleurs
+  if (postureMult(t, m) <= 0) return 0;                  // voilé de brume : le coup et ses effets le traversent
   score *= postureMult(t, m);                             // un boss cuirassé (coups physiques) ou voilé (hors corps à corps)
   if (!ally) return score / paceTime(m);
   score *= 1 + std::min(1.f, (a->crit + m.critBonus) / 100.f) * float(R.critMult - 1);
