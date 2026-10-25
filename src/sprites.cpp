@@ -948,9 +948,25 @@ static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, 
     case 'B': {
       g.rect(sx, sy, 16, 16, rgb(murky ? 0x3e6a52 : 0x3576bd));
       if (c == '~') {
+        // (2026-10-25) le large : plus sombre loin des berges (par carrés de 4 px), et une houle lente qui le traverse
+        auto water = [&](char n) { return n == '~' || n == 'B' || n == ' '; };  // ' ' : hors de la carte
+        uint32_t deep = murky ? 0x2c5040 : 0x1f5596, swell = murky ? 0x6a8a62 : 0x6aaee6;
+        for (int by = 0; by < 16; by += 4)
+          for (int bx = 0; bx < 16; bx += 4) {
+            float cx = x * 16 + bx + 2.f, cy = y * 16 + by + 2.f, d2 = 48 * 48;
+            for (int yy = y - 3; yy <= y + 3; yy++)
+              for (int xx = x - 3; xx <= x + 3; xx++)
+                if (!water(at(xx, yy))) {
+                  float ex = std::clamp(cx, xx * 16.f, xx * 16 + 16.f) - cx, ey = std::clamp(cy, yy * 16.f, yy * 16 + 16.f) - cy;
+                  d2 = std::min(d2, ex * ex + ey * ey);
+                }
+            float k = std::clamp((std::sqrt(d2) - 10) / 30, 0.f, 1.f);
+            if (k > 0) g.rect(sx + bx, sy + by, 4, 4, rgb(deep, uint8_t(255 * k)));
+            float s = std::sin(cx * .035f + cy * .06f - t * .8f);
+            if (s > .75f) g.rect(sx + bx, sy + by, 4, 4, rgb(swell, uint8_t((s - .75f) * 4 * 50 * k)));
+          }
         // Eau (3.3) : plus claire près des berges (peu profonde), ombre de la berge en haut, écume en tirets qui
         // ondule, vaguelettes qui dérivent et reflets qui scintillent
-        auto water = [&](char n) { return n == '~' || n == 'B' || n == ' '; };
         bool up = !water(at(x, y - 1)), dn = !water(at(x, y + 1)), lf = !water(at(x - 1, y)), rt = !water(at(x + 1, y));
         Color sh = rgb(murky ? 0x7a9a6a : 0x6fb2e6, 120), sh2 = rgb(murky ? 0x7a9a6a : 0x6fb2e6, 60);
         if (up) g.rect(sx, sy, 16, 4, sh), g.rect(sx, sy + 4, 16, 2, sh2);
