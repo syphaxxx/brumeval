@@ -9,7 +9,9 @@ Méthode :
 
 - Le mode test simule des combats (fin de la sortie de `--test`, seulement avec `BRUMEVAL_SIMULATIONS` défini depuis le
   2026-10-24) : IA seule, tactiques de départ, équipement des boutiques, forge, Expédition.
-- `BRUMEVAL_SIMULATIONS=1` joue les simulations ; `=4` joue 4 fois plus de combats (±4-5 % au lieu de ±10 %). Pour comparer deux réglages, copier l'exécutable et `data/` dans deux dossiers temporaires (le jeu cherche `data/` à côté du programme) et lancer les deux mesures en parallèle si besoin : depuis le 2026-10-25, le test multijoueur tire son port au hasard (`BRUMEVAL_PORT_TEST` pour l'imposer).
+- `BRUMEVAL_SIMULATIONS=1` joue les simulations ; `=4` joue 4 fois plus de combats (±4-5 % au lieu de ±10 %).
+  `BRUMEVAL_SIM_FILTRE=Griffon` ne joue que les simulations dont le nom contient ce mot (2026-10-25 ; un mot sans accent :
+  sous Windows, une variable accentuée n'arrive pas telle quelle ; le reste du mode test tourne quand même, ~3 min). Pour comparer deux réglages, copier l'exécutable et `data/` dans deux dossiers temporaires (le jeu cherche `data/` à côté du programme) et lancer les deux mesures en parallèle si besoin : depuis le 2026-10-25, le test multijoueur tire son port au hasard (`BRUMEVAL_PORT_TEST` pour l'imposer).
 - `BRUMEVAL_SANS_EVOLUTION=1` : équipes sans évolution (pour mesurer l'effet des évolutions). `BRUMEVAL_JOURNAL=<mot>` affiche le journal d'une simulation.
 - Plus de PV pour un boss change peu le résultat quand le combat se joue sur la survie de l'équipe : relever son niveau agit davantage.
 - Après un réglage, lancer aussi le joueur automatique (`--partie`) : l'histoire doit rester faisable.

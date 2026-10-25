@@ -46,7 +46,7 @@ Le mode test (src/test.cpp) vérifie les données, joue des scènes (titre, vill
 dialogue, recrutement, combat piloté par les menus, sauvegarde/chargement),
 enregistre des captures `.bmp` dans `captures/` et, avec `BRUMEVAL_SIMULATIONS=1`
 (2026-10-24 : sinon elles sont sautées, elles prenaient 6 des 7 minutes), simule des
-combats pour l'équilibrage. Il doit finir par « TOUS LES TESTS PASSENT ». Les tirages
+combats pour l'équilibrage (`BRUMEVAL_SIM_FILTRE=mot` : seulement celles dont le nom contient ce mot, sans accent). Il doit finir par « TOUS LES TESTS PASSENT ». Les tirages
 au hasard partent d'une graine fixe (`BRUMEVAL_GRAINE` pour en changer) : un échec se rejoue. Regarde les captures
 après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
 

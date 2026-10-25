@@ -4111,6 +4111,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   };
   auto simSetup = [&](const char* name, std::vector<std::pair<std::string, int>> party, std::function<BattleSetup()> mk, int n,
                       bool tac = false) {
+    // (2026-10-25) BRUMEVAL_SIM_FILTRE=Griffon : seulement les simulations dont le nom contient ce mot (mesure rapide)
+    if (const char* only = SDL_getenv("BRUMEVAL_SIM_FILTRE"); only && *only && std::string(name).find(only) == std::string::npos) return;
     n *= simFactor;
     int wins = 0;
     float total = 0;
