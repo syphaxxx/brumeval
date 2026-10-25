@@ -154,6 +154,7 @@ class Pilot {
   int menuMoves_ = 0;
   bool shouldFlee() const;  // combat sauvage qui tourne mal : mieux vaut fuir
   bool fleeNow_ = false;    // meute jugée trop forte dès le début du combat (répétition) : fuir
+  float startChance_ = 1;   // part de victoires prudente répétée au début de ce combat sauvage (1 : pas répété)
   int pathRisk(int at) const;  // niveau le plus haut des créatures des herbes sur le chemin jusqu'à cette case
   // Cases dans le champ de vision d'un dresseur (Npc::sight) qu'il n'est pas encore prêt à battre :
   // presque infranchissables (sinon le dresseur l'arrête et le bat)

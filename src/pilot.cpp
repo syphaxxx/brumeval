@@ -943,7 +943,10 @@ void Pilot::battleStep() {
     const ItemDef* lantern = nullptr;
     for (auto& d : allItems())
       if (d.capture > 0 && G.items.count(d.id) && G.items[d.id] > 0 && (!lantern || d.capture > lantern->capture)) lantern = &d;
-    if (lantern && B.canCapture && creaturesWanted() > 0 && (int)G.team.size() < rules().maxTeam) {
+    // (2026-10-25) seulement sans risque : un tour à lancer une lanterne est un tour sans frapper (la répétition, qui a
+    // jugé le combat, ne capture pas) ; contre une meute serrée, d'abord la gagner
+    bool safe = startChance_ >= .9f || B.alive(B.foes).size() <= 1;
+    if (lantern && B.canCapture && safe && creaturesWanted() > 0 && (int)G.team.size() < rules().maxTeam) {
       float bestCh = .2f;  // pas la peine en dessous (lanterne d'argent sur une créature en pleine forme : 24 %)
       for (auto& f : B.alive(B.foes))
         if (!f->S().human && !f->boss && captureChance(*f, lantern->capture) > bestCh) bestCh = captureChance(*f, lantern->capture), capture_ = f->name();
@@ -1550,7 +1553,7 @@ void Pilot::update(float dt) {
     battles++;
     battleMap_ = G.mapId;
     battleWild_ = engaged_.empty() && G.battle_->foeName.empty() && !G.battle_->boss;
-    fleeNow_ = false;
+    fleeNow_ = false, startChance_ = 1;
     if (battleWild_ && G.battle_->canFlee) {
       int top = 0;
       Json fight = {{"ennemis", Json::array()}};
@@ -1563,7 +1566,7 @@ void Pilot::update(float dt) {
       // niveau (Échoplume et Pétrolin du Vieux Phare), et même contre un Cendrelys seul, sans les avoir jaugés
       bool big = G.battle_->foes.size() >= 3 || top > G.avgLevel() + 1 || G.battle_->ambush_;
       if (big || top >= G.avgLevel() - 5) {
-        float c = prudent(rehearse(fight, 10, false), 10);
+        float c = startChance_ = prudent(rehearse(fight, 10, false), 10);
         fleeNow_ = c < .8f;   // fuir coûte peu, perdre coûte cher (retour, soins, moitié de l'or)
         if (SDL_getenv("BRUMEVAL_TRACE"))
           std::printf("  [%s] meute de %d (N.%d max) : %d %% de victoires%s\n", hms().c_str(), (int)G.battle_->foes.size(), top, int(c * 100 + .5f),
