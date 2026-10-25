@@ -524,7 +524,8 @@ static void drawBestiaryTactics(Gfx& g, int x, int y, int w, const Species& s, c
   g.text(x + 8, ly, T("Attaques de zone"), GOLD);
   ly += 11;
   if (zones.empty() && room()) g.text(x + 8, ly, T("aucune"), MUTED), ly += 11;
-  for (auto* m : zones) {
+  for (size_t k = 0; k < zones.size(); k++) {
+    const Move* m = zones[k];
     if (!room()) break;
     for (int r = 0; r < 3; r++)
       for (int q = 0; q < 3; q++) {
@@ -535,6 +536,10 @@ static void drawBestiaryTactics(Gfx& g, int x, int y, int w, const Species& s, c
     dot(x + 22.5f, ly + 4.5f, m->type);
     g.text(x + 28, ly, m->name, WHITE);
     ly += 11;
+    if (k + 1 < zones.size() && !room()) {  // (2026-10-25) la fiche est pleine : combien il en reste
+      g.text(x + w - 8, ly - 11, "+" + std::to_string(zones.size() - k - 1), MUTED, 2);
+      break;
+    }
   }
 }
 
