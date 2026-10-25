@@ -1560,9 +1560,9 @@ void drawPropShadow(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float
   g.ellipse(tx, ty, r->w * .36f, std::max(2.f, r->w * .2f), col);                               // la couronne, le haut
 }
 void drawBuildingShadow(Gfx& g, const Building& b, int sx, int sy, float kx, float ky, float a) {
-  float x0 = sx + 2, x1 = sx + b.w * 16 - 2, by = sy + b.h * 16, H = b.h * 16 * .8f;
-  if (BuildingLook L = buildingLook(b, sx, sy); L.r) x0 = L.x + 4, x1 = L.x + L.r->w - 4, by = L.y + L.r->h - 3, H = L.r->h * .8f;
-  float dx = kx * H, dy = ky * H, F = H * .5f;  // F : profondeur du bâtiment au sol (vue de trois quarts)
+  float x0 = sx + 2, x1 = sx + b.w * 16 - 2, by = sy + b.h * 16, H = b.h * 16 * .6f;
+  if (BuildingLook L = buildingLook(b, sx, sy); L.r) x0 = L.x + 4, x1 = L.x + L.r->w - 4, by = L.y + L.r->h - 3, H = L.r->h * .6f;
+  float dx = std::clamp(kx * H, -22.f, 22.f), dy = ky * H, F = H * .45f;  // F : profondeur du bâtiment au sol (vue de trois quarts)
   Color col = rgb(0x0a1030, uint8_t(64 * a));
   if (dx >= 0) g.poly({{x0, by - F}, {x1, by - F}, {x1 + dx, by - F + dy}, {x1 + dx, by + dy}, {x0 + dx, by + dy}, {x0, by}}, col);
   else g.poly({{x0, by - F}, {x1, by - F}, {x1, by}, {x1 + dx, by + dy}, {x0 + dx, by + dy}, {x0 + dx, by - F + dy}}, col);
