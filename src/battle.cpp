@@ -1664,7 +1664,7 @@ std::string Battle::intentText(const Fighter& e) const {
     if (o.get() == &e && from < 0) from = cellOf(o);
   if (e.S().combatRole == "protecteur" && from >= 0)
     for (auto& o : foes)
-      if (o.get() != &e && o->alive() && o->hp * 2 < o->mhp && inBoardZone(Area::Cross, from, cellOf(o)))
+      if (o.get() != &e && o->alive() && o->hp * 2 < o->mhp && o->S().combatRole != "protecteur" && inBoardZone(Area::Cross, from, cellOf(o)))
         cover = T(" (couvre {c})"), cover.replace(cover.find("{c}"), 3, o->name());
   if (in.wait) return T("Se met en garde") + cover;
   if (in.move.empty() || !hasMove(in.move)) return "";

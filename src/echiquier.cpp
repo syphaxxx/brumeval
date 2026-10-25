@@ -325,7 +325,7 @@ float Battle::posValue(const FighterP& a, int cell) {
   if (s.combatRole == "protecteur")                        // rester près des siens
     for (auto& o : alive(sideOf(a)))
       if (o != a && inBoardZone(Area::Cross, cell, cellOf(o)))  // (2026-10-25) surtout d'un blessé : il le couvre
-        v += 6 + (!isAlly(a) && o->hp * 2 < o->mhp ? 30.f * (1 - float(o->hp) / std::max(1, o->mhp)) : 0.f);
+        v += 6 + (!isAlly(a) && o->hp * 2 < o->mhp && o->S().combatRole != "protecteur" ? 30.f * (1 - float(o->hp) / std::max(1, o->mhp)) : 0.f);
   if (terrainHurts(a, cell)) v -= 25;
   for (auto& w : warnings_)
     if (isAlly(a) && inBoardZone(w.zone, w.center, cell)) v -= 60;

@@ -773,6 +773,16 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         B.cells_[mage.get()] = boardAt(1, 7);
         B.cells_[lior.get()] = boardAt(1, 2);
         check(B.posValue(mage, boardAt(1, 7)) > B.posValue(mage, boardAt(1, 4)), "IA : un soigneur ennemi reste à l'abri à l'arrière");
+        {  // Codex : Esprillon était déjà un lanceur de sorts ; le Grenouillon soigneur a plus d'Attaque que de Magie
+          auto frog = makeFighter("grenouillon", 20);
+          B.foes.push_back(frog);
+          B.cells_[frog.get()] = boardAt(1, 6);  // Lior en (1, 2) : de (1, 4), il serait à sa portée
+          float vBack = B.posValue(frog, boardAt(1, 6)), vFront = B.posValue(frog, boardAt(1, 4));
+          B.foes.pop_back();
+          B.cells_.erase(frog.get());
+          check(vBack > vFront, "IA : un soigneur ennemi à forte Attaque (Grenouillon) reste aussi à l'arrière (" + std::to_string(int(vBack)) +
+                                    " contre " + std::to_string(int(vFront)) + ")");
+        }
         B.cells_[brute.get()] = boardAt(1, 4), B.cells_[lior.get()] = boardAt(1, 3), B.cells_[extra.get()] = boardAt(2, 4);
       }
       seedRandom(seed + 2);
@@ -3590,7 +3600,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     online_ = std::make_unique<Online>(*this);
     guest.online_ = std::make_unique<Online>(guest);
     Online &H = *online_, &V = *guest.online_;
-    for (Online* o : {&H, &V}) o->settingsName = "multijoueur_test.txt", o->port = 47475;
+    // (2026-10-25) un port tiré au hasard (BRUMEVAL_PORT_TEST pour l'imposer) : plusieurs mode test peuvent tourner en
+    // même temps sans se disputer le port (avant : 47475 fixe, et les tests multijoueur échouaient)
+    const char* portEnv = SDL_getenv("BRUMEVAL_PORT_TEST");
+    int testPort = portEnv ? std::atoi(portEnv) : 47500 + int(std::random_device{}() % 1000);
+    for (Online* o : {&H, &V}) o->settingsName = "multijoueur_test.txt", o->port = testPort;
     H.pseudo = "Hôte", V.pseudo = "Invité";
     H.loopback = true;
     auto both = [&](int frames) {
