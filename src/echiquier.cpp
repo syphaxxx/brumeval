@@ -288,7 +288,9 @@ float Battle::posValue(const FighterP& a, int cell) {
   bool ranged = false;
   for (auto& id : moves) ranged = ranged || (moveInfo(id).damaging() && !moveInfo(id).melee);
   bool stalled = quietT_ > 40;  // rien ne se passe depuis longtemps : tout le monde va au contact
-  bool caster = s.base[B_MAG] > s.base[B_ATK] && ranged && !stalled;
+  // (2026-10-25) un soigneur ennemi qui sait soigner reste aussi à l'abri, derrière les siens
+  bool medic = !isAlly(a) && s.combatRole == "soigneur" && hasMove("soin");
+  bool caster = (s.base[B_MAG] > s.base[B_ATK] || medic) && (ranged || medic) && !stalled;
   for (auto& id : moves) {
     const Move& m = moveInfo(id);
     if (!m.damaging()) continue;
@@ -322,7 +324,8 @@ float Battle::posValue(const FighterP& a, int cell) {
   else v -= nearest * 2.5f;                                // aller au contact (blocage : voir quietT_)
   if (s.combatRole == "protecteur")                        // rester près des siens
     for (auto& o : alive(sideOf(a)))
-      if (o != a && inBoardZone(Area::Cross, cell, cellOf(o))) v += 6;
+      if (o != a && inBoardZone(Area::Cross, cell, cellOf(o)))  // (2026-10-25) surtout d'un blessé : il le couvre
+        v += 6 + (!isAlly(a) && o->hp * 2 < o->mhp ? 30.f * (1 - float(o->hp) / std::max(1, o->mhp)) : 0.f);
   if (terrainHurts(a, cell)) v -= 25;
   for (auto& w : warnings_)
     if (isAlly(a) && inBoardZone(w.zone, w.center, cell)) v -= 60;

@@ -732,6 +732,43 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       bool aimsAlly = declared && (it->second.wait || (!it->second.targets.empty() && it->second.targets[0] && B.isAlly(it->second.targets[0])));
       check(declared && aimsAlly, "combat : un ennemi annonce son intention (" + B.intentText(*brute) + ")");
       B.intents_.erase(brute.get());
+      {  // (2026-10-25) IA plus tactique : pas de corps à corps sur un allié en garde (il riposterait)
+        B.cells_[maelle.get()] = boardAt(2, 3);
+        B.moved_.insert(brute.get());  // au contact des deux, sans bouger
+        auto onLior = [&] {
+          int n = 0;
+          for (int k = 0; k < 200; k++) {
+            Battle::Plan p = B.think(brute);
+            n += !p.targets.empty() && p.targets[0] == lior && moveInfo(p.move).melee;
+          }
+          return n;
+        };
+        int open = onLior();
+        B.guarding_.insert(lior.get());
+        int guarded = onLior();
+        B.guarding_.erase(lior.get());
+        B.moved_.erase(brute.get());
+        B.cells_[maelle.get()] = boardAt(3, 0);
+        check(guarded < open / 2, "IA : un ennemi évite le corps à corps sur un allié en garde (" + std::to_string(guarded) + " fois sur 200 contre " +
+                                      std::to_string(open) + ")");
+        // Le protecteur (Galetor) couvre un blessé des siens ; le soigneur (Esprillon) reste à l'arrière
+        B.cells_[extra.get()] = boardAt(0, 7), B.cells_[mage.get()] = boardAt(2, 6);
+        float healthy = B.posValue(extra, boardAt(2, 7));
+        mage->hp = mage->mhp / 5;
+        float cover = B.posValue(extra, boardAt(2, 7));
+        B.cells_[extra.get()] = boardAt(2, 7);
+        B.intents_[extra.get()] = Battle::Intent{};
+        B.intents_[extra.get()].wait = true;
+        std::string says = B.intentText(*extra);
+        B.intents_.erase(extra.get());
+        mage->hp = mage->mhp;
+        check(cover > healthy + 10 && says.find(mage->name()) != std::string::npos,
+              "IA : un protecteur ennemi va couvrir un blessé des siens et le dit (" + says + ")");
+        B.cells_[mage.get()] = boardAt(1, 7);
+        B.cells_[lior.get()] = boardAt(1, 2);
+        check(B.posValue(mage, boardAt(1, 7)) > B.posValue(mage, boardAt(1, 4)), "IA : un soigneur ennemi reste à l'abri à l'arrière");
+        B.cells_[brute.get()] = boardAt(1, 4), B.cells_[lior.get()] = boardAt(1, 3), B.cells_[extra.get()] = boardAt(2, 4);
+      }
       seedRandom(seed + 2);
     }
     check(back > front * 1.15 && near > 0 && near < far * 0.85,

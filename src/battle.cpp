@@ -1447,7 +1447,9 @@ Battle::Plan Battle::think(FighterP a) {
         } else
           for (auto& t : theirs)
             // cible préférée hors de portée (corps à corps, elle est à l'arrière) : le meilleur adversaire à portée
-            if ((!focus || t == focus || !reachable(a, m, focus)) && reachable(a, m, t)) consider(id, {t}, zoneScore(a, m, t));
+            // (2026-10-25) cible préférée en garde : pas au corps à corps (riposte), un autre adversaire
+            if ((!focus || t == focus || !reachable(a, m, focus) || (m.melee && guarding_.count(focus.get()))) && reachable(a, m, t))
+              consider(id, {t}, zoneScore(a, m, t));
         break;
     }
   }
@@ -1497,6 +1499,7 @@ float Battle::attackScore(const FighterP& a, const Move& m, const FighterP& t) c
   score *= posMult(a, t, m);  // échiquier : dans le dos, encerclé, distance au contact
   if (m.melee && boardDist(cellOf(a), cellOf(t)) > reach(a)) score *= .9f;  // il faut d'abord s'approcher
   if (boardDist(cellOf(a), cellOf(t)) <= 1 && behind(t, a)) score *= 1.4f;  // il est dans mon dos : le frapper, c'est se retourner
+  if (!ally && m.melee && guarding_.count(t.get())) score *= .4f;  // (2026-10-25) en garde, il riposterait : frapper ailleurs
   if (!ally) return score / paceTime(m);
   score *= 1 + std::min(1.f, (a->crit + m.critBonus) / 100.f) * float(R.critMult - 1);
   if (score >= t->hp * 1.2f) score += 15;  // achever un adversaire affaibli
@@ -1642,7 +1645,16 @@ std::string Battle::intentText(const Fighter& e) const {
   auto it = intents_.find(&e);
   if (it == intents_.end() || !e.alive()) return "";
   const Intent& in = it->second;
-  if (in.wait) return T("Se met en garde");
+  // (2026-10-25) un protecteur dit quel blessé des siens il va couvrir (voisin de sa future case)
+  std::string cover;
+  int from = in.cell;
+  for (auto& o : foes)
+    if (o.get() == &e && from < 0) from = cellOf(o);
+  if (e.S().combatRole == "protecteur" && from >= 0)
+    for (auto& o : foes)
+      if (o.get() != &e && o->alive() && o->hp * 2 < o->mhp && inBoardZone(Area::Cross, from, cellOf(o)))
+        cover = T(" (couvre {c})"), cover.replace(cover.find("{c}"), 3, o->name());
+  if (in.wait) return T("Se met en garde") + cover;
   if (in.move.empty() || !hasMove(in.move)) return "";
   std::string who;
   for (auto& t : in.targets)
@@ -1650,7 +1662,7 @@ std::string Battle::intentText(const Fighter& e) const {
   std::string s = who.empty() ? T("Prépare {t}") : T("Prépare {t} sur {c}");
   if (size_t at = s.find("{t}"); at != std::string::npos) s.replace(at, 3, moveInfo(in.move).name);
   if (size_t at = s.find("{c}"); at != std::string::npos) s.replace(at, 3, who);
-  return s;
+  return s + cover;
 }
 
 // ---------------------------------------------------------------------------
