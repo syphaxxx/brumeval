@@ -21,6 +21,12 @@ static const Color WHITE = rgb(0xffffff), GOLD = rgb(0xffe066), GREY = rgb(0xb9c
 // Textes d'aide
 // ---------------------------------------------------------------------------
 static std::string pct(double x) { return std::to_string(int(std::lround(x * 100))) + " %"; }
+// (2026-10-26) voile d'un type (« type » de sa mécanique : la Brume Noire) : le nom du seul type qui l'atteint, vide sinon
+static std::string veilType(const Fighter& f) {
+  std::string id = f.mech.is_object() ? jget<std::string>(f.mech, "type", "") : "";
+  return id.empty() ? "" : types()[(size_t)typeOf(id)].name;
+}
+static std::string withType(std::string s, const std::string& ty) { return s.replace(s.find("{t}"), 3, ty); }
 // 0.75 → « 0,75 », 2 → « 2 »
 static std::string numFr(double x) {
   char b[32];
@@ -1580,7 +1586,8 @@ std::string Battle::damageText(const FighterP& a, const Move& m, const FighterP&
   if (!m.damaging() || !a || !d) return "";
   Preview pv = preview(a, m, d);
   if (pv.eff < 0) return T(" · absorbé : le soigne !");
-  if (postureMult(d, m) <= 0) return T(" · traverse la brume : au contact !");
+  if (postureMult(d, m) <= 0)
+    return veilType(*d).empty() ? T(" · traverse la brume : au contact !") : withType(T(" · traverse : seuls les coups de type {t} passent"), veilType(*d));
   if (pv.eff <= 0) return T(" · aucun effet");
   std::string s = T(" · ≈ ") + std::to_string(pv.lo) + (pv.hi > pv.lo ? "-" + std::to_string(pv.hi) : "") + T(" PV");
   s += " · " + std::to_string(int(std::lround(pv.hit * 100))) + " %";
@@ -1673,7 +1680,7 @@ void Battle::declareIntent(const FighterP& e) {
   if (std::string k = mech(e); (k == "cuirasse" || k == "voile") && mechDue(e)) {
     p = Plan{}, p.wait = true, in.posture = k;
     if (std::string msg = tr(jget<std::string>(e->mech, "message", "")); !msg.empty()) sc.say(msg, 1.2f);
-    tip(k.c_str());
+    tip(veilType(*e).empty() ? k.c_str() : "voile_type");
   }
   in.move = p.move, in.targets = p.targets, in.wait = p.wait;
   intents_[e.get()] = in;
@@ -1698,7 +1705,8 @@ std::string Battle::intentText(const Fighter& e) const {
         cover = T(" (couvre {c})"), cover.replace(cover.find("{c}"), 3, o->name());
   if (in.wait)
     return (in.posture == "cuirasse" ? T("Va se cuirasser : la magie passe, le corps à corps est puni")
-            : in.posture == "voile"  ? T("Va se voiler : seul le corps à corps l'atteindra")
+            : in.posture == "voile"  ? (veilType(e).empty() ? T("Va se voiler : seul le corps à corps l'atteindra")
+                                                             : withType(T("Va se voiler : seuls les coups de type {t} l'atteindront"), veilType(e)))
                                      : T("Se met en garde")) + cover;
   if (in.move.empty() || !hasMove(in.move)) return "";
   std::string who;
@@ -1778,7 +1786,7 @@ bool Battle::bossPlan(FighterP e) {
       std::vector<FighterP> hit;
       for (auto& a : alive(allies))
         if (inBoardZone(w.zone, w.center, cellOf(a))) hit.push_back(a);
-      if (w.kind == "ronces") {  // (2026-10-25) les ronces poussent sur toute la zone et y restent ; les anciennes se fanent
+      if (w.kind == "ronces") {  // (2026-10-25) les ronces (braises, foudre…) couvrent toute la zone et y restent ; les anciennes se fanent
         int ti = -1;
         for (size_t i = 0; i < rules().terrains.size(); i++)
           if (rules().terrains[i].id == jget<std::string>(e->mech, "terrain", "")) ti = (int)i;
@@ -1786,10 +1794,10 @@ bool Battle::bossPlan(FighterP e) {
           for (auto& [c, old] : grown_) terrain_[(size_t)c] = old;
           grown_.clear();
           for (int c = 0; c < BOARD_CELLS; c++)
-            if (inBoardZone(w.zone, w.center, c) && !blockedCell(c)) grown_[c] = terrain_[(size_t)c], terrain_[(size_t)c] = ti;
+            if (inBoardZone(w.zone, w.center, c) && inHalf(true, c) && !blockedCell(c)) grown_[c] = terrain_[(size_t)c], terrain_[(size_t)c] = ti;  // (chez les alliés : une ligne traverse le damier)
           log.push_back("  " + rules().terrains[(size_t)ti].name + " : " + zoneName(w.zone) + ", " + boardName(w.center));
           sound("statut");
-          sc.say(T("Des ronces jaillissent et couvrent la zone : n'y finissez pas votre tour !"), 1.1f);
+          sc.say(rules().terrains[(size_t)ti].name + T(" : la zone en reste couverte, n'y finissez pas votre tour !"), 1.1f);
         }
       }
       if (hit.empty()) {
@@ -1798,20 +1806,20 @@ bool Battle::bossPlan(FighterP e) {
         return false;  // il joue tout de même une attaque normale
       }
       log.push_back(e->name() + " : " + moveInfo(w.move).name + T(" (annoncée) sur ") + std::to_string(hit.size()));
-      bool charge = w.kind == "charge";
-      if (charge) {  // (2026-10-25) toute la ligne : les plus éloignés reculent d'abord (ceux qui suivent les heurtent)
+      int charge = w.kind == "charge" ? 1 : w.kind == "attire" ? -1 : 0;
+      if (charge) {  // (2026-10-25) charge : les plus éloignés reculent d'abord (ceux qui suivent les heurtent) ; attire : les plus proches avancent d'abord
         int ex = boardX(cellOf(e));
         std::stable_sort(hit.begin(), hit.end(), [&](const FighterP& x, const FighterP& y) {
-          return std::abs(boardX(cellOf(x)) - ex) > std::abs(boardX(cellOf(y)) - ex);
+          return std::abs(boardX(cellOf(x)) - ex) * charge > std::abs(boardX(cellOf(y)) - ex) * charge;
         });
-        sc.say(e->name() + T(" charge à travers la ligne !"), .8f);
+        sc.say(e->name() + (charge > 0 ? T(" charge à travers la ligne !") : T(" happe ceux qui sont restés dans la zone !")), .8f);
       }
       useMove(e, w.move, hit, false, float(rules().bossBurst), charge);
       return true;
     }
-  // (2026-10-25) un boss à mécanique de zone (ronces, charge) l'annonce un tour sur « tous », à la place des annonces au hasard
+  // (2026-10-25) un boss à mécanique de zone (ronces, charge, attire) l'annonce un tour sur « tous », à la place des annonces au hasard
   std::string k = mech(e);
-  bool zoned = k == "ronces" || k == "charge";
+  bool zoned = k == "ronces" || k == "charge" || k == "attire";
   if (!zoned && !k.empty() && mechDue(e)) return false;  // sa posture vient au tour suivant : pas de zone rouge qui l'empêche
   if (alive(allies).empty() || (zoned ? !mechDue(e) : frand() >= rules().bossWarn)) return false;
   // Sa plus forte attaque (ou celle de sa mécanique), concentrée sur la zone où se trouvent le plus d'alliés
@@ -1826,10 +1834,9 @@ bool Battle::bossPlan(FighterP e) {
       if (moveInfo(id).damaging() && moveInfo(id).power > power) power = moveInfo(id).power, best = id;
   if (best.empty()) return false;
   std::vector<Area> shapes = {Area::Column, Area::Cross, Area::Line};
-  if (k == "charge") shapes = {Area::Line};
-  if (k == "ronces")
+  if (zoned)  // sa forme, « zone » (par défaut : une ligne pour la charge, une colonne pour attire, une croix pour les ronces)
     for (Area z : {Area::Line, Area::Column, Area::Cross})
-      if (jget<std::string>(e->mech, "zone", "croix") == zoneId(z)) shapes = {z};
+      if (jget<std::string>(e->mech, "zone", k == "charge" ? "ligne" : k == "attire" ? "colonne" : "croix") == zoneId(z)) shapes = {z};
   int center = -1, most = 0;
   Area zone = shapes[0];
   for (Area z : shapes)
@@ -1866,13 +1873,18 @@ void Battle::takePosture(const FighterP& e, const std::string& kind) {
   log.push_back(e->name() + (armor ? T(" se cuirasse") : T(" se voile de brume")));
   pop(e, armor ? T("Cuirasse !") : T("Voile !"), armor ? rgb(0xc8d6f0) : rgb(0xc8b8ff));
   sound(armor ? "garde" : "statut");
-  sc.say(e->name() + (armor ? T(" se cuirasse : la magie passe, le corps à corps est puni !") : T(" se voile : seul le corps à corps l'atteint !")), 1.1f);
+  sc.say(e->name() + (armor                    ? T(" se cuirasse : la magie passe, le corps à corps est puni !")
+                      : veilType(*e).empty() ? T(" se voile : seul le corps à corps l'atteint !")
+                                             : withType(T(" se voile : seuls les coups de type {t} l'atteignent !"), veilType(*e))), 1.1f);
   sc.call([this, e] { afterAction(e, float(rules().quickGauge)); });
 }
 float Battle::postureMult(const FighterP& d, const Move& m) const {
   auto it = posture_.find(d.get());
   if (it == posture_.end()) return 1;
-  if (it->second == "voile") return m.melee ? 1.f : 0.f;  // sorts, tirs et états la traversent
+  if (it->second == "voile") {  // sorts, tirs et états la traversent ; voile d'un type : tout, sauf les coups de ce type
+    std::string ty = jget<std::string>(d->mech, "type", "");
+    return (ty.empty() ? m.melee : types()[(size_t)m.type].id == ty) ? 1.f : 0.f;
+  }
   return m.kind == Kind::Physical ? jget(d->mech, "valeur", .5f) : 1.f;
 }
 bool Battle::tacticTurn(FighterP a) {
@@ -2174,7 +2186,7 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
     pop(d, T("Traverse la brume"), rgb(0xc8b8ff));
     sound("rate");
     log.push_back(a->name() + " > " + d->name() + " : " + m.name + T(" traverse la brume"));
-    if (isAlly(a)) tip("voile");
+    if (isAlly(a)) tip(veilType(*d).empty() ? "voile" : "voile_type");  // (Codex, 2026-10-26) un voile d'un type : pas « allez au contact »
     return 0;
   }
   // Précision : l'esquive ne joue que contre les attaques physiques
@@ -2526,7 +2538,7 @@ void Battle::knockOut(const FighterP& f) {
   koT_[f.get()] = G.time;  // dessin : l'ennemi s'efface (3.3)
 }
 
-void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> targets, bool isLimit, float boost, bool charge) {
+void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> targets, bool isLimit, float boost, int charge) {
   if (follower()) {  // l'invité envoie son ordre ; l'hôte (ou le chef) le joue et renvoie le résultat
     Json t = Json::array();
     for (auto& f : targets) t.push_back(mine(f));
@@ -2618,10 +2630,15 @@ void Battle::useMove(FighterP a, const std::string& id, std::vector<FighterP> ta
         else {
           for (auto& e : m.effects)
             if (!e.self) applyEffect(t, e);
-          if (m.shove && t == targets[0] && dmg > 0) shove(a, t, m, dmg, *ko);
-          if (charge) {  // (2026-10-25) charge d'un boss : chaque cible recule d'une case, loin de lui (choc contre le bord ou un voisin)
+          if (m.shove && t == targets[0] && dmg > 0 && !charge) shove(a, t, m, dmg, *ko);  // (la charge déplace déjà : pas deux fois)
+          if (charge > 0) {  // (2026-10-25) charge d'un boss : chaque cible recule d'une case, loin de lui (choc contre le bord ou un voisin)
             int c = cellOf(t), x = boardX(c) + (boardX(c) >= boardX(cellOf(a)) ? 1 : -1);
             shoveTo(t, x < 0 || x >= BOARD_W ? -1 : boardAt(boardY(c), x), true, dmg, *ko);
+          } else if (charge < 0) {  // (2026-10-26) attire : tirée vers lui jusqu'à la ligne de front de son camp ; un combattant devant l'arrête
+            int c = cellOf(t), y = boardY(c), d = boardX(cellOf(a)) > boardX(c) ? 1 : -1, to = -1;
+            for (int x = boardX(c) + d; x >= 0 && x < BOARD_W && inHalf(isAlly(t), boardAt(y, x)) && !at(boardAt(y, x)) && !blockedCell(boardAt(y, x)); x += d)
+              to = boardAt(y, x);
+            if (to >= 0) shoveTo(t, to, false, dmg, *ko);
           }
         }
         if (!m.motion.empty() && t == targets[0] && a->alive()) motionAfterHit(a, t, m, *ko);
@@ -3464,6 +3481,14 @@ void Battle::draw() {
         if (k == "epines")  // (2026-10-25) ronces acérées de la Ronce-Mère : de grandes épines dressées
           for (int i = 0; i < 4; i++)
             g.tri(p.x - 10 + i * 6, p.y + 15, p.x - 6 + i * 6, p.y + 15, p.x - 8 + i * 6 + std::sin(ph + i) * .6f, p.y + 7 - (i % 2) * 2, rgb(0x3a1a0c, 230));
+        else if (k == "foudre")  // (2026-10-26) sol foudroyé du Seigneur des Orages : de petits éclairs qui crépitent
+          for (int i = 0; i < 2; i++) {
+            if (std::fmod(ph * 1.7f + i * 1.3f, 2.f) > 1.2f) continue;
+            float x = p.x - 5 + i * 10;
+            g.line(x + 1, p.y + 8, x - 2, p.y + 12, 1, rgb(0xfff6a0));
+            g.line(x - 2, p.y + 12, x + 1, p.y + 13, 1, rgb(0xfff6a0));
+            g.line(x + 1, p.y + 13, x - 1, p.y + 17, 1, rgb(0xfff6a0));
+          }
         else if (k == "degats")  // braises qui rougeoient
           for (int i = 0; i < 3; i++) g.ellipse(p.x - 6 + i * 6, p.y + 13 + (i % 2) * 2 - std::fmod(ph + i, 3.f), 1.5f, 1.5f, rgb(i % 2 ? 0xffd34d : 0xff5a1a));
         else if (k == "poison")  // épines
@@ -3495,14 +3520,18 @@ void Battle::draw() {
     for (int c = 0; c < BOARD_CELLS && !w.kind.empty(); c++) {
       if (!inBoardZone(w.zone, w.center, c)) continue;
       Pt p = cellPos(c);
-      if (w.kind == "charge") {
-        float d = boardX(c) < boardX(cellOf(w.who)) ? -1.f : 1.f, k = std::fmod(t * 1.5f + 10 - boardX(c) * .2f * d, 1.f);
+      if (w.kind == "charge" || w.kind == "attire") {  // flèches : où ils reculeront (charge), ou vers lui (attire, 2026-10-26)
+        float d = (boardX(c) < boardX(cellOf(w.who)) ? -1.f : 1.f) * (w.kind == "attire" ? -1.f : 1.f), k = std::fmod(t * 1.5f + 10 - boardX(c) * .2f * d, 1.f);
         g.tri(p.x + d * 5, p.y + 13, p.x - d * 2, p.y + 9.5f, p.x - d * 2, p.y + 16.5f, rgb(0xffe0b0, uint8_t(120 + 120 * k)));
-      } else if (w.kind == "ronces")
+      } else if (w.kind == "ronces") {  // pointes de la couleur du terrain qui va pousser (ronces, braises, foudre)
+        Color col = rgb(0x3a1a0c, 220);
+        for (auto& x : rules().terrains)
+          if (x.id == jget<std::string>(w.who->mech, "terrain", "") && x.look != "epines") col = rgb(x.color, 220);
         for (int i = 0; i < 3; i++) {
           float h = 2 + 2.5f * std::max(0.f, std::sin(t * 4 + i * 2 + c));
-          g.tri(p.x - 7 + i * 7, p.y + 15, p.x - 5 + i * 7, p.y + 15, p.x - 6 + i * 7, p.y + 15 - h, rgb(0x3a1a0c, 220));
+          g.tri(p.x - 7 + i * 7, p.y + 15, p.x - 5 + i * 7, p.y + 15, p.x - 6 + i * 7, p.y + 15 - h, col);
         }
+      }
     }
   // Limite (3.4) : un cercle d'invocation (Godot) tourne au sol sous chaque cible, sous les combattants
   if (anim_.limit && t - anim_.t0 >= 0 && t - anim_.t0 < .8f)

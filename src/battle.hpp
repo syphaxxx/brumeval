@@ -124,7 +124,7 @@ class Battle {
     std::string move;
     Area zone;
     int center;
-    std::string kind;  // (2026-10-25) mécanique du boss : « ronces » (le terrain y pousse), « charge » (recul) ; vide : classique
+    std::string kind;  // (2026-10-25) mécanique du boss : « ronces » (le terrain y pousse), « charge » (recul), « attire » ; vide : classique
   };
   std::vector<Warning> warnings_;
   std::vector<std::pair<int, int>> netWarn_;  // chez l'invité : zones annoncées reçues (case, zone)
@@ -196,8 +196,9 @@ class Battle {
   bool dangerAt(const FighterP& f, int cell) const;  // terrain qui blesse, zone rouge d'un boss, intention ennemie
   bool announced(const FighterP& f) const;           // ce boss a une attaque annoncée (zone rouge) en attente
   // Mécaniques des boss (2026-10-25) : la « mecanique » d'un ennemi (evenements.json) revient un tour sur « tous », toujours
-  // annoncée : posture (cuirasse : la magie passe, le corps à corps est puni ; voile : seul le corps à corps passe), annoncée
-  // par son intention, ou zone rouge (ronces : le terrain y pousse ; charge : toute une ligne, ceux qui y restent reculent)
+  // annoncée : posture (cuirasse : la magie passe, le corps à corps est puni ; voile : seul le corps à corps passe, ou seul
+  // le « type » dit), annoncée par son intention, ou zone rouge (ronces : le terrain y pousse ; charge : toute une ligne, ceux
+  // qui y restent reculent ; attire (2026-10-26) : ceux qui y restent sont tirés vers lui jusqu'au front, un allié devant les arrête)
   std::string mech(const FighterP& e) const;          // son genre (vide : aucune ; jamais en ligne)
   bool mechDue(const FighterP& e) const;              // son prochain tour est celui de sa mécanique
   std::map<const Fighter*, int> mechTurns_;           // tours déjà joués par chaque boss à mécanique
@@ -357,9 +358,9 @@ class Battle {
   Json mine(const FighterP& f) const;
   FighterP other(const Json& s) const;  // le même, vu par celui qui le reçoit
   void setBlink(const FighterP& f);
-  // boost > 1 : attaque annoncée (cibles déjà choisies, pas de zone autour, dégâts multipliés) ; charge : chaque cible
-  // touchée recule d'une case, loin du lanceur (charge d'un boss)
-  void useMove(FighterP a, const std::string& mv, std::vector<FighterP> targets, bool isLimit = false, float boost = 1, bool charge = false);
+  // boost > 1 : attaque annoncée (cibles déjà choisies, pas de zone autour, dégâts multipliés) ; charge 1 : chaque cible
+  // touchée recule d'une case, loin du lanceur (charge d'un boss) ; -1 : elle est tirée vers lui jusqu'au front (attire)
+  void useMove(FighterP a, const std::string& mv, std::vector<FighterP> targets, bool isLimit = false, float boost = 1, int charge = 0);
   void useItem(FighterP a, const std::string& it, FighterP target);
   void swapIn(FighterP a, FighterP r);
   void tryFlee(FighterP a);

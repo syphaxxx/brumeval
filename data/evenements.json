@@ -1558,7 +1558,7 @@
             "action": "combat",
             "ennemis": [
               {"espece": "givrelin", "niveau": 27},
-              {"espece": "givrecorne", "niveau": 37, "pv": 10, "boss": true, "phases": [{"pv": 0.5, "message": "Le Givrecorne déchaîne le blizzard !", "meteo": "blizzard", "bonus": {"defense": 1}}]},
+              {"espece": "givrecorne", "niveau": 37, "pv": 10, "boss": true, "mecanique": {"genre": "charge", "tous": 3, "technique": "corne_givre", "message": "Le Givrecorne baisse les cornes vers la ligne rouge : il va la charger !"}, "phases": [{"pv": 0.5, "message": "Le Givrecorne déchaîne le blizzard !", "meteo": "blizzard", "bonus": {"defense": 1}}]},
               {"espece": "givrelin", "niveau": 27}
             ],
             "renforts": [{"espece": "cristallin", "niveau": 26}],
@@ -2153,6 +2153,13 @@
                 "pv": 17,
                 "bouclier": 12,
                 "boss": true,
+                "mecanique": {
+                  "genre": "attire",
+                  "tous": 3,
+                  "zone": "colonne",
+                  "technique": "decharge",
+                  "message": "Le Kraken plonge ses tentacules sous la zone rouge : ceux qui y resteront seront happés vers lui !"
+                },
                 "phases": [
                   {"pv": 0.6, "message": "Le Kraken plonge et revient, couvert de corail !", "bouclier": 14},
                   {
@@ -2201,6 +2208,12 @@
                 "niveau": 53,
                 "pv": 13,
                 "boss": true,
+                "mecanique": {
+                  "genre": "charge",
+                  "tous": 3,
+                  "technique": "fleche_vent",
+                  "message": "Le Griffon tempête replie ses ailes, les yeux sur la ligne rouge : il va fondre dessus !"
+                },
                 "phases": [
                   {
                     "pv": 0.5,
@@ -2251,6 +2264,14 @@
                 "pv": 7.5,
                 "bouclier": 14,
                 "boss": true,
+                "mecanique": {
+                  "genre": "ronces",
+                  "tous": 3,
+                  "zone": "colonne",
+                  "technique": "foudre_noire",
+                  "terrain": "foudroye",
+                  "message": "Le Seigneur des Orages lève les bras : la foudre va s'abattre sur la zone rouge, et le sol en restera chargé !"
+                },
                 "phases": [
                   {
                     "pv": 0.7,
@@ -3749,10 +3770,16 @@
               {"espece": "aubespectre", "niveau": 62},
               {
                 "espece": "brume_noire",
-                "niveau": 68,
+                "niveau": 72,
                 "pv": 6.5,
                 "boss": true,
                 "bouclier": 14,
+                "mecanique": {
+                  "genre": "voile",
+                  "tous": 3,
+                  "type": "lumiere",
+                  "message": "La Brume Noire se referme sur elle-même : seule la lumière pourra la percer !"
+                },
                 "phases": [
                   {
                     "pv": 0.7,
@@ -8790,6 +8817,12 @@
                 "pv": 5.5,
                 "boss": true,
                 "bouclier": 12,
+                "mecanique": {
+                  "genre": "cuirasse",
+                  "tous": 3,
+                  "valeur": 0.4,
+                  "message": "Le Colosse d'écho se fige, sa mousse durcit en pierre : il va se cuirasser !"
+                },
                 "phases": [
                   {
                     "pv": 0.5,
@@ -8850,6 +8883,14 @@
                 "pv": 4,
                 "boss": true,
                 "bouclier": 12,
+                "mecanique": {
+                  "genre": "ronces",
+                  "tous": 3,
+                  "zone": "ligne",
+                  "technique": "brasier",
+                  "terrain": "braises",
+                  "message": "Le Phénix d'écho survole la ligne rouge : une pluie de flammes va s'y abattre, et les braises resteront !"
+                },
                 "phases": [
                   {
                     "pv": 0.6,
@@ -8913,6 +8954,11 @@
                 "pv": 7,
                 "boss": true,
                 "bouclier": 16,
+                "mecanique": {
+                  "genre": "voile",
+                  "tous": 3,
+                  "message": "L'Ombre du Premier Gardien s'efface dans les ténèbres : seule une lame au contact l'atteindra !"
+                },
                 "phases": [
                   {
                     "pv": 0.7,
