@@ -46,7 +46,7 @@ Le mode test (src/test.cpp) vérifie les données, joue des scènes (titre, vill
 dialogue, recrutement, combat piloté par les menus, sauvegarde/chargement),
 enregistre des captures `.bmp` dans `captures/` et, avec `BRUMEVAL_SIMULATIONS=1`
 (2026-10-24 : sinon elles sont sautées, elles prenaient 6 des 7 minutes), simule des
-combats pour l'équilibrage (`BRUMEVAL_SIM_FILTRE=mot1,mot2` : seulement celles dont le nom contient un de ces mots, sans accent). Il doit finir par « TOUS LES TESTS PASSENT ». Les tirages
+combats pour l'équilibrage (`BRUMEVAL_SIM_FILTRE=mot1,mot2` : seulement celles dont le nom contient un de ces mots, sans accent ni majuscule : « Phenix » trouve « Phénix »). Il doit finir par « TOUS LES TESTS PASSENT ». Les tirages
 au hasard partent d'une graine fixe (`BRUMEVAL_GRAINE` pour en changer) : un échec se rejoue. Regarde les captures
 après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
 
@@ -260,6 +260,20 @@ code) ; `docs/GUIDE.md` les range par domaine.
   un boss à posture pas la veille de sa posture. IA alliée : ×0,4 au corps à corps sur un ennemi en garde. Captures
   `boss_cuirasse(_annonce)`, `boss_voile`, `boss_ronces(_annonce)`, `boss_charge_annonce` ; une posture coûte un tour
   d'attaque au boss : Golem N.26 → 28, Mère des Brumes N.40 → 43 ; mesures : compétence `equilibrage`.
+  Actes 2 à 4 (2026-10-26) : **Attire** (Kraken des récifs, seul genre nouveau) : zone rouge de forme `zone` (une colonne par
+  défaut ; flèches tournées vers lui) ; ceux qui y restent prennent `technique` × 1,6 et sont tirés vers lui jusqu'à la ligne de
+  front de leur camp (`useMove(…, charge -1)`, les plus proches d'abord ; un combattant ou un obstacle devant les arrête, sans
+  choc) : quitter la zone, garder ses lanceurs de sorts derrière un allié ; astuce `attire`. **Voile d'un type** (Brume Noire,
+  `type` : `lumiere`) : seuls les coups de ce type l'atteignent, corps à corps compris (`postureMult`, `veilType` : « seuls les
+  coups de type Lumière » dans l'intention, le message et l'aide de la cible ; astuce `voile_type`). Les autres reprennent les
+  mécaniques par leurs paramètres : Griffon tempête et Givrecorne `charge` (Flèche du vent, Corne de givre ; pendant une charge,
+  la poussée propre de la technique est sautée), Seigneur des Orages `ronces` en colonne (Foudre noire, terrain `foudroye`
+  « Sol foudroyé », 6 %, dessin `foudre` : petits éclairs), Phénix d'écho `ronces` en ligne (Brasier, `braises`), Colosse d'écho
+  `cuirasse` (×0,4), Ombre du Premier Gardien `voile`. Le terrain d'une zone ne pousse que dans le camp allié (une ligne
+  traverse le damier) ; message « <terrain> : la zone en reste couverte… » ; à l'annonce, pointes de la couleur du terrain.
+  Gardien de cristal laissé sans mécanique (ç'aurait été une troisième cuirasse). Captures `boss_attire(_annonce)`,
+  `boss_voile_lumiere(_annonce)`, `boss_annonce_<espèce>`, `boss_sol_<espèce>` (Seigneur, Phénix) ; simulation de la Brume
+  Noire (équipe N.64) ; son voile lui coûte un tour d'attaque : Brume Noire N.68 → 72 ; les zones restent dans le bruit des mesures ; mesures : compétence `equilibrage`.
 - Vente : boutique > « Vendre… » (`Game::sellMenu`), moitié du prix, sauf les
   objets importants.
 - Boutique (2026-10-23) : un équipement survolé montre sous la liste ce qu'il changerait pour chaque membre qui peut le
