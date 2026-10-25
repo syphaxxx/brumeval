@@ -196,8 +196,12 @@ code) ; `docs/GUIDE.md` les range par domaine.
   `pris` de la sauvegarde ; `see()` dans `startBattle` et à l'entrée d'un
   renfort, `caught` à la capture, `noteBestiary()` compte l'équipe et la
   réserve. Menu `bestiaryMenu`, fiche `drawBestiaryPanel` (`panelMode_` 3 ; une fois l'espèce obtenue, sa
-  `description` : `Species::desc`, écrites par `outils/villes/descriptions.py`).
-  L'Expédition repart d'un bestiaire vide.
+  `description` : `Species::desc`, écrites par `outils/villes/descriptions.py`). Page tactique (2026-10-25, Gauche/Droite
+  ou un clic sur la fiche, `bestiaryPage_`, interceptés dans `Game::update` avant `menus.update`) : rôle et ce qu'il
+  change, faiblesses découvertes (`knownMatchup`, battle.hpp : seulement `Game::weak` ; « ? » / « +? » pour le reste),
+  absorptions découvertes, résistances et coups physiques/magiques (talent compris) une fois l'espèce obtenue (sinon
+  « ? » : rien ne les enregistre en combat), attaques de zone apprises (petit damier 3x3 de la forme). Lieux : zones
+  de jour et de nuit. L'Expédition repart d'un bestiaire vide.
 - Rééquilibrage (2026-10-23) : `Game::encounter` : au moins `par_allie` ennemis par combattant allié (0,6 depuis le
   2026-10-24), meutes d'au plus 2 + une créature par tranche de `meute_par_niveau` (15) niveaux de l'équipe (2026-10-24 :
   les débuts se jouent à deux contre deux), créatures sauvages au plus `ecart_niveau` (3) sous la moyenne de l'équipe (sans dépasser la zone de `plafond_niveau`), gains de leur niveau

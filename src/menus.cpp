@@ -379,6 +379,7 @@ static std::string evolutionText(const Species& s) {
 void Game::bestiaryMenu(int sel) {
   noteBestiary();
   panelMode_ = 3;
+  bestiaryPage_ = 0;
   std::vector<const Species*> all;
   for (auto& s : allSpecies())
     if (!s.human) all.push_back(&s);
@@ -406,16 +407,149 @@ void Game::bestiaryMenu(int sel) {
   menus.push(m);
 }
 
+Matchup knownMatchup(const Species& s, const std::set<std::string>* known) {
+  Matchup m;
+  m.full = !known;
+  auto r = [&](const std::string& k) {
+    auto it = s.resist.find(k);
+    return it == s.resist.end() ? 1.f : it->second;
+  };
+  for (Type t = 0; t < (Type)types().size(); t++) {
+    float e = typeEff(t, s.type) * (s.type2 >= 0 ? typeEff(t, s.type2) : 1.f) * r(types()[t].id);
+    bool found = m.full || known->count(s.id + ":" + std::to_string(t));  // Brisure : découverte en la frappant
+    if (e > 1) found ? m.weak.push_back({t, e}) : (void)m.hidden++;
+    else if (e < 0 && found) m.absorb.push_back({t, e});
+    else if (e >= 0 && e < 1 && m.full) m.resist.push_back({t, e});
+  }
+  m.phys = r("physique") * float(1 - talentValue(s, "resiste_physique"));  // comme applyHit : Carapace, Écorce runique
+  m.mag = r("magique") * float(1 - talentValue(s, "resiste_magie"));
+  return m;
+}
+
+// « ×0,5 », « ×2 »
+static std::string multText(float e) {
+  char b[16];
+  std::snprintf(b, sizeof b, "%.2f", e);
+  std::string s = b;
+  while (s.back() == '0') s.pop_back();
+  if (s.back() == '.') s.pop_back();
+  std::replace(s.begin(), s.end(), '.', ',');
+  return "×" + s;
+}
+
+// Fiche du bestiaire, page 2 : ce que l'équipe a appris pour la combattre (rien qui n'ait été découvert)
+static void drawBestiaryTactics(Gfx& g, int x, int y, int w, const Species& s, const Matchup& mu) {
+  int bottom = 184, ly = y + 32;  // au-dessus de l'aide
+  g.window(x, y, w, bottom - y);
+  g.text(x + 8, y + 6, s.name, GOLD);
+  g.text(x + w - 8, y + 6, "<2/2", MUTED, 2);
+  g.text(x + 8, y + 18, typesName(s), MUTED);
+  auto dot = [&](float cx, float cy, Type t) {
+    uint32_t c = types()[t].color & 0xffffff;
+    g.ellipse(cx, cy, 3.5f, 3.5f, rgb((c >> 1) & 0x7f7f7f)), g.ellipse(cx, cy, 2.6f, 2.6f, rgb(c));
+  };
+  bool cut = false;
+  auto room = [&] {
+    if (ly + 11 > bottom - 4) cut = true;
+    return !cut;
+  };
+  // Rôle : celui qu'on voit en combat (icône au-dessus de lui)
+  const std::string& role = s.combatRole;
+  if (role.empty())
+    g.text(x + 8, ly, T("Rôle : aucun"), MUTED), ly += 13;
+  else {
+    uint32_t col = role == "soigneur" ? 0x6ad87a : role == "protecteur" ? 0x8ad8d8 : 0xf0e06a;
+    g.text(x + 8, ly, std::string(T("Rôle : ")) + (role == "soigneur" ? T("Soigneur") : role == "protecteur" ? T("Protecteur") : T("Chef")), rgb(col));
+    const char* why = role == "soigneur" ? T("Soigne les siens : abattez-le en premier.")
+                    : role == "protecteur" ? T("Ses voisins en croix encaissent moins : isolez-les.")
+                                           : T("Ses alliés agissent plus vite tant qu'il tient.");
+    for (auto& l : Gfx::wrap(why, w - 16)) ly += 11, g.text(x + 8, ly, l, rgb(0xd8dcf0));
+    ly += 13;
+  }
+  // Efficacités : une ligne par catégorie, pastille du type et son nom (names faux : pastilles groupées par
+  // multiplicateur, pour tenir) ; « ? » tant que ce n'est pas découvert
+  auto row = [&](const char* label, const std::vector<std::pair<Type, float>>& list, bool names, bool showMult, std::string tail, Color tc) {
+    if (!room()) return;
+    g.text(x + 8, ly, label, WHITE);
+    int cx = x + 56;
+    if (list.empty() && tail.empty()) tail = T("rien");
+    std::vector<std::pair<std::vector<Type>, std::string>> segs;
+    if (names)
+      for (auto& [t, e] : list) segs.push_back({{t}, std::string(types()[t].name) + (showMult ? " " + multText(e) : "")});
+    else {
+      std::map<float, std::vector<Type>> by;
+      for (auto& [t, e] : list) by[e].push_back(t);
+      for (auto& [e, ts] : by) segs.push_back({ts, showMult ? multText(e) : ""});
+    }
+    for (auto& [ts, txt] : segs) {
+      int ew = 9 * (int)ts.size() + 1 + Gfx::textW(txt);
+      if (cx > x + 56 && cx + ew > x + w - 8) {
+        if ((ly += 11, !room())) return;
+        cx = x + 56;
+      }
+      for (size_t k = 0; k < ts.size(); k++) dot(cx + 3.5f + 9 * k, ly + 3.5f, ts[k]);
+      if (!txt.empty()) g.text(cx + 9 * (int)ts.size(), ly, txt, WHITE);
+      cx += ew + 5;
+    }
+    if (!tail.empty()) {
+      if (cx > x + 56 && cx + Gfx::textW(tail) > x + w - 8) {
+        if ((ly += 11, !room())) return;
+        cx = x + 56;
+      }
+      g.text(cx, ly, tail, tc);
+    }
+    ly += 12;
+  };
+  Color red = rgb(0xff8a7a), muted = MUTED;
+  row(T("Faible"), mu.weak, true, true, mu.hidden ? (mu.weak.empty() ? "?" : "+?") : !mu.full && mu.weak.empty() ? "?" : "", muted);
+  row(T("Absorbe"), mu.absorb, true, false, mu.full ? "" : "?", muted);
+  row(T("Résiste"), mu.resist, false, true, mu.full ? "" : "?", muted);
+  if (room()) {
+    g.text(x + 8, ly, T("Coups"), WHITE);
+    auto hit = [&](const char* what, float k) {
+      return std::string(what) + (mu.full ? multText(k) : std::string("?"));
+    };
+    bool hard = mu.full && (mu.phys < 1 || mu.mag < 1);
+    g.text(x + 56, ly, hit(T("phys."), mu.phys) + " " + hit(T("mag."), mu.mag), hard ? red : mu.full ? WHITE : muted);
+    ly += 14;
+  }
+  // Attaques de zone qu'elle apprend : un petit damier 3x3 montre la forme de la zone
+  std::vector<const Move*> zones;
+  for (auto& l : s.learn)
+    if (hasMove(l.move)) {
+      const Move& m = moveInfo(l.move);
+      if (m.damaging() && m.zone != Area::Single && std::find(zones.begin(), zones.end(), &m) == zones.end()) zones.push_back(&m);
+    }
+  if (!room()) return;
+  g.text(x + 8, ly, T("Attaques de zone"), GOLD);
+  ly += 11;
+  if (zones.empty() && room()) g.text(x + 8, ly, T("aucune"), MUTED), ly += 11;
+  for (auto* m : zones) {
+    if (!room()) break;
+    for (int r = 0; r < 3; r++)
+      for (int q = 0; q < 3; q++) {
+        bool lit = m->zone == Area::All || (m->zone == Area::Line && r == 1) || (m->zone == Area::Column && q == 1) ||
+                   (m->zone == Area::Cross && (r == 1 || q == 1));
+        g.rect(x + 8 + q * 3, ly + 1 + r * 3, 2, 2, lit ? rgb(0xff9a4a) : rgb(0x3a4478));
+      }
+    dot(x + 22.5f, ly + 4.5f, m->type);
+    g.text(x + 28, ly, m->name, WHITE);
+    ly += 11;
+  }
+}
+
 // Fiche du bestiaire : dessin, types, statistiques de base et lieux où vivre la rencontre
 void Game::drawBestiaryPanel(int x, int y) {
   if (!hasSpecies(bestiarySel_)) return;
   const Species& s = species(bestiarySel_);
   int w = 320 - x - 8;
   bool v = seen.count(s.id) > 0, c = caught.count(s.id) > 0;
+  if (v && bestiaryPage_ == 1) return drawBestiaryTactics(g, x, y, w, s, knownMatchup(s, c ? nullptr : &weak));
   std::vector<std::string> places;
   for (auto& mp : maps()) {
     bool here = false;
-    for (auto& z : mp.zones) here = here || std::find(z.pool.begin(), z.pool.end(), s.id) != z.pool.end();
+    for (auto& z : mp.zones)
+      here = here || std::find(z.pool.begin(), z.pool.end(), s.id) != z.pool.end() || std::find(z.night.begin(), z.night.end(), s.id) != z.night.end();
     for (auto& b : mp.bosses) here = here || b.id == s.id;
     if (here && mp.theme != Theme::Interieur) places.push_back(mp.name);
   }
@@ -438,6 +572,7 @@ void Game::drawBestiaryPanel(int x, int y) {
     return;
   }
   g.text(x + 8, y + 6, s.name, GOLD);
+  g.text(x + w - 8, y + 6, "1/2>", MUTED, 2);  // Gauche/Droite (ou un clic) : la page tactique
   g.text(x + 8, y + 18, typesName(s), MUTED);
   float k = creatureFit(s.id, top == 104 ? 60 : 46);  // les petites créatures deux fois plus grandes
   drawCreature(g, s.id, x + w / 2, y + top - 14 - 16 * k * s.size, k, false, time);

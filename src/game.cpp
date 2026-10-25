@@ -370,6 +370,12 @@ void Game::update(float dt) {
             if (in.mclick[0] && idx < (int)fm.items.size()) in.mclick[0] = false, fm.sel = idx, in.confirm = true;
           }
         }
+        if (panelMode_ == 3 && seen.count(bestiarySel_) &&
+            (in.press[LEFT] || in.press[RIGHT] || (in.mouseOn && in.mclick[0] && in.mx >= 154))) {  // Bestiaire : l'autre page de la fiche
+          bestiaryPage_ ^= 1;
+          in.press[LEFT] = in.press[RIGHT] = in.mclick[0] = false;
+          audio::play("curseur");
+        }
         menus.update(in);
         if (!menus.active()) formationPick_ = false;
         if (!menus.active()) panelMode_ = 0;
