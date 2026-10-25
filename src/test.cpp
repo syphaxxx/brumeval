@@ -3631,6 +3631,10 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
             if (u8(m.name) > 18) errs.push_back("nom de technique trop long : " + m.name);
           for (auto& sp : allSpecies())
             if (u8(sp.name) > 10) errs.push_back("nom d'espèce trop long : " + sp.name);
+          for (auto& m : maps())  // une réplique d'habitant tient dans la fenêtre de dialogue (4 lignes)
+            for (auto& n : m.npcs)
+              for (auto& l : n.lines)
+                if (Gfx::wrap(l, 284).size() > 4) errs.push_back("réplique trop longue : " + l);
           checked++;
           if (!errs.empty() && bad++ == 0) firstErr = "graine " + std::to_string(seed) + ", région " + std::to_string(k) + " : " + errs[0];
         }
@@ -3651,9 +3655,13 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       std::printf("\nMonde de la graine « %s » :\n", w);
       for (auto& id : X.content_.heroes) std::printf("  héros     %-10s %s\n", species(id).name.c_str(), species(id).role.c_str());
       for (auto& id : X.content_.starters) std::printf("  départ    %-10s %s\n", species(id).name.c_str(), typesName(species(id)).c_str());
+      procgen::Content cc = procgen::generateBase(seed);  // les régions une à une, comme X.generate, pour leurs combats
       for (int k = 1; k <= 3; k++) {
-        std::string px = "x" + std::to_string(k);
-        std::printf("  région %d  %s (gardien : %s)\n", k, procgen::regionName(seed, k).c_str(), species(px + "b").name.c_str());
+        std::string px = "x" + std::to_string(k), mk = "aucune";
+        Json ev = procgen::generateRegion(seed, k, cc).events;
+        for (auto& e : ev[px + "_gardien"]["actions"][1]["oui"][0]["ennemis"])
+          if (e.contains("mecanique")) mk = jget<std::string>(e["mecanique"], "genre", "?");
+        std::printf("  région %d  %s (gardien : %s, mécanique : %s)\n", k, procgen::regionName(seed, k).c_str(), species(px + "b").name.c_str(), mk.c_str());
         for (auto& s : allSpecies())
           if (s.id.rfind(px, 0) == 0) std::printf("            %-10s %-14s %s\n", s.name.c_str(), typesName(s).c_str(), s.role.c_str());
       }
@@ -3669,7 +3677,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
             "expédition : la même graine redonne exactement le même monde");
       // À plusieurs, chaque joueur génère le monde chez lui : l'empreinte doit être la même sous Windows, Mac et Linux
       std::string wh = Expedition::worldHash(2026, 3);
-      check(wh == "eb8f2be6200f01bc", "expédition : la graine 2026 donne le même monde sur tous les systèmes (empreinte " + wh + ")");
+      check(wh == "988a5d6200505022", "expédition : la graine 2026 donne le même monde sur tous les systèmes (empreinte " + wh + ")");
       procgen::Content c1 = procgen::generateBase(7), c6 = c1;
       std::string shop1 = procgen::generateRegion(7, 1, c1).events.dump(), shop6;
       for (int k = 1; k <= 6; k++) shop6 = procgen::generateRegion(7, k, c6).events.dump();
@@ -3683,6 +3691,10 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
                 shop6.find("gemme_") != std::string::npos,
             "expédition : talents (" + std::to_string(talents) + ") et rôles (" + std::to_string(roles) +
                 ") des créatures, gardiens en phases, gemmes en récompense et en boutique");
+      // (2026-10-26) mécanique propre des gardiens à partir de la région 3 (cuirasse, voile, ronces, charge)
+      check(shop1.find("\"mecanique\"") == std::string::npos && ev4.find("\"mecanique\"") != std::string::npos &&
+                shop6.find("\"mecanique\"") != std::string::npos,
+            "expédition : les gardiens ont une mécanique propre à partir de la région 3");
     }
     // Écran titre > Expédition, choix du héros puis de la créature
     titleMenu();
@@ -4607,7 +4619,10 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
           return s;
         };
         std::vector<std::pair<std::string, int>> party = {{X.content_.heroes[0], lvl}, {X.content_.starters[0], lvl}, {"x1r", lvl}};
-        std::string name = "Région " + std::to_string(k) + " (graine " + std::to_string(seed) + ", N." + std::to_string(lvl) + ")";
+        std::string name = "Région " + std::to_string(k) + " (graine " + std::to_string(seed) + ", N." + std::to_string(lvl);
+        for (auto& e : f.at("ennemis"))  // (2026-10-26) la mécanique du gardien, s'il en a une
+          if (e.contains("mecanique")) name += ", " + jget<std::string>(e["mecanique"], "genre", "?");
+        name += ")";
         simSetup(name.c_str(), party, mk, 15);
         if (k != 2) {  // le même gardien, équipe équipée par la boutique de la région
           simGear = k >= 6 ? 3 : k >= 3 ? 2 : 1;
@@ -4632,6 +4647,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
                 for (auto& f : *v) {
                   f->mhp = std::max(1, int(f->mhp * scale + 1e-4f));
                   f->hp = f->mhp;
+                  f->mech = Json();  // comme coop.cpp : pas de mécanique en ligne
                 }
               return s;
             };

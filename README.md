@@ -428,6 +428,10 @@ les créatures générées ont un **talent** (selon leur type) et parfois un **r
 **gardien a des phases** (il se déchaîne à mi-vie, change le temps dès la région 2,
 appelle à l'aide dès la région 4) ; il laisse une **gemme**, et les boutiques en
 vendent de plus en plus. Les duos d'un héros et de sa créature marchent aussi.
+Dès la région 3, chaque gardien a aussi une **mécanique** de boss selon ses types
+(il se cuirasse, se voile, fait pousser des ronces ou charge toute une ligne) ;
+l'habitant qui donne son point faible dit aussi comment la déjouer. À plusieurs,
+le gardien n'en a pas.
 (Les mondes des graines déjà jouées gagnent ces nouveautés ; le reste ne change
 pas.)
 
