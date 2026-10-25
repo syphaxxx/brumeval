@@ -167,7 +167,8 @@ des dégâts par type), `precision` (coups physiques, en points).
 cases par camp) : `id`, `nom`, `description`, `effet` (`degats` et `soin` : part
 des PV max à la fin du tour ; `poison` : chance ; `lent` : jauge ATB plus lente ;
 `esquive` : points d'esquive ; `magie` : Magie en plus), `valeur`, `insensibles`
-(types), `decors`, `couleur`.
+(types), `decors` (vide : jamais tiré au hasard, seulement posé par un boss), `couleur`,
+`dessin` (facultatif : le dessin d'un autre effet, ou `epines`).
 
 **Duos** (`regles.json`, `duo`) : `jauge` (jauge ATB du partenaire, en %) et
 `liste` : `membres` (deux : identifiant d'espèce, `humain` ou `type:feu`) et
@@ -189,12 +190,21 @@ liste de `{"pv": 0.5, "message": …, "bouclier": 14, "bonus": {"attaque": 1},
 "soin": 0.1}`. Chaque phase se déclenche une fois, quand ses PV passent sous la part
 `pv` (jamais en ligne).
 
+**Mécanique d'un boss** (2026-10-25) : `"mecanique": {"genre": …, "tous": 3, "message": …}`,
+qui revient un de ses tours sur `tous`, toujours annoncée (`message` à l'annonce ; jamais en
+ligne). `genre` : `cuirasse` (annoncée par son intention ; jusqu'à son tour suivant, en garde
+et coups physiques × `valeur`), `voile` (sorts, tirs et états le traversent jusqu'à son tour
+suivant), `ronces` (zone rouge de forme `zone`, puis `technique` sur ceux restés dedans et le
+terrain `terrain` sur toute la zone), `charge` (toute une ligne : `technique`, et chacun recule
+d'une case).
+
 **Portraits** : un dialogue « Nom : … » montre le portrait de l'apparence de ce nom
 (`apparences.json`, ou un de ses autres noms dans `"aussi"`).
 
 **Astuces** (2.8, `regles.json`, `astuces`) : `id` (le moment où elle apparaît,
 choisi par le code : `bouclier`, `faiblesse`, `brisure`, `ordre`, `role`, `meteo`,
-`terrain`, `pousser`, `duo`, `phase`, `gemme`, `talent`), `aide` (titre de la page
+`terrain`, `pousser`, `duo`, `phase`, `gemme`, `talent`, et les mécaniques des boss `cuirasse`,
+`voile`, `ronces`, `charge`), `aide` (titre de la page
 d'Aide que F1 ouvre ensuite) et `texte`. Chacune n'est montrée qu'une fois (ligne
 `astuce` de la sauvegarde) ; Options > Astuces les coupe.
 
@@ -362,7 +372,7 @@ page dont la condition `si` est vraie.
 | `or` | Ajoute ou retire de l'or | `quantite` (négative pour payer) |
 | `drapeau` | Retient qu'un événement a eu lieu | `nom`, `valeur` (false pour l'effacer) |
 | `recruter` | Un personnage rejoint l'équipe | `espece`, `niveau` |
-| `combat` | Lance un combat | `ennemis` (1 à 6 : `espece`, `niveau`, `pv` multiplicateur, `bouclier`, `boss`, `phases`), `renforts`, `nom`, `boss`, `fuite`, `capture`, `victoire`, `defaite` |
+| `combat` | Lance un combat | `ennemis` (1 à 6 : `espece`, `niveau`, `pv` multiplicateur, `bouclier`, `boss`, `phases`, `mecanique`), `renforts`, `nom`, `boss`, `fuite`, `capture`, `victoire`, `defaite` |
 | `question` | Question Oui / Non | `texte`, `oui`, `non` |
 | `si` | Condition | `condition`, `alors`, `sinon` |
 | `soigner` | Soigne l'équipe | `pv`, `pm` (true par défaut) |

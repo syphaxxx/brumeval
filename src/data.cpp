@@ -335,6 +335,7 @@ static void loadRules(const Json& j) {
     Rules::Terrain x;
     x.id = t.at("id").get<std::string>(), x.name = tr(t.at("nom").get<std::string>());
     x.desc = tr(jget<std::string>(t, "description", "")), x.kind = t.at("effet").get<std::string>();
+    x.look = jget<std::string>(t, "dessin", x.kind);
     x.value = jget(t, "valeur", 0.0);
     x.immune = jget(t, "insensibles", std::vector<std::string>{});
     x.themes = jget(t, "decors", std::vector<std::string>{});
@@ -982,6 +983,7 @@ FighterP makeFoe(const Json& e, int defaultLevel) {
   f->boss = jget(e, "boss", false);
   f->shieldMax = jget(e, "bouclier", 0);
   if (e.contains("phases") && e["phases"].is_array()) f->phases = e["phases"];
+  if (e.contains("mecanique") && e["mecanique"].is_object()) f->mech = e["mecanique"];
   return f;
 }
 

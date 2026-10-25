@@ -189,6 +189,16 @@
       "valeur": 0.2,
       "decors": ["grotte", "neige"],
       "couleur": "#d8b8ff"
+    },
+    {
+      "id": "epines",
+      "nom": "Ronces acérées",
+      "description": "Jaillies sous la Ronce-Mère. À la fin de son tour dessus, ou poussé dessus : perd 8 % de ses PV max (sauf Plante et Poison).",
+      "effet": "degats",
+      "valeur": 0.08,
+      "insensibles": ["plante", "poison"],
+      "dessin": "epines",
+      "couleur": "#7a3a1e"
     }
   ],
   "duo": {
@@ -297,6 +307,26 @@
       "id": "garde",
       "aide": "Échiquier",
       "texte": "En garde ! Attendre, c'est encaisser un quart de dégâts en moins et riposter à chaque coup au corps à corps jusqu'à son prochain tour, face à l'ennemi le plus proche : utile quand on est visé."
+    },
+    {
+      "id": "cuirasse",
+      "aide": "Rôles",
+      "texte": "Ce boss va se cuirasser (un écu près de sa barre de PV) : jusqu'à son prochain tour, les coups physiques ne lui font presque rien et il riposte à chaque coup au corps à corps. Frappez-le avec la magie, ou profitez-en pour soigner et vous placer."
+    },
+    {
+      "id": "voile",
+      "aide": "Rôles",
+      "texte": "Ce boss va se voiler de brume : jusqu'à son prochain tour, sorts, tirs et états le traversent. Allez au contact pour le frapper, ou occupez-vous de ses acolytes."
+    },
+    {
+      "id": "ronces",
+      "aide": "Rôles",
+      "texte": "Des ronces vont jaillir sous la zone rouge, et elles resteront : à la fin de son tour dessus, on y perd des PV. Quittez la zone, et n'y revenez pas tant qu'elles sont là."
+    },
+    {
+      "id": "charge",
+      "aide": "Rôles",
+      "texte": "Ce boss va charger toute la ligne rouge : ceux qui y restent sont frappés et reculent d'une case (choc contre le bord ou un voisin). Changez de ligne ; un allié en garde (Attendre) riposte à la charge."
     },
     {
       "id": "carapace",

@@ -355,7 +355,7 @@
         "oui": [
           {
             "action": "combat",
-            "ennemis": [{"espece": "golem", "niveau": 26, "pv": 12, "bouclier": 10, "boss": true, "phases": [{"pv": 0.5, "message": "Le golem s'embrase de suie ! Son armure se reforme.", "bouclier": 14, "bonus": {"attaque": 1, "vitesse": 1}}]}],
+            "ennemis": [{"espece": "golem", "niveau": 28, "pv": 12, "bouclier": 10, "boss": true, "mecanique": {"genre": "cuirasse", "tous": 3, "valeur": 0.4, "message": "Le Golem de suie gronde et se couvre de scories : il va se cuirasser !"}, "phases": [{"pv": 0.5, "message": "Le golem s'embrase de suie ! Son armure se reforme.", "bouclier": 14, "bonus": {"attaque": 1, "vitesse": 1}}]}],
             "boss": true,
             "fuite": false,
             "capture": false,
@@ -382,7 +382,7 @@
             "action": "combat",
             "ennemis": [
               {"espece": "tisonnel", "niveau": 19},
-              {"espece": "ignarok", "niveau": 24, "pv": 7.5, "boss": true, "phases": [{"pv": 0.6, "message": "Ignarok s'embrase : sa carapace de lave se reforme !", "bouclier": 10}, {"pv": 0.3, "message": "Ignarok rugit et appelle un tisonnel !", "renforts": [{"espece": "tisonnel", "niveau": 20}]}]},
+              {"espece": "ignarok", "niveau": 24, "pv": 7.5, "boss": true, "mecanique": {"genre": "charge", "tous": 3, "technique": "poing", "message": "Ignarok gratte le sol, les yeux sur la ligne rouge : il va la charger !"}, "phases": [{"pv": 0.6, "message": "Ignarok s'embrase : sa carapace de lave se reforme !", "bouclier": 10}, {"pv": 0.3, "message": "Ignarok rugit et appelle un tisonnel !", "renforts": [{"espece": "tisonnel", "niveau": 20}]}]},
               {"espece": "tisonnel", "niveau": 19}
             ],
             "boss": true,
@@ -896,7 +896,7 @@
             "action": "combat",
             "ennemis": [
               {"espece": "serpentin", "niveau": 14},
-              {"espece": "ronce_mere", "niveau": 20, "pv": 7, "boss": true, "phases": [{"pv": 0.5, "message": "La Ronce-Mère fait germer un champignon guérisseur !", "renforts": [{"espece": "champichou", "niveau": 16}]}]},
+              {"espece": "ronce_mere", "niveau": 20, "pv": 7, "boss": true, "mecanique": {"genre": "ronces", "tous": 3, "zone": "croix", "technique": "tempete", "terrain": "epines", "message": "La Ronce-Mère plonge ses racines sous la zone rouge : des ronces vont en jaillir, et elles resteront !"}, "phases": [{"pv": 0.5, "message": "La Ronce-Mère fait germer un champignon guérisseur !", "renforts": [{"espece": "champichou", "niveau": 16}]}]},
               {"espece": "serpentin", "niveau": 14}
             ],
             "renforts": [{"espece": "crapoison", "niveau": 13}],
@@ -1525,7 +1525,7 @@
         "oui": [
           {
             "action": "combat",
-            "ennemis": [{"espece": "nebulis", "niveau": 36}, {"espece": "mere_brumes", "niveau": 40, "pv": 6.5, "boss": true, "phases": [{"pv": 0.66, "message": "La brume s'épaissit autour de la Mère des Brumes…", "meteo": "brume"}, {"pv": 0.33, "message": "La Mère des Brumes se déchaîne !", "bonus": {"magie": 1}, "techniques": ["suie"]}]}, {"espece": "brumeloup", "niveau": 36}],
+            "ennemis": [{"espece": "nebulis", "niveau": 36}, {"espece": "mere_brumes", "niveau": 43, "pv": 6.5, "boss": true, "mecanique": {"genre": "voile", "tous": 3, "message": "La Mère des Brumes se fond dans la brume : elle va se voiler !"}, "phases": [{"pv": 0.66, "message": "La brume s'épaissit autour de la Mère des Brumes…", "meteo": "brume"}, {"pv": 0.33, "message": "La Mère des Brumes se déchaîne !", "bonus": {"magie": 1}, "techniques": ["suie"]}]}, {"espece": "brumeloup", "niveau": 36}],
             "renforts": [{"espece": "orbrume", "niveau": 36}],
             "boss": true,
             "fuite": false,

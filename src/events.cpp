@@ -93,6 +93,15 @@ static void checkAction(const Json& a, const std::string& where, std::vector<std
       if (a["ennemis"].empty() || a["ennemis"].size() > 6) err.push_back(w + T(" : il faut entre 1 et 6 ennemis"));
       for (auto& e : a["ennemis"]) {
         if (!hasSpecies(jget<std::string>(e, "espece", ""))) err.push_back(w + T(" : espèce inconnue « ") + jget<std::string>(e, "espece", "") + " »");
+        if (Json mc = e.value("mecanique", Json()); !mc.is_null()) {  // (2026-10-25) mécanique propre d'un boss
+          std::string g = jget<std::string>(mc, "genre", ""), mv = jget<std::string>(mc, "technique", ""), tn = jget<std::string>(mc, "terrain", "");
+          if (g != "cuirasse" && g != "voile" && g != "ronces" && g != "charge") err.push_back(w + T(" : mécanique inconnue « ") + g + " »");
+          if (jget(mc, "tous", 3) < 2) err.push_back(w + T(" : une mécanique revient au plus un tour sur deux (« tous » 2 ou plus)"));
+          if (!mv.empty() && !hasMove(mv)) err.push_back(w + T(" : mécanique, technique inconnue « ") + mv + " »");
+          bool okT = g != "ronces";
+          for (auto& x : rules().terrains) okT = okT || x.id == tn;
+          if (!okT) err.push_back(w + T(" : mécanique, terrain inconnu « ") + tn + " »");
+        }
         for (auto& p : e.value("phases", Json::array())) {  // phases d'un boss (2.7)
           float pv = jget(p, "pv", 0.f);
           if (pv <= 0 || pv >= 1) err.push_back(w + T(" : une phase doit avoir « pv » entre 0 et 1"));

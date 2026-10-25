@@ -320,6 +320,7 @@ struct Rules {
   // Cases de terrain (2.6) : posées au hasard sur les damiers selon le décor
   struct Terrain {
     std::string id, name, desc, kind;  // kind : degats, poison, soin, lent, esquive, magie
+    std::string look;  // dessin sur le damier (« dessin », sinon celui de son effet)
     double value = 0;
     std::vector<std::string> immune;  // types insensibles (identifiants)
     std::vector<std::string> themes;
@@ -444,6 +445,8 @@ struct Fighter {
   // nombre de phases déjà passées. bonusMoves : techniques en plus (phase d'un boss)
   Json phases;
   int phase = 0;
+  // (2026-10-25) mécanique propre d'un boss (« mecanique » : genre cuirasse, voile, ronces ou charge, un tour sur « tous »)
+  Json mech;
   std::vector<std::string> bonusMoves;
   // Héros : la créature compagnon choisie par le joueur (vide : la première créature libre de l'équipe)
   std::weak_ptr<Fighter> companion;
@@ -470,7 +473,7 @@ void seedRandom(unsigned s);  // mode test : rejouer la même suite de tirages
 int irand(int lo, int hi);  // entier entre lo et hi inclus
 
 FighterP makeFighter(const std::string& id, int lvl);
-// Un ennemi décrit dans un combat (« espece », « niveau », « pv » multiplicateur, « boss », « bouclier », « phases »)
+// Un ennemi décrit dans un combat (« espece », « niveau », « pv » multiplicateur, « boss », « bouclier », « phases », « mecanique »)
 FighterP makeFoe(const Json& e, int defaultLevel);
 // Nouvelle partie + (2026-10-20) : niveaux ajoutés à tous les adversaires (combats des événements, renforts, créatures
 // sauvages). Posé par Game (Game::applyNewGamePlus) d'après les drapeaux « ngp<k> » ; 0 partout ailleurs (Arène, tests).

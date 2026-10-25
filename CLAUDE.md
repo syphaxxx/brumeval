@@ -46,7 +46,7 @@ Le mode test (src/test.cpp) vérifie les données, joue des scènes (titre, vill
 dialogue, recrutement, combat piloté par les menus, sauvegarde/chargement),
 enregistre des captures `.bmp` dans `captures/` et, avec `BRUMEVAL_SIMULATIONS=1`
 (2026-10-24 : sinon elles sont sautées, elles prenaient 6 des 7 minutes), simule des
-combats pour l'équilibrage (`BRUMEVAL_SIM_FILTRE=mot` : seulement celles dont le nom contient ce mot, sans accent). Il doit finir par « TOUS LES TESTS PASSENT ». Les tirages
+combats pour l'équilibrage (`BRUMEVAL_SIM_FILTRE=mot1,mot2` : seulement celles dont le nom contient un de ces mots, sans accent). Il doit finir par « TOUS LES TESTS PASSENT ». Les tirages
 au hasard partent d'une graine fixe (`BRUMEVAL_GRAINE` pour en changer) : un échec se rejoue. Regarde les captures
 après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
 
@@ -243,6 +243,23 @@ code) ; `docs/GUIDE.md` les range par domaine.
   compétence `equilibrage`.
   À l'œil (2026-10-25, dessin seul) : bouclier qui se déplie (`guardT_`) et qui encaisse, élan de la riposte (`bursts_`),
   intention qui pulse à l'exécution ou se brise si déjouée (`intentFx_`) ; capture `garde_effets`.
+- Mécaniques des boss (2026-10-25, « dur mais très tactique ») : champ `mecanique` d'un ennemi d'evenements.json (`genre`,
+  `tous` : un de ses tours sur n, `message` dit à l'annonce ; `Fighter::mech`, `Battle::mech`/`mechDue`/`mechTurns_` ; jamais en
+  ligne ; vérifié par `checkEvents`), toujours annoncée, une contre-mesure chacune ; astuces `cuirasse`, `voile`, `ronces`, `charge`
+  et une ligne de l'aide « Rôles ». **Cuirasse** (Golem de suie) : son intention l'annonce (écu, « Va se cuirasser… »,
+  `Intent::posture`) ; à son tour `takePosture` : en garde (riposte au corps à corps) et coups physiques × `valeur` jusqu'à son
+  tour suivant (`posture_`, `postureMult` dans `applyHit`, `preview`, `attackScore` ; « · il riposte » dans l'aide de la cible) :
+  la magie, ou se placer. **Voile** (Mère des Brumes) : même annonce (volutes) ; sorts, tirs et états la traversent (« Traverse
+  la brume », `applyHit` rend 0, « · traverse la brume : au contact ! ») : aller au contact ou frapper ses acolytes. **Ronces**
+  (Ronce-Mère) : zone rouge de forme `zone` (`Warning::kind`, pousses dessinées dedans) ; à son tour, `technique` × 1,6 sur ceux
+  restés dedans, et le terrain `terrain` (`epines`, « Ronces acérées », 8 % des PV max, jamais tiré au hasard : `decors` vide ;
+  `dessin` d'un terrain = `Terrain::look`) couvre la zone jusqu'aux suivantes (`grown_`) : s'écarter puis éviter ces cases
+  (`dangerAt`). **Charge** (Ignarok) : toute une ligne (flèches dans la zone rouge) ; ceux qui y restent prennent `technique` ×
+  1,6 et reculent d'une case loin de lui (`useMove(…, charge)`, `shoveTo` ; les plus éloignés d'abord : choc contre le bord ou
+  un voisin) : changer de ligne, ne pas s'aligner ; en garde, on riposte. Un boss à zone n'annonce plus de zone rouge au hasard,
+  un boss à posture pas la veille de sa posture. IA alliée : ×0,4 au corps à corps sur un ennemi en garde. Captures
+  `boss_cuirasse(_annonce)`, `boss_voile`, `boss_ronces(_annonce)`, `boss_charge_annonce` ; une posture coûte un tour
+  d'attaque au boss : Golem N.26 → 28, Mère des Brumes N.40 → 43 ; mesures : compétence `equilibrage`.
 - Vente : boutique > « Vendre… » (`Game::sellMenu`), moitié du prix, sauf les
   objets importants.
 - Boutique (2026-10-23) : un équipement survolé montre sous la liste ce qu'il changerait pour chaque membre qui peut le
