@@ -194,8 +194,11 @@ vérifiée.
 - **Un intérieur** : `style` = `chapelle`, `auberge`, `boutique` ou `soin` (rien : une maison).
 - **Un lieu au bord de la mer** (plus de 15 % d'eau, `Game::coastal`) : mouettes, et la mer au fond des combats.
 - **Une fête la nuit** : champ `fete` (une condition) ; des lanternes montent dans le ciel.
+- **Le décor des combats** suit la carte : de la lave (`l`) donne un volcan, de la glace (`i`) des séracs, de l'eau
+  (`~`) dans une grotte un lac ; `lumiere` teinte le ciel (soleil bas sur la mer) ou fait tomber des rais dans une grotte.
 - Les captures `donjon_<carte>`, `carte_monde_fin`, `combat_port`, `combat_mines`, `meteo_orage`, `interieur_nuit` du
   mode test servent à comparer avant et après.
+  Captures `combat_<lieu>` et `boss_<lieu>` (grotte, volcan, col, Aube, Échos, Abîme, ruines, citadelle, marées, glacier…).
 
 ## 5. Tester
 

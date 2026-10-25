@@ -2988,6 +2988,20 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       draw();
       snap("combat_marais");
       battle_.reset();
+      // (2026-10-25) le décor du combat dans les autres grands lieux : grotte, volcan, Aube, Échos, donjons
+      for (auto [mp, shot] : {std::pair{"grotte", "combat_grotte"}, {"cratere", "combat_volcan"}, {"col", "combat_col"}, {"aube", "combat_aube"},
+                              {"echos", "combat_echos"}, {"abime1", "combat_abime"}, {"ruines", "combat_ruines"}, {"citadelle", "combat_citadelle"},
+                              {"marees", "combat_marees"}, {"glacier", "combat_glacier"}, {"pierres", "combat_pierres"}, {"plaine", "boss_plaine"},
+                              {"port", "boss_port"}, {"tour", "boss_tour"}}) {
+        changeMap(mi(mp), 2, 2, DOWN);
+        startBattle({makeFighter("galetor", 20)}, std::string(shot).rfind("boss", 0) == 0, nullptr);
+        run(1.5f);
+        menus.clear();
+        if (battle_) battle_->sc.clear();
+        draw();
+        snap(shot);
+        battle_.reset();
+      }
       mode = Mode::Map;
       menus.clear();
       time = keepT;
