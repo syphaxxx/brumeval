@@ -756,10 +756,9 @@ void Pilot::walk(float dt) {
     if (puzzleMoves_.empty()) needPlan_ = true;
     return;
   }
-  if (G.mapId != planMap_) {  // (2026-10-25) nouvelle carte : revoir les compagnons (adaptTeam) avant la première rencontre
-    needPlan_ = true;
-    return;
-  }
+  // (2026-10-25) nouvelle carte : revoir les compagnons avant la première rencontre, sans changer de chemin (replanifier
+  // ici le faisait tourner en rond : l'équipe changée change la répétition du boss, et l'auberge n'était jamais atteinte)
+  if (G.mapId != planMap_) planMap_ = G.mapId, adaptTeam(demo_);
   int cur = node(G.mapId, G.px, G.py);
   if (cur == lastNode_) sameT_ += dt;
   else sameT_ = 0, lastNode_ = cur;
