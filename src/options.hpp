@@ -20,6 +20,7 @@ struct Options {
   bool tips = true;
   bool autosave = true;        // sauvegarde automatique à chaque passage et porte (2026-10-20)
   bool english = false;        // langue (3.1) : anglais au lieu du français (data/langues/en.json)            // astuces (2.8) : chaque nouvelle règle expliquée la première fois
+  bool typeMarks = false;      // types lisibles sans couleur (2026-10-25, daltonisme) : un motif sur chaque pastille (typeMark, ui.hpp)
   std::array<SDL_Scancode, N_KEYS> keys = defaultKeys();
   static std::array<SDL_Scancode, N_KEYS> defaultKeys();
 };

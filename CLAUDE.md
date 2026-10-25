@@ -361,6 +361,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
   « Vitesse ×2 » un instant, puis « ×2 » discret en haut à droite). main.cpp appelle `game.update(dt)` `Game::speed()` fois par
   image : tout va plus vite (marche, combats, textes) sans changer la logique ; la musique reste normale. Toujours ×1 en
   multijoueur (`Online::connected`).
+- Types lisibles sans couleur (2026-10-25, daltonisme) : `options().typeMarks` (ligne `types_sans_couleur` d'`options.txt`, Options ; coupée par défaut) ; `typeMark` (ui.cpp, la seule fonction) pose le motif 5x5 du type (flammes, goutte, pousse…) sur chaque pastille : icônes `typeDot` (« #rrggbb » suivi du numéro du type), fiche tactique du Bestiaire, faiblesses sous la barre de PV (carrés de 7 px), orbe d'intention, cartes ; captures `*_motifs` du mode test.
 - Aide et descriptions (1.9) : `Game::helpPage_` ≥ 0 = une page d'aide en plein écran ; le reste du jeu attend (`update`
   s'arrête après le réseau). `moveDetails(m, lanceur)` / `moveHelp` (battle.cpp) décrivent toute technique (genre, type,
   puissance, coût, cible et zone, portée, soin chiffré, effets, rythme), `itemDetails` / `itemHelp` tout objet (soins,

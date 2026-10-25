@@ -114,9 +114,10 @@ Type typeOf(const std::string& id) {
 }
 const char* typeName(Type t) { return t >= 0 && t < (int)TYPES.size() ? TYPES[t].name.c_str() : "?"; }
 std::string typeDot(Type t) {
+  bool ok = t >= 0 && t < (int)TYPES.size();
   char b[8];
-  std::snprintf(b, sizeof b, "#%06x", t >= 0 && t < (int)TYPES.size() ? (unsigned)(TYPES[t].color & 0xffffff) : 0x8a92b8u);
-  return b;
+  std::snprintf(b, sizeof b, "#%06x", ok ? (unsigned)(TYPES[t].color & 0xffffff) : 0x8a92b8u);
+  return b + (ok ? std::to_string(t) : std::string());  // puis son numéro : son motif (option « Types lisibles sans couleur »)
 }
 float typeEff(Type a, Type d) {
   if (a < 0 || d < 0 || a >= (int)CHART.size() || d >= (int)CHART.size()) return 1.f;

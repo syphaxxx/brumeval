@@ -1,10 +1,13 @@
 #include "ui.hpp"
 
 #include <algorithm>
+#include <cmath>
+#include <cstdlib>
 #include <map>
 
 #include "audio.hpp"
 #include "data.hpp"
+#include "options.hpp"
 
 std::string utf8Prefix(const std::string& s, int n) {
   size_t i = 0;
@@ -151,15 +154,51 @@ static const SpriteRect* itemIcon(const std::string& label) {
   return it == names.end() ? nullptr : findSprite(it->second);
 }
 
+bool typeMark(Gfx& g, float cx, float cy, int type, uint8_t alpha) {
+  if (!options().typeMarks || type < 0 || type >= (int)types().size()) return false;
+  static const struct {
+    const char* id;
+    const char* rows[5];
+  } MARKS[] = {
+      {"normal", {".....", ".###.", ".#.#.", ".###.", "....."}},   // anneau
+      {"feu", {"#.#.#", "#.#.#", "#####", "#####", ".###."}},      // flammes
+      {"eau", {"..#..", "..#..", ".###.", "#####", ".###."}},      // goutte
+      {"plante", {"#...#", "##.##", ".###.", "..#..", "..#.."}},   // pousse
+      {"foudre", {"..##.", ".##..", "#####", "..##.", ".##.."}},   // éclair
+      {"ombre", {".###.", "##...", "##...", "##...", ".###."}},    // lune
+      {"lumiere", {"..#..", "#####", ".###.", ".#.#.", "#...#"}},  // étoile
+      {"glace", {"..#..", ".#.#.", "#...#", ".#.#.", "..#.."}},    // losange (cristal)
+      {"roche", {"##.##", "##.##", ".....", "##.##", "##.##"}},    // pierres
+      {"vent", {"####.", ".....", ".####", ".....", "###.."}},     // rafales
+      {"poison", {".###.", "#.#.#", "#####", ".###.", ".#.#."}},   // crâne
+      {"metal", {"#####", "..#..", "..#..", "..#..", "#####"}},    // poutre
+      {"esprit", {"#####", "....#", "###.#", "#...#", "#####"}},   // spirale
+  };
+  const TypeDef& td = types()[(size_t)type];
+  float x0 = std::round(cx - 2.5f), y0 = std::round(cy - 2.5f);  // sur les pixels : net
+  g.rect(x0, y0, 5, 5, rgb(td.color, alpha));  // fond de sa couleur : invisible sur une pastille, il porte le motif ailleurs
+  Color ink = rgb(0x0a0f33, alpha);
+  for (auto& mk : MARKS)
+    if (td.id == mk.id) {
+      for (int r = 0; r < 5; r++)
+        for (int c = 0; c < 5; c++)
+          if (mk.rows[r][c] == '#') g.rect(x0 + c, y0 + r, 1, 1, ink);
+      return true;
+    }
+  g.text(cx, y0 - 3, utf8Prefix(td.name, 1), ink, 1, false);  // un type ajouté sans motif : son initiale
+  return true;
+}
+
 // (2026-10-23) Petits dessins pour les entrées de menu qui n'ont pas de sprite (case de 11x11 en x, y)
 static void menuGlyph(Gfx& g, const std::string& n, float x, float y, uint8_t alpha) {
   auto rgb = [alpha](uint32_t c) { return ::rgb(c, alpha); };  // une entrée grisée : le dessin à moitié transparent
   float cx = x + 5.5f, cy = y + 5.5f;
-  if (n.size() == 7 && n[0] == '#') {  // « #rrggbb » : une pastille de cette couleur (le type d'une technique)
-    uint32_t c = (uint32_t)std::stoul(n.substr(1), nullptr, 16);
+  if (n.size() >= 7 && n[0] == '#') {  // « #rrggbb » : une pastille de cette couleur ; suivi d'un numéro (typeDot) : ce type
+    uint32_t c = (uint32_t)std::stoul(n.substr(1, 6), nullptr, 16);
     auto dark = [](uint32_t v) { return ((v >> 1) & 0x7f7f7f); };
     g.ellipse(cx, cy, 4.5f, 4.5f, rgb(dark(c))), g.ellipse(cx, cy, 3.5f, 3.5f, rgb(c));
-    g.ellipse(cx - 1.2f, cy - 1.4f, 1.3f, 1, rgb(0xffffff));  // reflet
+    if (!typeMark(g, cx, cy, n.size() > 7 ? std::atoi(n.c_str() + 7) : -1, alpha))
+      g.ellipse(cx - 1.2f, cy - 1.4f, 1.3f, 1, rgb(0xffffff));  // reflet
   } else if (n == "vide") {  // un emplacement libre : un carré en pointillés
     for (int k = 0; k < 4; k++) {
       g.rect(x + 1.5f + k * 2.2f, y + 1.5f, 1.2f, 1, rgb(0x8a92b8)), g.rect(x + 1.5f + k * 2.2f, y + 9.5f, 1.2f, 1, rgb(0x8a92b8));

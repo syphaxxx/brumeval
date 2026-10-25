@@ -27,7 +27,7 @@ void Game::optionsMenu(int sel) {
   panelMode_ = 0;  // le menu prend la place du résumé de l'équipe
   Menu m;
   m.title = T("Options");
-  m.x = 60, m.y = 40, m.w = 200, m.rows = 8, m.sel = sel;
+  m.x = 55, m.y = 40, m.w = 210, m.rows = 8, m.sel = sel;  // 210 : « Types lisibles sans couleur » tient
   auto volume = [this](const std::string& label, int* v, const std::string& help) {
     MenuItem it{label, "", help, true, nullptr};
     it.adjust = [v](int d) {
@@ -93,6 +93,16 @@ void Game::optionsMenu(int sel) {
     as.adjust = [flip](int) { flip(); };
     as.rightFn = [] { return std::string(options().autosave ? T("Oui") : T("Non")); };
     m.items.push_back(as);
+  }
+  {
+    auto flip = [] {
+      options().typeMarks = !options().typeMarks;
+      saveOptions();
+    };
+    MenuItem tm{T("Types lisibles sans couleur"), "", T("Un motif sur chaque pastille de type (flamme : Feu, goutte : Eau…), pour les reconnaître sans les couleurs."), true, flip};
+    tm.adjust = [flip](int) { flip(); };
+    tm.rightFn = [] { return std::string(options().typeMarks ? T("Oui") : T("Non")); };
+    m.items.push_back(tm);
   }
   m.items.push_back({T("Touches"), "", T("Changer les touches du clavier. La manette se branche toute seule."), true, [this] { keysMenu(); }});
   m.items.push_back({T("Retour"), "", "", true, [this, panel] {
@@ -448,6 +458,7 @@ static void drawBestiaryTactics(Gfx& g, int x, int y, int w, const Species& s, c
   auto dot = [&](float cx, float cy, Type t) {
     uint32_t c = types()[t].color & 0xffffff;
     g.ellipse(cx, cy, 3.5f, 3.5f, rgb((c >> 1) & 0x7f7f7f)), g.ellipse(cx, cy, 2.6f, 2.6f, rgb(c));
+    typeMark(g, cx, cy, t);
   };
   bool cut = false;
   auto room = [&] {

@@ -519,7 +519,8 @@ Mesures : compétence `equilibrage`.
 - **Anglais** : les textes des données sont déjà dans `data/` ; ceux du code
   (menus) sont à sortir dans un fichier de textes. Gros travail, mais
   mécanique.
-- Accessibilité : taille du texte, couleurs des types lisibles par tous.
+- Accessibilité : taille du texte, couleurs des types lisibles par tous. Fait le 2026-10-25 : option « Types lisibles
+  sans couleur » (un motif sur chaque pastille de type, pour les daltoniens). Reste : la taille du texte.
 - Mac : application signée (compte développeur Apple payant), sinon garder
   la manipulation « Ouvrir quand même ».
 
