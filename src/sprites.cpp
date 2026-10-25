@@ -1547,6 +1547,27 @@ void drawChimneySmoke(Gfx& g, const Building& b, int sx, int sy, float t) {
   }
 }
 
+// Ombres portées (2026-10-25) : (kx, ky) = décalage de l'ombre par pixel de hauteur, selon le soleil
+void drawPropShadow(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float kx, float ky, float a) {
+  const SpriteRect* r = propSprite(m, x, y);
+  char c = m.rows[y][x];
+  if (!r || c == 'e' || c == 't' || c == 'j' || r->h < 12) return;  // ni les meubles, ni ce qui est presque à plat
+  int h = hsh(x, y), jx = c == 'T' ? (h >> 7) % 5 - 2 : 0;  // le même décalage que drawProp
+  float fx = sx + 8 + jx, fy = sy + 14, H = r->h * .7f;   // l'ombre du haut tombe à 70 % de sa hauteur
+  float tx = fx + kx * H, ty = fy + ky * H;
+  Color col = rgb(0x0a1030, uint8_t(64 * a));
+  g.line(fx, fy, tx - (tx > fx ? 1 : -1) * r->w * .3f, ty, std::max(2.f, r->w * .14f), col);  // le tronc, le poteau
+  g.ellipse(tx, ty, r->w * .36f, std::max(2.f, r->w * .2f), col);                               // la couronne, le haut
+}
+void drawBuildingShadow(Gfx& g, const Building& b, int sx, int sy, float kx, float ky, float a) {
+  float x0 = sx + 2, x1 = sx + b.w * 16 - 2, by = sy + b.h * 16, H = b.h * 16 * .8f;
+  if (BuildingLook L = buildingLook(b, sx, sy); L.r) x0 = L.x + 4, x1 = L.x + L.r->w - 4, by = L.y + L.r->h - 3, H = L.r->h * .8f;
+  float dx = kx * H, dy = ky * H, F = H * .5f;  // F : profondeur du bâtiment au sol (vue de trois quarts)
+  Color col = rgb(0x0a1030, uint8_t(64 * a));
+  if (dx >= 0) g.poly({{x0, by - F}, {x1, by - F}, {x1 + dx, by - F + dy}, {x1 + dx, by + dy}, {x0 + dx, by + dy}, {x0, by}}, col);
+  else g.poly({{x0, by - F}, {x1, by - F}, {x1, by}, {x1 + dx, by + dy}, {x0 + dx, by + dy}, {x0 + dx, by - F + dy}}, col);
+}
+
 void drawChest(Gfx& g, int sx, int sy, bool open, float t) {
   g.ellipse(sx + 8, sy + 14, 7, 2, rgb(0, 50));
   if (const SpriteRect* r = findSprite("coffre")) {  // ouvert : assombri, couvercle rabattu
