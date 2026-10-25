@@ -1559,6 +1559,12 @@ std::string Battle::damageText(const FighterP& a, const Move& m, const FighterP&
   std::string s = T(" · ≈ ") + std::to_string(pv.lo) + (pv.hi > pv.lo ? "-" + std::to_string(pv.hi) : "") + T(" PV");
   s += " · " + std::to_string(int(std::lround(pv.hit * 100))) + " %";
   if (pv.back) s += T(" · dans le dos");
+  // (2026-10-25) ce que le coup changerait : l'abattre annule son intention, le briser lui fait perdre son tour
+  if (d->alive() && pv.lo >= d->hp) s += T(" · l'abat");
+  else if (d->alive() && pv.hi >= d->hp) s += T(" · peut l'abattre");
+  else if (pv.eff > 1 && d->shieldMax > 0 && !d->broken &&
+           d->shield <= (pv.eff >= 4 ? 2 : 1) + int(talentValue(a->S(), "briseur") + gemSupport(*a, "briseur")))
+    s += T(" · le brise");
   return s;
 }
 

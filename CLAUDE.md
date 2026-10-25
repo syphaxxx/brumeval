@@ -455,7 +455,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
   Poses de combat (`drawFighterPose`, Lior) : `lancer_k` pendant une capture (la lanterne vole vers la cible),
   `victoire` pendant la fenêtre des gains (à droite, du côté des ennemis vaincus), `ko` à terre.
   Dégâts prévus sur la cible visée (`Battle::damageText`, même formule que `applyHit` sans hasard ni critique :
-  fourchette de `ecart_min` à 1, chance de toucher) ; l'efficacité d'un type n'est comptée qu'une fois découverte
+  fourchette de `ecart_min` à 1, chance de toucher ; depuis le 2026-10-25 « l'abat », « peut l'abattre », « le brise ») ; l'efficacité d'un type n'est comptée qu'une fois découverte
   (`weakKnown`), sinon neutre : rien ne se devine sans attaquer (Brisure). Ennemi vaincu : il s'efface en 0,6 s (`koT_`). Décor de l'horizon en sprites
   (arbres, sapins, rochers). Écran titre : les personnages de part et d'autre du menu, dans un paysage de nuit (lune, montagnes enneigées,
   village aux fenêtres allumées, brume, prairie aux herbes qui ondulent ; `drawTitle`, 2026-10-20). Habitants : regards et

@@ -22,6 +22,9 @@ class Game;
 class Pilot {
  public:
   Pilot(Game& g, bool demo);
+  // Dossier de sa mémoire et de son historique (--partie <dossier>) ; vide : le dossier de l'utilisateur (démo du jeu).
+  // Deux parties lancées en même temps dans deux dossiers ne s'écrasent plus leurs apprentissages (audit du 2026-10-24)
+  static inline std::string memoryDir;
   ~Pilot();  // relâche les directions tenues (sinon le joueur continuerait de marcher)
   // Au début de Game::update : choisit les touches de cette image
   void update(float dt);

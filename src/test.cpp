@@ -713,6 +713,12 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       B.countering_ = false;
       check(braced > plain * .65 && braced < plain * .85,
             "combat : en garde, on encaisse un quart de dégâts en moins (" + std::to_string(braced) + " contre " + std::to_string(plain) + ")");
+      {  // (2026-10-25) l'aperçu dit quand le coup abat la cible
+        int keepHp = extra->hp;
+        extra->hp = 1;
+        check(B.damageText(lior, bite, extra).find(T(" · l'abat")) != std::string::npos, "aperçu des dégâts : « l'abat » sur une cible à 1 PV");
+        extra->hp = keepHp;
+      }
       lior->hp = lior->mhp, extra->hp = extra->mhp;
       B.applyHit(lior, extra, bite);
       check(lior->hp < lior->mhp, "combat : en garde, on riposte à un coup au corps à corps (Lior perd " + std::to_string(lior->mhp - lior->hp) + " PV)");

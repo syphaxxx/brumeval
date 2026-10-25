@@ -68,10 +68,15 @@ int Pilot::fear(int m) const {
 
 // BRUMEVAL_SANS_MEMOIRE=1 : ni mémoire ni historique (banc d'essai : chaque partie part de zéro)
 static bool noMemory() { return SDL_getenv("BRUMEVAL_SANS_MEMOIRE") != nullptr; }
+static std::string memoryFile(const std::string& name) { return Pilot::memoryDir.empty() ? userFile(name) : Pilot::memoryDir + "/" + name; }
+static void writeMemoryFile(const std::string& name, const std::string& text) {
+  if (Pilot::memoryDir.empty()) writeUserFile(name, text);
+  else std::ofstream(memoryFile(name), std::ios::binary) << text;
+}
 
 void Pilot::loadMemory() {
   if (noMemory()) return;
-  std::ifstream f(userFile("pilote_memoire.txt"));
+  std::ifstream f(memoryFile("pilote_memoire.txt"));
   std::string key;
   int n;
   while (f >> key >> n) learned_[key] = std::clamp(n, 0, 20);
@@ -86,11 +91,11 @@ void Pilot::saveMemory() const {
   if (noMemory()) return;
   std::string s;
   for (auto& [k, v] : learned_) s += k + " " + std::to_string(v) + "\n";
-  writeUserFile("pilote_memoire.txt", s);
+  writeMemoryFile("pilote_memoire.txt", s);
 }
 void Pilot::loadHistory() {
   if (noMemory()) return;
-  std::ifstream f(userFile("pilote_parties.txt"));
+  std::ifstream f(memoryFile("pilote_parties.txt"));
   Run r;
   while (f >> r.seconds >> r.defeats >> r.level >> r.starter) history_.push_back(r);
   if (history_.empty()) return;
@@ -112,7 +117,7 @@ void Pilot::recordRun() {
   history_.push_back(r);
   std::string s;
   for (auto& h : history_) s += std::to_string(h.seconds) + " " + std::to_string(h.defeats) + " " + std::to_string(h.level) + " " + h.starter + "\n";
-  writeUserFile("pilote_parties.txt", s);
+  writeMemoryFile("pilote_parties.txt", s);
   if (record) note("NOUVEAU RECORD : partie finie en " + hms() + " !");
 }
 
@@ -1565,6 +1570,7 @@ void Game::startPilot(bool demo) {
 int Game::autoGame(SDL_Surface* target, const std::string& out) {
   std::filesystem::create_directories(out);
   g.checkLayout = true;
+  Pilot::memoryDir = out;  // sa mémoire dans le dossier de la partie
   startPilot(SDL_getenv("BRUMEVAL_DEMO") != nullptr);  // BRUMEVAL_DEMO=1 : le joueur de la démo (menus visités, pauses), sans fenêtre
   Pilot& P = *pilot_;
   std::ofstream rep(out + "/rapport.txt");

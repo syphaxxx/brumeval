@@ -27,7 +27,7 @@ compagnon. Fichiers : `sauvegarde_partie_auto.txt`, `sauvegarde_demo.txt`
 (jamais la vraie partie). En démo, une touche rend la main au joueur. La
 vérification GitHub lance aussi `--partie`. Mesuré le 2026-10-09 (12 parties,
 3 premiers compagnons) : toujours finie, 45 à 60 minutes de jeu, niveau ~48.
-Il s'améliore d'une partie à l'autre (demandé le 2026-10-10) : `pilote_memoire.txt` (dossier de l'utilisateur) garde pour chaque combat difficile la marge de niveaux qu'il lui a fallu (mêlée à la précédente, baisse après une victoire du premier coup) et, pour chaque carte, `nature:<carte>` = les meutes qui l'ont battu : les herbes profondes de cette carte lui coûtent plus cher à traverser et il s'y entraîne moins loin (la crainte baisse d'un quart à chaque partie finie). Mesuré : 6, 6, 4, 4 puis 2 défaites sur cinq parties de suite. Il place son équipe avec la formation automatique, vise les zones les plus rentables (IA) et se met à l'abri des attaques annoncées. Échiquier (3.4) : `autoCommand` choisit d'abord une case (`planMove`/`posValue` : attaque possible de là, dans le dos, danger, Percée), puis l'action ; mesuré : histoire finie en 1 h 25-1 h 32 avec 0 à 3 défaites (contre 1 h 26 et 0 défaite en 3.3). Un combat d'entraînement sans récompense (`entrainement`, sans `victoire` : le maître d'armes une fois les bottes données) n'est ni un objectif ni un effet (`inspectList`) : sinon il le rejoue sans fin (vu le 2026-10-19, bloqué 30 min). Un combat `defi` se répète avec les combattants du défi (`challengeSetup`). Un nouveau genre d'interaction (objet à utiliser, énigme…) demande d'ajouter
+Il s'améliore d'une partie à l'autre (demandé le 2026-10-10) : `pilote_memoire.txt` (dossier de l'utilisateur pour la démo ; depuis le 2026-10-25, celui de la partie pour `--partie <dossier>` : deux mesures en parallèle ne s'écrasent plus) garde pour chaque combat difficile la marge de niveaux qu'il lui a fallu (mêlée à la précédente, baisse après une victoire du premier coup) et, pour chaque carte, `nature:<carte>` = les meutes qui l'ont battu : les herbes profondes de cette carte lui coûtent plus cher à traverser et il s'y entraîne moins loin (la crainte baisse d'un quart à chaque partie finie). Mesuré : 6, 6, 4, 4 puis 2 défaites sur cinq parties de suite. Il place son équipe avec la formation automatique, vise les zones les plus rentables (IA) et se met à l'abri des attaques annoncées. Échiquier (3.4) : `autoCommand` choisit d'abord une case (`planMove`/`posValue` : attaque possible de là, dans le dos, danger, Percée), puis l'action ; mesuré : histoire finie en 1 h 25-1 h 32 avec 0 à 3 défaites (contre 1 h 26 et 0 défaite en 3.3). Un combat d'entraînement sans récompense (`entrainement`, sans `victoire` : le maître d'armes une fois les bottes données) n'est ni un objectif ni un effet (`inspectList`) : sinon il le rejoue sans fin (vu le 2026-10-19, bloqué 30 min). Un combat `defi` se répète avec les combattants du défi (`challengeSetup`). Un nouveau genre d'interaction (objet à utiliser, énigme…) demande d'ajouter
 un objectif dans `Pilot::goals`. Méthode réutilisable pour d'autres jeux :
 compétence `joueur-automatique` de Claude Code.
 
@@ -53,7 +53,7 @@ compétence `joueur-automatique` de Claude Code.
 - **Boutique** (`worthTrip`) : il n'y va exprès que pour un meilleur équipement, des lanternes qui manquent ou presque
   plus de soins ; il achète d'abord 2 potions (le meilleur soin qu'il peut payer), et plus quand il est riche.
 - **Rapport** : chaque défaite dit contre quoi (adversaires, carte, niveau) ; « temps par activité » (combats sur les
-  trajets, combats difficiles, entraînement, trajets, menus) ; historique des parties dans `pilote_parties.txt`
+  trajets, combats difficiles, entraînement, trajets, menus) ; historique des parties dans `pilote_parties.txt` (même dossier)
   (temps, défaites, niveau, compagnon) : « Partie n°X. Record : … », « NOUVEAU RECORD ».
 - **Démo** : aucune touche ne reprend la main ; Espace (ou Start) met en pause, Échap quitte, F1/F2/F11 marchent.
 
@@ -62,7 +62,7 @@ compétence `joueur-automatique` de Claude Code.
 `BRUMEVAL_SANS_MEMOIRE=1` : ni mémoire ni historique (chaque partie part de zéro). Jouer **6 parties** (2 par compagnon
 de départ, `BRUMEVAL_COMPAGNON`) et comparer les moyennes (temps, défaites, niveau final, combats) : d'une partie à
 l'autre, le temps varie de ±15 min, une seule partie ne prouve rien. Pour comparer à l'ancienne version, la compiler
-à part (`git stash`, compilation, copie de l'exécutable) et mettre de côté `pilote_memoire.txt` pendant ses parties.
+à part (`git stash`, compilation, copie de l'exécutable) et la lancer dans un autre dossier (`--partie <dossier>`) : chaque dossier a sa mémoire.
 
 Mesuré le 2026-10-13 (6 parties chacune) : ancienne version 73 min, 5,8 défaites, niveau 58, 240 combats ; version 2.4
 68 min, 2,5 défaites, niveau 53, 218 combats (meilleure partie : 53 min, 1 défaite). Le temps se partage à peu près
