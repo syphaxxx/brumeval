@@ -11,10 +11,24 @@ Méthode :
   2026-10-24) : IA seule, tactiques de départ, équipement des boutiques, forge, Expédition.
 - `BRUMEVAL_SIMULATIONS=1` joue les simulations ; `=4` joue 4 fois plus de combats (±4-5 % au lieu de ±10 %). Pour comparer deux réglages, copier l'exécutable et `data/` dans deux dossiers temporaires (le jeu cherche `data/` à côté du programme) et lancer les deux mesures en parallèle si besoin : depuis le 2026-10-25, le test multijoueur tire son port au hasard (`BRUMEVAL_PORT_TEST` pour l'imposer).
 - `BRUMEVAL_SANS_EVOLUTION=1` : équipes sans évolution (pour mesurer l'effet des évolutions). `BRUMEVAL_JOURNAL=<mot>` affiche le journal d'une simulation.
+- `BRUMEVAL_SIM_FILTRE=Golem,Ignarok` (2026-10-25) : seulement les lignes dont le nom contient l'un de ces mots (les tests ordinaires passent quand même avant). Plusieurs mesures en même temps se gênent sur les fichiers de sauvegarde du mode test (échecs « expédition » sans rapport) : ne regarder que les taux, et refaire les tests seuls à la fin.
 - Plus de PV pour un boss change peu le résultat quand le combat se joue sur la survie de l'équipe : relever son niveau agit davantage.
 - Après un réglage, lancer aussi le joueur automatique (`--partie`) : l'histoire doit rester faisable.
 
 ## Historique des mesures
+
+- **Mécaniques des boss** (2026-10-25, « dur mais très tactique ») : cuirasse du Golem de suie (un tour sur trois, magie
+  conseillée), voile de la Mère des Brumes (seul le corps à corps passe), ronces de la Ronce-Mère (zone rouge, terrain qui
+  reste), charge d'Ignarok (une ligne, recul). Une posture coûte un tour d'attaque au boss : sans réglage, Golem (N.26) 31 → 46
+  / 48 → 61 / 51 → 61 % et Mère des Brumes (N.40) 3 → 20 / 56 → 87 / 67 → 90 % (IA / boutiques / forgé, ×4, graine 7) ; les
+  zones (ronces, charge) ne changent presque rien (elles remplacent les zones rouges au hasard). Golem N.27 : 53 / 57 / 53 ;
+  Mère N.42 : 14 / 70 / 83, N.44 : 1 / 44 / 57. Retenu : **Golem N.28, Mère des Brumes N.43**. Mesuré (avant → après ; IA /
+  tactiques / boutiques / forgé) : ×4 graine 7 : Golem 31 → 48 / – / 48 → 48 / 51 → 47 %, Ronce-Mère 11 → 9 / – / 60 → 45 /
+  50 → 50, Ignarok 16 → 18 / 13 → 18 / 60 → 59 / 71 → 66, Mère des Brumes 3 → 5 / 0 → 0 / 56 → 60 / 67 → 69 ; ×2 graine 2026 :
+  Golem 35 → 35 / – / 45 → 42 / 42 → 40, Ronce-Mère 6 → 8 / – / 36 → 43 / 53 → 41, Ignarok 16 → 22 / 21 → 11 / 61 → 61 /
+  76 → 67, Mère des Brumes 6 → 6 / 0 → 0 / 45 → 66 / 68 → 68 ; les autres boss dans le bruit (±12 à ×2). L'IA alliée évite le
+  corps à corps sur un ennemi en garde (×0,4) et les coups qu'une posture arrête ; elle ne se met pas en garde contre la
+  charge (le joueur peut riposter).
 
 - **IA plus tactique** (2026-10-25) : les ennemis évitent le corps à corps sur un allié en garde, un protecteur va
   couvrir un blessé des siens, un soigneur reste à l'arrière. Mesuré (BRUMEVAL_SIMULATIONS=2, même graine, avant →

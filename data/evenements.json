@@ -355,7 +355,7 @@
         "oui": [
           {
             "action": "combat",
-            "ennemis": [{"espece": "golem", "niveau": 26, "pv": 12, "bouclier": 10, "boss": true, "mecanique": {"genre": "cuirasse", "tous": 3, "valeur": 0.4, "message": "Le Golem de suie gronde et se couvre de scories : il va se cuirasser !"}, "phases": [{"pv": 0.5, "message": "Le golem s'embrase de suie ! Son armure se reforme.", "bouclier": 14, "bonus": {"attaque": 1, "vitesse": 1}}]}],
+            "ennemis": [{"espece": "golem", "niveau": 28, "pv": 12, "bouclier": 10, "boss": true, "mecanique": {"genre": "cuirasse", "tous": 3, "valeur": 0.4, "message": "Le Golem de suie gronde et se couvre de scories : il va se cuirasser !"}, "phases": [{"pv": 0.5, "message": "Le golem s'embrase de suie ! Son armure se reforme.", "bouclier": 14, "bonus": {"attaque": 1, "vitesse": 1}}]}],
             "boss": true,
             "fuite": false,
             "capture": false,
@@ -1493,7 +1493,7 @@
         "oui": [
           {
             "action": "combat",
-            "ennemis": [{"espece": "nebulis", "niveau": 36}, {"espece": "mere_brumes", "niveau": 40, "pv": 6.5, "boss": true, "mecanique": {"genre": "voile", "tous": 3, "message": "La Mère des Brumes se fond dans la brume : elle va se voiler !"}, "phases": [{"pv": 0.66, "message": "La brume s'épaissit autour de la Mère des Brumes…", "meteo": "brume"}, {"pv": 0.33, "message": "La Mère des Brumes se déchaîne !", "bonus": {"magie": 1}, "techniques": ["suie"]}]}, {"espece": "brumeloup", "niveau": 36}],
+            "ennemis": [{"espece": "nebulis", "niveau": 36}, {"espece": "mere_brumes", "niveau": 43, "pv": 6.5, "boss": true, "mecanique": {"genre": "voile", "tous": 3, "message": "La Mère des Brumes se fond dans la brume : elle va se voiler !"}, "phases": [{"pv": 0.66, "message": "La brume s'épaissit autour de la Mère des Brumes…", "meteo": "brume"}, {"pv": 0.33, "message": "La Mère des Brumes se déchaîne !", "bonus": {"magie": 1}, "techniques": ["suie"]}]}, {"espece": "brumeloup", "niveau": 36}],
             "renforts": [{"espece": "orbrume", "niveau": 36}],
             "boss": true,
             "fuite": false,
