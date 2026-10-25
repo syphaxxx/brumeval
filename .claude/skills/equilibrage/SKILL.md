@@ -83,7 +83,8 @@ Méthode :
   boutiques / forgé) : Kraken 96 / – / 100 / 100 %, Griffon 30 / – / 43 / 70, Seigneur 53 / 83 / 90, Phénix 70 (équipé),
   Colosse, Ombre, Orage ancien, Veilleur 100 : seuls le Griffon et le Phénix avaient baissé → Griffon N.53 ×13 (N.55 ×15
   avant), Phénix N.86 ×4 (N.87 ×4,5) ; mesuré après : Griffon 43 / 66 / 73 %, Phénix 100 %. Braconnier 33 % (IA, N.6 :
-  le premier dresseur, évitable), Chef des bandits 26 % (IA), défi « Les ailes » 10 %.
+  le premier dresseur, évitable), Chef des bandits 26 % (IA), défi « Les ailes » 10 %. bot28 (état publié en **3.7**,
+  2026-10-24) : tout fini en 13 h 55, 23 défaites, niveau 120, quatre actes en 7 h 27, estimation joueur 27 h.
 - **Rééquilibrage « trop facile »** (2026-10-23, demandé par l'utilisateur, comparé à Expedition 33) : le joueur automatique
   arrivait aux boss du milieu de l'histoire avec 15 à 20 niveaux d'avance (Givrecorne N.39 au niveau 58, Mère des Brumes
   N.44 au niveau 61) et ~2 créatures par rencontre contre jusqu'à 6 alliés. Réglages (`regles.json`) : `par_allie` 0,5
