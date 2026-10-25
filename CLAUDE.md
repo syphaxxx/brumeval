@@ -238,8 +238,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   un ennemi ne frappe pas au corps à corps un allié en garde (`attackScore` ×0,4 chez les ennemis, et `think` cherche une
   autre cible : il riposterait) ; un protecteur ennemi va se placer en croix d'un blessé des siens (`posValue` : +30 × PV
   perdus sous la moitié) et son intention le dit (« … (couvre X) », `intentText`) ; un soigneur ennemi (`soigneur`, soin
-  connu) garde ses distances comme un lanceur de sorts (`posValue`). L'intention affichée reste celle qu'il exécute. Sons `garde` et `dejoue`
-  (data/sons.json). Astuces « intention » et « garde », aide de l'échiquier, capture `garde_intention`, mesures :
+  connu) garde ses distances comme un lanceur de sorts (`posValue`). L'intention affichée reste celle qu'il exécute. Sons `garde`, `dejoue`, `vise` (une intention vise un allié ; au plus un par demi-seconde,
+  `aimSoundT_`), `riposte`, `bouclier` (un allié en garde encaisse) et `brisure` (`breakFoe`) (data/sons.json). Astuces « intention » et « garde », aide de l'échiquier, capture `garde_intention`, mesures :
   compétence `equilibrage`.
   À l'œil (2026-10-25, dessin seul) : bouclier qui se déplie (`guardT_`) et qui encaisse, élan de la riposte (`bursts_`),
   intention qui pulse à l'exécution ou se brise si déjouée (`intentFx_`) ; capture `garde_effets`.

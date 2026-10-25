@@ -83,7 +83,9 @@ moment précis : deux sons avec `"depart": 0` jouent ensemble. Le jeu utilise
 `coup_rapide` et `coup_lourd` (selon le rythme de la technique), `sort_<type>`
 (un sort de cet élément, par exemple `sort_feu` ; sinon `sort`),
 `capture_rate`, `limite`, `fuite`, `niveau`, `victoire`, `defaite`,
-`rencontre` (combat), `coffre`, `achat` et `porte`.
+`rencontre` (combat), `coffre`, `achat`, `porte`, `pas`, `bond`, `echange` (échiquier),
+`garde`, `dejoue`, `vise` (une intention vise un allié), `riposte`, `bouclier` (un allié en
+garde encaisse) et `brisure`.
 
 ## Le combat
 

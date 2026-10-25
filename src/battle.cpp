@@ -1659,6 +1659,9 @@ void Battle::declareIntent(const FighterP& e) {
   in.move = p.move, in.targets = p.targets, in.wait = p.wait;
   intents_[e.get()] = in;
   if (shown() && !autoPlay && !in.wait && !in.move.empty()) tip("intention");
+  // (2026-10-25) un petit signal quand un allié est visé, au plus un par demi-seconde
+  if (!in.wait && G.time - aimSoundT_ >= .5f && std::any_of(in.targets.begin(), in.targets.end(), [&](const FighterP& t) { return t && isAlly(t); }))
+    aimSoundT_ = G.time, sound("vise");
 }
 
 std::string Battle::intentText(const Fighter& e) const {
@@ -2147,6 +2150,7 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
   sound(fx);
   pop(d, std::to_string(dmg), eff > 1 ? GOLD : guarding_.count(d.get()) ? rgb(0x8fd0ff) : eff < 1 ? GREY : WHITE);  // bleu : encaissé en garde
   if (guarding_.count(d.get()) && shown()) bursts_.push_back({d, "garde", G.time});  // (2026-10-25) et l'éclat du bouclier
+  if (guarding_.count(d.get()) && isAlly(d)) sound("bouclier");                      // qu'un allié en garde encaisse s'entend
   if (crit) pop(d, T("Critique !"), RED), shakeT_ = G.time;
   if (back) {
     pop(d, T("Dans le dos !"), rgb(0xffb070));
@@ -2171,6 +2175,7 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
       const Move& c = moveInfo(counter);
       countering_ = true;
       pop(d, T("Riposte !"), rgb(0xffd34d));
+      sound("riposte");
       if (shown()) bursts_.push_back({d, "riposte", G.time});  // (2026-10-25) un court élan vers l'attaquant
       log.push_back("  " + d->name() + T(" riposte"));
       if (applyHit(d, a, c, .7f) >= 0 && !a->alive()) knockOut(a);
@@ -2382,7 +2387,7 @@ void Battle::breakFoe(const FighterP& d) {
     else ++it;
   pop(d, T("BRISÉ !"), GOLD);
   bursts_.push_back({d, "brisure", G.time});
-  sound("critique");
+  sound("brisure");
   flashT = G.time, flashCol = rgb(0xffe066);
   shakeT_ = G.time;
   log.push_back("  " + d->name() + T(" : BRISÉ"));

@@ -1109,6 +1109,36 @@
         {"onde": "triangle", "de": "A5", "duree": 0.1, "volume": 0.18, "depart": 0.06}
       ]
     },
+    "vise": [
+      {"onde": "carree", "de": "B5", "duree": 0.04, "volume": 0.11, "rapport": 0.25, "depart": 0},
+      {"onde": "carree", "de": "F5", "duree": 0.06, "volume": 0.11, "rapport": 0.25, "depart": 0.07}
+    ],
+    "riposte": {
+      "variation": 0.08,
+      "sons": [
+        {"onde": "bruit", "de": 6000, "a": 2500, "duree": 0.05, "volume": 0.25, "depart": 0},
+        {"onde": "triangle", "de": 1800, "a": 1750, "duree": 0.18, "volume": 0.18, "depart": 0},
+        {"onde": "sinus", "de": 2650, "a": 2600, "duree": 0.14, "volume": 0.1, "depart": 0}
+      ]
+    },
+    "bouclier": {
+      "variation": 0.05,
+      "sons": [
+        {"onde": "sinus", "de": "E6", "duree": 0.05, "volume": 0.14, "depart": 0},
+        {"onde": "sinus", "de": "E6", "duree": 0.22, "volume": 0.08, "depart": 0},
+        {"onde": "triangle", "de": 3300, "a": 3200, "duree": 0.06, "volume": 0.06, "depart": 0}
+      ]
+    },
+    "brisure": {
+      "variation": 0.06,
+      "sons": [
+        {"onde": "bruit", "de": 7000, "a": 1500, "duree": 0.18, "volume": 0.35, "depart": 0},
+        {"onde": "carree", "de": 150, "a": 50, "duree": 0.15, "volume": 0.25, "depart": 0},
+        {"onde": "sinus", "de": 3200, "a": 2800, "duree": 0.06, "volume": 0.15, "depart": 0.04},
+        {"onde": "sinus", "de": 2400, "a": 2100, "duree": 0.06, "volume": 0.15, "depart": 0.09},
+        {"onde": "sinus", "de": 2900, "a": 2500, "duree": 0.08, "volume": 0.12, "depart": 0.14}
+      ]
+    },
     "echange": [
       {"onde": "sinus", "de": 900, "a": 400, "duree": 0.14, "volume": 0.2},
       {"onde": "sinus", "de": 400, "a": 900, "duree": 0.14, "volume": 0.2, "depart": 0}
