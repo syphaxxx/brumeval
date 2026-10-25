@@ -18,6 +18,7 @@
 #include "data.hpp"
 
 class Game;
+class Battle;
 
 class Pilot {
  public:
@@ -125,7 +126,7 @@ class Pilot {
   // Répétition (2.4) : avant un combat difficile, il le simule plusieurs fois avec une copie de son
   // équipe (niveaux, équipement, techniques) sans toucher à la partie, et n'y va que s'il gagne
   // assez souvent. Résultat gardé tant que l'équipe ne change pas.
-  float rehearse(const Json& fight, int n, bool fullHealth);  // fullHealth : il se soignera avant d'y aller
+  float rehearse(const Json& fight, int n, bool fullHealth, const Battle* like = nullptr);  // fullHealth : il se soignera avant d'y aller ; like : sur ce champ de bataille (météo, terrain, obstacles)
   std::string teamSignature() const;
   std::map<std::string, std::pair<std::string, float>> chances_;  // combat → (signature de l'équipe, part de victoires)
   int rehearsals = 0;
@@ -134,6 +135,7 @@ class Pilot {
   // Chemin en cours
   Goal goal_;
   bool hasGoal_ = false, needPlan_ = true;
+  int planMap_ = -1;  // carte où le chemin a été choisi
   std::vector<Step> path_;
   int target_ = -1, targetFace_ = -1;
   int lastNode_ = -1;
@@ -156,6 +158,7 @@ class Pilot {
   int menuMoves_ = 0;
   bool shouldFlee() const;  // combat sauvage qui tourne mal : mieux vaut fuir
   bool fleeNow_ = false;    // meute jugée trop forte dès le début du combat (répétition) : fuir
+  float startChance_ = 1;   // part de victoires prudente répétée au début de ce combat sauvage (1 : pas répété)
   int pathRisk(int at) const;  // niveau le plus haut des créatures des herbes sur le chemin jusqu'à cette case
   // Cases dans le champ de vision d'un dresseur (Npc::sight) qu'il n'est pas encore prêt à battre :
   // presque infranchissables (sinon le dresseur l'arrête et le bat)
@@ -199,8 +202,14 @@ class Pilot {
   // Tactiques (2026-10-23) : un profil pour chacun selon ce qu'il sait faire (soigneur, protecteur, briseur, combattant)
   std::map<const Fighter*, std::string> profileOf_;
   void setupTactics(bool show);
-  void adaptTeam(bool show);  // compagnons selon les créatures du lieu (2026-10-24)
+  // compagnons selon les créatures du lieu (2026-10-24), ou celles d'un combat difficile (fight) ; vrai s'il en change
+  bool adaptTeam(bool show, const Json* fight = nullptr);
   std::string adaptKey_;      // lieu et équipe de la dernière adaptation
+  std::string bossAdapted_;   // combat difficile pour lequel les compagnons viennent d'être choisis
+  bool quiet_ = false;        // essai de compagnons (bossTeam) : rien au journal
+  // Avant un combat difficile (2026-10-25) : les compagnons choisis contre ses combattants (adaptTeam), gardés seulement
+  // si la répétition les donne nettement meilleurs que l'équipe du moment ; vrai s'il en change
+  bool bossTeam(const Json& fight);
   void forging();            // forge : renforce l'équipement porté tant que l'or et les matériaux le permettent
   bool forgeWanted() const;  // une arme ou armure portée peut être forgée maintenant
   float gearScore(const Fighter& f, const ItemDef& d) const;

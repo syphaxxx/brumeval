@@ -41,6 +41,16 @@ Méthode :
   100 % (Orage ancien 95) : aucun boss ne perd plus de 10 points, les écarts vont dans les deux sens (bruit ±7). Une
   première mesure à ×1 donnait cristal (tactiques) 93 → 66 : refaite à ×2, 73 → 71 (bruit).
 
+- **Joueur automatique plus malin** (2026-10-25, sans changer ni créatures ni boss ni rencontres ; détail : compétence
+  `joueur-auto-brumeval`, « Plus malin ») : toute rencontre sauvage à sa mesure répétée (sur le champ de bataille du
+  vrai combat) et fuie sous 80 %, fuite en plein combat plus tôt, compagnons revus à chaque carte et devant chaque boss
+  (gardés si la répétition le confirme), combats de la Ligue répétés en entier, auberge quand les PM manquent, Soigneur
+  à 55 %. Sans mémoire, une partie chacune : avant 16 h 19, 24 défaites, quatre actes en 7 h 47 (référence 13 h 55, 23,
+  7 h 27) ; après (quatre parties de versions successives) 14 h 00 / 9 / 5 h 43, 15 h 31 / 18 / 7 h 50, 13 h 14 / 7 /
+  6 h 29 et, état final, 14 h 52 / 12 / 6 h 23. Deux fois moins de défaites : la difficulté mesurée par le joueur
+  automatique baisse sans que le jeu change ; les mesures d'avant (bot14 à bot27) se comparent à « avant ».
+  Points durs restants : Phénix d'écho et Ombre du Gardien (perdus une à deux fois par partie malgré la répétition),
+  meutes de 3-4 du Sanctuaire des Échos et du Vieux Phare.
 - **Dur mais tactique** (2026-10-24, branche `jeu-tactique`, « un jeu dur mais très tactique ») : garde (« Attendre » :
   dégâts × 0,75 et riposte à chaque coup au corps à corps (`garde_riposte` 1, ×0,7) jusqu'au tour suivant), intentions
   des ennemis (annoncées à la moitié de la jauge (70 % d'abord), exécutées si elles tiennent encore ; les boss aussi, sauf zone rouge en
