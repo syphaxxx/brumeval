@@ -156,3 +156,43 @@ Flammenard contre des Cendrelys qui absorbent le Feu. Journal : « Compagnon : L
 une ville) ; météo et terrain, tirés selon le thème, manquaient : la canicule du Cratère des Échos renforce le Phénix, le
 combat « sûr à 85 % » se perdait quatre fois de suite (bot22). Le combat d'un objectif porte maintenant sa carte
 (`fight["carte"]`, posé dans `goals` et `watchSight`) et la répétition se joue dans son thème.
+
+## Plus malin, comme un bon joueur (2026-10-25)
+
+Demandé : « le rendre plus malin en combat et dans ses choix ». Ce qui a compté (mesures plus bas) :
+
+- **Jauger toute rencontre** (`Pilot::update`, début d'un combat sauvage) : avant, seules les meutes de 3 créatures ou
+  plus (ou plus fortes que l'équipe, ou une embuscade) étaient répétées ; il perdait contre deux créatures de son niveau
+  (Échoplume et Pétrolin au Vieux Phare, Loup d'aube et Nacrelin à la Citadelle). Maintenant, toute rencontre dont une
+  créature est à 5 niveaux de l'équipe ou plus forte : 10 répétitions (`rehearse`, état actuel, alpha compris :
+  `boss` passé à `makeFoe`), fuite sous 80 % prudents. Ces répétitions se jouent sur le champ de bataille du vrai
+  combat (`rehearse(…, like)` : sa météo, son terrain, ses obstacles ; avant, tirés à nouveau à chaque répétition : une
+  canicule ou des cases qui blessent ne comptaient qu'en moyenne). En plein combat (`shouldFlee`), fuite aussi dès la moitié des PV
+  perdue quand l'adversaire garde les deux tiers des siens.
+- **Compagnons revus à chaque carte** : `walk` appelle `adaptTeam` dès que la carte change (`planMap_`), avant la
+  première rencontre (avant, seulement au prochain `plan`, après le premier combat du lieu, souvent perdu), et
+  replanifie si l'équipe a changé (les répétitions se refont avec elle), sauf en route vers l'auberge : replanifier à
+  chaque carte le faisait tourner en rond entre Havre-d'Aube et l'île de Corail (l'équipe changée changeait la
+  répétition du boss « avec l'état actuel » : boss, puis auberge, puis boss… ; BLOQUÉ à 4 h 21). `adaptTeam` note une
+  créature par efficacité × puissance × bonus de type × sa statistique (Attaque ou Magie) contre la Défense ou la
+  Résistance de base de l'espèce : un attaquant physique ne vaut plus un mage contre les carapaces et les esprits.
+- **Devant un boss ou un dresseur** (`interactNow` → `bossTeam`) : il essaie les compagnons choisis contre les
+  combattants de ce combat (`adaptTeam(false, &fight)`), répète le combat avec les deux équipes (16 fois chacune) et ne
+  garde les nouveaux que s'ils gagnent nettement plus (+5 points) ; journal « Compagnons pour … : 60 → 80 % ». La
+  première version les prenait sans répéter : le Seigneur des Orages a été perdu avec eux.
+- **Combats enchaînés** (rangs de la Ligue : trois combats sans soin) : `rehearse` joue toute la suite (le premier
+  `combat` de chaque `victoire`, PV et PM gardés) et `inspectList` prend le niveau le plus haut de la suite ; avant, il
+  ne répétait que le premier et perdait le deuxième ou le troisième.
+- **PM** : retour à l'auberge aussi quand les PM de l'équipe tombent sous 25 % (sans PM, ni soins ni magie).
+- **Tactiques même mode auto coupé** (`battleStep`) : quand il coupe le mode auto (capture possible, fuite envisagée)
+  et que le menu s'ouvre sans capture ni fuite à faire, il joue `tacticTurn` (puis `autoCommand` si aucune règle ne
+  s'applique), comme la répétition qui a jugé le combat ; avant, l'IA seule jouait tous les combats de capture du début.
+  Il ne capture que sans risque (`startChance_` : répétition parfaite, ou un seul adversaire encore debout) : un tour à
+  lancer une lanterne est un tour sans frapper, que la répétition ne compte pas (défaites contre deux créatures de son
+  niveau dans la Vallée, au début).
+- **Profil Soigneur** (`regles.json`) : soigne sous 55 % des PV (45 % avant) : contre les meutes qui s'acharnent
+  (`lure`), 45 % arrivait trop tard.
+
+Pas fait (pistes) : `autoCommand` ne sert presque jamais en mode tactiques (la dernière règle « ennemi → attaque »
+s'applique toujours), le changer ne change rien ; viser d'abord l'ennemi qu'un coup abat demanderait une condition de
+tactique ; la formation automatique (`formation`) met déjà les lanceurs de sorts derrière.

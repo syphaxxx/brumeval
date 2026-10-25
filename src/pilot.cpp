@@ -328,7 +328,7 @@ std::string Pilot::teamSignature() const {
   return s;
 }
 
-float Pilot::rehearse(const Json& fight, int n, bool fullHealth) {
+float Pilot::rehearse(const Json& fight, int n, bool fullHealth, const Battle* like) {
   // La partie est mise de côté : la simulation joue avec des copies (expérience, objets, or, bestiaire)
   auto keepTeam = G.team, keepReserve = G.reserve;
   auto keepItems = G.items;
@@ -375,6 +375,12 @@ float Pilot::rehearse(const Json& fight, int n, bool fullHealth) {
       Battle b(G, std::move(s), maps()[(size_t)(where >= 0 && where < (int)maps().size() ? where : G.mapId)].theme);
       b.autoPlay = true;
       b.simTactics = true;
+      if (like && cur == &fight) {  // (2026-10-25) le champ de bataille du vrai combat : sa météo, son terrain, ses obstacles
+        b.weather_ = like->weather_, b.terrain_ = like->terrain_;
+        b.obstacles_.clear();
+        for (auto& [c, spr] : like->obstacles_)
+          if (!b.at(c)) b.obstacles_[c] = spr;
+      }
       for (float t = 0; t < 600 && !b.finished(); t += .05f) {
         G.in.confirm = true;
         b.update(.05f);
@@ -1573,7 +1579,7 @@ void Pilot::update(float dt) {
       // niveau (Échoplume et Pétrolin du Vieux Phare), et même contre un Cendrelys seul, sans les avoir jaugés
       bool big = G.battle_->foes.size() >= 3 || top > G.avgLevel() + 1 || G.battle_->ambush_;
       if (big || top >= G.avgLevel() - 5) {
-        float c = startChance_ = prudent(rehearse(fight, 10, false), 10);
+        float c = startChance_ = prudent(rehearse(fight, 10, false, G.battle_.get()), 10);
         fleeNow_ = c < .8f;   // fuir coûte peu, perdre coûte cher (retour, soins, moitié de l'or)
         if (SDL_getenv("BRUMEVAL_TRACE"))
           std::printf("  [%s] meute de %d (N.%d max) : %d %% de victoires%s\n", hms().c_str(), (int)G.battle_->foes.size(), top, int(c * 100 + .5f),

@@ -18,6 +18,7 @@
 #include "data.hpp"
 
 class Game;
+class Battle;
 
 class Pilot {
  public:
@@ -122,7 +123,7 @@ class Pilot {
   // Répétition (2.4) : avant un combat difficile, il le simule plusieurs fois avec une copie de son
   // équipe (niveaux, équipement, techniques) sans toucher à la partie, et n'y va que s'il gagne
   // assez souvent. Résultat gardé tant que l'équipe ne change pas.
-  float rehearse(const Json& fight, int n, bool fullHealth);  // fullHealth : il se soignera avant d'y aller
+  float rehearse(const Json& fight, int n, bool fullHealth, const Battle* like = nullptr);  // fullHealth : il se soignera avant d'y aller ; like : sur ce champ de bataille (météo, terrain, obstacles)
   std::string teamSignature() const;
   std::map<std::string, std::pair<std::string, float>> chances_;  // combat → (signature de l'équipe, part de victoires)
   int rehearsals = 0;
