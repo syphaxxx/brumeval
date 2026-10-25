@@ -196,3 +196,13 @@ Demandé : « le rendre plus malin en combat et dans ses choix ». Ce qui a comp
 Pas fait (pistes) : `autoCommand` ne sert presque jamais en mode tactiques (la dernière règle « ennemi → attaque »
 s'applique toujours), le changer ne change rien ; viser d'abord l'ennemi qu'un coup abat demanderait une condition de
 tactique ; la formation automatique (`formation`) met déjà les lanceurs de sorts derrière.
+
+Mesuré (sans mémoire, une partie chacune, même ordinateur ; d'une partie à l'autre ±2 h et ±8 défaites) : version
+d'avant **16 h 19, 24 défaites, quatre actes en 7 h 47** (référence donnée : 13 h 55, 23, 7 h 27) ; premières
+améliorations (rencontres jaugées, fuite plus tôt, compagnons, PM, Soigneur) 14 h 00, 9, 5 h 43 ; état intermédiaire
+(compagnons sans replanifier, capture prudente) 15 h 31, 18, 7 h 50 ; + replanifier si les compagnons changent 13 h 14,
+7, 6 h 29 ; **état final** (+ champ de bataille du vrai combat) 14 h 52, 12, 6 h 23. Moyenne des quatre parties
+améliorées : 14 h 24, 11,5 défaites, actes en 6 h 36 (contre 15 h 07, 23,5, 7 h 37 pour les deux mesures d'avant) :
+deux fois moins de défaites, l'histoire une heure plus tôt. Restent : le Phénix d'écho et l'Ombre du Gardien (perdus
+une ou deux fois malgré la répétition : la canicule du jour du combat n'est pas connue d'avance), des meutes de 3-4 au
+Sanctuaire des Échos et au Vieux Phare (répétées à 80 % et plus, perdues quand même), quelques dresseurs vus trop tard.
