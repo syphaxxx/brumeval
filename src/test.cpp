@@ -614,6 +614,20 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       battle_->cursor = battle_->foes[0];  // ennemi survolé : pointillé vers sa cible
       snap("garde_intention");
       battle_->cursor = nullptr;
+      {  // (2026-10-25) les mêmes, à l'œil, figés au bon moment : le bouclier de Maëlle se déplie, celui de Lior encaisse
+         // et il riposte vers le premier ennemi, dont l'intention pulse (exécutée) ; celle du deuxième vole en éclats (déjouée)
+        Battle& B = *battle_;
+        auto keepIntents = B.intents_;
+        FighterP e0 = B.foes[0], e1 = B.foes[1];
+        B.intentFx_[e0.get()] = {B.intents_[e0.get()], time - .12f, false};
+        B.intentFx_[e1.get()] = {B.intents_[e1.get()], time - .08f, true};
+        B.intents_.erase(e0.get()), B.intents_.erase(e1.get());
+        B.guarding_.insert(team[1].get()), B.guardT_[team[1].get()] = time - .1f;
+        B.anim_.actor = e0;
+        B.bursts_.push_back({team[0], "garde", time - .12f}), B.bursts_.push_back({team[0], "riposte", time - .12f});
+        snap("garde_effets");
+        B.intents_ = keepIntents, B.intentFx_.clear(), B.guarding_.erase(team[1].get()), B.bursts_.clear(), B.anim_.actor = nullptr;
+      }
       FighterP aimedAlly;
       for (auto& [who, in] : battle_->intents_)
         for (auto& tg : in.targets)

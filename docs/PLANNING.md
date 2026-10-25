@@ -455,6 +455,8 @@ Astuces « intention » et « garde », aide de l'échiquier, tests (garde ≈ 0
    aussi leurs coups ordinaires, « Déjoué ! » quand une annonce ne tient plus ; tactiques « Soi : visé » (le Protecteur se
    met en garde quand une attaque est annoncée sur lui) et « Allié : visé » (il va couvrir l'allié visé) ; l'icône d'intention apparaît en se posant ; au-dessus de l'allié
    visé, les dégâts qu'il va prendre (« ≈ 61-68 », additionnés si plusieurs ennemis le visent) : de quoi décider.
+   À l'œil (2026-10-25) : le bouclier se déplie et encaisse (arc bleu), la riposte part d'un élan, l'icône d'intention
+   pulse quand l'ennemi l'exécute et vole en éclats quand elle est déjouée.
 7. Joueur automatique : il adapte ses compagnons aux créatures du lieu (`Pilot::adaptTeam` ; en démo, par les menus Réserve
    et Compagnons) et jauge les zones de fin de partie au milieu de leur fourchette : ses défaites au Vieux Phare (quinze dans
    bot15, deux Champignards et un Flammenard contre des Cendrelys qui absorbent le Feu) étaient celles d'un joueur qui ne

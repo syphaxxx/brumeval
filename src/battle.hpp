@@ -178,6 +178,15 @@ class Battle {
     float t0 = 0;
   };
   std::map<const Fighter*, Intent> intents_;
+  // Dessin seul (2026-10-25) : une intention qui vient de quitter intents_, exécutée (l'icône pulse) ou déjouée (elle se
+  // brise en éclats) ; et depuis quand chacun est en garde (vu au dessin : le bouclier se déplie en 0,2 s)
+  struct IntentFx {
+    Intent in;
+    float t0 = -10;
+    bool foiled = false;
+  };
+  std::map<const Fighter*, IntentFx> intentFx_;
+  std::map<const Fighter*, float> guardT_;
   void declareIntent(const FighterP& e);
   std::string intentText(const Fighter& e) const;
   float lure(const FighterP& t) const;  // attrait d'une cible pour les ennemis (soigneur, lanceur, blessé)
@@ -214,7 +223,9 @@ class Battle {
   std::set<const Fighter*> breakthrough_;       // ceux qui ont déjà fait leur Percée
   float quietT_ = 0;    // temps de jauges sans que personne prenne de dégâts : au-delà de 40 s, l'ordinateur va au contact
   long long hpSum_ = -1;  // somme des PV de tous, pour voir s'ils baissent (dégâts, poison…)
-  struct Burst {  // éclat dessiné par-dessus un combattant (Percée, Brisure : images gfx_<fx>_k de Godot)
+  // éclat dessiné par-dessus un combattant (Percée, Brisure : images gfx_<fx>_k de Godot ; « garde » : le bouclier qui
+  // encaisse, « riposte » : élan vers l'attaquant, anim_.actor ; ces deux-là dessinés en code)
+  struct Burst {
     FighterP f;
     const char* fx;
     float t0;

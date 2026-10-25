@@ -241,6 +241,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   connu) garde ses distances comme un lanceur de sorts (`posValue`). L'intention affichée reste celle qu'il exécute. Sons `garde` et `dejoue`
   (data/sons.json). Astuces « intention » et « garde », aide de l'échiquier, capture `garde_intention`, mesures :
   compétence `equilibrage`.
+  À l'œil (2026-10-25, dessin seul) : bouclier qui se déplie (`guardT_`) et qui encaisse, élan de la riposte (`bursts_`),
+  intention qui pulse à l'exécution ou se brise si déjouée (`intentFx_`) ; capture `garde_effets`.
 - Vente : boutique > « Vendre… » (`Game::sellMenu`), moitié du prix, sauf les
   objets importants.
 - Boutique (2026-10-23) : un équipement survolé montre sous la liste ce qu'il changerait pour chaque membre qui peut le

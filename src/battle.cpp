@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <cstring>
 #include <map>
 
 #include "audio.hpp"
@@ -477,6 +478,11 @@ Pt Battle::offset(const FighterP& f) const {
     }
     else o.y = -6 * k;
   }
+  for (auto& b : bursts_)  // (2026-10-25) riposte : un court élan vers l'attaquant (son action est encore anim_)
+    if (float r = G.time - b.t0; b.f == f && !std::strcmp(b.fx, "riposte") && anim_.actor && anim_.actor != f && r >= 0 && r < .3f) {
+      float dx = cellPos(cellOf(anim_.actor)).x - cellPos(cellOf(f)).x;
+      o.x += (std::abs(dx) > 1 ? (dx > 0 ? 1.f : -1.f) : facesRight(f) ? 1.f : -1.f) * 10 * std::sin(3.14159f * r / .3f);
+    }
   if (blink == f && G.time - blinkT < .3f) o.x += std::sin((G.time - blinkT) * 70) * 2.5f;
   if (G.time - shakeT_ < .35f) o.y += std::sin((G.time - shakeT_) * 90) * 2.f * (1 - (G.time - shakeT_) / .35f);  // tremblement (brisure)
   return o;
@@ -1619,6 +1625,8 @@ void Battle::enemyTurn(FighterP e) {
     if (valid && in.targets.size() == 1 && !reachable(e, m, in.targets[0])) valid = false;
     if (valid && m.kind == Kind::Heal && in.targets[0]->hp * 4 >= in.targets[0]->mhp * 3) valid = false;  // déjà remis
   }
+  // (2026-10-25) dessin : l'icône de l'intention pulse quand il l'exécute, se brise quand elle est déjouée
+  if (declared && shown()) intentFx_[e.get()] = {in, G.time, !valid && !in.wait};
   if (valid) return useMove(e, in.move, in.targets);
   if (declared && !in.wait && !in.move.empty()) {  // l'annonce ne tient plus : le joueur a bien réagi, qu'il le sache
     log.push_back(e->name() + T(" : intention déjouée"));
@@ -2138,6 +2146,7 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
   if (!audio::has(fx)) fx = magic ? "sort" : "coup";
   sound(fx);
   pop(d, std::to_string(dmg), eff > 1 ? GOLD : guarding_.count(d.get()) ? rgb(0x8fd0ff) : eff < 1 ? GREY : WHITE);  // bleu : encaissé en garde
+  if (guarding_.count(d.get()) && shown()) bursts_.push_back({d, "garde", G.time});  // (2026-10-25) et l'éclat du bouclier
   if (crit) pop(d, T("Critique !"), RED), shakeT_ = G.time;
   if (back) {
     pop(d, T("Dans le dos !"), rgb(0xffb070));
@@ -2162,6 +2171,7 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
       const Move& c = moveInfo(counter);
       countering_ = true;
       pop(d, T("Riposte !"), rgb(0xffd34d));
+      if (shown()) bursts_.push_back({d, "riposte", G.time});  // (2026-10-25) un court élan vers l'attaquant
       log.push_back("  " + d->name() + T(" riposte"));
       if (applyHit(d, a, c, .7f) >= 0 && !a->alive()) knockOut(a);
       countering_ = false;
@@ -3246,33 +3256,84 @@ void Battle::draw() {
     }
   // Garde et intention (2026-10-24) : un petit bouclier, et l'icône de ce qu'un ennemi prépare (épée, orbe de la couleur
   // du type, croix verte pour un soin, sablier pour une garde) ; chez un ennemi, de part et d'autre de sa barre de PV
+  for (auto* side : {&allies, &foes})  // (2026-10-25) depuis quand chacun est en garde : le bouclier se déplie
+    for (auto& f : *side)
+      if (guarding_.count(f.get())) guardT_.emplace(f.get(), t);
+      else guardT_.erase(f.get());
   auto drawGuard = [&](const FighterP& f, float gx, float gy) {
     if (!guarding_.count(f.get()) || !f->alive()) return;
-    g.poly({{gx - 4, gy}, {gx + 4, gy}, {gx + 4, gy + 4}, {gx, gy + 8}, {gx - 4, gy + 4}}, rgb(0x1c2a78, 235));
-    g.poly({{gx - 2.5f, gy + 1.5f}, {gx + 2.5f, gy + 1.5f}, {gx + 2.5f, gy + 4}, {gx, gy + 6.3f}, {gx - 2.5f, gy + 4}}, rgb(0x8fd0ff, 235));
+    // il se déplie en 0,2 s, de la tranche à toute sa largeur (un peu plus large un instant), puis son bord luit
+    float u = (t - guardT_[f.get()]) / .2f, w = u >= 1 ? 1.f : std::max(.15f, std::sin(std::max(0.f, u) * 2) / std::sin(2.f));
+    Color rim = mix(rgb(0xffffff), rgb(0x1c2a78), std::clamp((u - 1) * 1.5f, 0.f, 1.f));
+    rim.a = 235;
+    g.poly({{gx - 4 * w, gy}, {gx + 4 * w, gy}, {gx + 4 * w, gy + 4}, {gx, gy + 8}, {gx - 4 * w, gy + 4}}, rim);
+    g.poly({{gx - 2.5f * w, gy + 1.5f}, {gx + 2.5f * w, gy + 1.5f}, {gx + 2.5f * w, gy + 4}, {gx, gy + 6.3f}, {gx - 2.5f * w, gy + 4}}, rgb(0x8fd0ff, 235));
   };
-  auto drawIntent = [&](const FighterP& f, float ix, float iy) {
-    auto it = intents_.find(f.get());
-    if (it == intents_.end() || !f->alive() || !(it->second.wait || hasMove(it->second.move))) return;
-    const Intent& in = it->second;
-    iy += std::sin(t * 5) * 1.f;
-    float sc = 1 + std::max(0.f, (.35f - (t - in.t0)) * 2);  // apparaît en grand, se pose en 0,35 s
-    g.ellipse(ix, iy, 6 * sc, 6 * sc, rgb(0x0a0f33, 210));
+  auto intentCol = [&](const Intent& in) {  // la couleur de son icône (aussi celle des éclats quand elle se brise)
+    if (in.wait) return rgb(0xd8e4f4);
+    const Move& m = moveInfo(in.move);
+    if (m.kind == Kind::Heal || m.kind == Kind::Revive) return rgb(0x6ad87a);
+    if (m.kind == Kind::Magic || m.kind == Kind::Status) return rgb(m.type >= 0 && m.type < (int)types().size() ? types()[(size_t)m.type].color : 0xc8a8ff);
+    return rgb(0xf4f8ff);
+  };
+  auto intentIcon = [&](const Intent& in, float ix, float iy, float s) {  // s : échelle
+    Color c = intentCol(in);
+    g.ellipse(ix, iy, 6 * s, 6 * s, rgb(0x0a0f33, 210));
     if (in.wait) {  // sablier : il se met en garde
-      g.tri(ix - 3, iy - 3.5f, ix + 3, iy - 3.5f, ix, iy, rgb(0xd8e4f4)), g.tri(ix - 3, iy + 3.5f, ix + 3, iy + 3.5f, ix, iy, rgb(0xd8e4f4));
+      g.tri(ix - 3 * s, iy - 3.5f * s, ix + 3 * s, iy - 3.5f * s, ix, iy, c), g.tri(ix - 3 * s, iy + 3.5f * s, ix + 3 * s, iy + 3.5f * s, ix, iy, c);
       return;
     }
     const Move& m = moveInfo(in.move);
     if (m.kind == Kind::Heal || m.kind == Kind::Revive) {  // croix verte : il va soigner un des siens
-      g.rect(ix - 1, iy - 4, 2, 8, rgb(0x6ad87a)), g.rect(ix - 4, iy - 1, 8, 2, rgb(0x6ad87a));
+      g.rect(ix - s, iy - 4 * s, 2 * s, 8 * s, c), g.rect(ix - 4 * s, iy - s, 8 * s, 2 * s, c);
     } else if (m.kind == Kind::Magic || m.kind == Kind::Status) {  // orbe de la couleur du type
-      uint32_t col = m.type >= 0 && m.type < (int)types().size() ? types()[(size_t)m.type].color : 0xc8a8ff;
-      g.ellipse(ix, iy, 3.5f, 3.5f, rgb(col)), g.ellipse(ix - 1.2f, iy - 1.2f, 1.2f, 1, rgb(0xffffff, 200));
+      g.ellipse(ix, iy, 3.5f * s, 3.5f * s, c), g.ellipse(ix - 1.2f * s, iy - 1.2f * s, 1.2f * s, s, rgb(0xffffff, 200));
     } else if (const SpriteRect* ic = findSprite("ic_epee_1")) {  // un coup : l'épée du menu Attaquer
-      float k = std::min(1.f, 9.f / std::max(ic->w, ic->h));
+      float k = std::min(1.f, 9.f / std::max(ic->w, ic->h)) * s;
       g.sprite(*ic, ix - ic->w * k / 2, iy - ic->h * k / 2, false, k);
     } else {
-      g.line(ix - 3, iy + 3, ix + 3, iy - 3, 2, rgb(0xf4f8ff)), g.line(ix - 3, iy - 1, ix - 1, iy + 1, 1, rgb(0xc08040));
+      g.line(ix - 3 * s, iy + 3 * s, ix + 3 * s, iy - 3 * s, 2, c), g.line(ix - 3 * s, iy - s, ix - s, iy + s, 1, rgb(0xc08040));
+    }
+  };
+  auto drawIntent = [&](const FighterP& f, float ix, float iy) {
+    if (!f->alive()) return;
+    iy += std::sin(t * 5) * 1.f;
+    if (auto it = intents_.find(f.get()); it != intents_.end()) {
+      if (it->second.wait || hasMove(it->second.move)) intentIcon(it->second, ix, iy, 1 + std::max(0.f, (.35f - (t - it->second.t0)) * 2));  // apparaît en grand, se pose en 0,35 s
+      return;
+    }
+    // (2026-10-25) elle vient de partir : exécutée, l'icône grossit et s'efface (l'annonce, puis le coup) ; déjouée, elle
+    // se fend et vole en éclats
+    auto fx = intentFx_.find(f.get());
+    if (fx == intentFx_.end() || !(fx->second.in.wait || hasMove(fx->second.in.move))) return;
+    const Intent& in = fx->second.in;
+    float k = (t - fx->second.t0) / .45f, a0 = g.alpha;
+    if (k < 0 || k >= 1) return;
+    Color c = intentCol(in);
+    if (!fx->second.foiled) {
+      g.alpha = a0 * (1 - k * k);
+      intentIcon(in, ix, iy, 1 + .6f * std::sqrt(k));
+      for (int i = 0; i < 12; i++) {  // un anneau qui s'ouvre
+        float ang = i * .5236f, r = 7 + k * 8;
+        g.rect(std::round(ix + std::cos(ang) * r), std::round(iy + std::sin(ang) * r), 1, 1, c);
+      }
+      g.alpha = a0;
+      return;
+    }
+    if (k < .35f) {  // l'icône tremble, se fend (un éclair blanc la traverse) et pâlit
+      float jx = ix + std::sin(k * 70) * 1.f;
+      g.alpha = a0 * (1 - k / .35f);
+      intentIcon(in, jx, iy, 1);
+      g.line(jx - 5, iy - 5, jx, iy, 1.5f, rgb(0xffffff)), g.line(jx, iy, jx - 1, iy + 2, 1.5f, rgb(0xffffff)), g.line(jx - 1, iy + 2, jx + 5, iy + 5, 1.5f, rgb(0xffffff));
+      g.alpha = a0;
+    }
+    for (int i = 0; i < 8; i++) {  // éclats qui s'écartent en tournant, puis retombent
+      float ang = i * .785f + .4f, r = 3 + k * 13, x = ix + std::cos(ang) * r, y = iy + std::sin(ang) * r * .8f + k * k * 12;
+      float sp = ang + k * 8, d = i % 3 ? 2.f : 3.f;
+      Color col = i % 2 ? rgb(0x8fd0ff) : i % 4 ? c : rgb(0x2a3460);
+      col.a = uint8_t(235 * (1 - k));
+      g.tri(x + std::cos(sp) * d, y + std::sin(sp) * d, x + std::cos(sp + 2.1f) * d, y + std::sin(sp + 2.1f) * d, x + std::cos(sp + 4.2f) * d,
+            y + std::sin(sp + 4.2f) * d, col);
     }
   };
   for (auto& f : shown) {
@@ -3465,6 +3526,38 @@ void Battle::draw() {
   // (le bond : la poussière part un peu après, quand le combattant touche le sol)
   for (auto& b : bursts_) {
     if (t < b.t0) continue;  // pas encore (poussière à l'atterrissage)
+    // (2026-10-25) dessinés en code : le bouclier qui encaisse, le coup de la riposte
+    bool guardFx = !std::strcmp(b.fx, "garde"), riposteFx = !std::strcmp(b.fx, "riposte");
+    if (guardFx || riposteFx) {
+      FighterP from = anim_.actor && anim_.actor != b.f ? anim_.actor : nullptr;  // l'attaquant (son action est encore anim_)
+      Pt p = pos(b.f), o = offset(b.f);
+      float u = (t - b.t0) / .35f;
+      if (guardFx && u < 1) {  // un arc bleu devant lui, du côté du coup, qui s'écarte et pâlit
+        float dir = from && std::abs(pos(from).x - p.x) > 1 ? (pos(from).x > p.x ? 1.f : -1.f) : facesRight(b.f) ? 1.f : -1.f;
+        float cx = p.x + o.x, cy = p.y - 6, rx = 13 + u * 3, ry = 17 + u * 2;
+        for (int i = 0; i < 8; i++) {
+          float a1 = -1.1f + i * .275f, a2 = a1 + .275f;
+          auto arc = [&](float a, float r) { return Pt{cx + dir * std::cos(a) * r, cy + std::sin(a) * r * ry / rx}; };
+          Pt q1 = arc(a1, rx), q2 = arc(a2, rx);
+          g.poly({q1, q2, arc(a2, rx - 4), arc(a1, rx - 4)}, rgb(0x8fd0ff, uint8_t(80 * (1 - u))));  // un voile, comme du verre
+          g.line(q1.x, q1.y, q2.x, q2.y, 2, rgb(0x8fd0ff, uint8_t(240 * (1 - u))));
+          if (u < .5f) g.line(q1.x - dir, q1.y, q2.x - dir, q2.y, 1, rgb(0xffffff, uint8_t(255 * (1 - u * 2))));
+        }
+        for (int i = 0; i < 4; i++) {  // quelques étincelles rejaillissent vers l'attaquant
+          float x = cx + dir * (rx + 1 + u * 10), y = cy - 6 + i * 4 + (i - 1.5f) * u * 6;
+          g.line(x, y, x + dir * 2, y + (i - 1.5f), 1, rgb(0xe0f4ff, uint8_t(255 * (1 - u))));
+        }
+      }
+      if (riposteFx && from && from->alive() && u > .2f && u < 1.2f) {  // deux entailles dorées sur l'attaquant
+        Pt q = pos(from);
+        float a = std::clamp((u - .2f) * 4, 0.f, 1.f), fade = std::clamp((1.2f - u) * 2.5f, 0.f, 1.f);
+        q.y -= 6;
+        g.line(q.x - 7, q.y - 7, q.x - 7 + 14 * a, q.y - 7 + 14 * a, 2, rgb(0xffd34d, uint8_t(240 * fade)));
+        g.line(q.x + 7, q.y - 7, q.x + 7 - 14 * a, q.y - 7 + 14 * a, 2, rgb(0xffd34d, uint8_t(240 * fade)));
+        g.line(q.x - 6, q.y - 7, q.x - 6 + 12 * a, q.y - 7 + 12 * a, 1, rgb(0xffffff, uint8_t(220 * fade)));
+      }
+      continue;
+    }
     int k = std::clamp(int((t - b.t0) / .5f * 8), 0, 7);
     if (const SpriteRect* r = findSprite(std::string("gfx_") + b.fx + "_" + std::to_string(k))) {
       Pt p = pos(b.f);
