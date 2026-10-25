@@ -492,6 +492,10 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - Graphismes des cartes (2.0, sprites.cpp) : maisons (`drawBuilding` : ombre, soubassement, pierres, tuiles en rangées,
   faîtage, cheminée, fenêtres à volets et jardinières), arbres `T` en trois variantes selon `hsh` (rond, petit, fruitier
   ou large en forêt), chemins `=` aux bords adoucis contre la nature (liseré, touffes, coins), herbe de la vallée variée.
+  2026-10-25 : le large de l'eau `~` plus sombre loin des berges (carrés de 4 px) avec une houle lente ; ombres portées
+  selon le soleil (`drawBuildingShadow`, `drawPropShadow`, appelées dans `drawMap` avant les personnages : longues vers
+  l'ouest le matin, courtes à midi, vers l'est le soir, pâles au crépuscule et sous la pluie) ; pavés `q` bordés d'un
+  rebord de pierres là où ils touchent l'herbe ou la terre, avec des brins qui débordent.
 - Graphismes (1.8) : décor des combats avec l'horizon à y 56 (`HZ` dans `Battle::draw`, reliefs à moitié de hauteur) pour que les trois rangées du damier soient sur le sol ; dalles en losange ; sur les cartes, écume le long des berges et ombre au pied des arbres (sprites.cpp).
 - Meutes (1.7) : `Game::wildDepth`, distance à pied du plus proche bâtiment ou
   passage ; plus on s'enfonce (jusqu'à `meute_distance` cases), plus les

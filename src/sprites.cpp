@@ -837,6 +837,25 @@ static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, 
         g.rect(sx, sy, 16, 16, rgb(0xa8a49c));
         g.frame(sx, sy, 16, 16, rgb(0x8a867e));
       }
+      // (2026-10-25) une bordure de pierres là où la place touche l'herbe ou la terre, et des brins qui la débordent
+      for (int s = 0; s < 4; s++) {
+        int nx = x + (s == 1) - (s == 3), ny = y + (s == 2) - (s == 0);
+        char n = at(nx, ny);
+        if (n != '.' && n != ',' && n != 'g' && n != 'F' && n != '=') continue;
+        bool horiz = s % 2 == 0;
+        int ex = s == 1 ? sx + 14 : sx, ey = s == 2 ? sy + 14 : sy;
+        g.rect(ex, ey, horiz ? 16 : 2, horiz ? 2 : 16, rgb(0x8a847a));
+        for (int i = 0; i < 4; i++) g.rect(ex + (horiz ? i * 4 + 1 : 0), ey + (horiz ? 0 : i * 4 + 1), horiz ? 2 : 1, horiz ? 1 : 2, rgb(0xc8c2b6));
+        if (s != 2) g.rect(ex + (s == 1 ? -1 : horiz ? 0 : 2), ey + (horiz ? 2 : 0), horiz ? 16 : 1, horiz ? 1 : 16, rgb(0x000000, 35));  // l'ombre du rebord
+        uint32_t blade = th == Theme::Neige ? 0xeef3fa : th == Theme::Foret ? 0x3f7a35 : th == Theme::Vallee ? 0x5aa83a : 0;
+        if (n == '=' || !blade) continue;
+        int hh = hsh(nx * 3 + s, ny * 5);
+        for (int k = 0; k < 2 + hh % 2; k++) {  // deux ou trois brins qui débordent sur la bordure
+          int o = 2 + (hh >> (3 + k * 4)) % 12;
+          if (horiz) g.rect(sx + o, ey + (s == 0 ? 0 : 1), 1, 2, rgb(blade)), g.rect(sx + o + 1, ey + (s == 0 ? 0 : 1), 1, 1, rgb(blade));
+          else g.rect(ex + (s == 3 ? 0 : 1), sy + o, 2, 1, rgb(blade)), g.rect(ex + (s == 3 ? 0 : 1), sy + o + 1, 1, 1, rgb(blade));
+        }
+      }
       break;
     }
     case 'H': {  // clôture
@@ -948,9 +967,25 @@ static void drawTileBase(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, 
     case 'B': {
       g.rect(sx, sy, 16, 16, rgb(murky ? 0x3e6a52 : 0x3576bd));
       if (c == '~') {
+        // (2026-10-25) le large : plus sombre loin des berges (par carrés de 4 px), et une houle lente qui le traverse
+        auto water = [&](char n) { return n == '~' || n == 'B' || n == ' '; };  // ' ' : hors de la carte
+        uint32_t deep = murky ? 0x2c5040 : 0x1f5596, swell = murky ? 0x6a8a62 : 0x6aaee6;
+        for (int by = 0; by < 16; by += 4)
+          for (int bx = 0; bx < 16; bx += 4) {
+            float cx = x * 16 + bx + 2.f, cy = y * 16 + by + 2.f, d2 = 48 * 48;
+            for (int yy = y - 3; yy <= y + 3; yy++)
+              for (int xx = x - 3; xx <= x + 3; xx++)
+                if (!water(at(xx, yy))) {
+                  float ex = std::clamp(cx, xx * 16.f, xx * 16 + 16.f) - cx, ey = std::clamp(cy, yy * 16.f, yy * 16 + 16.f) - cy;
+                  d2 = std::min(d2, ex * ex + ey * ey);
+                }
+            float k = std::clamp((std::sqrt(d2) - 10) / 30, 0.f, 1.f);
+            if (k > 0) g.rect(sx + bx, sy + by, 4, 4, rgb(deep, uint8_t(255 * k)));
+            float s = std::sin(cx * .035f + cy * .06f - t * .8f);
+            if (s > .75f) g.rect(sx + bx, sy + by, 4, 4, rgb(swell, uint8_t((s - .75f) * 4 * 50 * k)));
+          }
         // Eau (3.3) : plus claire près des berges (peu profonde), ombre de la berge en haut, écume en tirets qui
         // ondule, vaguelettes qui dérivent et reflets qui scintillent
-        auto water = [&](char n) { return n == '~' || n == 'B' || n == ' '; };
         bool up = !water(at(x, y - 1)), dn = !water(at(x, y + 1)), lf = !water(at(x - 1, y)), rt = !water(at(x + 1, y));
         Color sh = rgb(murky ? 0x7a9a6a : 0x6fb2e6, 120), sh2 = rgb(murky ? 0x7a9a6a : 0x6fb2e6, 60);
         if (up) g.rect(sx, sy, 16, 4, sh), g.rect(sx, sy + 4, 16, 2, sh2);
@@ -1510,6 +1545,27 @@ void drawChimneySmoke(Gfx& g, const Building& b, int sx, int sy, float t) {
     float x = cx + std::sin(t * 1.3f + i * 2.f) * 2 + k * 6, y = sy - 7 - k * 22;
     g.ellipse(x, y, 2.5f + k * 4, 2 + k * 3, rgb(0xd8d4d0, uint8_t(120 * (1 - k))));
   }
+}
+
+// Ombres portées (2026-10-25) : (kx, ky) = décalage de l'ombre par pixel de hauteur, selon le soleil
+void drawPropShadow(Gfx& g, const MapDef& m, int x, int y, int sx, int sy, float kx, float ky, float a) {
+  const SpriteRect* r = propSprite(m, x, y);
+  char c = m.rows[y][x];
+  if (!r || c == 'e' || c == 't' || c == 'j' || r->h < 12) return;  // ni les meubles, ni ce qui est presque à plat
+  int h = hsh(x, y), jx = c == 'T' ? (h >> 7) % 5 - 2 : 0;  // le même décalage que drawProp
+  float fx = sx + 8 + jx, fy = sy + 14, H = r->h * .7f;   // l'ombre du haut tombe à 70 % de sa hauteur
+  float tx = fx + kx * H, ty = fy + ky * H;
+  Color col = rgb(0x0a1030, uint8_t(64 * a));
+  g.line(fx, fy, tx - (tx > fx ? 1 : -1) * r->w * .3f, ty, std::max(2.f, r->w * .14f), col);  // le tronc, le poteau
+  g.ellipse(tx, ty, r->w * .36f, std::max(2.f, r->w * .2f), col);                               // la couronne, le haut
+}
+void drawBuildingShadow(Gfx& g, const Building& b, int sx, int sy, float kx, float ky, float a) {
+  float x0 = sx + 2, x1 = sx + b.w * 16 - 2, by = sy + b.h * 16, H = b.h * 16 * .6f;
+  if (BuildingLook L = buildingLook(b, sx, sy); L.r) x0 = L.x + 4, x1 = L.x + L.r->w - 4, by = L.y + L.r->h - 3, H = L.r->h * .6f;
+  float dx = std::clamp(kx * H, -22.f, 22.f), dy = ky * H, F = H * .45f;  // F : profondeur du bâtiment au sol (vue de trois quarts)
+  Color col = rgb(0x0a1030, uint8_t(64 * a));
+  if (dx >= 0) g.poly({{x0, by - F}, {x1, by - F}, {x1 + dx, by - F + dy}, {x1 + dx, by + dy}, {x0 + dx, by + dy}, {x0, by}}, col);
+  else g.poly({{x0, by - F}, {x1, by - F}, {x1, by}, {x1 + dx, by + dy}, {x0 + dx, by + dy}, {x0 + dx, by - F + dy}}, col);
 }
 
 void drawChest(Gfx& g, int sx, int sy, bool open, float t) {

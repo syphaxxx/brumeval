@@ -1303,6 +1303,17 @@ void Game::drawMap() {
       g.ellipse(sx + ox, sy + oy, vert ? 1.5f : 2, vert ? 2 : 1.5f, rgb(0x9fb2cc, uint8_t(150 * a)));
     }
   }
+  // Ombres portées (2026-10-25) : le jour, dehors, elles suivent le soleil ; longues le matin vers l'ouest, courtes à
+  // midi, longues le soir vers l'est ; elles pâlissent au crépuscule et sous la pluie
+  if (float sun = (1 - nightAmount()) * (1 - rainAmount()); outdoors() && sun > 0) {
+    float p = std::fmod(time / 720.f + .85f, 1.f) * 6.2831853f;  // comme nightAmount : 0 à midi
+    float low = 1 - std::clamp((std::cos(p) + .15f) / 1.15f, 0.f, 1.f);  // 0 : soleil haut, 1 : à l'horizon
+    float kx = std::sin(p) * (.15f + .6f * low), ky = .1f;
+    for (auto& b : m.buildings) drawBuildingShadow(g, b, b.x * 16 - camX, b.y * 16 - camY, kx, ky, sun);
+    for (int y = std::max(0, ty0 - 1); y <= ty0 + SCREEN_H / 16 + 3 && y < m.h(); y++)
+      for (int x = std::max(0, tx0 - 3); x <= tx1 + 3 && x < m.w(); x++)
+        if (hasProp(m, x, y)) drawPropShadow(g, m, x, y, x * 16 - camX, y * 16 - camY, kx, ky, sun);
+  }
   // Énigme (3.0) : grilles (fermées : barreaux), plaques allumées, rochers
   if (!m.puzzleFlag.empty()) {
     bool open = puzzleSolved(m);
