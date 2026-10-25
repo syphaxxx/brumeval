@@ -195,7 +195,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
 - Bestiaire : `Game::seen` / `caught` (espèces de créatures), lignes `vu` et
   `pris` de la sauvegarde ; `see()` dans `startBattle` et à l'entrée d'un
   renfort, `caught` à la capture, `noteBestiary()` compte l'équipe et la
-  réserve. Menu `bestiaryMenu`, fiche `drawBestiaryPanel` (`panelMode_` 3 ; une fois l'espèce obtenue, sa
+  réserve. Menu `bestiaryMenu`, fiche `drawBestiaryPanel` (`panelMode_` 3 ; chaque coup d'un allié apprend l'effet de son type sur l'espèce, résistance
+  comprise, et des coups physiques / magiques : clés `<espèce>:<type>`, `<espèce>:phys`, `:mag` de `Game::weak`, 2026-10-25 ; une fois l'espèce obtenue, sa
   `description` : `Species::desc`, écrites par `outils/villes/descriptions.py`). Page tactique (2026-10-25, Gauche/Droite
   ou un clic sur la fiche, `bestiaryPage_`, interceptés dans `Game::update` avant `menus.update`) : rôle et ce qu'il
   change, faiblesses découvertes (`knownMatchup`, battle.hpp : seulement `Game::weak` ; « ? » / « +? » pour le reste),

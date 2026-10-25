@@ -419,8 +419,9 @@ Matchup knownMatchup(const Species& s, const std::set<std::string>* known) {
     bool found = m.full || known->count(s.id + ":" + std::to_string(t));  // Brisure : découverte en la frappant
     if (e > 1) found ? m.weak.push_back({t, e}) : (void)m.hidden++;
     else if (e < 0 && found) m.absorb.push_back({t, e});
-    else if (e >= 0 && e < 1 && m.full) m.resist.push_back({t, e});
+    else if (e >= 0 && e < 1 && found) m.resist.push_back({t, e});  // (2026-10-25) découverte en frappant, elle aussi
   }
+  m.physKnown = m.full || known->count(s.id + ":phys"), m.magKnown = m.full || known->count(s.id + ":mag");
   m.phys = r("physique") * float(1 - talentValue(s, "resiste_physique"));  // comme applyHit : Carapace, Écorce runique
   m.mag = r("magique") * float(1 - talentValue(s, "resiste_magie"));
   return m;
@@ -506,11 +507,10 @@ static void drawBestiaryTactics(Gfx& g, int x, int y, int w, const Species& s, c
   row(T("Résiste"), mu.resist, false, true, mu.full ? "" : "?", muted);
   if (room()) {
     g.text(x + 8, ly, T("Coups"), WHITE);
-    auto hit = [&](const char* what, float k) {
-      return std::string(what) + (mu.full ? multText(k) : std::string("?"));
-    };
-    bool hard = mu.full && (mu.phys < 1 || mu.mag < 1);
-    g.text(x + 56, ly, hit(T("phys."), mu.phys) + " " + hit(T("mag."), mu.mag), hard ? red : mu.full ? WHITE : muted);
+    auto hit = [&](const char* what, float k, bool known) { return std::string(what) + (known ? multText(k) : std::string("?")); };
+    bool hard = (mu.physKnown && mu.phys < 1) || (mu.magKnown && mu.mag < 1);
+    g.text(x + 56, ly, hit(T("phys."), mu.phys, mu.physKnown) + " " + hit(T("mag."), mu.mag, mu.magKnown),
+           hard ? red : mu.physKnown || mu.magKnown ? WHITE : muted);
     ly += 14;
   }
   // Attaques de zone qu'elle apprend : un petit damier 3x3 montre la forme de la zone

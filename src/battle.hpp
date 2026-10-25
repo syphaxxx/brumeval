@@ -38,6 +38,7 @@ struct Matchup {
   int hidden = 0;            // faiblesses pas encore découvertes
   float phys = 1, mag = 1;   // coups physiques, magie (résistances propres et talent)
   bool full = false;
+  bool physKnown = false, magKnown = false;  // (2026-10-25) découverts en frappant (ou espèce obtenue)
 };
 Matchup knownMatchup(const Species& s, const std::set<std::string>* known);
 

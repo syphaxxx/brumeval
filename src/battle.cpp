@@ -1284,7 +1284,7 @@ static std::string foeInfo(const Game& G, const Fighter& f, const Move* m) {
   for (int st = 0; st < N_STAGES; st++)
     if (f.stage[st]) s += " · " + std::string(stageName(st)) + (f.stage[st] > 0 ? " +" : " ") + std::to_string(f.stage[st]);
   if (m && m->damaging()) {  // seulement une faiblesse déjà découverte (Brisure : à trouver en essayant)
-    if (G.weakKnown(f.sp, m->type)) s += T(" · faiblesse !");
+    if (G.weakKnown(f.sp, m->type) && moveEff(*m, f.S()) > 1) s += T(" · faiblesse !");
     else if (!G.weak.empty() || G.seen.count(f.sp)) s += " · ?";
   }
   return s;
@@ -2087,6 +2087,10 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
   float eff = moveEff(m, d->S());
   bool absorb = eff < 0;  // (2026-10-23) il absorbe ce type (résistance négative) : le coup le soigne
   if (absorb) eff = -eff;
+  if (isAlly(a) && eff <= 1 && !absorb && m.damaging()) {  // (2026-10-25) une résistance se découvre aussi en frappant
+    G.weak.insert(d->sp + ":" + std::to_string(m.type));
+    G.weak.insert(d->sp + (magic ? ":mag" : ":phys"));
+  }
   if (eff <= 0) {
     pop(d, T("Aucun effet"), GREY);
     sound("rate");

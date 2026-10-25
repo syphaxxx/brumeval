@@ -3257,6 +3257,13 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         check(m0.weak.empty() && m0.hidden == (int)mf.weak.size() && m0.resist.empty() && !m0.full && m1.weak.size() == 1 &&
                   m1.weak[0].first == found && m1.hidden + 1 == (int)mf.weak.size() && mf.full && !mf.resist.empty(),
               "bestiaire : la page tactique ne montre que les faiblesses découvertes, les résistances une fois obtenue (" + sp.id + ")");
+        {  // (2026-10-25) une résistance et l'effet des coups physiques se découvrent aussi en frappant
+          Type r = knownMatchup(sp, nullptr).resist[0].first;
+          std::set<std::string> hit = {sp.id + ":" + std::to_string(r), sp.id + ":phys"};
+          Matchup mh = knownMatchup(sp, &hit);
+          check(mh.resist.size() == 1 && mh.resist[0].first == r && mh.physKnown && !mh.magKnown && mh.weak.empty(),
+                "bestiaire : une résistance et l'effet des coups physiques découverts en frappant apparaissent (" + sp.id + ")");
+        }
         seen = {sp.id}, caught.clear(), weak = one;
         bestiaryMenu(at);
         in.press[RIGHT] = true;
