@@ -958,6 +958,9 @@ void Pilot::battleStep() {
       return;
     }
     G.menus.clear();
+    // (2026-10-25) mode auto coupé (capture possible, fuite envisagée) : ses tactiques jouent quand même, comme dans la
+    // répétition qui a jugé le combat ; avant, l'IA seule (qui soigne plus tard) jouait tous ces combats
+    if (!B.tacticsActive() && B.actor->tacticsOn && B.tacticTurn(B.actor)) return;
     B.autoCommand(B.actor);
     return;
   }
