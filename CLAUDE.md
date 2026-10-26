@@ -613,6 +613,12 @@ code) ; `docs/GUIDE.md` les range par domaine.
   aussi (les ennemis gardent l'ancienne notation, sur laquelle la difficulté
   est réglée). Principe des techniques : une faible est rapide et souvent avec
   un effet, une forte est lourde, pour qu'aucune ne devienne inutile.
+  Frise (2026-10-26, CTB de FFX) : en survolant une technique, un objet, « Attendre » ou la Limite (`previewMove`,
+  `paceAfter` ; `MenuItem::hover` du menu de commande), et pendant le choix de sa cible, `drawTurnOrder` montre l'ordre
+  juste après l'action (`turnOrder` avec les jauges supposées de `paceIf`, le partenaire d'un duo à 0) : le lanceur
+  d'abord, son prochain tour cerné d'or (la frise s'allonge jusqu'à lui) ; si `damageText` dit « le brise » sur la cible
+  probable (`cursor`), le prochain tour de cet ennemi est barré. Dessin seul (jamais chez l'invité : pas de frise) ;
+  capture `frise_rythme`.
 - Brisure (2.5, Octopath) : `Fighter::shield/shieldMax/broken`, posés dans le
   constructeur de `Battle` (ennemi d'un événement `bouclier`, sinon espèce,
   sinon `brisure.bouclier(_boss)` ; + talent Cuirasse ; jamais en duel). Dans

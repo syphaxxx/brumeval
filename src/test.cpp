@@ -2025,6 +2025,55 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     mode = Mode::Map;
   }
 
+  // --- Frise du rythme (2026-10-26, FFX) : la technique survolée montre où tombera le prochain tour du lanceur ---
+  {
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+    auto keepTeam = team;
+    auto keepWeak = weak;
+    bool keepAuto = tacticsAuto;
+    tacticsAuto = false;
+    auto gal = makeFighter("galetor", 20), brai = makeFighter("braisenard", 18);  // Charge rapide, Avalanche (Roche) lourde
+    team = {gal, makeFighter("louvet", 20), makeFighter("esprillon", 20)};
+    startBattle({brai, makeFighter("mulotin", 18), makeFighter("piafouine", 18)}, false, nullptr);
+    Battle& B = *battle_;
+    B.start -= 2;  // sans la transition d'entrée
+    B.sc.clear();
+    brai->shield = brai->shieldMax = 1, brai->mhp = brai->hp = 5000;  // un bouclier, sa faiblesse à la Roche découverte
+    weak.insert(brai->sp + ":" + std::to_string(typeOf("roche")));
+    float at = 0;
+    for (auto* side : {&B.allies, &B.foes})
+      for (auto& f : *side) f->atb = at += 14;
+    gal->atb = 100;
+    B.command(gal);
+    for (auto& it : menus.top().items)
+      if (it.label == T("Attaquer") && it.act) {
+        auto act = it.act;  // copie : l'action change les menus
+        act();
+        break;
+      }
+    auto nextTurn = [&](const std::string& id, const Fighter** breaks) {  // survol : place du prochain tour de Galetor
+      Menu& m = menus.top();
+      for (size_t i = 0; i < m.items.size(); i++)
+        if (m.items[i].label == moveInfo(id).name && m.items[i].hover) m.sel = (int)i, m.items[i].hover();
+      auto o = B.turnOrder(16, B.paceIf(breaks));
+      return int(std::find(o.begin(), o.end(), gal) - o.begin());
+    };
+    const Fighter *none = nullptr, *broken = nullptr;
+    int quick = nextTurn("charge", &none);
+    B.cursor = brai;
+    int heavy = nextTurn("avalanche", &broken);
+    snap("frise_rythme");
+    check(quick < heavy && broken == brai.get() && !none, "frise du rythme : prochain tour de Galetor en " + std::to_string(quick + 1) +
+                                                             "e place après Charge (rapide), en " + std::to_string(heavy + 1) +
+                                                             "e après Avalanche (lourde), qui brise Braisenard");
+    menus.clear();
+    battle_.reset();
+    sc.clear();
+    mode = Mode::Map;
+    team = keepTeam, weak = keepWeak, tacticsAuto = keepAuto;
+  }
+
   // --- Forge de Forgeroc (2.1) : or et matériaux, objet porté ou dans le sac, +3 avec un trophée, sauvegarde ---
   {
     auto lior = makeFighter("lior", 20);

@@ -776,14 +776,15 @@ float Battle::atbRate(const FighterP& f) const {
   return rate;
 }
 
-std::vector<FighterP> Battle::turnOrder(int n) const {
+std::vector<FighterP> Battle::turnOrder(int n, const std::map<const Fighter*, float>& atbIf) const {
   std::vector<std::pair<float, FighterP>> ev;
   for (auto* side : {&allies, &foes})
     for (auto& f : *side) {
       if (!f->alive()) continue;
       float rate = atbRate(f);
       if (rate <= 0) continue;
-      float t = std::max(0.f, (100 - f->atb) / rate);
+      auto it = atbIf.find(f.get());
+      float t = std::max(0.f, (100 - (it != atbIf.end() ? it->second : f->atb)) / rate);
       for (int k = 0; k < n; k++) ev.push_back({t + k * 100 / rate, f});
     }
   std::stable_sort(ev.begin(), ev.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
@@ -853,17 +854,47 @@ void Battle::drawWeather() {
   }
 }
 
+// (2026-10-26, FFX) une action survolée : l'ordre juste après elle, le lanceur d'abord (il joue maintenant), son prochain
+// tour en or (la frise s'allonge jusqu'à lui) ; la cible qu'elle briserait perd son prochain tour (barré)
+std::map<const Fighter*, float> Battle::paceIf(const Fighter** breaks) const {
+  bool open = paceDepth_ && actor && isAlly(actor) && G.menus.active() &&
+              (G.menus.depth() == paceDepth_ || (boardPicking() && G.menus.depth() == paceDepth_ + 1));  // ou le choix de sa cible
+  if (!open) return {};
+  auto atbIf = paceIf_;
+  bool b = false;
+  if (!paceMove_.empty() && moveInfo(paceMove_).target == Target::Enemy && cursor && cursor->alive() && !isAlly(cursor))
+    damageText(actor, moveInfo(paceMove_), cursor, &b);
+  if (b) atbIf[cursor.get()] = 0, *breaks = cursor.get();  // breakFoe : sa jauge retombe à zéro
+  return atbIf;
+}
+void Battle::paceAfter(const FighterP& a, float gauge, const std::string& move) {
+  paceIf_ = {{a.get(), gauge}}, paceMove_ = move, paceDepth_ = G.menus.depth();
+}
+
 void Battle::drawTurnOrder(float y, float minX, float maxX) {
   Gfx& g = G.g;
-  auto order = turnOrder(8);
+  const Fighter* breaks = nullptr;
+  auto atbIf = paceIf(&breaks);
+  auto order = turnOrder(12, atbIf);
+  size_t keep = 8;
+  if (!atbIf.empty()) {
+    order.insert(order.begin(), actor);
+    auto next = std::find(order.begin() + 1, order.end(), actor);
+    if (next != order.end()) keep = std::max(keep, size_t(next - order.begin()) + 1);
+  }
+  if (order.size() > keep) order.resize(keep);
   while (!order.empty() && minX + order.size() * 24.f > maxX) order.pop_back();  // place réservée à gauche et à droite
   if (order.empty()) return;
+  // (Codex) son prochain tour tombe au-delà de la frise (lent, ou compagnon) : son portrait au bout, avec une flèche
+  bool far = !atbIf.empty() && order.size() > 1 && std::find(order.begin() + 1, order.end(), actor) == order.end();
+  if (far) order.back() = actor;
   float x = std::clamp(160 - order.size() * 12.f, minX, maxX - order.size() * 24.f);
   std::map<const Fighter*, int> seenOnce;  // un ennemi brisé : seul son prochain tour est perdu
   std::set<const Fighter*> marked;         // (2026-10-25) son prochain tour porte son intention : un chevron orange
+  bool nextShown = false;                  // le prochain tour du lanceur (aperçu)
   for (size_t i = 0; i < order.size(); i++, x += 24) {
     const FighterP& f = order[i];
-    bool ally = isAlly(f), lost = !ally && f->broken && seenOnce[f.get()]++ == 0;
+    bool ally = isAlly(f), lost = !ally && (f->broken || f.get() == breaks) && seenOnce[f.get()]++ == 0;
     Color edge = ally ? rgb(0x8fd0ff) : f->boss ? rgb(0xffe066) : rgb(0xff8a7a);
     g.rect(x, y, 22, 12, rgb(0x0a0f33, 200));
     g.rect(x, y + 11, 22, 1, edge);
@@ -873,7 +904,14 @@ void Battle::drawTurnOrder(float y, float minX, float maxX) {
       g.text(x + 11, y + 1, utf8Prefix(f->name(), 3), lost ? GREY : ally ? WHITE : edge, 1, false);
     g.alpha = 1;
     if (lost) g.rect(x + 2, y + 6, 18, 1, rgb(0xffe066));  // barré : tour perdu (brisé)
-    if (auto it = intents_.find(f.get()); !ally && !lost && it != intents_.end() && marked.insert(f.get()).second && !it->second.wait &&
+    if (i > 0 && !atbIf.empty() && f == actor && !nextShown) {  // contour doré qui pulse
+      nextShown = true;
+      Color gold = rgb(0xffd34d, uint8_t(170 + 85 * std::sin(G.time * 6)));
+      g.rect(x - 1, y - 1, 24, 1, gold), g.rect(x - 1, y + 12, 24, 1, gold);
+      g.rect(x - 1, y, 1, 12, gold), g.rect(x + 22, y, 1, 12, gold);
+      if (far) g.tri(x + 17, y + 2, x + 17, y + 9, x + 21, y + 5.5f, gold);  // plus loin encore
+    }
+    if (auto it = intents_.find(f.get()); !ally && !lost && f.get() != breaks && it != intents_.end() && marked.insert(f.get()).second && !it->second.wait &&
                                           hasMove(it->second.move) && moveInfo(it->second.move).damaging()) {
       g.tri(x + 15, y + 8, x + 21, y + 8, x + 18, y + 11, rgb(0x2a1606, 220));
       g.tri(x + 16, y + 8.5f, x + 20, y + 8.5f, x + 18, y + 10.5f, rgb(0xff9a3a));
@@ -1034,7 +1072,10 @@ void Battle::command(FighterP a) {
                            FighterP p = d.partner;
                            t.items.push_back({mv.name, mv.cost ? std::to_string(mv.cost) + T(" PM") : p->name(),
                                               T("Avec ") + p->name() + (mv.cost ? " (" + std::to_string(mv.cost) + T(" PM chacun)") : "") + ". " + moveBrief(mv, a.get()), true,
-                                              [this, a, id, p] { moveTarget(a, id, p); }, [this, a, id] { previewMove(a, id); }});
+                                              [this, a, id, p] { moveTarget(a, id, p); }, [this, a, id, p] {
+                                                previewMove(a, id);
+                                                paceIf_[p.get()] = 0;  // le partenaire dépense sa jauge
+                                              }});
                          }
                          dock(t);
                          G.menus.push(t);
@@ -1066,7 +1107,7 @@ void Battle::command(FighterP a) {
                                                   return T("Chance de capture : ") + std::to_string(int(captureChance(f, item(id).capture) * 100)) + " %";
                                                 }, [this, a, id](FighterP t) { useItem(a, id, t); }, true);
                                               } else pickAlly(T("Sur qui ?"), item(id).revive > 0, [this, a, id](FighterP t) { useItem(a, id, t); });
-                                            }});
+                                            }, [this, a] { paceAfter(a, 0); }});
                        }
                        if (t.items.empty()) t.items.push_back({T("(sac vide)"), "", "", false, nullptr});
                        dock(t);
@@ -1148,6 +1189,12 @@ void Battle::command(FighterP a) {
   setIcons(m, {
       {T("Attaquer"), "ic_epee_1"}, {T("Magie"), "ic_baton_1"}, {T("Limite"), "etoile"}, {T("Duo"), "duo"}, {T("Objet"), "ic_sac"},
       {T("Se déplacer"), "pas"}, {T("Revenir"), "retour"}, {T("Attendre"), "sablier"}, {T("Changer"), "echange"}, {T("Fuir"), "drapeau"}});
+  // (2026-10-26) frise : « Attendre » (jauge rapide) et la Limite montrent où tombera son prochain tour, le reste rien
+  for (auto& it : m.items)
+    it.hover = [this, a, wait = it.label == T("Attendre"), lim = it.label == T("Limite")] {
+      if (wait || lim) paceAfter(a, wait ? float(rules().quickGauge) : 0.f);
+      else paceDepth_ = 0;
+    };
   // Le curseur sur la première action possible (rien à portée : « Se déplacer »)
   for (size_t i = 0; i < m.items.size(); i++)
     if (m.items[i].enabled && (anyTech || m.items[i].label == T("Se déplacer") || m.items[i].label == T("Attendre"))) {
@@ -1283,6 +1330,7 @@ void Battle::previewMove(const FighterP& a, const std::string& id) {
   preview_ = id;
   previewDepth_ = G.menus.depth();
   const Move& m = moveInfo(id);
+  paceAfter(a, paceGauge(m), id);  // la frise : son prochain tour après elle
   if (m.target != Target::Enemy) return;
   if (cursor && cursor->alive() && !isAlly(cursor) && reachable(a, m, cursor)) return;
   cursor = nullptr;
@@ -1582,7 +1630,7 @@ Battle::Preview Battle::preview(const FighterP& a, const Move& m, const FighterP
   return pv;
 }
 
-std::string Battle::damageText(const FighterP& a, const Move& m, const FighterP& d) const {
+std::string Battle::damageText(const FighterP& a, const Move& m, const FighterP& d, bool* breaks) const {
   if (!m.damaging() || !a || !d) return "";
   Preview pv = preview(a, m, d);
   if (pv.eff < 0) return T(" · absorbé : le soigne !");
@@ -1597,8 +1645,10 @@ std::string Battle::damageText(const FighterP& a, const Move& m, const FighterP&
   if (d->alive() && pv.lo >= d->hp) s += T(" · l'abat");
   else if (d->alive() && pv.hi >= d->hp) s += T(" · peut l'abattre");
   else if (pv.eff > 1 && d->shieldMax > 0 && !d->broken &&
-           d->shield <= (pv.eff >= 4 ? 2 : 1) + int(talentValue(a->S(), "briseur") + gemSupport(*a, "briseur")))
+           d->shield <= (pv.eff >= 4 ? 2 : 1) + int(talentValue(a->S(), "briseur") + gemSupport(*a, "briseur"))) {
     s += T(" · le brise");
+    if (breaks) *breaks = true;
+  }
   return s;
 }
 

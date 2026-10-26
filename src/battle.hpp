@@ -280,6 +280,13 @@ class Battle {
   std::string preview_;
   size_t previewDepth_ = 0;
   void previewMove(const FighterP& a, const std::string& id);
+  // Frise du rythme (2026-10-26, FFX) : l'action survolée (technique, objet, Attendre, Limite) et la jauge de chacun juste
+  // après elle ; paceDepth_ : le menu où elle est survolée (0 : aucune). Dessin seul : rien ne change dans le combat.
+  std::map<const Fighter*, float> paceIf_;
+  std::string paceMove_;  // la technique survolée : sa cible probable (cursor) serait-elle brisée ?
+  size_t paceDepth_ = 0;
+  void paceAfter(const FighterP& a, float gauge, const std::string& move = "");
+  std::map<const Fighter*, float> paceIf(const Fighter** breaks) const;  // jauges supposées (vide : pas d'aperçu)
   void drawZones(float t);
   void drawHud(float t);
   void moveTo(FighterP a, int cell);  // « Se déplacer » : change de case, puis choisit son action
@@ -312,7 +319,8 @@ class Battle {
   void tickATB(float dt);
   // Ordre des tours (2.5, inspiré de Final Fantasy X) : les n prochains tours prévus d'après les
   // jauges et les vitesses actuelles (sans le hasard de la paralysie)
-  std::vector<FighterP> turnOrder(int n) const;
+  // atbIf : jauges supposées de certains combattants (aperçu d'une action : `paceIf`)
+  std::vector<FighterP> turnOrder(int n, const std::map<const Fighter*, float>& atbIf = {}) const;
   void drawTurnOrder(float y, float minX = 0, float maxX = 320);
   bool skipTurn(FighterP f);  // sommeil ou paralysie : le tour est perdu
   void command(FighterP a);
@@ -322,7 +330,7 @@ class Battle {
   float attackScore(const FighterP& a, const Move& m, const FighterP& t) const;  // intérêt d'une attaque (IA et tactiques)
   // Dégâts prévus (3.3, aide du choix de la cible) : « ≈ 18-24 PV · 95 % » (sans coup critique). L'efficacité d'un type
   // n'est comptée qu'une fois découverte (Brisure) : sinon neutre, pour ne rien dévoiler.
-  std::string damageText(const FighterP& a, const Move& m, const FighterP& d) const;
+  std::string damageText(const FighterP& a, const Move& m, const FighterP& d, bool* breaks = nullptr) const;  // breaks : « le brise »
   // Dégâts prévus d'une attaque (même formule qu'applyHit, sans hasard ni critique) ; eff < 0 : absorbé, 0 : sans effet ;
   // fromCell : la case d'où l'attaquant frappera (sinon celle où il s'approchera)
   struct Preview {

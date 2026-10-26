@@ -326,7 +326,7 @@ void MenuStack::update(Input& in) {
     }
     if (in.mclick[0] && at >= 0 && !m.items[at].header) {
       in.mclick[0] = false;
-      m.sel = at;
+      if (at != m.sel) m.sel = at, hover();  // (Codex, 2026-10-26) un clic sans survol : l'aperçu suit la ligne cliquée
       if (m.items[at].adjust && m.items[at].enabled && !m.items[at].act) {
         auto f = m.items[at].adjust;
         f(+1);
