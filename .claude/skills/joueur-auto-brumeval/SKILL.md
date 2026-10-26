@@ -197,6 +197,12 @@ Pas fait (pistes) : `autoCommand` ne sert presque jamais en mode tactiques (la d
 s'applique toujours), le changer ne change rien ; viser d'abord l'ennemi qu'un coup abat demanderait une condition de
 tactique ; la formation automatique (`formation`) met déjà les lanceurs de sorts derrière.
 
+**IA alliée qui lit les intentions** (2026-10-26, mesures : compétence `equilibrage`) : ses tactiques visent d'abord
+l'ennemi qui a annoncé un coup dangereux (`attackScore`, surtout si le coup l'abat ou le brise) et leur `planMove` met
+un allié solide en travers d'un corps à corps annoncé sur un soigneur ou un blessé (`posValue`) ; la garde quand il
+est acculé (`shouldGuard`) ne joue que par `autoCommand` (mode IA, ou aucune règle possible). Sans mémoire : 12 h 25
+et 12 h 49, 10 et 11 défaites, quatre actes en 5 h 51 et 6 h 04 (bot31 sans ce travail : 10 h 22, 10, 6 h 29).
+
 Mesuré (sans mémoire, une partie chacune, même ordinateur ; d'une partie à l'autre ±2 h et ±8 défaites) : version
 d'avant **16 h 19, 24 défaites, quatre actes en 7 h 47** (référence donnée : 13 h 55, 23, 7 h 27) ; premières
 améliorations (rencontres jaugées, fuite plus tôt, compagnons, PM, Soigneur) 14 h 00, 9, 5 h 43 ; état intermédiaire

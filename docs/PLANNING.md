@@ -486,6 +486,13 @@ Astuces « intention » et « garde », aide de l'échiquier, tests (garde ≈ 0
 10. (2026-10-26) **Frise du rythme** (CTB de Final Fantasy X) : survoler une technique, un objet, « Attendre » ou la Limite
    montre dans la frise où tombera le prochain tour du lanceur (contour doré) ; un coup qui briserait la cible barre son
    prochain tour. Dessin seul, rien ne change dans le combat (capture `frise_rythme`).
+11. (2026-10-26) **L'IA alliée lit les intentions** comme un bon joueur (mode auto, simulations ; les tactiques du
+   joueur automatique en profitent par le choix de la cible et de la case) : elle abat d'abord l'ennemi qui a annoncé un
+   coup dangereux (surtout si son coup l'abat ou le brise), se met en garde quand elle est acculée et que la garde vaut
+   mieux (ripostes, coups évités, ou vie sauvée), et un allié solide coupe la route d'un corps à corps annoncé sur un
+   soigneur ou un blessé. Défis simulés : « La garde » 36 → 56 %, « La Percée » 77 → 96 %, « Lire les intentions » 91 →
+   96 % ; boss dans le bruit. Rien ne change côté ennemi. Joueur automatique sans mémoire : quatre actes en 5 h 51 et
+   6 h 04 (6 h 29 avant), 10 et 11 défaites en tout.
 Mesuré (joueur automatique sans mémoire, bot14) : tout fini en 8 h 20, 10 défaites (27 avant), niveau 112, quatre actes en
 5 h 40, estimation joueur 16 h 46 ; les défaites restantes : meutes du Vieux Phare. Mesuré ensuite : bot15 (version
 finale, mêmes règles) quatre actes en 4 h 40 et 8 défaites dans l'histoire, puis 20 au Vieux Phare (équipe jamais changée :
