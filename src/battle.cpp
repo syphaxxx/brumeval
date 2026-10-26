@@ -3859,7 +3859,10 @@ void Battle::draw() {
       g.rect(p.x - bw, by, bw * 2 * f->hp / f->mhp, 2, rgb(f->broken ? 0xffe066 : 0xff8a7a));
       // Brisure : bouclier (points restants) à gauche de la barre, ou « BRISÉ » ; dessous, les faiblesses découvertes
       if (f->broken) {
-        g.text(p.x, by - 20, T("BRISÉ"), rgb(0xffe066, uint8_t(180 + 70 * std::sin(t * 9))), 1);
+        bool popping = std::any_of(pops.begin(), pops.end(), [&](const Pop& q) {  // « BRISÉ ! » jaillit encore : pas deux fois le mot
+          return q.text == T("BRISÉ !") && G.time - q.t < 1 && std::fabs(q.x - p.x) < 24;
+        });
+        if (!popping) g.text(p.x, by - 20, T("BRISÉ"), rgb(0xffe066, uint8_t(180 + 70 * std::sin(t * 9))), 1);
       } else if (f->shieldMax > 0) {
         float sx = p.x - bw - 9, sy = by - 4;
         g.poly({{sx - 5, sy - 1}, {sx + 5, sy - 1}, {sx + 5, sy + 6}, {sx, sy + 10}, {sx - 5, sy + 6}}, rgb(0xc8d6f0));
