@@ -1,17 +1,20 @@
 ## Nouveautés
 
-Un jeu plus dur, mais où l'on voit venir chaque coup : les ennemis annoncent ce qu'ils préparent, et « Attendre » devient une vraie garde.
+Chaque boss a maintenant sa façon de se battre, toujours annoncée, avec sa parade — et le jeu vous apprend à les lire.
 
-- **Intentions** : à la moitié de sa jauge, chaque ennemi annonce ce qu'il va faire — une icône à côté de sa barre de PV (épée, orbe du type, croix verte pour un soin, sablier s'il va se mettre en garde), un chevron orange et les dégâts prévus au-dessus de l'allié visé, la zone en orange au sol, un pointillé vers sa cible quand on le survole. Il fait ce qu'il a annoncé si c'est encore possible, sinon « Déjoué ! » : écarter la cible, la mettre en garde ou abattre l'ennemi d'abord sont trois vraies réponses. Les boss aussi, sauf quand leur zone rouge est déjà annoncée.
-- **Garde** : « Attendre » n'est plus un tour perdu : un quart de dégâts en moins et une **riposte** à chaque coup au corps à corps jusqu'à votre prochain tour, face à l'ennemi le plus proche ; un bouclier le signale, à côté de la tête et dans le tableau du bas.
-- **Des ennemis qui choisissent** : soigneurs, lanceurs de sorts et blessés les attirent, et la meute s'acharne sur un allié déjà visé. Couvrez votre ligne arrière.
-- **Tactiques** : « Soi : visé » (le Protecteur se met en garde) et « Allié : visé » (il va le couvrir) ; chaque profil réanime et soigne avant d'attaquer ; « (conseillé) » marque le profil qui convient à un membre.
-- **Rencontres** : plus denses (0,6 créature par allié, jamais plus de 3 niveaux sous l'équipe), des meutes de 2 au début puis une créature de plus tous les 15 niveaux ; les créatures sauvages n'ont plus d'attaque sur toute l'équipe (une zone à la place : la formation compte) ; les meutes de la Citadelle plafonnées à trois.
-- **Une coquille corrigée** : Braisenard courait quatre fois trop vite depuis le 6 octobre ; les boss, réglés contre lui, sont ramenés d'un ou deux niveaux.
-- **Démo** : le joueur automatique change de compagnons selon les créatures du lieu et répète un boss dans le décor de son combat.
-- **Réseau** : l'invité du duel et les autres joueurs du gardien voient la garde et les intentions.
+- **Mécaniques des boss** : le Golem et le Colosse se cuirassent (la magie passe, le corps à corps est puni), la Mère des Brumes et l'Ombre se voilent (sorts et tirs la traversent : au contact !), la Brume Noire aussi, mais seule la Lumière passe ; la Ronce-Mère, le Seigneur des Orages et le Phénix couvrent une zone de ronces, de foudre ou de braises ; Ignarok, le Griffon et le Givrecorne chargent une ligne ; le Kraken happe une colonne et tire vers le front. En Expédition, les gardiens ont aussi la leur dès la région 3.
+- **Alphas** : une meute menée par un alpha devient un petit combat de boss, avec une mécanique selon ses types ; le début du combat dit laquelle et comment la contrer.
+- **S'exercer** : quatre défis courts (La cuirasse, Les ronces, La charge, Le voile), proposés par des maîtres le long de l'histoire et dans Arène > Défis ; « Les ailes » est de nouveau gagnable.
+- **Le rythme se voit** : en survolant une action, la frise de l'ordre des tours montre où tombera votre prochain tour (rapide, lourde, garde), et barre le tour d'un ennemi que le coup va briser. L'aperçu des dégâts dit aussi « l'abat », « peut l'abattre » ou « le brise ».
+- **Des ennemis plus malins** : ils évitent de frapper au corps à corps un allié en garde, un protecteur va couvrir un blessé, un soigneur reste à l'arrière.
+- **Un mode auto plus malin** : vos alliés abattent d'abord l'ennemi qui prépare un coup dangereux, se mettent en garde quand ils sont acculés et vont couvrir un soigneur menacé.
+- **Le Bestiaire prépare les combats** : une seconde page par créature (Gauche/Droite) avec son rôle, ses faiblesses, résistances et absorptions découvertes, ses attaques de zone ; frapper une créature suffit à apprendre ce qu'elle résiste.
+- **Des coups qui se sentent** : arrêt sur image sur les gros coups, éclair blanc d'un critique ou d'une Brisure, nombres qui jaillissent ; un écran des gains avec portraits et barres d'expérience qui se remplissent ; garde, riposte et intentions animées ; de nouveaux sons.
+- **Graphismes** : un décor de combat par lieu (grottes, volcan, col, neige, mer…), la mer plus profonde au large, des ombres qui suivent le soleil, des places pavées bordées de pierres.
+- **Menus** : fiche d'équipe et d'équipement plus claires (la comparaison directement dans la fiche), Options en groupes, Journal en listes (Quêtes, Primes, Terminées), Forge en deux groupes, et l'aide qui ne coupe plus le conseil du prochain gardien.
+- **Accessibilité** : Options > Types lisibles sans couleur, un motif sur chaque pastille de type.
 
-Dans la 3.6 : le regard, les embuscades, des créatures qui se battent autrement, les profils de tactiques. Dans la 3.5 : deux actes de plus, l'échiquier de combat, les primes et les quêtes. Dans la 3.1 : le jeu en anglais.
+Dans la 3.7 : les intentions des ennemis et la garde. Dans la 3.6 : le regard, les embuscades, les profils de tactiques. Dans la 3.5 : deux actes de plus, l'échiquier de combat, les primes et les quêtes. Dans la 3.1 : le jeu en anglais.
 
 ## Télécharger
 
