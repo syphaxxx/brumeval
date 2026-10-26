@@ -47,7 +47,9 @@ dialogue, recrutement, combat piloté par les menus, sauvegarde/chargement),
 enregistre des captures `.bmp` dans `captures/` et, avec `BRUMEVAL_SIMULATIONS=1`
 (2026-10-24 : sinon elles sont sautées, elles prenaient 6 des 7 minutes), simule des
 combats pour l'équilibrage (`BRUMEVAL_SIM_FILTRE=mot1,mot2` : seulement celles dont le nom contient un de ces mots, sans accent ni majuscule : « Phenix » trouve « Phénix »). Il doit finir par « TOUS LES TESTS PASSENT ». Les tirages
-au hasard partent d'une graine fixe (`BRUMEVAL_GRAINE` pour en changer) : un échec se rejoue. Regarde les captures
+au hasard partent d'une graine fixe (`BRUMEVAL_GRAINE` pour en changer) : un échec se rejoue. `BRUMEVAL_DOSSIER=<dossier>` : sauvegardes,
+options et fichiers de test dans ce dossier au lieu de `%APPDATA%` (2026-10-26 : deux modes test lancés en même temps,
+par exemple par des agents, se disputaient `sauvegarde_test.txt` et échouaient au hasard). Regarde les captures
 après un changement visuel. Il tourne sans fenêtre (rendu logiciel).
 
 Chaque image dessinée pendant les tests est vérifiée (`Gfx::checkLayout`,

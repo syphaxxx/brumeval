@@ -497,7 +497,9 @@ Ignarok 24, Ronce-Mère 20, Givrecorne 37, Mère des Brumes 40) pour retrouver l
 actes en 8 h 29 (anciens boss) et 7 h 43 (boss ramenés), 13 à 14 défaites dans l'histoire, contre 5 h 30 à 7 h avec le
 Braisenard trop rapide : le jeu corrigé est bien plus dur ; meutes adoucies au milieu (une créature de plus tous les 15
 niveaux au lieu de 10) ; Griffon et Phénix ramenés aussi (les autres boss tardifs tiennent). **Publié dans la 3.7
-(2026-10-24, PR #32)** ; dernière mesure : tout fini en 13 h 55, quatre actes en 7 h 27, estimation joueur 27 h.
+(2026-10-24, PR #32)** ; dernière mesure : tout fini en 13 h 55, quatre actes en 7 h 27, estimation joueur 27 h. Après la 3.7 (branche `apres-37`) :
+mécaniques des boss, joueur automatique plus malin (rencontres jaugées, compagnons par lieu et par boss) ; mesuré (bot30) :
+tout fini en 13 h 53 avec **13 défaites** (23 pour la 3.7), quatre actes en 7 h 26 avec 9 défaites.
 Mesures : compétence `equilibrage`.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)
