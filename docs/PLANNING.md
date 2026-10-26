@@ -414,8 +414,8 @@ regarde le personnage, et des menus « peut-être un peu simples et surchargés 
   la fiche s'arrête au-dessus de l'aide), comparaison de l'équipement sur la fiche (valeurs avec l'objet survolé, en vert ou
   en rouge ; aide plus courte), gemmes (icônes des chatons), Options en trois groupes titrés (Son, Affichage, Partie : tout
   se voit), Journal en listes titrées (Quêtes, Primes, Terminées ; plus de « en cours » répété). Captures `tour_NN`.
-Pistes : l'ordinateur qui protège son dos (« Attendre » pour se retourner), d'autres menus à regrouper ; la Forge (« sac »
-répété à chaque ligne, non traduit, et comparé par le joueur automatique).
+Pistes : l'ordinateur qui protège son dos (« Attendre » pour se retourner), d'autres menus à regrouper. Fait le
+2026-10-26 : la Forge en deux groupes titrés (Équipement porté, Dans le sac).
 
 ## Étape 2 decies — Rééquilibrage (demandé le 2026-10-23)
 
