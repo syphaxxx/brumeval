@@ -145,6 +145,13 @@ void writeJson(const std::string& rel, const Json& j) {
 }
 
 std::string userFile(const std::string& name) {
+  // (2026-10-26) BRUMEVAL_DOSSIER=<dossier> : sauvegardes et options ailleurs (deux modes test en même temps ne se gênent plus)
+  if (const char* d = SDL_getenv("BRUMEVAL_DOSSIER"); d && *d) {
+    std::error_code ec;
+    fs::create_directories(fs::u8path(d), ec);
+    std::string s = d;
+    return s + (s.back() == '/' || s.back() == '\\' ? "" : "/") + name;
+  }
   char* p = SDL_GetPrefPath("Brumeval", "Brumeval");
   std::string s = p ? p : "";
   SDL_free(p);
