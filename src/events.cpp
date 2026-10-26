@@ -387,7 +387,13 @@ void Game::execAction(const Json& a) {
     recruit(a["espece"].get<std::string>(), jget(a, "niveau", 1));
   } else if (k == "conseil") {  // conseil pour le prochain boss (2.8)
     std::string t = adviceText();
-    sc.say(t.empty() ? T("Tous les gardiens sont apaisés. La vallée vous doit beaucoup !") : t, 0);
+    if (t.empty()) t = T("Tous les gardiens sont apaisés. La vallée vous doit beaucoup !");
+    auto lines = Gfx::wrap(t, 284);  // (2026-10-26) la fenêtre de dialogue montre 4 lignes : un long conseil passe en pages
+    for (size_t i = 0; i < lines.size(); i += 4) {
+      std::string page;
+      for (size_t j = i; j < std::min(lines.size(), i + 4); j++) page += (page.empty() ? "" : " ") + lines[j];
+      sc.say(page, 0);
+    }
   } else if (k == "combat") {
     auto make = [&](const Json& e) { return makeFoe(e, avgLevel()); };
     BattleSetup setup;

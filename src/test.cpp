@@ -1799,10 +1799,16 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     bool first = adviceText().find(species(rules().advice.at(0).boss).name) != std::string::npos;
     flags.insert(rules().advice.at(0).flag);
     bool second = adviceText().find(species(rules().advice.at(1).boss).name) != std::string::npos;
-    for (auto& a : rules().advice) flags.insert(a.flag);
+    std::string tooLong;  // (2026-10-26) chaque conseil entier tient dans l'aide du Journal (six lignes)
+    flags.clear();
+    for (auto& a : rules().advice) {
+      if (Gfx::wrap(adviceText(), 300).size() > 6) tooLong += " " + a.boss;
+      flags.insert(a.flag);
+    }
+    if (!tooLong.empty()) std::printf("  conseils trop longs :%s\n", tooLong.c_str());
     bool done = adviceText().empty();
     flags = keep;
-    check(first && second && done, "conseils : le prochain gardien, puis le suivant, plus rien quand tous sont battus");
+    check(first && second && done && tooLong.empty(), "conseils : le prochain gardien, puis le suivant, plus rien quand tous sont battus ; chacun tient en six lignes");
     tipsOff_ = true;
     sc.clear(), menus.clear();
   }

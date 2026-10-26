@@ -410,14 +410,14 @@
       "boss": "ronce_mere",
       "lieu": "le fond du marais de Sylve-Noire",
       "gemme": "gemme_feu",
-      "texte": "Son Étreinte tire vos soigneurs vers l'avant. À mi-vie, un champignon guérisseur pousse : visez-le."
+      "texte": "Ses ronces jaillissent sur une croix annoncée, puis blessent qui y revient. À mi-vie, visez le champignon guérisseur."
     },
     {
       "drapeau": "boss2",
       "boss": "ignarok",
       "lieu": "le cratère des Monts Cendrelune",
       "gemme": "gemme_givre",
-      "texte": "Sa carapace de lave se reforme à 60 % de PV, puis il appelle un tisonnel. Gardez un gros coup pour chaque brisure."
+      "texte": "Il charge une ligne annoncée : changez de ligne, ou ripostez en garde. Sa carapace de lave se reforme à 60 % de PV."
     },
     {
       "drapeau": "harpie",
@@ -438,14 +438,14 @@
       "boss": "givrecorne",
       "lieu": "le sanctuaire des Pics Givrés",
       "gemme": "gemme_vie",
-      "texte": "À mi-vie, il déchaîne le blizzard, qui renforce la Glace : soyez prêts à soigner."
+      "texte": "Il charge une ligne annoncée : ne restez pas alignés. À mi-vie, le blizzard renforce la Glace : soyez prêts à soigner."
     },
     {
       "drapeau": "boss4",
       "boss": "mere_brumes",
       "lieu": "la Source des Brumes",
       "gemme": "gemme_vol",
-      "texte": "Le Nébulis (croix) la soigne : éliminez-le. La brume puis sa colère : gardez des PM pour la fin."
+      "texte": "Voilée, sorts et tirs la traversent : allez au contact. Le Nébulis (croix) la soigne : éliminez-le."
     },
     {
       "drapeau": "marees_boss",
@@ -459,21 +459,21 @@
       "boss": "kraken",
       "lieu": "les Ruines englouties, au nord du Récif d'Écume",
       "gemme": "gemme_vie",
-      "texte": "Il faut d'abord ouvrir la grille de l'énigme. Un Coquillon protecteur le couvre : écartez-le. Sa carapace de corail se reforme à 60 % de PV."
+      "texte": "Ouvrez d'abord la grille. Il tire une colonne annoncée vers le front : gardez vos mages hors de la zone."
     },
     {
       "drapeau": "griffon",
       "boss": "griffon",
       "lieu": "le pied de la Tour de l'Orage",
       "gemme": "gemme_eveil",
-      "texte": "Très rapide, et son Orageline (chef) le presse encore : abattez-la d'abord. À mi-vie, l'orage éclate."
+      "texte": "Il fond sur une ligne annoncée : changez de ligne. Son Orageline (chef) le presse : abattez-la d'abord."
     },
     {
       "drapeau": "boss5",
       "boss": "seigneur_orage",
       "lieu": "le sommet de la Tour de l'Orage",
       "gemme": "gemme_maitre",
-      "texte": "Trois phases : la foudre, puis des renforts (un Nuageon soigneur : visez-le), puis un dernier souffle. Gardez Limites et duos pour la fin."
+      "texte": "Sa foudre frappe une colonne annoncée et la laisse foudroyée : n'y restez pas. Visez le Nuageon soigneur."
     },
     {
       "drapeau": "gardien_lueurs",
@@ -494,7 +494,28 @@
       "boss": "brume_noire",
       "lieu": "le trône de la Citadelle des gardiens",
       "gemme": "gemme_maitre",
-      "texte": "Trois phases, de plus en plus rapides ; un Aubespectre la soigne : visez-le. Ilya vous soigne juste avant."
+      "texte": "Voilée, seule la Lumière l'atteint : gardez un sort de Lumière. Un Aubespectre la soigne : visez-le."
+    },
+    {
+      "drapeau": "colosse_echo_vaincu",
+      "boss": "colosse_echo",
+      "lieu": "la Forêt Pétrifiée",
+      "gemme": "gemme_esprit",
+      "texte": "Il se cuirasse un tour sur trois : la magie passe, le corps à corps est puni (il riposte). Frappez-le de loin pendant ce temps."
+    },
+    {
+      "drapeau": "phenix_echo_vaincu",
+      "boss": "phenix_echo",
+      "lieu": "le Cratère des Échos",
+      "gemme": "gemme_rempart",
+      "texte": "Ses flammes tombent sur une ligne annoncée et y laissent des braises : quittez-la. La canicule du Cratère renforce le Feu."
+    },
+    {
+      "drapeau": "echos_fin",
+      "boss": "ombre_gardien",
+      "lieu": "le Sanctuaire des Échos",
+      "gemme": "gemme_force",
+      "texte": "Voilée, seule une lame au contact l'atteint : sorts et tirs la traversent. Trois phases : gardez Limites et duos pour la fin."
     }
   ],
   "talents": [

@@ -328,7 +328,7 @@ std::string Game::adviceText() const {
     std::string known;
     for (int ty = 0; ty < (int)types().size(); ty++)
       if (weakKnown(a.boss, ty)) known += (known.empty() ? "" : ", ") + types()[ty].name;
-    t += known.empty() ? ::T("Ses faiblesses sont à découvrir : essayez chaque type, le Bestiaire s'en souviendra. ")
+    t += known.empty() ? ::T("Faiblesses : à découvrir (le Bestiaire s'en souviendra). ")
                        : ::T("Faiblesses connues : ") + known + ". ";
     t += a.text;
     if (!a.gem.empty() && hasItem(a.gem)) t += ::T(" Gemme conseillée : ") + item(a.gem).name + ".";
