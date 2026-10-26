@@ -721,7 +721,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   (dessiné plus grand, bouclier de boss, attaques annoncées, gains de boss ; capturé, il redevient ordinaire) ; message « Une meute menée par un alpha ».
   Mécanique des alphas (2026-10-26) : `makeAlpha` (data.cpp, appelé par `Game::encounter`) lui donne une `mecanique` de boss
   selon ses types d'après `rencontres.alpha_mecaniques` de regles.json (type → objet comme le champ `mecanique` d'un ennemi,
-  vérifié par `checkEvents` ; deux types, deux mécaniques : l'une au hasard ; type absent : aucune) ; le message d'entrée dit
+  vérifié par `checkEvents` ; deux types, deux mécaniques : l'une au hasard ; type absent : aucune), +`alpha_niveaux_posture` (1)
+  avec une posture (cuirasse, voile : elle lui coûte un tour d'attaque) ; le message d'entrée dit
   ce qu'il fait et la parade ; capturé, il la perd (`Fighter::mech` vidé, rien n'est sauvegardé) ; jamais en ligne
   (`Battle::mech`) ni en Expédition ; le joueur automatique répète la meute avec elle (`fight["ennemis"][…]["mecanique"]`)
   et marque « (alpha <genre>) » dans ses défaites. Test et capture `alpha_mecanique`, simulations « …, alpha » ; mesures :

@@ -769,10 +769,12 @@ void Pilot::walk(float dt) {
   }
   // (2026-10-25) nouvelle carte : revoir les compagnons avant la première rencontre, puis replanifier (les répétitions se
   // refont avec cette équipe) ; sauf en route vers l'auberge : l'équipe changée changeait la répétition du boss « avec
-  // l'état actuel », et il tournait en rond entre deux cartes sans jamais atteindre l'auberge
+  // l'état actuel », et il tournait en rond entre deux cartes sans jamais atteindre l'auberge. (2026-10-26) Ni en route vers
+  // son entraînement : les compagnons changent le niveau moyen, donc la zone choisie ; il allait et venait entre le Bois des
+  // Lueurs et le Cratère des Échos sans jamais combattre (bot32, BLOQUÉ à 6 h 12)
   if (G.mapId != planMap_) {
     planMap_ = G.mapId;
-    if (adaptTeam(demo_) && goal_.kind != Heal) {
+    if (adaptTeam(demo_) && goal_.kind != Heal && goal_.kind != Grind) {
       needPlan_ = true;
       return;
     }
