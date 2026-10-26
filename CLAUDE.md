@@ -393,6 +393,12 @@ code) ; `docs/GUIDE.md` les range par domaine.
   sort, soin, statut, capture) et la couleur du type ; `offset` décale le dessin
   (élan, secousse quand on est touché) et `drawAnim` dessine l'effet. En ligne,
   l'hôte ou le chef envoie `anim` aux autres.
+  Coups qui se sentent (2026-10-26, dessin seul) : `pop(f, texte, couleur, style)` (`PopStyle` : dégâts, critique,
+  faiblesse, résistance, abat, Brisure ; champ `s` du message `pop`) pose `impacts_` (recul selon la force, écrasement,
+  éclair blanc d'une image : `Gfx::spriteFlash`) et, pour un gros coup, l'arrêt sur image (`stopped_`, 50 à 90 ms) : seules
+  les minuteries de dessin du lanceur et de la cible passent par `since` ; étirement à l'élan (`squash`, `Gfx::squashX/Y`) ;
+  nombre critique doré en double taille, faiblesse orange, résistance gris-bleu, rebond d'échelle (`textBigFancy` accepte une
+  échelle non entière). Captures `coup_critique`, `coup_brisure`.
 - Police : `gfx.cpp`, fonction `buildFont()`. Un caractère absent s'affiche « ? » ;
   ajoute son dessin si tu utilises un nouveau symbole.
 - Données : tout le contenu est dans `data/` (voir `data/LISEZMOI.md`), chargé au

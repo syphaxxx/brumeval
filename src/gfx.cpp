@@ -100,21 +100,22 @@ const SpriteRect* findSprite(const std::string& id) {
 void Gfx::resetTextures() {
   if (atlas_) SDL_DestroyTexture(atlas_);
   if (atlasFlip_) SDL_DestroyTexture(atlasFlip_);
-  atlas_ = atlasFlip_ = nullptr;
+  if (atlasWhite_) SDL_DestroyTexture(atlasWhite_);
+  atlas_ = atlasFlip_ = atlasWhite_ = nullptr;
 }
 void Gfx::sprite(const SpriteRect& s, float x, float y, bool flip, float scale, Color tint, float flash) {
   if (!sane(x) || !sane(y) || scale <= 0) return;
   auto& a = atlas();
+  auto make = [&](const std::vector<uint8_t>& px) -> SDL_Texture* {
+    SDL_Surface* surf = SDL_CreateRGBSurfaceWithFormatFrom(const_cast<uint8_t*>(px.data()), a.w, a.h, 32, a.w * 4, SDL_PIXELFORMAT_RGBA32);
+    if (!surf) return nullptr;
+    SDL_Texture* t = SDL_CreateTextureFromSurface(r_, surf);
+    SDL_FreeSurface(surf);
+    if (t) SDL_SetTextureScaleMode(t, SDL_ScaleModeNearest);
+    return t;
+  };
   if (!atlas_) {
     if (a.px.empty()) return;
-    auto make = [&](const std::vector<uint8_t>& px) -> SDL_Texture* {
-      SDL_Surface* surf = SDL_CreateRGBSurfaceWithFormatFrom(const_cast<uint8_t*>(px.data()), a.w, a.h, 32, a.w * 4, SDL_PIXELFORMAT_RGBA32);
-      if (!surf) return nullptr;
-      SDL_Texture* t = SDL_CreateTextureFromSurface(r_, surf);
-      SDL_FreeSurface(surf);
-      if (t) SDL_SetTextureScaleMode(t, SDL_ScaleModeNearest);
-      return t;
-    };
     atlas_ = make(a.px);
     if (!atlas_) return;
     std::vector<uint8_t> mirrored(a.px.size());  // chaque ligne à l'envers
@@ -129,17 +130,28 @@ void Gfx::sprite(const SpriteRect& s, float x, float y, bool flip, float scale, 
   SDL_Rect src{tex == atlasFlip_ ? a.w - s.sx - s.sw : s.sx, s.sy, s.sw, s.sh};
   // position entière dans le jeu (comme les dessins en code), taille exacte : à pleine finesse dans l'image agrandie
   SDL_FRect dst{float(std::lround(x) + ox), float(std::lround(y)), s.w * scale, s.h * scale};
+  if (squashX != 1 || squashY != 1) {  // étiré ou écrasé autour de squashAt (tous les morceaux d'un même dessin ensemble)
+    float ax = squashAt.x + ox;
+    dst = {ax + (dst.x - ax) * squashX, squashAt.y + (dst.y - squashAt.y) * squashY, dst.w * squashX, dst.h * squashY};
+  }
+  flash = std::max(flash, spriteFlash);
   SDL_RendererFlip fl = flip && tex == atlas_ ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
   SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
   SDL_SetTextureColorMod(tex, uint8_t(tint.r * spriteTint.r / 255), uint8_t(tint.g * spriteTint.g / 255), uint8_t(tint.b * spriteTint.b / 255));
   SDL_SetTextureAlphaMod(tex, uint8_t(tint.a * std::clamp(alpha, 0.f, 1.f)));
   SDL_RenderCopyExF(r_, tex, &src, &dst, spriteAngle, nullptr, fl);
-  if (flash > 0) {  // éclat blanc : le sprite rajouté en mode additif
-    SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_ADD);
-    SDL_SetTextureColorMod(tex, 255, 255, 255);
-    SDL_SetTextureAlphaMod(tex, uint8_t(255 * std::clamp(flash, 0.f, 1.f) * std::clamp(alpha, 0.f, 1.f)));
-    SDL_RenderCopyExF(r_, tex, &src, &dst, spriteAngle, nullptr, fl);
-    SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
+  if (flash > 0) {  // éclat blanc (2026-10-26) : la silhouette du sprite en blanc par-dessus (atlas blanc, fait au premier éclat)
+    if (!atlasWhite_) {
+      std::vector<uint8_t> white(a.px);
+      for (size_t i = 0; i < white.size(); i += 4) white[i] = white[i + 1] = white[i + 2] = 255;
+      atlasWhite_ = make(white);
+    }
+    if (atlasWhite_) {
+      SDL_Rect ws{s.sx, s.sy, s.sw, s.sh};
+      SDL_SetTextureBlendMode(atlasWhite_, SDL_BLENDMODE_BLEND);
+      SDL_SetTextureAlphaMod(atlasWhite_, uint8_t(tint.a * std::clamp(flash, 0.f, 1.f) * std::clamp(alpha, 0.f, 1.f)));
+      SDL_RenderCopyExF(r_, atlasWhite_, &ws, &dst, spriteAngle, nullptr, flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+    }
   }
 }
 bool Gfx::sprite(const std::string& id, float x, float y, bool flip, float scale, Color tint, float flash) {
@@ -442,13 +454,18 @@ void Gfx::textBig(float x, float y, const std::string& s, Color c, int k, int al
   }
 }
 
-void Gfx::textBigFancy(float x, float y, const std::string& s, Color top, Color bot, Color outline, int k, int align) {
+void Gfx::textBigFancy(float x, float y, const std::string& s, Color top, Color bot, Color outline, float k, int align) {
+  if (k != std::floor(k)) {  // (2026-10-26) un pixel de lettre fait un nombre entier de pixels de l'image agrandie
+    float ps = 1;
+    SDL_RenderGetScale(r_, &ps, nullptr);
+    k = std::max(1.f, std::round(k * ps)) / std::max(1.f, ps);
+  }
   auto cps = decode(s);
-  int w = int(cps.size()) * 6 * k;
-  int X = (int)std::lround(x - (align == 1 ? w / 2 : align == 2 ? w : 0)), Y = (int)std::lround(y);
+  float w = cps.size() * 6 * k;
+  float X = std::round(x - (align == 1 ? w / 2 : align == 2 ? w : 0)), Y = std::round(y);
   auto& F = font();
   for (int pass = 0; pass < 3; pass++) {  // 0 : ombre portée, 1 : contour, 2 : lettres en dégradé
-    int cx = X + (pass == 0 ? k : 0), cy = Y + (pass == 0 ? k + 1 : 0);
+    float cx = X + (pass == 0 ? k : 0), cy = Y + (pass == 0 ? k + 1 : 0);
     for (auto cp : cps) {
       if (cp == ' ') {
         cx += 6 * k;
@@ -462,8 +479,8 @@ void Gfx::textBigFancy(float x, float y, const std::string& s, Color top, Color 
         else set(mix(top, bot, std::clamp((r - 2) / 7.f, 0.f, 1.f)));
         for (int q = 0; q < 5; q++)
           if (it->second.rows[r] & (1 << (4 - q))) {
-            SDL_Rect rc = pass == 1 ? SDL_Rect{cx + q * k + ox - 1, cy + r * k - 1, k + 2, k + 2} : SDL_Rect{cx + q * k + ox, cy + r * k, k, k};
-            SDL_RenderFillRect(r_, &rc);
+            SDL_FRect rc = pass == 1 ? SDL_FRect{cx + q * k + ox - 1, cy + r * k - 1, k + 2, k + 2} : SDL_FRect{cx + q * k + ox, cy + r * k, k, k};
+            SDL_RenderFillRectF(r_, &rc);
           }
       }
       cx += 6 * k;
