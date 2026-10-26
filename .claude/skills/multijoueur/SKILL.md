@@ -24,7 +24,8 @@ description: "Brumeval : protocole du multijoueur (net, online, coop, trade, upn
   l'équipe de l'invité ; quand la jauge de l'un d'eux est pleine, il envoie
   `tour` et attend `ordre`, qu'il vérifie) et envoie son état dix fois par
   seconde (`netState` : PV, PM, jauges, états, message en cours), plus les
-  nombres flottants, éclairs et clignotements. L'**invité** (`Net::Guest`) ne
+  nombres flottants (`pop` ; son champ facultatif `s`, le style : critique, faiblesse…, donne
+  à l'invité le même recul, éclair blanc et arrêt sur image), éclairs et clignotements. L'**invité** (`Net::Guest`) ne
   fait pas avancer le temps : il affiche cet état et répond à `tour` par son
   menu ou ses tactiques ; `useMove` envoie alors l'ordre au lieu de le jouer.
   Un combattant dans un message : `[0, rang]` pour l'équipe de l'expéditeur,

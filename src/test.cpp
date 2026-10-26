@@ -142,7 +142,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     frame();
     snap("86_options");
     bool louder = options().music == std::min(10, vol + 1);
-    menus.top().sel = 8;  // Touches (après Langue, Astuces, Sauvegarde auto et Types lisibles sans couleur)
+    for (size_t i = 0; i < menus.top().items.size(); i++)  // Touches (après les groupes Son, Affichage et Partie)
+      if (menus.top().items[i].label == T("Touches")) menus.top().sel = (int)i;
     in.confirm = true;
     frame();
     snap("87_touches");
@@ -780,6 +781,42 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     B.face(lior, boardAt(0, 2));  // même colonne : il garde son regard
     turns = turns && !B.facesRight(lior);
     B.facing_.erase(lior.get());
+    {  // (2026-10-26) à l'œil, un coup qui se sent (dessin seul) : un critique de Lior fige un instant le lanceur et la cible
+       // (arrêt sur image), l'éclaire en blanc une image, l'écrase et la repousse ; nombre doré en grand. Puis une Brisure.
+      B.cells_[lior.get()] = boardAt(1, 3), B.cells_[brute.get()] = boardAt(1, 4), B.cells_[mage.get()] = boardAt(2, 5);
+      B.cells_[extra.get()] = boardAt(0, 6), B.cells_[maelle.get()] = boardAt(2, 1);
+      B.pops.clear(), B.bursts_.clear(), B.impacts_.clear(), B.stopped_.clear();
+      B.start = time - 5;
+      int keepAcc = lior->acc, keepCrit = lior->crit, keepMhp = brute->mhp, keepShield = brute->shield;
+      bool keepBroken = brute->broken;
+      lior->acc = lior->crit = 1000;              // touche et critique à coup sûr
+      brute->mhp = brute->hp = keepMhp * 2;       // sans l'abattre
+      B.anim_ = Battle::Anim{lior, {brute}, Battle::Fx::Hit, rgb(types()[bite.type].color), false, time - .3f, bite.type};
+      int dmg = B.applyHit(lior, brute, bite);
+      lior->acc = keepAcc, lior->crit = keepCrit;
+      bool flash = B.impacts_.count(brute.get()) && B.impacts_[brute.get()].flash;
+      float t0 = B.impacts_[brute.get()].t0, len = B.stopLen_, keepTime = time;
+      time = t0 + .05f;  // dessin seul, au milieu de l'arrêt sur image (l'éclair : la première image dessinée)
+      snap("coup_critique");
+      time = t0 + .03f;  // pendant l'arrêt : le lanceur et la cible attendent, les autres non
+      bool frozen = B.since(brute.get(), t0) == 0 && B.since(lior.get(), t0) == 0 && B.since(mage.get(), t0) > .02f;
+      time = t0 + .23f;  // après : leurs minuteries repartent, en retard de la durée de l'arrêt
+      bool resumed = std::abs(B.since(brute.get(), t0) - (.23f - len)) < .001f;
+      time = keepTime;
+      check(dmg > 0 && flash && !B.impacts_[brute.get()].flash && len >= .04f && len <= .09f && frozen && resumed,
+            "à l'œil : un critique fige un instant le lanceur et sa cible (" + std::to_string(int(len * 1000)) +
+                " ms, dessin seul) et l'éclaire en blanc une seule image");
+      brute->mhp = brute->hp = keepMhp, brute->broken = keepBroken, brute->shield = keepShield;
+      B.pops.clear(), B.impacts_.clear(), B.stopped_.clear();
+      B.anim_ = Battle::Anim{lior, {mage}, Battle::Fx::Hit, rgb(types()[bite.type].color), false, time - .3f, bite.type};
+      keepBroken = mage->broken, keepShield = mage->shield;
+      B.breakFoe(mage);
+      time = keepTime + .05f;  // de même : l'éclair, « BRISÉ ! », éclats, écran doré
+      snap("coup_brisure");
+      time = keepTime;
+      mage->broken = keepBroken, mage->shield = keepShield;
+      B.pops.clear(), B.bursts_.clear(), B.impacts_.clear(), B.stopped_.clear(), B.anim_ = Battle::Anim{};
+    }
     seedRandom(seed + 1);  // la suite du mode test reprend une suite de tirages à elle
     check(turnedBack > turnedFront * 1.15 && turns,
           "échiquier : le dos dépend du regard (retourné : " + std::to_string(turnedBack) + " contre " + std::to_string(turnedFront) +
@@ -1107,6 +1144,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       frame();
     }
     bool summary = B.summaryOn_ && !B.summary_.empty();
+    run(1.5f);  // les barres d'expérience remplies
     snap("97_victoire");
     in.confirm = true;
     frame();
@@ -1116,6 +1154,38 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     mode = Mode::Map;
     menus.clear();
     sc.clear();
+    {  // (2026-10-26) fenêtre des gains à six alliés : barres qui se remplissent, passages de niveau ; Entrée les termine
+      team = {makeFighter("lior", 6), makeFighter("maelle", 6), makeFighter("brann", 6), makeFighter("braisenard", 6), makeFighter("rocaillou", 6), makeFighter("galetor", 6)};
+      startBattle({makeFighter("galetor", 14), makeFighter("braisenard", 14), makeFighter("rocaillou", 14)}, false, nullptr);
+      Battle& V = *battle_;
+      bool six = V.allies.size() == 6;
+      for (auto& f : V.foes) f->hp = 0, V.knockOut(f);
+      V.sc.clear();
+      V.checkEnd();
+      for (int i = 0; i < 300 && !V.summaryOn_; i++) {
+        if (V.sc.busy()) in.confirm = true;
+        frame();
+      }
+      V.loot_ = {{"potion", 1}, {"minerai", 2}, {"coeur_braise", 1}};  // le butin est tiré au hasard : celui-ci pour la capture
+      run(.38f);  // les barres en chemin (« +N exp » qui compte)
+      snap("gains_debut");
+      float mid = V.gainsFill(time);
+      in.confirm = true;  // pendant le remplissage : les barres pleines d'un coup, la fenêtre reste
+      frame();
+      bool filled = V.summaryOn_ && V.gainsFill(time) >= 1;
+      bool leveled = V.gainRows_.size() == 6 && int(V.gainRows_[0].to) > int(V.gainRows_[0].from);
+      run(.2f);
+      snap("gains_niveau");
+      in.mclick[0] = true;  // puis un clic (ou Entrée) : la suite
+      frame();
+      for (int i = 0; i < 300 && mode == Mode::Battle; i++) frame();
+      check(six && mid > 0 && mid < 1 && filled && leveled && mode == Mode::Map,
+            "gains à six alliés : barres d'expérience qui se remplissent, Entrée les remplit d'un coup, un clic continue");
+      battle_.reset();
+      mode = Mode::Map;
+      menus.clear();
+      sc.clear();
+    }
     // Formation : choisie dans le menu, gardée par la sauvegarde
     team = {makeFighter("lior", 20), makeFighter("maelle", 20), makeFighter("braisenard", 20)};
     formationMenu(0);
@@ -1215,7 +1285,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     snap("93_journal");
     bool listed = false;  // la quête (après le conseil « Prochain gardien »)
     for (auto& it : menus.top().items)
-      listed = listed || (it.right == T("en cours") &&
+      listed = listed || (it.icon == "parchemin" &&  // en cours (2026-10-26 : l'icône le dit, plus de « en cours » à droite)
                           it.help.find(tr("Le petit-fils de l'ancien cherche le médaillon de son grand-père, perdu dans le Bois "
                                           "Murmurant, au sud-ouest du village.")) != std::string::npos);
     listed = listed && menus.top().title == T("Journal");
@@ -3094,6 +3164,38 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     pauseMenu();
     teamMenuAt(1);
     show("équipe");
+    {  // (2026-10-26) Équipement : la liste, les emplacements, la comparaison sur la fiche, les gemmes ; puis tout est remis
+      auto keepGear = team[0]->gear;
+      auto keepGems = team[0]->gems;
+      auto keepItems = items;
+      menus.clear();
+      pauseMenu();
+      gearMenu();
+      show("équipement");
+      in.confirm = true;  // Lior
+      show("équipement : emplacements");
+      in.confirm = true;  // Arme : le premier objet du sac est survolé, la fiche montre ce qu'il change
+      show("équipement : comparaison");
+      in.press[DOWN] = true;
+      show("équipement : comparaison 2");
+      in.confirm = true;  // le porter : retour aux emplacements
+      frame();
+      bool gems = false;
+      for (size_t i = 0; i < menus.top().items.size(); i++)
+        if (menus.top().items[i].label == T("Gemmes") && menus.top().items[i].enabled) menus.top().sel = (int)i, gems = true;
+      if (gems) {
+        in.confirm = true;
+        show("gemmes");
+        in.confirm = true;  // le premier chaton : les gemmes du sac
+        show("gemmes : sertir");
+      }
+      menus.clear();
+      team[0]->gear = keepGear, team[0]->gems = keepGems, items = keepItems;
+      team[0]->recalc();
+      team[0]->hp = team[0]->mhp, team[0]->mp = team[0]->mmp;
+      optionsMenu();
+      show("options");
+    }
     menus.clear();
     itemMenu();
     show("objets");

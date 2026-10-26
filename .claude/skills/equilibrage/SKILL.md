@@ -63,7 +63,10 @@ Méthode :
   niveau 106, quatre actes en 7 h 26 (boss5 3:46, aube_fin 5:24, echos_fin 7:26) avec 9 défaites : Seigneur des Orages, Brume
   Noire (encore N.68), Phénix d'écho ×2, meutes de la Citadelle ×2, du Gouffre et du Sanctuaire ; après la fin : Vieux Phare ×3,
   Abîme. Estimation joueur 27 h (bot28, 3.7 : 13 h 55, 23 défaites). Simulations de l'état fusionné (2026-10-26, ×4) : Golem
-  31 / 46 / 53 % (IA / boutique / forgé), Phénix d'écho forgé 80 %.
+  31 / 46 / 53 % (IA / boutique / forgé), Phénix d'écho forgé 80 %. Avec les mécaniques des actes 2 à 4 (bot31, même pilote) :
+  **tout fini en 10 h 22, 10 défaites**, niveau 107, quatre actes en 6 h 29 (boss5 3:01, aube_fin 4:13, echos_fin 6:29), aucun
+  boss de l'histoire perdu (défaites : le Braconnier au tout début, deux dresseurs en revanche, l'Ombre des galeries, une
+  meute de la Citadelle, cinq au Vieux Phare) ; estimation joueur 20 h 40. D'une partie à l'autre l'écart reste grand.
 
 - **IA plus tactique** (2026-10-25) : les ennemis évitent le corps à corps sur un allié en garde, un protecteur va
   couvrir un blessé des siens, un soigneur reste à l'arrière. Mesuré (BRUMEVAL_SIMULATIONS=2, même graine, avant →

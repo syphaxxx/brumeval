@@ -92,11 +92,15 @@ class Battle {
   Net online() const { return net_; }
 
  private:
+  // Style d'un texte flottant (2026-10-26) : nombre de dégâts (il rebondit en apparaissant ; la cible recule et s'écrase),
+  // critique (en grand), faiblesse, résistance, coup qui abat, Brisure. Les gros coups figent un instant le lanceur et la cible.
+  enum PopStyle { PopDamage = 1, PopCrit = 2, PopWeak = 4, PopResist = 8, PopKO = 16, PopBreak = 32 };
   struct Pop {
     float x, y;
     std::string text;
     Color col;
     float t;
+    int style = 0;
   };
   // Action choisie par l'ordinateur (ennemis, ou alliés en mode automatique) ou par une tactique
   struct Plan {
@@ -148,9 +152,24 @@ class Battle {
   bool finished_ = false, ending_ = false;
   // Fin d'un combat gagné : tous les gains dans une fenêtre, fermée par Entrée
   std::vector<std::string> summary_;
-  std::vector<const Fighter*> levelUps_;  // alliés qui ont pris un niveau (étincelles dorées pendant la fenêtre des gains)
   bool summaryOn_ = false;
   float summaryT_ = 0;  // moment où elle s'est ouverte (elle se ferme seule après 8 s)
+  // (2026-10-26) ce que la fenêtre dessine (summary_ reste le texte du journal) : une ligne par combattant, sa barre
+  // d'expérience qui se remplit de `from` à `to` (en niveaux : 12,4 = niveau 12 et 40 % du suivant ; un niveau passé :
+  // « Niveau N ! » et des étincelles dorées autour de lui sur le damier), l'or et le butin
+  struct GainRow {
+    const Fighter* f;
+    int xp;
+    float from, to;
+    std::vector<std::pair<int, std::string>> learned;  // (niveau, technique) : montrée quand la barre y arrive
+    float at(float k) const { return k >= 1 ? to : from + (to - from) * k; }  // la barre à l'avancement k (0 à 1)
+  };
+  std::vector<GainRow> gainRows_;
+  std::vector<std::string> gainNotes_;               // « Le reste de l'équipe : +N exp », « Entraînement réussi ! »
+  std::vector<std::pair<std::string, int>> loot_;    // objets gagnés (identifiant, nombre), dans l'ordre
+  int goldWon_ = 0;
+  float fillT_ = 0;  // début du remplissage des barres (Entrée pendant le remplissage le termine)
+  float gainsFill(float t) const;  // avancement du remplissage, de 0 à 1
   BattleResult result_;
 
   bool isAlly(const FighterP& f) const;
@@ -290,7 +309,19 @@ class Battle {
   void drawZones(float t);
   void drawHud(float t);
   void moveTo(FighterP a, int cell);  // « Se déplacer » : change de case, puis choisit son action
-  void pop(const FighterP& f, const std::string& t, Color c);
+  void pop(const FighterP& f, const std::string& t, Color c, int style = 0);  // style : PopStyle (envoyé avec le texte)
+  // À l'œil (2026-10-26, dessin seul, posé par pop) : coup reçu (recul selon sa force, écrasement, éclair blanc d'une image
+  // pour un critique ou une Brisure) ; arrêt sur image des gros coups : les minuteries de dessin des combattants de stopped_
+  // s'arrêtent de stopT_ à stopT_ + stopLen_ (since), jamais la logique (ATB, Script, réseau)
+  struct Impact {
+    float t0 = -10, force = 0, dir = 1;  // force : 0 à 1 (part des PV max) ; dir : sens du recul (+1 : vers la droite)
+    bool flash = false;                  // éclair blanc pas encore dessiné
+  };
+  std::map<const Fighter*, Impact> impacts_;
+  std::set<const Fighter*> stopped_;
+  float stopT_ = -10, stopLen_ = 0;
+  float since(const Fighter* f, float t0) const;     // temps de dessin écoulé depuis t0 pour f, sans l'arrêt sur image
+  void squash(const FighterP& f, float x, float y);  // étire ou écrase son sprite (élan, impact), ancré à ses pieds
   // Bruitage (audio.hpp), seulement pour le combat affiché (pas les simulations) ;
   // share : l'hôte ou le chef le fait aussi entendre aux autres joueurs
   void sound(const std::string& id, bool share = true);

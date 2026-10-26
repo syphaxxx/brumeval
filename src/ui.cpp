@@ -190,7 +190,7 @@ bool typeMark(Gfx& g, float cx, float cy, int type, uint8_t alpha) {
 }
 
 // (2026-10-23) Petits dessins pour les entrées de menu qui n'ont pas de sprite (case de 11x11 en x, y)
-static void menuGlyph(Gfx& g, const std::string& n, float x, float y, uint8_t alpha) {
+void menuGlyph(Gfx& g, const std::string& n, float x, float y, uint8_t alpha) {
   auto rgb = [alpha](uint32_t c) { return ::rgb(c, alpha); };  // une entrée grisée : le dessin à moitié transparent
   float cx = x + 5.5f, cy = y + 5.5f;
   if (n.size() >= 7 && n[0] == '#') {  // « #rrggbb » : une pastille de cette couleur ; suivi d'un numéro (typeDot) : ce type
@@ -410,6 +410,29 @@ int MenuStack::maxRight() const {
   for (auto& m : st_) r = std::max(r, m.x + m.w);
   return r;
 }
+// Un menu ouvert par-dessus qui n'est pas bien à l'intérieur de celui-ci le cache entièrement,
+// plutôt que d'en laisser dépasser des morceaux
+static bool covered(const std::vector<Menu>& st, size_t k) {
+  const Menu& m = st[k];
+  int h, th;
+  menuBox(m, h, th);
+  for (size_t j = k + 1; j < st.size(); j++) {
+    const Menu& o = st[j];
+    if (o.hidden) continue;
+    int oh, oth;
+    menuBox(o, oh, oth);
+    bool meet = o.x < m.x + m.w && m.x < o.x + o.w && o.y < m.y + h && m.y < o.y + oh;
+    bool inside = o.x >= m.x + 4 && o.y >= m.y + 4 && o.x + o.w <= m.x + m.w - 4 && o.y + oh <= m.y + h - 4;
+    if (meet && !inside) return true;
+  }
+  return false;
+}
+int MenuStack::maxBottom() const {
+  int b = 0, h, th;
+  for (size_t k = 0; k < st_.size(); k++)
+    if (!st_[k].hidden && !covered(st_, k)) menuBox(st_[k], h, th), b = std::max(b, st_[k].y + h);
+  return b;
+}
 
 void MenuStack::draw(Gfx& g, float t) const {
   for (size_t k = 0; k < st_.size(); k++) {
@@ -418,19 +441,7 @@ void MenuStack::draw(Gfx& g, float t) const {
     bool top = k + 1 == st_.size();
     int h, th;
     menuBox(m, h, th);
-    // Un menu ouvert par-dessus qui n'est pas bien à l'intérieur de celui-ci le cache entièrement,
-    // plutôt que d'en laisser dépasser des morceaux
-    bool hidden = false;
-    for (size_t j = k + 1; j < st_.size() && !hidden; j++) {
-      const Menu& o = st_[j];
-      if (o.hidden) continue;
-      int oh, oth;
-      menuBox(o, oh, oth);
-      bool meet = o.x < m.x + m.w && m.x < o.x + o.w && o.y < m.y + h && m.y < o.y + oh;
-      bool inside = o.x >= m.x + 4 && o.y >= m.y + 4 && o.x + o.w <= m.x + m.w - 4 && o.y + oh <= m.y + h - 4;
-      hidden = meet && !inside;
-    }
-    if (hidden) continue;
+    if (covered(st_, k)) continue;
     int shown = std::min(m.rows, (int)m.items.size());
     g.window(m.x, m.y, m.w, h);
     if (!m.title.empty()) {
