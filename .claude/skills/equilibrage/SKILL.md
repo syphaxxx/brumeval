@@ -41,7 +41,10 @@ Méthode :
   Golem 35 → 35 / – / 45 → 42 / 42 → 40, Ronce-Mère 6 → 8 / – / 36 → 43 / 53 → 41, Ignarok 16 → 22 / 21 → 11 / 61 → 61 /
   76 → 67, Mère des Brumes 6 → 6 / 0 → 0 / 45 → 66 / 68 → 68 ; les autres boss dans le bruit (±12 à ×2). L'IA alliée évite le
   corps à corps sur un ennemi en garde (×0,4) et les coups qu'une posture arrête ; elle ne se met pas en garde contre la
-  charge (le joueur peut riposter).
+  charge (le joueur peut riposter). Partie automatique complète avec ces mécaniques (bot29, ancien pilote, sans mémoire) :
+  quatre actes en 7 h 23 (boss5 3:15, aube_fin 5:05), 29 défaites dans l'histoire dont la Mère des Brumes une fois (battue
+  au deuxième essai), Brume Noire deux fois et le Colosse d'écho trois fois ; Golem, Ronce-Mère et Ignarok battus du
+  premier coup. L'histoire reste faisable.
 
 - **IA plus tactique** (2026-10-25) : les ennemis évitent le corps à corps sur un allié en garde, un protecteur va
   couvrir un blessé des siens, un soigneur reste à l'arrière. Mesuré (BRUMEVAL_SIMULATIONS=2, même graine, avant →
