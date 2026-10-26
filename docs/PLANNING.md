@@ -409,7 +409,13 @@ regarde le personnage, et des menus « peut-être un peu simples et surchargés 
 - Menu de pause en 12 entrées et quatre groupes ; Échap > Préparation (Formation, Compagnons, Tactiques, Réserve) ;
   Discussions et Bestiaire dans le Journal ; menu de commande du combat plus court (Limite prête, Duo possible,
   Changer avec un remplaçant) ; volumes en crans ; « Gains ».
-Pistes : l'ordinateur qui protège son dos (« Attendre » pour se retourner), d'autres menus à regrouper.
+- (2026-10-26) Passe de finition des écrans hors combat : liste de l'équipe (pastille du type, niveau à droite, remplaçants
+  en gris au lieu de « Front »/« Rés. » à chaque ligne), fiche d'un membre (filets entre les groupes, « Techniques » en gris,
+  la fiche s'arrête au-dessus de l'aide), comparaison de l'équipement sur la fiche (valeurs avec l'objet survolé, en vert ou
+  en rouge ; aide plus courte), gemmes (icônes des chatons), Options en trois groupes titrés (Son, Affichage, Partie : tout
+  se voit), Journal en listes titrées (Quêtes, Primes, Terminées ; plus de « en cours » répété). Captures `tour_NN`.
+Pistes : l'ordinateur qui protège son dos (« Attendre » pour se retourner), d'autres menus à regrouper ; la Forge (« sac »
+répété à chaque ligne, non traduit, et comparé par le joueur automatique).
 
 ## Étape 2 decies — Rééquilibrage (demandé le 2026-10-23)
 

@@ -792,7 +792,10 @@ code) ; `docs/GUIDE.md` les range par domaine.
   Compagnons, Tactiques, Réserve) ; Discussions et Bestiaire dans le Journal (titre « Quêtes » avant la liste) ;
   icônes (`MenuItem::icon`, voir `MenuStack`) au menu de pause, aux commandes et techniques du combat, à l'écran titre,
   au Journal, à la boutique et au Bestiaire ; fines jauges sous les PV, PM, Exp. de la fiche d'équipe et sous les
-  statistiques de la fiche du Bestiaire.
+  statistiques de la fiche du Bestiaire. Finition (2026-10-26) : liste de l'équipe et de l'équipement avec la pastille du type
+  (remplaçants en gris), fiche d'un membre à filets qui s'arrête au-dessus de l'aide, comparaison dans la fiche
+  (`gearHover_` : valeurs avec l'objet survolé de `gearPick`, en vert ou en rouge), Options en groupes titrés, Journal en
+  listes titrées (Quêtes, Primes, Terminées) ; le tour des menus capture aussi Équipement, Gemmes et Options.
 - Épreuves des gardiens (2026-10-20) : après `aube_fin`, la porte du sanctuaire d'Aube (événement `epreuves`) ouvre huit
   combats contre des esprits gardiens (drapeaux `epreuve1`…`epreuve8`, niveaux 70 à 84), puis Ilya (`epreuve9`,
   Insigne des gardiens) ; quête `epreuves`. Script `outils/villes/epreuves.py` ; une phase à mi-vie pour chaque gardien,

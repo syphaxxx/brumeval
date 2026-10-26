@@ -142,7 +142,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     frame();
     snap("86_options");
     bool louder = options().music == std::min(10, vol + 1);
-    menus.top().sel = 8;  // Touches (après Langue, Astuces, Sauvegarde auto et Types lisibles sans couleur)
+    for (size_t i = 0; i < menus.top().items.size(); i++)  // Touches (après les groupes Son, Affichage et Partie)
+      if (menus.top().items[i].label == T("Touches")) menus.top().sel = (int)i;
     in.confirm = true;
     frame();
     snap("87_touches");
@@ -1191,7 +1192,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     snap("93_journal");
     bool listed = false;  // la quête (après le conseil « Prochain gardien »)
     for (auto& it : menus.top().items)
-      listed = listed || (it.right == T("en cours") &&
+      listed = listed || (it.icon == "parchemin" &&  // en cours (2026-10-26 : l'icône le dit, plus de « en cours » à droite)
                           it.help.find(tr("Le petit-fils de l'ancien cherche le médaillon de son grand-père, perdu dans le Bois "
                                           "Murmurant, au sud-ouest du village.")) != std::string::npos);
     listed = listed && menus.top().title == T("Journal");
@@ -3070,6 +3071,38 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     pauseMenu();
     teamMenuAt(1);
     show("équipe");
+    {  // (2026-10-26) Équipement : la liste, les emplacements, la comparaison sur la fiche, les gemmes ; puis tout est remis
+      auto keepGear = team[0]->gear;
+      auto keepGems = team[0]->gems;
+      auto keepItems = items;
+      menus.clear();
+      pauseMenu();
+      gearMenu();
+      show("équipement");
+      in.confirm = true;  // Lior
+      show("équipement : emplacements");
+      in.confirm = true;  // Arme : le premier objet du sac est survolé, la fiche montre ce qu'il change
+      show("équipement : comparaison");
+      in.press[DOWN] = true;
+      show("équipement : comparaison 2");
+      in.confirm = true;  // le porter : retour aux emplacements
+      frame();
+      bool gems = false;
+      for (size_t i = 0; i < menus.top().items.size(); i++)
+        if (menus.top().items[i].label == T("Gemmes") && menus.top().items[i].enabled) menus.top().sel = (int)i, gems = true;
+      if (gems) {
+        in.confirm = true;
+        show("gemmes");
+        in.confirm = true;  // le premier chaton : les gemmes du sac
+        show("gemmes : sertir");
+      }
+      menus.clear();
+      team[0]->gear = keepGear, team[0]->gems = keepGems, items = keepItems;
+      team[0]->recalc();
+      team[0]->hp = team[0]->mhp, team[0]->mp = team[0]->mmp;
+      optionsMenu();
+      show("options");
+    }
     menus.clear();
     itemMenu();
     show("objets");
