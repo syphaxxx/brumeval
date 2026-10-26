@@ -206,3 +206,10 @@ améliorées : 14 h 24, 11,5 défaites, actes en 6 h 36 (contre 15 h 07, 23,5, 7
 deux fois moins de défaites, l'histoire une heure plus tôt. Restent : le Phénix d'écho et l'Ombre du Gardien (perdus
 une ou deux fois malgré la répétition : la canicule du jour du combat n'est pas connue d'avance), des meutes de 3-4 au
 Sanctuaire des Échos et au Vieux Phare (répétées à 80 % et plus, perdues quand même), quelques dresseurs vus trop tard.
+
+**Alphas à mécanique** (2026-10-26) : la répétition d'une rencontre sauvage (`rehearse` au début du combat) garde la
+`mecanique` de l'alpha (sinon il croyait gagner une meute dont l'alpha se cuirasse ou charge) ; une défaite contre un alpha
+est marquée « (alpha <genre>) » dans le rapport. En route vers son entraînement (`Grind`), un changement de compagnons à
+l'arrivée sur une carte ne refait plus le plan (comme en route vers l'auberge) : les compagnons changent le niveau moyen,
+donc la zone d'entraînement choisie, et bot32 allait et venait entre le Bois des Lueurs et le Cratère des Échos sans
+combattre (BLOQUÉ à 6 h 12).

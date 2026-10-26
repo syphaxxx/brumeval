@@ -471,6 +471,11 @@ Astuces « intention » et « garde », aide de l'échiquier, tests (garde ≈ 0
    seule la Lumière passe, Ronce-Mère, Seigneur des Orages et Phénix d'écho couvrent une zone de ronces, de foudre ou de
    braises (s'en écarter et ne pas y revenir), Ignarok, Griffon tempête et Givrecorne chargent une ligne (changer de ligne),
    le Kraken happe une colonne et tire vers le front (s'en écarter ; un allié devant arrête la traction).
+10. (2026-10-26) **Alphas à mécanique** : les combats ordinaires demandent aussi de réfléchir. L'alpha d'une meute prend
+   une de ces mécaniques selon ses types (Roche, Métal, Glace, Normal se cuirassent ; Esprit, Ombre, Lumière se voilent ;
+   Plante, Poison font pousser des ronces ; Feu, Vent, Foudre chargent ; Eau happe), choisie dans les données
+   (`rencontres.alpha_mecaniques`) ; le message du début du combat dit ce qu'il fait et la parade ; +1 niveau avec une
+   posture. Simulations des meutes à alpha : inchangées (89 % → 88 %) ; joueur automatique : aucune défaite contre un alpha.
 Mesuré (joueur automatique sans mémoire, bot14) : tout fini en 8 h 20, 10 défaites (27 avant), niveau 112, quatre actes en
 5 h 40, estimation joueur 16 h 46 ; les défaites restantes : meutes du Vieux Phare. Mesuré ensuite : bot15 (version
 finale, mêmes règles) quatre actes en 4 h 40 et 8 défaites dans l'histoire, puis 20 au Vieux Phare (équipe jamais changée :

@@ -19,6 +19,24 @@ Méthode :
 
 ## Historique des mesures
 
+- **Mécaniques des alphas** (2026-10-26) : l'alpha d'une meute (6 % des meutes de 2 ou plus) prend une mécanique de boss
+  selon ses types (`rencontres.alpha_mecaniques` : Normal, Roche, Métal, Glace cuirasse ; Esprit, Ombre, Lumière voile ;
+  Plante, Poison ronces ; Feu, Vent, Foudre charge ; Eau attire). Simulations « …, alpha » (BRUMEVAL_SIMULATIONS=4,
+  `BRUMEVAL_SIM_FILTRE=alpha` ; Bois N.8 / Bosquet N.10 / Sylve-Noire N.13 / Cendrelune N.15 / Pics N.25, moyenne ; Vieux
+  Phare et Abîme à 100 % partout ; « avant » = même exécutable, `alpha_mecaniques` retiré des données) : sans mécanique
+  98 / 92 / 73 / 89 / 95 % (89) ; avec 100 / 95 / 70 / 90 / 99 (91) ; tous cuirassés 100 / 99 / 79 / 88 / 100 (93), tous
+  voilés 100 / 94 / 80 / 89 / 99 (92) : comme pour les boss et les gardiens, une posture lui coûte un tour d'attaque.
+  Retenu : **+1 niveau avec une posture** (`alpha_niveaux_posture`) : mélange 98 / 89 / 71 / 85 / 98 (88), tous cuirassés
+  98 / 95 / 73 / 85 / 99 (90), tous voilés 100 / 91 / 70 / 85 / 98 (89). Les zones (ronces, charge, attire) remplacent ses
+  zones rouges au hasard. Joueur automatique sans mémoire (sa répétition d'une meute garde la mécanique de l'alpha, ses
+  défaites contre un alpha sont marquées « (alpha <genre>) ») : bot32, aucune défaite contre un alpha, 3 défaites en 6 h 12,
+  mais BLOQUÉ (va-et-vient entre le Bois des Lueurs et le Cratère des Échos pour s'entraîner : les compagnons changent le
+  niveau moyen, donc la zone ; corrigé dans `Pilot::walk`) ; bot33 : quatre actes en 7 h 04 avec 15 défaites (8 contre des
+  meutes, aucune contre un alpha ; Colosse d'écho ×3), tout fini en 14 h 52, 20 défaites (5 après la fin : Vieux Phare ×4,
+  Orage ancien), niveau 125, estimation joueur 28 h 55. Référence (bot31, même base sans les alphas à mécanique) : tout
+  fini en 10 h 22, 10 défaites, quatre actes en 6 h 29 ; d'une partie à l'autre l'écart est grand (bot29 : 29 défaites
+  dans l'histoire) : les défaites de bot33 viennent de meutes ordinaires et du Colosse, pas des alphas.
+
 - **Mécaniques des gardiens de l'Expédition** (2026-10-26) : dès la région 3, une mécanique de boss selon les types
   (`procgen.cpp`, `genBoss`). Mesuré (BRUMEVAL_SIMULATIONS=4, `BRUMEVAL_SIM_FILTRE=gion,avec` ; IA / avec équipement,
   avant → après) : comme dans l'histoire, une posture coûte un tour d'attaque au gardien : sans réglage, les cinq gardiens
