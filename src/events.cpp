@@ -95,7 +95,9 @@ static void checkAction(const Json& a, const std::string& where, std::vector<std
         if (!hasSpecies(jget<std::string>(e, "espece", ""))) err.push_back(w + T(" : espèce inconnue « ") + jget<std::string>(e, "espece", "") + " »");
         if (Json mc = e.value("mecanique", Json()); !mc.is_null()) {  // (2026-10-25) mécanique propre d'un boss
           std::string g = jget<std::string>(mc, "genre", ""), mv = jget<std::string>(mc, "technique", ""), tn = jget<std::string>(mc, "terrain", "");
-          if (g != "cuirasse" && g != "voile" && g != "ronces" && g != "charge") err.push_back(w + T(" : mécanique inconnue « ") + g + " »");
+          if (g != "cuirasse" && g != "voile" && g != "ronces" && g != "charge" && g != "attire") err.push_back(w + T(" : mécanique inconnue « ") + g + " »");
+          if (std::string ty = jget<std::string>(mc, "type", ""); !ty.empty() && std::none_of(types().begin(), types().end(), [&](const TypeDef& x) { return x.id == ty; }))
+            err.push_back(w + T(" : mécanique, type inconnu « ") + ty + " »");
           if (jget(mc, "tous", 3) < 2) err.push_back(w + T(" : une mécanique revient au plus un tour sur deux (« tous » 2 ou plus)"));
           if (!mv.empty() && !hasMove(mv)) err.push_back(w + T(" : mécanique, technique inconnue « ") + mv + " »");
           bool okT = g != "ronces";

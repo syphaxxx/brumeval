@@ -12,7 +12,7 @@ Méthode :
 - `BRUMEVAL_SIMULATIONS=1` joue les simulations ; `=4` joue 4 fois plus de combats (±4-5 % au lieu de ±10 %).
   Pour comparer deux réglages, copier l'exécutable et `data/` dans deux dossiers temporaires (le jeu cherche `data/` à côté du programme) et lancer les deux mesures en parallèle si besoin : depuis le 2026-10-25, le test multijoueur tire son port au hasard (`BRUMEVAL_PORT_TEST` pour l'imposer).
 - `BRUMEVAL_SANS_EVOLUTION=1` : équipes sans évolution (pour mesurer l'effet des évolutions). `BRUMEVAL_JOURNAL=<mot>` affiche le journal d'une simulation.
-- `BRUMEVAL_SIM_FILTRE=Golem,Ignarok` (2026-10-25) : seulement les lignes dont le nom contient l'un de ces mots, sans accent
+- `BRUMEVAL_SIM_FILTRE=Golem,Ignarok` (2026-10-25) : seulement les lignes dont le nom contient l'un de ces mots, sans accent ni majuscule (2026-10-26 : « Phenix » trouve « Phénix »)
   (sous Windows, une variable accentuée n'arrive pas telle quelle) ; les tests ordinaires passent quand même avant (~3 min). Plusieurs mesures en même temps se gênent sur les fichiers de sauvegarde du mode test (échecs « expédition » sans rapport) : ne regarder que les taux, et refaire les tests seuls à la fin.
 - Plus de PV pour un boss change peu le résultat quand le combat se joue sur la survie de l'équipe : relever son niveau agit davantage.
 - Après un réglage, lancer aussi le joueur automatique (`--partie`) : l'histoire doit rester faisable.
@@ -29,6 +29,20 @@ Méthode :
   les zones rouges au hasard ; niveau inchangé) : région 3 graine 33 35 → 41 / 93 → 86, région 5 graines 11, 22, 33 :
   8 → 11 / 33 → 23, 60 → 50 / 88 → 95, 1 → 1 / 11 → 16. Aucune charge parmi les graines mesurées. Les lignes « à 2, 3, 4 »
   (gardien à plusieurs) jouent sans mécanique, comme en jeu.
+- **Mécaniques des boss, actes 2 à 4** (2026-10-26) : attire du Kraken (nouveau genre : une colonne, ceux qui y restent
+  sont tirés jusqu'au front), voile d'un type de la Brume Noire (seule la Lumière passe), et les autres reprises par leurs
+  paramètres (Griffon tempête et Givrecorne : charge ; Seigneur des Orages et Phénix d'écho : zone qui reste, foudre et
+  braises ; Colosse d'écho : cuirasse ; Ombre du Premier Gardien : voile). Mesuré ×2, graines 2026 puis 7 (avant → après ;
+  IA / tactiques / boutiques / forgé) : Givrecorne 22 → 26 et 22 → 33 / 43 → 41 et 40 → 35 / 68 → 63 et 67 → 73 / 83 → 83 et
+  86 → 90 %, Kraken 95 → 96 et 95 → 98 / – / 100 → 98 et 100 → 100 / 100 → 100 et 100 → 100, Griffon 38 → 30 et 33 → 31 / – /
+  63 → 58 et 51 → 68 / 75 → 70 et 73 → 68, Seigneur 36 → 43 et 41 → 36 / – / 93 → 83 et 91 → 90 / 91 → 91 et 95 → 85, Phénix
+  (forgé) 90 → 90 et 90 → 95, Colosse et Ombre (forgé, graine 2026) 100 → 100 : les zones restent dans le bruit (±7 à ×2),
+  elles remplacent les zones rouges au hasard. Brume Noire (nouvelle ligne, équipe N.64 ; « avant » = sa mécanique jamais
+  due, `tous` 1000) : sans voile 22 / 72 / 82 et 35 / 82 / 92 % (IA / boutiques / forgé), avec (N.68) 70 / 97 / 87 et
+  60 / 85 / 95 : le voile lui coûte un tour d'attaque sur trois et l'IA alliée se rabat sur les Aubespectres. N.71 : 45 / 75 /
+  92 et 42 / 75 / 92 ; N.72 : 25 / 77 / 75 et 37 / 65 / 90 ; N.73 : 40 / 70 / 77 (graine 2026). Retenu : **Brume Noire N.72**
+  (moyenne 31 / 71 / 83 contre 29 / 77 / 87 avant). Colosse et Ombre gardés tels quels (100 % avant comme après, équipe
+  forgée au niveau de l'acte 4 : la posture ne se voit pas dans ces mesures).
 
 - **Mécaniques des boss** (2026-10-25, « dur mais très tactique ») : cuirasse du Golem de suie (un tour sur trois, magie
   conseillée), voile de la Mère des Brumes (seul le corps à corps passe), ronces de la Ronce-Mère (zone rouge, terrain qui

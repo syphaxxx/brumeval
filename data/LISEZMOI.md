@@ -195,8 +195,12 @@ qui revient un de ses tours sur `tous`, toujours annoncée (`message` à l'annon
 ligne). `genre` : `cuirasse` (annoncée par son intention ; jusqu'à son tour suivant, en garde
 et coups physiques × `valeur`), `voile` (sorts, tirs et états le traversent jusqu'à son tour
 suivant), `ronces` (zone rouge de forme `zone`, puis `technique` sur ceux restés dedans et le
-terrain `terrain` sur toute la zone), `charge` (toute une ligne : `technique`, et chacun recule
-d'une case).
+terrain `terrain` sur toute la zone, côté allié), `charge` (toute une ligne : `technique`, et chacun recule
+d'une case), `attire` (2026-10-26 : zone rouge de forme `zone`, une colonne par défaut ; `technique`, puis
+chacun est tiré vers le boss jusqu'à la ligne de front de son camp, arrêté par un combattant devant lui).
+`zone` vaut `ligne`, `colonne` ou `croix` (par défaut : ligne pour `charge`, colonne pour `attire`, croix pour
+`ronces`). Un `voile` avec `type` (un identifiant de types.json) ne laisse passer que les coups de ce type,
+corps à corps compris (la Brume Noire : `lumiere`).
 
 **Portraits** : un dialogue « Nom : … » montre le portrait de l'apparence de ce nom
 (`apparences.json`, ou un de ses autres noms dans `"aussi"`).
@@ -204,7 +208,7 @@ d'une case).
 **Astuces** (2.8, `regles.json`, `astuces`) : `id` (le moment où elle apparaît,
 choisi par le code : `bouclier`, `faiblesse`, `brisure`, `ordre`, `role`, `meteo`,
 `terrain`, `pousser`, `duo`, `phase`, `gemme`, `talent`, et les mécaniques des boss `cuirasse`,
-`voile`, `ronces`, `charge`), `aide` (titre de la page
+`voile`, `voile_type`, `ronces`, `charge`, `attire`), `aide` (titre de la page
 d'Aide que F1 ouvre ensuite) et `texte`. Chacune n'est montrée qu'une fois (ligne
 `astuce` de la sauvegarde) ; Options > Astuces les coupe.
 

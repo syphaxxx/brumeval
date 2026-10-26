@@ -172,6 +172,11 @@ temps :
   se cuirasse (la magie passe, le corps à corps est puni par sa riposte), la Mère des Brumes se voile
   (seul le corps à corps l'atteint), la Ronce-Mère fait jaillir des ronces qui restent au sol (quittez
   la zone rouge), Ignarok charge toute une ligne et repousse ceux qui y restent (changez de ligne).
+  Les boss des actes 2 à 4 aussi (2026-10-26) : le Kraken des récifs happe une colonne et tire vers
+  le front ceux qui y restent (quittez-la ; un allié devant arrête la traction), le Griffon tempête et
+  le Givrecorne chargent une ligne, le Seigneur des Orages foudroie une colonne et le Phénix d'écho
+  enflamme une ligne (le sol reste chargé ou brûlant), la Brume Noire se voile et seule la Lumière
+  l'atteint, le Colosse d'écho se cuirasse, l'Ombre du Premier Gardien se voile.
 - **Portraits** dans les dialogues, **écran titre** animé (étoiles, étoile filante,
   lucioles, reflet sur le titre).
 

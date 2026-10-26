@@ -1803,6 +1803,9 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     };
     auto lior = makeFighter("lior", 30), maelle = makeFighter("maelle", 30), kael = makeFighter("kael", 30);
     const Move &blade = moveInfo("lame"), &light = moveInfo("lumiere");
+    auto glow = [&] {  // (2026-10-26) la zone rouge clignote : la capture attend qu'elle soit bien visible
+      for (int i = 0; i < 54 && std::sin(time * 7) < .9f; i++) frame();
+    };
     {  // Cuirasse (Golem de suie) : annoncée par son intention (un écu), la magie passe, le corps à corps est puni
       auto golem = story("golem", "golem");
       Battle& B = begin(golem, {lior, maelle});
@@ -1894,6 +1897,87 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       settle(B);
       bool pushed = B.cellOf(lior) == boardAt(2, 1) && B.cellOf(maelle) == boardAt(2, 0) && lior->hp < hpL && maelle->hp < hpM && kael->hp == hpK;
       check(warned && pushed, "boss : Ignarok annonce sa charge (une ligne), frappe et repousse ceux qui y restent (choc contre le bord)");
+      battle_.reset();
+    }
+    {  // (2026-10-26) Attire (Kraken) : une colonne annoncée ; ceux qui y restent sont frappés et tirés jusqu'au front, un allié devant les arrête
+      auto kr = story("kraken", "kraken");
+      auto lior = makeFighter("lior", 90), maelle = makeFighter("maelle", 90), kael = makeFighter("kael", 90);  // assez forts pour encaisser (N.53 × 1,6)
+      Battle& B = begin(kr, {lior, maelle, kael});
+      B.cells_[maelle.get()] = boardAt(0, 1), B.cells_[kael.get()] = boardAt(2, 1), B.cells_[lior.get()] = boardAt(2, 3);  // Lior devant Kael
+      B.cells_[kr.get()] = boardAt(1, 5);
+      B.mechTurns_[kr.get()] = jget(kr->mech, "tous", 3) - 1;
+      B.bossPlan(kr);
+      bool warned = B.warnings_.size() == 1 && B.warnings_[0].kind == "attire" && B.warnings_[0].zone == Area::Column &&
+                    boardX(B.warnings_[0].center) == 1 && B.threatened(maelle) && !B.threatened(lior);
+      run(.6f);
+      glow();
+      snap("boss_attire_annonce");
+      B.sc.clear();
+      int hpL = lior->hp, hpM = maelle->hp, hpK = kael->hp;
+      B.bossPlan(kr);
+      settle(B);
+      snap("boss_attire");
+      bool pulled = B.cellOf(maelle) == boardAt(0, 3) && B.cellOf(kael) == boardAt(2, 2) && B.cellOf(lior) == boardAt(2, 3) && maelle->hp < hpM &&
+                    kael->hp < hpK && lior->hp == hpL;
+      check(warned && pulled, "boss : le Kraken annonce ses tentacules (une colonne), frappe et tire vers le front ceux qui y restent (un allié devant arrête)");
+      battle_.reset();
+    }
+    {  // (2026-10-26) Voile d'un type (Brume Noire) : seuls les coups de Lumière l'atteignent, même le corps à corps la traverse
+      auto bn = story("brume_noire", "brume_noire");
+      lior->hp = lior->mhp, maelle->hp = maelle->mhp;
+      Battle& B = begin(bn, {lior, maelle});
+      B.cells_[lior.get()] = boardAt(1, 3), B.cells_[maelle.get()] = boardAt(2, 1), B.cells_[bn.get()] = boardAt(1, 4);
+      B.mechTurns_[bn.get()] = jget(bn->mech, "tous", 3) - 1;
+      B.declareIntent(bn);
+      bool told = B.intents_.count(bn.get()) && B.intents_[bn.get()].posture == "voile" &&
+                  B.intentText(*bn).find(types()[(size_t)typeOf("lumiere")].name) != std::string::npos;
+      run(.6f);
+      snap("boss_voile_lumiere_annonce");
+      B.sc.clear();
+      B.enemyTurn(bn);
+      run(.6f);
+      snap("boss_voile_lumiere");
+      int hp0 = bn->hp;
+      bool melee = B.applyHit(lior, bn, blade) == 0 && bn->hp == hp0 && B.attackScore(lior, blade, bn) == 0 &&
+                   B.damageText(lior, blade, bn).find(types()[(size_t)typeOf("lumiere")].name) != std::string::npos;
+      bool lit = B.applyHit(maelle, bn, light) > 0 && bn->hp < hp0;
+      check(told && B.posture_.count(bn.get()) && melee && lit,
+            "boss : la Brume Noire annonce son voile, puis seule la Lumière l'atteint (le corps à corps la traverse aussi)");
+      settle(B);
+      battle_.reset();
+    }
+    // (2026-10-26) les autres boss des actes 2 à 4 (et le Givrecorne) reprennent ces mécaniques : chacun annonce la sienne
+    // (une capture par annonce) ; ceux qui couvrent le sol y laissent leur terrain
+    for (auto [ev, sp] : std::vector<std::pair<const char*, const char*>>{{"griffon", "griffon"}, {"seigneur_orage", "seigneur_orage"},
+                                                                          {"colosse_echo", "colosse_echo"}, {"phenix_echo", "phenix_echo"},
+                                                                          {"sanctuaire_echos_boss", "ombre_gardien"}, {"givrecorne", "givrecorne"}}) {
+      auto boss = story(ev, sp);
+      auto l90 = makeFighter("lior", 90), m90 = makeFighter("maelle", 90), k90 = makeFighter("kael", 90);
+      Battle& B = begin(boss, {l90, m90, k90});
+      B.cells_[l90.get()] = boardAt(1, 3), B.cells_[m90.get()] = boardAt(1, 1), B.cells_[k90.get()] = boardAt(2, 1), B.cells_[boss.get()] = boardAt(1, 5);
+      B.mechTurns_[boss.get()] = jget(boss->mech, "tous", 3) - 1;
+      std::string k = B.mech(boss);
+      bool posture = k == "cuirasse" || k == "voile";
+      if (posture) B.declareIntent(boss);
+      else B.bossPlan(boss);
+      bool told = posture ? B.intents_.count(boss.get()) && B.intents_[boss.get()].posture == k && !B.intentText(*boss).empty()
+                          : B.warnings_.size() == 1 && B.warnings_[0].kind == k;
+      run(.6f);
+      if (!posture) glow();
+      snap(std::string("boss_annonce_") + sp);
+      std::string ground = jget<std::string>(boss->mech, "terrain", "");
+      if (!ground.empty() && told) {  // le sol se couvre (personne ne s'est écarté)
+        int center = B.warnings_[0].center;
+        B.sc.clear();
+        B.bossPlan(boss);
+        settle(B);
+        const Rules::Terrain* tr = B.terrainOf(center);
+        told = tr && tr->id == ground;
+        frame();
+        snap(std::string("boss_sol_") + sp);
+      }
+      check(!k.empty() && told, std::string("boss : ") + boss->name() + " annonce sa mécanique (" + k + ")");
+      B.sc.clear();
       battle_.reset();
     }
     sc.clear(), menus.clear();
@@ -4264,8 +4348,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   auto simWanted = [&](const std::string& name) {
     if (!onlyEnv || !*onlyEnv) return true;
     std::stringstream ss(onlyEnv);
-    for (std::string w; std::getline(ss, w, ',');)
-      if (!w.empty() && name.find(w) != std::string::npos) return true;
+    for (std::string w; std::getline(ss, w, ',');)  // (2026-10-26) sans accent ni majuscule : « Phenix » trouve « Phénix »
+      if (!w.empty() && makeSlug(name).find(makeSlug(w)) != std::string::npos) return true;
     return false;
   };
   // Équipement des boutiques (1 : vallée, 2 : Forgeroc, 3 : Givreval, 4 : Port-Écho) : le meilleur de chaque
@@ -4465,6 +4549,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   simSetup("Kraken des récifs (équipe N.46)", {{"lior", 46}, {"maelle", 46}, {"selene", 46}, {"braisenard", 46}, {"gouttelin", 46}, {"ronceau", 46}}, bossEvent("kraken"), 30);
   simSetup("Griffon tempête (équipe N.50)", {{"lior", 50}, {"maelle", 50}, {"kael", 50}, {"braisenard", 50}, {"gouttelin", 50}, {"ronceau", 50}}, bossEvent("griffon"), 30);
   simSetup("Seigneur des Orages (équipe N.54)", {{"lior", 54}, {"maelle", 54}, {"isra", 54}, {"braisenard", 54}, {"gouttelin", 54}, {"ronceau", 54}}, bossEvent("seigneur_orage"), 30);
+  // (2026-10-26) la fin de l'acte 3 (Citadelle : meutes N.60-64)
+  simSetup("Brume Noire (équipe N.64)", {{"lior", 64}, {"maelle", 64}, {"isra", 64}, {"braisenard", 64}, {"gouttelin", 64}, {"ronceau", 64}}, bossEvent("brume_noire"), 20);
   {  // Défis de l'échiquier (3.4) : l'IA seule doit pouvoir les gagner parfois, sans que ce soit acquis
     Json defis = readJson("defis.json");
     for (auto& d : defis) {
@@ -4526,6 +4612,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   simSetup("Kraken des récifs (équipe N.46)", {{"lior", 46}, {"maelle", 46}, {"selene", 46}, {"braisenard", 46}, {"gouttelin", 46}, {"ronceau", 46}}, bossEvent("kraken"), 30);
   simSetup("Griffon tempête (équipe N.50)", {{"lior", 50}, {"maelle", 50}, {"kael", 50}, {"braisenard", 50}, {"gouttelin", 50}, {"ronceau", 50}}, bossEvent("griffon"), 30);
   simSetup("Seigneur des Orages (équipe N.54)", {{"lior", 54}, {"maelle", 54}, {"isra", 54}, {"braisenard", 54}, {"gouttelin", 54}, {"ronceau", 54}}, bossEvent("seigneur_orage"), 30);
+  simSetup("Brume Noire (équipe N.64)", {{"lior", 64}, {"maelle", 64}, {"isra", 64}, {"braisenard", 64}, {"gouttelin", 64}, {"ronceau", 64}}, bossEvent("brume_noire"), 20);
 
   // Forge (2.1) : le même équipement, forgé au plus haut niveau possible à ce moment de l'histoire
   // (+1 avec le minerai de la vallée, +2 avec les cœurs de braise de Cendrelune, +3 après les Pics)
@@ -4543,6 +4630,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   simSetup("Kraken des récifs (équipe N.46)", {{"lior", 46}, {"maelle", 46}, {"selene", 46}, {"braisenard", 46}, {"gouttelin", 46}, {"ronceau", 46}}, bossEvent("kraken"), 30);
   simSetup("Griffon tempête (équipe N.50)", {{"lior", 50}, {"maelle", 50}, {"kael", 50}, {"braisenard", 50}, {"gouttelin", 50}, {"ronceau", 50}}, bossEvent("griffon"), 30);
   simSetup("Seigneur des Orages (équipe N.54)", {{"lior", 54}, {"maelle", 54}, {"isra", 54}, {"braisenard", 54}, {"gouttelin", 54}, {"ronceau", 54}}, bossEvent("seigneur_orage"), 30);
+  simSetup("Brume Noire (équipe N.64)", {{"lior", 64}, {"maelle", 64}, {"isra", 64}, {"braisenard", 64}, {"gouttelin", 64}, {"ronceau", 64}}, bossEvent("brume_noire"), 20);
   // Après la fin (2026-10-20) : l'Orage ancien (Abîme) sert de repère pour l'Ombre du Premier Gardien (acte 4)
   simSetup("Orage ancien (équipe N.100)", {{"lior", 100}, {"maelle", 100}, {"isra", 100}, {"braisenard", 100}, {"gouttelin", 100}, {"ronceau", 100}},
            bossEvent("abime3_boss"), 10);

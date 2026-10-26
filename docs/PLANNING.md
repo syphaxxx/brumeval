@@ -466,6 +466,11 @@ Astuces « intention » et « garde », aide de l'échiquier, tests (garde ≈ 0
    à temps ; simulé sur 100 combats : IA 96 %, Isra qui ne bouge jamais 20 %) et « La garde » (Brann acculé par quatre
    Mulotins rapides : IA qui frappe 37 %, Brann toujours en garde 79 %). Un défi qui mêle les deux a été essayé puis
    écarté : la garde seule y perd contre le Ferrolin, les mesures ne départageaient rien.
+9. (2026-10-25 et 26) **Mécaniques des boss**, toujours annoncées, une parade chacune : Golem de suie et Colosse d'écho se
+   cuirassent (la magie), Mère des Brumes et Ombre du Premier Gardien se voilent (le corps à corps), la Brume Noire aussi mais
+   seule la Lumière passe, Ronce-Mère, Seigneur des Orages et Phénix d'écho couvrent une zone de ronces, de foudre ou de
+   braises (s'en écarter et ne pas y revenir), Ignarok, Griffon tempête et Givrecorne chargent une ligne (changer de ligne),
+   le Kraken happe une colonne et tire vers le front (s'en écarter ; un allié devant arrête la traction).
 Mesuré (joueur automatique sans mémoire, bot14) : tout fini en 8 h 20, 10 défaites (27 avant), niveau 112, quatre actes en
 5 h 40, estimation joueur 16 h 46 ; les défaites restantes : meutes du Vieux Phare. Mesuré ensuite : bot15 (version
 finale, mêmes règles) quatre actes en 4 h 40 et 8 défaites dans l'histoire, puis 20 au Vieux Phare (équipe jamais changée :

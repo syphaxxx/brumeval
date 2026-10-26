@@ -199,6 +199,16 @@
       "insensibles": ["plante", "poison"],
       "dessin": "epines",
       "couleur": "#7a3a1e"
+    },
+    {
+      "id": "foudroye",
+      "nom": "Sol foudroyé",
+      "description": "Frappé par la foudre du Seigneur des Orages. À la fin de son tour dessus, ou poussé dessus : perd 6 % de ses PV max (sauf Foudre).",
+      "effet": "degats",
+      "valeur": 0.06,
+      "insensibles": ["foudre"],
+      "dessin": "foudre",
+      "couleur": "#e8d23a"
     }
   ],
   "duo": {
@@ -319,9 +329,19 @@
       "texte": "Ce boss va se voiler de brume : jusqu'à son prochain tour, sorts, tirs et états le traversent. Allez au contact pour le frapper, ou occupez-vous de ses acolytes."
     },
     {
+      "id": "voile_type",
+      "aide": "Rôles",
+      "texte": "Ce boss va se voiler : jusqu'à son prochain tour, seuls les coups d'un type l'atteignent (son intention dit lequel), tous les autres le traversent. Frappez avec ce type, ou occupez-vous de ses acolytes."
+    },
+    {
       "id": "ronces",
       "aide": "Rôles",
-      "texte": "Des ronces vont jaillir sous la zone rouge, et elles resteront : à la fin de son tour dessus, on y perd des PV. Quittez la zone, et n'y revenez pas tant qu'elles sont là."
+      "texte": "Le sol de la zone rouge va se couvrir (ronces, braises, foudre…), et cela restera : à la fin de son tour dessus, on y perd des PV. Quittez la zone, et n'y revenez pas tant que cela dure."
+    },
+    {
+      "id": "attire",
+      "aide": "Rôles",
+      "texte": "Ce boss va happer la zone rouge : ceux qui y restent sont frappés et tirés vers lui jusqu'à la ligne de front (un allié devant eux les arrête). Quittez la zone, et gardez vos lanceurs de sorts derrière un allié."
     },
     {
       "id": "charge",
