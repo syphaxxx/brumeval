@@ -1578,6 +1578,7 @@ void Pilot::update(float dt) {
       for (auto& f : G.battle_->foes) {
         top = std::max(top, f->lvl);
         fight["ennemis"].push_back({{"espece", f->sp}, {"niveau", f->lvl}, {"boss", f->boss}});  // un alpha reste un alpha
+        if (f->mech.is_object()) fight["ennemis"].back()["mecanique"] = f->mech;  // (2026-10-26) avec sa mécanique : sinon il croit gagner
       }
       fight["embuscade"] = G.battle_->ambush_;  // une embuscade se répète comme telle
       // (2026-10-25) toute rencontre à sa mesure, pas seulement les grandes meutes : il perdait contre deux créatures de son

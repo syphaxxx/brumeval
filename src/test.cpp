@@ -1980,6 +1980,35 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       B.sc.clear();
       battle_.reset();
     }
+    {  // (2026-10-26) l'alpha d'une meute : une mécanique de boss selon ses types (rencontres.alpha_mecaniques), dite dès l'entrée
+      bool kinds = true;
+      for (auto [sp, k] : std::vector<std::pair<const char*, const char*>>{{"rocaillou", "cuirasse"}, {"esprillon", "voile"}, {"champichou", "ronces"},
+                                                                           {"tisonnel", "charge"}, {"grenouillon", "attire"}, {"voltigeon", "charge"}}) {
+        auto a = makeAlpha(*makeFighter(sp, 12));
+        kinds = kinds && a->boss && a->lvl == 12 + rules().alphaLevels && jget<std::string>(a->mech, "genre", "") == k;
+      }
+      auto alpha = makeAlpha(*makeFighter("rocaillou", 12));
+      lior->hp = lior->mhp, maelle->hp = maelle->mhp;
+      sc.clear(), menus.clear();
+      mode = Mode::Map;
+      team = {lior, maelle};
+      BattleSetup s;
+      s.foes = {alpha, makeFighter("mulotin", 12), makeFighter("piafouine", 12)};
+      startBattle(std::move(s), nullptr);
+      run(.3f);
+      Battle& B = *battle_;
+      for (int i = 0; i < 300 && !B.sc.messageDone(); i++) frame();  // le message écrit en entier
+      bool intro = B.sc.text().find(T(" Il se cuirasse parfois : la magie passe, le corps à corps est puni.")) != std::string::npos;
+      snap("alpha_mecanique");
+      for (int i = 0; i < 300 && B.sc.busy(); i++) in.confirm = true, frame();
+      in.confirm = false;
+      B.mechTurns_[alpha.get()] = jget(alpha->mech, "tous", 3) - 1;
+      B.declareIntent(alpha);
+      bool posture = B.mech(alpha) == "cuirasse" && B.intents_.count(alpha.get()) && B.intents_[alpha.get()].posture == "cuirasse";
+      check(kinds && intro && posture, "alpha : sa mécanique vient de ses types (données), le début du combat la dit, il l'annonce comme un boss");
+      B.sc.clear();
+      battle_.reset();
+    }
     sc.clear(), menus.clear();
     mode = Mode::Map;
   }
@@ -4672,6 +4701,31 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     simSetup((std::string(name) + " (équipe N.84)").c_str(), {{"lior", 84}, {"maelle", 84}, {hero == std::string("lior") || hero == std::string("maelle") ? "isra" : hero, 84},
                                                    {"braisenard", 84}, {"gouttelin", 84}, {"ronceau", 84}}, bossEvent(ev), 10);
   simGear = 0, simForge = 0;
+  // (2026-10-26) les mêmes meutes menées par un alpha (makeAlpha : sa mécanique de boss selon ses types)
+  auto alphaGroup = [&](std::vector<std::string> pool, int lo, int hi, int n) {
+    auto mk = group(pool, lo, hi, n);
+    return [mk] {
+      auto v = mk();
+      v[0] = makeAlpha(*v[0]);
+      return v;
+    };
+  };
+  sim("Bois, alpha (N.8 contre 3 x N.4-7)", {{"lior", 8}, {"maelle", 8}, {"braisenard", 8}},
+      alphaGroup({"champichou", "mulotin", "lucioline", "piafouine"}, 4, 7, 3), false, 30);
+  sim("Bosquet du col, alpha (N.10)", {{"lior", 10}, {"maelle", 10}, {"gouttelin", 10}},
+      alphaGroup({"rocaillou", "grenouillon", "lucioline", "brumelin"}, 7, 10, 3), false, 30);
+  sim("Sylve-Noire, alpha (N.13)", {{"lior", 13}, {"maelle", 13}, {"kael", 13}},
+      alphaGroup({"louvet", "serpentin", "chauvenuit", "esprillon", "champichou"}, 10, 13, 3), false, 30);
+  sim("Cendrelune, alpha (N.15)", {{"lior", 15}, {"maelle", 15}, {"brann", 15}},
+      alphaGroup({"tisonnel", "galetor", "voltigeon", "glaconnet"}, 12, 15, 3), false, 30);
+  sim("Pics Givrés, alpha (N.25)", {{"lior", 25}, {"maelle", 25}, {"isra", 25}},
+      alphaGroup({"givrelin", "zephyrin", "ferrolin", "cristallin", "etincelot"}, 21, 24, 3), false, 30);
+  simGear = 4;
+  sim("Vieux Phare, alpha (N.104)", {{"lior", 104}, {"maelle", 104}, {"kael", 104}, {"braisenard", 104}, {"gouttelin", 104}, {"ronceau", 104}},
+      alphaGroup({"braisaure", "petrolin", "fossiloup", "echoplume", "spectrecho", "cendrelys"}, 100, 100, 3), false, 30);
+  sim("Abîme, alpha (N.100)", {{"lior", 100}, {"maelle", 100}, {"isra", 100}, {"braisenard", 100}, {"gouttelin", 100}, {"ronceau", 100}},
+      alphaGroup({"rocaube", "aubespectre", "nacrelin", "loup_aube", "brumeloup", "nebulis"}, 96, 96, 3), false, 30);
+  simGear = 0;
 
   // Expédition : gardien de chaque région contre une équipe générée (héros, créature de départ,
   // recrue de la région 1) arrivée deux niveaux au-dessus des créatures sauvages

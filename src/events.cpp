@@ -66,6 +66,19 @@ static void checkCondition(const Json& c, const std::string& where, std::vector<
 
 void checkConditionData(const Json& c, const std::string& where, std::vector<std::string>& err) { checkCondition(c, where, err); }
 
+// (2026-10-25) mécanique propre d'un boss (« mecanique » d'un ennemi ; aussi celles des alphas, rencontres.alpha_mecaniques)
+static bool isType(const std::string& ty) { return std::any_of(types().begin(), types().end(), [&](const TypeDef& x) { return x.id == ty; }); }
+static void checkMech(const Json& mc, const std::string& w, std::vector<std::string>& err) {
+  std::string g = jget<std::string>(mc, "genre", ""), mv = jget<std::string>(mc, "technique", ""), tn = jget<std::string>(mc, "terrain", "");
+  if (g != "cuirasse" && g != "voile" && g != "ronces" && g != "charge" && g != "attire") err.push_back(w + T(" : mécanique inconnue « ") + g + " »");
+  if (std::string ty = jget<std::string>(mc, "type", ""); !ty.empty() && !isType(ty)) err.push_back(w + T(" : mécanique, type inconnu « ") + ty + " »");
+  if (jget(mc, "tous", 3) < 2) err.push_back(w + T(" : une mécanique revient au plus un tour sur deux (« tous » 2 ou plus)"));
+  if (!mv.empty() && !hasMove(mv)) err.push_back(w + T(" : mécanique, technique inconnue « ") + mv + " »");
+  bool okT = g != "ronces";
+  for (auto& x : rules().terrains) okT = okT || x.id == tn;
+  if (!okT) err.push_back(w + T(" : mécanique, terrain inconnu « ") + tn + " »");
+}
+
 static void checkAction(const Json& a, const std::string& where, std::vector<std::string>& err) {
   if (!a.is_object() || !a.contains("action")) {
     err.push_back(where + T(" : chaque action doit avoir un champ \"action\""));
@@ -93,17 +106,7 @@ static void checkAction(const Json& a, const std::string& where, std::vector<std
       if (a["ennemis"].empty() || a["ennemis"].size() > 6) err.push_back(w + T(" : il faut entre 1 et 6 ennemis"));
       for (auto& e : a["ennemis"]) {
         if (!hasSpecies(jget<std::string>(e, "espece", ""))) err.push_back(w + T(" : espèce inconnue « ") + jget<std::string>(e, "espece", "") + " »");
-        if (Json mc = e.value("mecanique", Json()); !mc.is_null()) {  // (2026-10-25) mécanique propre d'un boss
-          std::string g = jget<std::string>(mc, "genre", ""), mv = jget<std::string>(mc, "technique", ""), tn = jget<std::string>(mc, "terrain", "");
-          if (g != "cuirasse" && g != "voile" && g != "ronces" && g != "charge" && g != "attire") err.push_back(w + T(" : mécanique inconnue « ") + g + " »");
-          if (std::string ty = jget<std::string>(mc, "type", ""); !ty.empty() && std::none_of(types().begin(), types().end(), [&](const TypeDef& x) { return x.id == ty; }))
-            err.push_back(w + T(" : mécanique, type inconnu « ") + ty + " »");
-          if (jget(mc, "tous", 3) < 2) err.push_back(w + T(" : une mécanique revient au plus un tour sur deux (« tous » 2 ou plus)"));
-          if (!mv.empty() && !hasMove(mv)) err.push_back(w + T(" : mécanique, technique inconnue « ") + mv + " »");
-          bool okT = g != "ronces";
-          for (auto& x : rules().terrains) okT = okT || x.id == tn;
-          if (!okT) err.push_back(w + T(" : mécanique, terrain inconnu « ") + tn + " »");
-        }
+        if (Json mc = e.value("mecanique", Json()); !mc.is_null()) checkMech(mc, w, err);  // (2026-10-25) mécanique propre d'un boss
         for (auto& p : e.value("phases", Json::array())) {  // phases d'un boss (2.7)
           float pv = jget(p, "pv", 0.f);
           if (pv <= 0 || pv >= 1) err.push_back(w + T(" : une phase doit avoir « pv » entre 0 et 1"));
@@ -175,6 +178,12 @@ std::vector<std::string> checkEvents() {
       if (pages[p].contains("si")) checkCondition(pages[p]["si"], where, err);
       checkList(pages[p].value("actions", Json::array()), where, err);
     }
+  }
+  for (auto& [ty, mc] : rules().alphaMechs.items()) {  // (2026-10-26) mécaniques des alphas, selon leur type
+    std::string w = "regles.json, rencontres.alpha_mecaniques." + ty;
+    if (!isType(ty)) err.push_back(w + T(" : type inconnu"));
+    if (!mc.is_object()) err.push_back(w + T(" : il faut un objet (« genre »…)"));
+    else checkMech(mc, w, err);
   }
   bool storyWorld = false;  // en Expédition, seule la région générée est chargée (« expedition_<k> ») : pas de primes
   for (auto& m : maps()) storyWorld = storyWorld || m.id.rfind("expedition_", 0) != 0;

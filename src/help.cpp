@@ -149,7 +149,8 @@ static std::vector<HelpPage> helpPages() {
                 ::T("Chef (couronne) : tant qu'il est debout, la jauge ATB de ses alliés va ") + pct(R.roleChief) + ::T(" plus vite."),
                 ::T("Vos créatures protectrices et chefs aident aussi votre équipe."),
                 ::T("Les boss ont des phases : sous un seuil de PV, ils changent (bouclier rechargé, bonus, nouvelles techniques, autre météo, renforts). Gardez de quoi encaisser leur seconde forme."),
-                ::T("Certains ont leur mécanique, toujours annoncée : se cuirasser (la magie passe, le corps à corps est puni), se voiler (seul le corps à corps passe, ou seul un type), couvrir le sol d'une zone de ronces, de braises ou de foudre (quittez-la et n'y revenez pas), charger une ligne (changez de ligne), happer une zone et tirer vers le front (quittez-la ; un allié devant arrête la traction).")}});
+                ::T("Certains ont leur mécanique, toujours annoncée : se cuirasser (la magie passe, le corps à corps est puni), se voiler (seul le corps à corps passe, ou seul un type), couvrir le sol d'une zone de ronces, de braises ou de foudre (quittez-la et n'y revenez pas), charger une ligne (changez de ligne), happer une zone et tirer vers le front (quittez-la ; un allié devant arrête la traction)."),
+                ::T("L'alpha d'une meute sauvage a aussi la sienne, selon son type : le message du début du combat la dit.")}});
   p.push_back({::T("Pousser"), ::T("Pousser et tirer les combattants sur le damier."),
                {::T("Certaines techniques poussent la cible d'une case vers l'arrière (Charge, Ruée, Rafale, Vague, Fracas…) ou la tirent vers l'avant (Flèche-grappin, Tornade, Étreinte…). Leur description le précise."),
                 ::T("Si la case d'arrivée est déjà prise, les deux combattants se heurtent : chacun subit un choc de ") + pct(R.shoveClash) +

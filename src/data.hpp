@@ -226,6 +226,7 @@ struct Rules {
   double chroma = 0;  // chance qu'une créature sauvage soit chromatique (couleurs rares, sprite « _chroma »)
   double alpha = 0;   // chance qu'une meute (2 créatures ou plus) soit menée par un alpha (comme un boss)
   int alphaLevels = 3;     // niveaux en plus de l'alpha
+  Json alphaMechs = Json::object();  // (2026-10-26) type → « mecanique » de boss d'un alpha (rencontres.alpha_mecaniques)
   double nightShare = .5;  // part des rencontres de nuit tirées de la liste « nuit » d'une zone
   // (2026-10-23, rééquilibrage) des rencontres à la mesure de l'équipe : au moins perAlly ennemis par combattant allié
   // (arrondi), et des créatures sauvages au plus levelGap niveaux sous la moyenne de l'équipe, sans dépasser le haut de
@@ -475,6 +476,9 @@ int irand(int lo, int hi);  // entier entre lo et hi inclus
 FighterP makeFighter(const std::string& id, int lvl);
 // Un ennemi décrit dans un combat (« espece », « niveau », « pv » multiplicateur, « boss », « bouclier », « phases », « mecanique »)
 FighterP makeFoe(const Json& e, int defaultLevel);
+// Le chef d'une meute devenu alpha (rencontres.alpha_niveaux en plus, traité comme un boss, mécanique de boss selon ses
+// types : rencontres.alpha_mecaniques ; deux types, deux mécaniques : l'une au hasard)
+FighterP makeAlpha(const Fighter& f);
 // Nouvelle partie + (2026-10-20) : niveaux ajoutés à tous les adversaires (combats des événements, renforts, créatures
 // sauvages). Posé par Game (Game::applyNewGamePlus) d'après les drapeaux « ngp<k> » ; 0 partout ailleurs (Arène, tests).
 extern int foeLevelBonus;

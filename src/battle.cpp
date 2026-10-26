@@ -375,6 +375,7 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
     }
   G.menus.clear();
   std::string intro;
+  float introWait = 1.3f;
   FighterP leader = foes[0];
   for (auto& e : foes)
     if (e->boss) leader = e;
@@ -383,12 +384,22 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
   else if (boss) intro = leader->name() + T(" surgit devant vous !");
   else if (foes.size() > 1) intro = std::to_string(foes.size()) + T(" créatures sauvages surgissent !");
   else intro = leader->name() + T(" sauvage apparaît !");
-  if (foeName.empty() && !boss && leader->boss && !leader->S().human) intro = T("Une meute menée par un alpha : ") + leader->name() + " !";
+  if (foeName.empty() && !boss && leader->boss && !leader->S().human) {  // (2026-10-26) et ce que fait sa mécanique, avec sa parade
+    std::string k = mech(leader);
+    intro = T("Une meute menée par un alpha : ") + leader->name() + " !" +
+            (k == "cuirasse" ? T(" Il se cuirasse parfois : la magie passe, le corps à corps est puni.")
+             : k == "voile"  ? T(" Il se voile parfois : seul le corps à corps l'atteint alors.")
+             : k == "ronces" ? T(" Ses ronces couvrent la zone rouge : quittez-la et n'y revenez pas.")
+             : k == "charge" ? T(" Il charge toute une ligne : ne vous alignez pas.")
+             : k == "attire" ? T(" Il happe une colonne vers lui : quittez la zone rouge.")
+                             : "");
+    if (!k.empty()) introWait = 2.4f;  // le temps de lire la parade
+  }
   for (auto& e : foes)
     if (e->chroma && foeName.empty() && !boss) intro = T("Une créature chromatique ! ") + e->name() + T(" brille de couleurs rares.");
   if (ambush_) intro = T("Embuscade ! Des créatures surgissent derrière vous.");
   if (!s.intro.empty()) intro = s.intro;
-  sc.say(intro, s.intro.empty() ? 1.3f : 0.f);  // la leçon d'un défi attend Entrée
+  sc.say(intro, s.intro.empty() ? introWait : 0.f);  // la leçon d'un défi attend Entrée
 }
 
 
@@ -2707,7 +2718,7 @@ void Battle::useItem(FighterP a, const std::string& id, FighterP t) {
         foes.erase(std::find(foes.begin(), foes.end(), t));
         t->tag.clear();
         t->clearBattle();
-        t->boss = false;  // un alpha capturé redevient une créature comme les autres (le statut n'est pas sauvegardé)
+        t->boss = false, t->mech = Json();  // un alpha capturé redevient une créature comme les autres (ni l'un ni l'autre n'est sauvegardé)
         t->shield = t->shieldMax = 0;
         t->hp = t->mhp;
         t->mp = t->mmp;

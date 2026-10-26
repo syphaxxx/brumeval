@@ -765,13 +765,7 @@ void Game::encounter() {
       if (floorLvl > lv) foes.back()->rewardLvl = lv + foeLevelBonus;
       if (!inExpedition() && frand() < rules().chroma) foes.back()->chroma = true;  // couleurs rares
     }
-    if (n >= 2 && !inExpedition() && frand() < rules().alpha) {  // une meute menée par un alpha : plus fort, traité comme un boss
-      bool chroma = foes[0]->chroma;
-      int reward = foes[0]->rewardLvl;  // relevée : ses gains restent ceux de sa zone (plus les niveaux de l'alpha)
-      foes[0] = makeFighter(foes[0]->sp, foes[0]->lvl + rules().alphaLevels);
-      foes[0]->boss = true, foes[0]->chroma = chroma;
-      foes[0]->rewardLvl = reward > 0 ? reward + rules().alphaLevels : 0;
-    }
+    if (n >= 2 && !inExpedition() && frand() < rules().alpha) foes[0] = makeAlpha(*foes[0]);  // une meute menée par un alpha (data.cpp)
     BattleSetup s;
     s.foes = foes;
     s.ambush = !inExpedition() && n >= 2 && frand() < rules().ambush;  // (2026-10-23) certaines surgissent derrière l'équipe

@@ -316,6 +316,7 @@ static void loadRules(const Json& j) {
   if (j.contains("recompenses"))
     for (auto& b : j["recompenses"].value("butin_type", Json::array()))
       r.typeDrops.push_back({b.at("type").get<std::string>(), b.at("objet").get<std::string>(), b.at("chance").get<double>()});
+  if (j.contains("rencontres")) r.alphaMechs = j["rencontres"].value("alpha_mecaniques", Json::object());
   if (j.contains("damier")) {
     r.flyTypes = jget(j["damier"], "vol", std::vector<std::string>{});
     r.fastTypes = jget(j["damier"], "rapides", std::vector<std::string>{});
@@ -986,6 +987,16 @@ FighterP makeFoe(const Json& e, int defaultLevel) {
   if (e.contains("phases") && e["phases"].is_array()) f->phases = e["phases"];
   if (e.contains("mecanique") && e["mecanique"].is_object()) f->mech = e["mecanique"];
   return f;
+}
+FighterP makeAlpha(const Fighter& f) {
+  auto a = makeFighter(f.sp, f.lvl + RULES.alphaLevels);
+  a->boss = true, a->chroma = f.chroma;
+  a->rewardLvl = f.rewardLvl > 0 ? f.rewardLvl + RULES.alphaLevels : 0;  // relevée : ses gains restent ceux de sa zone (plus les niveaux de l'alpha)
+  std::vector<Json> k;
+  for (Type t : {a->S().type, a->S().type2})
+    if (t >= 0 && RULES.alphaMechs.contains(TYPES[t].id)) k.push_back(RULES.alphaMechs.at(TYPES[t].id));
+  if (!k.empty()) a->mech = k[k.size() > 1 && frand() < .5f];
+  return a;
 }
 
 static bool hasTypeIn(const Species& s, const std::vector<std::string>& ids) {
