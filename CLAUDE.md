@@ -604,7 +604,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   `instructeur_voile`) ; récompensés une fois, puis rejouables ; captures `defi_<id>`. Simulations : lignes « (tactiques) »
   (comme le joueur automatique) et « (sans la parade) » (`careless` de test.cpp : Isra qui ne bouge pas, combattants qui
   frappent la cuirasse, tirs et sorts dans le voile, personne qui quitte la ligne ou la croix) ; mesures : compétence
-  `equilibrage`.
+  `equilibrage`. En Nouvelle partie +, les ennemis d'un défi gardent leur niveau (`challengeSetup` coupe `foeLevelBonus` :
+  les combattants prêtés ne montent pas).
   Mesuré (BRUMEVAL_SIMULATIONS=2) : sans
   réglage, boss bien plus faciles (encerclés par 6 alliés : +60 %) ; après (boss ni encerclés ni gênés au contact,
   encerclement 10 %, Ignarok N.25, Ronce-Mère N.22, Mère des Brumes N.41), difficulté proche de la 3.3.

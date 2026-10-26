@@ -449,10 +449,12 @@ bool challengeSetup(const std::string& id, BattleSetup& s) {
       s.allies.push_back(makeFighter(e.at("espece").get<std::string>(), jget(e, "niveau", 10)));
       s.allyCells.push_back(cell(e));
     }
+    int bonus = std::exchange(foeLevelBonus, 0);  // (2026-10-26) combattants prêtés à niveau fixe : pas de bonus de Nouvelle partie +
     for (auto& e : c.value("ennemis", Json::array())) {
       s.foes.push_back(makeFoe(e, 10));
       s.foeCells.push_back(cell(e));
     }
+    foeLevelBonus = bonus;
     for (auto& o : c.value("obstacles", Json::array())) {  // seulement sur le plateau, sur une case libre
       int y = o.at(0).get<int>(), x = o.at(1).get<int>(), b = boardAt(y, x);
       bool free = y >= 0 && y < GRID && x >= 0 && x < BOARD_W;

@@ -3625,10 +3625,12 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         frame();
       }
       Json probe = {{"espece", "mulotin"}, {"niveau", 5}};
-      bool ok = has("ngp1") && !has("aube_fin") && has("peche:gardon") && !items.count("trident") && items["potion"] == 3 &&
+      BattleSetup ds;  // un défi garde ses niveaux : ses combattants sont prêtés, à niveau fixe
+      bool challenge = challengeSetup("dos", ds) && ds.foes[0]->lvl == readJson("defis.json")[0]["ennemis"][0].value("niveau", 10);
+      bool ok = challenge && has("ngp1") && !has("aube_fin") && has("peche:gardon") && !items.count("trident") && items["potion"] == 3 &&
                 team.size() == n && foeLevelBonus == NGP_LEVELS && makeFoe(probe, 1)->lvl == 5 + NGP_LEVELS &&
                 M().id == rules().startMap && !visited.count("cendrelune");
-      check(ok, "nouvelle partie + : l'histoire recommence avec l'équipe, sans les objets importants, ennemis +" + std::to_string(NGP_LEVELS) + " niveaux");
+      check(ok, "nouvelle partie + : l'histoire recommence avec l'équipe, sans les objets importants, ennemis +" + std::to_string(NGP_LEVELS) + " niveaux (pas ceux des défis)");
       flags = savedFlags;
       items = savedItems;
       team = savedTeam;
