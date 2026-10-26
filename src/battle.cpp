@@ -386,8 +386,9 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
   else intro = leader->name() + T(" sauvage apparaît !");
   if (foeName.empty() && !boss && leader->boss && !leader->S().human) {  // (2026-10-26) et ce que fait sa mécanique, avec sa parade
     std::string k = mech(leader);
-    intro = T("Une meute menée par un alpha : ") + leader->name() + " !" +
-            (k == "cuirasse" ? T(" Il se cuirasse parfois : la magie passe, le corps à corps est puni.")
+    intro = T("Une meute menée par un alpha : {n} !");
+    if (size_t at = intro.find("{n}"); at != std::string::npos) intro.replace(at, 3, leader->name());
+    intro += (k == "cuirasse" ? T(" Il se cuirasse parfois : la magie passe, le corps à corps est puni.")
              : k == "voile"  ? T(" Il se voile parfois : seul le corps à corps l'atteint alors.")
              : k == "ronces" ? T(" Ses ronces couvrent la zone rouge : quittez-la et n'y revenez pas.")
              : k == "charge" ? T(" Il charge toute une ligne : ne vous alignez pas.")

@@ -1593,7 +1593,9 @@ void Pilot::update(float dt) {
       }
     }
     battleFoes_.clear();
-    for (auto& f : G.battle_->foes) battleFoes_ += (battleFoes_.empty() ? "" : ", ") + f->name() + " N." + std::to_string(f->lvl);
+    for (auto& f : G.battle_->foes)  // (2026-10-26) l'alpha d'une meute et sa mécanique, pour le rapport des défaites
+      battleFoes_ += (battleFoes_.empty() ? "" : ", ") + f->name() + " N." + std::to_string(f->lvl) +
+                     (battleWild_ && f->boss ? " (alpha" + (f->mech.is_object() ? " " + jget<std::string>(f->mech, "genre", "") : "") + ")" : "");
     if (!G.battle_->reserve.empty()) battleFoes_ += " (+" + std::to_string(G.battle_->reserve.size()) + " renforts)";
     // Créatures sauvages et compagnons qui manquent : le mode auto est coupé pour ce combat, afin que
     // le menu de commande s'ouvre et que le pilote puisse lancer une lanterne (battleStep)
