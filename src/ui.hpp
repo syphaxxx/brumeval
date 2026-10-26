@@ -135,3 +135,5 @@ std::string utf8Prefix(const std::string& s, int n);
 // (2026-10-25) Option « Types lisibles sans couleur » (daltonisme) : le motif du type (5x5 pixels sombres sur un carré
 // de sa couleur) centré en (cx, cy), à poser sur chaque pastille de type ; faux (rien de dessiné) si l'option est coupée
 bool typeMark(Gfx& g, float cx, float cy, int type, uint8_t alpha = 255);
+// Petit dessin d'une entrée de menu sans sprite (« piece », « etoile », « sablier »…) dans la case de 11x11 en (x, y)
+void menuGlyph(Gfx& g, const std::string& n, float x, float y, uint8_t alpha = 255);

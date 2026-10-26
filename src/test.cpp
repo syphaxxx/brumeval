@@ -1084,6 +1084,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       frame();
     }
     bool summary = B.summaryOn_ && !B.summary_.empty();
+    run(1.5f);  // les barres d'expérience remplies
     snap("97_victoire");
     in.confirm = true;
     frame();
@@ -1093,6 +1094,38 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     mode = Mode::Map;
     menus.clear();
     sc.clear();
+    {  // (2026-10-26) fenêtre des gains à six alliés : barres qui se remplissent, passages de niveau ; Entrée les termine
+      team = {makeFighter("lior", 6), makeFighter("maelle", 6), makeFighter("brann", 6), makeFighter("braisenard", 6), makeFighter("rocaillou", 6), makeFighter("galetor", 6)};
+      startBattle({makeFighter("galetor", 14), makeFighter("braisenard", 14), makeFighter("rocaillou", 14)}, false, nullptr);
+      Battle& V = *battle_;
+      bool six = V.allies.size() == 6;
+      for (auto& f : V.foes) f->hp = 0, V.knockOut(f);
+      V.sc.clear();
+      V.checkEnd();
+      for (int i = 0; i < 300 && !V.summaryOn_; i++) {
+        if (V.sc.busy()) in.confirm = true;
+        frame();
+      }
+      V.loot_ = {{"potion", 1}, {"minerai", 2}, {"coeur_braise", 1}};  // le butin est tiré au hasard : celui-ci pour la capture
+      run(.38f);  // les barres en chemin (« +N exp » qui compte)
+      snap("gains_debut");
+      float mid = V.gainsFill(time);
+      in.confirm = true;  // pendant le remplissage : les barres pleines d'un coup, la fenêtre reste
+      frame();
+      bool filled = V.summaryOn_ && V.gainsFill(time) >= 1;
+      bool leveled = V.gainRows_.size() == 6 && int(V.gainRows_[0].to) > int(V.gainRows_[0].from);
+      run(.2f);
+      snap("gains_niveau");
+      in.mclick[0] = true;  // puis un clic (ou Entrée) : la suite
+      frame();
+      for (int i = 0; i < 300 && mode == Mode::Battle; i++) frame();
+      check(six && mid > 0 && mid < 1 && filled && leveled && mode == Mode::Map,
+            "gains à six alliés : barres d'expérience qui se remplissent, Entrée les remplit d'un coup, un clic continue");
+      battle_.reset();
+      mode = Mode::Map;
+      menus.clear();
+      sc.clear();
+    }
     // Formation : choisie dans le menu, gardée par la sauvegarde
     team = {makeFighter("lior", 20), makeFighter("maelle", 20), makeFighter("braisenard", 20)};
     formationMenu(0);
