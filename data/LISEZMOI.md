@@ -417,4 +417,6 @@ Le tableau d'annonces (tuile `G` d'une carte) montre les primes. `rangs` : `prim
 Les défis de l'échiquier (Arène > Défis de l'échiquier…). Chaque défi : `id`, `nom`, `description` (la leçon, montrée
 dans le menu), `decor` (vallee, foret, neige, cendres, grotte), `allies` et `ennemis` (comme les ennemis d'un combat :
 `espece`, `niveau`, `pv`, `boss`…, plus `case` : [ligne 0-3, colonne 0-7] du plateau ; les alliés partent à gauche,
-colonnes 0 à 3), `obstacles` : liste de [ligne, colonne].
+colonnes 0 à 3), `obstacles` : liste de [ligne, colonne]. Un ennemi avec `"boss": true` peut porter une `mecanique`
+(2026-10-26, comme un boss d'evenements.json : cuirasse, voile, ronces, charge, attire) ; le mode test refuse une
+`mecanique` sans `boss` (elle ne jouerait pas).

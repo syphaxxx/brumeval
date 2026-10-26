@@ -19,6 +19,22 @@ Méthode :
 
 ## Historique des mesures
 
+- **Défis des mécaniques** (2026-10-26) : un défi court par mécanique de boss (`data/defis.json` : `cuirasse`, `ronces`,
+  `charge`, `voile`), réglé pour se gagner presque toujours avec la parade et se perdre souvent sans. Trois lignes par défi
+  qui apprend une parade : « Défi : … » (IA), « (tactiques) » (règles de départ, comme le joueur automatique) et « (sans la
+  parade) » (`careless` de test.cpp : Isra qui ne bouge pas pour `intentions`, Brann et Lior qui frappent toujours le boss
+  au corps à corps pour `cuirasse`, Kael et Isra qui tirent sur lui même voilé pour `voile`, personne qui ne se déplace pour
+  `charge` et `ronces`). Retenu (BRUMEVAL_SIMULATIONS=2, graine 2026 ; IA / tactiques / sans la parade) : cuirasse (Brann
+  N.14, Isra N.12, Lior N.14 contre un Golem de suie N.16 ×1,5, cuirasse un tour sur 2 à ×0,1, et deux Champichous N.12)
+  100 / 97 / 12 %, ronces (Maëlle et Kael N.16 contre un Ronceau N.20 ×3,5, Tempête en croix) 100 / 97 / 10, charge (Kael et
+  Isra N.18 alignés contre un Tisonnel N.18 ×2, Crocs) 100 / 85 / 12, voile (Kael et Isra N.18 contre un Brumelin N.19 ×2 et
+  deux Noctailes N.15 ×1,3) 100 / 97 / 40 (32 sur une autre mesure) ; intentions 97 / 100 / 20. Répétition du joueur
+  automatique (20 combats, test « joueur automatique : il relève… ») : 85 à 100 %. Essais : la cuirasse ne départage
+  presque rien tant que la parade n'est l'affaire que d'un combattant et que le boss résiste à ses coups (Galetor, Ferrogeant :
+  Normal résisté par Roche et Métal ; avec Brann et Isra seuls, IA 40 à 90 % contre 20 à 67 % sans la parade) ; il faut deux
+  combattants au corps à corps, un boss qu'ils blessent hors de sa cuirasse et des soigneurs à frapper pendant. Charge et
+  ronces : quelques PV de plus suffisent à tout faire basculer (charge N.18 ×2,5 : 80 / 75 / 10 ; N.19 ×3 : 30 / 15 / 0).
+
 - **Mécaniques des gardiens de l'Expédition** (2026-10-26) : dès la région 3, une mécanique de boss selon les types
   (`procgen.cpp`, `genBoss`). Mesuré (BRUMEVAL_SIMULATIONS=4, `BRUMEVAL_SIM_FILTRE=gion,avec` ; IA / avec équipement,
   avant → après) : comme dans l'histoire, une posture coûte un tour d'attaque au gardien : sans réglage, les cinq gardiens

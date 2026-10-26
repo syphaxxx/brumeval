@@ -105,5 +105,111 @@
       {"espece": "mulotin", "niveau": 12, "pv": 0.65, "case": [2, 6]},
       {"espece": "mulotin", "niveau": 12, "pv": 0.65, "case": [3, 5]}
     ]
+  },
+  {
+    "id": "cuirasse",
+    "nom": "La cuirasse",
+    "decor": "grotte",
+    "description": "Le Golem annonce sa cuirasse (un écu). Cuirassé, il riposte au corps à corps : frappez les Champichous, la magie passe.",
+    "allies": [
+      {"espece": "brann", "niveau": 14, "case": [1, 2]},
+      {"espece": "isra", "niveau": 12, "case": [2, 1]},
+      {"espece": "lior", "niveau": 14, "case": [0, 1]}
+    ],
+    "ennemis": [
+      {
+        "espece": "golem",
+        "niveau": 16,
+        "pv": 1.5,
+        "boss": true,
+        "mecanique": {
+          "genre": "cuirasse",
+          "tous": 2,
+          "valeur": 0.1,
+          "message": "Le Golem de suie gronde et se couvre de scories : il va se cuirasser !"
+        },
+        "case": [1, 5]
+      },
+      {"espece": "champichou", "niveau": 12, "case": [0, 5]},
+      {"espece": "champichou", "niveau": 12, "case": [3, 5]}
+    ]
+  },
+  {
+    "id": "ronces",
+    "nom": "Les ronces",
+    "decor": "foret",
+    "description": "Le Ronceau annonce ses ronces : une croix rouge. Quittez-la avant son tour, puis ne restez pas sur les ronces.",
+    "allies": [
+      {"espece": "maelle", "niveau": 16, "case": [1, 1]},
+      {"espece": "kael", "niveau": 16, "case": [1, 2]}
+    ],
+    "ennemis": [
+      {
+        "espece": "ronceau",
+        "niveau": 20,
+        "pv": 3.5,
+        "boss": true,
+        "mecanique": {
+          "genre": "ronces",
+          "tous": 2,
+          "zone": "croix",
+          "technique": "tempete",
+          "terrain": "epines",
+          "message": "Le Ronceau plonge ses racines sous la zone rouge : des ronces vont en jaillir, et elles resteront !"
+        },
+        "case": [1, 5]
+      }
+    ]
+  },
+  {
+    "id": "charge",
+    "nom": "La charge",
+    "decor": "cendres",
+    "description": "Le Tisonnel annonce sa charge : toute une ligne en rouge. Quittez-la avant son tour, et ne restez pas alignés.",
+    "allies": [
+      {"espece": "kael", "niveau": 18, "case": [1, 2]},
+      {"espece": "isra", "niveau": 18, "case": [1, 0]}
+    ],
+    "ennemis": [
+      {
+        "espece": "tisonnel",
+        "niveau": 18,
+        "pv": 2,
+        "boss": true,
+        "mecanique": {
+          "genre": "charge",
+          "tous": 2,
+          "technique": "crocs",
+          "message": "Le Tisonnel gratte le sol, les yeux sur la ligne rouge : il va la charger !"
+        },
+        "case": [1, 5]
+      }
+    ]
+  },
+  {
+    "id": "voile",
+    "nom": "Le voile",
+    "decor": "foret",
+    "description": "Le Brumelin annonce son voile (des volutes). Voilé, sorts et tirs le traversent : visez ses acolytes, ou allez au contact.",
+    "allies": [
+      {"espece": "kael", "niveau": 18, "case": [1, 1]},
+      {"espece": "isra", "niveau": 18, "case": [2, 1]}
+    ],
+    "ennemis": [
+      {
+        "espece": "brumelin",
+        "niveau": 19,
+        "pv": 2,
+        "boss": true,
+        "mecanique": {
+          "genre": "voile",
+          "tous": 2,
+          "message": "Le Brumelin se fond dans la brume : il va se voiler !"
+        },
+        "case": [1, 6]
+      },
+      {"espece": "noctaile", "niveau": 15, "pv": 1.3, "case": [0, 5]},
+      {"espece": "noctaile", "niveau": 15, "pv": 1.3, "case": [3, 5]}
+    ]
   }
 ]
