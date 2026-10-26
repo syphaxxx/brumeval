@@ -719,6 +719,13 @@ code) ; `docs/GUIDE.md` les range par domaine.
   (l'assistant de la professeure, `outils/villes/chromatiques.py`). Alphas (même jour) : une meute de 2 créatures ou
   plus est parfois menée par un alpha (règle `rencontres.alpha`, 0,06 ; pas en Expédition) : +`alpha_niveaux` (3) et `Fighter::boss`
   (dessiné plus grand, bouclier de boss, attaques annoncées, gains de boss ; capturé, il redevient ordinaire) ; message « Une meute menée par un alpha ».
+  Mécanique des alphas (2026-10-26) : `makeAlpha` (data.cpp, appelé par `Game::encounter`) lui donne une `mecanique` de boss
+  selon ses types d'après `rencontres.alpha_mecaniques` de regles.json (type → objet comme le champ `mecanique` d'un ennemi,
+  vérifié par `checkEvents` ; deux types, deux mécaniques : l'une au hasard ; type absent : aucune) ; le message d'entrée dit
+  ce qu'il fait et la parade ; capturé, il la perd (`Fighter::mech` vidé, rien n'est sauvegardé) ; jamais en ligne
+  (`Battle::mech`) ni en Expédition ; le joueur automatique répète la meute avec elle (`fight["ennemis"][…]["mecanique"]`)
+  et marque « (alpha <genre>) » dans ses défaites. Test et capture `alpha_mecanique`, simulations « …, alpha » ; mesures :
+  compétence `equilibrage`.
 - Nouvelle partie + (2026-10-20) : après `aube_fin`, Ilya propose de tout recommencer (action `nouvelle_partie_plus`,
   `Game::startNewGamePlus`) : équipe, équipement, or, Bestiaire et drapeaux `peche:` gardés ; objets importants (prix 0,
   ni équipement ni gemme) rendus ; drapeaux effacés sauf `ngp<k>`, et `ngp<k+1>` posé. `foeLevelBonus` (data.cpp) =

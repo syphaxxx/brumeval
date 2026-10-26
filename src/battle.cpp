@@ -374,8 +374,7 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
         for (auto& o : side == &allies ? foes : allies) o->stage[S_ATK] = std::max(-3, o->stage[S_ATK] - 1);
     }
   G.menus.clear();
-  std::string intro;
-  float introWait = 1.3f;
+  std::string intro, parade;
   FighterP leader = foes[0];
   for (auto& e : foes)
     if (e->boss) leader = e;
@@ -388,19 +387,19 @@ Battle::Battle(Game& game, BattleSetup s, Theme bg_)
     std::string k = mech(leader);
     intro = T("Une meute menée par un alpha : {n} !");
     if (size_t at = intro.find("{n}"); at != std::string::npos) intro.replace(at, 3, leader->name());
-    intro += (k == "cuirasse" ? T(" Il se cuirasse parfois : la magie passe, le corps à corps est puni.")
+    parade = k == "cuirasse" ? T(" Il se cuirasse parfois : la magie passe, le corps à corps est puni.")
              : k == "voile"  ? T(" Il se voile parfois : seul le corps à corps l'atteint alors.")
              : k == "ronces" ? T(" Ses ronces couvrent la zone rouge : quittez-la et n'y revenez pas.")
              : k == "charge" ? T(" Il charge toute une ligne : ne vous alignez pas.")
              : k == "attire" ? T(" Il happe une colonne vers lui : quittez la zone rouge.")
-                             : "");
-    if (!k.empty()) introWait = 2.4f;  // le temps de lire la parade
+                             : "";
   }
   for (auto& e : foes)
     if (e->chroma && foeName.empty() && !boss) intro = T("Une créature chromatique ! ") + e->name() + T(" brille de couleurs rares.");
   if (ambush_) intro = T("Embuscade ! Des créatures surgissent derrière vous.");
+  intro += parade;  // la parade de l'alpha, même après « Embuscade ! » ou une chromatique
   if (!s.intro.empty()) intro = s.intro;
-  sc.say(intro, s.intro.empty() ? introWait : 0.f);  // la leçon d'un défi attend Entrée
+  sc.say(intro, !s.intro.empty() ? 0.f : parade.empty() ? 1.3f : 2.4f);  // la leçon d'un défi attend Entrée ; le temps de lire la parade
 }
 
 

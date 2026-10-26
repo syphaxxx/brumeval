@@ -179,12 +179,14 @@ std::vector<std::string> checkEvents() {
       checkList(pages[p].value("actions", Json::array()), where, err);
     }
   }
-  for (auto& [ty, mc] : rules().alphaMechs.items()) {  // (2026-10-26) mécaniques des alphas, selon leur type
-    std::string w = "regles.json, rencontres.alpha_mecaniques." + ty;
-    if (!isType(ty)) err.push_back(w + T(" : type inconnu"));
-    if (!mc.is_object()) err.push_back(w + T(" : il faut un objet (« genre »…)"));
-    else checkMech(mc, w, err);
-  }
+  if (!rules().alphaMechs.is_object()) err.push_back(std::string("regles.json, rencontres.alpha_mecaniques") + T(" : il faut un objet { type : mécanique }"));
+  else
+    for (auto& [ty, mc] : rules().alphaMechs.items()) {  // (2026-10-26) mécaniques des alphas, selon leur type
+      std::string w = "regles.json, rencontres.alpha_mecaniques." + ty;
+      if (!isType(ty)) err.push_back(w + T(" : type inconnu"));
+      if (!mc.is_object()) err.push_back(w + T(" : il faut un objet (« genre »…)"));
+      else checkMech(mc, w, err);
+    }
   bool storyWorld = false;  // en Expédition, seule la région générée est chargée (« expedition_<k> ») : pas de primes
   for (auto& m : maps()) storyWorld = storyWorld || m.id.rfind("expedition_", 0) != 0;
   for (auto& b : storyWorld ? bounties() : Json::array()) {  // primes : leur condition et leur combat

@@ -226,6 +226,7 @@ struct Rules {
   double chroma = 0;  // chance qu'une créature sauvage soit chromatique (couleurs rares, sprite « _chroma »)
   double alpha = 0;   // chance qu'une meute (2 créatures ou plus) soit menée par un alpha (comme un boss)
   int alphaLevels = 3;     // niveaux en plus de l'alpha
+  int alphaPostureLevels = 0;  // (2026-10-26) et en plus avec une posture (cuirasse, voile : elle lui coûte un tour d'attaque)
   Json alphaMechs = Json::object();  // (2026-10-26) type → « mecanique » de boss d'un alpha (rencontres.alpha_mecaniques)
   double nightShare = .5;  // part des rencontres de nuit tirées de la liste « nuit » d'une zone
   // (2026-10-23, rééquilibrage) des rencontres à la mesure de l'équipe : au moins perAlly ennemis par combattant allié

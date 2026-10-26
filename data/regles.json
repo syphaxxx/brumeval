@@ -22,6 +22,7 @@
     "chromatique": 0.006,
     "alpha": 0.06,
     "alpha_niveaux": 3,
+    "alpha_niveaux_posture": 1,
     "alpha_mecaniques": {
       "normal": {"genre": "cuirasse"},
       "roche": {"genre": "cuirasse"},

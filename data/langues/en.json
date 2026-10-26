@@ -603,6 +603,7 @@
   " : quête inconnue « ": ": unknown quest “",
   " : action inconnue « ": ": unknown action “",
   " page ": " page ",
+  " : il faut un objet { type : mécanique }": ": an object { type: mechanic } is needed",
   " : type inconnu": ": unknown type",
   " : il faut un objet (« genre »…)": ": an object is needed (« genre »…)",
   "Prime « ": "Bounty \"",

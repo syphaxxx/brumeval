@@ -196,6 +196,7 @@ std::vector<RuleField> ruleFields(Rules& r) {
       D("rencontres", "chromatique", "Chance d'une créature chromatique", r.chroma, 0, 1, .001),
       D("rencontres", "alpha", "Chance d'un alpha à la tête d'une meute", r.alpha, 0, 1, .01),
       I("rencontres", "alpha_niveaux", "Niveaux en plus de l'alpha", r.alphaLevels, 0, 20, 1),
+      I("rencontres", "alpha_niveaux_posture", "… et en plus s'il se cuirasse ou se voile", r.alphaPostureLevels, 0, 10, 1),
       D("rencontres", "part_nuit", "Part des rencontres de nuit (liste « nuit »)", r.nightShare, 0, 1, .05),
       D("rencontres", "par_allie", "Ennemis au moins par allié en combat", r.perAlly, 0, 2, .05),
       D("rencontres", "embuscade", "Chance d'une embuscade (2 créatures ou plus)", r.ambush, 0, 1, .01),
@@ -989,13 +990,15 @@ FighterP makeFoe(const Json& e, int defaultLevel) {
   return f;
 }
 FighterP makeAlpha(const Fighter& f) {
-  auto a = makeFighter(f.sp, f.lvl + RULES.alphaLevels);
-  a->boss = true, a->chroma = f.chroma;
-  a->rewardLvl = f.rewardLvl > 0 ? f.rewardLvl + RULES.alphaLevels : 0;  // relevée : ses gains restent ceux de sa zone (plus les niveaux de l'alpha)
   std::vector<Json> k;
-  for (Type t : {a->S().type, a->S().type2})
+  for (Type t : {f.S().type, f.S().type2})
     if (t >= 0 && RULES.alphaMechs.contains(TYPES[t].id)) k.push_back(RULES.alphaMechs.at(TYPES[t].id));
-  if (!k.empty()) a->mech = k[k.size() > 1 && frand() < .5f];
+  Json mech = k.empty() ? Json() : k[k.size() > 1 && frand() < .5f];
+  std::string g = jget<std::string>(mech, "genre", "");
+  int more = RULES.alphaLevels + (g == "cuirasse" || g == "voile" ? RULES.alphaPostureLevels : 0);  // une posture lui coûte un tour d'attaque
+  auto a = makeFighter(f.sp, f.lvl + more);
+  a->boss = true, a->chroma = f.chroma, a->mech = mech;
+  a->rewardLvl = f.rewardLvl > 0 ? f.rewardLvl + more : 0;  // relevée : ses gains restent ceux de sa zone (plus les niveaux de l'alpha)
   return a;
 }
 

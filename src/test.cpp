@@ -1985,7 +1985,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       for (auto [sp, k] : std::vector<std::pair<const char*, const char*>>{{"rocaillou", "cuirasse"}, {"esprillon", "voile"}, {"champichou", "ronces"},
                                                                            {"tisonnel", "charge"}, {"grenouillon", "attire"}, {"voltigeon", "charge"}}) {
         auto a = makeAlpha(*makeFighter(sp, 12));
-        kinds = kinds && a->boss && a->lvl == 12 + rules().alphaLevels && jget<std::string>(a->mech, "genre", "") == k;
+        int more = rules().alphaLevels + (k == std::string("cuirasse") || k == std::string("voile") ? rules().alphaPostureLevels : 0);
+        kinds = kinds && a->boss && a->lvl == 12 + more && jget<std::string>(a->mech, "genre", "") == k;
       }
       auto alpha = makeAlpha(*makeFighter("rocaillou", 12));
       lior->hp = lior->mhp, maelle->hp = maelle->mhp;
@@ -2005,8 +2006,21 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       B.mechTurns_[alpha.get()] = jget(alpha->mech, "tous", 3) - 1;
       B.declareIntent(alpha);
       bool posture = B.mech(alpha) == "cuirasse" && B.intents_.count(alpha.get()) && B.intents_[alpha.get()].posture == "cuirasse";
-      check(kinds && intro && posture, "alpha : sa mécanique vient de ses types (données), le début du combat la dit, il l'annonce comme un boss");
       B.sc.clear();
+      battle_.reset();
+      BattleSetup s2;  // en embuscade, la parade reste dite après « Embuscade ! »
+      s2.foes = {makeAlpha(*makeFighter("esprillon", 12)), makeFighter("mulotin", 12)};
+      s2.ambush = true;
+      sc.clear(), menus.clear();
+      mode = Mode::Map;
+      startBattle(std::move(s2), nullptr);
+      run(.3f);
+      std::string said = battle_ ? battle_->sc.text() : "";
+      bool ambush = said.find(T("Embuscade ! Des créatures surgissent derrière vous.")) == 0 &&
+                    said.find(T(" Il se voile parfois : seul le corps à corps l'atteint alors.")) != std::string::npos;
+      check(kinds && intro && posture && ambush,
+            "alpha : sa mécanique vient de ses types (données), le début du combat la dit (même en embuscade), il l'annonce comme un boss");
+      if (battle_) battle_->sc.clear();
       battle_.reset();
     }
     sc.clear(), menus.clear();

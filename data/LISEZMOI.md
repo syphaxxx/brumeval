@@ -20,7 +20,7 @@ toutes les références existent et que chaque lieu des cartes est accessible.
 | `objets.json` | Objets : prix, effets (soin, PM, réanimation, capture), équipement (`equipement` : `arme`, `armure` ou `accessoire`, et `bonus` : `pv`, `pm`, `attaque`, `defense`, `magie`, `resistance`, `vitesse`, `precision`, `esquive`, `critique`) ; `"trophee": true` pour un trophée de boss (forge) ; `pour` : l'identifiant du seul héros qui peut le porter (armes des quêtes des héros) ; `icone` : son icône dans les menus (un nom de `sprites.json`). Les armes et armures forgées (`epee_fer+1`…) sont créées par le jeu, pas écrites ici |
 | `apparences.json` | Couleurs et accessoires des personnages ; `sprite` : le début du nom de ses sprites (`lior` → `lior_bas_0`…) |
 | `sprites.png`, `sprites.json` | L'atlas des sprites et la place de chacun, fabriqués par `outils/sprites/decoupe.py` (ne pas modifier à la main) |
-| `regles.json` | Départ de la partie, rencontres, formules de combat, récompenses (dont `butin_type` : matériaux selon le type de la créature vaincue), forge, tactiques de départ… |
+| `regles.json` | Départ de la partie, rencontres (dont `alpha_mecaniques` : type → mécanique de boss de l'alpha d'une meute, comme le champ `mecanique` d'un ennemi), formules de combat, récompenses (dont `butin_type` : matériaux selon le type de la créature vaincue), forge, tactiques de départ… |
 | `evenements.json` | Dialogues et événements de l'histoire |
 | `cartes/*.json` | Une carte par fichier : tuiles, bâtiments, habitants, coffres… |
 | `sons.json` | Musiques et bruitages (fabriqués par le jeu, sans fichier audio) |
