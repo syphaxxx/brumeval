@@ -55,7 +55,11 @@ void Game::forgeMenu(int sel) {
   for (size_t i = 0; i < list.size(); i++) {
     const ItemDef& d = item(list[i].id);
     FighterP owner = list[i].owner;
-    std::string id = d.id, who = owner ? utf8Prefix(owner->name(), 7) : "sac";
+    // (2026-10-26) deux groupes titrés au lieu de « sac » répété à chaque ligne ; le joueur automatique s'arrête au second
+    if (i == 0 && owner) m.items.push_back(menuHeader(T("Équipement porté")));
+    if (!owner && (i == 0 || list[i - 1].owner)) m.items.push_back(menuHeader(T("Dans le sac")));
+    int n = owner ? 0 : items.at(d.id);
+    std::string id = d.id, who = owner ? utf8Prefix(owner->name(), 7) : n > 1 ? "×" + std::to_string(n) : "";
     if (!forgeable(d)) {
       m.items.push_back({d.name, who, d.bonusText() + T(". Déjà au maximum (+") + std::to_string(d.forged) + ").", false, nullptr});
       continue;
@@ -63,9 +67,9 @@ void Game::forgeMenu(int sel) {
     const ItemDef& next = item(forgedId(d.forged ? d.base : d.id, d.forged + 1));
     std::string missing, cost = forgeCost(d, &missing);
     std::string help = T("En +") + std::to_string(next.forged) + " : " + next.bonusText() + T(" (au lieu de ") +
-                       (d.bonusText().empty() ? "rien" : d.bonusText()) + T("). Coût : ") + cost + "." +
+                       (d.bonusText().empty() ? T("rien") : d.bonusText()) + T("). Coût : ") + cost + "." +
                        (missing.empty() ? T(" Entrée : forger.") : T(" Il manque : ") + missing + ".");
-    int at = (int)i;
+    int at = (int)m.items.size();
     // Entrée : forge tout de suite (comme un achat en boutique ; le coût est dans l'aide en bas)
     MenuItem it{d.name, who, help, missing.empty(), [this, owner, id, at] {
                   forge(owner, id);

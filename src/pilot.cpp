@@ -1146,8 +1146,10 @@ void Pilot::forging() {
   Menu& t = G.menus.top();
   int idx = -1;
   if (forgeWanted())
-    for (int i = 0; i < (int)t.items.size() && idx < 0; i++)
-      if (t.items[i].enabled && !t.items[i].header && t.items[i].right != "sac") idx = i;  // l'équipement porté
+    for (int i = 0; i < (int)t.items.size() && idx < 0; i++) {
+      if (t.items[i].header && t.items[i].label == T("Dans le sac")) break;  // l'équipement porté seulement
+      if (t.items[i].enabled && !t.items[i].header) idx = i;
+    }
   if (idx < 0) {
     G.in.cancel = true;
     wait_ = .3f;
