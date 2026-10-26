@@ -782,6 +782,13 @@ void Battle::update(float dt) {
     startTips();
   }
   if (summaryOn_) {  // fenêtre des gains : Entrée (ou un clic) la ferme
+    bool key = G.in.confirm || G.in.cancel || G.in.mclick[0];
+    // pendant le remplissage, les barres pleines d'un coup (le joueur automatique ferme d'un coup, comme avant)
+    if (key && !autoPlay && !G.pilot_ && !gainRows_.empty() && gainsFill(G.time) < 1) {
+      fillT_ = G.time - 1;
+      G.in.confirm = G.in.cancel = G.in.mclick[0] = false;
+      return;
+    }
     if (G.in.confirm || G.in.cancel || G.in.mclick[0] || autoPlay || G.time - summaryT_ > 8) {  // ou toute seule après 8 s
       summaryOn_ = false;
       G.in.confirm = false;
@@ -2953,7 +2960,7 @@ void Battle::victory() {
     sound("victoire", false);
     sc.wait(.6f);
     sc.call([this] {
-      summary_ = {T("Entraînement réussi !")};
+      summary_ = gainNotes_ = {T("Entraînement réussi !")};
       summaryOn_ = true;
       summaryT_ = G.time;
       sc.halt();
@@ -2980,23 +2987,35 @@ void Battle::victory() {
   sc.call([this, share, res, goldGain] {
     const Rules& R = rules();
     summary_.clear();
-    levelUps_.clear();
+    gainRows_.clear(), gainNotes_.clear(), loot_.clear();
+    goldWon_ = goldGain;
+    auto level = [](const Fighter& f) { return f.lvl + (f.need() > 0 ? std::min(.999f, float(f.xp) / f.need()) : 0.f); };
+    auto found = [this](const std::string& id) {  // un objet de plus au butin dessiné (le même objet : un seul ×n)
+      for (auto& [i, n] : loot_)
+        if (i == id) return void(n++);
+      loot_.push_back({id, 1});
+    };
     bool up = false;
     if (share > 0) {
       for (auto& a : alive(allies)) {
         if (!mineToCommand(a)) continue;  // gardien à plusieurs : chacun ne fait progresser que ses combattants
         int before = a->lvl;
+        float from = level(*a);
         auto msgs = gainXp(*a, share);
+        GainRow row{a.get(), share, from, level(*a), {}};
+        for (int l = before + 1; l <= a->lvl; l++)
+          for (auto& ln : a->S().learn)
+            if (ln.lvl == l) row.learned.push_back({l, moveInfo(ln.move).name});
+        gainRows_.push_back(row);
         summary_.push_back(a->name() + " : +" + std::to_string(share) + T(" exp") + (a->lvl > before ? T(" · niveau ") + std::to_string(a->lvl) + " !" : ""));
         for (auto& m : msgs)
           if (m.find(T(" apprend ")) != std::string::npos) summary_.push_back("   " + m);
         up = up || a->lvl > before;
-        if (a->lvl > before) levelUps_.push_back(a.get());
       }
       bool others = false;
       for (auto& m : G.team)
         if (!isAlly(m) && m->alive()) gainXp(*m, res), others = true;
-      if (others && res > 0) summary_.push_back(T("Le reste de l'équipe : +") + std::to_string(res) + T(" exp"));
+      if (others && res > 0) summary_.push_back(T("Le reste de l'équipe : +") + std::to_string(res) + T(" exp")), gainNotes_.push_back(summary_.back());
     }
     if (goldGain > 0) {
       G.gold += goldGain;
@@ -3009,6 +3028,7 @@ void Battle::victory() {
         acc += float(chance);
         if (r < acc) {
           G.items[id]++;
+          found(id);
           summary_.push_back(T("Objet trouvé : ") + item(id).name);
           break;
         }
@@ -3019,6 +3039,7 @@ void Battle::victory() {
           for (auto& td : R.typeDrops)
             if (hasType(f->S(), typeOf(td.type)) && frand() < float(td.chance)) {
               G.items[td.item]++;
+              found(td.item);
               summary_.push_back(T("Objet trouvé : ") + item(td.item).name);
             }
     }
@@ -3026,9 +3047,15 @@ void Battle::victory() {
     for (auto& l : summary_) log.push_back("  " + l);
     summaryOn_ = true;
     summaryT_ = G.time;
+    fillT_ = G.time + .3f;  // la fenêtre apparaît, puis les barres se remplissent
     sc.halt();
   });
   sc.call([this] { finish(BattleResult::Win); });
+}
+
+float Battle::gainsFill(float t) const {
+  float k = std::clamp(t - fillT_, 0.f, 1.f);  // une seconde, de plus en plus lentement
+  return 1 - (1 - k) * (1 - k) * (1 - k);
 }
 
 void Battle::finish(BattleResult r) {
@@ -3186,7 +3213,7 @@ void Battle::drawHud(float t) {
       Color sc2 = rgb(statusColor(a->status));
       g.rect(hx + 45, y + 1, 5, 5, sc2);
     }
-    if (a->alive() && guarding_.count(a.get())) {  // (2026-10-24) en garde : un petit bouclier
+    if (a->alive() && guarding_.count(a.get()) && !ending_) {  // (2026-10-24) en garde : un petit bouclier (plus après la fin)
       float gx = hx + 56, gy = y;
       g.poly({{gx - 3, gy}, {gx + 3, gy}, {gx + 3, gy + 3}, {gx, gy + 6}, {gx - 3, gy + 3}}, rgb(0x8fd0ff));
       g.poly({{gx - 1.5f, gy + 1}, {gx + 1.5f, gy + 1}, {gx + 1.5f, gy + 3}, {gx, gy + 4.5f}, {gx - 1.5f, gy + 3}}, rgb(0x1c2a78));
@@ -3694,7 +3721,7 @@ void Battle::draw() {
       if (guarding_.count(f.get())) guardT_.emplace(f.get(), t);
       else guardT_.erase(f.get());
   auto drawGuard = [&](const FighterP& f, float gx, float gy) {
-    if (!guarding_.count(f.get()) || !f->alive()) return;
+    if (!guarding_.count(f.get()) || !f->alive() || ending_) return;  // combat fini : plus de garde à montrer
     // il se déplie en 0,2 s, de la tranche à toute sa largeur (un peu plus large un instant), puis son bord luit
     float u = (t - guardT_[f.get()]) / .2f, w = u >= 1 ? 1.f : std::max(.15f, std::sin(std::max(0.f, u) * 2) / std::sin(2.f));
     Color rim = mix(rgb(0xffffff), rgb(0x1c2a78), std::clamp((u - 1) * 1.5f, 0.f, 1.f));
@@ -4136,10 +4163,10 @@ void Battle::draw() {
   if (!ending_ && !summaryOn_ && !follower()) drawTurnOrder(orderY, orderX, orderMax);  // ordre des prochains tours, sous le message
   if (G.menus.shownDepth() <= 1) drawHud(t);  // un sous-menu ouvert prend sa place
   drawWeather();
-  if (summaryOn_)  // niveau gagné : une colonne d'étincelles dorées monte autour de l'allié
-    for (const Fighter* f : levelUps_)
+  if (summaryOn_)  // niveau gagné : une colonne d'étincelles dorées monte autour de l'allié, dès que sa barre y arrive
+    for (auto& r : gainRows_)
       for (auto& a : allies)
-        if (a.get() == f && a->alive()) {
+        if (a.get() == r.f && a->alive() && int(r.at(gainsFill(t))) > int(r.from)) {
           Pt p = pos(a);
           float age = t - summaryT_;
           for (int k = 0; k < 10; k++) {
@@ -4147,14 +4174,44 @@ void Battle::draw() {
             float s = 1.5f * std::sin(ph * 3.14159f);
             g.rect(x - s, y, 2 * s + 1, 1, rgb(0xffe680, uint8_t(230 * (1 - ph)))), g.rect(x, y - s, 1, 2 * s + 1, rgb(0xffe680, uint8_t(230 * (1 - ph))));
           }
-          if (age < 1.2f) g.text(p.x, p.y - 44 - age * 8, T("Niveau +"), rgb(0xffe066, uint8_t(255 * std::min(1.f, (1.2f - age) * 3))), 1);
         }
   if (summaryOn_) {  // fenêtre des gains de la victoire
-    // à droite, du côté des ennemis vaincus : l'équipe reste visible (pose de victoire)
-    int w = Gfx::textW(T("Entrée : continuer"));
-    for (auto& l : summary_) w = std::max(w, Gfx::textW(l));
-    w = std::min(312, w + 18);
-    int x = std::max(4, 316 - w), h = 36 + 11 * (int)summary_.size(), y = std::max(26, 92 - h / 2);
+    // à droite, du côté des ennemis vaincus : l'équipe reste visible (pose de victoire). (2026-10-26) une ligne par
+    // combattant (portrait, nom, barre d'expérience qui se remplit, « Niveau N ! »), puis l'or et le butin en icônes
+    float fill = gainsFill(t);
+    auto levelText = [](int n) {
+      std::string s = T("Niveau {n} !");
+      size_t at = s.find("{n}");
+      return at == std::string::npos ? s : s.replace(at, 3, std::to_string(n));
+    };
+    struct Chip {
+      std::string text;
+      const SpriteRect* icon;
+    };
+    std::vector<Chip> chips;  // l'or (le premier, avec une pièce), puis chaque objet
+    if (goldWon_ > 0) chips.push_back({T("Or : +") + std::to_string(goldWon_), nullptr});
+    for (auto& [id, n] : loot_) chips.push_back({item(id).name + (n > 1 ? " ×" + std::to_string(n) : ""), item(id).icon.empty() ? nullptr : findSprite(item(id).icon)});
+    int w = Gfx::textW(T("Entrée : continuer")) + 2, learned = 0;
+    for (auto& r : gainRows_) {
+      int right = Gfx::textW("+" + std::to_string(r.xp) + T(" exp"));
+      if (int(r.to) > int(r.from)) right = std::max(right, Gfx::textW(levelText(int(r.to))));
+      w = std::max(w, 22 + Gfx::textW(r.f->name()) + 8 + right);
+      for (auto& [lv, mv] : r.learned) w = std::max(w, 28 + Gfx::textW(T("Apprend ") + mv)), learned++;
+    }
+    for (auto& n : gainNotes_) w = std::max(w, Gfx::textW(n));
+    for (auto& c : chips) w = std::max(w, 13 + Gfx::textW(c.text));
+    w = std::min(312, w + 16);
+    std::vector<std::vector<size_t>> chipLines;  // les icônes à la suite, à la ligne quand la place manque
+    for (int i = 0, used = 0; i < (int)chips.size(); i++) {
+      int cw = 13 + Gfx::textW(chips[(size_t)i].text);
+      if (chipLines.empty() || used + 8 + cw > w - 16) chipLines.push_back({}), used = -8;
+      chipLines.back().push_back((size_t)i), used += 8 + cw;
+    }
+    int h = 18 + 15 * (int)gainRows_.size() + (gainNotes_.empty() ? 0 : 2 + 11 * (int)gainNotes_.size()) +
+            (chipLines.empty() ? 0 : 2 + 12 * (int)chipLines.size()) + 14;
+    learned = std::clamp((PANEL_Y - 6 - h) / 10, 0, learned);  // techniques apprises : autant de lignes que la place le permet
+    h += 10 * learned;
+    int x = std::max(4, 316 - w), y = std::max(top.empty() ? 4 : int(orderY), std::min(92 - h / 2, PANEL_Y - 2 - h));
     g.window(x, y, w, h);
     bool big = Gfx::textW(T("Victoire !")) * 2 <= x - 8;  // le grand titre a la place à gauche : la fenêtre dit « Gains »
     g.text(x + w / 2, y + 5, big ? T("Gains") : T("Victoire !"), GOLD, 1);
@@ -4170,7 +4227,44 @@ void Battle::draw() {
         }
       }
     }
-    for (size_t i = 0; i < summary_.size(); i++) g.text(x + 8, y + 19 + i * 11, summary_[i], WHITE);
+    float ly = y + 18;
+    for (auto& r : gainRows_) {
+      float v = r.at(fill);  // la barre en niveaux : la partie entière est le niveau atteint
+      int lv = int(v), lv0 = int(r.from);
+      drawFighterIcon(g, *r.f, x + 18, ly + 5, 20, 10, true);
+      g.text(x + 30, ly, r.f->name(), WHITE);
+      if (lv > lv0) g.text(x + w - 8, ly, levelText(lv), GOLD, 2);
+      else g.text(x + w - 8, ly, "+" + std::to_string(int(r.xp * fill + .5f)) + T(" exp"), rgb(0xd8def2), 2);
+      float bx = x + 30, bw = x + w - 8 - bx, part = v - lv;
+      float flash = lv > lv0 && fill < 1 ? std::max(0.f, 1 - part * 5) : 0;  // éclair blanc au passage d'un niveau
+      g.rect(bx, ly + 10, bw, 3, rgb(0x03051a, 200));
+      g.rect(bx, ly + 10, bw * part, 3, mix(rgb(0xc89af0), rgb(0xffffff), flash));
+      g.rect(bx, ly + 10, bw * part, 1, mix(rgb(0xe8d4ff), rgb(0xffffff), flash));  // reflet
+      ly += 15;
+      for (auto& [l, mv] : r.learned)
+        if (learned > 0) {
+          if (lv >= l) g.text(x + 36, ly, T("Apprend ") + mv, BLUE);  // quand la barre arrive à ce niveau
+          ly += 10, learned--;
+        }
+    }
+    if (!gainNotes_.empty()) ly += 2;
+    for (auto& n : gainNotes_) g.text(x + 8, ly, n, WHITE), ly += 11;
+    if (!chipLines.empty()) ly += 2;
+    for (auto& line : chipLines) {
+      float cx = x + 8;
+      for (size_t i : line) {
+        const Chip& c = chips[i];
+        bool coin = goldWon_ > 0 && i == 0;
+        if (coin) menuGlyph(g, "piece", cx, ly - 1.5f);
+        else if (c.icon) {
+          float k = std::min(1.f, 11.f / std::max(c.icon->w, c.icon->h));
+          g.sprite(*c.icon, cx + (11 - c.icon->w * k) / 2, ly - 1.5f + (11 - c.icon->h * k) / 2, false, k);
+        }
+        g.text(cx + 13, ly, c.text, coin ? rgb(0xffd34d) : WHITE);
+        cx += 13 + Gfx::textW(c.text) + 8;
+      }
+      ly += 12;
+    }
     g.text(x + w / 2, y + h - 12, T("Entrée : continuer"), rgb(0xaab3d8), 1);
   }
   G.menus.draw(g, t);

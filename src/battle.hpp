@@ -152,9 +152,24 @@ class Battle {
   bool finished_ = false, ending_ = false;
   // Fin d'un combat gagné : tous les gains dans une fenêtre, fermée par Entrée
   std::vector<std::string> summary_;
-  std::vector<const Fighter*> levelUps_;  // alliés qui ont pris un niveau (étincelles dorées pendant la fenêtre des gains)
   bool summaryOn_ = false;
   float summaryT_ = 0;  // moment où elle s'est ouverte (elle se ferme seule après 8 s)
+  // (2026-10-26) ce que la fenêtre dessine (summary_ reste le texte du journal) : une ligne par combattant, sa barre
+  // d'expérience qui se remplit de `from` à `to` (en niveaux : 12,4 = niveau 12 et 40 % du suivant ; un niveau passé :
+  // « Niveau N ! » et des étincelles dorées autour de lui sur le damier), l'or et le butin
+  struct GainRow {
+    const Fighter* f;
+    int xp;
+    float from, to;
+    std::vector<std::pair<int, std::string>> learned;  // (niveau, technique) : montrée quand la barre y arrive
+    float at(float k) const { return k >= 1 ? to : from + (to - from) * k; }  // la barre à l'avancement k (0 à 1)
+  };
+  std::vector<GainRow> gainRows_;
+  std::vector<std::string> gainNotes_;               // « Le reste de l'équipe : +N exp », « Entraînement réussi ! »
+  std::vector<std::pair<std::string, int>> loot_;    // objets gagnés (identifiant, nombre), dans l'ordre
+  int goldWon_ = 0;
+  float fillT_ = 0;  // début du remplissage des barres (Entrée pendant le remplissage le termine)
+  float gainsFill(float t) const;  // avancement du remplissage, de 0 à 1
   BattleResult result_;
 
   bool isAlly(const FighterP& f) const;

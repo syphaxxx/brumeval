@@ -398,6 +398,8 @@ Après la 3.7 (2026-10-26, « que les coups se sentent ») : arrêt sur image de
 Brisure ou un coup qui abat (dessin seul : ni l'ATB ni le Script ni le réseau n'attendent), étirement du lanceur à l'élan,
 cible écrasée et repoussée selon la force du coup, éclair blanc d'une image (critique, Brisure), nombres qui rebondissent
 (critique doré en grand, faiblesse orange, résistance gris-bleu). Captures `coup_critique`, `coup_brisure`.
+Fenêtre des gains (2026-10-26) : une ligne par combattant avec son portrait et sa barre d'expérience qui se remplit
+(« Niveau N ! » doré), l'or et le butin en icônes ; Entrée termine le remplissage. Captures `gains_debut`, `gains_niveau`.
 
 ## Étape 2 nonies — Gameplay et menus (demandé le 2026-10-23)
 

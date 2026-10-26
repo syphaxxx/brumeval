@@ -190,7 +190,7 @@ bool typeMark(Gfx& g, float cx, float cy, int type, uint8_t alpha) {
 }
 
 // (2026-10-23) Petits dessins pour les entrées de menu qui n'ont pas de sprite (case de 11x11 en x, y)
-static void menuGlyph(Gfx& g, const std::string& n, float x, float y, uint8_t alpha) {
+void menuGlyph(Gfx& g, const std::string& n, float x, float y, uint8_t alpha) {
   auto rgb = [alpha](uint32_t c) { return ::rgb(c, alpha); };  // une entrée grisée : le dessin à moitié transparent
   float cx = x + 5.5f, cy = y + 5.5f;
   if (n.size() >= 7 && n[0] == '#') {  // « #rrggbb » : une pastille de cette couleur ; suivi d'un numéro (typeDot) : ce type

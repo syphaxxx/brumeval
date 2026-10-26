@@ -450,6 +450,11 @@ code) ; `docs/GUIDE.md` les range par domaine.
   du combat : trois), puis la ligne de la météo, de l'ordre des tours et des renforts :
   en combat, `moveBrief` (une ligne compacte : genre, type, puissance, coût, portée, zone, effets, rythme) remplace
   `moveHelp`, et les objets n'ont que `itemDetails`. Météo à gauche de l'ordre des tours.
+  Fenêtre des gains (2026-10-26, dessin seul : `summary_` reste le texte du journal) : une ligne par combattant
+  (`gainRows_` : portrait `drawFighterIcon`, barre d'expérience qui se remplit en une seconde de l'ancienne valeur à la
+  nouvelle, `gainsFill`, « Niveau N ! » doré, « Apprend … » si la place le permet), puis l'or (pièce de `menuGlyph`) et le
+  butin (`loot_`, icônes des objets) ; Entrée ou un clic pendant le remplissage le termine, puis ferme (le joueur
+  automatique ferme d'un coup, comme avant) ; plus de bouclier de garde après la fin (`ending_`). Captures `gains_debut`, `gains_niveau`.
 - Choix sur le damier (3.2, demandé le 2026-10-15) : la cible (`pickFoe`, `pickAlly`) et la case de « Se déplacer » se
   choisissent sur le damier (flèches : la case la plus proche dans cette direction ; souris : survol et clic ; Entrée,
   Échap). Le menu existe toujours mais `Menu::hidden` (pas dessiné ni cliquable : joueur automatique, mode test et aide
@@ -665,8 +670,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   temps sur un coffre fermé (`drawChest(…, t)`), et à l'ouverture des rayons de lumière et l'icône de l'objet qui monte
   (`Game::chestFx_`). Bulles d'humeur : de temps en temps, un habitant sans bulle de quête (ni dresseur) montre une
   note de musique, « … » ou un cœur (selon sa case ; dessin seul, `drawMap`).
-  Combat : les alliés qui gagnent un niveau sont entourés d'étincelles dorées pendant la fenêtre des gains
-  (`Battle::levelUps_`).
+  Combat : les alliés qui gagnent un niveau sont entourés d'étincelles dorées pendant la fenêtre des gains, dès que
+  leur barre d'expérience y arrive (`Battle::gainRows_`).
 - Stratégie 2.7 (FF7, boss en phases) : gemmes `ItemDef::gem` (`gemMove`, `gemBonus` en %, `gemSupport`/`gemValue`),
   `Fighter::gems[emplacement]` (ligne `gemmes <emplacement> id…` après `equipement`, aussi dans les échanges),
   `gemSockets` (règles `gemmes`), `trimGems` (rendues au sac quand l'équipement change), `gemSupport(f, effet)` ;
