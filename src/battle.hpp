@@ -92,11 +92,15 @@ class Battle {
   Net online() const { return net_; }
 
  private:
+  // Style d'un texte flottant (2026-10-26) : nombre de dégâts (il rebondit en apparaissant ; la cible recule et s'écrase),
+  // critique (en grand), faiblesse, résistance, coup qui abat, Brisure. Les gros coups figent un instant le lanceur et la cible.
+  enum PopStyle { PopDamage = 1, PopCrit = 2, PopWeak = 4, PopResist = 8, PopKO = 16, PopBreak = 32 };
   struct Pop {
     float x, y;
     std::string text;
     Color col;
     float t;
+    int style = 0;
   };
   // Action choisie par l'ordinateur (ennemis, ou alliés en mode automatique) ou par une tactique
   struct Plan {
@@ -283,7 +287,19 @@ class Battle {
   void drawZones(float t);
   void drawHud(float t);
   void moveTo(FighterP a, int cell);  // « Se déplacer » : change de case, puis choisit son action
-  void pop(const FighterP& f, const std::string& t, Color c);
+  void pop(const FighterP& f, const std::string& t, Color c, int style = 0);  // style : PopStyle (envoyé avec le texte)
+  // À l'œil (2026-10-26, dessin seul, posé par pop) : coup reçu (recul selon sa force, écrasement, éclair blanc d'une image
+  // pour un critique ou une Brisure) ; arrêt sur image des gros coups : les minuteries de dessin des combattants de stopped_
+  // s'arrêtent de stopT_ à stopT_ + stopLen_ (since), jamais la logique (ATB, Script, réseau)
+  struct Impact {
+    float t0 = -10, force = 0, dir = 1;  // force : 0 à 1 (part des PV max) ; dir : sens du recul (+1 : vers la droite)
+    bool flash = false;                  // éclair blanc pas encore dessiné
+  };
+  std::map<const Fighter*, Impact> impacts_;
+  std::set<const Fighter*> stopped_;
+  float stopT_ = -10, stopLen_ = 0;
+  float since(const Fighter* f, float t0) const;     // temps de dessin écoulé depuis t0 pour f, sans l'arrêt sur image
+  void squash(const FighterP& f, float x, float y);  // étire ou écrase son sprite (élan, impact), ancré à ses pieds
   // Bruitage (audio.hpp), seulement pour le combat affiché (pas les simulations) ;
   // share : l'hôte ou le chef le fait aussi entendre aux autres joueurs
   void sound(const std::string& id, bool share = true);

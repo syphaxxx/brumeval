@@ -394,6 +394,10 @@ panneau des combats et jauges. Captures du mode test : `donjon_<carte>`, `carte_
 `combat_mines`, `meteo_orage`, `interieur_nuit`. Pistes : poses d'attaque des héros, effets de sorts, décors des cartes.
 Après la 3.5 (branche `graphismes-2`) : Marais Pâle (`eau`), lumière des lieux (`lumiere`), nom des boss et « Victoire ! » en
 grand, onglet du nom dans les dialogues, écran de fin à l'aube, icônes et jauges dans les menus.
+Après la 3.7 (2026-10-26, « que les coups se sentent ») : arrêt sur image de 50 à 90 ms sur un critique, une faiblesse, une
+Brisure ou un coup qui abat (dessin seul : ni l'ATB ni le Script ni le réseau n'attendent), étirement du lanceur à l'élan,
+cible écrasée et repoussée selon la force du coup, éclair blanc d'une image (critique, Brisure), nombres qui rebondissent
+(critique doré en grand, faiblesse orange, résistance gris-bleu). Captures `coup_critique`, `coup_brisure`.
 
 ## Étape 2 nonies — Gameplay et menus (demandé le 2026-10-23)
 

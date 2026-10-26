@@ -15,7 +15,7 @@
 #include "tactics.hpp"
 
 static const Color WHITE = rgb(0xffffff), GOLD = rgb(0xffe066), GREY = rgb(0xb9c0de), GREEN = rgb(0x7dffa8), BLUE = rgb(0x8fd0ff),
-                   RED = rgb(0xff8a7a);
+                   RED = rgb(0xff8a7a), WEAK = rgb(0xffa04a), RESIST = rgb(0x9aa8c8);  // faiblesse, résistance (2026-10-26)
 
 // ---------------------------------------------------------------------------
 // Textes d'aide
@@ -405,7 +405,7 @@ std::vector<FighterP> Battle::alive(const std::vector<FighterP>& v) const {
 
 // Nombre ou texte flottant au-dessus d'un combattant ; ils s'empilent s'ils apparaissent ensemble
 // (3.3 : sans chevaucher ceux des voisins, et jamais sur la ligne de l'ordre des tours)
-void Battle::pop(const FighterP& f, const std::string& t, Color c) {
+void Battle::pop(const FighterP& f, const std::string& t, Color c, int style) {
   Pt p = pos(f);
   float w = Gfx::textW(t) + 4, x = std::clamp(p.x, w / 2 + 2, 318 - w / 2), y0 = std::max(popTop_, p.y - 22);
   // Chaque texte monte de 8 px pendant son premier tiers de seconde : un texte plus ancien est déjà monté d'autant
@@ -422,8 +422,51 @@ void Battle::pop(const FighterP& f, const std::string& t, Color c) {
     float up = y0 - 11 * ((k + 1) / 2), down = y0 + 11 * (k / 2);
     y = k % 2 && up >= popTop_ ? up : down;
   }
-  pops.push_back({x, y, t, c, G.time});
-  if (net_ == Net::Host || net_ == Net::Lead) send_(-1, Json{{"t", "pop"}, {"f", mine(f)}, {"txt", t}, {"c", Json::array({c.r, c.g, c.b})}});
+  pops.push_back({x, y, t, c, G.time, style});
+  if (style && shown()) {  // (2026-10-26) dessin seul : la cible recule loin du lanceur et s'écrase ; un gros coup fige les deux
+    Impact& im = impacts_[f.get()];
+    bool same = im.t0 == G.time;  // un critique qui brise ou qui abat : tout dans la même image
+    float force = style & PopDamage ? std::clamp(std::atoi(t.c_str()) * 4.f / std::max(1, f->mhp), 0.f, 1.f) : 0.f;  // t : les dégâts
+    if (style & PopKO) force = 1;
+    float dx = anim_.actor && anim_.actor != f ? pos(f).x - pos(anim_.actor).x : 0;
+    im = {G.time, same ? std::max(im.force, force) : force, std::abs(dx) > 1 ? (dx > 0 ? 1.f : -1.f) : -float(facingOf(f)),
+          (same && im.flash) || (style & (PopCrit | PopBreak))};
+    float stop = style & (PopKO | PopBreak) ? .09f : style & PopCrit ? .07f : style & PopWeak ? .05f : 0.f;
+    if (stop > 0) {
+      if (G.time > stopT_ + stopLen_) stopped_.clear(), stopT_ = G.time, stopLen_ = 0;
+      stopLen_ = std::max(stopLen_, G.time + stop - stopT_);
+      stopped_.insert(f.get());
+      if (anim_.actor) stopped_.insert(anim_.actor.get());
+    }
+  }
+  if (net_ == Net::Host || net_ == Net::Lead) {
+    Json msg{{"t", "pop"}, {"f", mine(f)}, {"txt", t}, {"c", Json::array({c.r, c.g, c.b})}};
+    if (style) msg["s"] = style;
+    send_(-1, msg);
+  }
+}
+
+float Battle::since(const Fighter* f, float t0) const {
+  float e = G.time - t0;
+  if (stopped_.count(f)) e -= std::max(0.f, std::min(G.time, stopT_ + stopLen_) - std::max(t0, stopT_));
+  return e;
+}
+
+// Étirement et écrasement (2026-10-26, dessin seul) : le lanceur s'allonge dans son élan (ou s'étire vers le haut d'un petit
+// bond), la cible s'écrase à l'impact puis rebondit un peu ; ancré à ses pieds (x, y : son point de dessin)
+void Battle::squash(const FighterP& f, float x, float y) {
+  float sx = 1, sy = 1;
+  if (float e = since(f.get(), anim_.t0); anim_.actor == f && e >= 0 && e < .4f) {
+    float k = std::sin(3.14159f * e / .4f);
+    if (anim_.fx == Fx::Hit) sx += .1f * k, sy -= .07f * k;
+    else sx -= .05f * k, sy += .07f * k;
+  }
+  if (auto it = impacts_.find(f.get()); it != impacts_.end())
+    if (float u = since(f.get(), it->second.t0) / .3f; u >= 0 && u < 1) {
+      float q = (1 - u) * (1 - u) * std::cos(u * 6) * (.06f + .08f * it->second.force);
+      sx *= 1 + q, sy *= 1 - q;
+    }
+  G.g.squashX = sx, G.g.squashY = sy, G.g.squashAt = {x, y + 14};
 }
 
 bool Battle::shown() const { return G.battle_.get() == this; }
@@ -472,7 +515,7 @@ void Battle::startAnim(const FighterP& a, const std::vector<FighterP>& targets, 
 // combattant touché tremble un instant
 Pt Battle::offset(const FighterP& f) const {
   Pt o{0, 0};
-  float e = G.time - anim_.t0;
+  float e = since(f.get(), anim_.t0);  // (2026-10-26) arrêté pendant un arrêt sur image
   if (anim_.actor == f && e >= 0 && e < .4f) {
     float k = std::sin(3.14159f * e / .4f);
     if (anim_.fx == Fx::Hit) {  // vers sa cible (sur l'échiquier, elle peut être derrière lui)
@@ -486,11 +529,13 @@ Pt Battle::offset(const FighterP& f) const {
     else o.y = -6 * k;
   }
   for (auto& b : bursts_)  // (2026-10-25) riposte : un court élan vers l'attaquant (son action est encore anim_)
-    if (float r = G.time - b.t0; b.f == f && !std::strcmp(b.fx, "riposte") && anim_.actor && anim_.actor != f && r >= 0 && r < .3f) {
+    if (float r = since(f.get(), b.t0); b.f == f && !std::strcmp(b.fx, "riposte") && anim_.actor && anim_.actor != f && r >= 0 && r < .3f) {
       float dx = cellPos(cellOf(anim_.actor)).x - cellPos(cellOf(f)).x;
       o.x += (std::abs(dx) > 1 ? (dx > 0 ? 1.f : -1.f) : facesRight(f) ? 1.f : -1.f) * 10 * std::sin(3.14159f * r / .3f);
     }
-  if (blink == f && G.time - blinkT < .3f) o.x += std::sin((G.time - blinkT) * 70) * 2.5f;
+  if (float b = since(f.get(), blinkT); blink == f && b < .3f) o.x += std::sin(b * 70) * 2.5f;
+  if (auto it = impacts_.find(f.get()); it != impacts_.end())  // (2026-10-26) recul selon la force du coup, puis il revient
+    if (float u = since(f.get(), it->second.t0) / .25f; u >= 0 && u < 1) o.x += it->second.dir * (2 + 5 * it->second.force) * (1 - u) * (1 - u);
   if (G.time - shakeT_ < .35f) o.y += std::sin((G.time - shakeT_) * 90) * 2.f * (1 - (G.time - shakeT_) / .35f);  // tremblement (brisure)
   return o;
 }
@@ -615,15 +660,16 @@ void Battle::drawTypeFx(const Pt& p, float k) {
 
 void Battle::drawAnim() {
   Gfx& g = G.g;
-  float e = G.time - anim_.t0 - .2f;  // l'effet arrive sur la cible juste après l'élan
-  if (e < 0 || e > .6f) return;
-  float k = e / .6f;  // 0 au début, 1 à la fin
+  // l'effet arrive sur la cible juste après l'élan ; 0 au début, 1 à la fin (2026-10-26 : il s'arrête avec elle pendant
+  // un arrêt sur image)
+  auto phase = [&](const FighterP& f) { return (since(f.get(), anim_.t0) - .2f) / .6f; };
+  float k = anim_.targets.empty() ? -1 : phase(anim_.targets[0]);
   auto fade = [](Color c, float a) {
     c.a = uint8_t(std::clamp(a, 0.f, 1.f) * 255);
     return c;
   };
   // Limite : une invocation (planche des sorts) se dresse au-dessus des cibles, selon le type de la technique
-  if (anim_.limit && !anim_.targets.empty()) {
+  if (anim_.limit && k >= 0 && k <= 1) {
     std::string ty = anim_.type >= 0 ? types()[anim_.type].id : "";
     const char* who = ty == "feu" || ty == "foudre" ? "inv_dragon"
                       : ty == "eau" || ty == "glace" || ty == "esprit" || ty == "lumiere" ? "inv_esprit"
@@ -638,6 +684,8 @@ void Battle::drawAnim() {
     }
   }
   for (auto& f : anim_.targets) {
+    k = phase(f);
+    if (k < 0 || k > 1) continue;
     Pt p = pos(f);
     p.y -= 4;
     Color c = anim_.col, white = rgb(0xffffff);
@@ -2254,7 +2302,9 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
   std::string fx = crit ? "critique" : magic ? "sort_" + types()[m.type].id : m.pace == Pace::Quick ? "coup_rapide" : m.pace == Pace::Heavy ? "coup_lourd" : "coup";
   if (!audio::has(fx)) fx = magic ? "sort" : "coup";
   sound(fx);
-  pop(d, std::to_string(dmg), eff > 1 ? GOLD : guarding_.count(d.get()) ? rgb(0x8fd0ff) : eff < 1 ? GREY : WHITE);  // bleu : encaissé en garde
+  // (2026-10-26) critique : doré et en grand ; faiblesse : orange ; résistance : gris-bleu ; bleu : encaissé en garde
+  pop(d, std::to_string(dmg), crit ? GOLD : eff > 1 ? WEAK : guarding_.count(d.get()) ? rgb(0x8fd0ff) : eff < 1 ? RESIST : WHITE,
+      PopDamage | (crit ? PopCrit : 0) | (eff > 1 ? PopWeak : eff < 1 ? PopResist : 0) | (d->alive() ? 0 : PopKO));
   if (guarding_.count(d.get()) && shown()) bursts_.push_back({d, "garde", G.time});  // (2026-10-25) et l'éclat du bouclier
   if (guarding_.count(d.get()) && isAlly(d)) sound("bouclier");                      // qu'un allié en garde encaisse s'entend
   if (crit) pop(d, T("Critique !"), RED), shakeT_ = G.time;
@@ -2262,8 +2312,8 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
     pop(d, T("Dans le dos !"), rgb(0xffb070));
     if (isAlly(a)) tip("dos");
   }
-  if (eff > 1) pop(d, T("Efficace !"), GOLD);
-  else if (eff < 1) pop(d, T("Résiste"), GREY);
+  if (eff > 1) pop(d, T("Efficace !"), WEAK);
+  else if (eff < 1) pop(d, T("Résiste"), RESIST);
   if (isAlly(d) || duel()) d->lim = std::min(100.f, d->lim + dmg * float(R.limitGain) / d->mhp);  // en duel, les deux équipes
   if (double steal = gemSupport(*a, "vol_vie"); steal > 0 && a->alive() && a->hp < a->mhp) {  // gemme de vol de vie
     int h = std::max(1, int(dmg * steal));
@@ -2493,7 +2543,7 @@ void Battle::breakFoe(const FighterP& d) {
   for (auto it = warnings_.begin(); it != warnings_.end();)
     if (it->who == d) it = warnings_.erase(it);
     else ++it;
-  pop(d, T("BRISÉ !"), GOLD);
+  pop(d, T("BRISÉ !"), GOLD, PopBreak);
   bursts_.push_back({d, "brisure", G.time});
   sound("brisure");
   flashT = G.time, flashCol = rgb(0xffe066);
@@ -3453,7 +3503,9 @@ void Battle::draw() {
     Color c = rgb(0x000000, uint8_t((28 - i) * 2));
     g.rect(L + i, 0, 1, SCREEN_H, c), g.rect(R - 1 - i, 0, 1, SCREEN_H, c);
   }
-  bool blinking = blink && t - blinkT < .42f && int((t - blinkT) / .07f) % 2 == 0;
+  // (2026-10-26) visible d'abord, pour que l'impact (éclair, écrasement, arrêt sur image) se voie
+  float blinkE = blink ? since(blink.get(), blinkT) : 1;
+  bool blinking = blink && blinkE < .42f && int(blinkE / .07f) % 2 == 1;
   // Échiquier (3.4) : une dalle par case, claires et foncées en alternance ; la moitié de chaque camp légèrement
   // teintée (bleu : le nôtre, rouge : l'adverse), la ligne de front au milieu
   {
@@ -3677,6 +3729,18 @@ void Battle::draw() {
             y + std::sin(sp + 4.2f) * d, col);
     }
   };
+  // (2026-10-26) avant de dessiner un combattant : son étirement ou écrasement, et l'éclair blanc d'un critique ou d'une
+  // Brisure (une seule image) ; after() remet le dessin normal. Pas de traînée pendant le recul d'un coup reçu.
+  auto before = [&](const FighterP& f, float x, float y) {
+    squash(f, x, y);
+    auto it = impacts_.find(f.get());
+    if (it != impacts_.end() && it->second.flash) it->second.flash = false, g.spriteFlash = 1;
+  };
+  auto after = [&] { g.squashX = g.squashY = 1, g.spriteFlash = 0; };
+  auto recoiling = [&](const FighterP& f) {
+    auto it = impacts_.find(f.get());
+    return it != impacts_.end() && since(f.get(), it->second.t0) < .25f;
+  };
   for (auto& f : shown) {
     Pt p = pos(f);
     Pt o = offset(f);
@@ -3692,7 +3756,7 @@ void Battle::draw() {
         g.rect(std::round(p.x + std::cos(ang) * r * 1.4f), std::round(p.y + 13 + std::sin(ang) * r * .45f), 2, 1, c);
       }
     }
-    if (std::abs(o.x) > 5 && f->alive() && !(blinking && blink == f)) {  // élan : deux silhouettes pâles derrière l'attaquant
+    if (std::abs(o.x) > 5 && f->alive() && !(blinking && blink == f) && !recoiling(f)) {  // élan : deux silhouettes pâles derrière l'attaquant
       float s = isAlly(f) ? 1.f : f->boss ? 1.45f : f->sp == "brumelin" ? .85f : 1.f, a0 = g.alpha;
       for (float k : {.3f, .6f}) {
         g.alpha = a0 * (.12f + .18f * k);
@@ -3704,9 +3768,11 @@ void Battle::draw() {
       float s = f->boss ? 1.45f : f->sp == "brumelin" ? .85f : 1.f;
       if (dim) g.alpha = .45f;
       if (!f->alive()) {  // vaincu : il pâlit et s'efface en s'enfonçant un peu
-        float k = std::clamp((t - koT_[f.get()]) / .6f, 0.f, 1.f);
+        float k = std::clamp(since(f.get(), koT_[f.get()]) / .6f, 0.f, 1.f);
         g.alpha = 1 - k;
-        drawFighterSprite(g, *f, p.x, p.y + k * 4, s, false, t);
+        before(f, p.x + o.x, p.y);  // (2026-10-26) le coup qui l'abat le repousse et l'écrase encore
+        drawFighterSprite(g, *f, p.x + o.x, p.y + k * 4, s, false, t);
+        after();
         g.alpha = (1 - k) * .8f;
         g.ellipse(p.x, p.y - 4, 10 + k * 14, 8 + k * 10, rgb(0xffffff, 120));
         g.alpha = 1;
@@ -3718,7 +3784,11 @@ void Battle::draw() {
       float a0 = g.alpha;
       if (veil) g.alpha = a0 * .45f;
       if (armor) g.spriteTint = rgb(0xa8b4c8);
-      if (!(blinking && blink == f)) drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, s, facesRight(f), t + p.x * .01f);  // vers l'adversaire le plus proche
+      if (!(blinking && blink == f)) {
+        before(f, p.x + o.x, p.y + o.y);
+        drawFighterSprite(g, *f, p.x + o.x, p.y + o.y, s, facesRight(f), t + p.x * .01f);  // vers l'adversaire le plus proche
+        after();
+      }
       g.spriteTint = rgb(0xffffff), g.alpha = a0;
       if (veil)
         for (int i = 0; i < 6; i++) {
@@ -3804,7 +3874,7 @@ void Battle::draw() {
       float a = t - summaryT_ - (p.x + p.y) * .004f;
       if (a > 0 && a < 1.5f) hop = -std::round(std::abs(std::sin(a * 6.2832f)) * 5);
     }
-    if (std::abs(o.x) > 3 && pose.empty() && !(blinking && blink == f)) {  // (2026-10-21) l'élan laisse deux traînées
+    if (std::abs(o.x) > 3 && pose.empty() && !(blinking && blink == f) && !recoiling(f)) {  // (2026-10-21) l'élan laisse deux traînées
       float keepA = g.alpha;
       for (float k : {.35f, .65f}) {
         g.alpha = keepA * (k < .5f ? .18f : .3f);
@@ -3812,8 +3882,12 @@ void Battle::draw() {
       }
       g.alpha = keepA;
     }
-    if (!(blinking && blink == f) && !(!pose.empty() && drawFighterPose(g, *f, pose, p.x + o.x, p.y + o.y, facesRight(f))))
-      drawFighterSprite(g, *f, p.x + o.x, p.y + o.y + hop, 1, facesRight(f), t + p.x * .01f);  // vers l'adversaire le plus proche
+    if (!(blinking && blink == f)) {
+      before(f, p.x + o.x, p.y + o.y + hop);
+      if (!(!pose.empty() && drawFighterPose(g, *f, pose, p.x + o.x, p.y + o.y, facesRight(f))))
+        drawFighterSprite(g, *f, p.x + o.x, p.y + o.y + hop, 1, facesRight(f), t + p.x * .01f);  // vers l'adversaire le plus proche
+      after();
+    }
     g.alpha = 1;
     drawStatusTag(*f, p.x - 24, p.y - 16);
     drawGuard(f, p.x - 13, std::max(44.f, p.y - fighterTop(*f, 1) - 4));  // en garde : à côté de la tête
@@ -3938,20 +4012,28 @@ void Battle::draw() {
     std::vector<const Pop*> order;
     for (auto& p : pops) order.push_back(&p);
     std::sort(order.begin(), order.end(), [](const Pop* a, const Pop* b) { return a->t < b->t; });
-    std::vector<std::pair<float, float>> placed;  // centre x, y des textes déjà posés
+    struct Placed {
+      float x, w, top, bot;  // centre, demi-largeur, haut et bas des textes déjà posés
+    };
+    std::vector<Placed> placed;
     for (const Pop* p : order) {
       float u = t - p->t, y = p->y - std::min(1.f, u * 3) * 8 - (u < .3f ? std::sin(u / .3f * 3.1416f) * 3 : 0.f);
-      float w = Gfx::textW(p->text) / 2.f + 2;
+      // (2026-10-26) un nombre de dégâts jaillit plus grand puis se pose (un critique reste en double taille), posé sur le
+      // même bas qu'un texte ordinaire
+      float k = p->style & PopCrit ? 2.f : 1.f;
+      if (p->style & PopDamage && u < .16f) k *= 1 + .5f * (1 - u / .16f) * (1 - u / .16f);
+      float w = Gfx::textW(p->text) * k / 2 + 2, x = std::clamp(p->x, w, 320 - w), bot = y + 11, top = bot - 11 * k;
       for (bool moved = true; moved;) {
         moved = false;
-        for (auto& [px, py] : placed)
-          if (std::abs(px - p->x) < w + 10 && std::abs(py - y) < 9) y = py - 9, moved = true;
+        for (auto& q : placed)
+          if (std::abs(q.x - x) < w + q.w && top < q.bot - 2 && bot > q.top + 2) bot = q.top + 2, top = bot - 11 * k, moved = true;
       }
-      placed.push_back({p->x, y});
+      if (k > 1 && top < popTop_ - 11) top = popTop_ - 11;  // en grand : pas plus haut qu'un texte ordinaire (l'ordre des tours)
+      placed.push_back({x, w, top, top + 11 * k});
       // (2026-10-21) contour sombre et dégradé (clair en haut) : lisible sur tous les décors
       Color light = mix(p->col, rgb(0xffffff), .55f), dark = rgb(0x10081a);
       light.a = p->col.a, dark.a = p->col.a;
-      g.textBigFancy(p->x, y, p->text, light, p->col, dark, 1, 1);
+      g.textBigFancy(x, top, p->text, light, p->col, dark, k, 1);
     }
   }
   if (flashT >= 0 && t - flashT < .5f) {
@@ -4276,7 +4358,7 @@ void Battle::netMessage(const Json& m) {
         // même empilement que Battle::pop, sans renvoyer le message
         Net keep = net_;
         net_ = Net::None;
-        pop(f, jget<std::string>(m, "txt", ""), col);
+        pop(f, jget<std::string>(m, "txt", ""), col, jget(m, "s", 0));  // (2026-10-26) style : critique, faiblesse…
         net_ = keep;
       }
     } else if (k == "clignote") {

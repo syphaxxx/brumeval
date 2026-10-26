@@ -720,6 +720,42 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     B.face(lior, boardAt(0, 2));  // même colonne : il garde son regard
     turns = turns && !B.facesRight(lior);
     B.facing_.erase(lior.get());
+    {  // (2026-10-26) à l'œil, un coup qui se sent (dessin seul) : un critique de Lior fige un instant le lanceur et la cible
+       // (arrêt sur image), l'éclaire en blanc une image, l'écrase et la repousse ; nombre doré en grand. Puis une Brisure.
+      B.cells_[lior.get()] = boardAt(1, 3), B.cells_[brute.get()] = boardAt(1, 4), B.cells_[mage.get()] = boardAt(2, 5);
+      B.cells_[extra.get()] = boardAt(0, 6), B.cells_[maelle.get()] = boardAt(2, 1);
+      B.pops.clear(), B.bursts_.clear(), B.impacts_.clear(), B.stopped_.clear();
+      B.start = time - 5;
+      int keepAcc = lior->acc, keepCrit = lior->crit, keepMhp = brute->mhp, keepShield = brute->shield;
+      bool keepBroken = brute->broken;
+      lior->acc = lior->crit = 1000;              // touche et critique à coup sûr
+      brute->mhp = brute->hp = keepMhp * 2;       // sans l'abattre
+      B.anim_ = Battle::Anim{lior, {brute}, Battle::Fx::Hit, rgb(types()[bite.type].color), false, time - .3f, bite.type};
+      int dmg = B.applyHit(lior, brute, bite);
+      lior->acc = keepAcc, lior->crit = keepCrit;
+      bool flash = B.impacts_.count(brute.get()) && B.impacts_[brute.get()].flash;
+      float t0 = B.impacts_[brute.get()].t0, len = B.stopLen_, keepTime = time;
+      time = t0 + .05f;  // dessin seul, au milieu de l'arrêt sur image (l'éclair : la première image dessinée)
+      snap("coup_critique");
+      time = t0 + .03f;  // pendant l'arrêt : le lanceur et la cible attendent, les autres non
+      bool frozen = B.since(brute.get(), t0) == 0 && B.since(lior.get(), t0) == 0 && B.since(mage.get(), t0) > .02f;
+      time = t0 + .23f;  // après : leurs minuteries repartent, en retard de la durée de l'arrêt
+      bool resumed = std::abs(B.since(brute.get(), t0) - (.23f - len)) < .001f;
+      time = keepTime;
+      check(dmg > 0 && flash && !B.impacts_[brute.get()].flash && len >= .04f && len <= .09f && frozen && resumed,
+            "à l'œil : un critique fige un instant le lanceur et sa cible (" + std::to_string(int(len * 1000)) +
+                " ms, dessin seul) et l'éclaire en blanc une seule image");
+      brute->mhp = brute->hp = keepMhp, brute->broken = keepBroken, brute->shield = keepShield;
+      B.pops.clear(), B.impacts_.clear(), B.stopped_.clear();
+      B.anim_ = Battle::Anim{lior, {mage}, Battle::Fx::Hit, rgb(types()[bite.type].color), false, time - .3f, bite.type};
+      keepBroken = mage->broken, keepShield = mage->shield;
+      B.breakFoe(mage);
+      time = keepTime + .05f;  // de même : l'éclair, « BRISÉ ! », éclats, écran doré
+      snap("coup_brisure");
+      time = keepTime;
+      mage->broken = keepBroken, mage->shield = keepShield;
+      B.pops.clear(), B.bursts_.clear(), B.impacts_.clear(), B.stopped_.clear(), B.anim_ = Battle::Anim{};
+    }
     seedRandom(seed + 1);  // la suite du mode test reprend une suite de tirages à elle
     check(turnedBack > turnedFront * 1.15 && turns,
           "échiquier : le dos dépend du regard (retourné : " + std::to_string(turnedBack) + " contre " + std::to_string(turnedFront) +
