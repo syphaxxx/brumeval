@@ -13,7 +13,7 @@ Méthode :
   Pour comparer deux réglages, copier l'exécutable et `data/` dans deux dossiers temporaires (le jeu cherche `data/` à côté du programme) et lancer les deux mesures en parallèle si besoin : depuis le 2026-10-25, le test multijoueur tire son port au hasard (`BRUMEVAL_PORT_TEST` pour l'imposer).
 - `BRUMEVAL_SANS_EVOLUTION=1` : équipes sans évolution (pour mesurer l'effet des évolutions). `BRUMEVAL_JOURNAL=<mot>` affiche le journal d'une simulation.
 - `BRUMEVAL_SIM_FILTRE=Golem,Ignarok` (2026-10-25) : seulement les lignes dont le nom contient l'un de ces mots, sans accent ni majuscule (2026-10-26 : « Phenix » trouve « Phénix »)
-  (sous Windows, une variable accentuée n'arrive pas telle quelle) ; les tests ordinaires passent quand même avant (~3 min). Plusieurs mesures en même temps se gênent sur les fichiers de sauvegarde du mode test (échecs « expédition » sans rapport) : ne regarder que les taux, et refaire les tests seuls à la fin.
+  (sous Windows, une variable accentuée n'arrive pas telle quelle) ; les tests ordinaires passent quand même avant (~3 min). Plusieurs mesures en même temps se gênaient sur les fichiers de sauvegarde du mode test (échecs « expédition » sans rapport) : depuis le 2026-10-26, donner à chacune son dossier avec `BRUMEVAL_DOSSIER=<dossier>`.
 - Plus de PV pour un boss change peu le résultat quand le combat se joue sur la survie de l'équipe : relever son niveau agit davantage.
 - Après un réglage, lancer aussi le joueur automatique (`--partie`) : l'histoire doit rester faisable.
 
