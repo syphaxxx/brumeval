@@ -370,6 +370,17 @@ class Battle {
     bool back = false;
   };
   Preview preview(const FighterP& a, const Move& m, const FighterP& d, int fromCell = -1) const;
+  bool medic(const FighterP& t) const;  // un vrai soigneur (rôle, ou soin connu et plus de Magie que d'Attaque)
+  std::string counterMove(const FighterP& d) const;  // technique de sa riposte (vide : aucune)
+  // IA alliée (2026-10-26), d'après les intentions annoncées : dégâts prévus sur f (tous : le chevron « ≈ lo-hi » ; landing :
+  // sans les corps à corps qu'un pas a mis hors de portée ; soon : seulement ceux qui frapperont avant que sa garde tombe ;
+  // melee : les ennemis comptés qui le frapperont au corps à corps) ; intention de e qui ferait tomber un allié, le laisserait
+  // sous le tiers de ses PV ou vise un soigneur ; ce coup l'arrête-t-il (2 : il l'abat, son intention tombe ; 1 : il le
+  // brise, il perd son tour) ; se mettre en garde plutôt que jouer p (acculé)
+  Preview incoming(const FighterP& f, bool landing = false, bool soon = false, std::vector<FighterP>* melee = nullptr) const;
+  bool dangerousIntent(const FighterP& e) const;
+  int stopsFoe(const FighterP& a, const FighterP& d, const Preview& pv) const;
+  bool shouldGuard(const FighterP& a, const Plan& p) const;
   // Tactiques (tactics.hpp) : première règle possible de l'allié a, puis son exécution
   bool tacticsActive() const;
   bool tacticPlan(FighterP a, Plan& out);

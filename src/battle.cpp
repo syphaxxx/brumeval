@@ -1607,6 +1607,21 @@ Battle::Plan Battle::think(FighterP a) {
 }
 
 
+// La technique d'une riposte : sa première qui blesse, une cible de préférence (la toute première peut être un cri)
+std::string Battle::counterMove(const FighterP& d) const {
+  std::string counter;
+  for (auto& id : d->techs())
+    if (const Move& t = moveInfo(id); t.damaging() && (counter.empty() || (t.target == Target::Enemy && moveInfo(counter).target != Target::Enemy)))
+      counter = id;
+  return counter;
+}
+// (2026-10-26) un vrai soigneur : rôle soigneur, ou un soin connu avec plus de Magie que d'Attaque (Lior, qui connaît Soin,
+// reste un combattant) : l'IA alliée le couvre et abat d'abord qui le vise
+bool Battle::medic(const FighterP& t) const {
+  bool h = false;
+  for (auto& id : t->spells()) h = h || moveInfo(id).kind == Kind::Heal || moveInfo(id).kind == Kind::Revive;
+  return t->S().combatRole == "soigneur" || (h && t->eMag() >= t->eAtk());
+}
 // Attrait d'un combattant pour les ennemis qui choisissent qui frapper : un soigneur vaut le double, un lanceur de
 // sorts un peu plus, un blessé attire d'autant plus qu'il est bas (achever) ; un boss n'y est pas plus sensible
 float Battle::lure(const FighterP& t) const {
@@ -1644,6 +1659,8 @@ float Battle::attackScore(const FighterP& a, const Move& m, const FighterP& t) c
   score *= 1 + std::min(1.f, (a->crit + m.critBonus) / 100.f) * float(R.critMult - 1);
   if (score >= t->hp * 1.2f) score += 15;  // achever un adversaire affaibli
   if (!t->S().combatRole.empty() && !t->boss) score *= 1.25f;  // rôles : abattre d'abord soigneur, chef et protecteur
+  // (2026-10-26) abattre d'abord celui qui a annoncé un coup dangereux, surtout si ce coup l'arrête (abattu, brisé)
+  if (dangerousIntent(t)) score *= stopsFoe(a, t, preview(a, m, t)) ? 2.f : 1.2f;
   if (m.shove && !t->boss) {  // pousser / tirer : un choc contre un voisin ou le bord, ou une case qui blesse
     int to = shoveDest(a, t, m);
     bool clash = (to == -1 && m.shove > 0) || (to >= 0 && ((at(to) && at(to) != a) || blockedCell(to)));
@@ -1708,26 +1725,120 @@ std::string Battle::damageText(const FighterP& a, const Move& m, const FighterP&
   if (pv.back) s += T(" · dans le dos");
   if (m.melee && guarding_.count(d.get()) && isAlly(a) != isAlly(d)) s += T(" · il riposte");  // (2026-10-25) en garde, cuirassé
   // (2026-10-25) ce que le coup changerait : l'abattre annule son intention, le briser lui fait perdre son tour
-  if (d->alive() && pv.lo >= d->hp) s += T(" · l'abat");
+  int stop = stopsFoe(a, d, pv);
+  if (stop == 2) s += T(" · l'abat");
   else if (d->alive() && pv.hi >= d->hp) s += T(" · peut l'abattre");
-  else if (pv.eff > 1 && d->shieldMax > 0 && !d->broken &&
-           d->shield <= (pv.eff >= 4 ? 2 : 1) + int(talentValue(a->S(), "briseur") + gemSupport(*a, "briseur"))) {
+  else if (stop == 1) {
     s += T(" · le brise");
     if (breaks) *breaks = true;
   }
   return s;
 }
 
+int Battle::stopsFoe(const FighterP& a, const FighterP& d, const Preview& pv) const {
+  if (!d->alive() || pv.eff <= 0) return 0;
+  if (pv.lo >= d->hp) return 2;
+  return pv.eff > 1 && d->shieldMax > 0 && !d->broken &&
+         d->shield <= (pv.eff >= 4 ? 2 : 1) + int(talentValue(a->S(), "briseur") + gemSupport(*a, "briseur"));
+}
+
+Battle::Preview Battle::incoming(const FighterP& f, bool landing, bool soon, std::vector<FighterP>* melee) const {
+  Preview sum;
+  // soon : sa garde tombe quand sa jauge, repartie de la jauge rapide, revient à 100 ; l'ennemi frappe-t-il avant ?
+  float guardLeft = float(100 - rules().quickGauge) / std::max(.01f, atbRate(f));
+  for (auto& e : foes) {
+    auto it = intents_.find(e.get());
+    if (it == intents_.end() || !e->alive()) continue;
+    const Intent& in = it->second;
+    if (in.wait || in.move.empty() || !hasMove(in.move) || !moveInfo(in.move).damaging()) continue;
+    const Move& m = moveInfo(in.move);
+    int from = in.cell >= 0 ? in.cell : cellOf(e);
+    float k = 0;        // visé (1), ou voisin d'une cible dans la zone (zone_voisins) (Codex, 2026-10-26)
+    bool lands = false;  // un corps à corps porte encore si sa cible est à portée de la case annoncée
+    for (auto& tg : in.targets) {
+      if (!tg || !tg->alive() || k >= 1) continue;
+      bool hit = tg == f;
+      if (!hit && m.zone != Area::Single && m.zone != Area::All)
+        for (auto& v : zoneTargets(m, tg)) hit = hit || v == f;
+      if (hit) k = tg == f ? 1.f : float(rules().zoneSide), lands = !m.melee || (from >= 0 && boardDist(from, cellOf(tg)) <= reach(e));
+    }
+    if (k <= 0 || (landing && !lands)) continue;
+    if (soon && (100 - e->atb) / std::max(.01f, atbRate(e)) >= guardLeft) continue;
+    if (Preview pv = preview(e, m, f, in.cell); pv.eff > 0) sum.lo += int(pv.lo * k), sum.hi += int(pv.hi * k);
+    if (melee && m.melee && lands) melee->push_back(e);
+  }
+  return sum;
+}
+
+bool Battle::dangerousIntent(const FighterP& e) const {
+  auto it = intents_.find(e.get());
+  if (it == intents_.end() || !e->alive() || isAlly(e)) return false;
+  const Intent& in = it->second;
+  if (in.wait || in.move.empty() || !hasMove(in.move) || !moveInfo(in.move).damaging()) return false;
+  for (auto& t0 : in.targets) {
+    if (!t0 || !t0->alive() || !isAlly(t0)) continue;
+    for (auto& tg : zoneTargets(moveInfo(in.move), t0)) {  // la cible, et ses voisins dans la zone
+      if (medic(tg)) return true;
+      Preview pv = incoming(tg);  // toutes les intentions sur lui : une meute qui s'acharne
+      if (pv.hi >= tg->hp || (tg->hp - (pv.lo + pv.hi) / 2) * 3 < tg->mhp) return true;
+    }
+  }
+  return false;
+}
+
+// Visé par des coups annoncés qui partiront avant que sa garde tombe, et acculé (pas de case à l'abri, ou il a préféré
+// rester) : en garde si elle lui sauve la vie (le haut de la fourchette l'abattrait, plus en garde), ou si, contre les corps à
+// corps annoncés, ses ripostes (×0,7, une par coup reçu) et la part de leurs dégâts qu'il n'encaissera pas valent plus que ce
+// que p ferait, moins la jauge rapide que la garde lui rend. Contre des sorts (pas de riposte), seulement pour sauver sa vie.
+// Jamais s'il soigne, ni si p arrête l'un de ceux qui le visent.
+bool Battle::shouldGuard(const FighterP& a, const Plan& p) const {
+  if (!isAlly(a) || p.wait || p.limit || p.duo || !p.item.empty() || p.move.empty()) return false;
+  const Move& m = moveInfo(p.move);
+  if (!m.damaging() && m.kind != Kind::Status) return false;  // soin, réanimation : d'abord
+  const Rules& R = rules();
+  float act = 0;  // ce que fera p
+  for (auto& t0 : p.targets) {
+    if (!t0 || isAlly(t0) || !m.damaging()) continue;
+    for (auto& t : zoneTargets(m, t0)) {  // une zone touche aussi ses voisins, à zone_voisins (Codex, 2026-10-26)
+      Preview pv = preview(a, m, t);
+      if (t != t0) pv.lo = int(pv.lo * R.zoneSide), pv.hi = int(pv.hi * R.zoneSide);
+      auto it = intents_.find(t.get());
+      if (stopsFoe(a, t, pv) && it != intents_.end() && std::count(it->second.targets.begin(), it->second.targets.end(), a)) return false;
+      act += (pv.lo + pv.hi) / 2.f * pv.hit;
+    }
+  }
+  std::vector<FighterP> close;
+  Preview inc = incoming(a, true, true, &close);
+  if (inc.hi <= 0) return false;
+  if (inc.hi >= a->hp && inc.hi * R.guard < a->hp) return true;  // la garde lui sauve la vie
+  float keep = 0;  // ce que lui vaudrait la garde contre les corps à corps
+  std::string counter = counterMove(a);
+  for (auto& e : close) {
+    const Intent& in = intents_.at(e.get());
+    Preview hit = preview(e, moveInfo(in.move), a, in.cell);
+    float k = std::count(in.targets.begin(), in.targets.end(), a) ? 1.f : float(R.zoneSide);  // voisin de sa cible
+    keep += (hit.lo + hit.hi) / 2.f * k * float(1 - R.guard);
+    if (!counter.empty()) {
+      Preview pv = preview(a, moveInfo(counter), e, cellOf(a));
+      keep += (pv.lo + pv.hi) / 2.f * pv.hit * float(R.guardRiposte) * .7f;
+    }
+  }
+  return keep > 0 && keep >= act * (1 - float(R.quickGauge) / 100);
+}
+
 void Battle::autoCommand(FighterP a) {
   actor = a;
   if (!moved_.count(a.get())) {  // échiquier : d'abord la meilleure case (à l'abri d'une attaque annoncée)
+    // (2026-10-26) acculé (aucune case à l'abri) sous des coups annoncés, la garde valant mieux que son action : en garde
+    // sur place (bouger l'exposerait à l'encerclement et aux coups dans le dos)
+    if (threatened(a) && safeCell(a) < 0 && shouldGuard(a, think(a))) return waitTurn(a);
     int c = planMove(a);
     if (c < 0 && threatened(a)) c = safeCell(a);
     step(a, c);
     moved_.insert(a.get());
   }
   Plan p = think(a);
-  if (p.wait) waitTurn(a);
+  if (p.wait || shouldGuard(a, p)) waitTurn(a);  // (2026-10-26) ou la garde vaut mieux, sous des coups annoncés
   else if (p.duo) duoMove(a, p.duo, p.move, p.targets);
   else useMove(a, p.move, p.targets, p.limit);
 }
@@ -2391,10 +2502,7 @@ int Battle::applyHit(const FighterP& a, const FighterP& d, const Move& m, float 
   // Riposte : gemme de riposte, ou (2026-10-24) en garde (« Attendre ») : un coup au corps à corps lui en vaut un en retour
   if (m.melee && a->alive() && d->alive() && !countering_ && !d->techs().empty() &&
       frand() < gemSupport(*d, "contre") + (guarding_.count(d.get()) ? R.guardRiposte : 0)) {
-    std::string counter;  // sa première technique qui blesse, une cible de préférence (la toute première peut être un cri)
-    for (auto& id : d->techs())
-      if (const Move& t = moveInfo(id); t.damaging() && (counter.empty() || (t.target == Target::Enemy && moveInfo(counter).target != Target::Enemy)))
-        counter = id;
+    std::string counter = counterMove(d);
     if (!counter.empty()) {
       const Move& c = moveInfo(counter);
       countering_ = true;

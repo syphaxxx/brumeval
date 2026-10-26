@@ -53,6 +53,32 @@ Méthode :
   combattants au corps à corps, un boss qu'ils blessent hors de sa cuirasse et des soigneurs à frapper pendant. Charge et
   ronces : quelques PV de plus suffisent à tout faire basculer (charge N.18 ×2,5 : 80 / 75 / 10 ; N.19 ×3 : 30 / 15 / 0).
 
+- **IA alliée qui lit les intentions** (2026-10-26 ; `autoCommand`, `attackScore`, `posValue` ; rien côté ennemi) :
+  abattre d'abord l'ennemi qui a annoncé un coup dangereux (×1,2, ×2 si le coup l'abat ou le brise), garde quand elle
+  est acculée (vie sauvée, ou ripostes + part évitée des corps à corps annoncés ≥ son action × 0,75), couvrir un
+  soigneur ou un blessé (+30 pour la case qui coupe la route). Mesuré ×2, même graine (avant → après ; IA) : défis La
+  garde 27 → 52 %, La Percée 67 → 97, Lire les intentions 90 → 92, Le mur 77 → 65, Dans le dos 100 → 90, Bousculade 52 →
+  52 ; ×4 : La garde 36 → 56, Percée 77 → 96, intentions 91 → 96, mur 75 → 72, dos 92 → 88. Boss dans le bruit (IA /
+  tactiques / boutiques / forgé, ×2) : Sylvarque 10 → 10 / 18 → 18 / 51 → 47 / 58 → 56, Golem 20 → 40 / – / 37 → 55 / 42
+  → 47 (×4 : 35 → 38 / – / 47 → 40 / 52 → 47), Ronce-Mère 13 → 15 / – / 50 → 45 / 36 → 40, Ignarok 16 → 23 / 16 → 20 /
+  53 → 51 / 73 → 65, Givrecorne 22 → 18 / 33 → 33 / 62 → 63 / 85 → 82, cristal 75 → 75 / 66 → 68 / 98 → 100 / 100, Mère
+  des Brumes 3 → 8 / 0 → 0 / 63 → 61 / 88 → 78 (×4 : 6 → 8 / 0 → 0 / 64 → 56 / 71 → 74), Griffon 43 → 33 / – / 66 → 63 /
+  63 → 80, Seigneur 48 → 48 / – / 86 → 86 / 83 → 85, Brume Noire 37 → 35 / – / 75 → 80 / 90 → 85, Orage ancien 100 → 85
+  (×4 : 97 → 90), Phénix 85 → 80, le reste à 100 % ; aucun boss nettement plus facile. Essais : la première version
+  (garde aussi contre les sorts, pour un quart des dégâts évités ; Lior, qui connaît Soin, compté comme soigneur)
+  donnait La garde 65 %, mais la Mère des Brumes équipée 8 à 12 points plus bas sur trois mesures → contre des sorts, la
+  garde seulement pour sauver sa vie, et seul un vrai soigneur (`medic`) compte. Garde par les seules ripostes : La
+  garde 45 %. Retraits un à un (×4, première version) : sans la garde, La garde 37 % et Percée 78 % ; sans couvrir, Le
+  mur 58 % ; sans abattre d'abord, peu de différence (intentions 96 %, mur 76 %) mais rien n'empire : gardé (il sert
+  aussi aux tactiques du joueur automatique, par `attackScore`). Partie automatique sans mémoire (première version) :
+  tout fini en 12 h 25, 10 défaites, quatre actes en 5 h 51 avec 6 défaites (meutes du Récif, du Gouffre, du Cratère et
+  du Sanctuaire, un combat à renforts de Havre-d'Aube deux fois ; aucun boss de l'histoire perdu), estimation joueur
+  24 h 31 ; référence bot31 (sans ce travail) : 10 h 22, 10 défaites, quatre actes en 6 h 29. Version retenue : tout fini
+  en 12 h 49, 11 défaites, quatre actes en 6 h 04 avec 5 défaites (deux meutes des premières minutes, le Seigneur des
+  Orages une fois, meutes de la Forêt Pétrifiée et du Sanctuaire), puis le Vieux Phare ×4 et l'Orage ancien ×2 ;
+  estimation joueur 24 h 48. L'histoire arrive plus tôt (5 h 51 et 6 h 04 contre 6 h 29) avec autant de défaites ou
+  moins ; le temps total varie de ±2 h d'une partie à l'autre.
+
 - **Mécaniques des gardiens de l'Expédition** (2026-10-26) : dès la région 3, une mécanique de boss selon les types
   (`procgen.cpp`, `genBoss`). Mesuré (BRUMEVAL_SIMULATIONS=4, `BRUMEVAL_SIM_FILTRE=gion,avec` ; IA / avec équipement,
   avant → après) : comme dans l'histoire, une posture coûte un tour d'attaque au gardien : sans réglage, les cinq gardiens
