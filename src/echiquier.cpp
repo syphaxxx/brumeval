@@ -326,6 +326,17 @@ float Battle::posValue(const FighterP& a, int cell) {
     for (auto& o : alive(sideOf(a)))
       if (o != a && inBoardZone(Area::Cross, cell, cellOf(o)))  // (2026-10-25) surtout d'un blessé : il le couvre
         v += 6 + (!isAlly(a) && o->hp * 2 < o->mhp && o->S().combatRole != "protecteur" ? 30.f * (1 - float(o->hp) / std::max(1, o->mhp)) : 0.f);
+  // (2026-10-26) couvrir : un allié solide se met en travers de la route d'un ennemi qui a annoncé un corps à corps sur un
+  // soigneur ou un blessé des siens (les ennemis ne traversent pas les adversaires et s'arrêtent à leur contact)
+  if (isAlly(a) && !caster && hpR >= .6f)
+    for (auto& o : theirs) {
+      auto it = intents_.find(o.get());
+      if (it == intents_.end() || it->second.wait || it->second.targets.size() != 1 || !hasMove(it->second.move)) continue;
+      const Move& m = moveInfo(it->second.move);
+      FighterP tg = it->second.targets[0];
+      if (!m.melee || !m.damaging() || !tg || tg == a || !tg->alive() || !isAlly(tg) || (!Battle::medic(tg) && tg->hp * 2 >= tg->mhp)) continue;
+      if (boardDist(cellOf(o), cellOf(tg)) > reach(o) && !reachable(o, m, tg)) v += 30;  // de cette case, il lui barre la route
+    }
   if (terrainHurts(a, cell)) v -= 25;
   for (auto& w : warnings_)
     if (isAlly(a) && inBoardZone(w.zone, w.center, cell)) v -= 60;

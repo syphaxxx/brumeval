@@ -666,6 +666,66 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         check(with > battle_->lure(aimedAlly), "meute : un allié déjà visé par une intention attire davantage les autres ennemis");
       }
     }
+    {  // (2026-10-26) l'IA alliée lit les intentions : acculée sous des corps à corps annoncés, en garde ; un coup annoncé
+       // sur un soigneur : abattre d'abord celui qui l'a annoncé
+      auto firstMelee = [](const FighterP& e) {
+        for (auto& id : e->techs())
+          if (moveInfo(id).melee && moveInfo(id).damaging()) return id;
+        return std::string();
+      };
+      auto calmBoard = [&] {
+        battle_->terrain_.fill(-1), battle_->obstacles_.clear(), battle_->weather_ = -1;
+        battle_->warnings_.clear(), battle_->intents_.clear(), battle_->moved_.clear();
+      };
+      BattleSetup s;
+      FighterP brann = makeFighter("brann", 14);
+      s.allies = {brann};
+      for (int i = 0; i < 3; i++) s.foes.push_back(makeFighter("mulotin", 12));
+      startBattle(std::move(s), nullptr);
+      calmBoard();
+      Battle& C = *battle_;
+      C.cells_[brann.get()] = boardAt(0, 0);  // dans un coin, les trois cases autour prises
+      for (int i = 0; i < 3; i++) C.cells_[C.foes[(size_t)i].get()] = boardAt(i >= 1, i != 1);  // (0, 1), (1, 0), (1, 1)
+      bool calm = !C.shouldGuard(brann, C.think(brann));
+      for (auto& e : C.foes) {
+        Battle::Intent in;
+        in.move = firstMelee(e), in.targets = {brann};
+        C.intents_[e.get()] = in;
+        e->atb = 95;  // ils frapperont avant que sa garde tombe
+      }
+      bool cornered = C.threatened(brann) && C.safeCell(brann) < 0;
+      C.autoCommand(brann);
+      check(calm && cornered && C.guarding_.count(brann.get()),
+            "IA alliée : acculé dans un coin sous trois corps à corps annoncés, Brann se met en garde (il riposte) ; sans intention, non");
+      C.sc.clear();
+      BattleSetup s2;
+      FighterP lior = makeFighter("lior", 20), maelle = makeFighter("maelle", 20);
+      s2.allies = {lior, maelle};
+      s2.foes = {makeFighter("mulotin", 20), makeFighter("mulotin", 20)};
+      startBattle(std::move(s2), nullptr);
+      calmBoard();
+      Battle& D = *battle_;
+      FighterP e1 = D.foes[0], e2 = D.foes[1];
+      D.cells_[lior.get()] = boardAt(1, 3), D.cells_[maelle.get()] = boardAt(1, 0);
+      D.cells_[e1.get()] = boardAt(0, 4), D.cells_[e2.get()] = boardAt(2, 4);  // à égale distance de Lior
+      auto aimed = [&] {
+        std::pair<int, int> n{0, 0};
+        for (int k = 0; k < 200; k++) {
+          Battle::Plan p = D.think(lior);
+          if (p.targets.size() == 1) n.first += p.targets[0] == e1, n.second += p.targets[0] == e2;
+        }
+        return n;
+      };
+      auto before = aimed();
+      Battle::Intent in;
+      in.move = firstMelee(e1), in.targets = {maelle};
+      D.intents_[e1.get()] = in;
+      auto after = aimed();
+      check(D.dangerousIntent(e1) && after.first > 2 * after.second && after.first > before.first + 30,
+            "IA alliée : l'ennemi qui a annoncé un coup sur Maëlle (soigneuse) est visé d'abord (" + std::to_string(after.first) + " contre " +
+                std::to_string(after.second) + " ; sans intention " + std::to_string(before.first) + " contre " + std::to_string(before.second) + ")");
+      D.sc.clear();
+    }
     startBattle({brute, mage, extra}, false, nullptr);
     Battle& B = *battle_;
     bool halves = true;  // échiquier (3.4) : chaque camp part de sa moitié du plateau

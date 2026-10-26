@@ -240,7 +240,14 @@ code) ; `docs/GUIDE.md` les range par domaine.
   un ennemi ne frappe pas au corps à corps un allié en garde (`attackScore` ×0,4 chez les ennemis, et `think` cherche une
   autre cible : il riposterait) ; un protecteur ennemi va se placer en croix d'un blessé des siens (`posValue` : +30 × PV
   perdus sous la moitié) et son intention le dit (« … (couvre X) », `intentText`) ; un soigneur ennemi (`soigneur`, soin
-  connu) garde ses distances comme un lanceur de sorts (`posValue`). L'intention affichée reste celle qu'il exécute. Sons `garde`, `dejoue`, `vise` (une intention vise un allié ; au plus un par demi-seconde,
+  connu) garde ses distances comme un lanceur de sorts (`posValue`). L'intention affichée reste celle qu'il exécute.
+  **IA alliée** (2026-10-26, `autoCommand`, `attackScore`, `posValue`) : elle vise d'abord l'ennemi dont l'intention est
+  dangereuse (`dangerousIntent` : un allié tomberait ou finirait sous le tiers de ses PV, ou un vrai soigneur `medic`
+  est visé ; ×1,2, ×2 si le coup l'arrête : `stopsFoe`, « l'abat » ou « le brise »), se met en garde acculée quand la
+  garde vaut mieux (`shouldGuard` : vie sauvée, ou ripostes et part évitée des corps à corps annoncés qui partiront
+  avant son tour, `incoming`), et un allié solide coupe la route d'un corps à corps annoncé sur un soigneur ou un blessé
+  (`posValue` +30) ; jamais côté ennemi.
+  Sons `garde`, `dejoue`, `vise` (une intention vise un allié ; au plus un par demi-seconde,
   `aimSoundT_`), `riposte`, `bouclier` (un allié en garde encaisse) et `brisure` (`breakFoe`) (data/sons.json). Astuces « intention » et « garde », aide de l'échiquier, capture `garde_intention`, mesures :
   compétence `equilibrage`.
   À l'œil (2026-10-25, dessin seul) : bouclier qui se déplie (`guardT_`) et qui encaisse, élan de la riposte (`bursts_`),
@@ -584,7 +591,7 @@ code) ; `docs/GUIDE.md` les range par domaine.
   vent ; ensuite, trois questions en chaîne : « Lire les intentions », « La garde », « Dans le dos »). Sept défis : `dos`,
   `percee`, `ailes`, `mur`, `bousculade`, et (2026-10-25, pour apprendre la 3.7) `intentions` (un Ferrolin N.20 lent, blindé
   et faible à la magie annonce Coup d'acier sur Isra : l'écarter, Lior peut barrer la route ; simulé : IA 96 %, Isra qui ne
-  bouge jamais 20 %) et `garde` (Brann acculé dans un coin par quatre Mulotins rapides : IA 37 %, toujours en garde 79 %).
+  bouge jamais 20 %) et `garde` (Brann acculé dans un coin par quatre Mulotins rapides : IA 37 %, toujours en garde 79 % ; IA alliée qui lit les intentions, 2026-10-26 : 56 %).
   Mesuré (BRUMEVAL_SIMULATIONS=2) : sans
   réglage, boss bien plus faciles (encerclés par 6 alliés : +60 %) ; après (boss ni encerclés ni gênés au contact,
   encerclement 10 %, Ignarok N.25, Ronce-Mère N.22, Mère des Brumes N.41), difficulté proche de la 3.3.
