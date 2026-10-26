@@ -4668,9 +4668,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   std::printf("\nÉquilibrage (combats simulés, IA automatique) :\n");
   int simFactor = std::max(1, std::atoi(simEnv));
   // (2026-10-25) BRUMEVAL_SIM_FILTRE=Golem,Ignarok : seulement les lignes dont le nom contient l'un de ces mots
-  const char* onlyEnv = SDL_getenv("BRUMEVAL_SIM_FILTRE");
+  // une copie : sous Windows, SDL_getenv réutilise sa mémoire à chaque appel (BRUMEVAL_JOURNAL brouillait le filtre)
+  const char* onlyRaw = SDL_getenv("BRUMEVAL_SIM_FILTRE");
+  const std::string onlyEnv = onlyRaw ? onlyRaw : "";
   auto simWanted = [&](const std::string& name) {
-    if (!onlyEnv || !*onlyEnv) return true;
+    if (onlyEnv.empty()) return true;
     std::stringstream ss(onlyEnv);
     for (std::string w; std::getline(ss, w, ',');)  // (2026-10-26) sans accent ni majuscule : « Phenix » trouve « Phénix »
       if (!w.empty() && makeSlug(name).find(makeSlug(w)) != std::string::npos) return true;
