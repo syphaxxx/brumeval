@@ -394,6 +394,12 @@ panneau des combats et jauges. Captures du mode test : `donjon_<carte>`, `carte_
 `combat_mines`, `meteo_orage`, `interieur_nuit`. Pistes : poses d'attaque des héros, effets de sorts, décors des cartes.
 Après la 3.5 (branche `graphismes-2`) : Marais Pâle (`eau`), lumière des lieux (`lumiere`), nom des boss et « Victoire ! » en
 grand, onglet du nom dans les dialogues, écran de fin à l'aube, icônes et jauges dans les menus.
+Après la 3.7 (2026-10-26, « que les coups se sentent ») : arrêt sur image de 50 à 90 ms sur un critique, une faiblesse, une
+Brisure ou un coup qui abat (dessin seul : ni l'ATB ni le Script ni le réseau n'attendent), étirement du lanceur à l'élan,
+cible écrasée et repoussée selon la force du coup, éclair blanc d'une image (critique, Brisure), nombres qui rebondissent
+(critique doré en grand, faiblesse orange, résistance gris-bleu). Captures `coup_critique`, `coup_brisure`.
+Fenêtre des gains (2026-10-26) : une ligne par combattant avec son portrait et sa barre d'expérience qui se remplit
+(« Niveau N ! » doré), l'or et le butin en icônes ; Entrée termine le remplissage. Captures `gains_debut`, `gains_niveau`.
 
 ## Étape 2 nonies — Gameplay et menus (demandé le 2026-10-23)
 
@@ -405,7 +411,13 @@ regarde le personnage, et des menus « peut-être un peu simples et surchargés 
 - Menu de pause en 12 entrées et quatre groupes ; Échap > Préparation (Formation, Compagnons, Tactiques, Réserve) ;
   Discussions et Bestiaire dans le Journal ; menu de commande du combat plus court (Limite prête, Duo possible,
   Changer avec un remplaçant) ; volumes en crans ; « Gains ».
-Pistes : l'ordinateur qui protège son dos (« Attendre » pour se retourner), d'autres menus à regrouper.
+- (2026-10-26) Passe de finition des écrans hors combat : liste de l'équipe (pastille du type, niveau à droite, remplaçants
+  en gris au lieu de « Front »/« Rés. » à chaque ligne), fiche d'un membre (filets entre les groupes, « Techniques » en gris,
+  la fiche s'arrête au-dessus de l'aide), comparaison de l'équipement sur la fiche (valeurs avec l'objet survolé, en vert ou
+  en rouge ; aide plus courte), gemmes (icônes des chatons), Options en trois groupes titrés (Son, Affichage, Partie : tout
+  se voit), Journal en listes titrées (Quêtes, Primes, Terminées ; plus de « en cours » répété). Captures `tour_NN`.
+Pistes : l'ordinateur qui protège son dos (« Attendre » pour se retourner), d'autres menus à regrouper. Fait le
+2026-10-26 : la Forge en deux groupes titrés (Équipement porté, Dans le sac).
 
 ## Étape 2 decies — Rééquilibrage (demandé le 2026-10-23)
 
@@ -471,7 +483,15 @@ Astuces « intention » et « garde », aide de l'échiquier, tests (garde ≈ 0
    seule la Lumière passe, Ronce-Mère, Seigneur des Orages et Phénix d'écho couvrent une zone de ronces, de foudre ou de
    braises (s'en écarter et ne pas y revenir), Ignarok, Griffon tempête et Givrecorne chargent une ligne (changer de ligne),
    le Kraken happe une colonne et tire vers le front (s'en écarter ; un allié devant arrête la traction).
-10. (2026-10-26) **Alphas à mécanique** : les combats ordinaires demandent aussi de réfléchir. L'alpha d'une meute prend
+10. (2026-10-26) **Frise du rythme** (CTB de Final Fantasy X) : survoler une technique, un objet, « Attendre » ou la Limite
+   montre dans la frise où tombera le prochain tour du lanceur (contour doré) ; un coup qui briserait la cible barre son
+   prochain tour. Dessin seul, rien ne change dans le combat (capture `frise_rythme`).
+11. (2026-10-26) **Défis des mécaniques** : s'exercer sans risque avant chaque boss à mécanique, une leçon par défi,
+   combattants prêtés, petite récompense la première fois, puis Arène > Défis : « La cuirasse » (maître d'armes de la
+   Vallée : frapper ailleurs pendant la cuirasse, la magie passe), « Les ronces » (l'ermite de Sylve-Noire), « La charge »
+   (instructeur de Forgeroc) et « Le voile » (instructeur de Givreval). Mesuré sur 40 combats (IA / sans la parade) :
+   cuirasse 100 / 12 %, ronces 100 / 10, charge 100 / 12, voile 100 / 40 ; le joueur automatique les gagne en répétition.
+12. (2026-10-26) **Alphas à mécanique** : les combats ordinaires demandent aussi de réfléchir. L'alpha d'une meute prend
    une de ces mécaniques selon ses types (Roche, Métal, Glace, Normal se cuirassent ; Esprit, Ombre, Lumière se voilent ;
    Plante, Poison font pousser des ronces ; Feu, Vent, Foudre chargent ; Eau happe), choisie dans les données
    (`rencontres.alpha_mecaniques`) ; le message du début du combat dit ce qu'il fait et la parade ; +1 niveau avec une
@@ -500,7 +520,8 @@ Braisenard trop rapide : le jeu corrigé est bien plus dur ; meutes adoucies au 
 niveaux au lieu de 10) ; Griffon et Phénix ramenés aussi (les autres boss tardifs tiennent). **Publié dans la 3.7
 (2026-10-24, PR #32)** ; dernière mesure : tout fini en 13 h 55, quatre actes en 7 h 27, estimation joueur 27 h. Après la 3.7 (branche `apres-37`) :
 mécaniques des boss, joueur automatique plus malin (rencontres jaugées, compagnons par lieu et par boss) ; mesuré (bot30) :
-tout fini en 13 h 53 avec **13 défaites** (23 pour la 3.7), quatre actes en 7 h 26 avec 9 défaites.
+tout fini en 13 h 53 avec **13 défaites** (23 pour la 3.7), quatre actes en 7 h 26 avec 9 défaites ; avec les mécaniques
+des actes 2 à 4 (bot31) : 10 h 22, 10 défaites, quatre actes en 6 h 29, aucun boss de l'histoire perdu.
 Mesures : compétence `equilibrage`.
 
 ## Étape 3 — Systèmes de jeu (3 à 4 séances)

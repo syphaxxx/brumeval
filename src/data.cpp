@@ -786,7 +786,7 @@ const char* gearStatName(int s) { return T(GEAR_STATS[std::clamp(s, 0, N_GEAR_ST
 std::string ItemDef::bonusText() const {
   std::string t;
   for (int i = 0; i < N_GEAR_STATS; i++)
-    if (bonus[i]) t += (t.empty() ? "" : ", ") + std::string(bonus[i] > 0 ? "+" : "") + std::to_string(bonus[i]) + (i >= GS_ACC ? " % " : " ") + GEAR_STATS[i];
+    if (bonus[i]) t += (t.empty() ? "" : ", ") + std::string(bonus[i] > 0 ? "+" : "") + std::to_string(bonus[i]) + (i >= GS_ACC ? " % " : " ") + gearStatName(i);
   return t;
 }
 std::string forgedId(const std::string& base, int level) { return level > 0 ? base + "+" + std::to_string(level) : base; }

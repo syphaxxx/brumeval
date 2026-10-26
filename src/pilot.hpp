@@ -46,6 +46,7 @@ class Pilot {
   long long readChars_ = 0;
 
  private:
+  friend class Game;  // le mode test (test.cpp) lit inspect et rehearse
   // Case où se tenir, et direction à regarder avant d'appuyer sur Entrée (-1 : y arriver suffit)
   struct Spot {
     int node, face;

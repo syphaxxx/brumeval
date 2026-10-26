@@ -44,6 +44,10 @@ class Gfx {
   float alpha = 1.f;  // opacité globale appliquée à tout ce qui est dessiné
   float spriteAngle = 0;                       // rotation des sprites (degrés, autour de leur centre) : combattant K.O. couché
   Color spriteTint = {255, 255, 255, 255};     // teinte multipliée à tous les sprites (K.O. : grisé)
+  float spriteFlash = 0;                       // éclat blanc de tous les sprites (0 à 1 : coup critique, Brisure)
+  // Étirement / écrasement des sprites (combats : élan, impact) : largeur × squashX, hauteur × squashY autour de squashAt
+  float squashX = 1, squashY = 1;
+  Pt squashAt{0, 0};
 
   // Écran plus large que le jeu (16:9, 16:10…) : l'image fait fullW pixels de large (320 au
   // moins) et tout se place dans la zone de 320 pixels du milieu, décalée de ox pixels. Un
@@ -62,7 +66,7 @@ class Gfx {
   void gradV(float x, float y, float w, float h, Color top, Color bottom);
 
   // Sprite de l'atlas, coin haut-gauche en (x, y) ; flip : retourné gauche-droite ; tint : couleur multipliée
-  // (blanc = couleurs d'origine) ; flash : 0 à 1, éclaircit (coup reçu)
+  // (blanc = couleurs d'origine) ; flash : 0 à 1, vers le blanc (coup reçu ; 1 : silhouette blanche)
   void sprite(const SpriteRect& s, float x, float y, bool flip = false, float scale = 1, Color tint = {255, 255, 255, 255},
               float flash = 0);
   // Même chose par le nom ; faux (rien dessiné) si le sprite n'existe pas
@@ -73,8 +77,9 @@ class Gfx {
   // Texte (police pixel intégrée, accents français compris)
   void text(float x, float y, const std::string& s, Color c, int align = 0, bool shadow = true);  // align : 0 gauche, 1 centre, 2 droite
   void textBig(float x, float y, const std::string& s, Color c, int scale, int align = 0);
-  // Grand titre (2026-10-21) : contour, ombre portée et dégradé de haut en bas (top -> bottom)
-  void textBigFancy(float x, float y, const std::string& s, Color top, Color bottom, Color outline, int scale, int align = 0);
+  // Grand titre (2026-10-21) : contour, ombre portée et dégradé de haut en bas (top -> bottom) ; une échelle non entière
+  // (rebond d'un nombre de combat) est arrondie au pixel de l'image agrandie : rien de flou
+  void textBigFancy(float x, float y, const std::string& s, Color top, Color bottom, Color outline, float scale, int align = 0);
   static int textW(const std::string& s);
   static std::vector<std::string> wrap(const std::string& s, int width);
   static constexpr int LINE_H = 12;
@@ -101,6 +106,7 @@ class Gfx {
   SDL_Renderer* r_;
   SDL_Texture* atlas_ = nullptr;
   SDL_Texture* atlasFlip_ = nullptr;  // le même atlas retourné gauche-droite (sprites tournés vers la droite)
+  SDL_Texture* atlasWhite_ = nullptr; // le même en blanc (éclat d'un coup), fait au premier éclat
   struct Box {
     int x, y, w, h;
     bool hidden = false;  // entièrement recouverte par une fenêtre dessinée ensuite

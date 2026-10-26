@@ -387,6 +387,7 @@ class Game {
   std::string shopHover_;    // boutique : l'objet survolé (panneau de comparaison, drawShopPanel)
   void drawShopPanel(int x, int y);
   int teamPanelSel_ = 0;
+  std::pair<int, std::string> gearHover_{-1, ""};  // (2026-10-26) Équipement : emplacement et objet survolés (« » : retirer), la fiche les montre
   int swapFrom_ = -1;
   std::string notice_;       // petit message en bas de l'écran
   float noticeT_ = 0;

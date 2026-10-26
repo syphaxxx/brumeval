@@ -120,6 +120,7 @@ class MenuStack {
   size_t shownDepth() const;  // menus dessinés (sans les menus cachés, Menu::hidden)
   Menu& top() { return st_.back(); }
   int maxRight() const;  // bord droit le plus à droite des menus ouverts (0 si aucun)
+  int maxBottom() const;  // bord bas le plus bas des menus affichés (0 si aucun)
   void update(Input& in);
   void draw(Gfx& g, float t) const;
   std::string help() const;
@@ -135,3 +136,5 @@ std::string utf8Prefix(const std::string& s, int n);
 // (2026-10-25) Option « Types lisibles sans couleur » (daltonisme) : le motif du type (5x5 pixels sombres sur un carré
 // de sa couleur) centré en (cx, cy), à poser sur chaque pastille de type ; faux (rien de dessiné) si l'option est coupée
 bool typeMark(Gfx& g, float cx, float cy, int type, uint8_t alpha = 255);
+// Petit dessin d'une entrée de menu sans sprite (« piece », « etoile », « sablier »…) dans la case de 11x11 en (x, y)
+void menuGlyph(Gfx& g, const std::string& n, float x, float y, uint8_t alpha = 255);

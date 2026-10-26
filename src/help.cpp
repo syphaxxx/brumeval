@@ -95,7 +95,7 @@ static std::vector<HelpPage> helpPages() {
                 ::T("Percée : atteindre le bord adverse donne un bonus pour tout le combat."),
                 ::T("Obstacles, bonds derrière la cible, échanges de cases, bottes qui font aller plus loin."),
                 ::T("Tactiques : S'approcher, Contourner, Protéger. Formation : choisie sur le dessin du plateau."),
-                ::T("Défis de l'échiquier : dans l'Arène, et auprès du maître d'armes de la Vallée et des instructeurs de Forgeroc et de Givreval.")}});
+                ::T("Défis de l'échiquier : dans l'Arène, et auprès du maître d'armes de la Vallée, de l'ermite de Sylve-Noire et des instructeurs de Forgeroc et de Givreval.")}});
   p.push_back({::T("Statistiques"), ::T("PV, PM, Attaque, Défense, Magie, Résistance, Vitesse…"),
                {::T("PV (points de vie) : à 0, le combattant est K.O. Un soigneur ou une auberge rend tout."),
                 ::T("PM (points de magie) : les sorts en coûtent. Les techniques sont gratuites."),
@@ -218,7 +218,8 @@ static std::vector<HelpPage> helpPages() {
                {::T("Normale : après l'action, la jauge ATB repart de zéro."),
                 ::T("Rapide : la jauge repart à ") + std::to_string(R.quickGauge) + ::T(" % : on rejoue plus tôt. Souvent plus faible, parfois avec un effet en plus."),
                 ::T("Lourde : la jauge repart à −") + std::to_string(R.heavyDelay) + ::T(" % : on rejoue plus tard. Ce sont les plus fortes."),
-                ::T("Se déplacer est toujours rapide."),
+                ::T("Attendre (en garde) est rapide ; se déplacer ne finit pas le tour."),
+                ::T("La frise des tours, en haut : survolez une action, votre prochain tour s'entoure d'or à sa place ; un ennemi que le coup briserait a son prochain tour barré."),
                 ::T("Chaque technique dit son rythme dans sa description (en bas de l'écran quand on la choisit).")}});
   // États : effets chiffrés, puis les types insensibles
   std::vector<std::string> st = {

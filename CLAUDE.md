@@ -393,6 +393,12 @@ code) ; `docs/GUIDE.md` les range par domaine.
   sort, soin, statut, capture) et la couleur du type ; `offset` décale le dessin
   (élan, secousse quand on est touché) et `drawAnim` dessine l'effet. En ligne,
   l'hôte ou le chef envoie `anim` aux autres.
+  Coups qui se sentent (2026-10-26, dessin seul) : `pop(f, texte, couleur, style)` (`PopStyle` : dégâts, critique,
+  faiblesse, résistance, abat, Brisure ; champ `s` du message `pop`) pose `impacts_` (recul selon la force, écrasement,
+  éclair blanc d'une image : `Gfx::spriteFlash`) et, pour un gros coup, l'arrêt sur image (`stopped_`, 50 à 90 ms) : seules
+  les minuteries de dessin du lanceur et de la cible passent par `since` ; étirement à l'élan (`squash`, `Gfx::squashX/Y`) ;
+  nombre critique doré en double taille, faiblesse orange, résistance gris-bleu, rebond d'échelle (`textBigFancy` accepte une
+  échelle non entière). Captures `coup_critique`, `coup_brisure`.
 - Police : `gfx.cpp`, fonction `buildFont()`. Un caractère absent s'affiche « ? » ;
   ajoute son dessin si tu utilises un nouveau symbole.
 - Données : tout le contenu est dans `data/` (voir `data/LISEZMOI.md`), chargé au
@@ -444,6 +450,11 @@ code) ; `docs/GUIDE.md` les range par domaine.
   du combat : trois), puis la ligne de la météo, de l'ordre des tours et des renforts :
   en combat, `moveBrief` (une ligne compacte : genre, type, puissance, coût, portée, zone, effets, rythme) remplace
   `moveHelp`, et les objets n'ont que `itemDetails`. Météo à gauche de l'ordre des tours.
+  Fenêtre des gains (2026-10-26, dessin seul : `summary_` reste le texte du journal) : une ligne par combattant
+  (`gainRows_` : portrait `drawFighterIcon`, barre d'expérience qui se remplit en une seconde de l'ancienne valeur à la
+  nouvelle, `gainsFill`, « Niveau N ! » doré, « Apprend … » si la place le permet), puis l'or (pièce de `menuGlyph`) et le
+  butin (`loot_`, icônes des objets) ; Entrée ou un clic pendant le remplissage le termine, puis ferme (le joueur
+  automatique ferme d'un coup, comme avant) ; plus de bouclier de garde après la fin (`ending_`). Captures `gains_debut`, `gains_niveau`.
 - Choix sur le damier (3.2, demandé le 2026-10-15) : la cible (`pickFoe`, `pickAlly`) et la case de « Se déplacer » se
   choisissent sur le damier (flèches : la case la plus proche dans cette direction ; souris : survol et clic ; Entrée,
   Échap). Le menu existe toujours mais `Menu::hidden` (pas dessiné ni cliquable : joueur automatique, mode test et aide
@@ -581,10 +592,20 @@ code) ; `docs/GUIDE.md` les range par domaine.
   partagé par l'Arène, les événements et le joueur automatique). Action `combat` d'un événement : `defi` (ce défi, ses
   combattants prêtés : pas de « Changer ») et `entrainement` (ni gains ni évolutions, une défaite ne coûte rien :
   `BattleSetup::training`) ; maître d'armes de la Vallée (événement `maitre_armes`, drapeau `maitre_bottes`, Bottes de
-  vent ; ensuite, trois questions en chaîne : « Lire les intentions », « La garde », « Dans le dos »). Sept défis : `dos`,
+  vent ; ensuite « La cuirasse », puis trois questions en chaîne, sous-événement `maitre_armes_lecons` : « Lire les
+  intentions », « La garde », « Dans le dos »). Onze défis : `dos`,
   `percee`, `ailes`, `mur`, `bousculade`, et (2026-10-25, pour apprendre la 3.7) `intentions` (un Ferrolin N.20 lent, blindé
   et faible à la magie annonce Coup d'acier sur Isra : l'écarter, Lior peut barrer la route ; simulé : IA 96 %, Isra qui ne
   bouge jamais 20 %) et `garde` (Brann acculé dans un coin par quatre Mulotins rapides : IA 37 %, toujours en garde 79 %).
+  (2026-10-26) Un par mécanique de boss, pour s'y exercer avant : un ennemi de défi porte `boss` et `mecanique` comme un boss
+  d'événement (`makeFoe` ; le mode test refuse une `mecanique` sans `boss`) : `cuirasse` (jeune Golem de suie et deux
+  Champichous ; maître d'armes, drapeau `maitre_cuirasse`), `ronces` (l'ermite de Sylve-Noire, après les bandits,
+  `ermite_ronces`), `charge` (instructeur de Forgeroc, `instructeur_charge`), `voile` (instructeur de Givreval,
+  `instructeur_voile`) ; récompensés une fois, puis rejouables ; captures `defi_<id>`. Simulations : lignes « (tactiques) »
+  (comme le joueur automatique) et « (sans la parade) » (`careless` de test.cpp : Isra qui ne bouge pas, combattants qui
+  frappent la cuirasse, tirs et sorts dans le voile, personne qui quitte la ligne ou la croix) ; mesures : compétence
+  `equilibrage`. En Nouvelle partie +, les ennemis d'un défi gardent leur niveau (`challengeSetup` coupe `foeLevelBonus` :
+  les combattants prêtés ne montent pas).
   Mesuré (BRUMEVAL_SIMULATIONS=2) : sans
   réglage, boss bien plus faciles (encerclés par 6 alliés : +60 %) ; après (boss ni encerclés ni gênés au contact,
   encerclement 10 %, Ignarok N.25, Ronce-Mère N.22, Mère des Brumes N.41), difficulté proche de la 3.3.
@@ -615,6 +636,12 @@ code) ; `docs/GUIDE.md` les range par domaine.
   aussi (les ennemis gardent l'ancienne notation, sur laquelle la difficulté
   est réglée). Principe des techniques : une faible est rapide et souvent avec
   un effet, une forte est lourde, pour qu'aucune ne devienne inutile.
+  Frise (2026-10-26, CTB de FFX) : en survolant une technique, un objet, « Attendre » ou la Limite (`previewMove`,
+  `paceAfter` ; `MenuItem::hover` du menu de commande), et pendant le choix de sa cible, `drawTurnOrder` montre l'ordre
+  juste après l'action (`turnOrder` avec les jauges supposées de `paceIf`, le partenaire d'un duo à 0) : le lanceur
+  d'abord, son prochain tour cerné d'or (la frise s'allonge jusqu'à lui) ; si `damageText` dit « le brise » sur la cible
+  probable (`cursor`), le prochain tour de cet ennemi est barré. Dessin seul (jamais chez l'invité : pas de frise) ;
+  capture `frise_rythme`.
 - Brisure (2.5, Octopath) : `Fighter::shield/shieldMax/broken`, posés dans le
   constructeur de `Battle` (ennemi d'un événement `bouclier`, sinon espèce,
   sinon `brisure.bouclier(_boss)` ; + talent Cuirasse ; jamais en duel). Dans
@@ -653,8 +680,8 @@ code) ; `docs/GUIDE.md` les range par domaine.
   temps sur un coffre fermé (`drawChest(…, t)`), et à l'ouverture des rayons de lumière et l'icône de l'objet qui monte
   (`Game::chestFx_`). Bulles d'humeur : de temps en temps, un habitant sans bulle de quête (ni dresseur) montre une
   note de musique, « … » ou un cœur (selon sa case ; dessin seul, `drawMap`).
-  Combat : les alliés qui gagnent un niveau sont entourés d'étincelles dorées pendant la fenêtre des gains
-  (`Battle::levelUps_`).
+  Combat : les alliés qui gagnent un niveau sont entourés d'étincelles dorées pendant la fenêtre des gains, dès que
+  leur barre d'expérience y arrive (`Battle::gainRows_`).
 - Stratégie 2.7 (FF7, boss en phases) : gemmes `ItemDef::gem` (`gemMove`, `gemBonus` en %, `gemSupport`/`gemValue`),
   `Fighter::gems[emplacement]` (ligne `gemmes <emplacement> id…` après `equipement`, aussi dans les échanges),
   `gemSockets` (règles `gemmes`), `trimGems` (rendues au sac quand l'équipement change), `gemSupport(f, effet)` ;
@@ -788,7 +815,10 @@ code) ; `docs/GUIDE.md` les range par domaine.
   Compagnons, Tactiques, Réserve) ; Discussions et Bestiaire dans le Journal (titre « Quêtes » avant la liste) ;
   icônes (`MenuItem::icon`, voir `MenuStack`) au menu de pause, aux commandes et techniques du combat, à l'écran titre,
   au Journal, à la boutique et au Bestiaire ; fines jauges sous les PV, PM, Exp. de la fiche d'équipe et sous les
-  statistiques de la fiche du Bestiaire.
+  statistiques de la fiche du Bestiaire. Finition (2026-10-26) : liste de l'équipe et de l'équipement avec la pastille du type
+  (remplaçants en gris), fiche d'un membre à filets qui s'arrête au-dessus de l'aide, comparaison dans la fiche
+  (`gearHover_` : valeurs avec l'objet survolé de `gearPick`, en vert ou en rouge), Options en groupes titrés, Journal en
+  listes titrées (Quêtes, Primes, Terminées) ; le tour des menus capture aussi Équipement, Gemmes et Options.
 - Épreuves des gardiens (2026-10-20) : après `aube_fin`, la porte du sanctuaire d'Aube (événement `epreuves`) ouvre huit
   combats contre des esprits gardiens (drapeaux `epreuve1`…`epreuve8`, niveaux 70 à 84), puis Ilya (`epreuve9`,
   Insigne des gardiens) ; quête `epreuves`. Script `outils/villes/epreuves.py` ; une phase à mi-vie pour chaque gardien,

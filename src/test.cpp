@@ -142,7 +142,8 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     frame();
     snap("86_options");
     bool louder = options().music == std::min(10, vol + 1);
-    menus.top().sel = 8;  // Touches (après Langue, Astuces, Sauvegarde auto et Types lisibles sans couleur)
+    for (size_t i = 0; i < menus.top().items.size(); i++)  // Touches (après les groupes Son, Affichage et Partie)
+      if (menus.top().items[i].label == T("Touches")) menus.top().sel = (int)i;
     in.confirm = true;
     frame();
     snap("87_touches");
@@ -720,6 +721,42 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     B.face(lior, boardAt(0, 2));  // même colonne : il garde son regard
     turns = turns && !B.facesRight(lior);
     B.facing_.erase(lior.get());
+    {  // (2026-10-26) à l'œil, un coup qui se sent (dessin seul) : un critique de Lior fige un instant le lanceur et la cible
+       // (arrêt sur image), l'éclaire en blanc une image, l'écrase et la repousse ; nombre doré en grand. Puis une Brisure.
+      B.cells_[lior.get()] = boardAt(1, 3), B.cells_[brute.get()] = boardAt(1, 4), B.cells_[mage.get()] = boardAt(2, 5);
+      B.cells_[extra.get()] = boardAt(0, 6), B.cells_[maelle.get()] = boardAt(2, 1);
+      B.pops.clear(), B.bursts_.clear(), B.impacts_.clear(), B.stopped_.clear();
+      B.start = time - 5;
+      int keepAcc = lior->acc, keepCrit = lior->crit, keepMhp = brute->mhp, keepShield = brute->shield;
+      bool keepBroken = brute->broken;
+      lior->acc = lior->crit = 1000;              // touche et critique à coup sûr
+      brute->mhp = brute->hp = keepMhp * 2;       // sans l'abattre
+      B.anim_ = Battle::Anim{lior, {brute}, Battle::Fx::Hit, rgb(types()[bite.type].color), false, time - .3f, bite.type};
+      int dmg = B.applyHit(lior, brute, bite);
+      lior->acc = keepAcc, lior->crit = keepCrit;
+      bool flash = B.impacts_.count(brute.get()) && B.impacts_[brute.get()].flash;
+      float t0 = B.impacts_[brute.get()].t0, len = B.stopLen_, keepTime = time;
+      time = t0 + .05f;  // dessin seul, au milieu de l'arrêt sur image (l'éclair : la première image dessinée)
+      snap("coup_critique");
+      time = t0 + .03f;  // pendant l'arrêt : le lanceur et la cible attendent, les autres non
+      bool frozen = B.since(brute.get(), t0) == 0 && B.since(lior.get(), t0) == 0 && B.since(mage.get(), t0) > .02f;
+      time = t0 + .23f;  // après : leurs minuteries repartent, en retard de la durée de l'arrêt
+      bool resumed = std::abs(B.since(brute.get(), t0) - (.23f - len)) < .001f;
+      time = keepTime;
+      check(dmg > 0 && flash && !B.impacts_[brute.get()].flash && len >= .04f && len <= .09f && frozen && resumed,
+            "à l'œil : un critique fige un instant le lanceur et sa cible (" + std::to_string(int(len * 1000)) +
+                " ms, dessin seul) et l'éclaire en blanc une seule image");
+      brute->mhp = brute->hp = keepMhp, brute->broken = keepBroken, brute->shield = keepShield;
+      B.pops.clear(), B.impacts_.clear(), B.stopped_.clear();
+      B.anim_ = Battle::Anim{lior, {mage}, Battle::Fx::Hit, rgb(types()[bite.type].color), false, time - .3f, bite.type};
+      keepBroken = mage->broken, keepShield = mage->shield;
+      B.breakFoe(mage);
+      time = keepTime + .05f;  // de même : l'éclair, « BRISÉ ! », éclats, écran doré
+      snap("coup_brisure");
+      time = keepTime;
+      mage->broken = keepBroken, mage->shield = keepShield;
+      B.pops.clear(), B.bursts_.clear(), B.impacts_.clear(), B.stopped_.clear(), B.anim_ = Battle::Anim{};
+    }
     seedRandom(seed + 1);  // la suite du mode test reprend une suite de tirages à elle
     check(turnedBack > turnedFront * 1.15 && turns,
           "échiquier : le dos dépend du regard (retourné : " + std::to_string(turnedBack) + " contre " + std::to_string(turnedFront) +
@@ -1047,6 +1084,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       frame();
     }
     bool summary = B.summaryOn_ && !B.summary_.empty();
+    run(1.5f);  // les barres d'expérience remplies
     snap("97_victoire");
     in.confirm = true;
     frame();
@@ -1056,6 +1094,38 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     mode = Mode::Map;
     menus.clear();
     sc.clear();
+    {  // (2026-10-26) fenêtre des gains à six alliés : barres qui se remplissent, passages de niveau ; Entrée les termine
+      team = {makeFighter("lior", 6), makeFighter("maelle", 6), makeFighter("brann", 6), makeFighter("braisenard", 6), makeFighter("rocaillou", 6), makeFighter("galetor", 6)};
+      startBattle({makeFighter("galetor", 14), makeFighter("braisenard", 14), makeFighter("rocaillou", 14)}, false, nullptr);
+      Battle& V = *battle_;
+      bool six = V.allies.size() == 6;
+      for (auto& f : V.foes) f->hp = 0, V.knockOut(f);
+      V.sc.clear();
+      V.checkEnd();
+      for (int i = 0; i < 300 && !V.summaryOn_; i++) {
+        if (V.sc.busy()) in.confirm = true;
+        frame();
+      }
+      V.loot_ = {{"potion", 1}, {"minerai", 2}, {"coeur_braise", 1}};  // le butin est tiré au hasard : celui-ci pour la capture
+      run(.38f);  // les barres en chemin (« +N exp » qui compte)
+      snap("gains_debut");
+      float mid = V.gainsFill(time);
+      in.confirm = true;  // pendant le remplissage : les barres pleines d'un coup, la fenêtre reste
+      frame();
+      bool filled = V.summaryOn_ && V.gainsFill(time) >= 1;
+      bool leveled = V.gainRows_.size() == 6 && int(V.gainRows_[0].to) > int(V.gainRows_[0].from);
+      run(.2f);
+      snap("gains_niveau");
+      in.mclick[0] = true;  // puis un clic (ou Entrée) : la suite
+      frame();
+      for (int i = 0; i < 300 && mode == Mode::Battle; i++) frame();
+      check(six && mid > 0 && mid < 1 && filled && leveled && mode == Mode::Map,
+            "gains à six alliés : barres d'expérience qui se remplissent, Entrée les remplit d'un coup, un clic continue");
+      battle_.reset();
+      mode = Mode::Map;
+      menus.clear();
+      sc.clear();
+    }
     // Formation : choisie dans le menu, gardée par la sauvegarde
     team = {makeFighter("lior", 20), makeFighter("maelle", 20), makeFighter("braisenard", 20)};
     formationMenu(0);
@@ -1155,7 +1225,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     snap("93_journal");
     bool listed = false;  // la quête (après le conseil « Prochain gardien »)
     for (auto& it : menus.top().items)
-      listed = listed || (it.right == T("en cours") &&
+      listed = listed || (it.icon == "parchemin" &&  // en cours (2026-10-26 : l'icône le dit, plus de « en cours » à droite)
                           it.help.find(tr("Le petit-fils de l'ancien cherche le médaillon de son grand-père, perdu dans le Bois "
                                           "Murmurant, au sud-ouest du village.")) != std::string::npos);
     listed = listed && menus.top().title == T("Journal");
@@ -2068,6 +2138,55 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     mode = Mode::Map;
   }
 
+  // --- Frise du rythme (2026-10-26, FFX) : la technique survolée montre où tombera le prochain tour du lanceur ---
+  {
+    sc.clear(), menus.clear();
+    mode = Mode::Map;
+    auto keepTeam = team;
+    auto keepWeak = weak;
+    bool keepAuto = tacticsAuto;
+    tacticsAuto = false;
+    auto gal = makeFighter("galetor", 20), brai = makeFighter("braisenard", 18);  // Charge rapide, Avalanche (Roche) lourde
+    team = {gal, makeFighter("louvet", 20), makeFighter("esprillon", 20)};
+    startBattle({brai, makeFighter("mulotin", 18), makeFighter("piafouine", 18)}, false, nullptr);
+    Battle& B = *battle_;
+    B.start -= 2;  // sans la transition d'entrée
+    B.sc.clear();
+    brai->shield = brai->shieldMax = 1, brai->mhp = brai->hp = 5000;  // un bouclier, sa faiblesse à la Roche découverte
+    weak.insert(brai->sp + ":" + std::to_string(typeOf("roche")));
+    float at = 0;
+    for (auto* side : {&B.allies, &B.foes})
+      for (auto& f : *side) f->atb = at += 14;
+    gal->atb = 100;
+    B.command(gal);
+    for (auto& it : menus.top().items)
+      if (it.label == T("Attaquer") && it.act) {
+        auto act = it.act;  // copie : l'action change les menus
+        act();
+        break;
+      }
+    auto nextTurn = [&](const std::string& id, const Fighter** breaks) {  // survol : place du prochain tour de Galetor
+      Menu& m = menus.top();
+      for (size_t i = 0; i < m.items.size(); i++)
+        if (m.items[i].label == moveInfo(id).name && m.items[i].hover) m.sel = (int)i, m.items[i].hover();
+      auto o = B.turnOrder(16, B.paceIf(breaks));
+      return int(std::find(o.begin(), o.end(), gal) - o.begin());
+    };
+    const Fighter *none = nullptr, *broken = nullptr;
+    int quick = nextTurn("charge", &none);
+    B.cursor = brai;
+    int heavy = nextTurn("avalanche", &broken);
+    snap("frise_rythme");
+    check(quick < heavy && broken == brai.get() && !none, "frise du rythme : prochain tour de Galetor en " + std::to_string(quick + 1) +
+                                                             "e place après Charge (rapide), en " + std::to_string(heavy + 1) +
+                                                             "e après Avalanche (lourde), qui brise Braisenard");
+    menus.clear();
+    battle_.reset();
+    sc.clear();
+    mode = Mode::Map;
+    team = keepTeam, weak = keepWeak, tacticsAuto = keepAuto;
+  }
+
   // --- Forge de Forgeroc (2.1) : or et matériaux, objet porté ou dans le sac, +3 avec un trophée, sauvegarde ---
   {
     auto lior = makeFighter("lior", 20);
@@ -2485,6 +2604,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
             for (auto& e : d.value(k, Json::array()))
               valid = valid && hasSpecies(e.value("espece", "")) && e.contains("case") && at(e["case"], std::string(k) == "allies");
           for (auto& o : d.value("obstacles", Json::array())) valid = valid && at(o, false);
+          for (auto& e : d.value("ennemis", Json::array()))  // (2026-10-26) une mécanique de boss ne joue que sur un boss (Battle::mech)
+            if (e.contains("mecanique")) {
+              static const std::set<std::string> kinds = {"cuirasse", "voile", "ronces", "charge", "attire"};
+              valid = valid && jget(e, "boss", false) && kinds.count(jget<std::string>(e["mecanique"], "genre", "")) && jget(e["mecanique"], "tous", 3) >= 2;
+            }
           valid = valid && d.contains("nom") && d.contains("description");
         }
         A.menuChallenges();
@@ -2531,6 +2655,69 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         bool back = mode == Mode::Arena && menus.active() && menus.top().title == T("Défis de l'échiquier") && menus.top().items[0].right == T("réussi");
         check(valid && placed && back, "arène : défis de l'échiquier (données valides, plateau imposé, retour à la liste « réussi »)");
         menus.clear();
+        // (2026-10-26) défis des mécaniques de boss : l'ennemi du défi porte sa mécanique et l'annonce comme un boss
+        bool mechs = true;
+        for (std::string id : {"cuirasse", "voile", "charge", "ronces"}) {
+          int at = -1;
+          for (size_t i = 0; i < defis.size(); i++)
+            if (jget<std::string>(defis[i], "id", "") == id) at = (int)i;
+          A.startChallenge(at);
+          FighterP boss;
+          if (battle_)
+            for (auto& f : battle_->foes)
+              if (f->boss) boss = f;
+          if (!boss) {
+            mechs = false;
+            continue;
+          }
+          Battle& B = *battle_;
+          B.start = time - 5;
+          B.sc.clear();
+          mechs = mechs && B.mech(boss) == id;
+          B.mechTurns_[boss.get()] = jget(boss->mech, "tous", 3) - 1;  // son prochain tour est celui de sa mécanique
+          if (id == "charge" || id == "ronces") B.bossPlan(boss), mechs = mechs && B.warnings_.size() == 1 && B.warnings_[0].kind == id;
+          else B.declareIntent(boss), mechs = mechs && B.intents_.count(boss.get()) && B.intents_[boss.get()].posture == id;
+          run(1.1f);  // le message s'écrit en entier (le combat attend)
+          snap("defi_" + id);
+          B.sc.clear();
+          for (auto& f : B.foes) f->hp = 0, B.knockOut(f);
+          B.checkEnd();
+          for (int i = 0; i < 60 * 30 && mode == Mode::Battle; i++) {
+            if (battle_ && battle_->sc.busy()) in.confirm = true;
+            frame();
+          }
+          menus.clear();
+        }
+        check(mechs && mode == Mode::Arena, "défis : la cuirasse, le voile, la charge et les ronces portent la mécanique de leur boss et l'annoncent (captures defi_…)");
+        // Joueur automatique : il relève une fois chaque défi récompensé (ensuite, plus rien à y faire) et le gagne en
+        // répétition (ses combattants prêtés, avec leurs tactiques) : il ne restera pas bloqué dessus
+        bool keepAuto = tacticsAuto;  // le joueur automatique le met à vrai, jusque dans son destructeur
+        {
+          Pilot P(*this, false);
+          auto keepFlags = flags;
+          std::string said;
+          bool ok = true;
+          struct Lesson {
+            const char *ev, *before, *flag, *defi;
+          };
+          for (auto& c : {Lesson{"maitre_armes", "maitre_bottes", "maitre_cuirasse", "cuirasse"},
+                          Lesson{"instructeur_forgeroc", "instructeur_forgeroc", "instructeur_charge", "charge"},
+                          Lesson{"instructeur_givreval", "instructeur_givreval", "instructeur_voile", "voile"},
+                          Lesson{"ermite", "bandits", "ermite_ronces", "ronces"}}) {
+            flags = keepFlags;
+            flags.insert(c.before);
+            Pilot::Info in = P.inspect(c.ev);
+            bool offered = in.combat && jget<std::string>(in.fight, "defi", "") == c.defi;
+            float won = offered ? P.rehearse(in.fight, 20, true) : 0;
+            flags.insert(c.flag);
+            Pilot::Info after = P.inspect(c.ev);
+            ok = ok && offered && won >= .7f && !after.combat && !after.effect;
+            said += std::string(said.empty() ? "" : ", ") + c.defi + " " + std::to_string(int(won * 100 + .5f)) + " %";
+          }
+          flags = keepFlags;
+          check(ok, "joueur automatique : il relève une fois chaque défi des mécaniques et le gagne en répétition (" + said + ")");
+        }
+        tacticsAuto = keepAuto;
       }
     }
     mode = Mode::Title;
@@ -3028,6 +3215,38 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
     pauseMenu();
     teamMenuAt(1);
     show("équipe");
+    {  // (2026-10-26) Équipement : la liste, les emplacements, la comparaison sur la fiche, les gemmes ; puis tout est remis
+      auto keepGear = team[0]->gear;
+      auto keepGems = team[0]->gems;
+      auto keepItems = items;
+      menus.clear();
+      pauseMenu();
+      gearMenu();
+      show("équipement");
+      in.confirm = true;  // Lior
+      show("équipement : emplacements");
+      in.confirm = true;  // Arme : le premier objet du sac est survolé, la fiche montre ce qu'il change
+      show("équipement : comparaison");
+      in.press[DOWN] = true;
+      show("équipement : comparaison 2");
+      in.confirm = true;  // le porter : retour aux emplacements
+      frame();
+      bool gems = false;
+      for (size_t i = 0; i < menus.top().items.size(); i++)
+        if (menus.top().items[i].label == T("Gemmes") && menus.top().items[i].enabled) menus.top().sel = (int)i, gems = true;
+      if (gems) {
+        in.confirm = true;
+        show("gemmes");
+        in.confirm = true;  // le premier chaton : les gemmes du sac
+        show("gemmes : sertir");
+      }
+      menus.clear();
+      team[0]->gear = keepGear, team[0]->gems = keepGems, items = keepItems;
+      team[0]->recalc();
+      team[0]->hp = team[0]->mhp, team[0]->mp = team[0]->mmp;
+      optionsMenu();
+      show("options");
+    }
     menus.clear();
     itemMenu();
     show("objets");
@@ -3449,10 +3668,12 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         frame();
       }
       Json probe = {{"espece", "mulotin"}, {"niveau", 5}};
-      bool ok = has("ngp1") && !has("aube_fin") && has("peche:gardon") && !items.count("trident") && items["potion"] == 3 &&
+      BattleSetup ds;  // un défi garde ses niveaux : ses combattants sont prêtés, à niveau fixe
+      bool challenge = challengeSetup("dos", ds) && ds.foes[0]->lvl == readJson("defis.json")[0]["ennemis"][0].value("niveau", 10);
+      bool ok = challenge && has("ngp1") && !has("aube_fin") && has("peche:gardon") && !items.count("trident") && items["potion"] == 3 &&
                 team.size() == n && foeLevelBonus == NGP_LEVELS && makeFoe(probe, 1)->lvl == 5 + NGP_LEVELS &&
                 M().id == rules().startMap && !visited.count("cendrelune");
-      check(ok, "nouvelle partie + : l'histoire recommence avec l'équipe, sans les objets importants, ennemis +" + std::to_string(NGP_LEVELS) + " niveaux");
+      check(ok, "nouvelle partie + : l'histoire recommence avec l'équipe, sans les objets importants, ennemis +" + std::to_string(NGP_LEVELS) + " niveaux (pas ceux des défis)");
       flags = savedFlags;
       items = savedItems;
       team = savedTeam;
@@ -4427,8 +4648,9 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       f->hp = f->mhp, f->mp = f->mmp;
     }
   };
+  // hook : appelé avant chaque pas du combat (un défi « sans la parade » : Isra qui ne bouge jamais…)
   auto simSetup = [&](const char* name, std::vector<std::pair<std::string, int>> party, std::function<BattleSetup()> mk, int n,
-                      bool tac = false) {
+                      bool tac = false, std::function<void(Battle&)> hook = nullptr) {
     if (!simWanted(name)) return;
     n *= simFactor;
     int wins = 0;
@@ -4461,6 +4683,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       for (int i = 0; i < 20 * 900 && !done; i++) {
         in.confirm = true;
         if (keep && battle_) lastLog = battle_->log;
+        if (hook && battle_) hook(*battle_);
         update(1 / 20.f);
         t += 1 / 20.f;
       }
@@ -4595,12 +4818,35 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   // (2026-10-26) la fin de l'acte 3 (Citadelle : meutes N.60-64)
   simSetup("Brume Noire (équipe N.64)", {{"lior", 64}, {"maelle", 64}, {"isra", 64}, {"braisenard", 64}, {"gouttelin", 64}, {"ronceau", 64}}, bossEvent("brume_noire"), 20);
   {  // Défis de l'échiquier (3.4) : l'IA seule doit pouvoir les gagner parfois, sans que ce soit acquis
+    // (2026-10-26) un défi qui apprend une parade se rejoue sans elle : la défaite doit y être fréquente
+    auto pin = [](const char* sp) {  // ce combattant ne se déplace jamais de lui-même (« tout le monde » si vide)
+      return [sp](Battle& B) {
+        for (auto& a : B.allies)
+          if (!*sp || a->sp == sp) B.moved_.insert(a.get());
+      };
+    };
+    auto stubborn = [](std::map<std::string, std::string> moves) {  // ces combattants frappent le boss avec cette technique, quoi qu'il arrive
+      return [moves](Battle& B) {
+        B.simTactics = true;
+        for (auto& a : B.allies) {
+          a->tacticsOn = moves.count(a->sp) > 0;  // les autres : l'IA, comme avec la parade
+          if (a->tacticsOn) a->tactics = {tacticFromJson(Json{{"si", "ennemi_boss"}, {"technique", moves.at(a->sp)}})};
+        }
+      };
+    };
+    std::map<std::string, std::function<void(Battle&)>> careless = {
+        {"intentions", pin("isra")},                                             // Isra reste sous le chevron
+        {"cuirasse", stubborn({{"brann", "hache"}, {"lior", "estoc"}})},          // ses combattants frappent la cuirasse au corps à corps
+        {"voile", stubborn({{"kael", "fleche_vent"}, {"isra", "feu"}})},         // tirs et sorts dans le voile
+        {"charge", pin("")},                                                     // personne ne quitte la ligne
+        {"ronces", pin("")},                                                     // personne ne quitte la croix, ni les ronces
+    };
     Json defis = readJson("defis.json");
     for (auto& d : defis) {
       std::vector<std::pair<std::string, int>> party;
       for (auto& e : d.value("allies", Json::array())) party.push_back({e.at("espece").get<std::string>(), jget(e, "niveau", 10)});
       std::string name = T("Défi : ") + tr(jget<std::string>(d, "nom", ""));
-      simSetup(name.c_str(), party, [&, d] {
+      auto setup = [&, d] {
         BattleSetup s;
         auto cell = [](const Json& e) {
           Json p = e.value("case", Json::array({1, 1}));
@@ -4613,7 +4859,12 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         s.fixedBoard = true, s.canCapture = false;
         s.theme = (int)themeOf(jget<std::string>(d, "decor", "vallee"));
         return s;
-      }, 20);
+      };
+      simSetup(name.c_str(), party, setup, 20);
+      auto it = careless.find(jget<std::string>(d, "id", ""));
+      if (it == careless.end()) continue;
+      simSetup((name + " (tactiques)").c_str(), party, setup, 20, true);  // comme le joueur automatique
+      simSetup((name + " (sans la parade)").c_str(), party, setup, 20, false, it->second);
     }
   }
 

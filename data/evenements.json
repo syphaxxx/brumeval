@@ -592,6 +592,46 @@
         ]
       },
       {
+        "si": {"drapeau": "bandits", "sans_drapeau": ["ronce", "ermite_ronces"]},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Ermite : Merci d'avoir chassé ces brigands ! Kael veillera de nouveau sur la forêt."
+          },
+          {
+            "action": "dire",
+            "texte": "Ermite : La Ronce-Mère fait jaillir des ronces sous ses ennemis, et elles restent. Kael s'y exerce contre un Ronceau."
+          },
+          {
+            "action": "question",
+            "texte": "Relever le défi « Les ronces » ?",
+            "oui": [
+              {
+                "action": "combat",
+                "defi": "ronces",
+                "entrainement": true,
+                "fuite": true,
+                "victoire": [
+                  {
+                    "action": "dire",
+                    "texte": "Ermite : Vous voilà prêts pour le marais. Prenez ces remèdes, on ne sait jamais."
+                  },
+                  {"action": "donner", "objet": "remede", "quantite": 3},
+                  {"action": "drapeau", "nom": "ermite_ronces"}
+                ],
+                "defaite": [
+                  {
+                    "action": "dire",
+                    "texte": "Ermite : Sortez de la croix rouge avant son tour, puis ne finissez jamais un tour sur les ronces."
+                  }
+                ]
+              }
+            ],
+            "non": [{"action": "dire", "texte": "Ermite : Reste la Ronce-Mère, au fond du marais…"}]
+          }
+        ]
+      },
+      {
         "si": {"sans_drapeau": "ronce"},
         "actions": [
           {
@@ -959,9 +999,66 @@
   "instructeur_forgeroc": {
     "pages": [
       {
+        "si": {"drapeau": ["instructeur_forgeroc", "instructeur_charge"]},
+        "actions": [
+          {
+            "action": "question",
+            "texte": "Reprendre le défi « La charge » ?",
+            "oui": [{"action": "combat", "defi": "charge", "entrainement": true, "fuite": true}],
+            "non": [
+              {
+                "action": "question",
+                "texte": "Reprendre le défi « Bousculade » ?",
+                "oui": [{"action": "combat", "defi": "bousculade", "entrainement": true, "fuite": true}]
+              }
+            ]
+          }
+        ]
+      },
+      {
         "si": {"drapeau": "instructeur_forgeroc"},
         "actions": [
-          {"action": "question", "texte": "Reprendre le défi « Bousculade » ?", "oui": [{"action": "combat", "defi": "bousculade", "entrainement": true, "fuite": true}]}
+          {
+            "action": "dire",
+            "texte": "Instructeur : Là-haut, Ignarok charge toute une ligne : ceux qui y restent prennent le choc et reculent."
+          },
+          {
+            "action": "dire",
+            "texte": "Instructeur : Kael et Isra contre un Tisonnel qui charge. Une défaite ne vous coûtera rien."
+          },
+          {
+            "action": "question",
+            "texte": "Relever le défi « La charge » ?",
+            "oui": [
+              {
+                "action": "combat",
+                "defi": "charge",
+                "entrainement": true,
+                "fuite": true,
+                "victoire": [
+                  {
+                    "action": "dire",
+                    "texte": "Instructeur : Bien esquivé ! Voilà de quoi encaisser le prochain choc."
+                  },
+                  {"action": "donner", "objet": "superpotion", "quantite": 2},
+                  {"action": "drapeau", "nom": "instructeur_charge"}
+                ],
+                "defaite": [
+                  {
+                    "action": "dire",
+                    "texte": "Instructeur : Dès que la ligne rouge paraît, changez de ligne, et ne restez pas l'un derrière l'autre."
+                  }
+                ]
+              }
+            ],
+            "non": [
+              {
+                "action": "question",
+                "texte": "Reprendre le défi « Bousculade » ?",
+                "oui": [{"action": "combat", "defi": "bousculade", "entrainement": true, "fuite": true}]
+              }
+            ]
+          }
         ]
       },
       {
@@ -994,9 +1091,64 @@
   "instructeur_givreval": {
     "pages": [
       {
+        "si": {"drapeau": ["instructeur_givreval", "instructeur_voile"]},
+        "actions": [
+          {
+            "action": "question",
+            "texte": "Reprendre le défi « Le voile » ?",
+            "oui": [{"action": "combat", "defi": "voile", "entrainement": true, "fuite": true}],
+            "non": [
+              {
+                "action": "question",
+                "texte": "Reprendre le défi « Le mur » ?",
+                "oui": [{"action": "combat", "defi": "mur", "entrainement": true, "fuite": true}]
+              }
+            ]
+          }
+        ]
+      },
+      {
         "si": {"drapeau": "instructeur_givreval"},
         "actions": [
-          {"action": "question", "texte": "Reprendre le défi « Le mur » ?", "oui": [{"action": "combat", "defi": "mur", "entrainement": true, "fuite": true}]}
+          {
+            "action": "dire",
+            "texte": "Instructeur : À la Source des Brumes, la Mère des Brumes se voile : sorts et flèches la traversent."
+          },
+          {
+            "action": "dire",
+            "texte": "Instructeur : Kael et Isra contre un Brumelin qui se voile, et ses deux acolytes. Une défaite ne vous coûtera rien."
+          },
+          {
+            "action": "question",
+            "texte": "Relever le défi « Le voile » ?",
+            "oui": [
+              {
+                "action": "combat",
+                "defi": "voile",
+                "entrainement": true,
+                "fuite": true,
+                "victoire": [
+                  {"action": "dire", "texte": "Instructeur : Vous avez vu clair dans la brume ! Prenez ceci."},
+                  {"action": "donner", "objet": "ether", "quantite": 1},
+                  {"action": "donner", "objet": "plume", "quantite": 1},
+                  {"action": "drapeau", "nom": "instructeur_voile"}
+                ],
+                "defaite": [
+                  {
+                    "action": "dire",
+                    "texte": "Instructeur : Quand les volutes l'entourent, tirez sur ses acolytes, ou allez au contact."
+                  }
+                ]
+              }
+            ],
+            "non": [
+              {
+                "action": "question",
+                "texte": "Reprendre le défi « Le mur » ?",
+                "oui": [{"action": "combat", "defi": "mur", "entrainement": true, "fuite": true}]
+              }
+            ]
+          }
         ]
       },
       {
@@ -1028,45 +1180,61 @@
   "maitre_armes": {
     "pages": [
       {
-        "si": {"drapeau": "maitre_bottes"},
+        "si": {"drapeau": ["maitre_bottes", "maitre_cuirasse"]},
         "actions": [
-          {"action": "dire", "texte": "Maître d'armes : Encore un peu d'entraînement ? D'autres défis vous attendent dans l'Arène."},
+          {
+            "action": "dire",
+            "texte": "Maître d'armes : Encore un peu d'entraînement ? D'autres défis vous attendent dans l'Arène."
+          },
           {
             "action": "question",
-            "texte": "Apprendre à lire les intentions des ennemis ?",
+            "texte": "Reprendre le défi « La cuirasse » ?",
+            "oui": [{"action": "combat", "defi": "cuirasse", "entrainement": true, "fuite": true}],
+            "non": [{"action": "evenement", "id": "maitre_armes_lecons"}]
+          }
+        ]
+      },
+      {
+        "si": {"drapeau": "maitre_bottes"},
+        "actions": [
+          {
+            "action": "dire",
+            "texte": "Maître d'armes : Certains gardiens se cuirassent, comme le Golem de suie de la Grotte des Échos."
+          },
+          {
+            "action": "dire",
+            "texte": "Maître d'armes : Cuirassé, il riposte à chaque coup au corps à corps, et l'acier glisse sur lui. La magie, elle, passe."
+          },
+          {
+            "action": "dire",
+            "texte": "Maître d'armes : Brann, Lior et Isra contre un jeune golem et deux Champichous. Une défaite ne vous coûtera rien."
+          },
+          {
+            "action": "question",
+            "texte": "Relever le défi « La cuirasse » ?",
             "oui": [
-              {"action": "dire", "texte": "Maître d'armes : Chaque ennemi annonce son coup : un chevron orange au-dessus de sa cible, et les dégâts prévus."},
               {
                 "action": "combat",
-                "defi": "intentions",
+                "defi": "cuirasse",
                 "entrainement": true,
                 "fuite": true,
-                "defaite": [{"action": "dire", "texte": "Maître d'armes : Quand le chevron est sur Isra, faites-la reculer avant qu'il frappe, puis lancez vos sorts."}]
-              }
-            ],
-            "non": [
-              {
-                "action": "question",
-                "texte": "Apprendre la garde ?",
-                "oui": [
-                  {"action": "dire", "texte": "Maître d'armes : Attendre, c'est se mettre en garde : on encaisse moins, et on rend chaque coup reçu au corps à corps."},
+                "victoire": [
                   {
-                    "action": "combat",
-                    "defi": "garde",
-                    "entrainement": true,
-                    "fuite": true,
-                    "defaite": [{"action": "dire", "texte": "Maître d'armes : Ne frappez pas à chaque tour : choisissez Attendre, et laissez-les venir."}]
-                  }
+                    "action": "dire",
+                    "texte": "Maître d'armes : Parfait. Prenez ces éthers : vos sorts en auront besoin."
+                  },
+                  {"action": "donner", "objet": "ether", "quantite": 2},
+                  {"action": "drapeau", "nom": "maitre_cuirasse"}
                 ],
-                "non": [
+                "defaite": [
                   {
-                    "action": "question",
-                    "texte": "Reprendre le défi « Dans le dos » ?",
-                    "oui": [{"action": "combat", "defi": "dos", "entrainement": true, "fuite": true}]
+                    "action": "dire",
+                    "texte": "Maître d'armes : Quand l'écu paraît au-dessus du golem, Brann et Lior frappent les Champichous ; Isra lance ses sorts."
                   }
                 ]
               }
-            ]
+            ],
+            "non": [{"action": "evenement", "id": "maitre_armes_lecons"}]
           }
         ]
       },
@@ -1095,6 +1263,63 @@
                   {"action": "drapeau", "nom": "maitre_bottes"}
                 ],
                 "defaite": [{"action": "dire", "texte": "Maître d'armes : Ce n'est rien. Contournez le protecteur par le haut, et revenez me voir."}]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "maitre_armes_lecons": {
+    "actions": [
+      {
+        "action": "question",
+        "texte": "Apprendre à lire les intentions des ennemis ?",
+        "oui": [
+          {
+            "action": "dire",
+            "texte": "Maître d'armes : Chaque ennemi annonce son coup : un chevron orange au-dessus de sa cible, et les dégâts prévus."
+          },
+          {
+            "action": "combat",
+            "defi": "intentions",
+            "entrainement": true,
+            "fuite": true,
+            "defaite": [
+              {
+                "action": "dire",
+                "texte": "Maître d'armes : Quand le chevron est sur Isra, faites-la reculer avant qu'il frappe, puis lancez vos sorts."
+              }
+            ]
+          }
+        ],
+        "non": [
+          {
+            "action": "question",
+            "texte": "Apprendre la garde ?",
+            "oui": [
+              {
+                "action": "dire",
+                "texte": "Maître d'armes : Attendre, c'est se mettre en garde : on encaisse moins, et on rend chaque coup reçu au corps à corps."
+              },
+              {
+                "action": "combat",
+                "defi": "garde",
+                "entrainement": true,
+                "fuite": true,
+                "defaite": [
+                  {
+                    "action": "dire",
+                    "texte": "Maître d'armes : Ne frappez pas à chaque tour : choisissez Attendre, et laissez-les venir."
+                  }
+                ]
+              }
+            ],
+            "non": [
+              {
+                "action": "question",
+                "texte": "Reprendre le défi « Dans le dos » ?",
+                "oui": [{"action": "combat", "defi": "dos", "entrainement": true, "fuite": true}]
               }
             ]
           }

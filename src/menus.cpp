@@ -27,7 +27,7 @@ void Game::optionsMenu(int sel) {
   panelMode_ = 0;  // le menu prend la place du résumé de l'équipe
   Menu m;
   m.title = T("Options");
-  m.x = 55, m.y = 40, m.w = 210, m.rows = 8, m.sel = sel;  // 210 : « Types lisibles sans couleur » tient
+  m.x = 55, m.y = 14, m.w = 210, m.rows = 13, m.sel = sel;  // 210 : « Types lisibles sans couleur » tient ; tout se voit, au-dessus de l'aide
   auto volume = [this](const std::string& label, int* v, const std::string& help) {
     MenuItem it{label, "", help, true, nullptr};
     it.adjust = [v](int d) {
@@ -38,8 +38,10 @@ void Game::optionsMenu(int sel) {
     it.notches = [v] { return *v; };  // des crans plutôt que « 7 / 10 »
     return it;
   };
+  m.items.push_back(menuHeader(T("Son")));  // (2026-10-26) trois groupes titrés : le son, l'affichage, la partie
   m.items.push_back(volume(T("Musique"), &options().music, T("Gauche / droite : volume de la musique.")));
   m.items.push_back(volume(T("Effets sonores"), &options().effects, T("Gauche / droite : volume des bruitages.")));
+  m.items.push_back(menuHeader(T("Affichage")));
   auto full = [] {
     options().fullscreen = !options().fullscreen;
     saveOptions();
@@ -48,19 +50,6 @@ void Game::optionsMenu(int sel) {
   fs.adjust = [full](int) { full(); };
   fs.rightFn = [] { return std::string(options().fullscreen ? T("Oui") : T("Non")); };
   m.items.push_back(fs);
-  {
-    MenuItem sp{T("Vitesse du jeu"), "", T("Gauche / droite : ×1, ×2 ou ×3 (marche, combats, textes). Aussi avec F2. Toujours ×1 en multijoueur."), true,
-                [] {
-                  options().speed = options().speed % 3 + 1;
-                  saveOptions();
-                }};
-    sp.adjust = [](int d) {
-      options().speed = std::clamp(options().speed + d, 1, 3);
-      saveOptions();
-    };
-    sp.rightFn = [] { return T("×") + std::to_string(options().speed); };
-    m.items.push_back(sp);
-  }
   {
     auto lang = [] {  // langue (3.1) : tout se traduit aussitôt (les noms des données sont reconstruits)
       options().english = !options().english;
@@ -73,6 +62,30 @@ void Game::optionsMenu(int sel) {
     lg.adjust = [lang](int) { lang(); };
     lg.rightFn = [] { return std::string(options().english ? T("English") : T("Français")); };
     m.items.push_back(lg);
+  }
+  {
+    auto flip = [] {
+      options().typeMarks = !options().typeMarks;
+      saveOptions();
+    };
+    MenuItem tm{T("Types lisibles sans couleur"), "", T("Un motif sur chaque pastille de type (flamme : Feu, goutte : Eau…), pour les reconnaître sans les couleurs."), true, flip};
+    tm.adjust = [flip](int) { flip(); };
+    tm.rightFn = [] { return std::string(options().typeMarks ? T("Oui") : T("Non")); };
+    m.items.push_back(tm);
+  }
+  m.items.push_back(menuHeader(T("Partie")));
+  {
+    MenuItem sp{T("Vitesse du jeu"), "", T("Gauche / droite : ×1, ×2 ou ×3 (marche, combats, textes). Aussi avec F2. Toujours ×1 en multijoueur."), true,
+                [] {
+                  options().speed = options().speed % 3 + 1;
+                  saveOptions();
+                }};
+    sp.adjust = [](int d) {
+      options().speed = std::clamp(options().speed + d, 1, 3);
+      saveOptions();
+    };
+    sp.rightFn = [] { return T("×") + std::to_string(options().speed); };
+    m.items.push_back(sp);
   }
   {
     auto flip = [] {
@@ -94,17 +107,8 @@ void Game::optionsMenu(int sel) {
     as.rightFn = [] { return std::string(options().autosave ? T("Oui") : T("Non")); };
     m.items.push_back(as);
   }
-  {
-    auto flip = [] {
-      options().typeMarks = !options().typeMarks;
-      saveOptions();
-    };
-    MenuItem tm{T("Types lisibles sans couleur"), "", T("Un motif sur chaque pastille de type (flamme : Feu, goutte : Eau…), pour les reconnaître sans les couleurs."), true, flip};
-    tm.adjust = [flip](int) { flip(); };
-    tm.rightFn = [] { return std::string(options().typeMarks ? T("Oui") : T("Non")); };
-    m.items.push_back(tm);
-  }
   m.items.push_back({T("Touches"), "", T("Changer les touches du clavier. La manette se branche toute seule."), true, [this] { keysMenu(); }});
+  m.items.back().sep = true;
   m.items.push_back({T("Retour"), "", "", true, [this, panel] {
                        panelMode_ = panel;
                        menus.pop();
@@ -723,6 +727,7 @@ void Game::drawFormationPanel(int x, int y) {
 
 void Game::companionsMenu(int sel) {
   panelMode_ = 2;  // fiche à droite
+  gearHover_ = {-1, ""};
   Menu m;
   m.title = T("Compagnons");
   m.x = 8, m.y = 8, m.w = 132, m.rows = 8, m.sel = sel;
@@ -784,6 +789,7 @@ void Game::companionsMenu(int sel) {
 // ---------------------------------------------------------------------------
 void Game::gearMenu(int sel) {
   panelMode_ = 2;  // fiche détaillée à droite : les statistiques changent en direct
+  gearHover_ = {-1, ""};
   Menu m;
   m.title = T("Équipement");
   m.x = 8, m.y = 8, m.w = 132, m.rows = 9, m.sel = sel;
@@ -791,8 +797,11 @@ void Game::gearMenu(int sel) {
     FighterP f = team[i];
     int n = 0;
     for (auto& g : f->gear) n += !g.empty();
-    m.items.push_back({f->name(), n ? std::to_string(n) + "/3" : "", T("Entrée : changer son équipement."), true,
-                       [this, f, i] { gearSlots(f, (int)i); }, [this, i] { teamPanelSel_ = (int)i; }});
+    MenuItem it{f->name(), n ? std::to_string(n) + "/3" : "", T("Entrée : changer son équipement."), true,
+                [this, f, i] { gearSlots(f, (int)i); }, [this, i] { teamPanelSel_ = (int)i; }};
+    it.icon = typeDot(f->S().type);  // comme la liste de l'équipe
+    it.shrink = true;
+    m.items.push_back(it);
   }
   m.onCancel = [this] {
     panelMode_ = 1;
@@ -803,9 +812,10 @@ void Game::gearMenu(int sel) {
 }
 
 void Game::gearSlots(FighterP f, int who, int sel) {
+  gearHover_ = {-1, ""};
   Menu m;
   m.title = f->name();
-  m.x = 8, m.y = 8, m.w = 132, m.rows = 7;
+  m.x = 8, m.y = 8, m.w = 132, m.rows = 8;  // tout tient, Retour compris
   for (int s = 0; s < N_GEAR; s++) {  // chaque emplacement : son titre, puis l'objet porté
     const std::string& id = f->gear[(size_t)s];
     bool ok = s == G_ACCESSORY || f->S().human;
@@ -888,11 +898,15 @@ void Game::gemMenu(FighterP f, int who, int sel) {
                     menus.push(p);
                   }};
       it.shrink = true;
+      // (2026-10-26) le chaton vide en pointillés, la gemme sertie avec son icône ; un filet entre deux équipements
+      it.icon = cur.empty() ? "vide" : item(cur).icon.empty() ? "ic_gemme_cristal" : item(cur).icon;
+      it.sep = k == 0;
       m.items.push_back(it);
     }
   }
   m.sel = std::clamp(sel, 0, std::max(0, (int)m.items.size() - 1));
   m.items.push_back({T("Retour"), "", "", true, [this] { menus.pop(); }});
+  m.items.back().icon = "retour", m.items.back().sep = true;
   teamPanelSel_ = who;
   menus.push(m);
 }
@@ -929,15 +943,23 @@ void Game::gearPick(FighterP f, int who, int s) {
       if (diff) cmp += (cmp.empty() ? "" : ", ") + std::string(diff > 0 ? "+" : "") + std::to_string(diff) + (k >= GS_ACC ? " % " : " ") + gearStatName(k);
     }
     int sockets = gemSockets(d), now = cur.empty() ? 0 : gemSockets(item(cur));
-    std::string help = (cmp.empty() ? std::string(T("Mêmes statistiques")) : T("Par rapport à l'actuel : ") + cmp) + ". " +
-                       std::to_string(sockets) + (sockets > 1 ? T(" chatons") : T(" chaton")) + (sockets < now ? T(" (moins qu'avant : des gemmes reviendront au sac)") : "") +
-                       ". " + itemHelp(d);
-    MenuItem it{d.name, T("×") + std::to_string(n), help, true, [equip, id] { equip(id); }};
+    // (2026-10-26) la fiche à droite montre les statistiques avec cet objet (en vert ce qui monte, en rouge ce qui baisse) :
+    // l'aide ne garde que l'écart, les chatons et la description (deux lignes : la fiche garde sa place)
+    std::string help = (cmp.empty() ? std::string(T("Mêmes statistiques")) : cmp) + " · " + std::to_string(sockets) +
+                       (sockets > 1 ? T(" chatons") : T(" chaton")) + (sockets < now ? T(" (moins qu'avant : des gemmes reviendront au sac)") : "") +
+                       "." + (d.desc.empty() ? "" : " " + d.desc);
+    MenuItem it{d.name, n > 1 ? T("×") + std::to_string(n) : "", help, true, [equip, id] { equip(id); }, [this, s, id] { gearHover_ = {s, id}; }};
     it.shrink = true;
     m.items.push_back(it);
   }
-  if (!f->gear[(size_t)s].empty()) m.items.push_back({T("Retirer"), "", T("Remettre ") + item(f->gear[(size_t)s]).name + T(" dans le sac."), true, [equip] { equip(""); }});
+  if (!f->gear[(size_t)s].empty())
+    m.items.push_back({T("Retirer"), "", T("Remettre ") + item(f->gear[(size_t)s]).name + T(" dans le sac."), true, [equip] { equip(""); },
+                       [this, s] { gearHover_ = {s, ""}; }});
   if (m.items.empty()) m.items.push_back({T("(rien dans le sac)"), "", T("Les boutiques vendent armes, armures et accessoires."), false, nullptr});
+  m.onCancel = [this] {
+    gearHover_ = {-1, ""};
+    menus.pop();
+  };
   menus.push(m);
 }
 
@@ -954,6 +976,24 @@ void Game::journalMenu() {
     m.items.push_back({T("Exploits"), std::to_string(exploitsDone()) + "/" + std::to_string(exploitCount()),
                        T("Des défis pour ceux qui veulent tout faire : finir les actes, remplir le Bestiaire, devenir champion…"), true,
                        [this] { exploitsMenu(); }});
+  if (!inExpedition()) {  // (2026-10-23) venus du menu de pause ; au retour, le Journal retrouve son affichage
+    auto back = [this] {
+      panelMode_ = 0;
+      menus.pop();
+    };
+    int n = newDiscussions();
+    m.items.push_back({T("Discussions"), n ? std::to_string(n) + T(" nouv.") : "", T("Ce que se disent les héros au fil de l'aventure."), true, [this, back] {
+                         discussionsMenu();
+                         menus.top().onCancel = back;
+                       }});
+    m.items.push_back({T("Bestiaire"), "", T("Les créatures rencontrées et obtenues, et leur fiche."), true, [this, back] {
+                         bestiaryMenu();
+                         menus.top().onCancel = back;
+                       }});
+  }
+  // (2026-10-26) trois listes titrées : quêtes en cours, primes, quêtes terminées (l'icône dit l'état : plus de « en cours »
+  // à chaque ligne)
+  std::vector<MenuItem> active, hunts, finished;
   for (auto& q : quests()) {
     std::string id = jget<std::string>(q, "id", "");
     if (!has(questFlag(id))) continue;
@@ -964,43 +1004,29 @@ void Game::journalMenu() {
       for (auto& s : steps)  // la dernière étape dont la condition est vraie
         if (!s.contains("si") || checkCond(s["si"])) help = tr(jget<std::string>(s, "texte", ""));
     }
-    MenuItem it{tr(jget<std::string>(q, "nom", id)), done ? T("terminée") : T("en cours"), tr(jget<std::string>(q, "lieu", "")) + " — " + help, true, nullptr};
+    MenuItem it{tr(jget<std::string>(q, "nom", id)), "", tr(jget<std::string>(q, "lieu", "")) + " — " + help, true, nullptr};
     it.color = done ? 0xaab3d8 : 0;
     it.icon = done ? "coche" : "parchemin";
     it.shrink = true;
-    m.items.push_back(it);
+    (done ? finished : active).push_back(it);
   }
   for (auto& b : bounties()) {  // primes acceptées, pas encore touchées
     std::string id = jget<std::string>(b, "id", "");
     if (!has(bountyFlag(id, 0)) || has(bountyFlag(id, 2))) continue;
     bool beaten = has(bountyFlag(id, 1));
-    MenuItem it{T("Prime : ") + tr(jget<std::string>(b, "nom", id)), beaten ? T("Prime !") : T("en chasse"),
+    MenuItem it{tr(jget<std::string>(b, "nom", id)), beaten ? T("Prime !") : T("en chasse"),
                 tr(jget<std::string>(b, "lieu", "")) + " — " +
                     (beaten ? std::string(T("Vaincu : toucher la prime à un tableau d'annonces.")) : tr(jget<std::string>(b, "description", ""))),
                 true, nullptr};
     it.icon = "viser";
     it.shrink = true;
-    m.items.push_back(it);
+    hunts.push_back(it);
   }
-  if (!inExpedition()) {  // (2026-10-23) venus du menu de pause ; au retour, le Journal retrouve son affichage
-    auto back = [this] {
-      panelMode_ = 0;
-      menus.pop();
-    };
-    int n = newDiscussions();
-    MenuItem talk{T("Discussions"), n ? std::to_string(n) + T(" nouv.") : "", T("Ce que se disent les héros au fil de l'aventure."), true, [this, back] {
-                    discussionsMenu();
-                    menus.top().onCancel = back;
-                  }};
-    MenuItem best{T("Bestiaire"), "", T("Les créatures rencontrées et obtenues, et leur fiche."), true, [this, back] {
-                    bestiaryMenu();
-                    menus.top().onCancel = back;
-                  }};
-    size_t at = 0;  // après Prochain gardien, Progression et Exploits, avant les quêtes
-    while (at < m.items.size() && (m.items[at].label == T("Prochain gardien") || m.items[at].label == T("Progression") || m.items[at].label == T("Exploits"))) at++;
-    m.items.insert(m.items.begin() + (long)at, {talk, best});
-    if (m.items.size() > at + 2) m.items.insert(m.items.begin() + (long)at + 2, menuHeader(T("Quêtes")));  // la liste des quêtes à part
-  }
+  for (auto* part : {&active, &hunts, &finished})
+    if (!part->empty()) {
+      m.items.push_back(menuHeader(part == &active ? T("Quêtes") : part == &hunts ? T("Primes") : T("Terminées")));
+      m.items.insert(m.items.end(), part->begin(), part->end());
+    }
   setIcons(m, {{T("Prochain gardien"), "carte"}, {T("Progression"), "etoile"}, {T("Exploits"), "coupe"}, {T("Discussions"), "bulle"},
                {T("Bestiaire"), "ic_livre"}});
   if (m.items.empty()) m.items.push_back({T("(aucune quête)"), "", T("Parlez aux habitants : certains ont besoin d'aide."), false, nullptr});
@@ -1070,6 +1096,7 @@ void Game::progressMenu() {
 void Game::teamMenu() { teamMenuAt(0); }
 void Game::teamMenuAt(int sel) {
   panelMode_ = 2;
+  gearHover_ = {-1, ""};
   Menu m;
   m.title = swapFrom_ >= 0 ? T("Échanger avec…") : T("Équipe");
   m.x = 8, m.y = 8, m.w = 132, m.rows = 9;
@@ -1078,18 +1105,25 @@ void Game::teamMenuAt(int sel) {
   for (size_t i = 0; i < team.size(); i++) {
     auto& f = team[i];
     bool fr = std::find(fv.begin(), fv.end(), f) != fv.end();
-    m.items.push_back({(int)i == swapFrom_ ? "» " + f->name() : f->name(), fr ? T("Front") : f->alive() ? T("Rés.") : T("K.O."),
-                       T("Entrée sur deux membres pour les échanger. Les 3 premiers valides combattent."), true,
-                       [this, i] {
-                         if (swapFrom_ < 0) swapFrom_ = (int)i;
-                         else {
-                           std::swap(team[swapFrom_], team[i]);
-                           swapFrom_ = -1;
-                         }
-                         menus.pop();
-                         teamMenuAt((int)i);
-                       },
-                       [this, i] { teamPanelSel_ = (int)i; }});
+    // (2026-10-26) le niveau à droite ; au combat en blanc, remplaçant en gris, K.O. en rouge (plus de « Front » à chaque ligne)
+    MenuItem it{(int)i == swapFrom_ ? "» " + f->name() : f->name(), T("N.") + std::to_string(f->lvl),
+                std::string(!f->alive() ? T("K.O.") : fr ? T("Au combat.") : T("Remplaçant : seuls les 3 premiers héros valides et leurs compagnons combattent.")) +
+                    T(" Entrée sur deux membres pour les échanger."),
+                true,
+                [this, i] {
+                  if (swapFrom_ < 0) swapFrom_ = (int)i;
+                  else {
+                    std::swap(team[swapFrom_], team[i]);
+                    swapFrom_ = -1;
+                  }
+                  menus.pop();
+                  teamMenuAt((int)i);
+                },
+                [this, i] { teamPanelSel_ = (int)i; }};
+    it.color = !f->alive() ? 0xff7b6b : fr ? 0 : 0xaab3d8;
+    it.icon = typeDot(f->S().type);
+    it.shrink = true;
+    m.items.push_back(it);
   }
   m.onCancel = [this] {
     swapFrom_ = -1;
@@ -1358,20 +1392,35 @@ void Game::drawTeamPanel(int x, int y, int sel) {
     return;
   }
   if (sel >= (int)team.size()) return;
-  const Fighter& f = *team[sel];
+  const Fighter& now = *team[sel];
+  Fighter f = now;  // (2026-10-26) Équipement : la fiche telle qu'elle serait avec l'objet survolé (gearPick)
+  if (gearHover_.first >= 0) {
+    f.gear[(size_t)gearHover_.first] = gearHover_.second;
+    trimGems(f);
+    f.recalc();
+    f.hp = std::clamp(f.mhp - (now.mhp - now.hp), now.alive() ? 1 : 0, f.mhp);
+    f.mp = std::clamp(f.mmp - (now.mmp - now.mp), 0, f.mmp);
+  }
+  auto tone = [](int before, int after) { return after > before ? rgb(0x6ad87a) : after < before ? rgb(0xf06a5a) : WHITE; };
   int w = 320 - x - 8;
   std::string t, s;
   for (auto& id : f.techs()) t += (t.empty() ? "" : ", ") + moveInfo(id).name;
   for (auto& id : f.spells()) s += (s.empty() ? "" : ", ") + moveInfo(id).name;
   auto techLines = Gfx::wrap(T("Techniques : ") + t, w - 16), magicLines = s.empty() ? std::vector<std::string>{} : Gfx::wrap(T("Magie : ") + s, w - 16);
-  for (auto* v : {&techLines, &magicLines})  // deux lignes au plus chacune (en anglais, les noms sont parfois plus longs)
-    if (v->size() > 2) {
-      v->resize(2);
-      v->back() = utf8Prefix(v->back(), std::max(0, (w - 16) / 6 - 1)) + "…";
-    }
   auto limitLines = f.S().limit.empty() ? std::vector<std::string>{} : Gfx::wrap(T("Limite : ") + moveInfo(f.S().limit).name, w - 16);
-  int lines = (int)techLines.size() + (int)magicLines.size() + (int)limitLines.size();
-  g.window(x, y, w, std::min(SCREEN_H - y - 2, 34 + 5 * 11 + 3 + 4 * 11 + 3 + lines * 11 + 6));
+  auto cut = [&](std::vector<std::string>& v, size_t n) {  // n lignes au plus, la dernière finie par « … »
+    if (v.size() <= n) return;
+    v.resize(n);
+    v.back() = utf8Prefix(v.back(), std::max(0, (w - 16) / 6 - 1)) + "…";
+  };
+  cut(techLines, 2), cut(magicLines, 2);  // deux lignes au plus chacune (en anglais, les noms sont parfois plus longs)
+  // (2026-10-26) la fiche s'arrête au-dessus de la bande d'aide (trois lignes au plus) : sinon, une ligne de moins
+  size_t helpLines = menus.help().empty() ? 0 : std::min<size_t>(3, Gfx::wrap(menus.help(), 300).size());
+  int room = (helpLines ? 236 - 10 - 11 * (int)helpLines - 1 : SCREEN_H - 2) - y;
+  auto height = [&] { return 34 + 5 * 11 + 4 + 4 * 11 + 4 + int(techLines.size() + magicLines.size() + limitLines.size()) * 11 + 6; };
+  while (height() > room && (techLines.size() > 1 || magicLines.size() > 1))
+    techLines.size() >= magicLines.size() ? cut(techLines, techLines.size() - 1) : cut(magicLines, magicLines.size() - 1);
+  g.window(x, y, w, std::min(SCREEN_H - y - 2, height()));
   g.text(x + 8, y + 6, f.name(), GOLD);
   g.text(x + w - 8, y + 6, T("Niveau ") + std::to_string(f.lvl), WHITE, 2);
   if (const Rules::Talent* tl = talentOf(f.S())) g.text(x + 8, y + 19, T("Talent : ") + tl->name, rgb(0xffd34d));  // (Aide > Talents)
@@ -1382,9 +1431,9 @@ void Game::drawTeamPanel(int x, int y, int sel) {
     drawCreature(g, f.sp, x + w - 34, y + 74 - 16 * k * f.S().size, k, false, time, f.chroma);
   }
   int ly = y + 34;
-  auto row = [&](const std::string& a, const std::string& b) {
+  auto row = [&](const std::string& a, const std::string& b, Color c = WHITE) {
     g.text(x + 8, ly, a, MUTED);
-    g.text(x + 54, ly, b, WHITE);
+    g.text(x + 54, ly, b, c);
     ly += 11;
   };
   row(T("Type"), typesName(f.S()));
@@ -1393,31 +1442,45 @@ void Game::drawTeamPanel(int x, int y, int sel) {
     g.rect(x + 54, ly - 1, 48, 2, rgb(0x03051a, 200));
     g.rect(x + 54, ly - 1, 48 * part, 2, rgb(c));
   };
+  auto rule = [&] {  // (2026-10-26) un fin filet entre deux groupes (comme MenuItem::sep)
+    g.rect(x + 8, ly + 1, w - 16, 1, rgb(0x8090c8, 90));
+    ly += 4;
+  };
   float hpPart = f.mhp ? (float)f.hp / f.mhp : 0;
-  row(T("PV"), std::to_string(f.hp) + "/" + std::to_string(f.mhp));
+  row(T("PV"), std::to_string(f.hp) + "/" + std::to_string(f.mhp), tone(now.mhp, f.mhp));
   gauge(hpPart, hpPart > .5f ? 0x6ad87a : hpPart > .25f ? 0xffd34d : 0xf06a5a);
-  row(T("PM"), std::to_string(f.mp) + "/" + std::to_string(f.mmp));
+  row(T("PM"), std::to_string(f.mp) + "/" + std::to_string(f.mmp), tone(now.mmp, f.mmp));
   gauge(f.mmp ? (float)f.mp / f.mmp : 0, 0x6aa8f0);
   row(T("Exp."), std::to_string(f.xp) + "/" + std::to_string(f.need()));
   gauge(f.need() ? (float)f.xp / f.need() : 0, 0xc89af0);
-  row(T("Pas"), std::to_string(fighterMoveRange(f)) + T(" cases") + (speciesFlies(f.S()) ? T(", vole") : ""));  // échiquier
-  ly += 3;
-  // Statistiques sur deux colonnes
-  auto pair = [&](const char* a, int va, const char* b, const std::string& vb) {
+  row(T("Pas"), std::to_string(fighterMoveRange(f)) + T(" cases") + (speciesFlies(f.S()) ? T(", vole") : ""),  // échiquier
+      tone(fighterMoveRange(now), fighterMoveRange(f)));
+  rule();
+  // Statistiques sur deux colonnes ; avec un objet survolé : en vert ce qui monte, en rouge ce qui baisse
+  auto pair = [&](const char* a, int va, int was, const char* b, int vb, int wasB, const char* unit) {
     g.text(x + 8, ly, a, MUTED);
-    g.text(x + 76, ly, std::to_string(va), WHITE, 2);
+    g.text(x + 76, ly, std::to_string(va), tone(was, va), 2);
     g.text(x + 84, ly, b, MUTED);
-    g.text(x + w - 8, ly, vb, WHITE, 2);
+    g.text(x + w - 8, ly, std::to_string(vb) + unit, tone(wasB, vb), 2);
     ly += 11;
   };
-  pair(T("Attaque"), f.atk, T("Défense"), std::to_string(f.def));
-  pair(T("Magie"), f.mag, T("Résist."), std::to_string(f.res));
-  pair(T("Vitesse"), f.spd, T("Précis."), std::to_string(f.acc) + "%");
-  pair(T("Esquive"), f.eva, T("Critique"), std::to_string(f.crit) + "%");
-  ly += 3;
-  for (auto& l : techLines) g.text(x + 8, ly, l, WHITE), ly += 11;
-  for (auto& l : magicLines) g.text(x + 8, ly, l, rgb(0x9fd8ff)), ly += 11;
-  for (auto& l : limitLines) g.text(x + 8, ly, l, rgb(0xff9ad0)), ly += 11;  // un nom long passe à la ligne
+  pair(T("Attaque"), f.atk, now.atk, T("Défense"), f.def, now.def, "");
+  pair(T("Magie"), f.mag, now.mag, T("Résist."), f.res, now.res, "");
+  pair(T("Vitesse"), f.spd, now.spd, T("Précis."), f.acc, now.acc, "%");
+  pair(T("Esquive"), f.eva, now.eva, T("Critique"), f.crit, now.crit, "%");
+  rule();
+  // Techniques, magie, Limite : le mot du début en gris, les noms dans leur couleur
+  auto moves = [&](const std::vector<std::string>& v, std::string label, Color c) {
+    while (!label.empty() && label.back() == ' ') label.pop_back();
+    for (size_t i = 0; i < v.size(); i++, ly += 11)
+      if (i == 0 && v[i].rfind(label, 0) == 0) {
+        g.text(x + 8, ly, label, MUTED);
+        if (v[i].size() > label.size()) g.text(x + 8 + Gfx::textW(label), ly, v[i].substr(label.size()), c);
+      } else g.text(x + 8, ly, v[i], c);
+  };
+  moves(techLines, T("Techniques : "), WHITE);
+  moves(magicLines, T("Magie : "), rgb(0x9fd8ff));
+  moves(limitLines, T("Limite : "), rgb(0xff9ad0));  // un nom long passe à la ligne
 }
 
 // ---------------------------------------------------------------------------
