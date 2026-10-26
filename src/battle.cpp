@@ -4019,21 +4019,22 @@ void Battle::draw() {
     for (const Pop* p : order) {
       float u = t - p->t, y = p->y - std::min(1.f, u * 3) * 8 - (u < .3f ? std::sin(u / .3f * 3.1416f) * 3 : 0.f);
       // (2026-10-26) un nombre de dégâts jaillit plus grand puis se pose (un critique reste en double taille), posé sur le
-      // même bas qu'un texte ordinaire
-      float k = p->style & PopCrit ? 2.f : 1.f;
+      // même bas qu'un texte ordinaire ; les textes se rangent d'après leur taille posée (rien ne saute pendant le rebond)
+      float size = p->style & PopCrit ? 2.f : 1.f, k = size;
       if (p->style & PopDamage && u < .16f) k *= 1 + .5f * (1 - u / .16f) * (1 - u / .16f);
-      float w = Gfx::textW(p->text) * k / 2 + 2, x = std::clamp(p->x, w, 320 - w), bot = y + 11, top = bot - 11 * k;
+      float w = Gfx::textW(p->text) * size / 2 + 2, x = std::clamp(p->x, w, 320 - w), bot = y + 11, top = bot - 11 * size;
       for (bool moved = true; moved;) {
         moved = false;
         for (auto& q : placed)
-          if (std::abs(q.x - x) < w + q.w && top < q.bot - 2 && bot > q.top + 2) bot = q.top + 2, top = bot - 11 * k, moved = true;
+          if (std::abs(q.x - x) < w + q.w && top < q.bot - 2 && bot > q.top + 2) bot = q.top + 2, top = bot - 11 * size, moved = true;
       }
-      if (k > 1 && top < popTop_ - 11) top = popTop_ - 11;  // en grand : pas plus haut qu'un texte ordinaire (l'ordre des tours)
-      placed.push_back({x, w, top, top + 11 * k});
+      if (size > 1 && top < popTop_ - 11) top = popTop_ - 11;  // en grand : pas plus haut qu'un texte ordinaire (l'ordre des tours)
+      placed.push_back({x, w, top, top + 11 * size});
       // (2026-10-21) contour sombre et dégradé (clair en haut) : lisible sur tous les décors
       Color light = mix(p->col, rgb(0xffffff), .55f), dark = rgb(0x10081a);
       light.a = p->col.a, dark.a = p->col.a;
-      g.textBigFancy(x, top, p->text, light, p->col, dark, k, 1);
+      float half = Gfx::textW(p->text) * k / 2 + 2;
+      g.textBigFancy(std::clamp(x, half, 320 - half), top + 11 * (size - k), p->text, light, p->col, dark, k, 1);
     }
   }
   if (flashT >= 0 && t - flashT < .5f) {
