@@ -95,7 +95,7 @@ static std::vector<HelpPage> helpPages() {
                 ::T("Percée : atteindre le bord adverse donne un bonus pour tout le combat."),
                 ::T("Obstacles, bonds derrière la cible, échanges de cases, bottes qui font aller plus loin."),
                 ::T("Tactiques : S'approcher, Contourner, Protéger. Formation : choisie sur le dessin du plateau."),
-                ::T("Défis de l'échiquier : dans l'Arène, et auprès du maître d'armes de la Vallée et des instructeurs de Forgeroc et de Givreval.")}});
+                ::T("Défis de l'échiquier : dans l'Arène, et auprès du maître d'armes de la Vallée, de l'ermite de Sylve-Noire et des instructeurs de Forgeroc et de Givreval.")}});
   p.push_back({::T("Statistiques"), ::T("PV, PM, Attaque, Défense, Magie, Résistance, Vitesse…"),
                {::T("PV (points de vie) : à 0, le combattant est K.O. Un soigneur ou une auberge rend tout."),
                 ::T("PM (points de magie) : les sorts en coûtent. Les techniques sont gratuites."),

@@ -486,6 +486,11 @@ Astuces « intention » et « garde », aide de l'échiquier, tests (garde ≈ 0
 10. (2026-10-26) **Frise du rythme** (CTB de Final Fantasy X) : survoler une technique, un objet, « Attendre » ou la Limite
    montre dans la frise où tombera le prochain tour du lanceur (contour doré) ; un coup qui briserait la cible barre son
    prochain tour. Dessin seul, rien ne change dans le combat (capture `frise_rythme`).
+11. (2026-10-26) **Défis des mécaniques** : s'exercer sans risque avant chaque boss à mécanique, une leçon par défi,
+   combattants prêtés, petite récompense la première fois, puis Arène > Défis : « La cuirasse » (maître d'armes de la
+   Vallée : frapper ailleurs pendant la cuirasse, la magie passe), « Les ronces » (l'ermite de Sylve-Noire), « La charge »
+   (instructeur de Forgeroc) et « Le voile » (instructeur de Givreval). Mesuré sur 40 combats (IA / sans la parade) :
+   cuirasse 100 / 12 %, ronces 100 / 10, charge 100 / 12, voile 100 / 40 ; le joueur automatique les gagne en répétition.
 Mesuré (joueur automatique sans mémoire, bot14) : tout fini en 8 h 20, 10 défaites (27 avant), niveau 112, quatre actes en
 5 h 40, estimation joueur 16 h 46 ; les défaites restantes : meutes du Vieux Phare. Mesuré ensuite : bot15 (version
 finale, mêmes règles) quatre actes en 4 h 40 et 8 défaites dans l'histoire, puis 20 au Vieux Phare (équipe jamais changée :

@@ -2561,6 +2561,11 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
             for (auto& e : d.value(k, Json::array()))
               valid = valid && hasSpecies(e.value("espece", "")) && e.contains("case") && at(e["case"], std::string(k) == "allies");
           for (auto& o : d.value("obstacles", Json::array())) valid = valid && at(o, false);
+          for (auto& e : d.value("ennemis", Json::array()))  // (2026-10-26) une mécanique de boss ne joue que sur un boss (Battle::mech)
+            if (e.contains("mecanique")) {
+              static const std::set<std::string> kinds = {"cuirasse", "voile", "ronces", "charge", "attire"};
+              valid = valid && jget(e, "boss", false) && kinds.count(jget<std::string>(e["mecanique"], "genre", "")) && jget(e["mecanique"], "tous", 3) >= 2;
+            }
           valid = valid && d.contains("nom") && d.contains("description");
         }
         A.menuChallenges();
@@ -2607,6 +2612,69 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         bool back = mode == Mode::Arena && menus.active() && menus.top().title == T("Défis de l'échiquier") && menus.top().items[0].right == T("réussi");
         check(valid && placed && back, "arène : défis de l'échiquier (données valides, plateau imposé, retour à la liste « réussi »)");
         menus.clear();
+        // (2026-10-26) défis des mécaniques de boss : l'ennemi du défi porte sa mécanique et l'annonce comme un boss
+        bool mechs = true;
+        for (std::string id : {"cuirasse", "voile", "charge", "ronces"}) {
+          int at = -1;
+          for (size_t i = 0; i < defis.size(); i++)
+            if (jget<std::string>(defis[i], "id", "") == id) at = (int)i;
+          A.startChallenge(at);
+          FighterP boss;
+          if (battle_)
+            for (auto& f : battle_->foes)
+              if (f->boss) boss = f;
+          if (!boss) {
+            mechs = false;
+            continue;
+          }
+          Battle& B = *battle_;
+          B.start = time - 5;
+          B.sc.clear();
+          mechs = mechs && B.mech(boss) == id;
+          B.mechTurns_[boss.get()] = jget(boss->mech, "tous", 3) - 1;  // son prochain tour est celui de sa mécanique
+          if (id == "charge" || id == "ronces") B.bossPlan(boss), mechs = mechs && B.warnings_.size() == 1 && B.warnings_[0].kind == id;
+          else B.declareIntent(boss), mechs = mechs && B.intents_.count(boss.get()) && B.intents_[boss.get()].posture == id;
+          run(1.1f);  // le message s'écrit en entier (le combat attend)
+          snap("defi_" + id);
+          B.sc.clear();
+          for (auto& f : B.foes) f->hp = 0, B.knockOut(f);
+          B.checkEnd();
+          for (int i = 0; i < 60 * 30 && mode == Mode::Battle; i++) {
+            if (battle_ && battle_->sc.busy()) in.confirm = true;
+            frame();
+          }
+          menus.clear();
+        }
+        check(mechs && mode == Mode::Arena, "défis : la cuirasse, le voile, la charge et les ronces portent la mécanique de leur boss et l'annoncent (captures defi_…)");
+        // Joueur automatique : il relève une fois chaque défi récompensé (ensuite, plus rien à y faire) et le gagne en
+        // répétition (ses combattants prêtés, avec leurs tactiques) : il ne restera pas bloqué dessus
+        bool keepAuto = tacticsAuto;  // le joueur automatique le met à vrai, jusque dans son destructeur
+        {
+          Pilot P(*this, false);
+          auto keepFlags = flags;
+          std::string said;
+          bool ok = true;
+          struct Lesson {
+            const char *ev, *before, *flag, *defi;
+          };
+          for (auto& c : {Lesson{"maitre_armes", "maitre_bottes", "maitre_cuirasse", "cuirasse"},
+                          Lesson{"instructeur_forgeroc", "instructeur_forgeroc", "instructeur_charge", "charge"},
+                          Lesson{"instructeur_givreval", "instructeur_givreval", "instructeur_voile", "voile"},
+                          Lesson{"ermite", "bandits", "ermite_ronces", "ronces"}}) {
+            flags = keepFlags;
+            flags.insert(c.before);
+            Pilot::Info in = P.inspect(c.ev);
+            bool offered = in.combat && jget<std::string>(in.fight, "defi", "") == c.defi;
+            float won = offered ? P.rehearse(in.fight, 20, true) : 0;
+            flags.insert(c.flag);
+            Pilot::Info after = P.inspect(c.ev);
+            ok = ok && offered && won >= .7f && !after.combat && !after.effect;
+            said += std::string(said.empty() ? "" : ", ") + c.defi + " " + std::to_string(int(won * 100 + .5f)) + " %";
+          }
+          flags = keepFlags;
+          check(ok, "joueur automatique : il relève une fois chaque défi des mécaniques et le gagne en répétition (" + said + ")");
+        }
+        tacticsAuto = keepAuto;
       }
     }
     mode = Mode::Title;
@@ -4535,8 +4603,9 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       f->hp = f->mhp, f->mp = f->mmp;
     }
   };
+  // hook : appelé avant chaque pas du combat (un défi « sans la parade » : Isra qui ne bouge jamais…)
   auto simSetup = [&](const char* name, std::vector<std::pair<std::string, int>> party, std::function<BattleSetup()> mk, int n,
-                      bool tac = false) {
+                      bool tac = false, std::function<void(Battle&)> hook = nullptr) {
     if (!simWanted(name)) return;
     n *= simFactor;
     int wins = 0;
@@ -4569,6 +4638,7 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
       for (int i = 0; i < 20 * 900 && !done; i++) {
         in.confirm = true;
         if (keep && battle_) lastLog = battle_->log;
+        if (hook && battle_) hook(*battle_);
         update(1 / 20.f);
         t += 1 / 20.f;
       }
@@ -4703,12 +4773,35 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
   // (2026-10-26) la fin de l'acte 3 (Citadelle : meutes N.60-64)
   simSetup("Brume Noire (équipe N.64)", {{"lior", 64}, {"maelle", 64}, {"isra", 64}, {"braisenard", 64}, {"gouttelin", 64}, {"ronceau", 64}}, bossEvent("brume_noire"), 20);
   {  // Défis de l'échiquier (3.4) : l'IA seule doit pouvoir les gagner parfois, sans que ce soit acquis
+    // (2026-10-26) un défi qui apprend une parade se rejoue sans elle : la défaite doit y être fréquente
+    auto pin = [](const char* sp) {  // ce combattant ne se déplace jamais de lui-même (« tout le monde » si vide)
+      return [sp](Battle& B) {
+        for (auto& a : B.allies)
+          if (!*sp || a->sp == sp) B.moved_.insert(a.get());
+      };
+    };
+    auto stubborn = [](std::map<std::string, std::string> moves) {  // ces combattants frappent le boss avec cette technique, quoi qu'il arrive
+      return [moves](Battle& B) {
+        B.simTactics = true;
+        for (auto& a : B.allies) {
+          a->tacticsOn = moves.count(a->sp) > 0;  // les autres : l'IA, comme avec la parade
+          if (a->tacticsOn) a->tactics = {tacticFromJson(Json{{"si", "ennemi_boss"}, {"technique", moves.at(a->sp)}})};
+        }
+      };
+    };
+    std::map<std::string, std::function<void(Battle&)>> careless = {
+        {"intentions", pin("isra")},                                             // Isra reste sous le chevron
+        {"cuirasse", stubborn({{"brann", "hache"}, {"lior", "estoc"}})},          // ses combattants frappent la cuirasse au corps à corps
+        {"voile", stubborn({{"kael", "fleche_vent"}, {"isra", "feu"}})},         // tirs et sorts dans le voile
+        {"charge", pin("")},                                                     // personne ne quitte la ligne
+        {"ronces", pin("")},                                                     // personne ne quitte la croix, ni les ronces
+    };
     Json defis = readJson("defis.json");
     for (auto& d : defis) {
       std::vector<std::pair<std::string, int>> party;
       for (auto& e : d.value("allies", Json::array())) party.push_back({e.at("espece").get<std::string>(), jget(e, "niveau", 10)});
       std::string name = T("Défi : ") + tr(jget<std::string>(d, "nom", ""));
-      simSetup(name.c_str(), party, [&, d] {
+      auto setup = [&, d] {
         BattleSetup s;
         auto cell = [](const Json& e) {
           Json p = e.value("case", Json::array({1, 1}));
@@ -4721,7 +4814,12 @@ int Game::selfTest(SDL_Surface* target, const std::string& out) {
         s.fixedBoard = true, s.canCapture = false;
         s.theme = (int)themeOf(jget<std::string>(d, "decor", "vallee"));
         return s;
-      }, 20);
+      };
+      simSetup(name.c_str(), party, setup, 20);
+      auto it = careless.find(jget<std::string>(d, "id", ""));
+      if (it == careless.end()) continue;
+      simSetup((name + " (tactiques)").c_str(), party, setup, 20, true);  // comme le joueur automatique
+      simSetup((name + " (sans la parade)").c_str(), party, setup, 20, false, it->second);
     }
   }
 

@@ -592,10 +592,19 @@ code) ; `docs/GUIDE.md` les range par domaine.
   partagé par l'Arène, les événements et le joueur automatique). Action `combat` d'un événement : `defi` (ce défi, ses
   combattants prêtés : pas de « Changer ») et `entrainement` (ni gains ni évolutions, une défaite ne coûte rien :
   `BattleSetup::training`) ; maître d'armes de la Vallée (événement `maitre_armes`, drapeau `maitre_bottes`, Bottes de
-  vent ; ensuite, trois questions en chaîne : « Lire les intentions », « La garde », « Dans le dos »). Sept défis : `dos`,
+  vent ; ensuite « La cuirasse », puis trois questions en chaîne, sous-événement `maitre_armes_lecons` : « Lire les
+  intentions », « La garde », « Dans le dos »). Onze défis : `dos`,
   `percee`, `ailes`, `mur`, `bousculade`, et (2026-10-25, pour apprendre la 3.7) `intentions` (un Ferrolin N.20 lent, blindé
   et faible à la magie annonce Coup d'acier sur Isra : l'écarter, Lior peut barrer la route ; simulé : IA 96 %, Isra qui ne
   bouge jamais 20 %) et `garde` (Brann acculé dans un coin par quatre Mulotins rapides : IA 37 %, toujours en garde 79 %).
+  (2026-10-26) Un par mécanique de boss, pour s'y exercer avant : un ennemi de défi porte `boss` et `mecanique` comme un boss
+  d'événement (`makeFoe` ; le mode test refuse une `mecanique` sans `boss`) : `cuirasse` (jeune Golem de suie et deux
+  Champichous ; maître d'armes, drapeau `maitre_cuirasse`), `ronces` (l'ermite de Sylve-Noire, après les bandits,
+  `ermite_ronces`), `charge` (instructeur de Forgeroc, `instructeur_charge`), `voile` (instructeur de Givreval,
+  `instructeur_voile`) ; récompensés une fois, puis rejouables ; captures `defi_<id>`. Simulations : lignes « (tactiques) »
+  (comme le joueur automatique) et « (sans la parade) » (`careless` de test.cpp : Isra qui ne bouge pas, combattants qui
+  frappent la cuirasse, tirs et sorts dans le voile, personne qui quitte la ligne ou la croix) ; mesures : compétence
+  `equilibrage`.
   Mesuré (BRUMEVAL_SIMULATIONS=2) : sans
   réglage, boss bien plus faciles (encerclés par 6 alliés : +60 %) ; après (boss ni encerclés ni gênés au contact,
   encerclement 10 %, Ignarok N.25, Ronce-Mère N.22, Mère des Brumes N.41), difficulté proche de la 3.3.
