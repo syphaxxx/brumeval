@@ -41,9 +41,9 @@
       {"espece": "brann", "niveau": 17, "case": [2, 3]}
     ],
     "ennemis": [
-      {"espece": "rocaillou", "niveau": 13, "case": [1, 4]},
+      {"espece": "banquisot", "niveau": 13, "case": [1, 4]},
       {"espece": "galetor", "niveau": 12, "case": [2, 4]},
-      {"espece": "esprillon", "niveau": 12, "case": [1, 7]},
+      {"espece": "grenouillon", "niveau": 12, "case": [1, 7]},
       {"espece": "champichou", "niveau": 11, "case": [2, 7]}
     ],
     "obstacles": [[0, 4], [3, 4]]

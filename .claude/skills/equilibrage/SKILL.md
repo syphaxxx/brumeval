@@ -79,6 +79,13 @@ Méthode :
   estimation joueur 24 h 48. L'histoire arrive plus tôt (5 h 51 et 6 h 04 contre 6 h 29) avec autant de défaites ou
   moins ; le temps total varie de ±2 h d'une partie à l'autre.
 
+- **Défi « Les ailes » réparé** (2026-10-26) : 0 à 10 % depuis le rééquilibrage du 23/10 (journal : l'Esprillon, soigneur,
+  résiste au physique, 0,55 ; Kael lui faisait 7 à 17 par flèche et il se soignait ; Rocaillou et Galetor, carapaces, ne
+  prenaient que 3-4 de Brann). Esprillon → Grenouillon (soigneur sans résistance) : 33 % ; et Rocaillou → Banquisot
+  (protecteur sans résistance au physique) : 95 % (×4), 92 % avec l'IA alliée qui lit les intentions. Tous les défis
+  ensuite (×4, IA ; « tactiques » / « sans la parade ») : dos 90, Percée 96, ailes 92, mur 70, Bousculade 47, intentions 95
+  (98 / 21), garde 68, cuirasse 98 (96 / 13), ronces 100 (96 / 5), charge 96 (87 / 26), voile 98 (100 / 47).
+
 - **Mécaniques des gardiens de l'Expédition** (2026-10-26) : dès la région 3, une mécanique de boss selon les types
   (`procgen.cpp`, `genBoss`). Mesuré (BRUMEVAL_SIMULATIONS=4, `BRUMEVAL_SIM_FILTRE=gion,avec` ; IA / avec équipement,
   avant → après) : comme dans l'histoire, une posture coûte un tour d'attaque au gardien : sans réglage, les cinq gardiens
