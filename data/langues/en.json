@@ -4973,15 +4973,12 @@
   "Forêt de Sylve-Noire, à l'ouest.": "Blackwood Forest, to the west.",
   "Un garde forestier vous arrête : « La forêt est trop dangereuse tant que la brume rôde. Revenez quand le gardien du col sera vaincu. »": "A forest ranger stops you: “The forest is too dangerous while the mist is about. Come back when the pass's guardian is defeated.”",
   "Le bateau du pêcheur. Tant que la brume couvre le lac, il ne peut pas traverser.": "The fisherman's boat. While the mist covers the lake, it can't cross.",
-<<<<<<< HEAD
   "Se déplacer est toujours rapide.": "Moving is always quick.",
-=======
   "Par rapport à l'actuel : ": "Compared to the current one: ",
   "terminée": "completed",
   "en cours": "in progress",
   "Prime : ": "Bounty: ",
   "Entrée sur deux membres pour les échanger. Les 3 premiers valides combattent.": "Enter on two members to swap them. The first 3 able members fight.",
->>>>>>> worktree-agent-a801f665929675a45
   "Certaines créatures résistent en plus aux coups physiques, à la magie ou à un type : leur fiche du Bestiaire donne leurs faiblesses.": "Some creatures also resist physical hits, magic or a type: their Bestiary entry shows their weaknesses.",
   "Intentions : à 70 % de sa jauge, un ennemi annonce ce qu'il prépare (icône à côté de sa barre de PV, chevron orange sur sa cible, zone en orange au sol, pointillé vers sa cible quand on le survole). Écartez la cible, mettez-la en garde, ou frappez-le d'abord. Un sablier : il va se mettre en garde, frappez-le de loin.": "Intentions: at 70% of its gauge, an enemy shows what it is readying (an icon beside its HP bar, an orange chevron on its target, the area in orange on the ground, a dotted line to its target when hovered). Move the target away, brace it, or strike the enemy first. An hourglass: it is about to brace, hit it from afar.",
   "Se mettre en garde : un quart de dégâts en moins jusqu'à son prochain tour, face à l'ennemi le plus proche ; il rejoue plus tôt.": "Brace: a quarter less damage until their next turn, facing the nearest enemy; they act again sooner.",
