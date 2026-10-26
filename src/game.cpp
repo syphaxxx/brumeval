@@ -1743,8 +1743,11 @@ void Game::drawMap() {
   int noticeY = 190;
   if (menus.active() && askText_.empty() && !menus.help().empty()) {
     auto lines = Gfx::wrap(menus.help(), 300);
-    if (lines.size() > 3) {  // trois lignes au plus : la fenêtre ne monte pas sur les panneaux (textes anglais plus longs)
-      lines.resize(3);
+    // trois lignes au plus : la fenêtre ne monte pas sur les panneaux (textes anglais plus longs) ; sans panneau, jusqu'à
+    // six tant qu'elle ne touche aucun menu (2026-10-26 : le conseil du prochain gardien, dans le Journal, était coupé)
+    size_t most = panelMode_ ? 3 : (size_t)std::clamp((236 - 10 - 2 - menus.maxBottom()) / 11, 3, 6);
+    if (lines.size() > most) {
+      lines.resize(most);
       lines.back() = utf8Prefix(lines.back(), 49) + "…";
     }
     int h = 10 + 11 * (int)lines.size();

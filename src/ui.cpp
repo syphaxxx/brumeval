@@ -410,6 +410,29 @@ int MenuStack::maxRight() const {
   for (auto& m : st_) r = std::max(r, m.x + m.w);
   return r;
 }
+// Un menu ouvert par-dessus qui n'est pas bien à l'intérieur de celui-ci le cache entièrement,
+// plutôt que d'en laisser dépasser des morceaux
+static bool covered(const std::vector<Menu>& st, size_t k) {
+  const Menu& m = st[k];
+  int h, th;
+  menuBox(m, h, th);
+  for (size_t j = k + 1; j < st.size(); j++) {
+    const Menu& o = st[j];
+    if (o.hidden) continue;
+    int oh, oth;
+    menuBox(o, oh, oth);
+    bool meet = o.x < m.x + m.w && m.x < o.x + o.w && o.y < m.y + h && m.y < o.y + oh;
+    bool inside = o.x >= m.x + 4 && o.y >= m.y + 4 && o.x + o.w <= m.x + m.w - 4 && o.y + oh <= m.y + h - 4;
+    if (meet && !inside) return true;
+  }
+  return false;
+}
+int MenuStack::maxBottom() const {
+  int b = 0, h, th;
+  for (size_t k = 0; k < st_.size(); k++)
+    if (!st_[k].hidden && !covered(st_, k)) menuBox(st_[k], h, th), b = std::max(b, st_[k].y + h);
+  return b;
+}
 
 void MenuStack::draw(Gfx& g, float t) const {
   for (size_t k = 0; k < st_.size(); k++) {
@@ -418,19 +441,7 @@ void MenuStack::draw(Gfx& g, float t) const {
     bool top = k + 1 == st_.size();
     int h, th;
     menuBox(m, h, th);
-    // Un menu ouvert par-dessus qui n'est pas bien à l'intérieur de celui-ci le cache entièrement,
-    // plutôt que d'en laisser dépasser des morceaux
-    bool hidden = false;
-    for (size_t j = k + 1; j < st_.size() && !hidden; j++) {
-      const Menu& o = st_[j];
-      if (o.hidden) continue;
-      int oh, oth;
-      menuBox(o, oh, oth);
-      bool meet = o.x < m.x + m.w && m.x < o.x + o.w && o.y < m.y + h && m.y < o.y + oh;
-      bool inside = o.x >= m.x + 4 && o.y >= m.y + 4 && o.x + o.w <= m.x + m.w - 4 && o.y + oh <= m.y + h - 4;
-      hidden = meet && !inside;
-    }
-    if (hidden) continue;
+    if (covered(st_, k)) continue;
     int shown = std::min(m.rows, (int)m.items.size());
     g.window(m.x, m.y, m.w, h);
     if (!m.title.empty()) {

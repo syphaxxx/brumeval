@@ -120,6 +120,7 @@ class MenuStack {
   size_t shownDepth() const;  // menus dessinés (sans les menus cachés, Menu::hidden)
   Menu& top() { return st_.back(); }
   int maxRight() const;  // bord droit le plus à droite des menus ouverts (0 si aucun)
+  int maxBottom() const;  // bord bas le plus bas des menus affichés (0 si aucun)
   void update(Input& in);
   void draw(Gfx& g, float t) const;
   std::string help() const;
