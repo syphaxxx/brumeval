@@ -3924,7 +3924,7 @@ void Battle::draw() {
           g.tri(x - 3, y + .5f, x + 3, y + .5f, x, y + 4, rgb(0xff9a3a));
         }
         if (auto [lo, hi] = dmg[a.get()]; lo > 0)  // ce qu'il va prendre : de quoi décider (garde, soin, recul)
-          g.text(p.x, y - 8, "≈ " + std::to_string(lo) + (hi > lo ? "-" + std::to_string(hi) : ""), rgb(0xff9a3a), 1);
+          g.text(p.x, y - 10, "≈ " + std::to_string(lo) + (hi > lo ? "-" + std::to_string(hi) : ""), rgb(0xff9a3a), 1);
       }
   }
   // Par-dessus les combattants : contour de la zone et flèche au-dessus de la cible (le sprite cache sa case)
