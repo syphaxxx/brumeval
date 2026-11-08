@@ -1,0 +1,4 @@
+🎮 **Brumes 0.7** est sortie !
+La suite de Brumeval, en RPG tactique isométrique : terrains en relief, classes et talents, sept recrues, deux régions facultatives et la Ronde après la fin.
+Votre sauvegarde de Brumeval est reprise au premier lancement (une copie est gardée).
+Télécharger (Windows) : https://github.com/syphaxxx/brumes-versions/releases/tag/v0.7
