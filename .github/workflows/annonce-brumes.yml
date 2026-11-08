@@ -1,0 +1,25 @@
+# Annonce d'une version de Brumes (le successeur de Brumeval) sur le canal Discord, avec le même webhook
+# (secret DISCORD_WEBHOOK de ce dépôt, jamais écrit dans le code). Ne tourne que sur la branche annonce-brumes,
+# quand annonce/message.txt change : la branche main et la compilation de Brumeval ne sont pas touchées.
+name: Annonce Brumes
+
+on:
+  push:
+    branches: [annonce-brumes]
+    paths: [annonce/message.txt]
+
+permissions:
+  contents: read
+
+jobs:
+  annonce:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Annoncer la version de Brumes sur Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK" ]; then echo "Pas de webhook Discord"; exit 1; fi
+          jq -n --rawfile c annonce/message.txt '{content: $c, username: "Brumes"}' |
+            curl --fail -sS -H "Content-Type: application/json" -d @- "$DISCORD_WEBHOOK"
